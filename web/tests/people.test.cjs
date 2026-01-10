@@ -551,13 +551,6 @@ run_test("get_full_name", () => {
     assert.equal(names, "Isaac Newton");
 });
 
-run_test("get_full_names_for_poll_option", () => {
-    initialize();
-    people.add_active_user(isaac);
-    const names = people.get_full_names_for_poll_option([me.user_id, isaac.user_id]);
-    assert.equal(names, "Me Myself, Isaac Newton");
-});
-
 run_test("get_display_full_names", ({override}) => {
     initialize();
     people.initialize_current_user(me.user_id);

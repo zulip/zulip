@@ -10,7 +10,6 @@ import type {WidgetExtraData} from "./generic_widget.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import type {Message} from "./message_store.ts";
-import * as people from "./people.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
 import {
     PollData,
@@ -39,6 +38,11 @@ export function activate({
     const poll_owner_user_id = widget_context.owner_user_id();
     const current_user_id = widget_context.current_user_id();
 
+    function get_full_name_list(user_ids: number[]): string {
+        // This will return something like "Alice Lee, Bob Jones, Cindy Perez"
+        return widget_context.get_full_name_list(user_ids);
+    }
+
     const parse_result = poll_widget_extra_data_schema.safeParse(extra_data);
     if (!parse_result.success) {
         blueslip.error("invalid poll widget extra data", {issues: parse_result.error.issues});
@@ -54,7 +58,7 @@ export function activate({
         is_my_poll,
         question: parsed_extra_data.question ?? "",
         options: parsed_extra_data.options ?? [],
-        comma_separated_names: people.get_full_names_for_poll_option,
+        get_full_name_list,
         report_error_function: blueslip.warn,
     });
 
