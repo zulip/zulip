@@ -2674,12 +2674,14 @@ one or more new messages.
 
         return msg
 
-    def build_webhook_url(self, *args: str, **kwargs: str) -> str:
+    def build_webhook_url(self, *args: str, legacy_name: str | None = None, **kwargs: str) -> str:
         url = self.url_template
         assert url.find("api_key") >= 0
         api_key = self.test_user.api_key
         url = self.url_template.format(
-            webhook_dir_name=self.webhook_dir_name, api_key=api_key, stream=self.channel_name
+            webhook_dir_name=self.webhook_dir_name if legacy_name is None else legacy_name,
+            api_key=api_key,
+            stream=self.channel_name,
         )
 
         has_arguments = kwargs or args
