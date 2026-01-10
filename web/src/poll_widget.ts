@@ -37,6 +37,7 @@ export function activate({
     const container_is_hidden = widget_context.is_container_hidden();
     const is_my_poll = widget_context.is_my_poll();
     const poll_owner_user_id = widget_context.owner_user_id();
+    const current_user_id = widget_context.current_user_id();
 
     const parse_result = poll_widget_extra_data_schema.safeParse(extra_data);
     if (!parse_result.success) {
@@ -48,8 +49,8 @@ export function activate({
     const parsed_extra_data = parse_result.data;
 
     const poll_data = new PollData({
-        message_sender_id: poll_owner_user_id,
-        current_user_id: people.my_current_user_id(),
+        poll_owner_user_id,
+        current_user_id,
         is_my_poll,
         question: parsed_extra_data.question ?? "",
         options: parsed_extra_data.options ?? [],

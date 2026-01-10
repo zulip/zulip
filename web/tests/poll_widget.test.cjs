@@ -41,7 +41,7 @@ run_test("PollData my question", () => {
 
     const data_holder = new PollData({
         current_user_id: me.user_id,
-        message_sender_id: me.user_id,
+        poll_owner_user_id: me.user_id,
         is_my_poll,
         question,
         options: [],
@@ -191,7 +191,7 @@ run_test("wrong person editing question", () => {
 
     const data_holder = new PollData({
         current_user_id: me.user_id,
-        message_sender_id: me.user_id,
+        poll_owner_user_id: me.user_id,
         is_my_poll,
         question,
         options: [],

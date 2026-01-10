@@ -28,4 +28,8 @@ export class ZulipWidgetContext {
     owner_user_id(): number {
         return this.sender_id;
     }
+
+    current_user_id(): number {
+        return people.my_current_user_id();
+    }
 }
