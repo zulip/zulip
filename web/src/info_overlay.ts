@@ -5,6 +5,7 @@ import render_markdown_help from "../templates/markdown_help.hbs";
 import render_search_operator from "../templates/search_operators.hbs";
 import render_status_message_example from "../templates/status_message_example.hbs";
 import render_poll_widget_example from "../templates/widgets/poll_widget_example.hbs";
+import render_todo_widget_example from "../templates/widgets/todo_widget_example.hbs";
 
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";
@@ -176,50 +177,7 @@ ${$t({defaultMessage: "Task 1"})}: ${$t({defaultMessage: "This is the first task
 ${$t({defaultMessage: "Task 2"})}: ${$t({defaultMessage: "This is the second task."})}
 ${$t({defaultMessage: "Last task"})}`,
         // output_html required since todo rendering is done outside Markdown.
-        output_html: `\
-<div class="message_content rendered_markdown">
-    <div class="widget-content">
-        <div class="todo-widget">
-            <h4>${$t({defaultMessage: "Today's tasks"})}</h4>
-            <ul class="todo-widget">
-                <li>
-                    <label class="checkbox">
-                        <span>
-                            <input type="checkbox" class="task" checked="checked">
-                            <span class="rendered-checkbox"></span>
-                        </span>
-                        <span>
-                            <s><strong>${$t({defaultMessage: "Task 1"})}:</strong> ${$t({defaultMessage: "This is the first task."})}</s>
-                        </span>
-                    </label>
-                </li>
-                <li>
-                    <label class="checkbox">
-                        <span>
-                            <input type="checkbox" class="task">
-                            <span class="rendered-checkbox"></span>
-                        </span>
-                        <span>
-                            <strong>${$t({defaultMessage: "Task 2"})}:</strong> ${$t({defaultMessage: "This is the second task."})}
-                        </span>
-                    </label>
-                </li>
-                <li>
-                    <label class="checkbox">
-                        <span>
-                            <input type="checkbox" class="task">
-                            <span class="rendered-checkbox"></span>
-                        </span>
-                        <span>
-                            <strong>${$t({defaultMessage: "Last task"})}</strong>
-                        </span>
-                    </label>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-`,
+        output_html: render_todo_widget_example(),
     },
     {
         markdown: "---",
