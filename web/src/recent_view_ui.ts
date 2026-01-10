@@ -8,7 +8,7 @@ import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view
 import render_recent_view_filters from "../templates/recent_view_filters.hbs";
 import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
-import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
+import render_users_with_status_icons from "../templates/users_with_status_icons.hbs";
 
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
@@ -713,18 +713,19 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // Direct message info
         const user_ids_string = last_msg.to_user_ids;
         assert(typeof last_msg.display_recipient !== "string");
-        const rendered_pm_with_html = last_msg.display_recipient
-            .filter(
-                (recipient: DisplayRecipientUser) =>
-                    !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
-            )
-            .map((user: DisplayRecipientUser) =>
-                render_user_with_status_icon({
+        const rendered_pm_with_html = render_users_with_status_icons({
+            users: last_msg.display_recipient
+                .filter(
+                    (recipient: DisplayRecipientUser) =>
+                        !people.is_my_user_id(recipient.id) ||
+                        last_msg.display_recipient.length === 1,
+                )
+                .map((user: DisplayRecipientUser) => ({
                     name: people.get_display_full_name(user.id),
                     status_emoji_info: user_status.get_status_emoji(user.id),
-                }),
-            );
-        rendered_pm_with_html.sort();
+                }))
+                .toSorted((a, b) => util.strcmp(a.name, b.name)),
+        });
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
         const has_unread_mention =
@@ -758,11 +759,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
 
         dm_context = {
             user_ids_string,
-            rendered_pm_with_html: util.format_array_as_list(
-                rendered_pm_with_html,
-                "long",
-                "conjunction",
-            ),
+            rendered_pm_with_html,
             pm_url,
             is_group,
             is_bot,
