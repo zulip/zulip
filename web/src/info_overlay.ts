@@ -4,6 +4,7 @@ import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
 import render_search_operator from "../templates/search_operators.hbs";
 import render_status_message_example from "../templates/status_message_example.hbs";
+import render_poll_widget_example from "../templates/widgets/poll_widget_example.hbs";
 
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";
@@ -167,32 +168,7 @@ ${$t({defaultMessage: "Milk"})}
 ${$t({defaultMessage: "Tea"})}
 ${$t({defaultMessage: "Coffee"})}`,
         // output_html required since poll rendering is done outside Markdown.
-        output_html: `\
-<div class="poll-widget">
-    <h4 class="poll-question-header">${$t({defaultMessage: "What did you drink this morning?"})}</h4>
-    <i class="fa fa-pencil poll-edit-question"></i>
-    <ul class="poll-widget">
-    <li>
-        <button class="poll-vote">
-            0
-        </button>
-        <span>${$t({defaultMessage: "Milk"})}</span>
-    </li>
-    <li>
-        <button class="poll-vote">
-            0
-        </button>
-        <span>${$t({defaultMessage: "Tea"})}</span>
-    </li>
-    <li>
-        <button class="poll-vote">
-            0
-        </button>
-        <span>${$t({defaultMessage: "Coffee"})}</span>
-    </li>
-    </ul>
-</div>
-`,
+        output_html: render_poll_widget_example(),
     },
     {
         markdown: `/todo ${$t({defaultMessage: "Today's tasks"})}
