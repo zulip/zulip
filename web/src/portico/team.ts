@@ -2,6 +2,9 @@ import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+import "../templates.ts";
+import render_contributors from "../../templates/team/contributors.hbs";
+
 // The list of repository names is duplicated here in order to provide
 // a clear type for Contributor objects.
 //
@@ -134,7 +137,6 @@ function exclude_bot_contributors(contributor: Contributor): boolean {
 //   - Make tab header responsive.
 //   - Display full name instead of GitHub username.
 export default function render_tabs(contributors: Contributor[]): void {
-    const template = _.template($("#contributors-template").html());
     const count_template = _.template($("#count-template").html());
     const total_count_template = _.template($("#total-count-template").html());
     const contributors_list = contributors
@@ -150,7 +152,7 @@ export default function render_tabs(contributors: Contributor[]): void {
     mapped_contributors_list.sort((a, b) =>
         a.commits < b.commits ? 1 : a.commits > b.commits ? -1 : 0,
     );
-    const total_tab_html = mapped_contributors_list.map((c) => template(c)).join("");
+    const total_tab_html = render_contributors({contributors: mapped_contributors_list});
 
     const twenty_plus_total_contributors = mapped_contributors_list.filter((c) => c.commits >= 20);
     const hundred_plus_total_contributors = mapped_contributors_list.filter(
@@ -197,17 +199,15 @@ export default function render_tabs(contributors: Contributor[]): void {
                     return a_commits < b_commits ? 1 : a_commits > b_commits ? -1 : 0;
                 });
 
-                const html = filtered_by_tab
-                    .map((c) =>
-                        template({
-                            name: get_display_name(c),
-                            github_username: c.github_username,
-                            avatar: c.avatar,
-                            profile_url: get_profile_url(c, tab_name),
-                            commits: c.total_commits,
-                        }),
-                    )
-                    .join("");
+                const html = render_contributors({
+                    contributors: filtered_by_tab.map((c) => ({
+                        name: get_display_name(c),
+                        github_username: c.github_username,
+                        avatar: c.avatar,
+                        profile_url: get_profile_url(c, tab_name),
+                        commits: c.total_commits,
+                    })),
+                });
 
                 $(`#tab-${CSS.escape(tab_name)} .contributors-grid`).html(html);
                 const contributor_count = filtered_by_tab.length;
