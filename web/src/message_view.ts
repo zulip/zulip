@@ -492,11 +492,18 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
     const coming_from_recent_view = recent_view_util.is_visible();
     const coming_from_inbox = inbox_util.is_visible();
 
+    const preserve_zoomed_in_channel =
+        stream_list.is_zoomed_in() &&
+        stream_list.get_sidebar_stream_topic_info(filter).stream_id === narrow_state.stream_id();
+    const show_more_topics = preserve_zoomed_in_channel || show_opts.show_more_topics === true;
     const opts = {
         change_hash: true,
         trigger: "unknown",
-        show_more_topics: false,
         ...show_opts,
+        // This is a bit awkward, since `show_opts` may have already
+        // included a show_more_topics value, but we always want to
+        // prefer the value above that avoids unzooming incorrectly.
+        show_more_topics,
         then_select_id: show_opts.then_select_id ?? -1,
     };
 
