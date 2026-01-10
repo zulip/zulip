@@ -1048,7 +1048,7 @@ function do_toggle_resolve_topic(
 
                 if (report_errors_in_global_banner) {
                     const {msg} = z.object({msg: z.string()}).parse(xhr.responseJSON);
-                    ui_report.generic_embed_error(msg, 3500);
+                    ui_report.generic_embed_error(_.escape(msg), 3500);
                 }
             }
         },
