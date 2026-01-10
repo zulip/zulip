@@ -3,7 +3,7 @@ name: Deploy Showcase to GitHub Pages
 on:
   push:
     branches:
-      - showell-templates
+      - showell-templates-showcase-poll-widget
 
 permissions:
   contents: read
@@ -29,7 +29,7 @@ jobs:
         run: npm install
 
       - name: Build showcase
-        run: node ./node_modules/webpack-cli/bin/cli.js build --disable-interpret --config=web/webpack.showcase.ts
+        run: node ./node_modules/webpack-cli/bin/cli.js build --disable-interpret --config=web/webpack.config.ts --config-name=frontend
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
