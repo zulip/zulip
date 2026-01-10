@@ -933,7 +933,7 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     // Folder filter logic
     if (selected_folder_id !== null && msg.type === "stream") {
         const sub = sub_store.get(msg.stream_id);
-        if (sub === undefined || sub.folder_id !== selected_folder_id) {
+        if (sub?.folder_id !== selected_folder_id) {
             return true;
         }
     }
@@ -1161,25 +1161,25 @@ function get_folder_filter_options(): dropdown_widget.Option[] {
 
 function folder_filter_click_handler(
     event: JQuery.ClickEvent,
-    dropdown: DropdownWidget,
-    widget_elem: tippy.Instance,
+    dropdown: tippy.Instance,
+    widget: DropdownWidget,
 ): void {
     event.preventDefault();
     event.stopPropagation();
-    
+
     const filter_id = $(event.currentTarget).attr("data-unique-id");
     assert(filter_id !== undefined);
-    
+
     if (filter_id === "all_folders") {
         selected_folder_id = null;
     } else {
         selected_folder_id = Number.parseInt(filter_id, 10);
     }
-    
+
     save_filters();
     assert(topics_widget !== undefined);
     topics_widget.hard_redraw();
-    widget_elem.hide();
+    dropdown.hide();
 }
 
 function setup_folder_filter_widget(): void {
@@ -1921,7 +1921,7 @@ function load_filters(): void {
         // Load saved folder filter
         const saved_folder_filter = ls.get(ls_folder_filter_key);
         if (saved_folder_filter !== undefined && saved_folder_filter !== null) {
-            selected_folder_id = saved_folder_filter;
+            selected_folder_id = Number(saved_folder_filter);
         }
     }
     // Verify that the dropdown_filters are valid.
