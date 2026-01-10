@@ -50,14 +50,32 @@ export function activate({
             /* noop */
         };
     }
-    const parsed_extra_data = parse_result.data;
+
+    /*
+        The server sends us the initial poll question and poll options
+        (from the author of the poll) via the extra_data mechanism.
+
+        We just grab them below and pass them into PollData.
+
+        After that, all the additional data comes in the form of
+        events, which get transported as "submessage" events, which in
+        turn are just the same things as we store in the SubMessage model.
+        Our widget is mostly oblivious to all the transport and
+        server-side mechanisms, but they may still be useful to
+        understand here.
+
+        See docs/subsystems/widgets.md for even more context.
+    */
+
+    const question = parse_result.data.question ?? "";
+    const options = parse_result.data.options ?? [];
 
     const poll_data = new PollData({
         poll_owner_user_id,
         current_user_id,
         is_my_poll,
-        question: parsed_extra_data.question ?? "",
-        options: parsed_extra_data.options ?? [],
+        question,
+        options,
         get_full_name_list,
         report_error_function: blueslip.warn,
     });
