@@ -1,29 +1,31 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import render_widgets_zform_choices from "../templates/widgets/zform_choices.hbs";
 
 import * as blueslip from "./blueslip.ts";
-import type {WidgetExtraData} from "./generic_widget.ts";
 import type {Message} from "./message_store.ts";
 import * as transmit from "./transmit.ts";
 import type {Event} from "./widget_data.ts";
-import {zform_widget_extra_data_schema} from "./zform_data.ts";
+import type {AnyWidgetData} from "./widget_schema.ts";
 import type {ZFormExtraData} from "./zform_data.ts";
+
+export const widget_type = "zform";
 
 export function activate(opts: {
     $elem: JQuery;
-    extra_data: WidgetExtraData;
+    any_data: AnyWidgetData;
     message: Message;
 }): (events: Event[]) => void {
+    assert(opts.any_data.widget_type === "zform");
     const $outer_elem = opts.$elem;
-    const parse_result = zform_widget_extra_data_schema.safeParse(opts.extra_data);
-    if (!parse_result.success) {
-        blueslip.error("invalid zform extra data", {issues: parse_result.error.issues});
+    if (opts.any_data.extra_data === null) {
+        blueslip.error("invalid zform extra data");
         return (_events: Event[]): void => {
             /* noop */
         };
     }
-    const {data} = parse_result;
+    const data = opts.any_data.extra_data;
 
     function make_choices(data: ZFormExtraData): JQuery {
         // Assign idx values to each of our choices so that

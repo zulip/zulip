@@ -16,7 +16,7 @@ import {zform_widget_extra_data_schema} from "./zform_data.ts";
 
 export type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
 
-export const widget_data_schema = z.discriminatedUnion("widget_type", [
+export const any_widget_data_schema = z.discriminatedUnion("widget_type", [
     z.object({widget_type: z.literal("poll"), extra_data: poll_widget_extra_data_schema}),
     z.object({
         widget_type: z.literal("zform"),
@@ -27,3 +27,4 @@ export const widget_data_schema = z.discriminatedUnion("widget_type", [
         extra_data: z.nullable(todo_widget_extra_data_schema),
     }),
 ]);
+export type AnyWidgetData = z.infer<typeof any_widget_data_schema>;

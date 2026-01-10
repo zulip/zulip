@@ -5,7 +5,7 @@ import * as channel from "./channel.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
-import {widget_data_schema} from "./widget_schema.ts";
+import {any_widget_data_schema} from "./widget_schema.ts";
 import type {WidgetOutboundData} from "./widget_schema.ts";
 import * as widgetize from "./widgetize.ts";
 
@@ -13,7 +13,7 @@ export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
 const widget_data_event_schema = z.object({
     sender_id: z.number(),
-    data: widget_data_schema,
+    data: any_widget_data_schema,
 });
 
 const inbound_data_event_schema = z.object({
@@ -94,23 +94,12 @@ export function do_process_submessages(in_opts: {$row: JQuery; message_id: numbe
 
     // Right now, our only use of submessages is widgets.
 
-    const data = widget_event.data;
-
-    if (data === undefined) {
-        return;
-    }
-
-    const widget_type = data.widget_type;
-
-    if (widget_type === undefined) {
-        return;
-    }
+    const any_data = widget_event.data;
 
     const post_to_server = make_server_callback(message_id);
 
     widgetize.activate({
-        widget_type,
-        extra_data: data.extra_data,
+        any_data,
         events: inbound_events,
         $row,
         message,

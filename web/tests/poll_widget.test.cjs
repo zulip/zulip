@@ -231,8 +231,11 @@ run_test("activate another person poll", ({mock_template}) => {
         message: {
             sender_id: alice.user_id,
         },
-        extra_data: {
-            question: "What do you want?",
+        any_data: {
+            widget_type: "poll",
+            extra_data: {
+                question: "What do you want?",
+            },
         },
     };
 
@@ -342,8 +345,11 @@ run_test("activate own poll", ({mock_template}) => {
         message: {
             sender_id: me.user_id,
         },
-        extra_data: {
-            question: "Where to go?",
+        any_data: {
+            widget_type: "poll",
+            extra_data: {
+                question: "Where to go?",
+            },
         },
     };
 

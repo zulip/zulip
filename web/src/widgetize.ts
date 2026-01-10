@@ -1,10 +1,11 @@
 import $ from "jquery";
 
-import type {GenericWidget, PostToServerFunction, WidgetExtraData} from "./generic_widget.ts";
+import type {GenericWidget, PostToServerFunction} from "./generic_widget.ts";
 import {create_widget_instance, is_supported_widget_type} from "./generic_widget.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import type {Event} from "./widget_data.ts";
+import type {AnyWidgetData} from "./widget_schema.ts";
 
 // These are the arguments that get passed in to us from the
 // submessage system, which is essentially the transport layer
@@ -15,8 +16,7 @@ import type {Event} from "./widget_data.ts";
 // and then sends events to active users when new submessages arrive
 // via the standard Zulip events mechanism.
 type ActivateArguments = {
-    widget_type: string;
-    extra_data: WidgetExtraData;
+    any_data: AnyWidgetData;
     events: Event[];
     $row: JQuery;
     message: Message;
@@ -43,15 +43,10 @@ function set_widget_in_message($row: JQuery, $widget_elem: JQuery): void {
 }
 
 export function activate(in_opts: ActivateArguments): void {
-    const widget_type = in_opts.widget_type;
-    const extra_data = in_opts.extra_data;
-    const events = in_opts.events;
-    const $row = in_opts.$row;
-    const message = in_opts.message;
-    const post_to_server = in_opts.post_to_server;
+    const {any_data, events, $row, message, post_to_server} = in_opts;
 
     // the callee will log any appropriate warnings here
-    if (!is_supported_widget_type(widget_type)) {
+    if (!is_supported_widget_type(any_data.widget_type)) {
         return;
     }
 
@@ -71,11 +66,10 @@ export function activate(in_opts: ActivateArguments): void {
     const $widget_elem = $("<div>").addClass("widget-content");
 
     const generic_widget = create_widget_instance({
-        widget_type,
         post_to_server,
         $widget_elem,
         message,
-        extra_data,
+        any_data,
     });
 
     if (!is_message_preview) {
