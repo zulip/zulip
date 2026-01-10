@@ -1,0 +1,22 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "id": "6961cf78fb9d13be07871c78",
+            "external_id": "22",
+            "type": "contact",
+            "archived": true
+        }
+    },
+    "links": {},
+    "id": "notif_72d7d36b-5c4b-4a5b-811c-9c985d5b104e",
+    "topic": "contact.archived",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768019637,
+    "created_at": 1768019637,
+    "self": null
+}

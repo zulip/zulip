@@ -1,0 +1,22 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "id": "696122fb2591e0cadd20073a",
+            "external_id": "1",
+            "type": "contact",
+            "deleted": true
+        }
+    },
+    "links": {},
+    "id": "notif_d997a8b0-19f8-47df-b203-b7e8424a2029",
+    "topic": "contact.deleted",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768019870,
+    "created_at": 1768019869,
+    "self": null
+}
