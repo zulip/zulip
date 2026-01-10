@@ -32,10 +32,6 @@ export function is_supported_widget_type(widget_type: string): boolean {
         return true;
     }
 
-    if (widget_type === "tictactoe") {
-        return false; // don't warn for deleted legacy widget
-    }
-
     blueslip.warn("unknown widget_type", {widget_type});
     return false;
 }
