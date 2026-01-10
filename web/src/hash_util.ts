@@ -48,7 +48,21 @@ export function encode_operand(operator: string, operand: string): string {
         }
     }
 
-    if (util.canonicalize_channel_synonyms(operator) === "channel") {
+    const canonical_operator = util.canonicalize_channel_synonyms(operator);
+
+    // Handle multi-channel: channels operator with comma-separated IDs
+    // Don't URL-encode the operand - just return as-is
+    if (canonical_operator === "channels" && operand.includes(",")) {
+        return operand;
+    }
+
+    if (canonical_operator === "channel") {
+        // Check if this is a comma-separated list of channel IDs (multi-channel)
+        if (operand.includes(",")) {
+            // For multi-channel, just return the comma-separated IDs as-is
+            // (no slug encoding, since we don't include names for multi-channel)
+            return operand;
+        }
         const stream_id = Number.parseInt(operand, 10);
         return encode_stream_id(stream_id);
     }
@@ -75,10 +89,43 @@ export function decode_operand(
         }
     }
 
+    // Save raw operand before decoding to check for multi-channel
+    // A genuine multi-channel URL has comma in the RAW operand (e.g., "1,2,3")
+    // A single channel with comma in name has encoded comma (e.g., "987-Florida.2C-USA")
+    const raw_operand = operand;
     operand = internal_url.decodeHashComponent(operand);
 
     if (operator === "channel") {
+        // Handle multi-channel search: comma-separated IDs
+        // Check RAW operand for comma (before URL decoding) to distinguish
+        // genuine multi-channel from single channels with comma in name
+        if (raw_operand.includes(",")) {
+            // Parse each channel ID from the comma-separated string
+            const ids = operand.split(",").map((id_str) => {
+                const trimmed = id_str.trim();
+                // Each segment might be "123" or "123-channelname", extract the ID
+                const stream_id = stream_data.slug_to_stream_id(trimmed);
+                return stream_id?.toString() ?? trimmed;
+            });
+            return ids.join(",");
+        }
+        // Single channel
         return stream_data.slug_to_stream_id(operand)?.toString() ?? "";
+    }
+
+    // Handle multi-channel search: channels operator with comma-separated IDs
+    // (but not "public" or "web-public" which are special operands)
+    // Check RAW operand for comma to distinguish genuine multi-channel
+    if (operator === "channels" && raw_operand.includes(",")) {
+        // Parse each channel ID from the comma-separated string
+        // Return as comma-separated IDs (normalized to just the numeric IDs)
+        const ids = operand.split(",").map((id_str) => {
+            const trimmed = id_str.trim();
+            // Each segment might be "123" or "123-channelname", extract the ID
+            const stream_id = stream_data.slug_to_stream_id(trimmed);
+            return stream_id?.toString() ?? trimmed;
+        });
+        return ids.join(",");
     }
 
     return operand;
@@ -122,8 +169,14 @@ export function search_terms_to_hash(terms?: NarrowTerm[]): string {
 
         for (const term of terms) {
             // Support legacy tuples.
-            const operator = util.canonicalize_channel_synonyms(term.operator);
+            let operator = util.canonicalize_channel_synonyms(term.operator);
             const operand = term.operand;
+
+            // For multi-channel search (operand contains comma-separated IDs),
+            // use "channels" in the URL instead of "channel"
+            if (operator === "channel" && operand.includes(",")) {
+                operator = "channels";
+            }
 
             const sign = term.negated ? "-" : "";
             hash +=
@@ -217,9 +270,23 @@ export function parse_narrow(hash: string[]): NarrowCanonicalTerm[] | undefined 
             return undefined;
         }
 
-        const canonical_operator = filter_util.canonicalize_operator(
+        let canonical_operator = filter_util.canonicalize_operator(
             narrow_operator_schema.parse(operator),
         );
+
+        // Handle multi-channel search: when URL has `channels/{id,id,id}` format
+        // (with comma-separated channel IDs, not "public" or "web-public"),
+        // convert to `channel` operator with the comma-separated operand.
+        // This is the URL-layer pluralization; internally we always use `channel`.
+        if (
+            canonical_operator === "channels" &&
+            raw_operand.includes(",") &&
+            raw_operand !== "public" &&
+            raw_operand !== "web-public"
+        ) {
+            canonical_operator = "channel";
+        }
+
         const operand = decode_operand(canonical_operator, raw_operand);
         terms.push({
             negated,

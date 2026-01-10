@@ -3166,3 +3166,135 @@ run_test("get_stringified_narrow_for_server_query", () => {
         '[{"operator":"channel","operand":1,"negated":false},{"operator":"topic","operand":"bar","negated":false}]',
     );
 });
+
+run_test("is_valid_search_term", () => {
+    // Valid DM term with known user
+    let term = {operator: "dm", operand: "joe@example.com"};
+    assert.ok(Filter.is_valid_search_term(term));
+
+    // Valid DM term with multiple known users
+    term = {operator: "dm", operand: "joe@example.com,STEVE@foo.com"};
+    assert.ok(Filter.is_valid_search_term(term));
+
+    // Invalid DM term with unknown user
+    term = {operator: "dm", operand: "unknown@example.com"};
+    assert.ok(!Filter.is_valid_search_term(term));
+
+    // Invalid DM term with mix of known and unknown users
+    term = {operator: "dm", operand: "joe@example.com,unknown@example.com"};
+    assert.ok(!Filter.is_valid_search_term(term));
+
+    // pm-with should also be validated
+    term = {operator: "pm-with", operand: "joe@example.com"};
+    assert.ok(Filter.is_valid_search_term(term));
+
+    term = {operator: "pm-with", operand: "unknown@example.com"};
+    assert.ok(!Filter.is_valid_search_term(term));
+
+    // Non-DM operators are always valid (validation happens elsewhere)
+    term = {operator: "channel", operand: "1"};
+    assert.ok(Filter.is_valid_search_term(term));
+
+    term = {operator: "search", operand: "keyword"};
+    assert.ok(Filter.is_valid_search_term(term));
+});
+
+run_test("multi_channel_predicate", () => {
+    // Create test channels
+    const channel1 = {name: "Channel 1", stream_id: 101};
+    const channel2 = {name: "Channel 2", stream_id: 102};
+    const channel3 = {name: "Channel 3", stream_id: 103};
+    stream_data.add_sub_for_tests(channel1);
+    stream_data.add_sub_for_tests(channel2);
+    stream_data.add_sub_for_tests(channel3);
+
+    // Multi-channel predicate with comma-separated IDs
+    const predicate = get_predicate([["channel", "101,102"]]);
+
+    // Should match messages in any of the specified channels
+    const msg_in_channel1 = {type: "stream", stream_id: 101};
+    const msg_in_channel2 = {type: "stream", stream_id: 102};
+    const msg_in_channel3 = {type: "stream", stream_id: 103};
+    const dm_msg = {type: "private"};
+
+    assert.ok(predicate(msg_in_channel1));
+    assert.ok(predicate(msg_in_channel2));
+    assert.ok(!predicate(msg_in_channel3));
+    assert.ok(!predicate(dm_msg));
+});
+
+run_test("multi_channel_is_valid_canonical_term", () => {
+    // is_valid_canonical_term handles multi-channel (comma-separated IDs)
+    const channel1 = {name: "Test1", stream_id: 201};
+    const channel2 = {name: "Test2", stream_id: 202};
+    stream_data.add_sub_for_tests(channel1);
+    stream_data.add_sub_for_tests(channel2);
+
+    // Multi-channel with valid IDs
+    let term = {operator: "channel", operand: "201,202", negated: false};
+    assert.ok(Filter.is_valid_canonical_term(term));
+
+    // Multi-channel with at least one valid ID
+    term = {operator: "channel", operand: "201,999", negated: false};
+    assert.ok(Filter.is_valid_canonical_term(term));
+
+    // Multi-channel with numeric-looking IDs (even if streams don't exist)
+    term = {operator: "channel", operand: "999,888", negated: false};
+    assert.ok(Filter.is_valid_canonical_term(term));
+});
+
+run_test("multi_channel_is_common_narrow", () => {
+    // is_common_narrow returns false for multi-channel search
+    const channel1 = {name: "Common1", stream_id: 301};
+    const channel2 = {name: "Common2", stream_id: 302};
+    stream_data.add_sub_for_tests(channel1);
+    stream_data.add_sub_for_tests(channel2);
+
+    // Single channel is a common narrow
+    let filter = new Filter([{operator: "channel", operand: "301"}]);
+    assert.ok(filter.is_common_narrow());
+
+    // Multi-channel is NOT a common narrow
+    filter = new Filter([{operator: "channel", operand: "301,302"}]);
+    assert.ok(!filter.is_common_narrow());
+});
+
+run_test("multi_channel_redirect_url", () => {
+    // generate_redirect_url returns '#' for multi-channel
+    const channel1 = {name: "Redirect1", stream_id: 401};
+    stream_data.add_sub_for_tests(channel1);
+
+    // Single channel + topic + search gets a proper redirect
+    let filter = new Filter([
+        {operator: "channel", operand: "401"},
+        {operator: "topic", operand: "test"},
+        {operator: "search", operand: "keyword"},
+    ]);
+    let redirect_url = filter.generate_redirect_url();
+    assert.ok(redirect_url !== "#");
+
+    // Multi-channel + topic + search redirects to home
+    filter = new Filter([
+        {operator: "channel", operand: "401,402"},
+        {operator: "topic", operand: "test"},
+        {operator: "search", operand: "keyword"},
+    ]);
+    redirect_url = filter.generate_redirect_url();
+    assert.equal(redirect_url, "#");
+
+    // Single channel (without topic) + search gets a proper redirect
+    filter = new Filter([
+        {operator: "channel", operand: "401"},
+        {operator: "search", operand: "keyword"},
+    ]);
+    redirect_url = filter.generate_redirect_url();
+    assert.ok(redirect_url !== "#");
+
+    // Multi-channel + search redirects to home
+    filter = new Filter([
+        {operator: "channel", operand: "401,402"},
+        {operator: "search", operand: "keyword"},
+    ]);
+    redirect_url = filter.generate_redirect_url();
+    assert.equal(redirect_url, "#");
+});

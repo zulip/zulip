@@ -204,6 +204,42 @@ run_test("test_parse_narrow", () => {
     );
 });
 
+run_test("test_parse_narrow_multi_channel", () => {
+    // Multi-channel search uses /channels/{id,id,id} format in URL.
+    // It should be parsed as a channel operator with comma-separated IDs.
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "channels", "1,2,3"]), [
+        {negated: false, operator: "channel", operand: "1,2,3"},
+    ]);
+
+    // Multi-channel with negation
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "-channels", "99,42"]), [
+        {negated: true, operator: "channel", operand: "99,42"},
+    ]);
+
+    // channels:public should remain as channels operator (not converted)
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "channels", "public"]), [
+        {negated: false, operator: "channels", operand: "public"},
+    ]);
+
+    // channels:web-public should remain as channels operator (not converted)
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "channels", "web-public"]), [
+        {negated: false, operator: "channels", operand: "web-public"},
+    ]);
+});
+
+run_test("test_search_terms_to_hash_multi_channel", () => {
+    // Multi-channel should use /channels/ URL format
+    const multi_channel_terms = [{operator: "channel", operand: "1,2,3", negated: false}];
+    assert.equal(hash_util.search_terms_to_hash(multi_channel_terms), "#narrow/channels/1,2,3");
+
+    // Single channel should continue to use /channel/ URL format
+    const single_channel_terms = [{operator: "channel", operand: "99", negated: false}];
+    assert.equal(
+        hash_util.search_terms_to_hash(single_channel_terms),
+        "#narrow/channel/99-frontend",
+    );
+});
+
 run_test("test_channels_settings_edit_url", () => {
     const sub = {
         name: "research & development",

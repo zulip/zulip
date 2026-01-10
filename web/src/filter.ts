@@ -149,6 +149,12 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
                 return false;
             }
 
+            // Handle multi-channel: comma-separated IDs
+            if (term.operand.includes(",")) {
+                const channel_ids = new Set(term.operand.split(",").map((id) => id.trim()));
+                return channel_ids.has(message.stream_id.toString());
+            }
+
             return message.stream_id.toString() === term.operand;
         }
 
@@ -512,6 +518,16 @@ export class Filter {
             case "with":
                 return Number.isInteger(Number(term.operand));
             case "channel":
+                // Handle multi-channel: comma-separated IDs
+                if (term.operand.includes(",")) {
+                    const ids = term.operand.split(",").map((id) => id.trim());
+                    // At least one valid channel ID is required
+                    return ids.some(
+                        (id) =>
+                            stream_data.get_sub_by_id_string(id) !== undefined ||
+                            !Number.isNaN(Number.parseInt(id, 10)),
+                    );
+                }
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
                 return channels_operands.has(term.operand);
@@ -566,6 +582,21 @@ export class Filter {
             return sign + operator + ":" + operand;
         });
         return term_strings.join(" ");
+    }
+
+    static is_valid_search_term(term: NarrowTerm): boolean {
+        if (term.operator === "pm-with" || term.operator === "dm") {
+            const emails = term.operand.split(",");
+            for (const email of emails) {
+                if (!people.get_by_email(email)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // TODO: Add validation for other operators (channel, etc) if needed.
+        // For now, we assume others are valid or handled elsewhere.
+        return true;
     }
 
     static term_type(term: NarrowTerm): string {
@@ -969,6 +1000,10 @@ export class Filter {
                 if (page_params.narrow_stream === undefined || term.operator !== "channel") {
                     return true;
                 }
+                // Multi-channel operands (comma-separated) should not be filtered
+                if (term.operand.includes(",")) {
+                    return true;
+                }
                 const narrow_stream = stream_data.get_sub_by_name(page_params.narrow_stream);
                 assert(narrow_stream !== undefined);
                 return Number.parseInt(term.operand, 10) === narrow_stream.stream_id;
@@ -1135,6 +1170,11 @@ export class Filter {
         }
 
         if (_.isEqual(term_types, ["channel"])) {
+            // Multi-channel search (comma-separated operands) should not be treated as a common narrow
+            const channel_term = this.terms_with_operator("channel")[0];
+            if (channel_term?.operand.includes(",")) {
+                return false;
+            }
             return true;
         }
 
@@ -1226,9 +1266,12 @@ export class Filter {
             return "/#narrow/has/reaction/sender/me";
         }
         if (_.isEqual(term_types, ["channel", "topic", "search"])) {
-            const sub = stream_data.get_sub_by_id_string(
-                this.terms_with_operator("channel")[0]!.operand,
-            );
+            const channel_operand = this.terms_with_operator("channel")[0]!.operand;
+            // Multi-channel operand - redirect to home
+            if (channel_operand.includes(",")) {
+                return "#";
+            }
+            const sub = stream_data.get_sub_by_id_string(channel_operand);
             // if channel does not exist, redirect to home view
             if (!sub) {
                 return "#";
@@ -1249,9 +1292,12 @@ export class Filter {
         if (term_types[1] === "search") {
             switch (term_types[0]) {
                 case "channel": {
-                    const sub = stream_data.get_sub_by_id_string(
-                        this.terms_with_operator("channel")[0]!.operand,
-                    );
+                    const channel_operand = this.terms_with_operator("channel")[0]!.operand;
+                    // Multi-channel operand - redirect to home
+                    if (channel_operand.includes(",")) {
+                        return "#";
+                    }
+                    const sub = stream_data.get_sub_by_id_string(channel_operand);
                     // if channel does not exist, redirect to home view
                     if (!sub) {
                         return "#";
