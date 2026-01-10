@@ -6,7 +6,6 @@ import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
 import * as blueslip from "./blueslip.ts";
-import type {WidgetExtraData} from "./generic_widget.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import type {Message} from "./message_store.ts";
@@ -29,7 +28,7 @@ export function activate({
 }: {
     $elem: JQuery;
     callback: (data: PollWidgetOutboundData) => void;
-    extra_data: WidgetExtraData;
+    extra_data: unknown; // parsed below into PollWidgetExtraData
     message: Message;
 }): (events: Event[]) => void {
     const widget_context = new ZulipWidgetContext(message);

@@ -1,11 +1,8 @@
 import * as blueslip from "./blueslip.ts";
 import type {Message} from "./message_store.ts";
-import type {PollWidgetExtraData, PollWidgetOutboundData} from "./poll_data.ts";
-import type {TodoWidgetExtraData, TodoWidgetOutboundData} from "./todo_widget.ts";
+import type {PollWidgetOutboundData} from "./poll_data.ts";
+import type {TodoWidgetOutboundData} from "./todo_widget.ts";
 import type {Event} from "./widget_data.ts";
-import type {ZFormExtraData} from "./zform_data.ts";
-
-export type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
 
 type HandleInboundEventsFunction = (events: Event[]) => void;
 
@@ -21,7 +18,7 @@ type WidgetImplementation = Record<string, unknown> & {
         $elem: JQuery;
         callback: (data: WidgetOutboundData) => void;
         message: Message;
-        extra_data: WidgetExtraData;
+        extra_data: unknown; // parsed by individual widgets
     }) => HandleInboundEventsFunction;
 };
 
@@ -60,7 +57,7 @@ export function create_widget_instance(info: {
     post_to_server: PostToServerFunction;
     $widget_elem: JQuery;
     message: Message;
-    extra_data: WidgetExtraData;
+    extra_data: unknown; // parsed by individual widgets
 }): GenericWidget {
     const {widget_type, post_to_server, $widget_elem, message, extra_data} = info;
 

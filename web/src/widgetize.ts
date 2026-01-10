@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import type {GenericWidget, PostToServerFunction, WidgetExtraData} from "./generic_widget.ts";
+import type {GenericWidget, PostToServerFunction} from "./generic_widget.ts";
 import {create_widget_instance, is_supported_widget_type} from "./generic_widget.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -16,7 +16,7 @@ import type {Event} from "./widget_data.ts";
 // via the standard Zulip events mechanism.
 type ActivateArguments = {
     widget_type: string;
-    extra_data: WidgetExtraData;
+    extra_data: unknown; // parsed by each widget
     events: Event[];
     $row: JQuery;
     message: Message;
@@ -70,6 +70,14 @@ export function activate(in_opts: ActivateArguments): void {
     // DOM and event handlers that eventually go in this div.
     const $widget_elem = $("<div>").addClass("widget-content");
 
+    // Finally create our widget!  Note that at this layer, the
+    // "extra_data" object is still completely opaque and
+    // unvalidated. Each individual widget parses the data
+    // according to the shape it expects. To give a concrete
+    // example, the todo widget expects extra_data to include
+    // something like a "task_list_title" field, and that
+    // field would make no sense to either the poll or zform
+    // widget.
     const generic_widget = create_widget_instance({
         widget_type,
         post_to_server,

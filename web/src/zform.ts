@@ -3,7 +3,6 @@ import $ from "jquery";
 import render_widgets_zform_choices from "../templates/widgets/zform_choices.hbs";
 
 import * as blueslip from "./blueslip.ts";
-import type {WidgetExtraData} from "./generic_widget.ts";
 import type {Message} from "./message_store.ts";
 import * as transmit from "./transmit.ts";
 import type {Event} from "./widget_data.ts";
@@ -12,7 +11,7 @@ import type {ZFormExtraData} from "./zform_data.ts";
 
 export function activate(opts: {
     $elem: JQuery;
-    extra_data: WidgetExtraData;
+    extra_data: unknown; // parsed into ZFormExtraData below
     message: Message;
 }): (events: Event[]) => void {
     const $outer_elem = opts.$elem;
