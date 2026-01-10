@@ -4,7 +4,10 @@ import type {GenericWidget, PostToServerFunction} from "./generic_widget.ts";
 import {create_widget_instance, is_supported_widget_type} from "./generic_widget.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
-import type {Event} from "./widget_data.ts";
+
+// Our Event data from the server is opaque and unknown
+// until the widget parses it with zod.
+export type Event = {sender_id: number; data: unknown};
 
 // These are the arguments that get passed in to us from the
 // submessage system, which is essentially the transport layer

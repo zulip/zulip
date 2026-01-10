@@ -18,7 +18,10 @@ import {
     vote_schema,
 } from "./poll_data.ts";
 import {ZulipWidgetContext} from "./widget_context.ts";
-import type {Event} from "./widget_data.ts";
+
+// Our Event data from the server is opaque and unknown
+// until the widget parses it with zod.
+export type Event = {sender_id: number; data: unknown};
 
 export function activate({
     $elem,

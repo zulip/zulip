@@ -5,9 +5,12 @@ import render_widgets_zform_choices from "../templates/widgets/zform_choices.hbs
 import * as blueslip from "./blueslip.ts";
 import type {Message} from "./message_store.ts";
 import * as transmit from "./transmit.ts";
-import type {Event} from "./widget_data.ts";
 import {zform_widget_extra_data_schema} from "./zform_data.ts";
 import type {ZFormExtraData} from "./zform_data.ts";
+
+// Our Event data from the server is opaque and unknown
+// until the widget parses it with zod.
+export type Event = {sender_id: number; data: unknown};
 
 export function activate(opts: {
     $elem: JQuery;

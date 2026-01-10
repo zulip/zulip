@@ -316,7 +316,6 @@ EXEMPT_FILES = make_set(
         "web/src/user_topics.ts",
         "web/src/user_topics_ui.ts",
         "web/src/views_util.ts",
-        "web/src/widget_data.ts",
         "web/src/widget_modal.ts",
         "web/src/widget_schema.ts",
         "web/src/zcommand.ts",
