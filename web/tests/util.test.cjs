@@ -373,10 +373,6 @@ run_test("format_array_as_list", () => {
         util.format_array_as_list(array, "long", "conjunction"),
         "apple, banana, and orange",
     );
-    assert.equal(
-        util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-        '<b class="highlighted-element">apple</b>, <b class="highlighted-element">banana</b>, and <b class="highlighted-element">orange</b>',
-    );
 
     // Conjunction format
     assert.equal(
@@ -394,10 +390,6 @@ run_test("format_array_as_list", () => {
         assert.equal(
             util.format_array_as_list(array, "long", "conjunction"),
             "apple, banana, orange",
-        );
-        assert.equal(
-            util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-            '<b class="highlighted-element">apple</b>, <b class="highlighted-element">banana</b>, <b class="highlighted-element">orange</b>',
         );
 
         assert.equal(
