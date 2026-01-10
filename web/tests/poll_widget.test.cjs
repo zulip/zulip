@@ -35,19 +35,21 @@ people.add_active_user(me);
 people.add_active_user(alice);
 people.initialize_current_user(me.user_id);
 
-run_test("PollData my question", () => {
-    const is_my_poll = true;
-    const question = "Favorite color?";
-
-    const data_holder = new PollData({
+function my_poll_data(question) {
+    return new PollData({
         current_user_id: me.user_id,
         poll_owner_user_id: me.user_id,
-        is_my_poll,
+        is_my_poll: true,
         question,
         options: [],
         comma_separated_names: people.get_full_names_for_poll_option,
         report_error_function: blueslip.warn,
     });
+}
+
+run_test("my question with PollData", () => {
+    const question = "Favorite color?";
+    const data_holder = my_poll_data(question);
 
     let data = data_holder.get_widget_data();
 
@@ -186,18 +188,8 @@ run_test("PollData my question", () => {
 });
 
 run_test("wrong person editing question", () => {
-    const is_my_poll = true;
     const question = "Favorite color?";
-
-    const data_holder = new PollData({
-        current_user_id: me.user_id,
-        poll_owner_user_id: me.user_id,
-        is_my_poll,
-        question,
-        options: [],
-        comma_separated_names: people.get_full_names_for_poll_option,
-        report_error_function: blueslip.warn,
-    });
+    const data_holder = my_poll_data(question);
 
     const question_event = {
         type: "question",
