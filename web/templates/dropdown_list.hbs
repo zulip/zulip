@@ -27,7 +27,7 @@
             </span>
         </a>
         {{else}}
-        <a class="dropdown-list-item-common-styles {{#if is_setting_disabled}}setting-disabled-option{{/if}}">
+        <a class="dropdown-list-item-common-styles {{#if is_setting_disabled}}setting-disabled-option{{/if}} {{#if is_option_styled}}setting-styled-option{{/if}}">
             {{#if stream}}
                 {{> inline_decorated_channel_name stream=stream show_colored_icon=true}}
             {{else if is_direct_message}}
@@ -48,6 +48,12 @@
                     {{else}}
                         <span class="setting-disabled-option-text dropdown-list-text-neutral">{{t "Disable" }}</span>
                     {{/if}}
+                {{/if}}
+            {{else if is_option_styled}}
+                {{#if bold_current_selection}}
+                    <span class="setting-styled-option-text dropdown-list-text-selected">{{name}}</span>
+                {{else}}
+                    <span class="setting-styled-option-text dropdown-list-text-neutral">{{name}}</span>
                 {{/if}}
             {{else if (eq unique_id -2)}}
                 {{!-- This is the option for PresetUrlOption.CHANNEL_MAPPING --}}

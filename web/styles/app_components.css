@@ -1019,11 +1019,13 @@ div.overlay .flex.overlay-content > .overlay-container,
 }
 
 .dropdown-current-value-not-in-options,
-.setting-disabled-option {
+.setting-disabled-option,
+.setting-styled-option {
     color: hsl(38deg 46% 54%);
 
     .setting-disabled-option-text,
-    .setting-disabled-option-icon {
+    .setting-disabled-option-icon,
+    .setting-styled-option-text {
         color: hsl(38deg 46% 54%);
     }
 
