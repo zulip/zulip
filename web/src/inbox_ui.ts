@@ -10,7 +10,7 @@ import render_inbox_row from "../templates/inbox_view/inbox_row.hbs";
 import render_inbox_stream_container from "../templates/inbox_view/inbox_stream_container.hbs";
 import render_inbox_view from "../templates/inbox_view/inbox_view.hbs";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
-import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
+import render_users_with_status_icons from "../templates/users_with_status_icons.hbs";
 
 import * as animate from "./animate.ts";
 import * as buddy_data from "./buddy_data.ts";
@@ -469,13 +469,14 @@ function format_dm(
         recipient_ids.push(people.my_current_user_id());
     }
 
-    const rendered_dm_with_html = recipient_ids
-        .map((recipient_id) => ({
-            name: people.get_display_full_name(recipient_id),
-            status_emoji_info: user_status.get_status_emoji(recipient_id),
-        }))
-        .toSorted((a, b) => util.strcmp(a.name, b.name))
-        .map((user_info) => render_user_with_status_icon(user_info));
+    const rendered_dm_with_html = render_users_with_status_icons({
+        users: recipient_ids
+            .map((recipient_id) => ({
+                name: people.get_display_full_name(recipient_id),
+                status_emoji_info: user_status.get_status_emoji(recipient_id),
+            }))
+            .toSorted((a, b) => util.strcmp(a.name, b.name)),
+    });
 
     let user_circle_class: string | false | undefined;
     let is_bot = false;
@@ -492,10 +493,7 @@ function format_dm(
     const context = {
         conversation_key: user_ids_string,
         is_direct: true,
-        rendered_dm_with_html: util.format_array_as_list_with_conjunction(
-            rendered_dm_with_html,
-            "long",
-        ),
+        rendered_dm_with_html,
         is_group: recipient_ids.length > 1,
         user_circle_class,
         is_bot,
