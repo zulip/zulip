@@ -20,5 +20,6 @@
         "./styles/portico/dev_help.css",
         "./styles/portico/markdown.css"
     ],
-    "showroom": ["./src/bundles/showroom.ts"]
+    "showroom": ["./src/bundles/showroom.ts"],
+    "showcase": ["./src/bundles/showcase.ts"]
 }

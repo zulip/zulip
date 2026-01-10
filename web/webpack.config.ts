@@ -59,6 +59,10 @@ const config = (
             chunks: ["error-styles"],
             publicPath: production ? "/static/webpack-bundles/" : "/webpack/",
         }),
+        new HtmlWebpackPlugin({
+            filename:"showcase.html",
+            chunks: ['showcase']
+        }),
     ];
     if (production && !env.puppeteer_tests) {
         plugins.push(
@@ -126,6 +130,9 @@ const config = (
                     test: /\.[cm]?[jt]s$/,
                     include: [path.resolve(import.meta.dirname, "src")],
                     loader: "babel-loader",
+                    options:{
+                        configFile: path.resolve(import.meta.dirname, "babel.config.js"),
+                    }
                 },
                 // regular css files
                 {
