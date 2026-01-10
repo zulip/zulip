@@ -6,7 +6,7 @@ import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
 import * as blueslip from "./blueslip.ts";
-import {$t} from "./fake_i18n.ts";
+import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import type {Message} from "./message_store.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
