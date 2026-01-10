@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
+import render_search_channel_pill from "../templates/search_channel_pill.hbs";
 import render_search_list_item from "../templates/search_list_item.hbs";
 import render_search_user_pill from "../templates/search_user_pill.hbs";
 
@@ -12,7 +13,7 @@ import type {InputPill, InputPillContainer} from "./input_pill.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
-import type {NarrowCanonicalTerm, NarrowTermSuggestion} from "./state_data.ts";
+import type {NarrowTerm, NarrowTermSuggestion} from "./state_data.ts";
 import * as state_data from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
@@ -21,10 +22,7 @@ import * as util from "./util.ts";
 
 export type SearchUserPill = {
     type: "search_user";
-} & SearchUserPillContext;
-
-export type SearchUserPillContext = {
-    operator: "dm" | "dm-including" | "sender";
+    operator: NarrowTerm["operator"];
     negated: boolean;
     users: {
         full_name: string;
@@ -37,9 +35,28 @@ export type SearchUserPillContext = {
     }[];
 };
 
-type SearchPill = ({type: "generic_operator"} & NarrowCanonicalTerm) | SearchUserPill;
+export type SearchChannelPill = {
+    type: "search_channel";
+    operator: NarrowTerm["operator"];
+    negated: boolean;
+    channels: {
+        stream_id: number;
+        name: string;
+        color: string | undefined;
+        invite_only: boolean;
+        is_web_public: boolean;
+    }[];
+};
+
+type SearchPill = ({type: "generic_operator"} & NarrowTerm) | SearchUserPill | SearchChannelPill;
 
 export type SearchPillWidget = InputPillContainer<SearchPill>;
+
+// These operator types use user pills as operands.
+const user_pill_operators = new Set(["dm", "dm-including", "sender"]);
+
+// Channel operator uses channel pills for multi-channel search.
+const channel_pill_operators = new Set(["channel"]);
 
 export function create_item_from_search_string(search_string: string): SearchPill | undefined {
     const search_term = util.the(Filter.parse(search_string));
@@ -57,19 +74,61 @@ export function create_item_from_search_string(search_string: string): SearchPil
 
 export function get_search_string_from_item(item: SearchPill): string {
     const sign = item.negated ? "-" : "";
-    return `${sign}${item.operator}: ${get_search_operand(item, true)}`;
+    const operand = get_search_operand(item, true);
+    if (operand === "") {
+        return `${sign}${item.operator}:`;
+    }
+    return `${sign}${item.operator}: ${operand}`;
 }
 
 // This is called when the a pill is closed. We have custom logic here
 // because group user pills have pills inside of them, and it's possible
 // to e.g. remove a user from a group-DM pill without deleting the whole
-// DM pill.
+// DM pill. Same for channel pills in multi-channel search.
 function on_pill_exit(
     clicked_element: HTMLElement,
     all_pills: InputPill<SearchPill>[],
     remove_pill: (pill: HTMLElement) => void,
 ): void {
     const $user_pill_container = $(clicked_element).parents(".user-pill-container");
+    const $channel_pill_container = $(clicked_element).parents(".channel-pill-container");
+
+    // Handle channel pill containers (multi-channel search)
+    if ($channel_pill_container.length > 0) {
+        const stream_id_string = $(clicked_element).closest(".pill").attr("data-stream-id");
+        assert(stream_id_string !== undefined);
+        const stream_id = Number.parseInt(stream_id_string, 10);
+
+        // Find the outer pill that contains the channel pills.
+        const outer_idx = all_pills.findIndex(
+            (pill) => pill.$element[0] === $channel_pill_container[0],
+        );
+        assert(outer_idx !== -1);
+        const channel_container_pill = all_pills[outer_idx]!.item;
+        assert(channel_container_pill?.type === "search_channel");
+
+        // If there's only one channel in this pill, delete the whole pill.
+        if (channel_container_pill.channels.length === 1) {
+            assert(util.the(channel_container_pill.channels).stream_id === stream_id);
+            remove_pill(util.the($channel_pill_container));
+            return;
+        }
+
+        // Remove the channel from the pill data.
+        const channel_idx = channel_container_pill.channels.findIndex(
+            (channel) => channel.stream_id === stream_id,
+        );
+        assert(channel_idx !== -1);
+        channel_container_pill.channels.splice(channel_idx, 1);
+
+        // Remove the channel pill from the DOM.
+        const $outer_container = all_pills[outer_idx]!.$element;
+        const $channel_pill = $($outer_container.children(".pill")[channel_idx]!);
+        assert($channel_pill.attr("data-stream-id") === stream_id.toString());
+        $channel_pill.remove();
+        return;
+    }
+
     if ($user_pill_container.length === 0) {
         // This is just a regular search pill, so we don't need to do fancy logic.
         const $clicked_pill = $(clicked_element).closest(".pill");
@@ -112,39 +171,25 @@ function on_pill_exit(
 export function generate_pills_html(suggestion: Suggestion, text_query: string): string {
     const search_terms = Filter.parse(suggestion.search_string);
 
-    type PillRenderData =
-        | ({type: "generic_operator"} & (NarrowCanonicalTerm | NarrowTermSuggestion) & {
-                  display_value?: string;
-                  is_empty_string_topic?: boolean;
-                  sign?: string;
-                  topic_display_name?: string;
-                  description_html?: string;
-              })
-        | SearchUserPill;
-    const pill_render_data: PillRenderData[] = search_terms.map((term, index) => {
-        const narrow_term: NarrowCanonicalTerm | undefined =
-            Filter.convert_suggestion_to_term(term);
-
-        // For invalid terms, we just return a generic operator pill
-        // with the unparsed value.
-        if (narrow_term === undefined) {
-            return {
-                type: "generic_operator",
-                ...term,
-                display_value: Filter.unparse([term]),
-            };
-        }
-
+    const pill_render_data = search_terms.map((term, index) => {
+        const narrow_term: NarrowTerm = {
+            operator: term.operator,
+            operand: term.operand,
+            negated: term.negated,
+        };
         const search_pill: SearchPill = {
             type: "generic_operator",
             ...narrow_term,
         };
 
-        switch (search_pill.operator) {
+        switch (term.operator) {
             case "dm":
             case "dm-including":
             case "sender":
-                return search_user_pill_data_from_term(narrow_term);
+                if (term.operand === "") {
+                    break;
+                }
+                return search_user_pill_data_from_term(term);
             case "topic":
                 if (search_pill.operand === "") {
                     // There are three variants of this suggestion state:
@@ -197,6 +242,14 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                     description_html,
                 };
             }
+            case "channel":
+            case "stream":
+            case "streams":
+                // channels:public and channels:web-public should fall through to generic
+                if (term.operand !== "") {
+                    return search_channel_pill_data_from_term(term);
+                }
+                break;
         }
 
         return {
@@ -235,6 +288,20 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                 pills: pill_render_data,
                 description_html,
             });
+        } else if (render_data.type === "search_channel") {
+            // Add description for channel pills so #ChannelName appears in the typeahead
+            const is_operator_suggestion =
+                search_terms[0]!.operator !== "" && !text_query.includes(":");
+            let description_html = Filter.search_description_as_html(
+                search_terms,
+                is_operator_suggestion,
+            );
+            const capitalized_first_letter = description_html.charAt(0).toUpperCase();
+            description_html = capitalized_first_letter + description_html.slice(1);
+            return render_search_list_item({
+                pills: pill_render_data,
+                description_html,
+            });
         }
     }
 
@@ -253,6 +320,9 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         generate_pill_html(item) {
             if (item.type === "search_user") {
                 return render_search_user_pill(item);
+            }
+            if (item.type === "search_channel") {
+                return render_search_channel_pill(item);
             }
             if (item.operator === "topic" && item.operand === "") {
                 return render_input_pill({
@@ -275,10 +345,12 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
     return pills;
 }
 
-function search_user_pill_data_from_term(term: NarrowCanonicalTerm): SearchUserPill {
-    assert(
-        term.operator === "dm" || term.operator === "dm-including" || term.operator === "sender",
-    );
+function search_channel_pill_data_from_term(term: NarrowTerm): SearchChannelPill {
+    const stream_ids = term.operand.split(",").map((id_str) => Number.parseInt(id_str.trim(), 10));
+    return search_channel_pill_data(stream_ids, term.operator, term.negated ?? false);
+}
+
+function search_user_pill_data_from_term(term: NarrowTerm): SearchUserPill {
     const emails = term.operand.split(",");
     const users = emails.map((email) => {
         const person = people.get_by_email(email);
@@ -298,7 +370,7 @@ function is_sent_by_me_pill(pill: SearchUserPill): boolean {
 
 function search_user_pill_data(
     users: User[],
-    operator: "dm" | "dm-including" | "sender",
+    operator: NarrowTerm["operator"],
     negated: boolean,
 ): SearchUserPill {
     return {
@@ -320,10 +392,43 @@ function search_user_pill_data(
 function append_user_pill(
     users: User[],
     pill_widget: SearchPillWidget,
-    operator: "dm" | "dm-including" | "sender",
+    operator: NarrowTerm["operator"],
     negated: boolean,
 ): void {
     const pill_data = search_user_pill_data(users, operator, negated);
+    pill_widget.appendValidatedData(pill_data);
+    pill_widget.clear_text();
+}
+
+function search_channel_pill_data(
+    stream_ids: number[],
+    operator: NarrowTerm["operator"],
+    negated: boolean,
+): SearchChannelPill {
+    return {
+        type: "search_channel",
+        operator,
+        negated,
+        channels: stream_ids.map((stream_id) => {
+            const sub = stream_data.get_sub_by_id(stream_id);
+            return {
+                stream_id,
+                name: sub?.name ?? `#${stream_id}`,
+                color: sub?.color,
+                invite_only: sub?.invite_only ?? false,
+                is_web_public: sub?.is_web_public ?? false,
+            };
+        }),
+    };
+}
+
+function append_channel_pill(
+    stream_ids: number[],
+    pill_widget: SearchPillWidget,
+    operator: NarrowTerm["operator"],
+    negated: boolean,
+): void {
+    const pill_data = search_channel_pill_data(stream_ids, operator, negated);
     pill_widget.appendValidatedData(pill_data);
     pill_widget.clear_text();
 }
@@ -366,34 +471,33 @@ export function set_search_bar_contents(
             continue;
         }
 
-        if (Filter.convert_suggestion_to_term(term) === undefined) {
+        if (!Filter.is_valid_search_term(term)) {
             invalid_inputs.push(input);
             continue;
         }
 
-        switch (term.operator) {
-            case "dm":
-            case "dm-including":
-            case "sender":
-                if (term.operand !== "") {
-                    const users = term.operand.split(",").map((email) => {
-                        // This is definitely not undefined, because we just validated it
-                        // with `Filter.is_valid_search_term`.
-                        const user = people.get_by_email(email)!;
-                        return user;
-                    });
-                    append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
-                    added_pills_as_input_strings.add(input);
-                }
-                break;
-            case "search":
-                // This isn't a pill, so we don't add it to `added_pills_as_input_strings`
-                search_operator_strings.push(input);
-                break;
-            default:
-                pill_widget.appendValue(input);
-                added_pills_as_input_strings.add(input);
-                break;
+        if (user_pill_operators.has(term.operator) && term.operand !== "") {
+            const users = term.operand.split(",").map((email) => {
+                // This is definitely not undefined, because we just validated it
+                // with `Filter.is_valid_search_term`.
+                const user = people.get_by_email(email)!;
+                return user;
+            });
+            append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
+            added_pills_as_input_strings.add(input);
+        } else if (channel_pill_operators.has(term.operator) && term.operand !== "") {
+            // Channel search: operand contains channel ID(s), possibly comma-separated
+            const stream_ids = term.operand
+                .split(",")
+                .map((id_str) => Number.parseInt(id_str.trim(), 10));
+            append_channel_pill(stream_ids, pill_widget, term.operator, term.negated ?? false);
+            added_pills_as_input_strings.add(input);
+        } else if (term.operator === "search") {
+            // This isn't a pill, so we don't add it to `added_pills_as_input_strings`
+            search_operator_strings.push(input);
+        } else {
+            pill_widget.appendValue(input);
+            added_pills_as_input_strings.add(input);
         }
     }
     pill_widget.clear_text();
@@ -412,12 +516,24 @@ function get_search_operand(item: SearchPill, for_display: boolean): string {
     if (item.type === "search_user") {
         return item.users.map((user) => user.email).join(",");
     }
+    if (item.type === "search_channel") {
+        if (for_display) {
+            return item.channels.map((channel) => channel.name).join(", ");
+        }
+        return item.channels.map((channel) => channel.stream_id.toString()).join(",");
+    }
     // When we're displaying the operand in a pill, we sometimes want to make
     // it more human readable. We do this for channel pills (with channels
     // specified) and topic pills only.
     if (for_display) {
         if (item.operator === "channel" && item.operand !== "") {
-            return stream_data.get_valid_sub_by_id_string(item.operand).name;
+            const ids = item.operand.split(",");
+            return ids
+                .map((id) => {
+                    const sub = stream_data.get_valid_sub_by_id_string(id.trim());
+                    return sub?.name ?? id.trim();
+                })
+                .join(", ");
         }
         if (item.operator === "topic") {
             return util.get_final_topic_display_name(item.operand);
@@ -429,10 +545,15 @@ function get_search_operand(item: SearchPill, for_display: boolean): string {
 
 export function get_current_search_pill_terms(
     pill_widget: SearchPillWidget,
-): NarrowCanonicalTerm[] {
-    return pill_widget.items().map((item) => ({
-        operator: item.operator,
-        operand: get_search_operand(item, false),
-        negated: item.negated,
-    }));
+): state_data.NarrowCanonicalTerm[] {
+    return pill_widget.items().map((item) => {
+        const term = {
+            operator: item.operator,
+            operand: get_search_operand(item, false),
+            negated: item.negated,
+        };
+        // Canonicalize to ensure legacy operators (pm-with, stream, etc.)
+        // are converted to their modern equivalents (dm, channel, etc.)
+        return Filter.canonicalize_term(term);
+    });
 }
