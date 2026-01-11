@@ -8,6 +8,7 @@ import * as poll_widget from "./poll_widget.ts";
 import type {TodoWidgetOutboundData} from "./todo_widget.ts";
 import * as todo_widget from "./todo_widget.ts";
 import * as zform from "./zform.ts";
+import * as zform_data from "./zform_data.ts";
 
 // Our Event data from the server is opaque and unknown
 // until the widget parses it with zod.
@@ -90,10 +91,11 @@ export function create_widget_instance(info: {
                 });
             }
             case "zform": {
+                const form_data = zform_data.form_schema.parse(extra_data);
                 return zform.activate({
                     $elem: $widget_elem,
                     message,
-                    extra_data,
+                    form_data,
                 });
             }
         }

@@ -12,7 +12,7 @@ import * as z from "zod/mini";
     zform-trivia-quiz-bot section for more details.
 */
 
-export const zform_widget_extra_data_schema = z.object({
+export const form_schema = z.object({
     type: z.literal("choices"),
     heading: z.string(),
     choices: z.array(
@@ -25,4 +25,4 @@ export const zform_widget_extra_data_schema = z.object({
     ),
 });
 
-export type ZFormExtraData = z.infer<typeof zform_widget_extra_data_schema>;
+export type ZFormData = z.infer<typeof form_schema>;
