@@ -802,6 +802,9 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="New Relic",
     ),
     IncomingWebhookIntegration(
+        "notion", ["productivity"], [WebhookScreenshotConfig("page_created.json")]
+    ),
+    IncomingWebhookIntegration(
         "opencollective",
         ["financial"],
         [WebhookScreenshotConfig("one_time_donation.json")],
