@@ -305,7 +305,7 @@
         }
     }
 
-    #compose-new-direct-message,
+    .compose-new-direct-message,
     .show-all-direct-messages {
         color: var(--color-sidebar-action);
         display: none;
@@ -329,7 +329,7 @@
     &.hover-over-dm-section,
     &.zoom-in,
     &:hover {
-        #compose-new-direct-message,
+        .compose-new-direct-message,
         .show-all-direct-messages {
             display: flex;
         }
