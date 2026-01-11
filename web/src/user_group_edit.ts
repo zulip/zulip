@@ -1870,13 +1870,28 @@ function setup_dropdown_filters_widget(): void {
 }
 
 function update_filter_widget_visibility(): void {
-    if (user_groups.realm_has_deactivated_user_groups()) {
-        $("#user-group-edit-filter-options").show();
-    } else {
-        $("#user-group-edit-filter-options").hide();
+    const total_groups = user_groups.get_realm_user_groups(true).length;
+    const $filterDropdown = $("#user-group-edit-filter-options");
+    const $searchBox = $("#group_filter");
+
+    if (total_groups === 0) {
+        $searchBox.hide();
+        $filterDropdown.hide();
         update_displayed_groups(FILTERS.ACTIVE_GROUPS);
         if (filters_dropdown_widget) {
             filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
+        }
+    } else {
+        $searchBox.show();
+
+        if (user_groups.realm_has_deactivated_user_groups()) {
+            $filterDropdown.show();
+        } else {
+            $filterDropdown.hide();
+            update_displayed_groups(FILTERS.ACTIVE_GROUPS);
+            if (filters_dropdown_widget) {
+                filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
+            }
         }
     }
 }
