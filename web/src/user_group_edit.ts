@@ -85,7 +85,7 @@ const initial_group_filter = FILTERS.ACTIVE_GROUPS;
 let group_list_widget: ListWidget.ListWidget<UserGroup, UserGroup>;
 let group_list_toggler: Toggle;
 
-const GROUP_INFO_BANNER: Banner = {
+export const GROUP_INFO_BANNER: Banner = {
     intent: "info",
     label: $t({
         defaultMessage:
@@ -1931,12 +1931,6 @@ export function setup_page(callback: () => void): void {
             $("#groups_overlay_container"),
         );
         $groups_overlay_container.html(groups_overlay_html);
-        update_displayed_groups(initial_group_filter);
-        settings_banner.set_up_banner(
-            $(".group-info-banner"),
-            GROUP_INFO_BANNER,
-            "/help/user-groups",
-        );
 
         settings_banner.set_up_upgrade_banners();
         // Initially as the overlay is build with empty right panel,

@@ -402,6 +402,7 @@ h4.user_group_setting_subsection_title {
 }
 
 .two-pane-settings-container .two-pane-settings-subheader {
+    position: relative;
     display: flex;
     align-items: center;
     border-bottom: 1px solid var(--color-border-modal-bar);
@@ -646,6 +647,19 @@ h4.user_group_setting_subsection_title {
             text-align: left;
         }
     }
+}
+
+.user-group-help-icon {
+    position: absolute;
+    right: 1.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: hsl(0deg 0% 67%);
+    font-size: 1.2rem;
+}
+
+.user-group-help-icon:hover {
+    color: hsl(0deg 0% 47%);
 }
 
 #search_stream_name,
