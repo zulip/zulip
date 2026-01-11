@@ -599,7 +599,53 @@ function do_mark_unread_by_narrow(
 }
 
 function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
-    // TODO: Add support for locally echoing when we're offline.
+    const messages_to_update: Message[] = [];
+    for (const message_id of message_ids_to_update) {
+        const message = message_store.get(message_id);
+        if (message && !message.unread) {
+            messages_to_update.push(message);
+        }
+    }
+
+    for (const message of messages_to_update) {
+        message.unread = true;
+        if (message.type === "private") {
+            const user_ids = people.pm_with_user_ids(message) ?? [];
+            unread.process_unread_message({
+                id: message.id,
+                mentioned: message.mentioned,
+                mentioned_me_directly: message.mentioned_me_directly,
+                type: "private",
+                user_ids_string: people.pm_lookup_key_from_user_ids(user_ids),
+                unread: true,
+            });
+        } else {
+            unread.process_unread_message({
+                id: message.id,
+                mentioned: message.mentioned,
+                mentioned_me_directly: message.mentioned_me_directly,
+                type: "stream",
+                stream_id: message.stream_id,
+                topic: message.topic,
+                unread: true,
+            });
+        }
+    }
+
+    for (const list of message_lists.all_rendered_message_lists()) {
+        list.view.show_messages_as_unread(message_ids_to_update);
+    }
+    recent_view_ui.complete_rerender();
+    unread_ui.update_unread_counts(true);
+
+    if (
+        message_lists.current !== undefined &&
+        !message_lists.current.can_mark_messages_read() &&
+        message_lists.current.has_unread_messages()
+    ) {
+        unread_ui.notify_messages_remain_unread();
+    }
+
     void channel.post({
         url: "/json/messages/flags",
         data: {messages: JSON.stringify(message_ids_to_update), op: "remove", flag: "read"},
