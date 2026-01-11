@@ -7,8 +7,8 @@
             "type": "conversation",
             "id": "215472621202693",
             "created_at": 1768031789,
-            "updated_at": 1768032989,
-            "waiting_since": 1768032894,
+            "updated_at": 1768031793,
+            "waiting_since": 1768031789,
             "snoozed_until": null,
             "source": {
                 "type": "conversation",
@@ -41,11 +41,11 @@
                 "type": "conversation",
                 "url": "http://localhost:5500/test.html"
             },
-            "admin_assignee_id": 9608799,
+            "admin_assignee_id": null,
             "team_assignee_id": null,
             "open": true,
             "state": "open",
-            "read": true,
+            "read": false,
             "tags": {
                 "type": "tag.list",
                 "tags": []
@@ -54,37 +54,32 @@
             "sla_applied": null,
             "statistics": {
                 "type": "conversation_statistics",
-                "time_to_assignment": 211,
-                "time_to_admin_reply": 211,
-                "time_to_first_close": 1026,
-                "time_to_last_close": 1026,
-                "median_time_to_reply": 117,
+                "time_to_assignment": null,
+                "time_to_admin_reply": null,
+                "time_to_first_close": null,
+                "time_to_last_close": null,
+                "median_time_to_reply": null,
                 "first_contact_reply_at": "2026-01-10T07:56:29.000Z",
-                "first_assignment_at": "2026-01-10T08:00:00.000Z",
-                "first_admin_reply_at": "2026-01-10T08:00:00.000Z",
-                "first_close_at": "2026-01-10T08:13:35.000Z",
-                "last_assignment_at": "2026-01-10T08:00:00.000Z",
-                "last_assignment_admin_reply_at": "2026-01-10T08:00:00.000Z",
-                "last_contact_reply_at": "2026-01-10T08:14:54.000Z",
-                "last_admin_reply_at": "2026-01-10T08:13:32.000Z",
-                "last_close_at": "2026-01-10T08:13:35.000Z",
-                "last_closed_by_id": 9608799,
-                "count_reopens": 1,
-                "count_assignments": 1,
-                "count_conversation_parts": 19,
+                "first_assignment_at": null,
+                "first_admin_reply_at": null,
+                "first_close_at": null,
+                "last_assignment_at": null,
+                "last_assignment_admin_reply_at": null,
+                "last_contact_reply_at": "2026-01-10T07:56:29.000Z",
+                "last_admin_reply_at": null,
+                "last_close_at": null,
+                "last_closed_by_id": null,
+                "count_reopens": 0,
+                "count_assignments": 0,
+                "count_conversation_parts": 3,
                 "assigned_team_first_response_time": [],
                 "assigned_team_first_response_time_in_office_hours": [],
-                "handling_time": 865
+                "handling_time": null
             },
             "conversation_rating": null,
             "teammates": {
                 "type": "admin.list",
-                "admins": [
-                    {
-                        "type": "admin",
-                        "id": "9608799"
-                    }
-                ]
+                "admins": []
             },
             "title": "",
             "custom_attributes": {
@@ -114,12 +109,12 @@
                 "conversation_parts": [
                     {
                         "type": "conversation_part",
-                        "id": "37358610849",
-                        "part_type": "timer_unsnooze",
-                        "body": null,
-                        "created_at": 1768032989,
-                        "updated_at": 1768032989,
-                        "notified_at": 1768032989,
+                        "id": "37358121213",
+                        "part_type": "channel_and_reply_time_expectation",
+                        "body": "<p>shetty will reply as soon as they can.</p>",
+                        "created_at": 1768031793,
+                        "updated_at": 1768031793,
+                        "notified_at": 1768031793,
                         "assigned_to": null,
                         "author": {
                             "id": "9608808",
@@ -145,12 +140,12 @@
         }
     },
     "links": {},
-    "id": "notif_2ef33b1d-0dab-4c99-be31-3dbc79a6e7d9",
-    "topic": "conversation.admin.unsnoozed",
+    "id": "notif_9108e504-998b-4afb-afd2-405cff43b99f",
+    "topic": "conversation.operator.replied",
     "delivery_status": "pending",
     "delivery_attempts": 1,
     "delivered_at": 0,
-    "first_sent_at": 1768032990,
-    "created_at": 1768032989,
+    "first_sent_at": 1768031794,
+    "created_at": 1768031793,
     "self": null
 }

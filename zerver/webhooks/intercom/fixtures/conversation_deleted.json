@@ -1,0 +1,20 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "conversation",
+            "conversation_id": "215472621305755"
+        }
+    },
+    "links": {},
+    "id": "notif_d808d1ab-c203-42fb-9e66-d281c7d1f74d",
+    "topic": "conversation.deleted",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768112097,
+    "created_at": 1768112097,
+    "self": null
+}
