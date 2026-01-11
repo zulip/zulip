@@ -504,7 +504,25 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         recipient_str = stream.name
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         display_recipient = get_display_recipient(recipient)
-        emails = [user_dict["email"] for user_dict in display_recipient]
+        # Get recipient IDs, excluding the sender
+        recipient_user_ids = [
+            user_dict["id"] for user_dict in display_recipient if user_dict["id"] != user_profile.id
+        ]
+        # Bulk fetch user profiles and filter to active users only
+        emails = list(
+            UserProfile.objects.filter(id__in=recipient_user_ids, is_active=True).values_list(
+                "email", flat=True
+            )
+        )
+
+        if not emails:
+            logger.info(
+                "Dropping missed-message email reply for group DM from user %s: "
+                "no active recipients remain.",
+                user_profile.id,
+            )
+            return
+
         recipient_str = ", ".join(emails)
         internal_send_group_direct_message(user_profile.realm, user_profile, body, emails=emails)
     else:
