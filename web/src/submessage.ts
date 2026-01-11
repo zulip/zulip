@@ -5,10 +5,13 @@ import * as channel from "./channel.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
-import type {WidgetOutboundData} from "./widget_schema.ts";
+import type {PollWidgetOutboundData} from "./poll_data.ts";
+import type {TodoWidgetOutboundData} from "./todo_widget.ts";
 import * as widgetize from "./widgetize.ts";
 
 export type Submessage = z.infer<typeof message_store.submessage_schema>;
+
+type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
 
 const widget_data_schema = z.object({
     widget_type: z.union([z.literal("poll"), z.literal("todo"), z.literal("zform")]),
