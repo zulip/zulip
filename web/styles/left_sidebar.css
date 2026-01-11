@@ -306,7 +306,7 @@
     }
 
     #compose-new-direct-message,
-    #show-all-direct-messages {
+    .show-all-direct-messages {
         color: var(--color-sidebar-action);
         display: none;
         align-items: center;
@@ -330,7 +330,7 @@
     &.zoom-in,
     &:hover {
         #compose-new-direct-message,
-        #show-all-direct-messages {
+        .show-all-direct-messages {
             display: flex;
         }
     }
