@@ -85,7 +85,7 @@ test("activate", ({override}) => {
 
     const opts = {
         events: [...events],
-        extra_data: "",
+        extra_data: {question: "What's for lunch?", options: []},
         message: {
             id: 2001,
         },

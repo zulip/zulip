@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import * as blueslip from "./blueslip.ts";
 import type {Message} from "./message_store.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
+import {poll_setup_data_schema} from "./poll_data.ts";
 import * as poll_widget from "./poll_widget.ts";
 import type {TodoWidgetOutboundData} from "./todo_widget.ts";
 import * as todo_widget from "./todo_widget.ts";
@@ -72,11 +73,12 @@ export function create_widget_instance(info: {
         // (showell wrote this comment)
         switch (widget_type) {
             case "poll": {
+                const poll_setup_data = poll_setup_data_schema.parse(extra_data);
                 return poll_widget.activate({
                     $elem: $widget_elem,
                     callback: post_to_server_callback,
                     message,
-                    extra_data,
+                    setup_data: poll_setup_data,
                 });
             }
             case "todo": {

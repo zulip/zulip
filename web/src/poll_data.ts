@@ -64,12 +64,12 @@ type Vote = {type: string; key: string; vote: number};
 
 /* ---------------------- */
 
-export const poll_widget_extra_data_schema = z.object({
+export const poll_setup_data_schema = z.object({
     question: z.optional(z.string()),
     options: z.optional(z.array(z.string())),
 });
 
-export type PollWidgetExtraData = z.infer<typeof poll_widget_extra_data_schema>;
+export type PollSetupData = z.infer<typeof poll_setup_data_schema>;
 
 export type PollWidgetOutboundData = NewOption | Question | Vote;
 

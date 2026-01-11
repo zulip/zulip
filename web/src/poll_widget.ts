@@ -9,14 +9,8 @@ import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import type {Message} from "./message_store.ts";
-import type {PollWidgetOutboundData} from "./poll_data.ts";
-import {
-    PollData,
-    new_option_schema,
-    poll_widget_extra_data_schema,
-    question_schema,
-    vote_schema,
-} from "./poll_data.ts";
+import type {PollSetupData, PollWidgetOutboundData} from "./poll_data.ts";
+import {PollData, new_option_schema, question_schema, vote_schema} from "./poll_data.ts";
 import {ZulipWidgetContext} from "./widget_context.ts";
 
 // Our Event data from the server is opaque and unknown
@@ -26,12 +20,12 @@ export type Event = {sender_id: number; data: unknown};
 export function activate({
     $elem,
     callback,
-    extra_data,
+    setup_data,
     message,
 }: {
     $elem: JQuery;
     callback: (data: PollWidgetOutboundData) => void;
-    extra_data: unknown; // parsed below into PollWidgetExtraData
+    setup_data: PollSetupData;
     message: Message;
 }): (events: Event[]) => void {
     const widget_context = new ZulipWidgetContext(message);
@@ -45,17 +39,11 @@ export function activate({
         return widget_context.get_full_name_list(user_ids);
     }
 
-    const parse_result = poll_widget_extra_data_schema.safeParse(extra_data);
-    if (!parse_result.success) {
-        blueslip.error("invalid poll widget extra data", {issues: parse_result.error.issues});
-        return (_events: Event[]): void => {
-            /* noop */
-        };
-    }
-
     /*
         The server sends us the initial poll question and poll options
         (from the author of the poll) via the extra_data mechanism.
+
+        The input layer passes that data into us as "setup_data".
 
         We just grab them below and pass them into PollData.
 
@@ -68,9 +56,8 @@ export function activate({
 
         See docs/subsystems/widgets.md for even more context.
     */
-
-    const question = parse_result.data.question ?? "";
-    const options = parse_result.data.options ?? [];
+    const question = setup_data.question ?? "";
+    const options = setup_data.options ?? [];
 
     const poll_data = new PollData({
         poll_owner_user_id,
