@@ -35,6 +35,35 @@
                             </p>
                         </div>
                         {{else}}
+                        {{#if is_topic_resolved}}
+                        <div class="message_content message_edit_history_content">
+                            <p>{{t "Topic resolved." }}
+                                <a href="{{new_location_url}}">#{{new_stream}} > {{new_topic_display_name}}</a>
+                            </p>
+                        </div>
+                        {{else}}
+                        {{#if is_topic_unresolved}}
+                        <div class="message_content message_edit_history_content">
+                            <p>{{t "Topic unresolved."}}
+                                <a href="{{new_location_url}}">#{{new_stream}} > {{new_topic_display_name}}</a>
+                            </p>
+                        </div>
+                        {{else if prev_location_url}}
+                        <div class="message_content message_edit_history_content">
+                            <p>
+                                {{#tr}}
+                                    Moved from <z-link-from></z-link-from> to <z-link-to></z-link-to>
+                                    {{#*inline "z-link-from"}}
+                                        <a href="{{prev_location_url}}">#{{prev_stream}} > {{prev_topic_display_name}}</a>
+                                    {{/inline}}
+                                    {{#*inline "z-link-to"}}
+                                        <a href="{{new_location_url}}">#{{new_stream}} > {{new_topic_display_name}}</a>
+                                    {{/inline}}
+                                {{/tr}}
+                            </p>
+                        </div>
+                        {{else}}
+                        {{! This is for normal text edits. We keep the old logic so we don't break them }}
                         {{#if stream_changed}}
                         <div class="message_content message_edit_history_content">
                             <p>{{t "Channel" }}: <span class="highlight_text_inserted">{{ new_stream }}</span>
@@ -49,6 +78,9 @@
                                 <span class="highlight_text_deleted {{#if is_empty_string_prev_topic}}empty-topic-display{{/if}}">{{ prev_topic_display_name }}</span>
                             </p>
                         </div>
+                        {{/if}}
+                        {{/if}}
+
                         {{/if}}
                         {{#if body_to_render}}
                         <div class="message_content rendered_markdown message_edit_history_content">
