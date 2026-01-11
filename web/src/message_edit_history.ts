@@ -7,6 +7,7 @@ import render_message_history_overlay from "../templates/message_history_overlay
 
 import {exit_overlay} from "./browser_history.ts";
 import * as channel from "./channel.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as message_lists from "./message_lists.ts";
@@ -44,6 +45,10 @@ type EditHistoryEntry = {
     prev_stream: string | undefined;
     prev_stream_id: number | undefined;
     new_stream: string | undefined;
+    prev_location_url?: string | undefined;
+    new_location_url?: string | undefined;
+    is_topic_resolved?: boolean;
+    is_topic_unresolved?: boolean;
 };
 
 const server_message_history_schema = z.object({
@@ -168,9 +173,9 @@ export function fetch_and_render_message_history(message: Message): void {
                 let is_empty_string_prev_topic;
                 let is_empty_string_new_topic;
                 let stream_changed;
+                let initial_entry_for_move_history = false;
                 let prev_stream;
                 let prev_stream_id;
-                let initial_entry_for_move_history = false;
 
                 if (index === 0) {
                     edited_by_notice = $t({defaultMessage: "Posted by {full_name}"}, {full_name});
@@ -224,6 +229,26 @@ export function fetch_and_render_message_history(message: Message): void {
                     edited_by_notice = $t({defaultMessage: "Edited by {full_name}"}, {full_name});
                     body_to_render = msg.content_html_diff;
                 }
+                const is_topic_resolved =
+                    new_topic_display_name === "✔ " + prev_topic_display_name;
+                const is_topic_unresolved =
+                    prev_topic_display_name === "✔ " + new_topic_display_name;
+
+                let prev_location_url;
+                let new_location_url;
+
+                if (msg.prev_stream !== undefined || msg.prev_topic !== undefined) {
+                    if (message.type !== "stream") {
+                        continue;
+                    }
+                    const current_stream_id = msg.stream ?? message.stream_id;
+                    const old_stream_id = msg.prev_stream ?? current_stream_id;
+                    const old_topic = msg.prev_topic ?? msg.topic;
+
+                    prev_location_url = hash_util.by_stream_topic_url(old_stream_id, old_topic);
+                    new_location_url = hash_util.by_stream_topic_url(current_stream_id, msg.topic);
+                }
+
                 const item: EditHistoryEntry = {
                     initial_entry_for_move_history,
                     edited_at_time,
@@ -240,7 +265,15 @@ export function fetch_and_render_message_history(message: Message): void {
                     stream_changed,
                     prev_stream,
                     prev_stream_id,
-                    new_stream: undefined,
+                    new_stream:
+                        message.type === "stream" &&
+                        (msg.prev_stream !== undefined || msg.prev_topic !== undefined)
+                            ? get_display_stream_name(msg.stream ?? message.stream_id)
+                            : undefined,
+                    prev_location_url,
+                    new_location_url,
+                    is_topic_resolved,
+                    is_topic_unresolved,
                 };
 
                 if (msg.prev_stream) {
