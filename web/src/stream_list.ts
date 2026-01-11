@@ -651,6 +651,57 @@ function stream_id_for_elt($elt: JQuery): number {
     return Number.parseInt(stream_id_string, 10);
 }
 
+class StreamSidebarRow {
+    sub: StreamSubscription;
+    $list_item: JQuery;
+
+    constructor(sub: StreamSubscription) {
+        this.sub = sub;
+        this.$list_item = build_stream_sidebar_li(sub);
+        this.update_unread_count();
+    }
+
+    // The `inactive_stream` class is useful for identifying these
+    // channels to node tests, even if the design doesn't currently
+    // style these channels differently.
+    update_whether_active(): void {
+        if (stream_list_sort.has_recent_activity(this.sub)) {
+            this.$list_item.removeClass("inactive_stream");
+        } else {
+            this.$list_item.addClass("inactive_stream");
+        }
+    }
+
+    get_li(): JQuery {
+        return this.$list_item;
+    }
+
+    remove(): void {
+        this.$list_item.remove();
+    }
+
+    update_unread_count(): void {
+        const count = unread.unread_count_info_for_stream(this.sub.stream_id);
+        const stream_has_any_unread_mention_messages = unread.stream_has_any_unread_mentions(
+            this.sub.stream_id,
+        );
+        const stream_has_any_unmuted_unread_mention = unread.stream_has_any_unmuted_mentions(
+            this.sub.stream_id,
+        );
+        const stream_has_only_muted_unread_mentions =
+            !this.sub.is_muted &&
+            stream_has_any_unread_mention_messages &&
+            !stream_has_any_unmuted_unread_mention;
+        update_count_in_dom(
+            this.$list_item,
+            count,
+            stream_has_any_unread_mention_messages,
+            stream_has_any_unmuted_unread_mention,
+            stream_has_only_muted_unread_mentions,
+        );
+    }
+}
+
 export function zoom_in_topics(stream_id: number): void {
     // This only does stream-related tasks related to zooming
     // in to more topics, which is basically hiding all the
@@ -715,57 +766,6 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
     };
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;
-}
-
-class StreamSidebarRow {
-    sub: StreamSubscription;
-    $list_item: JQuery;
-
-    constructor(sub: StreamSubscription) {
-        this.sub = sub;
-        this.$list_item = build_stream_sidebar_li(sub);
-        this.update_unread_count();
-    }
-
-    // The `inactive_stream` class is useful for identifying these
-    // channels to node tests, even if the design doesn't currently
-    // style these channels differently.
-    update_whether_active(): void {
-        if (stream_list_sort.has_recent_activity(this.sub)) {
-            this.$list_item.removeClass("inactive_stream");
-        } else {
-            this.$list_item.addClass("inactive_stream");
-        }
-    }
-
-    get_li(): JQuery {
-        return this.$list_item;
-    }
-
-    remove(): void {
-        this.$list_item.remove();
-    }
-
-    update_unread_count(): void {
-        const count = unread.unread_count_info_for_stream(this.sub.stream_id);
-        const stream_has_any_unread_mention_messages = unread.stream_has_any_unread_mentions(
-            this.sub.stream_id,
-        );
-        const stream_has_any_unmuted_unread_mention = unread.stream_has_any_unmuted_mentions(
-            this.sub.stream_id,
-        );
-        const stream_has_only_muted_unread_mentions =
-            !this.sub.is_muted &&
-            stream_has_any_unread_mention_messages &&
-            !stream_has_any_unmuted_unread_mention;
-        update_count_in_dom(
-            this.$list_item,
-            count,
-            stream_has_any_unread_mention_messages,
-            stream_has_any_unmuted_unread_mention,
-            stream_has_only_muted_unread_mentions,
-        );
-    }
 }
 
 function build_stream_sidebar_row(sub: StreamSubscription): void {
