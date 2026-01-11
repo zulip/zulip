@@ -69,13 +69,12 @@ export function is_zoomed_in(): boolean {
 
 function zoom_in(): void {
     const stream_id = topic_list.active_stream_id();
+    assert(stream_id !== undefined);
 
     popovers.hide_all();
     pm_list.close();
     topic_list.zoom_in();
-    zoom_in_topics({
-        stream_id,
-    });
+    zoom_in_topics(stream_id);
 
     zoomed_in = true;
 }
@@ -653,7 +652,7 @@ function stream_id_for_elt($elt: JQuery): number {
     return Number.parseInt(stream_id_string, 10);
 }
 
-export function zoom_in_topics(options: {stream_id: number | undefined}): void {
+export function zoom_in_topics(stream_id: number): void {
     // This only does stream-related tasks related to zooming
     // in to more topics, which is basically hiding all the
     // other streams.
@@ -662,7 +661,6 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
 
     $("#stream_filters li.narrow-filter").each(function () {
         const $elt = $(this);
-        const stream_id = options.stream_id;
 
         if (stream_id_for_elt($elt) === stream_id) {
             $elt.toggleClass("hide", false);
