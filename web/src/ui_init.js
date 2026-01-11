@@ -176,7 +176,6 @@ import * as user_topic_popover from "./user_topic_popover.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
-import * as widgets from "./widgets.ts";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -458,7 +457,6 @@ export async function initialize_everything(state_data) {
         theme.initialize_theme_for_spectator();
     }
     thumbnail.initialize();
-    widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();
     message_list_tooltips.initialize();

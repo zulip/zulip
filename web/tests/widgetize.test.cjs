@@ -61,9 +61,6 @@ set_global("document", "document-stub");
 
 const {GenericWidget} = zrequire("generic_widget");
 const widgetize = zrequire("widgetize");
-const widgets = zrequire("widgets");
-
-widgets.initialize();
 
 function test(label, f) {
     run_test(label, ({override}) => {
