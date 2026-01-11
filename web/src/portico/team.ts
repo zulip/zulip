@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 
 import "../templates.ts";
 import render_contributors from "../../templates/team/contributors.hbs";
+import render_loading from "../../templates/team/loading.hbs";
 
 // The list of repository names is duplicated here in order to provide
 // a clear type for Contributor objects.
@@ -177,7 +178,7 @@ export default function render_tabs(contributors: Contributor[]): void {
             continue;
         }
         // Set as the loading template for now, and load when clicked.
-        $(`#tab-${CSS.escape(tab_name)} .contributors-grid`).html($("#loading-template").html());
+        $(`#tab-${CSS.escape(tab_name)} .contributors-grid`).html(render_loading());
 
         $(`#${CSS.escape(tab_name)}`).on("click", () => {
             if (!loaded_tabs.includes(tab_name)) {
