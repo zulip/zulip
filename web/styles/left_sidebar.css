@@ -353,6 +353,10 @@
     padding: 0 var(--left-sidebar-right-margin)
         var(--sidebar-filter-bottom-spacing) 5px;
 
+    &.no-display {
+        display: none;
+    }
+
     .channel-folders-sidebar-menu-icon {
         grid-area: channel-folders-option;
         display: grid;
