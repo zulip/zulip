@@ -28,9 +28,11 @@ def get_valid_invite_confirmations_generated_by_user(
         Confirmation.objects.filter(type=Confirmation.INVITATION, object_id__in=prereg_user_ids)
     )
 
-    multiuse_invite_ids = MultiuseInvite.objects.filter(referred_by=user_profile).values_list(
-        "id", flat=True
-    )
+    from confirmation import settings as confirmation_settings
+
+    multiuse_invite_ids = MultiuseInvite.objects.filter(referred_by=user_profile).exclude(
+        status=confirmation_settings.STATUS_REVOKED
+    ).values_list("id", flat=True)
     confirmations += Confirmation.objects.filter(
         type=Confirmation.MULTIUSE_INVITE,
         object_id__in=multiuse_invite_ids,

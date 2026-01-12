@@ -44,9 +44,11 @@ from zerver.models import (
     NamedUserGroup,
     PreregistrationUser,
     Realm,
+    RealmAuditLog,
     Stream,
     UserProfile,
 )
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 
 
@@ -364,9 +366,8 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
         invite = confirmation_obj.content_object
         assert invite is not None
 
-        # This should be impossible, because revoking a multiuse invite
-        # deletes the Confirmation object, so it couldn't have been fetched above.
-        assert invite.status != confirmation_settings.STATUS_REVOKED
+        if invite.status == confirmation_settings.STATUS_REVOKED:
+            continue
         invites.append(
             dict(
                 invited_by_user_id=invite.referred_by.id,
@@ -411,30 +412,43 @@ def do_create_multiuse_invite_link(
 
 
 @transaction.atomic(durable=True)
-def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
+def do_revoke_user_invite(prereg_user: PreregistrationUser, acting_user: UserProfile) -> None:
     email = prereg_user.email
     realm = prereg_user.realm
     assert realm is not None
 
-    # Delete both the confirmation objects and the prereg_user object.
-    # TODO: Probably we actually want to set the confirmation objects
-    # to a "revoked" status so that we can give the invited user a better
-    # error message.
-    content_type = ContentType.objects.get_for_model(PreregistrationUser)
-    Confirmation.objects.filter(content_type=content_type, object_id=prereg_user.id).delete()
-    prereg_user.delete()
+    prereg_user.status = confirmation_settings.STATUS_REVOKED
+    prereg_user.save(update_fields=["status"])
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=AuditLogEventType.USER_INVITATION_REVOKED,
+        event_time=timezone_now(),
+        extra_data={"prereg_user_id": prereg_user.id},
+    )
+
     clear_scheduled_invitation_emails(email)
     notify_invites_changed(realm, changed_invite_referrer=prereg_user.referred_by)
 
 
 @transaction.atomic(durable=True)
-def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
+def do_revoke_multi_use_invite(
+    multiuse_invite: MultiuseInvite, acting_user: UserProfile
+) -> None:
     realm = multiuse_invite.referred_by.realm
 
-    content_type = ContentType.objects.get_for_model(MultiuseInvite)
-    Confirmation.objects.filter(content_type=content_type, object_id=multiuse_invite.id).delete()
     multiuse_invite.status = confirmation_settings.STATUS_REVOKED
     multiuse_invite.save(update_fields=["status"])
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=AuditLogEventType.USER_INVITATION_REVOKED,
+        event_time=timezone_now(),
+        extra_data={"multiuse_invite_id": multiuse_invite.id},
+    )
+
     notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
