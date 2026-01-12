@@ -116,6 +116,26 @@ export function dispatch_normal_event(event) {
 
         case "attachment":
             attachments_ui.update_attachments(event);
+            // When an attachment is removed, force the browser to reload images in those messages
+            // so they show as 404/unavailable instead of cached previews
+            if (event.op === "remove" && event.attachment.message_ids) {
+                for (const message_id of event.attachment.message_ids) {
+                    // Use Zulip's message_live_update to update all views
+                    message_live_update.update_message_in_all_views(message_id, ($row) => {
+                        // Find all images/videos in this message and force reload
+                        $row.find("img, video, audio").each(function () {
+                            const $media = $(this);
+                            const src = $media.attr("src");
+                            if (src && src.includes("/user_uploads/")) {
+                                // Force reload with cache-busting parameter
+                                const cacheBuster = `?reload=${Date.now()}`;
+                                const newSrc = src.split("?")[0] + cacheBuster;
+                                $media.attr("src", newSrc);
+                            }
+                        });
+                    });
+                }
+            }
             break;
 
         case "channel_folder":
