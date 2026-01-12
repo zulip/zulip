@@ -22,12 +22,12 @@ export type Event = {sender_id: number; data: unknown};
 // to a todo list. We arbitrarily pick this value.
 const MAX_IDX = 1000;
 
-export const todo_widget_extra_data_schema = z.object({
+export const todo_setup_data_schema = z.object({
     task_list_title: z.optional(z.string()),
     tasks: z.optional(z.array(z.object({task: z.string(), desc: z.string()}))),
 });
 
-export type TodoWidgetExtraData = z.infer<typeof todo_widget_extra_data_schema>;
+type TodoSetupData = z.infer<typeof todo_setup_data_schema>;
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
@@ -321,23 +321,15 @@ export class TaskData {
 export function activate({
     $elem,
     callback,
-    extra_data,
+    setup_data,
     message,
 }: {
     $elem: JQuery;
     callback: (data: TodoWidgetOutboundData) => void;
-    extra_data: unknown;
+    setup_data: TodoSetupData;
     message: Message;
 }): (events: Event[]) => void {
-    const parse_result = z.nullable(todo_widget_extra_data_schema).safeParse(extra_data);
-    if (!parse_result.success) {
-        blueslip.warn("invalid todo extra data", {issues: parse_result.error.issues});
-        return () => {
-            /* we send a dummy function when extra data is invalid */
-        };
-    }
-    const {data} = parse_result;
-    const {task_list_title = "", tasks = []} = data ?? {};
+    const {task_list_title = "", tasks = []} = setup_data;
     const is_my_task_list = people.is_my_user_id(message.sender_id);
     const task_data = new TaskData({
         message_sender_id: message.sender_id,

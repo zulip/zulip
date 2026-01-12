@@ -83,11 +83,12 @@ export function create_widget_instance(info: {
                 });
             }
             case "todo": {
+                const todo_setup_data = todo_widget.todo_setup_data_schema.parse(extra_data);
                 return todo_widget.activate({
                     $elem: $widget_elem,
                     callback: post_to_server_callback,
                     message,
-                    extra_data,
+                    setup_data: todo_setup_data,
                 });
             }
             case "zform": {
