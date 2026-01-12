@@ -675,14 +675,7 @@ function get_special_filter_suggestions(
     if (last.negated === true || is_search_operand_negated) {
         suggestions = suggestions
             .filter((suggestion) => suggestion !== "-is:resolved")
-            .map((suggestion) => {
-                // If the search_string is "is:resolved", we want to suggest "Unresolved topics"
-                // instead of "Exclude resolved topics".
-                if (suggestion === "is:resolved") {
-                    return "-" + suggestion;
-                }
-                return "-" + suggestion;
-            });
+            .map((suggestion) => "-" + suggestion);
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
