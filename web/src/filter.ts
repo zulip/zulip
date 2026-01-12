@@ -76,10 +76,7 @@ function message_in_home(message: Message): boolean {
         return true;
     }
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-    if (
-        page_params.narrow_stream !== undefined &&
-        stream_name.toLowerCase() === page_params.narrow_stream.toLowerCase()
-    ) {
+    if (stream_name.toLowerCase() === page_params.narrow_stream?.toLowerCase()) {
         return true;
     }
 

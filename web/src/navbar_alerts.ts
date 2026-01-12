@@ -113,7 +113,7 @@ export function maybe_toggle_empty_required_profile_fields_banner(): void {
         .find((f) => f.required && !f.value);
     if (empty_required_profile_fields_exist) {
         open_navbar_banner_and_resize(PROFILE_MISSING_REQUIRED_FIELDS_BANNER);
-    } else if ($banner && $banner.attr("data-process") === "profile-missing-required-fields") {
+    } else if ($banner?.attr("data-process") === "profile-missing-required-fields") {
         close_navbar_banner_and_resize($banner);
     }
 }
@@ -154,7 +154,7 @@ export function is_organization_profile_incomplete(): boolean {
 
 export function toggle_organization_profile_incomplete_banner(): void {
     const $banner = $("#navbar_alerts_wrapper").find(".banner");
-    if ($banner && $banner.attr("data-process") === "organization-profile-incomplete") {
+    if ($banner?.attr("data-process") === "organization-profile-incomplete") {
         close_navbar_banner_and_resize($banner);
         return;
     }
