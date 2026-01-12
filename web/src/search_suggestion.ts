@@ -61,23 +61,23 @@ const descriptions: Record<string, string> = {
     "has:reaction": "messages with reactions",
 };
 
-const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[]>> &
-    Record<
-        | "is:resolved"
-        | "-is:resolved"
-        | "is:dm"
-        | "is:starred"
-        | "is:mentioned"
-        | "is:followed"
-        | "is:alerted"
-        | "is:unread"
-        | "is:muted"
-        | "has:link"
-        | "has:image"
-        | "has:attachment"
-        | "has:reaction",
-        TermPattern[]
-    > = {
+type SearchFilter =
+    | NarrowTerm["operator"]
+    | "is:resolved"
+    | "-is:resolved"
+    | "is:dm"
+    | "is:starred"
+    | "is:mentioned"
+    | "is:followed"
+    | "is:alerted"
+    | "is:unread"
+    | "is:muted"
+    | "has:link"
+    | "has:image"
+    | "has:attachment"
+    | "has:reaction";
+
+const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     channel: channel_incompatible_patterns,
     stream: channel_incompatible_patterns,
     streams: channel_incompatible_patterns,
@@ -141,6 +141,17 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
     "has:image": [{operator: "has", operand: "image"}],
     "has:attachment": [{operator: "has", operand: "attachment"}],
     "has:reaction": [{operator: "has", operand: "reaction"}],
+    near: [],
+    // These below are not currently looked up.
+    has: [],
+    in: [],
+    "": [],
+    id: [],
+    is: [],
+    search: [],
+    with: [],
+    "group-pm-with": [],
+    subject: [],
 };
 
 // TODO: We have stripped suggestion of all other attributes, we should now
@@ -235,7 +246,7 @@ function get_channel_suggestions(
     // For users with "stream" in their muscle memory, still
     // have suggestions with "channel:" operator.
     const valid = ["stream", "channel", "search", ""];
-    if (!check_validity(last.operator, terms, valid, incompatible_patterns.channel!)) {
+    if (!check_validity(last.operator, terms, valid, incompatible_patterns.channel)) {
         return [];
     }
 
@@ -391,7 +402,7 @@ function get_person_suggestions(
     const valid = ["search", autocomplete_operator];
 
     if (
-        !check_validity(last.operator, terms, valid, incompatible_patterns[autocomplete_operator]!)
+        !check_validity(last.operator, terms, valid, incompatible_patterns[autocomplete_operator])
     ) {
         return [];
     }
@@ -508,7 +519,7 @@ function get_topic_suggestions(
             last.operator,
             terms,
             ["channel", "topic", "search"],
-            incompatible_patterns.topic!,
+            incompatible_patterns.topic,
         )
     ) {
         return [];
@@ -730,14 +741,14 @@ function get_channels_filter_suggestions(
     if (!page_params.is_spectator) {
         suggestions.push({
             search_string: public_channels_search_string,
-            incompatible_patterns: incompatible_patterns.channels!,
+            incompatible_patterns: incompatible_patterns.channels,
         });
     }
 
     if (stream_data.realm_has_web_public_streams()) {
         suggestions.push({
             search_string: web_public_channels_search_string,
-            incompatible_patterns: incompatible_patterns.channels!,
+            incompatible_patterns: incompatible_patterns.channels,
         });
     }
 
@@ -857,7 +868,7 @@ function get_sent_by_me_suggestions(
     const from_string = negated_symbol + "from";
     const sent_string = negated_symbol + "sent";
 
-    if (match_criteria(terms, incompatible_patterns.sender!)) {
+    if (match_criteria(terms, incompatible_patterns.sender)) {
         return [];
     }
 
@@ -918,8 +929,7 @@ function get_operator_suggestions(
     choices = choices.filter(
         (choice) =>
             common.phrase_match(last_operand, choice) &&
-            (!incompatible_patterns[choice] ||
-                !match_criteria(terms, incompatible_patterns[choice])),
+            !match_criteria(terms, incompatible_patterns[choice]),
     );
 
     return choices.map((choice) => {
