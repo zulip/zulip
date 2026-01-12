@@ -1043,7 +1043,7 @@ export function search_term_description_html(operand: string): string {
     return `search for ${Handlebars.Utils.escapeExpression(operand)}`;
 }
 
-export function get_search_result(
+export let get_suggestions = function (
     pill_search_terms: NarrowCanonicalTerm[],
     text_search_terms_non_canonical: NarrowTermSuggestion[],
     add_current_filter = false,
@@ -1184,14 +1184,6 @@ export function get_search_result(
     }
 
     return attacher.get_result().slice(0, max_items);
-}
-
-export let get_suggestions = function (
-    pill_search_terms: NarrowCanonicalTerm[],
-    text_search_terms: NarrowTermSuggestion[],
-    add_current_filter = false,
-): Suggestion[] {
-    return get_search_result(pill_search_terms, text_search_terms, add_current_filter);
 };
 
 export function rewire_get_suggestions(value: typeof get_suggestions): void {
