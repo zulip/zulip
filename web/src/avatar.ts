@@ -59,7 +59,6 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
 function display_avatar_delete_complete(): void {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();
-    $("#user-avatar-source").show();
 }
 
 function display_avatar_delete_started(): void {
