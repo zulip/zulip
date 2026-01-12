@@ -146,11 +146,11 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("deployment", TOPIC_DEPLOYMENT, expected_message)
 
     def test_deployment_status_msg(self) -> None:
-        expected_message = ":green_circle: Deployment changed status to success."
+        expected_message = ":check: Deployment changed status to success."
         self.check_webhook("deployment_status", TOPIC_DEPLOYMENT, expected_message)
 
     def test_deployment_status_failure_msg(self) -> None:
-        expected_message = ":red_circle: Deployment changed status to failure."
+        expected_message = ":cross_mark: Deployment changed status to failure."
         self.check_webhook("deployment_status__failure", TOPIC_DEPLOYMENT, expected_message)
 
     def test_fork_msg(self) -> None:
@@ -297,17 +297,17 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__synchronized", TOPIC_PR, expected_message)
 
     def test_pull_request_closed_msg(self) -> None:
-        expected_message = ":white_circle: baxterthehacker closed without merge [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        expected_message = ":cross_mark: baxterthehacker closed without merge [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__closed", TOPIC_PR, expected_message)
 
     def test_pull_request_closed_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = ":white_circle: baxterthehacker closed without merge [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
+        expected_message = ":cross_mark: baxterthehacker closed without merge [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__closed", expected_topic_name, expected_message)
 
     def test_pull_request_merged_msg(self) -> None:
-        expected_message = ":purple_circle: baxterthehacker merged [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        expected_message = ":check: baxterthehacker merged [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__merged", TOPIC_PR, expected_message)
 
     def test_pull_request_merged_msg_private_repository_skipped(self) -> None:
@@ -361,33 +361,33 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("release__with_name", TOPIC_REPO, expected_message)
 
     def test_page_build_msg(self) -> None:
-        expected_message = ":green_circle: GitHub Pages build, triggered by baxterthehacker, has finished building."
+        expected_message = ":check: GitHub Pages build, triggered by baxterthehacker, has finished building."
         self.check_webhook("page_build", TOPIC_REPO, expected_message)
 
     def test_page_build_errored_msg(self) -> None:
-        expected_message = ":red_circle: GitHub Pages build, triggered by baxterthehacker, has failed: \n~~~ quote\nSomething went wrong.\n~~~."
+        expected_message = ":cross_mark: GitHub Pages build, triggered by baxterthehacker, has failed: \n~~~ quote\nSomething went wrong.\n~~~."
         self.check_webhook("page_build__errored", TOPIC_REPO, expected_message)
 
     def test_status_msg(self) -> None:
-        expected_message = ":green_circle: [9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
+        expected_message = ":check: [9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
         self.check_webhook("status", TOPIC_REPO, expected_message)
 
     def test_status_failure_msg(self) -> None:
-        expected_message = ":red_circle: [9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to failure."
+        expected_message = ":cross_mark: [9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to failure."
         self.check_webhook("status__failure", TOPIC_REPO, expected_message)
 
     def test_status_with_target_url_msg(self) -> None:
-        expected_message = ":green_circle: [9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)."
+        expected_message = ":check: [9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)."
         self.check_webhook("status__with_target_url", TOPIC_REPO, expected_message)
 
     def test_pull_request_review_msg(self) -> None:
-        expected_message = ":green_circle: baxterthehacker submitted [PR review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
+        expected_message = ":thumbs_up: baxterthehacker submitted [PR review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
         self.check_webhook("pull_request_review", TOPIC_PR, expected_message)
 
     def test_pull_request_review_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = ":green_circle: baxterthehacker submitted [PR review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
+        expected_message = ":thumbs_up: baxterthehacker submitted [PR review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
         self.check_webhook("pull_request_review", expected_topic_name, expected_message)
 
     def test_pull_request_review_msg_with_empty_body(self) -> None:
@@ -495,14 +495,14 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_check_run(self) -> None:
         expected_topic_name = "hello-world / checks"
         expected_message = """
-:green_circle: Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
+:check: Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
 """.strip()
         self.check_webhook("check_run__completed", expected_topic_name, expected_message)
 
     def test_check_run_failure(self) -> None:
         expected_topic_name = "hello-world / checks"
         expected_message = """
-:red_circle: Check [randscape](http://github.com/github/hello-world/runs/4) completed (failure). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
+:cross_mark: Check [randscape](http://github.com/github/hello-world/runs/4) completed (failure). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
 """.strip()
         self.check_webhook("check_run__completed_failure", expected_topic_name, expected_message)
 
@@ -654,7 +654,7 @@ A temporary team so that I can get some webhook fixtures!
         self.assertTrue(stack_info)
 
     def test_discussion_answered(self) -> None:
-        expected_message = ":green_circle: Niloth-p marked [comment #11460065](https://github.com/Niloth-p/webhook-tester/discussions/5#discussioncomment-11460065) as the answer:\n\n~~~ quote\nIf you're looking for a detailed explanation of the project structure, I'd recommend checking out our CONTRIBUTING.md file. It includes a breakdown of the different directories and files, as well as some guidelines for contributing to the project.\n~~~"
+        expected_message = ":check: Niloth-p marked [comment #11460065](https://github.com/Niloth-p/webhook-tester/discussions/5#discussioncomment-11460065) as the answer:\n\n~~~ quote\nIf you're looking for a detailed explanation of the project structure, I'd recommend checking out our CONTRIBUTING.md file. It includes a breakdown of the different directories and files, as well as some guidelines for contributing to the project.\n~~~"
         self.check_webhook("discussion__answered", TOPIC_DISCUSSION_ANSWERS, expected_message)
 
     def test_discussion_category_changed(self) -> None:
@@ -672,7 +672,7 @@ A temporary team so that I can get some webhook fixtures!
         self.check_webhook("discussion__created", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_closed(self) -> None:
-        expected_message = ":red_circle: Cordelia closed [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3) as resolved."
+        expected_message = ":cross_mark: Cordelia closed [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3) as resolved."
         self.check_webhook("discussion__closed", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_deleted(self) -> None:
@@ -701,7 +701,7 @@ A temporary team so that I can get some webhook fixtures!
         self.check_webhook("discussion__pinned", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_reopened(self) -> None:
-        expected_message = ":yellow_circle: Niloth-p reopened [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3)."
+        expected_message = ":alert: Niloth-p reopened [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3)."
         self.check_webhook("discussion__reopened", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_transferred(self) -> None:
@@ -721,7 +721,7 @@ A temporary team so that I can get some webhook fixtures!
         self.check_webhook("discussion__unpinned", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_unanswered(self) -> None:
-        expected_message = ":yellow_circle: Cordelia marked [comment #11460059](https://github.com/Niloth-p/webhook-tester/discussions/5#discussioncomment-11460059) as not the answer."
+        expected_message = ":grey_question: Cordelia marked [comment #11460059](https://github.com/Niloth-p/webhook-tester/discussions/5#discussioncomment-11460059) as not the answer."
         self.check_webhook("discussion__unanswered", TOPIC_DISCUSSION_ANSWERS, expected_message)
 
     def test_discussion_comment_msg(self) -> None:
