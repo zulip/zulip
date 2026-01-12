@@ -1,10 +1,28 @@
 {{#each profile_fields}}
-    <li role="none" class="popover-menu-list-item text-item custom_user_field" data-type="{{this.type}}" data-field-id="{{this.id}}">
+    <li
+      role="none"
+      class="popover-menu-list-item {{#if this.display_on_user_card}}link-item{{else}}text-item{{/if}} custom_user_field"
+      data-type="{{this.type}}"
+      data-field-id="{{this.id}}"
+      >
         {{#if this.is_link}}
-            <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="custom-profile-field-value custom-profile-field-link" data-tippy-content="{{this.name}}" tabindex="0">
+            <a
+              href="{{this.value}}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="custom-profile-field-value custom-profile-field-link"
+              data-tippy-content="{{this.name}}"
+              tabindex="0"
+              >
                 <span class="custom-profile-field-text">{{this.value}}</span>
             </a>
-            <span role="menuitem" tabindex="0" class="popover-menu-link copy-button copy-custom-profile-field-link" aria-label="{{t 'Copy URL' }}" data-tippy-content="{{t 'Copy URL' }}">
+            <span
+              role="menuitem"
+              tabindex="0"
+              class="popover-menu-link copy-button copy-custom-profile-field-link"
+              aria-label="{{t 'Copy URL'}}"
+              data-tippy-content="{{t 'Copy URL'}}"
+              >
                 <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
             </span>
         {{else if this.is_external_account}}
@@ -17,12 +35,43 @@
                 {{> ../../default_external_account_icon subtype=this.subtype}}
                 <span class="custom-profile-field-text">{{this.value}}</span>
             {{/if}}
+        {{else if this.display_on_user_card}}
+            <span
+              role="menuitem"
+              class="popover-menu-link view_full_user_profile custom-profile-field-clickable"
+              tabindex="0"
+              >
+                <i
+                  class="popover-menu-icon zulip-icon zulip-icon-id-card"
+                  aria-hidden="true"
+                  ></i>
+                <span class="popover-menu-label">{{this.name}}</span>
+            </span>
+            <span
+              role="menuitem"
+              tabindex="0"
+              class="copy-button copy-custom-profile-field-long-text hide_copy_icon"
+              aria-label="{{t 'Copy'}}"
+              data-tippy-content="{{t 'Copy'}}"
+              data-field-value="{{this.value}}"
+              >
+                <i
+                  class="zulip-icon zulip-icon-copy"
+                  aria-hidden="true"
+                  ></i>
+            </span>
         {{else if this.rendered_value}}
-            <div class="custom-profile-field-value rendered_markdown" data-tippy-content="{{this.name}}">
+            <div
+              class="custom-profile-field-value rendered_markdown"
+              data-tippy-content="{{this.name}}"
+              >
                 {{rendered_markdown this.rendered_value}}
             </div>
         {{else}}
-            <div class="custom-profile-field-value" data-tippy-content="{{this.name}}">
+            <div
+              class="custom-profile-field-value"
+              data-tippy-content="{{this.name}}"
+              >
                 <span class="custom-profile-field-text">{{this.value}}</span>
             </div>
         {{/if}}
