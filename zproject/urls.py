@@ -263,6 +263,7 @@ from zerver.views.users import (
     patch_bot_backend,
     reactivate_user_backend,
     regenerate_bot_api_key,
+    set_bot_avatar_backend,
     update_user_by_email_api,
     update_user_by_id_api,
 )
@@ -368,6 +369,7 @@ v1_api_and_json_patterns = [
     rest_path("users/<email>", GET=get_user_by_email, PATCH=update_user_by_email_api),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
     rest_path("bots/<int:bot_id>/api_key/regenerate", POST=regenerate_bot_api_key),
+    rest_path("bots/<int:bot_id>/avatar", POST=set_bot_avatar_backend),
     rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
     # invites -> zerver.views.invite
     rest_path("invites", GET=get_user_invites, POST=invite_users_backend),

@@ -1527,21 +1527,19 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         email = "hambot-bot@zulip.testserver"
-        # Try error case first (too many files):
-        with get_test_image_file("img.png") as fp1, get_test_image_file("img.gif") as fp2:
-            result = self.client_patch_multipart(
-                f"/json/bots/{self.get_bot_user(email).id}", dict(file1=fp1, file2=fp2)
-            )
-        self.assert_json_error(result, "You may only upload one file at a time")
+        bot_id = self.get_bot_user(email).id
+
+        # Test that PATCH endpoint rejects file uploads
+        with get_test_image_file("img.png") as fp:
+            result = self.client_patch_multipart(f"/json/bots/{bot_id}", dict(file=fp))
+        self.assert_json_error(result, "Avatar uploads must use the avatar upload endpoint.")
 
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.avatar_version, 1)
 
-        # HAPPY PATH
+        # HAPPY PATH - use the new dedicated avatar upload endpoint
         with get_test_image_file("img.png") as fp:
-            result = self.client_patch_multipart(
-                f"/json/bots/{self.get_bot_user(email).id}", dict(file=fp)
-            )
+            result = self.client_post(f"/json/bots/{bot_id}/avatar", dict(file=fp))
             profile = get_user(bot_email, bot_realm)
             self.assertEqual(profile.avatar_version, 2)
             # Make sure that avatar image that we've uploaded is same with avatar image in the server
@@ -1552,6 +1550,60 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
         self.assertTrue(os.path.exists(avatar_disk_path(profile)))
+
+    def test_upload_bot_avatar_no_file(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_id = self.get_bot_user(bot_email).id
+
+        # Test uploading with no file
+        result = self.client_post(f"/json/bots/{bot_id}/avatar", {})
+        self.assert_json_error(result, "You must upload exactly one avatar.")
+
+    def test_upload_bot_avatar_too_large(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_id = self.get_bot_user(bot_email).id
+
+        # Test uploading a file that's too large
+        with (
+            get_test_image_file("img.png") as fp,
+            self.settings(MAX_AVATAR_FILE_SIZE_MIB=0),
+        ):
+            result = self.client_post(f"/json/bots/{bot_id}/avatar", dict(file=fp))
+        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
+
+    def test_upload_bot_avatar_permission_denied(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_id = self.get_bot_user(bot_email).id
+
+        # Test that another user cannot upload avatar for someone else's bot
+        self.login("othello")
+        with get_test_image_file("img.png") as fp:
+            result = self.client_post(f"/json/bots/{bot_id}/avatar", dict(file=fp))
+        self.assert_json_error(result, "Insufficient permission")
 
     def test_patch_bot_to_stream(self) -> None:
         self.login("hamlet")

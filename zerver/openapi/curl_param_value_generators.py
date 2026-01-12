@@ -429,3 +429,22 @@ def get_temporary_url_for_uploaded_file() -> dict[str, object]:
         realm_id = upload_path_parts[1]
         filename = upload_path_parts[2]
     return {"realm_id_str": realm_id, "filename": filename}
+
+
+@openapi_param_value_generator(["/bots/{bot_id}/avatar:post"])
+def upload_bot_avatar() -> dict[str, object]:
+    user_profile = helpers.example_user("iago")
+    # Create a bot directly without requiring test client
+    bot = do_create_user(
+        email="test-bot-for-avatar@zulip.com",
+        password=None,
+        realm=user_profile.realm,
+        full_name="Test Avatar Bot",
+        bot_type=UserProfile.DEFAULT_BOT,
+        bot_owner=user_profile,
+        acting_user=None,
+    )
+    return {
+        "bot_id": bot.id,
+        "file": "zerver/tests/images/img.png",
+    }
