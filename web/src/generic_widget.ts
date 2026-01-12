@@ -5,6 +5,7 @@ import type {Message} from "./message_store.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
 import {poll_setup_data_schema} from "./poll_data.ts";
 import * as poll_widget from "./poll_widget.ts";
+import {todo_setup_data_schema} from "./todo_data.ts";
 import type {TodoWidgetOutboundData} from "./todo_widget.ts";
 import * as todo_widget from "./todo_widget.ts";
 import * as zform from "./zform.ts";
@@ -83,7 +84,7 @@ export function create_widget_instance(info: {
                 });
             }
             case "todo": {
-                const todo_setup_data = todo_widget.todo_setup_data_schema.parse(extra_data);
+                const todo_setup_data = todo_setup_data_schema.parse(extra_data);
                 return todo_widget.activate({
                     $elem: $widget_elem,
                     callback: post_to_server_callback,
