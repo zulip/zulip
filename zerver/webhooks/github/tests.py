@@ -361,7 +361,9 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("release__with_name", TOPIC_REPO, expected_message)
 
     def test_page_build_msg(self) -> None:
-        expected_message = ":check: GitHub Pages build, triggered by baxterthehacker, has finished building."
+        expected_message = (
+            ":check: GitHub Pages build, triggered by baxterthehacker, has finished building."
+        )
         self.check_webhook("page_build", TOPIC_REPO, expected_message)
 
     def test_page_build_errored_msg(self) -> None:
