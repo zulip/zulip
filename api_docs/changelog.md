@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 457**
+
+[`GET /events`](/api/get-events): `delete_message` events are now
+  sent to the user who deletes the message only if they have content
+  access to the messages' recipient, and the `message_ids` list only
+  includes IDs of the messages that they can access.
+
 **Feature level 456**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
