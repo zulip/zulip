@@ -15,7 +15,7 @@ where the compose box is hidden under keyboard. To fix it, we rollback
 to resizing content when keyboard is shown on Firefox Android.
 TODO: Remove this when Firefox Android fixes the bug -
 https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no{% if is_firefox_android %}, interactive-widget=resizes-content{% endif %}" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
 {% endblock %}
 
 {% block customhead %}
@@ -269,4 +269,60 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
     <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
     </form>
 </div>
+<script nonce="{{ csp_nonce }}">
+    // Fix for iOS Safari where the virtual keyboard covers the compose box.
+    if (window.visualViewport) {
+        var compose = null;
+        var lastTop = null;
+        var viewHeightThreshold = 0;
+
+        function updatePosition() {
+            if (!compose) {
+                compose = document.getElementById('compose');
+            }
+            
+            if (compose) {
+                // Initialize threshold once
+                if (!viewHeightThreshold) {
+                    viewHeightThreshold = window.innerHeight * 0.85;
+                }
+
+                // Check if keyboard is likely CLOSED
+                if (window.visualViewport.height > viewHeightThreshold) {
+                    if (compose.style.bottom !== "0px") {
+                        compose.style.bottom = "0px";
+                        compose.style.top = "auto";
+                        lastTop = null; // Reset
+                    }
+                } else {
+                    // Keyboard is OPEN: Lock to visual viewport bottom
+                    // We calculate the absolute top position in the document
+                    var viewportBottom = window.visualViewport.offsetTop + window.visualViewport.height;
+                    var composeHeight = compose.offsetHeight;
+                    var newTop = viewportBottom - composeHeight;
+
+                    // Only update DOM if changed (Micro-optimization)
+                    if (newTop !== lastTop) {
+                        compose.style.bottom = "auto";
+                        compose.style.top = newTop + "px";
+                        lastTop = newTop;
+                    }
+                }
+            }
+            requestAnimationFrame(updatePosition);
+        }
+
+        // Start the loop
+        requestAnimationFrame(updatePosition);
+        
+        // Keep ResizeObserver for element size changes (like growing text area)
+        var observer = new ResizeObserver(function() {
+             lastTop = null; // Force update
+        });
+        var composeInit = document.getElementById('compose');
+        if (composeInit) {
+             observer.observe(composeInit);
+        }
+    }
+</script>
 {% endblock %}
