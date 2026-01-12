@@ -280,7 +280,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
             if (!compose) {
                 compose = document.getElementById('compose');
             }
-            
+
             if (compose) {
                 // Initialize threshold once
                 if (!viewHeightThreshold) {
@@ -314,7 +314,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
 
         // Start the loop
         requestAnimationFrame(updatePosition);
-        
+
         // Keep ResizeObserver for element size changes (like growing text area)
         var observer = new ResizeObserver(function() {
              lastTop = null; // Force update
