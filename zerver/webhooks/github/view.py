@@ -813,11 +813,14 @@ def handle_topic_rename(
     stream: str,
     new_topic: str,
 ) -> None:
+    type_str = "PR" if header_event == "pull_request" else "issue"
+    item = payload["pull_request"] if header_event == "pull_request" else payload["issue"]
+
     old_topic = truncate_topic(
         TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
-            type="PR",
-            id=payload["pull_request"]["number"].tame(check_int),
+            type=type_str,
+            id=item["number"].tame(check_int),
             title=payload["changes"]["title"]["from"].tame(check_string),
         )
     )
@@ -1281,12 +1284,12 @@ def api_github_webhook(
 
     sent_message_id = check_send_webhook_message(request, user_profile, topic_name, body, event)
 
-    # Handle topic renaming for PRs with edited titles
+    # Handle topic renaming for PRs and Issues with edited titles
     if (
         sent_message_id is not None
         and stream is not None
         and user_specified_topic is None
-        and header_event == "pull_request"
+        and header_event in ("pull_request", "issues")
         and payload["action"].tame(check_string) == "edited"
         and "title" in payload.get("changes", {})
     ):
