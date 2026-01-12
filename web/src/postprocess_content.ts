@@ -106,10 +106,15 @@ export function postprocess_content(html: string): string {
                 title = url.toString();
                 legacy_title = href;
             }
-            elt.setAttribute(
-                "title",
-                ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
-            );
+            // Store URL in data attribute for Tippy tooltip instead of using browser's title tooltip
+            // We use Tippy tooltips to show the URL with no delay, helping users quickly identify
+            // potentially fraudulent links.
+            const final_title = ["", legacy_title].includes(elt.title)
+                ? title
+                : `${title}\n${elt.title}`;
+            elt.setAttribute("data-url-tooltip", final_title);
+            // Remove the title attribute to prevent browser's default tooltip from appearing
+            elt.removeAttribute("title");
         }
     }
 
