@@ -62,20 +62,6 @@ export function down(with_centering = false): void {
     assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(1);
 
-    if (message_lists.current.is_at_end()) {
-        if (with_centering) {
-            // At the last message, scroll to the bottom so we have
-            // lots of nice whitespace for new messages coming in.
-            const $current_msg_list = message_lists.current.view.$list;
-            message_viewport.scrollTop(
-                ($current_msg_list.outerHeight(true) ?? 0) - message_viewport.height() * 0.1,
-            );
-            unread_ops.process_visible();
-        }
-
-        return;
-    }
-
     const $selected_message = message_lists.current.selected_row();
     if ($selected_message.length > 0) {
         const viewport_info = message_viewport.message_viewport_info();
@@ -88,6 +74,20 @@ export function down(with_centering = false): void {
             page_down();
             return;
         }
+    }
+
+    if (message_lists.current.is_at_end()) {
+        if (with_centering) {
+            // At the last message, scroll to the bottom so we have
+            // lots of nice whitespace for new messages coming in.
+            const $current_msg_list = message_lists.current.view.$list;
+            message_viewport.scrollTop(
+                ($current_msg_list.outerHeight(true) ?? 0) - message_viewport.height() * 0.1,
+            );
+            unread_ops.process_visible();
+        }
+
+        return;
     }
 
     // Normal path starts here.
