@@ -6,10 +6,9 @@ import type {MessageList} from "./message_list.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
+import type {Submessage} from "./submessage_schema.ts";
 import type {TodoWidgetOutboundData} from "./todo_widget.ts";
 import * as widgetize from "./widgetize.ts";
-
-export type Submessage = z.infer<typeof message_store.submessage_schema>;
 
 type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
 

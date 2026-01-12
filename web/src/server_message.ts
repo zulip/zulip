@@ -1,5 +1,7 @@
 import * as z from "zod/mini";
 
+import {submessage_schema} from "./submessage_schema.ts";
+
 const display_recipient_users_schema = z.object({
     id: z.number(),
     email: z.string(),
@@ -28,16 +30,6 @@ const message_reaction_schema = z.array(
     }),
 );
 
-const submessage_schema = z.array(
-    z.object({
-        msg_type: z.string(),
-        content: z.string(),
-        message_id: z.number(),
-        sender_id: z.number(),
-        id: z.number(),
-    }),
-);
-
 export const server_message_schema = z.intersection(
     z.object({
         avatar_url: z.nullish(z.string()),
@@ -56,7 +48,7 @@ export const server_message_schema = z.intersection(
         sender_id: z.number(),
         // The web app doesn't use sender_realm_str; ignore.
         // sender_realm_str: z.string(),
-        submessages: submessage_schema,
+        submessages: z.array(submessage_schema),
         timestamp: z.number(),
     }),
     z.discriminatedUnion("type", [

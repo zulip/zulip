@@ -6,6 +6,7 @@ import type {RawLocalMessage} from "./echo.ts";
 import type {LocalMessage, NewMessage, ProcessedMessage} from "./message_helper.ts";
 import type {TimeFormattedReminder} from "./message_reminder.ts";
 import * as people from "./people.ts";
+import {submessage_schema} from "./submessage_schema.ts";
 import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
@@ -62,14 +63,6 @@ export const single_message_content_schema = z.object({
         content: z.string(),
         content_type: z.enum(["text/html", "text/x-markdown"]),
     }),
-});
-
-export const submessage_schema = z.object({
-    id: z.number(),
-    sender_id: z.number(),
-    message_id: z.number(),
-    content: z.string(),
-    msg_type: z.string(),
 });
 
 export const raw_message_schema = z.intersection(
