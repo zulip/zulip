@@ -478,8 +478,6 @@ export function initialize(): void {
     });
 
     // Initialize tooltips for external links to show URL with no delay.
-    // This replaces the browser's default title tooltip with Tippy for instant
-    // visibility, helping users identify potentially fraudulent links.
     message_list_tooltip(".rendered_markdown a[data-url-tooltip]", {
         delay: [0, 0], // Show immediately on hover with no delay
         onShow(instance) {
