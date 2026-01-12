@@ -450,7 +450,7 @@ export function initialize(): void {
                 },
             );
         } else {
-            flatpickr.flatpickr_instance?.close();
+            flatpickr.close_all();
         }
     });
 

@@ -96,19 +96,19 @@ export function open_schedule_message_menu(
             };
             $popper.on("click", ".send_later_custom", (e) => {
                 const current_time = new Date();
-    
+
                 // Hide the popover before showing the date picker
                 popover_menus.hide_current_popover_if_visible(instance);
-    
+
                 // Try to find the schedule button - it might have different selectors
                 let reference_element = document.querySelector(".send_later");
-    
+
                 // If not found, try the message send controls area
                 reference_element ??= document.querySelector("#compose-send-button");
-    
+
                 // If still not found, use the compose textarea as fallback
                 reference_element ??= document.querySelector("#compose-textarea");
-    
+
                 // Final fallback - use body and center the picker
                 let final_element: HTMLElement;
                 if (reference_element instanceof HTMLElement) {
@@ -127,13 +127,13 @@ export function open_schedule_message_menu(
                         minDate: new Date(
                             current_time.getTime() +
                                 scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
-                            ),
-                        },
-                    );
-    
-                    e.preventDefault();
-                    e.stopPropagation();
-                });
+                        ),
+                    },
+                );
+
+                e.preventDefault();
+                e.stopPropagation();
+            });
             $popper.one(
                 "click",
                 ".send_later_today, .send_later_tomorrow, .send_later_monday",
