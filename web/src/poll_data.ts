@@ -2,12 +2,12 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 export type PollDataConfig = {
-    message_sender_id: number;
+    poll_owner_user_id: number;
     current_user_id: number;
     is_my_poll: boolean;
     question: string;
     options: string[];
-    comma_separated_names: (user_ids: number[]) => string;
+    get_full_name_list: (user_ids: number[]) => string;
     report_error_function: (msg: string, more_info?: Record<string, unknown>) => void;
 };
 
@@ -85,29 +85,29 @@ export class PollData {
 
     key_to_option = new Map<string, PollOption>();
     my_idx = 1;
-    message_sender_id: number;
+    poll_owner_user_id: number;
     me: number;
     is_my_poll: boolean;
     poll_question: string;
     input_mode: boolean;
-    comma_separated_names: (user_ids: number[]) => string;
+    get_full_name_list: (user_ids: number[]) => string;
     report_error_function: (error_message: string) => void;
 
     constructor({
-        message_sender_id,
+        poll_owner_user_id,
         current_user_id,
         is_my_poll,
         question,
         options,
-        comma_separated_names,
+        get_full_name_list,
         report_error_function,
     }: PollDataConfig) {
-        this.message_sender_id = message_sender_id;
+        this.poll_owner_user_id = poll_owner_user_id;
         this.me = current_user_id;
         this.is_my_poll = is_my_poll;
         this.poll_question = question;
         this.input_mode = is_my_poll; // for now
-        this.comma_separated_names = comma_separated_names;
+        this.get_full_name_list = get_full_name_list;
         this.report_error_function = report_error_function;
 
         if (question) {
@@ -180,7 +180,7 @@ export class PollData {
 
     handle_question_event(sender_id: number, data: Question): void {
         // Only the message author can edit questions.
-        if (sender_id !== this.message_sender_id) {
+        if (sender_id !== this.poll_owner_user_id) {
             this.report_error_function(`user ${sender_id} is not allowed to edit the question`);
             return;
         }
@@ -261,7 +261,7 @@ export class PollData {
 
             options.push({
                 option: obj.option,
-                names: this.comma_separated_names(voters),
+                names: this.get_full_name_list(voters),
                 count: voters.length,
                 key,
                 current_user_vote,

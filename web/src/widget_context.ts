@@ -28,4 +28,12 @@ export class ZulipWidgetContext {
     owner_user_id(): number {
         return this.sender_id;
     }
+
+    current_user_id(): number {
+        return people.my_current_user_id();
+    }
+
+    get_full_name_list(user_ids: number[]): string {
+        return people.get_display_full_names(user_ids).join(", ");
+    }
 }

@@ -1,0 +1,40 @@
+name: Deploy Showcase to GitHub Pages
+
+on:
+  push:
+    branches:
+      - showell-templates-showcase-poll-widget
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build showcase
+        run: node ./node_modules/webpack-cli/bin/cli.js build --disable-interpret --config=web/webpack.config.ts --config-name=frontend
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/showcase-build
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

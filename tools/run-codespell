@@ -14,6 +14,7 @@ if [ "$#" -eq 0 ]; then
             ':!*.asc' \
             ':!*.svg' \
             ':!*/fixtures/*' \
+            ':!web/showcase-build/*' \
             ':!docs/THIRDPARTY' \
             ':!docs/translating' \
             ':!locale' \
