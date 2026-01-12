@@ -42,114 +42,97 @@ def api_taiga_webhook(
 
 templates = {
     "epic": {
-        "create": "[{user}]({user_link}) created epic {subject}.",
-        "set_assigned_to": "[{user}]({user_link}) assigned epic {subject} to {new}.",
-        "unset_assigned_to": "[{user}]({user_link}) unassigned epic {subject}.",
-        "changed_assigned_to": "[{user}]({user_link}) reassigned epic {subject}"
-        " from {old} to {new}.",
-        "blocked": "[{user}]({user_link}) blocked epic {subject}.",
-        "unblocked": "[{user}]({user_link}) unblocked epic {subject}.",
-        "changed_status": "[{user}]({user_link}) changed status of epic {subject}"
-        " from {old} to {new}.",
-        "renamed": "[{user}]({user_link}) renamed epic from **{old}** to **{new}**.",
-        "description_diff": "[{user}]({user_link}) updated description of epic {subject}.",
-        "commented": "[{user}]({user_link}) commented on epic {subject}.",
-        "delete": "[{user}]({user_link}) deleted epic {subject}.",
+        "create": "{user} created epic {subject}.",
+        "set_assigned_to": "{user} assigned epic {subject} to {new}.",
+        "unset_assigned_to": "{user} unassigned epic {subject}.",
+        "changed_assigned_to": "{user} reassigned epic {subject} from {old} to {new}.",
+        "blocked": "{user} blocked epic {subject}.",
+        "unblocked": "{user} unblocked epic {subject}.",
+        "changed_status": "{user} changed status of epic {subject} from {old} to {new}.",
+        "renamed": "{user} renamed epic from **{old}** to **{new}**.",
+        "description_diff": "{user} updated description of epic {subject}.",
+        "commented": "{user} commented on epic {subject}.",
+        "delete": "{user} deleted epic {subject}.",
     },
     "relateduserstory": {
         "create": (
-            "[{user}]({user_link}) added a related user story"
-            " {userstory_subject} to the epic {epic_subject}."
+            "{user} added a related user story {userstory_subject} to the epic {epic_subject}."
         ),
         "delete": (
-            "[{user}]({user_link}) removed a related user story"
-            " {userstory_subject} from the epic {epic_subject}."
+            "{user} removed a related user story {userstory_subject} from the epic {epic_subject}."
         ),
     },
     "userstory": {
-        "create": "[{user}]({user_link}) created user story {subject}.",
-        "set_assigned_to": "[{user}]({user_link}) assigned user story {subject} to {new}.",
-        "unset_assigned_to": "[{user}]({user_link}) unassigned user story {subject}.",
-        "changed_assigned_to": "[{user}]({user_link}) reassigned user story {subject}"
-        " from {old} to {new}.",
-        "points": "[{user}]({user_link}) changed estimation of user story {subject}.",
-        "blocked": "[{user}]({user_link}) blocked user story {subject}.",
-        "unblocked": "[{user}]({user_link}) unblocked user story {subject}.",
-        "set_milestone": "[{user}]({user_link}) added user story {subject} to sprint {new}.",
-        "unset_milestone": "[{user}]({user_link}) removed user story {subject} from sprint {old}.",
-        "changed_milestone": "[{user}]({user_link}) changed sprint of user story {subject} from {old}"
-        " to {new}.",
-        "changed_status": "[{user}]({user_link}) changed status of user story {subject}"
-        " from {old} to {new}.",
-        "closed": "[{user}]({user_link}) closed user story {subject}.",
-        "reopened": "[{user}]({user_link}) reopened user story {subject}.",
-        "renamed": "[{user}]({user_link}) renamed user story from {old} to **{new}**.",
-        "description_diff": "[{user}]({user_link}) updated description of user story {subject}.",
-        "commented": "[{user}]({user_link}) commented on user story {subject}.",
-        "delete": "[{user}]({user_link}) deleted user story {subject}.",
-        "due_date": "[{user}]({user_link}) changed due date of user story {subject}"
-        " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of user story {subject} to {new}.",
+        "create": "{user} created user story {subject}.",
+        "set_assigned_to": "{user} assigned user story {subject} to {new}.",
+        "unset_assigned_to": "{user} unassigned user story {subject}.",
+        "changed_assigned_to": "{user} reassigned user story {subject} from {old} to {new}.",
+        "points": "{user} changed estimation of user story {subject}.",
+        "blocked": "{user} blocked user story {subject}.",
+        "unblocked": "{user} unblocked user story {subject}.",
+        "set_milestone": "{user} added user story {subject} to sprint {new}.",
+        "unset_milestone": "{user} removed user story {subject} from sprint {old}.",
+        "changed_milestone": "{user} changed sprint of user story {subject} from {old} to {new}.",
+        "changed_status": "{user} changed status of user story {subject} from {old} to {new}.",
+        "closed": "{user} closed user story {subject}.",
+        "reopened": "{user} reopened user story {subject}.",
+        "renamed": "{user} renamed user story from {old} to **{new}**.",
+        "description_diff": "{user} updated description of user story {subject}.",
+        "commented": "{user} commented on user story {subject}.",
+        "delete": "{user} deleted user story {subject}.",
+        "due_date": "{user} changed due date of user story {subject} from {old} to {new}.",
+        "set_due_date": "{user} set due date of user story {subject} to {new}.",
     },
     "milestone": {
-        "create": "[{user}]({user_link}) created sprint {subject}.",
-        "renamed": "[{user}]({user_link}) renamed sprint from {old} to **{new}**.",
-        "estimated_start": "[{user}]({user_link}) changed estimated start of sprint {subject}"
+        "create": "{user} created sprint {subject}.",
+        "renamed": "{user} renamed sprint from {old} to **{new}**.",
+        "estimated_start": "{user} changed estimated start of sprint {subject}"
         " from {old} to {new}.",
-        "estimated_finish": "[{user}]({user_link}) changed estimated finish of sprint {subject}"
+        "estimated_finish": "{user} changed estimated finish of sprint {subject}"
         " from {old} to {new}.",
-        "set_estimated_start": "[{user}]({user_link}) changed estimated start of sprint {subject}"
-        " to {new}.",
-        "set_estimated_finish": "[{user}]({user_link}) set estimated finish of sprint {subject}"
-        " to {new}.",
-        "delete": "[{user}]({user_link}) deleted sprint {subject}.",
+        "set_estimated_start": "{user} changed estimated start of sprint {subject} to {new}.",
+        "set_estimated_finish": "{user} set estimated finish of sprint {subject} to {new}.",
+        "delete": "{user} deleted sprint {subject}.",
     },
     "task": {
-        "create": "[{user}]({user_link}) created task {subject}.",
-        "set_assigned_to": "[{user}]({user_link}) assigned task {subject} to {new}.",
-        "unset_assigned_to": "[{user}]({user_link}) unassigned task {subject}.",
-        "changed_assigned_to": "[{user}]({user_link}) reassigned task {subject}"
-        " from {old} to {new}.",
-        "blocked": "[{user}]({user_link}) blocked task {subject}.",
-        "unblocked": "[{user}]({user_link}) unblocked task {subject}.",
-        "changed_status": "[{user}]({user_link}) changed status of task {subject}"
-        " from {old} to {new}.",
-        "renamed": "[{user}]({user_link}) renamed task {old} to **{new}**.",
-        "description_diff": "[{user}]({user_link}) updated description of task {subject}.",
-        "set_milestone": "[{user}]({user_link}) added task {subject} to sprint {new}.",
-        "commented": "[{user}]({user_link}) commented on task {subject}.",
-        "delete": "[{user}]({user_link}) deleted task {subject}.",
-        "changed_us": "[{user}]({user_link}) moved task {subject} from user story {old} to {new}.",
-        "due_date": "[{user}]({user_link}) changed due date of task {subject} from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of task {subject} to {new}.",
+        "create": "{user} created task {subject}.",
+        "set_assigned_to": "{user} assigned task {subject} to {new}.",
+        "unset_assigned_to": "{user} unassigned task {subject}.",
+        "changed_assigned_to": "{user} reassigned task {subject} from {old} to {new}.",
+        "blocked": "{user} blocked task {subject}.",
+        "unblocked": "{user} unblocked task {subject}.",
+        "changed_status": "{user} changed status of task {subject} from {old} to {new}.",
+        "renamed": "{user} renamed task {old} to **{new}**.",
+        "description_diff": "{user} updated description of task {subject}.",
+        "set_milestone": "{user} added task {subject} to sprint {new}.",
+        "commented": "{user} commented on task {subject}.",
+        "delete": "{user} deleted task {subject}.",
+        "changed_us": "{user} moved task {subject} from user story {old} to {new}.",
+        "due_date": "{user} changed due date of task {subject} from {old} to {new}.",
+        "set_due_date": "{user} set due date of task {subject} to {new}.",
     },
     "issue": {
-        "create": "[{user}]({user_link}) created issue {subject}.",
-        "set_assigned_to": "[{user}]({user_link}) assigned issue {subject} to {new}.",
-        "unset_assigned_to": "[{user}]({user_link}) unassigned issue {subject}.",
-        "changed_assigned_to": "[{user}]({user_link}) reassigned issue {subject}"
-        " from {old} to {new}.",
-        "set_milestone": "[{user}]({user_link}) added issue {subject} to sprint {new}.",
-        "unset_milestone": "[{user}]({user_link}) detached issue {subject} from sprint {old}.",
-        "changed_priority": "[{user}]({user_link}) changed priority of issue "
-        "{subject} from {old} to {new}.",
-        "changed_severity": "[{user}]({user_link}) changed severity of issue "
-        "{subject} from {old} to {new}.",
-        "changed_status": "[{user}]({user_link}) changed status of issue {subject}"
-        " from {old} to {new}.",
-        "changed_type": "[{user}]({user_link}) changed type of issue {subject} from {old} to {new}.",
-        "renamed": "[{user}]({user_link}) renamed issue {old} to **{new}**.",
-        "description_diff": "[{user}]({user_link}) updated description of issue {subject}.",
-        "commented": "[{user}]({user_link}) commented on issue {subject}.",
-        "delete": "[{user}]({user_link}) deleted issue {subject}.",
-        "due_date": "[{user}]({user_link}) changed due date of issue {subject}"
-        " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of issue {subject} to {new}.",
-        "blocked": "[{user}]({user_link}) blocked issue {subject}.",
-        "unblocked": "[{user}]({user_link}) unblocked issue {subject}.",
+        "create": "{user} created issue {subject}.",
+        "set_assigned_to": "{user} assigned issue {subject} to {new}.",
+        "unset_assigned_to": "{user} unassigned issue {subject}.",
+        "changed_assigned_to": "{user} reassigned issue {subject} from {old} to {new}.",
+        "set_milestone": "{user} added issue {subject} to sprint {new}.",
+        "unset_milestone": "{user} detached issue {subject} from sprint {old}.",
+        "changed_priority": "{user} changed priority of issue {subject} from {old} to {new}.",
+        "changed_severity": "{user} changed severity of issue {subject} from {old} to {new}.",
+        "changed_status": "{user} changed status of issue {subject} from {old} to {new}.",
+        "changed_type": "{user} changed type of issue {subject} from {old} to {new}.",
+        "renamed": "{user} renamed issue {old} to **{new}**.",
+        "description_diff": "{user} updated description of issue {subject}.",
+        "commented": "{user} commented on issue {subject}.",
+        "delete": "{user} deleted issue {subject}.",
+        "due_date": "{user} changed due date of issue {subject} from {old} to {new}.",
+        "set_due_date": "{user} set due date of issue {subject} to {new}.",
+        "blocked": "{user} blocked issue {subject}.",
+        "unblocked": "{user} unblocked issue {subject}.",
     },
     "webhook_test": {
-        "test": "[{user}]({user_link}) triggered a test of the Taiga integration.",
+        "test": "{user} triggered a test of the Taiga integration.",
     },
 }
 
@@ -169,8 +152,7 @@ def parse_comment(
         "event": "commented",
         "type": message["type"].tame(check_string),
         "values": {
-            "user": get_owner_name(message),
-            "user_link": get_owner_link(message),
+            "user": get_display_user(message),
             "subject": get_subject(message),
         },
     }
@@ -185,8 +167,7 @@ def parse_create_or_delete(
             "type": message["type"].tame(check_string),
             "event": message["action"].tame(check_string),
             "values": {
-                "user": get_owner_name(message),
-                "user_link": get_owner_link(message),
+                "user": get_display_user(message),
                 "epic_subject": get_epic_subject(message),
                 "userstory_subject": get_userstory_subject(message),
             },
@@ -196,8 +177,7 @@ def parse_create_or_delete(
         "type": message["type"].tame(check_string),
         "event": message["action"].tame(check_string),
         "values": {
-            "user": get_owner_name(message),
-            "user_link": get_owner_link(message),
+            "user": get_display_user(message),
             "subject": get_subject(message),
         },
     }
@@ -207,8 +187,7 @@ def parse_change_event(change_type: str, message: WildValue) -> EventType | None
     """Parses change event."""
     evt: EventType = {}
     values: dict[str, str | bool | None] = {
-        "user": get_owner_name(message),
-        "user_link": get_owner_link(message),
+        "user": get_display_user(message),
         "subject": get_subject(message),
     }
 
@@ -291,8 +270,7 @@ def parse_webhook_test(
         "type": "webhook_test",
         "event": "test",
         "values": {
-            "user": get_owner_name(message),
-            "user_link": get_owner_link(message),
+            "user": get_display_user(message),
             "end_type": "test",
         },
     }
@@ -329,12 +307,10 @@ def generate_content(data: EventType) -> str:
     return content
 
 
-def get_owner_name(message: WildValue) -> str:
-    return message["by"]["full_name"].tame(check_string)
-
-
-def get_owner_link(message: WildValue) -> str:
-    return message["by"]["permalink"].tame(check_string)
+def get_display_user(message: WildValue) -> str:
+    owner_name = message["by"]["full_name"].tame(check_string)
+    owner_link = message["by"]["permalink"].tame(check_string)
+    return f"[{owner_name}]({owner_link})"
 
 
 def get_subject(message: WildValue) -> str:
