@@ -6,7 +6,10 @@ Receive GitLab notifications in Zulip!
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-webhook-url-with-branch-filtering.md!}
+1. Decide where to send {{ integration_display_name }} notifications, and
+   [generate the integration URL](/help/generate-integration-url). You'll be
+   able to configure which branches you'll receive notifications from,
+   and whether to exclude notifications from private projects.
 
 1. Go to your repository on GitLab and click **Settings** on the left
    sidebar.  Click on **Webhooks** and select **Add new webhook**.

@@ -16,6 +16,10 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/-/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 2 commits to branch tomek.\n\n* b ([66abd2da288](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n* c ([eb6ae1e591e](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9))"
         self.check_webhook("push_hook", expected_topic_name, expected_message)
 
+    def test_push_event_private_project_ignored(self) -> None:
+        self.url = self.build_webhook_url(ignore_private_projects="true")
+        self.check_webhook(fixture_name="push_hook", expect_noop=True)
+
     def test_push_local_branch_without_commits(self) -> None:
         expected_topic_name = "my-awesome-project / changes"
         expected_message = "Eeshan Garg [pushed](https://gitlab.com/eeshangarg/my-awesome-project/-/compare/0000000000000000000000000000000000000000...68d7a5528cf423dfaac37dd62a56ac9cc8a884e3) the branch changes."
@@ -420,6 +424,13 @@ A trivial change that should probably be ignored.
 
         self.check_webhook(
             "merge_request_hook__merge_request_merged", expected_topic_name, expected_message
+        )
+
+    def test_merge_request_merged_event_message_ignored(self) -> None:
+        self.url = self.build_webhook_url(ignore_private_projects="true")
+        self.check_webhook(
+            fixture_name="merge_request_hook__merge_request_merged",
+            expect_noop=True,
         )
 
     def test_wiki_page_opened_event_message(self) -> None:
