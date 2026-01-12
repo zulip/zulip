@@ -94,6 +94,7 @@
 * [Get a user's status](/api/get-user-status)
 * [Update your status](/api/update-status)
 * [Update user status](/api/update-status-for-user)
+* [Upload a bot avatar](/api/upload-bot-avatar)
 * [Set "typing" status](/api/set-typing-status)
 * [Set "typing" status for message editing](/api/set-typing-status-for-message-edit)
 * [Get a user's presence](/api/get-user-presence)
