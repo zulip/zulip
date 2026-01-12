@@ -17,9 +17,13 @@ export function get_stream_filters_max_height(): number {
     // Add some gap for bottom element to be properly visible.
     const GAP = 15;
 
+    const $left_sidebar_search = $("#left-sidebar-search");
+    const is_search_visible = $left_sidebar_search.attr("display") !== "none";
+
     let stream_filters_max_height =
         viewport_height -
         Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
+        (is_search_visible ? ($left_sidebar_search.outerHeight(true) ?? 0) : 0) -
         ($("#left-sidebar-navigation-area").not(".hidden-by-filters").outerHeight(true) ?? 0) -
         ($("#direct-messages-section-header").not(".hidden-by-filters").outerHeight(true) ?? 0) -
         GAP;
