@@ -309,22 +309,29 @@ def build_message_list(
         assert stream_id_map is not None
         assert stream_id in stream_id_map
         stream = stream_id_map[stream_id]
+        topic_name = message.topic_name()
+        topic_display_name = get_topic_display_name(topic_name, user.default_language)
         narrow_link = topic_narrow_url(
             realm=user.realm,
             stream=stream,
-            topic_name=message.topic_name(),
+            topic_name=topic_name,
         )
         channel_privacy_icon = get_channel_privacy_icon(stream)
-        header = f"{channel_privacy_icon}{stream.name} > {message.topic_name()}"
+        header = f"{channel_privacy_icon}{stream.name} > {topic_display_name}"
+        topic_html: Markup = Markup.escape(topic_display_name)
+        if topic_name == "":
+            topic_html = Markup("<span class='empty-topic-display'>{topic_html}</span>").format(
+                topic_html=topic_html,
+            )
         stream_link = stream_narrow_url(user.realm, stream)
         header_html = Markup(
-            "<a href='{stream_link}'>{channel_privacy_icon}{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
+            "<a href='{stream_link}'>{channel_privacy_icon}{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_html}</a>"
         ).format(
             stream_link=stream_link,
             channel_privacy_icon=channel_privacy_icon,
             stream_name=stream.name,
             narrow_link=narrow_link,
-            topic_name=message.topic_name(),
+            topic_html=topic_html,
         )
         return {
             "plain": header,

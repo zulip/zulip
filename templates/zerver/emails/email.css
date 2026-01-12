@@ -219,6 +219,11 @@ p.digest_paragraph,
     z-index: 100;
 }
 
+/* Styling for empty topic placeholders. */
+.empty-topic-display {
+    font-style: italic;
+}
+
 /* CSS for digest email content. */
 .messages {
     width: 600px;
