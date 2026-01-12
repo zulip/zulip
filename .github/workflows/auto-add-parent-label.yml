@@ -1,0 +1,46 @@
+name: Auto add general area label
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  issues: write
+
+jobs:
+  add-general-label:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Add general area label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const addedLabel = context.payload.label.name;
+            const issue = context.payload.issue;
+
+            // Explicit allowlist of supported parent labels
+            const allowedParents = new Set([
+              "area: compose",
+              "area: left sidebar",
+              // add more parent labels here if needed
+            ]);
+
+            // Match labels like: "area: compose (uploads)"
+            const match = addedLabel.match(/^area:\s*([^(]+)\s*\(/);
+            if (!match) return;
+
+            const parentLabel = `area: ${match[1].trim()}`;
+
+            // Skip if this parent label isn’t explicitly supported
+            if (!allowedParents.has(parentLabel)) return;
+
+            // Avoid re-adding if parent already exists
+            if (issue.labels.some(l => l.name === parentLabel)) return;
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: [parentLabel],
+            });
