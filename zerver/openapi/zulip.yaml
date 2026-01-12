@@ -2142,23 +2142,35 @@ paths:
                               description: |
                                 Event sent when a message has been deleted.
 
-                                Sent to all users who currently are subscribed to the
-                                messages' recipient. May also be sent to additional users
-                                who had access to it, including, in particular, an
-                                administrator user deleting messages in a stream that they
-                                are not subscribed to.
+                                Sent to all users who currently are subscribed to the messages'
+                                recipient. May also be sent to additional users who had access to
+                                the deleted message, including, in particular, an administrator user
+                                deleting messages in a channel that they are not subscribed to, but
+                                have content access to. Clients can thus reliably remove the
+                                messages from whatever view the administrator was using to delete
+                                them.
 
-                                This means that clients can assume that they will always
-                                receive an event of this type for deletions that the
-                                client itself initiated.
+                                Clients will receive an event of this type for message deletions
+                                that the client itself initiated if and only if the user previously
+                                had access to the deleted messages. (Some moderation actions, such
+                                as deleting all messages sent by a user, allow deleting DMs or
+                                private channel messages that the acting user cannot themselves
+                                access. The user will not receive deletion events for such
+                                inaccessible messages).
 
                                 This event is also sent when the user loses access to a message,
                                 such as when it is [moved to a channel][message-move-channel] that
                                 the user does not [have permission to access][channel-access].
 
-                                **Changes**: Prior to Zulip 12.0 (feature level 452) messages
-                                deleted via a message retention policy incorrectly failed to
-                                generate `delete_message` events.
+                                **Changes**: Before Zulip 12.0 (feature level 457), an
+                                administrator who initiated the deletion of messages that they did
+                                not have permission to access could theoretically receive this event
+                                for inaccessible messages. However, no Zulip feature actually
+                                generated events of that type.
+
+                                Prior to Zulip 12.0 (feature level 452) messages deleted via a
+                                message retention policy incorrectly failed to generate
+                                `delete_message` events.
 
                                 Before Zulip 9.0 (feature level 274), this event was only sent to
                                 subscribers of the message's recipient.

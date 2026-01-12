@@ -26,6 +26,7 @@
 # same system for routine deletions via the Zulip UI (deleting a
 # message or group of messages) as we use for message retention policy
 # deletions.
+import copy
 import logging
 import time
 from collections.abc import Iterable, Mapping
@@ -42,7 +43,7 @@ from psycopg2.sql import SQL, Composable, Identifier, Literal
 
 from zerver.actions.message_flags import do_clear_mobile_push_notifications_for_ids
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.message import event_recipient_ids_for_action_on_messages
+from zerver.lib.message import bulk_access_messages, event_recipient_ids_for_action_on_messages
 from zerver.lib.request import RequestVariableConversionError
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
@@ -366,9 +367,35 @@ def _process_grouped_messages_deletion(
             is_channel_message=message_type == "stream",
             channel=stream if message_type == "stream" else None,
         )
-        if acting_user is not None:
-            # Always send event to the user who deleted the message.
-            users_to_notify.add(acting_user.id)
+
+        acting_user_event: DeleteMessagesEvent | None = None
+        if acting_user is not None and message_type == "stream":
+            # Send event to the user who deleted the messages only if the
+            # user has access to the messages, and the event should only
+            # include message IDs which the user can access.
+            #
+            # For DMs, acting_user will already be included in users_to_notify
+            # if they can access the messages, so this logic applies only to
+            # channel messages.
+            #
+            # We need to check access here for cases where messages
+            # are deleted in bulk by an admin, like when deactivating
+            # a spam user, when we do not check access to messages.
+            messages = Message.objects.filter(id__in=message_ids)
+            assert stream is not None
+            accessible_messages = bulk_access_messages(
+                acting_user, messages, stream=stream, is_modifying_message=False
+            )
+
+            if len(accessible_messages) == len(message_ids):
+                if acting_user.id not in users_to_notify:
+                    users_to_notify.add(acting_user.id)
+            elif len(accessible_messages) != 0:
+                if acting_user.id in users_to_notify:
+                    users_to_notify.remove(acting_user.id)
+                accessible_message_ids = [msg.id for msg in accessible_messages]
+                acting_user_event = copy.deepcopy(event)
+                acting_user_event["message_ids"] = sorted(accessible_message_ids)
 
     # Uses index: zerver_message_pkey
     Message.objects.filter(id__in=message_ids).delete()
@@ -378,6 +405,10 @@ def _process_grouped_messages_deletion(
             check_update_first_message_id(realm, stream, message_ids, users_to_notify)
 
         send_event_on_commit(realm, event, users_to_notify)
+
+        if acting_user_event is not None:
+            assert acting_user is not None
+            send_event_on_commit(realm, acting_user_event, [acting_user.id])
 
 
 def delete_messages(
