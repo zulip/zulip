@@ -949,10 +949,13 @@ export function initialize(): void {
         if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
             const is_click_within_link = $(e.target).closest("a").length > 0;
             if (is_click_within_link || $(e.target).closest(".copy_codeblock").length > 0) {
-                const is_selecting_link_text = is_click_within_link && mouse_drag.is_drag(e);
+                const is_selecting_link_text =
+                    is_click_within_link &&
+                    (mouse_drag.is_drag(e) || document.getSelection()?.type === "Range");
                 if (is_selecting_link_text) {
                     // Avoid triggering the click handler for a link
-                    // when just dragging over it to select the text.
+                    // when just dragging over it to select the text or
+                    // double/triple clicking it to select link text.
                     e.preventDefault();
                     return;
                 }
