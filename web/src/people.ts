@@ -2009,7 +2009,10 @@ export function is_displayable_conversation_participant(user_id: number): boolea
     return !is_valid_bot_user(user_id) && is_person_active(user_id);
 }
 
-export function populate_valid_user_ids(params: StateData["user_groups"]): void {
+export function populate_valid_user_ids(
+    params: StateData["user_groups"],
+    cross_realm_bots: StateData["people"]["cross_realm_bots"],
+): void {
     // Every valid user ID is guaranteed to exist in at least one
     // system group, so we can us that to compute the set of valid
     // user IDs in the realm.
@@ -2017,6 +2020,10 @@ export function populate_valid_user_ids(params: StateData["user_groups"]): void 
         if (user_group.is_system_group) {
             valid_user_ids = valid_user_ids.union(new Set(user_group.members));
         }
+    }
+
+    for (const bot of cross_realm_bots) {
+        valid_user_ids.add(bot.user_id);
     }
 }
 
@@ -2290,7 +2297,7 @@ export async function initialize(
     user_group_params: StateData["user_groups"],
 ): Promise<void> {
     initialize_current_user(my_user_id);
-    populate_valid_user_ids(user_group_params);
+    populate_valid_user_ids(user_group_params, people_params.cross_realm_bots);
 
     // Compute the set of user IDs that we know are valid in the
     // organization, but do not have a copy of.
