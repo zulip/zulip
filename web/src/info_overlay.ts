@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
+import render_print_info_overlay from "../templates/print_info_overlay.hbs";
 import render_search_operator from "../templates/search_operators.hbs";
 import render_status_message_example from "../templates/status_message_example.hbs";
 import render_poll_widget_example from "../templates/widgets/poll_widget_example.hbs";
@@ -28,7 +29,7 @@ import {user_settings} from "./user_settings.ts";
 // set_up_toggler is called.
 export let toggler: Toggle | undefined;
 
-export function printPane(paneId: string): void {
+export function print_pane(paneId: string): void {
     const $pane = $(`#${CSS.escape(paneId)} .overlay-scroll-container`);
     if ($pane.length === 0) {
         blueslip.warn("printPane: pane not found", {paneId});
@@ -40,112 +41,33 @@ export function printPane(paneId: string): void {
         "message-formatting": $t({defaultMessage: "Message formatting"}),
         "search-operators": $t({defaultMessage: "Search filters"}),
     };
+
     const title = titleMap[paneId] ?? $t({defaultMessage: "Help"});
 
-    // Create print container
-    const $printContainer = $("<div>")
-        .attr("id", "zulip-print-container")
-        .attr("aria-hidden", "true")
-        .css("display", "none");
-
-    // Add title
-    const $title = $("<h1>").addClass("zulip-print-title").text(title);
-    $printContainer.append($title);
-
-    // Clone the pane to capture all content
+    // Clone pane content
     const $clone = $pane.clone(true, true);
-
-    // Remove scrollbars or wrapper elements
     $clone.find(".simplebar-track, .simplebar-scrollbar").remove();
 
-    // Extract inner content only (unwrapped), works for SimpleBar and default
-    const $scrollContent =
+    const bodyHtml =
         $clone.find(".simplebar-content").length > 0
-            ? $clone.find(".simplebar-content").contents()
-            : $clone.contents();
+            ? $clone.find(".simplebar-content").html()
+            : $clone.html();
 
-    // Append extracted content to print container
-    const $body = $("<div>").addClass("zulip-print-body").append($scrollContent);
-    $printContainer.append($body);
+    // Render template
+    const html = render_print_info_overlay({
+        title,
+        body_html: bodyHtml,
+    });
 
-    // Add print container to document
+    const $printContainer = $(html).hide();
     $("body").append($printContainer);
+    $printContainer.show();
 
-    // Print-specific CSS
-    const printCss = `
-@media print {
-  body > * { display: none !important; }
-  #zulip-print-container {
-    display: block !important;
-    position: static !important;
-    width: auto !important;
-    margin: 0;
-    padding: 12mm !important;
-  }
-  #zulip-print-container .overlay-scroll-container {
-    overflow: visible !important;
-    max-height: none !important;
-  }
-  #zulip-print-container table {
-    border-collapse: collapse;
-    width: 100%;
-    margin-bottom: 8px;
-  }
-  #zulip-print-container th,
-  #zulip-print-container td {
-    border: 1px solid #dcdcdc;
-    padding: 8px;
-    text-align: left;
-    vertical-align: top;
-  }
-  #zulip-print-container th {
-    background-color: #f5f5f5;
-    font-weight: 600;
-  }
-  #zulip-print-container kbd {
-    background: #f0f0f0;
-    border: 1px solid #999;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: monospace;
-    font-size: 0.95em;
-  }
-  #zulip-print-container .zulip-print-title {
-    font-size: 22px;
-    margin: 0 0 12px 0;
-    color: #222;
-  }
-}
-`;
-
-    // Inject CSS
-    const styleEl = document.createElement("style");
-    styleEl.setAttribute("id", "zulip-temp-print-style");
-    styleEl.append(printCss);
-    document.head.append(styleEl);
-
-    // Cleanup function
     const cleanup = (): void => {
         $("#zulip-print-container").remove();
-        const el = document.querySelector("#zulip-temp-print-style");
-        if (el) {
-            el.remove();
-        }
         window.removeEventListener("afterprint", cleanup);
     };
-
-    // Attach afterprint
     window.addEventListener("afterprint", cleanup);
-
-    // Fallback cleanup if afterprint doesn’t fire
-    const fallbackTimeout = window.setTimeout(() => {
-        cleanup();
-        window.clearTimeout(fallbackTimeout);
-    }, 60_000);
-
-    // Make container visible before printing
-    $("#zulip-print-container").css("display", "block");
-
     try {
         window.print();
     } catch {
@@ -465,7 +387,7 @@ function informationalOverlayPrintKeyHandler(e: JQuery.KeyDownEvent): void {
         }
     }
 
-    printPane(activePaneId);
+    print_pane(activePaneId);
 }
 
 export function show(target: string | undefined): void {
