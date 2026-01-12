@@ -800,12 +800,11 @@ class SlackImporter(ZulipTestCase):
         with self.assertLogs(level="INFO"):
             (
                 zerver_userprofile,
-                avatar_list,
                 slack_user_id_to_zulip_user_id,
                 customprofilefield,
                 customprofilefield_value,
             ) = users_to_zerver_userprofile(
-                slack_data_dir, user_data, 1, timestamp, "testdomain.com"
+                slack_data_dir, user_data, 1, timestamp, "testdomain.com", lambda _, __: None
             )
 
         # Test custom profile fields
@@ -827,7 +826,6 @@ class SlackImporter(ZulipTestCase):
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(slack_user_id_to_zulip_user_id, test_slack_user_id_to_zulip_user_id)
-        self.assert_length(avatar_list, 9)
 
         self.assert_length(zerver_userprofile, 11)
 
@@ -916,7 +914,9 @@ class SlackImporter(ZulipTestCase):
         bad_email1 = user_data[0]["profile"]["email"] = "jon@gmail,com"
         bad_email2 = user_data[1]["profile"]["email"] = "jane@gmail.m"
         with self.assertRaises(Exception) as e, self.assertLogs(level="INFO"):
-            users_to_zerver_userprofile(slack_data_dir, user_data, 1, timestamp, "test_domain")
+            users_to_zerver_userprofile(
+                slack_data_dir, user_data, 1, timestamp, "test_domain", lambda _, __: None
+            )
         error_message = str(e.exception)
         expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
         self.assertEqual(error_message, expected_error_message)
@@ -1223,7 +1223,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(realm["zerver_userpresence"], [])
 
     @mock.patch(
-        "zerver.data_import.slack.users_to_zerver_userprofile", return_value=[[], [], {}, [], []]
+        "zerver.data_import.slack.users_to_zerver_userprofile", return_value=[[], {}, [], []]
     )
     @mock.patch(
         "zerver.data_import.slack.channels_to_zerver_stream",
@@ -1232,32 +1232,24 @@ class SlackImporter(ZulipTestCase):
     def test_slack_workspace_to_realm(
         self, mock_channels_to_zerver_stream: mock.Mock, mock_users_to_zerver_userprofile: mock.Mock
     ) -> None:
+        output_dir = os.path.join(settings.TEST_WORKER_DIR, "test-slack-import")
+        os.makedirs(output_dir, exist_ok=True)
         realm_id = 1
         user_list: list[dict[str, Any]] = []
-        (
-            realm,
-            slack_user_id_to_zulip_user_id,
-            slack_recipient_name_to_zulip_recipient_id,
-            added_channels,
-            added_mpims,
-            added_dms,
-            _dm_members,
-            avatar_list,
-            _em,
-        ) = slack_workspace_to_realm(
-            "testdomain", realm_id, user_list, "test-realm", "./random_path", {}
+        converted_realm_result = slack_workspace_to_realm(
+            "testdomain", realm_id, user_list, "test-realm", "./random_path", {}, 1, output_dir
         )
 
         test_zerver_realmdomain = [
             {"realm": realm_id, "allow_subdomains": False, "domain": "testdomain", "id": realm_id}
         ]
         # Functioning already tests in helper functions
-        self.assertEqual(slack_user_id_to_zulip_user_id, {})
-        self.assertEqual(added_channels, {})
-        self.assertEqual(added_mpims, {})
-        self.assertEqual(added_dms, {})
-        self.assertEqual(slack_recipient_name_to_zulip_recipient_id, {})
-        self.assertEqual(avatar_list, [])
+        self.assertEqual(converted_realm_result.slack_user_id_to_zulip_user_id, {})
+        self.assertEqual(converted_realm_result.added_channels, {})
+        self.assertEqual(converted_realm_result.added_mpims, {})
+        self.assertEqual(converted_realm_result.added_dms, {})
+        self.assertEqual(converted_realm_result.slack_recipient_name_to_zulip_recipient_id, {})
+        self.assertEqual(converted_realm_result.avatar_records, [])
 
         mock_channels_to_zerver_stream.assert_called_once_with("./random_path", 1, ANY, {}, [])
         passed_realm = mock_channels_to_zerver_stream.call_args_list[0][0][2]
@@ -1270,6 +1262,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(passed_realm["import_source"], "slack")
         self.assert_length(passed_realm.keys(), 17)
 
+        realm = converted_realm_result.realm
         self.assertEqual(realm["zerver_stream"], [])
         self.assertEqual(realm["zerver_userprofile"], [])
         self.assertEqual(realm["zerver_realmemoji"], [])
@@ -2245,7 +2238,6 @@ by Pieter
     @responses.activate
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
     @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
-    @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
     @mock.patch("zerver.data_import.slack.check_slack_token_access")
     def test_slack_import_to_existing_database(
@@ -2253,7 +2245,6 @@ by Pieter
         mock_check_slack_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
-        mock_build_avatar: mock.Mock,
         mock_attachment: mock.Mock,
     ) -> None:
         test_slack_dir = os.path.join(
@@ -2469,7 +2460,6 @@ by Pieter
     @mock.patch("zerver.data_import.slack.requests.get")
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
     @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
-    @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
     @mock.patch("zerver.data_import.slack.check_slack_token_access")
     def test_slack_import_unicode_filenames(
@@ -2477,7 +2467,6 @@ by Pieter
         mock_check_slack_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
-        mock_build_avatar: mock.Mock,
         mock_attachment: mock.Mock,
         mock_requests_get: mock.Mock,
     ) -> None:
