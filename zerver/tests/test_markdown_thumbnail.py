@@ -344,9 +344,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
             ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
             thumb_mock.assert_called_once()
         self.assert_length(thumbnail_logs.output, 1)
-        self.assertTrue(
-            thumbnail_logs.output[0].startswith("ERROR:zerver.worker.thumbnail:some bad error")
-        )
+        self.assertIn("some bad error", thumbnail_logs.output[0])
         self.assertFalse(ImageAttachment.objects.filter(path_id=path_id).exists())
         self.assert_message_content_is(
             message_id, f'<p><a href="/user_uploads/{path_id}">image</a></p>'
@@ -368,9 +366,7 @@ class MarkdownThumbnailTest(ZulipTestCase):
             ensure_thumbnails(ImageAttachment.objects.get(path_id=path_id))
             thumb_mock.assert_called_once()
         self.assert_length(thumbnail_logs.output, 1)
-        self.assertTrue(
-            thumbnail_logs.output[0].startswith("ERROR:zerver.worker.thumbnail:some bad error")
-        )
+        self.assertIn("some bad error", thumbnail_logs.output[0])
         self.assertFalse(ImageAttachment.objects.filter(path_id=path_id).exists())
         self.assert_message_content_is(message_id, "<p>Testing </p>")
 

@@ -166,7 +166,15 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> ThumbnailingResult:
             written_images += 1
 
     except pyvips.Error as e:
-        logger.exception(e)
+        logger.exception(
+            "Failed to thumbnail %s, %d byte %s @ %dx%d: %s",
+            image_attachment.path_id,
+            len(image_bytes),
+            image_attachment.content_type,
+            image_attachment.original_width_px,
+            image_attachment.original_height_px,
+            e.message,
+        )
 
         if written_images == 0 and len(image_attachment.thumbnail_metadata) == 0:
             # We have never thumbnailed this -- it most likely had
