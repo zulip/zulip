@@ -158,9 +158,8 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("issues__edited_body", expected_topic_name, expected_message)
 
     def test_issues_edited_title(self) -> None:
-        long_title = "This is a very long issue title used to exceed Zulip's maximum topic length so that truncation logic is exercised when the issue title is edited via the GitHub webhook"
-        expected_topic_name = truncate_topic(f"test-repo / issue #6 {long_title}")
-        expected_message = "Pritesh-30 edited [issue #6](https://github.com/Pritesh-30/test-repo/issues/6):\n\n~~~ quote\nThe body of the issue is edited.\n~~~"
+        expected_topic_name = "zulip-test / issue #33 New Short Title."
+        expected_message = "DhruvShetty22 edited [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
         self.check_webhook("issues__edited_title", expected_topic_name, expected_message)
 
     def test_issue_comment_msg(self) -> None:
@@ -183,8 +182,10 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("issue_comment__pull_request_comment", TOPIC_PR, expected_message)
 
     def test_issue_msg(self) -> None:
-        expected_message = "baxterthehacker opened [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
-        self.check_webhook("issues__opened", TOPIC_ISSUE, expected_message)
+        long_title = "This is a very long Issue title to test topic truncation when renaming."
+        expected_topic_name = truncate_topic(f"zulip-test / issue #33 {long_title}")
+        expected_message = "DhruvShetty22 opened [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
+        self.check_webhook("issues__opened", expected_topic_name, expected_message)
 
     def test_pull_request_title_edit_moves_topic(self) -> None:
         old_topic = "public-repo / PR #1 This is a very long Pull request titl..."
@@ -199,10 +200,21 @@ class GitHubWebhookTest(WebhookTestCase):
             Message.objects.filter(realm=self.test_user.realm, subject=old_topic).exists()
         )
 
+    def test_issue_title_edit_moves_topic(self) -> None:
+        old_topic = "zulip-test / issue #33 This is a very long Issue title to..."
+        opened_message = "DhruvShetty22 opened [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
+        new_topic = "zulip-test / issue #33 New Short Title."
+        edited_message = "DhruvShetty22 edited [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
+        self.check_webhook("issues__opened", old_topic, opened_message)
+        self.check_webhook("issues__edited_title", new_topic, edited_message)
+        self.assertFalse(
+            Message.objects.filter(realm=self.test_user.realm, subject=old_topic).exists()
+        )
+
     def test_issue_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "baxterthehacker opened [issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
+        expected_message = "DhruvShetty22 opened [issue #33 This is a very long Issue title to test topic truncation when renaming.](https://github.com/DhruvShetty22/zulip-test/issues/33)\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
         self.check_webhook("issues__opened", expected_topic_name, expected_message)
 
     def test_issue_assigned(self) -> None:

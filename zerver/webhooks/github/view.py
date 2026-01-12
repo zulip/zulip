@@ -755,10 +755,11 @@ def handle_topic_rename(
     changes = payload.get("changes")
     repo_name = get_repository_name(payload)
 
-    number = payload["pull_request"]["number"].tame(check_int)
+    type_str = "PR" if header_event == "pull_request" else "issue"
+    item = payload["pull_request"] if header_event == "pull_request" else payload["issue"]
+    number = item["number"].tame(check_int)
     old_title = changes["title"]["from"].tame(check_string)
-    new_title = payload["pull_request"]["title"].tame(check_string)
-    type_str = "PR"
+    new_title = item["title"].tame(check_string)
 
     old_topic = truncate_topic(
         TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
@@ -1201,9 +1202,9 @@ def api_github_webhook(
     ):
         return json_success(request)
 
-    # Handle topic renaming for PRs with edited titles
+    # Handle topic renaming for PRs and Issues with edited titles
     if (
-        header_event == "pull_request"
+        header_event in ("pull_request", "issues")
         and payload.get("action", "").tame(check_string) == "edited"
         and "title" in payload.get("changes", {})
         and stream
