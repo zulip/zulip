@@ -42,58 +42,58 @@ TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 
 # Mapping of GitHub check run conclusions to status emojis
 CHECK_RUN_CONCLUSION_EMOJI = {
-    "success": ":green_circle:",
-    "failure": ":red_circle:",
-    "cancelled": ":white_circle:",
-    "skipped": ":white_circle:",
-    "timed_out": ":orange_circle:",
-    "action_required": ":yellow_circle:",
-    "neutral": ":white_circle:",
-    "stale": ":grey_question:",
+    "success": ":check:",
+    "failure": ":cross_mark:",
+    "cancelled": ":cross_mark:",
+    "skipped": ":cross_mark:",
+    "timed_out": ":time_ticking:",
+    "action_required": ":alert:",
+    "neutral": ":grey_question:",
+    "stale": ":time_ticking:",
 }
 
 # Mapping of GitHub deployment status states to emojis
 DEPLOYMENT_STATUS_EMOJI = {
-    "success": ":green_circle:",
-    "failure": ":red_circle:",
-    "error": ":red_circle:",
-    "pending": ":yellow_circle:",
+    "success": ":check:",
+    "failure": ":cross_mark:",
+    "error": ":cross_mark:",
+    "pending": ":time_ticking:",
 }
 
 # Mapping of GitHub commit status states to emojis
 STATUS_STATE_EMOJI = {
-    "success": ":green_circle:",
-    "failure": ":red_circle:",
-    "error": ":red_circle:",
-    "pending": ":yellow_circle:",
+    "success": ":check:",
+    "failure": ":cross_mark:",
+    "error": ":cross_mark:",
+    "pending": ":time_ticking:",
 }
 
 # Mapping of GitHub Pages build status to emojis
 PAGE_BUILD_STATUS_EMOJI = {
-    "built": ":green_circle:",
-    "errored": ":red_circle:",
-    "building": ":orange_circle:",
+    "built": ":check:",
+    "errored": ":cross_mark:",
+    "building": ":time_ticking:",
 }
 
 # Mapping of GitHub pull request review states to emojis
 PR_REVIEW_STATE_EMOJI = {
-    "approved": ":green_circle:",
-    "changes_requested": ":red_circle:",
+    "approved": ":thumbs_up:",
+    "changes_requested": ":thumbs_down:",
     "commented": ":speech_balloon:",
 }
 
 # Mapping of GitHub pull request close actions to emojis
 PR_CLOSE_ACTION_EMOJI = {
-    "merged": ":purple_circle:",
-    "closed without merge": ":white_circle:",
+    "merged": ":check:",
+    "closed without merge": ":cross_mark:",
 }
 
 # Mapping of GitHub discussion status actions to emojis
 DISCUSSION_STATUS_EMOJI = {
-    "answered": ":green_circle:",
-    "closed": ":red_circle:",
-    "reopened": ":yellow_circle:",
-    "unanswered": ":yellow_circle:",
+    "answered": ":check:",
+    "closed": ":cross_mark:",
+    "reopened": ":alert:",
+    "unanswered": ":grey_question:",
 }
 
 DISCUSSION_TEMPLATES = {
