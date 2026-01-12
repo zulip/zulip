@@ -1122,7 +1122,7 @@ def api_github_webhook(
     """
     header_event = get_event_header(request, "X-GitHub-Event", "GitHub")
 
-    # Check if the repository is private and skip processing if ignore_private_repositories is True
+    # Ignore events from private repositories if the URL option is set
     if (
         "repository" in payload
         and payload["repository"]["private"].tame(check_bool)
