@@ -407,6 +407,11 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
             return false;
         }
 
+        if (person.is_deleted) {
+            // Deleted users are not real users and should not be shown.
+            return false;
+        }
+
         const is_dm = direct_message_recipients.has(user_id);
         if (!people.is_person_active(user_id) && !is_dm) {
             // Deactivated users are hidden in the buddy list except in DM narrows.
