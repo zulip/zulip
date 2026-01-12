@@ -12,10 +12,7 @@ function get_bottom_whitespace_height(): number {
     return message_viewport.height() * 0.4;
 }
 
-function get_new_heights(): {
-    stream_filters_max_height: number;
-    buddy_list_wrapper_max_height: number;
-} {
+export function get_stream_filters_max_height(): number {
     const viewport_height = message_viewport.height();
     // Add some gap for bottom element to be properly visible.
     const GAP = 15;
@@ -29,9 +26,14 @@ function get_new_heights(): {
 
     // Don't let us crush the stream sidebar completely out of view
     stream_filters_max_height = Math.max(80, stream_filters_max_height);
+    return stream_filters_max_height;
+}
 
-    // RIGHT SIDEBAR
-
+function get_new_heights(): {
+    stream_filters_max_height: number;
+    buddy_list_wrapper_max_height: number;
+} {
+    const viewport_height = message_viewport.height();
     const usable_height =
         viewport_height -
         Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
@@ -40,7 +42,7 @@ function get_new_heights(): {
     const buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
     return {
-        stream_filters_max_height,
+        stream_filters_max_height: get_stream_filters_max_height(),
         buddy_list_wrapper_max_height,
     };
 }
@@ -179,9 +181,8 @@ export function resize_stream_subscribers_list(): void {
 }
 
 export function resize_stream_filters_container(): void {
-    const h = get_new_heights();
     resize_bottom_whitespace();
-    $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
+    $("#left_sidebar_scroll_container").css("max-height", get_stream_filters_max_height());
 }
 
 export function resize_sidebars(): void {
