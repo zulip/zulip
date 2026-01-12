@@ -203,7 +203,6 @@ function format_channel_item_html(stream: StreamSubscription): string {
         invite_only: stream.invite_only,
         is_web_public: stream.is_web_public,
         stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
-        show_remove_channel_from_folder: true,
         can_manage_folder: can_user_manage_folder(),
     });
 }
