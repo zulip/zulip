@@ -172,6 +172,15 @@ function match_criteria(terms: NarrowCanonicalTerm[], criteria: TermPattern[]): 
     });
 }
 
+function filter_suggestions_by_criteria(
+    terms: NarrowCanonicalTerm[],
+    search_filters: SearchFilter[],
+): Suggestion[] {
+    return search_filters
+        .filter((search_filter) => !match_criteria(terms, incompatible_patterns[search_filter]))
+        .map((search_string) => ({search_string}));
+}
+
 function check_validity(
     last_operator: NarrowCanonicalOperator,
     terms: NarrowCanonicalTerm[],
@@ -666,12 +675,9 @@ function get_topic_suggestions(
     });
 }
 
-type SuggestionAndIncompatiblePatterns = Suggestion & {incompatible_patterns: TermPattern[]};
-
 function get_special_filter_suggestions(
     last: NarrowCanonicalTermSuggestion,
-    terms: NarrowCanonicalTerm[],
-    suggestions: SuggestionAndIncompatiblePatterns[],
+    suggestions: Suggestion[],
 ): Suggestion[] {
     const is_search_operand_negated = last.operator === "search" && last.operand.startsWith("-");
     // Negating suggestions on is_search_operand_negated is required for
@@ -697,9 +703,6 @@ function get_special_filter_suggestions(
 
     const last_string = Filter.unparse([last]).toLowerCase();
     suggestions = suggestions.filter((s) => {
-        if (match_criteria(terms, s.incompatible_patterns)) {
-            return false;
-        }
         if (last_string === "") {
             return true;
         }
@@ -715,9 +718,8 @@ function get_special_filter_suggestions(
             descriptions[s.search_string]?.toLowerCase().startsWith(last_string)
         );
     });
-    const filtered_suggestions = suggestions.map(({incompatible_patterns, ...s}) => s);
 
-    return filtered_suggestions;
+    return suggestions;
 }
 
 function get_channels_filter_suggestions(
@@ -729,82 +731,42 @@ function get_channels_filter_suggestions(
     }
     const public_channels_search_string = "channels:public";
     const web_public_channels_search_string = "channels:web-public";
-    const suggestions: SuggestionAndIncompatiblePatterns[] = [];
+    const suggestions: Suggestion[] = [];
 
     if (!page_params.is_spectator) {
-        suggestions.push({
-            search_string: public_channels_search_string,
-            incompatible_patterns: incompatible_patterns["channels:public"],
-        });
+        suggestions.push(...filter_suggestions_by_criteria(terms, [public_channels_search_string]));
     }
 
     if (stream_data.realm_has_web_public_streams()) {
-        suggestions.push({
-            search_string: web_public_channels_search_string,
-            incompatible_patterns: incompatible_patterns["channels:web-public"],
-        });
+        suggestions.push(
+            ...filter_suggestions_by_criteria(terms, [web_public_channels_search_string]),
+        );
     }
 
-    return get_special_filter_suggestions(last, terms, suggestions);
+    return get_special_filter_suggestions(last, suggestions);
 }
 
 function get_is_filter_suggestions(
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
 ): Suggestion[] {
-    let suggestions: SuggestionAndIncompatiblePatterns[];
+    let suggestions: Suggestion[];
     if (page_params.is_spectator) {
-        suggestions = [
-            {
-                search_string: "is:resolved",
-                incompatible_patterns: incompatible_patterns["is:resolved"],
-            },
-            {
-                search_string: "-is:resolved",
-                incompatible_patterns: incompatible_patterns["-is:resolved"],
-            },
-        ];
+        suggestions = filter_suggestions_by_criteria(terms, ["is:resolved", "-is:resolved"]);
     } else {
-        suggestions = [
-            {
-                search_string: "is:dm",
-                incompatible_patterns: incompatible_patterns["is:dm"],
-            },
-            {
-                search_string: "is:starred",
-                incompatible_patterns: incompatible_patterns["is:starred"],
-            },
-            {
-                search_string: "is:mentioned",
-                incompatible_patterns: incompatible_patterns["is:mentioned"],
-            },
-            {
-                search_string: "is:followed",
-                incompatible_patterns: incompatible_patterns["is:followed"],
-            },
-            {
-                search_string: "is:alerted",
-                incompatible_patterns: incompatible_patterns["is:alerted"],
-            },
-            {
-                search_string: "is:unread",
-                incompatible_patterns: incompatible_patterns["is:unread"],
-            },
-            {
-                search_string: "is:muted",
-                incompatible_patterns: incompatible_patterns["is:muted"],
-            },
-            {
-                search_string: "is:resolved",
-                incompatible_patterns: incompatible_patterns["is:resolved"],
-            },
-            {
-                search_string: "-is:resolved",
-                incompatible_patterns: incompatible_patterns["-is:resolved"],
-            },
-        ];
+        suggestions = filter_suggestions_by_criteria(terms, [
+            "is:dm",
+            "is:starred",
+            "is:mentioned",
+            "is:followed",
+            "is:alerted",
+            "is:unread",
+            "is:muted",
+            "is:resolved",
+            "-is:resolved",
+        ]);
     }
-    const special_filtered_suggestions = get_special_filter_suggestions(last, terms, suggestions);
+    const special_filtered_suggestions = get_special_filter_suggestions(last, suggestions);
     // Suggest "is:dm" to anyone with "is:private" in their muscle memory
     const other_suggestions = [];
     if (
@@ -825,25 +787,13 @@ function get_has_filter_suggestions(
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
 ): Suggestion[] {
-    const suggestions: SuggestionAndIncompatiblePatterns[] = [
-        {
-            search_string: "has:link",
-            incompatible_patterns: incompatible_patterns["has:link"],
-        },
-        {
-            search_string: "has:image",
-            incompatible_patterns: incompatible_patterns["has:image"],
-        },
-        {
-            search_string: "has:attachment",
-            incompatible_patterns: incompatible_patterns["has:attachment"],
-        },
-        {
-            search_string: "has:reaction",
-            incompatible_patterns: incompatible_patterns["has:reaction"],
-        },
-    ];
-    return get_special_filter_suggestions(last, terms, suggestions);
+    const suggestions: Suggestion[] = filter_suggestions_by_criteria(terms, [
+        "has:link",
+        "has:image",
+        "has:attachment",
+        "has:reaction",
+    ]);
+    return get_special_filter_suggestions(last, suggestions);
 }
 
 function get_sent_by_me_suggestions(
