@@ -1351,6 +1351,10 @@ input.invalid-input {
 }
 
 #uppy-editor {
+    .modal__container {
+        width: 60em; /* Larger width for comfortable image cropping */
+    }
+
     .modal__title {
         overflow: hidden;
         text-overflow: ellipsis;
