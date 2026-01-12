@@ -95,42 +95,45 @@ export function open_schedule_message_menu(
                 }
             };
             $popper.on("click", ".send_later_custom", (e) => {
-                const $send_later_options_content = $popper.find(".popover-menu-list");
                 const current_time = new Date();
+    
+                // Hide the popover before showing the date picker
+                popover_menus.hide_current_popover_if_visible(instance);
+    
+                // Try to find the schedule button - it might have different selectors
+                let reference_element = document.querySelector(".send_later");
+    
+                // If not found, try the message send controls area
+                reference_element ??= document.querySelector("#compose-send-button");
+    
+                // If still not found, use the compose textarea as fallback
+                reference_element ??= document.querySelector("#compose-textarea");
+    
+                // Final fallback - use body and center the picker
+                let final_element: HTMLElement;
+                if (reference_element instanceof HTMLElement) {
+                    final_element = reference_element;
+                } else {
+                    final_element = document.body;
+                }
+
                 flatpickr.show_flatpickr(
-                    util.the($(".send_later_custom")),
+                    final_element,
                     (send_at_time) => {
                         message_schedule_callback(send_at_time);
-                        popover_menus.hide_current_popover_if_visible(instance);
                     },
                     new Date(current_time.getTime() + 60 * 60 * 1000),
                     {
                         minDate: new Date(
                             current_time.getTime() +
                                 scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
-                        ),
-                        onClose(selectedDates, _dateStr, instance) {
-                            // Return to normal state.
-                            $send_later_options_content.css("pointer-events", "all");
-                            const selected_date = selectedDates[0];
-                            assert(instance.config.minDate !== undefined);
-                            if (selected_date && selected_date < instance.config.minDate) {
-                                scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
-                                    true,
-                                );
-                            } else {
-                                scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
-                                    false,
-                                );
-                            }
+                            ),
                         },
-                    },
-                );
-                // Disable interaction with rest of the options in the popover.
-                $send_later_options_content.css("pointer-events", "none");
-                e.preventDefault();
-                e.stopPropagation();
-            });
+                    );
+    
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
             $popper.one(
                 "click",
                 ".send_later_today, .send_later_tomorrow, .send_later_monday",
