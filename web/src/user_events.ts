@@ -173,6 +173,11 @@ export const update_person = function update(event: UserUpdate): void {
                 "src",
                 `${event.avatar_url_medium}`,
             );
+            if (current_user.avatar_source === "G") {
+                $("#user-avatar-source").show();
+            } else {
+                $("#user-avatar-source").hide();
+            }
         }
 
         message_live_update.update_avatar(user.user_id, event.avatar_url);
