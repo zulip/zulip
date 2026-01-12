@@ -26,6 +26,7 @@
 # same system for routine deletions via the Zulip UI (deleting a
 # message or group of messages) as we use for message retention policy
 # deletions.
+import copy
 import logging
 import time
 from collections.abc import Iterable, Mapping
@@ -42,9 +43,14 @@ from psycopg2.sql import SQL, Composable, Identifier, Literal
 
 from zerver.actions.message_flags import do_clear_mobile_push_notifications_for_ids
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.message import event_recipient_ids_for_action_on_messages
+from zerver.lib.message import (
+    event_recipient_ids_for_action_on_messages,
+    get_messages_with_usermessage_rows_for_user,
+)
 from zerver.lib.request import RequestVariableConversionError
+from zerver.lib.streams import user_has_content_access
 from zerver.lib.topic import DB_TOPIC_NAME
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     ArchivedAttachment,
@@ -366,9 +372,47 @@ def _process_grouped_messages_deletion(
             is_channel_message=message_type == "stream",
             channel=stream if message_type == "stream" else None,
         )
-        if acting_user is not None:
-            # Always send event to the user who deleted the message.
-            users_to_notify.add(acting_user.id)
+
+        acting_user_event: DeleteMessagesEvent | None = None
+        if (
+            acting_user is not None
+            and acting_user.id not in users_to_notify
+            and message_type == "stream"
+        ):
+            # Send event to the user who deleted the messages only if the
+            # user has content access to the location of the message.
+            # For DMs, acting_user will already be included in
+            # users_to_notify if they are involved in the conversation,
+            # so we only handle channel messages here.
+            #
+            # We need to check access here for cases where messages
+            # are deleted in bulk by an admin, like when deactivating
+            # a spam user when we do not check access to messages.
+            assert stream is not None
+            if stream.is_history_public_to_subscribers():
+                # For a channel with public history, acting_user should
+                # receive the event if they have content access to the stream.
+                if user_has_content_access(
+                    acting_user,
+                    stream,
+                    UserGroupMembershipDetails(user_recursive_group_ids=None),
+                    is_subscribed=False,
+                ):
+                    users_to_notify.add(acting_user.id)
+            else:
+                # For a channel with protected history, acting_user should
+                # receive the event only if they have a UserMessage row for
+                # at least one of the messages being deleted and only with
+                # message_ids for which they have a UserMessage row.
+                messages_with_usermessage_row = get_messages_with_usermessage_rows_for_user(
+                    acting_user.id, message_ids
+                )
+                if len(messages_with_usermessage_row) != 0:
+                    if len(messages_with_usermessage_row) == len(message_ids):
+                        users_to_notify.add(acting_user.id)
+                    else:
+                        acting_user_event = copy.deepcopy(event)
+                        acting_user_event["message_ids"] = sorted(messages_with_usermessage_row)
 
     # Uses index: zerver_message_pkey
     Message.objects.filter(id__in=message_ids).delete()
@@ -378,6 +422,10 @@ def _process_grouped_messages_deletion(
             check_update_first_message_id(realm, stream, message_ids, users_to_notify)
 
         send_event_on_commit(realm, event, users_to_notify)
+
+        if acting_user_event is not None:
+            assert acting_user is not None
+            send_event_on_commit(realm, acting_user_event, [acting_user.id])
 
 
 def delete_messages(
