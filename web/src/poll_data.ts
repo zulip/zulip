@@ -28,6 +28,7 @@ type PollOption = {
 export type WidgetData = {
     options: PollOptionData[];
     question: string;
+    is_edited: boolean;
 };
 
 /*
@@ -92,6 +93,7 @@ export class PollData {
     input_mode: boolean;
     comma_separated_names: (user_ids: number[]) => string;
     report_error_function: (error_message: string) => void;
+    is_edited = false;
 
     constructor({
         message_sender_id,
@@ -147,6 +149,10 @@ export class PollData {
             return;
         }
 
+        if (sender_id !== "canned") {
+            this.is_edited = true;
+        }
+
         if (idx < 0 || idx > MAX_IDX) {
             this.report_error_function("poll widget: idx out of bound");
             return;
@@ -183,6 +189,10 @@ export class PollData {
         if (sender_id !== this.message_sender_id) {
             this.report_error_function(`user ${sender_id} is not allowed to edit the question`);
             return;
+        }
+
+        if (this.poll_question !== "" && this.poll_question !== data.question) {
+            this.is_edited = true;
         }
 
         this.set_question(data.question);
@@ -271,6 +281,7 @@ export class PollData {
         const widget_data = {
             options,
             question: this.poll_question,
+            is_edited: this.is_edited,
         };
 
         return widget_data;

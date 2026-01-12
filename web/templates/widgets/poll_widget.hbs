@@ -1,6 +1,9 @@
 <div class="poll-widget">
     <div class="poll-widget-header-area">
-        <h4 class="poll-question-header"></h4>
+        <h4 class="poll-question-container">
+            <span class="poll-question-header">{{question}}</span>
+            <span class="message_edit_notice" style="display: none;">{{t "(edited)"}}</span>
+        </h4>
         <i class="fa fa-pencil poll-edit-question"></i>
         <div class="poll-question-bar">
             <input type="text" class="poll-question" placeholder="{{t 'Add question'}}" />

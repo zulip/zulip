@@ -54,6 +54,7 @@ run_test("PollData my question", () => {
     assert.deepEqual(data, {
         options: [],
         question: "Favorite color?",
+        is_edited: false,
     });
 
     const question_event = {
@@ -67,6 +68,7 @@ run_test("PollData my question", () => {
     assert.deepEqual(data, {
         options: [],
         question: "best plan?",
+        is_edited: true,
     });
 
     const option_event = {
@@ -89,6 +91,7 @@ run_test("PollData my question", () => {
             },
         ],
         question: "best plan?",
+        is_edited: true,
     });
 
     let vote_event = {
@@ -111,6 +114,7 @@ run_test("PollData my question", () => {
             },
         ],
         question: "best plan?",
+        is_edited: true,
     });
 
     vote_event = {
@@ -133,6 +137,7 @@ run_test("PollData my question", () => {
             },
         ],
         question: "best plan?",
+        is_edited: true,
     });
 
     const invalid_vote_event = {
@@ -182,6 +187,7 @@ run_test("PollData my question", () => {
             },
         ],
         question: "best plan?",
+        is_edited: true,
     });
 });
 
@@ -211,6 +217,7 @@ run_test("wrong person editing question", () => {
     assert.deepEqual(data_holder.get_widget_data(), {
         options: [],
         question: "Favorite color?",
+        is_edited: false,
     });
 });
 
@@ -252,11 +259,13 @@ run_test("activate another person poll", ({mock_template}) => {
     const $poll_question_submit = set_widget_find_result("button.poll-question-check");
     const $poll_edit_question = set_widget_find_result(".poll-edit-question");
     const $poll_question_header = set_widget_find_result(".poll-question-header");
-    const $poll_question_container = set_widget_find_result(".poll-question-bar");
+    const $poll_question_container = set_widget_find_result(".poll-question-container");
+    const $poll_question_bar = set_widget_find_result(".poll-question-bar");
     const $poll_option_container = set_widget_find_result(".poll-option-bar");
 
     const $poll_vote_button = set_widget_find_result("button.poll-vote");
     const $poll_please_wait = set_widget_find_result(".poll-please-wait");
+    set_widget_find_result(".message_edit_notice");
 
     set_widget_find_result("button.poll-question-remove");
     set_widget_find_result("input.poll-question");
@@ -264,9 +273,10 @@ run_test("activate another person poll", ({mock_template}) => {
     const handle_events = poll_widget.activate(opts);
 
     assert.ok($poll_option_container.visible());
-    assert.ok($poll_question_header.visible());
+    assert.ok($poll_question_container.visible());
 
-    assert.ok(!$poll_question_container.visible());
+    assert.ok(!$poll_question_header.visible());
+    assert.ok(!$poll_question_bar.visible());
     assert.ok(!$poll_question_submit.visible());
     assert.ok(!$poll_edit_question.visible());
     assert.ok(!$poll_please_wait.visible());
@@ -367,18 +377,20 @@ run_test("activate own poll", ({mock_template}) => {
     const $poll_edit_question = set_widget_find_result(".poll-edit-question");
     const $poll_question_input = set_widget_find_result("input.poll-question");
     const $poll_question_header = set_widget_find_result(".poll-question-header");
-    const $poll_question_container = set_widget_find_result(".poll-question-bar");
+    const $poll_question_container = set_widget_find_result(".poll-question-container");
+    const $poll_question_bar = set_widget_find_result(".poll-question-bar");
     const $poll_option_container = set_widget_find_result(".poll-option-bar");
 
     set_widget_find_result("button.poll-vote");
     const $poll_please_wait = set_widget_find_result(".poll-please-wait");
+    set_widget_find_result(".message_edit_notice");
 
     set_widget_find_result("button.poll-question-remove");
 
     function assert_visibility() {
         assert.ok($poll_option_container.visible());
-        assert.ok($poll_question_header.visible());
-        assert.ok(!$poll_question_container.visible());
+        assert.ok($poll_question_container.visible());
+        assert.ok(!$poll_question_bar.visible());
         assert.ok($poll_edit_question.visible());
         assert.ok(!$poll_please_wait.visible());
     }
