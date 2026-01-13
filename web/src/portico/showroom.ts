@@ -187,7 +187,7 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "Because you're using an unsupported or very old browser, Zulip may not work as expected.",
         buttons: [
             {
-                attention: "borderless",
+                variant: "text",
                 intent: "warning",
                 label: "Learn more",
             },

@@ -251,7 +251,7 @@ const UNSUPPORTED_BROWSER_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "unsupported-browser-learn-more",
         },
