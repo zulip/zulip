@@ -223,6 +223,7 @@ export default defineConfig({
                     label: "Getting started",
                     items: [
                         "create-an-organization",
+                        "demo-organizations",
                         "join-a-zulip-organization",
                         "set-up-your-account",
                         "introduction-to-topics",
