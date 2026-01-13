@@ -665,8 +665,8 @@ class Realm(models.Model):
     JITSI_SERVER_SPECIAL_VALUES_MAP = {"default": None}
     jitsi_server_url = models.URLField(null=True, default=None)
 
-    # Please access this via get_gif_rating_options.
-    GIF_RATING_OPTIONS = {
+    # Please access this via get_gif_rating_policy_options.
+    GIF_RATING_POLICY_OPTIONS = {
         "disabled": {
             "name": gettext_lazy("GIF integration disabled"),
             "id": 0,
@@ -693,7 +693,9 @@ class Realm(models.Model):
     }
 
     # Rating policy of the GIFs that will be retrieved.
-    gif_rating_policy = models.PositiveSmallIntegerField(default=GIF_RATING_OPTIONS["g"]["id"])
+    gif_rating_policy = models.PositiveSmallIntegerField(
+        default=GIF_RATING_POLICY_OPTIONS["g"]["id"]
+    )
 
     default_code_block_language = models.TextField(default="")
 
@@ -924,12 +926,12 @@ class Realm(models.Model):
     def __str__(self) -> str:
         return f"{self.string_id} {self.id}"
 
-    def get_gif_rating_options(self) -> dict[str, dict[str, object]]:
-        """Wrapper function for GIF_RATING_OPTIONS that ensures evaluation
+    def get_gif_rating_policy_options(self) -> dict[str, dict[str, object]]:
+        """Wrapper function for GIF_RATING_POLICY_OPTIONS that ensures evaluation
         of the lazily evaluated `name` field without modifying the original."""
         return {
             rating_type: {"name": str(rating["name"]), "id": rating["id"]}
-            for rating_type, rating in self.GIF_RATING_OPTIONS.items()
+            for rating_type, rating in self.GIF_RATING_POLICY_OPTIONS.items()
         }
 
     def authentication_methods_dict(self) -> dict[str, bool]:

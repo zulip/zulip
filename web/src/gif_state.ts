@@ -8,19 +8,19 @@ type GifRating = "pg" | "pg-13" | "r" | "g";
 export function is_tenor_enabled(): boolean {
     return (
         realm.tenor_api_key !== "" &&
-        realm.realm_gif_rating_policy !== realm.gif_rating_options.disabled.id
+        realm.realm_gif_rating_policy !== realm.gif_rating_policy_options.disabled.id
     );
 }
 
 export function is_giphy_enabled(): boolean {
     return (
         realm.giphy_api_key !== "" &&
-        realm.realm_gif_rating_policy !== realm.gif_rating_options.disabled.id
+        realm.realm_gif_rating_policy !== realm.gif_rating_policy_options.disabled.id
     );
 }
 
 export function get_rating(): GifRating {
-    const options = realm.gif_rating_options;
+    const options = realm.gif_rating_policy_options;
     for (const rating of ["pg", "g", "pg-13", "r"] as const) {
         if (options[rating]?.id === realm.realm_gif_rating_policy) {
             return rating;
@@ -28,7 +28,7 @@ export function get_rating(): GifRating {
     }
 
     // The below should never run unless a server bug allowed a
-    // `gif_rating_policy` value not present in `gif_rating_options`.
+    // `gif_rating_policy` value not present in `gif_rating_policy_options`.
     blueslip.error("Invalid gif_rating value: " + realm.realm_gif_rating_policy);
     return "g";
 }
@@ -38,7 +38,7 @@ export function update_gif_rating_policy(): void {
     // the currently set GIF icon depending on whether the policy is configured
     // to `disabled`.
     // It won't change the GIF provider without a server restart as of now.
-    if (realm.realm_gif_rating_policy === realm.gif_rating_options.disabled.id) {
+    if (realm.realm_gif_rating_policy === realm.gif_rating_policy_options.disabled.id) {
         $(".zulip-icon-gif").hide();
     } else {
         $(".zulip-icon-gif").show();

@@ -2210,8 +2210,8 @@ class RealmAPITest(ZulipTestCase):
             ],
             jitsi_server_url=["https://example.jit.si"],
             gif_rating_policy=[
-                Realm.GIF_RATING_OPTIONS["g"]["id"],
-                Realm.GIF_RATING_OPTIONS["r"]["id"],
+                Realm.GIF_RATING_POLICY_OPTIONS["g"]["id"],
+                Realm.GIF_RATING_POLICY_OPTIONS["r"]["id"],
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             message_content_edit_limit_seconds=[1000, 1100, 1200],
