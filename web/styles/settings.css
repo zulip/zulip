@@ -1781,6 +1781,36 @@ label.preferences-radio-choice-label {
     width: fit-content;
 }
 
+#realm-user-default-settings {
+    .settings-field-label,
+    .settings-checkbox-wrapper,
+    .info-density-controls {
+        .reset-user-setting-to-default {
+            display: inline-flex;
+            padding: 0.1875em; /* 3px at 16px */
+            margin-left: 0.1875em; /* 3px at 16px */
+
+            position: relative;
+            top: -0.0625em; /* 1px at 16px */
+
+            .zulip-icon {
+                width: 1em; /* 15px at 16px */
+                height: 1em; /* 15px at 16px */
+                font-size: 0.9375em; /* 15px at 16px */
+            }
+        }
+    }
+
+    .general_notifications .reset-user-setting-to-default {
+        font-size: 1.2em;
+        margin-top: 0.3125em; /* 6px at 16px */
+        /* This is needed to adjust the gap property used
+        for flex layout so that button is not too far from
+        the heading. */
+        margin-left: -0.5em; /* 9.6px at 16px */
+    }
+}
+
 .settings-profile-user-field-hint {
     color: var(--color-text-settings-field-hint);
     /* We effectively eliminate the margin-bottom on

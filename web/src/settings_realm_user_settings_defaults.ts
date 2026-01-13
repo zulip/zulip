@@ -1,17 +1,29 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
+import * as z from "zod/mini";
+
+import render_confirm_reset_user_configuration from "../templates/settings/confirm_reset_user_configuration.hbs";
 
 import * as audible_notifications from "./audible_notifications.ts";
+import * as channel from "./channel.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as overlays from "./overlays.ts";
-import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import * as people from "./people.ts";
+import {
+    realm_default_settings_schema,
+    realm_user_settings_defaults,
+} from "./realm_user_settings_defaults.ts";
 import * as settings_components from "./settings_components.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import type {SettingsPanel} from "./settings_preferences.ts";
 import {current_user} from "./state_data.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
+import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
 export let realm_default_settings_panel: SettingsPanel | undefined;
@@ -37,6 +49,10 @@ export function maybe_disable_widgets(): void {
         $(".organization-box [data-name='organization-level-user-defaults']")
             .find(".information-density-settings")
             .addClass("disabled-setting");
+
+        $(".organization-box [data-name='organization-level-user-defaults']")
+            .find(".reset-user-setting-to-default")
+            .hide();
     }
 }
 
@@ -54,6 +70,61 @@ export function update_page(property: string): void {
             settings_org.discard_realm_default_settings_subsection_changes($subsection);
         }
     }
+}
+
+function get_realm_default_setting_value_for_reset(property: string): number | string | boolean {
+    return realm_user_settings_defaults[
+        z
+            .keyof(
+                z.omit(realm_default_settings_schema, {
+                    available_notification_sounds: true,
+                    emojiset_choices: true,
+                }),
+            )
+            .parse(property)
+    ];
+}
+
+function confirm_resetting_user_setting_to_default(property_list: string[]): void {
+    const html_body = render_confirm_reset_user_configuration();
+
+    function reset_user_configuration(): void {
+        const active_human_user_ids = people.get_realm_active_human_user_ids();
+        const deactivated_human_user_ids = people.get_non_active_human_ids();
+        const target_users = {
+            user_ids: [...active_human_user_ids, ...deactivated_human_user_ids],
+            skip_if_already_edited: $("#users_to_reset_configuration").val() !== "everyone",
+        };
+        const data: Record<string, number | string | boolean> = {
+            target_users: JSON.stringify(target_users),
+        };
+        for (const property of property_list) {
+            data[property] = get_realm_default_setting_value_for_reset(property);
+        }
+        channel.patch({
+            url: "/json/settings",
+            data,
+            success() {
+                dialog_widget.close();
+            },
+            error(xhr) {
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+            },
+        });
+    }
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Reset user configurations?"}),
+        html_body,
+        id: "confirm-reset-user-configuration",
+        on_click: reset_user_configuration,
+        close_on_submit: false,
+        loading_spinner: true,
+        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        post_render() {
+            $("#users_to_reset_configuration").val("everyone");
+        },
+    });
 }
 
 export function set_up(): void {
@@ -109,6 +180,32 @@ export function set_up(): void {
         "/json/realm/user_settings_defaults",
         true,
     );
+
+    $container.find(".reset-user-setting-to-default").on("click", function (this: HTMLElement) {
+        let property_list = [];
+        if ($(this).closest(".info-density-controls").length > 0) {
+            // Information density settings do not follow the usual
+            // convention of having "div.input-group" container for
+            // each setting and thus they need to be handled here
+            // in a different block.
+            property_list = [
+                $(this)
+                    .closest(".info-density-controls")
+                    .find(".button-group")
+                    .attr("data-property")!,
+            ];
+        } else if ($(this).closest(".general_notifications").length > 0) {
+            property_list = [
+                ...settings_config.stream_notification_settings,
+                ...settings_config.pm_mention_notification_settings,
+                ...settings_config.followed_topic_notification_settings,
+            ];
+        } else {
+            const $elem = $(this).closest(".input-group").find(".prop-element");
+            property_list = [settings_components.extract_property_name($elem, true)];
+        }
+        confirm_resetting_user_setting_to_default(property_list);
+    });
 
     maybe_disable_widgets();
 }

@@ -5,7 +5,12 @@
     </div>
 
     <div class="input-group">
-        <label class="settings-field-label">{{t "User list style" }}</label>
+        <label class="settings-field-label">
+            {{t "User list style" }}
+            {{#if for_realm_settings}}
+                {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+            {{/if}}
+        </label>
         <div class="user_list_style_values settings-highlight-box prop-element" id="{{prefix}}user_list_style" data-setting-widget-type="radio-group" data-setting-choice-type="number">
             {{#each (object_values user_list_style_values)}}
                 <label class="preferences-radio-choice-label">
@@ -50,7 +55,12 @@
     </div>
 
     <div class="input-group">
-        <label for="{{prefix}}web_animate_image_previews" class="settings-field-label">{{t "Play animated images" }}</label>
+        <label for="{{prefix}}web_animate_image_previews" class="settings-field-label">
+            {{t "Play animated images" }}
+            {{#if for_realm_settings}}
+                {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+            {{/if}}
+        </label>
         <select name="web_animate_image_previews" class="setting_web_animate_image_previews prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_animate_image_previews" data-setting-widget-type="string">
             {{> dropdown_options_widget option_values=(object_values web_animate_image_previews_values)}}
         </select>
@@ -61,7 +71,8 @@
       is_checked=settings_object.receives_typing_notifications
       label=settings_label.receives_typing_notifications
       render_only=settings_render_only.receives_typing_notifications
-      prefix=prefix}}
+      prefix=prefix
+      show_reset_button=for_realm_settings}}
 
     {{> settings_checkbox
       setting_name="web_inbox_show_channel_folders"
@@ -69,26 +80,30 @@
       label=settings_label.web_inbox_show_channel_folders
       render_only=settings_render_only.web_inbox_show_channel_folders
       help_link="/help/channel-folders"
-      prefix=prefix}}
+      prefix=prefix
+      show_reset_button=for_realm_settings}}
 
     {{> settings_checkbox
       setting_name="hide_ai_features"
       is_checked=settings_object.hide_ai_features
       label=settings_label.hide_ai_features
       render_only=settings_render_only.hide_ai_features
-      prefix=prefix}}
+      prefix=prefix
+      show_reset_button=for_realm_settings}}
 
     {{> settings_checkbox
       setting_name="fluid_layout_width"
       is_checked=settings_object.fluid_layout_width
       label=settings_label.fluid_layout_width
       render_only=settings_render_only.fluid_layout_width
-      prefix=prefix}}
+      prefix=prefix
+      show_reset_button=for_realm_settings}}
 
     {{> settings_checkbox
       setting_name="high_contrast_mode"
       is_checked=settings_object.high_contrast_mode
       label=settings_label.high_contrast_mode
       render_only=settings_render_only.high_contrast_mode
-      prefix=prefix}}
+      prefix=prefix
+      show_reset_button=for_realm_settings}}
 </div>

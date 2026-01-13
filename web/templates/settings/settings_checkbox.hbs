@@ -16,6 +16,9 @@
         {{#if help_icon_tooltip_text}}
         <i class="tippy-zulip-tooltip fa fa-info-circle settings-info-icon" {{#if hide_tooltip}}style="display: none;"{{/if}} data-tippy-content="{{help_icon_tooltip_text}}"></i>
         {{/if}}
+        {{#if show_reset_button}}
+        {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+        {{/if}}
     </label>
 </div>
 {{/unless}}
