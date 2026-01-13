@@ -5,6 +5,7 @@ from io import BytesIO
 from typing import Any
 
 import pyvips
+import sentry_sdk
 from django.db import transaction
 from typing_extensions import override
 
@@ -49,6 +50,7 @@ class ThumbnailWorker(QueueProcessingWorker):
                 return
             lock_time = time.perf_counter() - start_time
             logger.info("Starting thumbnailing for %s", row.path_id)
+            sentry_sdk.set_tag("path_id", row.path_id)
             result = ensure_thumbnails(row)
             commit_time = time.perf_counter()
         end_time = time.perf_counter()
