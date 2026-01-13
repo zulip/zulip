@@ -33,7 +33,7 @@ export function get_rating(): GifRating {
     return "g";
 }
 
-export function update_gif_rating_policy(): void {
+export function update_gif_icon_visibility(): void {
     // Updating the GIF rating policy would only result in us showing/hiding
     // the currently set GIF icon depending on whether the policy is configured
     // to `disabled`.
