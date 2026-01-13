@@ -2124,6 +2124,104 @@ class SlackImporter(ZulipTestCase):
                 "app_id": "A3G4A68V9",
                 "channel_name": "general",
             },
+            {
+                "subtype": "bot_message",
+                "text": "`render_block` will delete me, help!\nHello, `render_block` recognizes me.",
+                "username": "ClickUp",
+                "attachments": [
+                    {
+                        "id": 1,
+                        "blocks": [
+                            {
+                                "type": "section",
+                                "block_id": "bZ4XB",
+                                "text": {
+                                    "type": "mrkdwn",
+                                    "text": "*<https://app.clickup.com/t/25567147/86cw30wf2|asd>*",
+                                    "verbatim": False,
+                                },
+                            },
+                            {
+                                "type": "context",
+                                "block_id": "TEfLM",
+                                "elements": [
+                                    {
+                                        "type": "image",
+                                        "image_url": "https://search.clickup-au.com/media/app-icons/clickup/logo_alpha.png",
+                                        "alt_text": "Cookie / The Goodiest of Cstdddddsdd / dds",
+                                    },
+                                    {"type": "mrkdwn", "text": "in dds", "verbatim": False},
+                                    {
+                                        "type": "image",
+                                        "image_url": "https://search.clickup-au.com/media/app-icons/clickup/status.png",
+                                        "alt_text": "Status",
+                                    },
+                                    {"type": "mrkdwn", "text": "To Do", "verbatim": False},
+                                ],
+                            },
+                            {
+                                "type": "actions",
+                                "block_id": "cg8fg",
+                                "elements": [
+                                    {
+                                        "type": "button",
+                                        "action_id": "NOOP",
+                                        "text": {
+                                            "type": "plain_text",
+                                            "text": "View task",
+                                            "emoji": False,
+                                        },
+                                        "url": "https://app.clickup.com/t/25567147/86cw30wf2",
+                                    },
+                                    {
+                                        "type": "button",
+                                        "action_id": "EDIT_TASK_ACTION",
+                                        "text": {
+                                            "type": "plain_text",
+                                            "text": "Edit task",
+                                            "emoji": False,
+                                        },
+                                        "value": '{"taskID":"86cw30wf2","teamID":"25567147","taskUrl":"https://app.clickup.com/t/25567147/86cw30wf2"}',
+                                    },
+                                ],
+                            },
+                        ],
+                        "color": "#656f7d",
+                        "fallback": "[no preview available]",
+                    }
+                ],
+                "type": "message",
+                "ts": "1723609070.703489",
+                "bot_id": "B06NWMNUQ3W",
+                "app_id": "A3G4A68V9",
+                "blocks": [
+                    {
+                        "type": "rich_text",
+                        "elements": [
+                            {
+                                "type": "rich_text_section",
+                                "elements": [
+                                    {
+                                        "type": "text",
+                                        "text": "`render_block` will delete me, help!",
+                                    }
+                                ],
+                            }
+                        ],
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "plain_text",
+                            "text": "Hello, `render_block` recognizes me.",
+                            "emoji": True,
+                        },
+                    },
+                ],
+                "channel": "C06P6T3QGD7",
+                "event_ts": "1723609070.703489",
+                "channel_type": "channel",
+            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -2160,7 +2258,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 4)
+        self.assert_length(zerver_message, 5)
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
@@ -2206,6 +2304,22 @@ by Pieter
 """.strip()
         self.assertEqual(zerver_message[3]["content"], expected_message_block_3)
         self.assertEqual(zerver_message[3]["sender"], slack_user_id_to_zulip_user_id["B06NWMNUQ3W"])
+
+        expected_message_block_4 = """
+`render_block` will delete me, help!
+Hello, `render_block` recognizes me.
+**[asd](https://app.clickup.com/t/25567147/86cw30wf2)**
+
+[Cookie / The Goodiest of Cstdddddsdd / dds](https://search.clickup-au.com/media/app-icons/clickup/logo_alpha.png)
+
+in dds
+
+[Status](https://search.clickup-au.com/media/app-icons/clickup/status.png)
+
+To Do
+""".strip()
+        self.assertEqual(zerver_message[4]["content"], expected_message_block_4)
+        self.assertEqual(zerver_message[4]["sender"], slack_user_id_to_zulip_user_id["B06NWMNUQ3W"])
 
     @mock.patch("zerver.data_import.slack.channel_message_to_zerver_message")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
