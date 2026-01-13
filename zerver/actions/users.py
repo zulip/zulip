@@ -956,7 +956,7 @@ def do_send_password_reset_email(
         user_profile = None
 
     if user_profile is not None:
-        queue_soft_reactivation(user_profile.id)
+        queue_soft_reactivation(user_profile.id, user_profile.realm_id)
         maybe_remove_from_suppression_list(user_profile.delivery_email)
         context["active_account_in_realm"] = True
         context["reset_url"] = generate_password_reset_url(user_profile, token_generator)

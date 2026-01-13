@@ -95,9 +95,9 @@ class DigestTopic:
 
 # Changes to this should also be reflected in
 # zerver/worker/digest_emails.py:DigestWorker.consume()
-def queue_digest_user_ids(user_ids: list[int], cutoff: datetime) -> None:
+def queue_digest_user_ids(user_ids: list[int], cutoff: datetime, realm_id: int) -> None:
     # Convert cutoff to epoch seconds for transit.
-    event = {"user_ids": user_ids, "cutoff": cutoff.strftime("%s")}
+    event = {"user_ids": user_ids, "cutoff": cutoff.strftime("%s"), "realm_id": realm_id}
     queue_json_publish_rollback_unsafe("digest_emails", event)
 
 
@@ -151,7 +151,7 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime) -> None:
     chunk_size = 30
     for i in range(0, len(user_ids), chunk_size):
         chunk_user_ids = list(user_ids[i : i + chunk_size])
-        queue_digest_user_ids(chunk_user_ids, cutoff)
+        queue_digest_user_ids(chunk_user_ids, cutoff, realm.id)
         logger.info(
             "Queuing user_ids for potential digest: %s",
             chunk_user_ids,

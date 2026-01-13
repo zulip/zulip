@@ -111,6 +111,7 @@ def export_realm(
     # killing the process after 60s
     event = {
         "type": "realm_export",
+        "realm_id": realm.id,
         "user_profile_id": user.id,
         "realm_export_id": row.id,
     }

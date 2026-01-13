@@ -183,6 +183,12 @@ class QueueProcessingWorker(ABC):
                         "local_queue_size": self.get_remaining_local_queue_size(),
                     },
                 )
+                if (
+                    len(events) == 1
+                    and events[0].get("realm_id")
+                    and isinstance(events[0]["realm_id"], int)
+                ):
+                    sentry_sdk.set_tag("realm_id", events[0]["realm_id"])
             try:
                 if self.idle:
                     # We're reactivating after having gone idle due to emptying the queue.

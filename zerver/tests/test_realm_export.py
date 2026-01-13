@@ -385,6 +385,7 @@ class RealmExportTest(ZulipTestCase):
         expected_event = {
             "type": "realm_export",
             "user_profile_id": acting_user.id,
+            "realm_id": acting_user.realm_id,
             "realm_export_id": realm_export_id,
         }
         mock_event_on_commit.assert_called_once_with("deferred_work", expected_event)
