@@ -334,7 +334,7 @@ export function dispatch_normal_event(event) {
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
                 jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
-                gif_rating_policy: gif_state.update_gif_rating_policy,
+                gif_rating_policy: gif_state.update_gif_icon_visibility,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
                 welcome_message_custom_text: noop,
