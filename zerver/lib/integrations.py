@@ -722,7 +722,17 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="Home Assistant",
     ),
     IncomingWebhookIntegration("ifttt", ["meta-integration"], display_name="IFTTT"),
-    IncomingWebhookIntegration("intercom", ["customer-support"]),
+    IncomingWebhookIntegration(
+        "intercom",
+        ["customer-support"],
+        url_options=[
+            WebhookUrlOption(
+                name="separate_topics_for_each_entity",
+                label="Create separate topics for each entity",
+                validator=check_bool,
+            ),
+        ],
+    ),
     IncomingWebhookIntegration(
         "jira",
         ["project-management"],
