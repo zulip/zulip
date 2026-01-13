@@ -1215,36 +1215,7 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .group-header {
-        white-space: nowrap;
-        padding-top: 5px;
-        display: flex;
-        align-items: center;
-
-        .group-name-wrapper {
-            position: relative;
-            font-size: 1.5em;
-            font-weight: 600;
-            white-space: nowrap;
-            max-width: 90%;
-            flex: auto;
-            min-width: 0;
-            overflow-x: clip;
-            text-overflow: ellipsis;
-
-            .group-name {
-                display: block;
-                width: 100%;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
-
-        .button-group {
-            margin-left: auto;
-        }
-    }
-
+    .group-description-field,
     .channel-description-field {
         display: flex;
         flex-wrap: wrap;
@@ -1262,7 +1233,7 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .group-description-wrapper,
+    .user-group-description,
     .stream-description {
         hyphens: auto;
 
@@ -1567,12 +1538,6 @@ h4.user_group_setting_subsection_title {
             display: block;
             float: right;
             margin-top: 10px;
-        }
-
-        .group-header {
-            .button-group {
-                margin-top: -5px;
-            }
         }
     }
 }
