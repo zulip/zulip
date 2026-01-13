@@ -302,12 +302,15 @@ class SlackWebhookTests(WebhookTestCase):
 
     @mock_slack_api_calls
     def test_message_from_slack_integration_bot(self) -> None:
+        message_body = "**Task status changed** from `complete` to `to do`"
+        # The integration message is from Slack's ClickUp webhook integration.
+        expected_message = EXPECTED_MESSAGE.format(user="ClickUp", message=message_body)
+
         self.check_webhook(
             "message_from_slack_integration_bot",
-            "",
-            "",
+            EXPECTED_TOPIC,
+            expected_message,
             content_type="application/json",
-            expect_noop=True,
         )
 
     @mock_slack_api_calls
