@@ -4,7 +4,6 @@ import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import cast
 
 import pyvips
 from bs4 import BeautifulSoup
@@ -556,8 +555,9 @@ def process_inline_images_to_thumbnails(
 ) -> tuple[bool, str | None]:
     if placeholder_image_tag is None:
         assert image_link is not None
-        full_res_image_tag = cast(Tag | None, image_link.find("img", src=image_link["href"]))
-        if full_res_image_tag and image_data is not None:
+        full_res_image_tag = image_link.find("img", src=image_link["href"])
+        assert full_res_image_tag is None or isinstance(full_res_image_tag, Tag)
+        if full_res_image_tag is not None and image_data is not None:
             # The <img> element has the same src as the link,
             # which means this is an older, non-thumbnailed
             # version.  Let's replace the image with a spinner,
