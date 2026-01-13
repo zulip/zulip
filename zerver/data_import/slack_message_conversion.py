@@ -1,3 +1,4 @@
+import contextlib
 import re
 from datetime import datetime, timezone
 from itertools import zip_longest
@@ -253,7 +254,14 @@ def convert_to_zulip_markdown(
     return text, mentioned_users_id, message_has_link
 
 
+class LossyConversionError(Exception):
+    pass
+
+
 def render_block(block: WildValue) -> str:
+    """
+    Raises `LossyConversionError` if it's a rich_text block type.
+    """
     # https://api.slack.com/reference/block-kit/blocks
     supported_types = {
         "context",
@@ -283,18 +291,18 @@ def render_block(block: WildValue) -> str:
     known_types = {
         *supported_types,
         *unhandled_types,
-        # All user-sent messages contain at least a "block" component with a
-        # "rich_text" block. This block contains the same string as the "text"
-        # field. We're skipping this because the Slack import tool already
-        # handles the "text" field and the Slack incoming integration
-        # overrides it.
-        # https://docs.slack.dev/reference/block-kit/blocks/rich-text-block/
+        # rich_text is a special case. It probably composes the bulk of a message
+        # body since it's responsible for very basic text formatting--such as
+        # plain text, bold, italic, etc. Our current Slack text conversion module
+        # can't process this block since this is not formatted in Markdown.
         "rich_text",
     }
     block_type = block["type"].tame(check_string_in(known_types))
 
     if block_type in unhandled_types:
         return ""
+    elif block_type == "rich_text":
+        raise LossyConversionError
     elif block_type == "context" and block.get("elements"):
         pieces = []
         # Slack renders these pieces left-to-right, packed in as
@@ -425,7 +433,14 @@ def render_attachment(attachment: WildValue) -> str:
                 fields.append(f"{value}")
         pieces.append("\n".join(fields))
     if attachment.get("blocks"):
-        pieces += map(render_block, attachment["blocks"])
+        for block in attachment["blocks"]:
+            # rich_text blocks in "attachments" elements don't have a
+            # corresponding raw value in the "text" field, so we can't
+            # fallback to the "text" field in this case like we can do
+            # with rich_text in message "blocks".
+            # TODO: We should use the raw rich_text strings instead.
+            with contextlib.suppress(LossyConversionError):  # nocoverage
+                pieces.append(render_block(block))
     if image_url_wv := attachment.get("image_url"):
         try:
             image_url = image_url_wv.tame(check_url)
@@ -465,7 +480,13 @@ def process_slack_block_and_attachment(message: WildValue) -> str:
     raw_text = message["text"].tame(check_string)
 
     if message.get("blocks"):
-        pieces += map(render_block, message["blocks"])
+        try:
+            pieces += map(render_block, message["blocks"])
+        except LossyConversionError:
+            # render_block doesn't yet handle the "rich_text" block, which is used
+            # for very basic text formatting. To avoid message content loss, process
+            # the message["text"] field instead if rich_text is used.
+            pieces.append(raw_text)
 
     if set(pieces) in ({""}, set()):
         pieces.append(raw_text)
