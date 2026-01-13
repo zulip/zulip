@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 448
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (363, 1)  # bumped 2026-01-12 to add browserslist-useragent-regexp
+PROVISION_VERSION = (364, 0)  # bumped 2026-01-12 to upgrade JavaScript dependencies
