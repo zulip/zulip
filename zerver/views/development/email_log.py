@@ -51,104 +51,117 @@ def clear_emails(request: HttpRequest) -> HttpResponse:
 
 @require_safe
 def generate_all_emails(request: HttpRequest) -> HttpResponse:
-    # We import the Django test client inside the view function,
-    # because it isn't needed in production elsewhere, and not
-    # importing it saves ~50ms of unnecessary manage.py startup time.
+    # We import Django test client and override_settings inside
+    # the view function, because it isn't needed in production
+    # elsewhere, and not importing it saves ~50ms of unnecessary
+    # manage.py startup time.
 
-    from django.test import Client
+    from django.test import Client, override_settings
 
-    client = Client()
+    # override_settings is used as a hacky workaround to disable
+    # rate limiting; this is fine because this view only runs in
+    # the development environment.
+    with override_settings(RATE_LIMITING=False):
+        client = Client()
 
-    # write fake data for all variables
-    registered_email = "hamlet@zulip.com"
-    unregistered_email_1 = "new-person@zulip.com"
-    unregistered_email_2 = "new-person-2@zulip.com"
-    invite_expires_in_minutes = INVITATION_LINK_VALIDITY_MINUTES
-    realm = get_realm("zulip")
-    other_realm = Realm.objects.exclude(string_id="zulip").first()
-    user = get_user_by_delivery_email(registered_email, realm)
+        # write fake data for all variables
+        registered_email = "hamlet@zulip.com"
+        unregistered_email_1 = "new-person@zulip.com"
+        unregistered_email_2 = "new-person-2@zulip.com"
+        invite_expires_in_minutes = INVITATION_LINK_VALIDITY_MINUTES
+        realm = get_realm("zulip")
+        other_realm = Realm.objects.exclude(string_id="zulip").first()
+        user = get_user_by_delivery_email(registered_email, realm)
 
-    # Password reset emails
-    # active account in realm
-    result = client.post(
-        "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=realm.host
-    )
-    assert result.status_code == 302
-    # deactivated user
-    change_user_is_active(user, False)
-    result = client.post(
-        "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=realm.host
-    )
-    assert result.status_code == 302
-    change_user_is_active(user, True)
-    # account on different realm
-    assert other_realm is not None
-    result = client.post(
-        "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=other_realm.host
-    )
-    assert result.status_code == 302
-    # no account anywhere
-    result = client.post(
-        "/accounts/password/reset/", {"email": unregistered_email_1}, HTTP_HOST=realm.host
-    )
-    assert result.status_code == 302
+        # Password reset emails
+        # active account in realm
+        result = client.post(
+            "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=realm.host
+        )
+        assert result.status_code == 302
+        # deactivated user
+        change_user_is_active(user, False)
+        result = client.post(
+            "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=realm.host
+        )
+        assert result.status_code == 302
+        change_user_is_active(user, True)
+        # account on different realm
+        assert other_realm is not None
+        result = client.post(
+            "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=other_realm.host
+        )
+        assert result.status_code == 302
+        # no account anywhere
+        result = client.post(
+            "/accounts/password/reset/", {"email": unregistered_email_1}, HTTP_HOST=realm.host
+        )
+        assert result.status_code == 302
 
-    # Confirm account email
-    result = client.post("/accounts/home/", {"email": unregistered_email_1}, HTTP_HOST=realm.host)
-    assert result.status_code == 302
+        # Confirm account email
+        result = client.post(
+            "/accounts/home/", {"email": unregistered_email_1}, HTTP_HOST=realm.host
+        )
+        assert result.status_code == 302
 
-    # Find account email
-    result = client.post("/accounts/find/", {"emails": registered_email}, HTTP_HOST=realm.host)
-    assert result.status_code == 200
+        # Find account email
+        result = client.post("/accounts/find/", {"emails": registered_email}, HTTP_HOST=realm.host)
+        assert result.status_code == 200
 
-    # New login email
-    logged_in = client.login(dev_auth_username=registered_email, realm=realm)
-    assert logged_in
+        # New login email
+        logged_in = client.login(dev_auth_username=registered_email, realm=realm)
+        assert logged_in
 
-    # New user invite and reminder emails
-    stream = get_realm_stream("Denmark", user.realm.id)
-    result = client.post(
-        "/json/invites",
-        {
-            "invitee_emails": unregistered_email_2,
-            "invite_expires_in_minutes": invite_expires_in_minutes,
-            "stream_ids": orjson.dumps([stream.id]).decode(),
-        },
-        HTTP_HOST=realm.host,
-    )
-    assert result.status_code == 200
+        # New user invite and reminder emails
+        stream = get_realm_stream("Denmark", user.realm.id)
+        result = client.post(
+            "/json/invites",
+            {
+                "invitee_emails": unregistered_email_2,
+                "invite_expires_in_minutes": invite_expires_in_minutes,
+                "stream_ids": orjson.dumps([stream.id]).decode(),
+            },
+            HTTP_HOST=realm.host,
+        )
+        assert result.status_code == 200
 
-    # Verification for new email
-    result = client.patch(
-        "/json/settings",
-        urlencode({"email": "hamlets-new@zulip.com"}),
-        content_type="application/x-www-form-urlencoded",
-        HTTP_HOST=realm.host,
-    )
-    assert result.status_code == 200
+        # Verification for new email
+        result = client.patch(
+            "/json/settings",
+            urlencode({"email": "hamlets-new@zulip.com"}),
+            content_type="application/x-www-form-urlencoded",
+            HTTP_HOST=realm.host,
+        )
+        assert result.status_code == 200
 
-    # Email change successful
-    key = Confirmation.objects.filter(type=Confirmation.EMAIL_CHANGE).latest("id").confirmation_key
-    user_profile = get_user_by_delivery_email(registered_email, realm)
-    result = client.post("/accounts/confirm_new_email/", {"key": key})
-    assert result.status_code == 200
+        # Email change successful
+        key = (
+            Confirmation.objects.filter(type=Confirmation.EMAIL_CHANGE)
+            .latest("id")
+            .confirmation_key
+        )
+        user_profile = get_user_by_delivery_email(registered_email, realm)
+        result = client.post("/accounts/confirm_new_email/", {"key": key})
+        assert result.status_code == 200
 
-    # Reset the email value so we can run this again
-    do_change_user_delivery_email(user_profile, registered_email, acting_user=None)
+        # Reset the email value so we can run this again
+        do_change_user_delivery_email(user_profile, registered_email, acting_user=None)
 
-    # Initial email with new account information for normal user
-    send_account_registered_email(user_profile)
+        # Initial email with new account information for normal user
+        send_account_registered_email(user_profile)
 
-    # Onboarding emails for normal user
-    enqueue_welcome_emails(user_profile)
+        # Onboarding emails for normal user
+        enqueue_welcome_emails(user_profile)
 
-    # Initial email with new account information for admin user
-    send_account_registered_email(get_user_by_delivery_email("iago@zulip.com", realm))
+        # Initial email with new account information for admin user
+        send_account_registered_email(get_user_by_delivery_email("iago@zulip.com", realm))
 
-    # Onboarding emails for admin user
-    enqueue_welcome_emails(get_user_by_delivery_email("iago@zulip.com", realm), realm_creation=True)
+        # Onboarding emails for admin user
+        enqueue_welcome_emails(
+            get_user_by_delivery_email("iago@zulip.com", realm), realm_creation=True
+        )
 
-    # Realm reactivation email
-    do_send_realm_reactivation_email(realm, acting_user=None)
+        # Realm reactivation email
+        do_send_realm_reactivation_email(realm, acting_user=None)
 
-    return redirect(email_page)
+        return redirect(email_page)
