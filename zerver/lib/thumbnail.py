@@ -544,7 +544,6 @@ html_formatter = HTMLFormatter(
 
 def process_inline_images_to_thumbnails(
     image_tag: Tag | None,
-    image_src: str,
     path_id: str,
     image_data: MarkdownImageMetadata | None,
     to_delete: set[str] | None,
@@ -648,7 +647,6 @@ def process_traditional_inline_images_to_thumbnails(
 
     return process_inline_images_to_thumbnails(
         image_tag,
-        image_link["href"],
         path_id,
         image_data,
         to_delete,
@@ -698,7 +696,7 @@ def rewrite_thumbnailed_images(
         image_data = images.get(path_id)
 
         image_changed, remaining_thumbnails_to_add = process_inline_images_to_thumbnails(
-            inline_image, image_src, path_id, image_data, to_delete
+            inline_image, path_id, image_data, to_delete
         )
 
         changed |= image_changed
