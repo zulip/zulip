@@ -1404,6 +1404,10 @@ ul.popover-group-menu-member-list {
     display: flex;
     align-items: flex-start;
     gap: 5px;
+
+    .realm-emoji-wrapper {
+        display: flex;
+    }
 }
 
 .personal-menu-status-text {
