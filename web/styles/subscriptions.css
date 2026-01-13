@@ -1184,42 +1184,13 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .group-header {
-        white-space: nowrap;
-        padding-top: 5px;
-        display: flex;
-        align-items: center;
-
-        .group-name-wrapper {
-            position: relative;
-            font-size: 1.5em;
-            font-weight: 600;
-            white-space: nowrap;
-            max-width: 90%;
-            flex: auto;
-            min-width: 0;
-            overflow-x: clip;
-            text-overflow: ellipsis;
-
-            .group-name {
-                display: block;
-                width: 100%;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
-
-        .button-group {
-            margin-left: auto;
-        }
-    }
-
     .group_change_property_info,
     .stream_change_property_info {
         vertical-align: top;
         margin: 0 5px 0 0;
     }
 
+    .group-description-field,
     .channel-description-field {
         display: flex;
         /* 10px at 16px */
@@ -1230,7 +1201,7 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .group-description-wrapper,
+    .user-group-description,
     .stream-description {
         hyphens: auto;
         display: flex;
@@ -1526,12 +1497,6 @@ h4.user_group_setting_subsection_title {
             display: block;
             float: right;
             margin-top: 10px;
-        }
-
-        .group-header {
-            .button-group {
-                margin-top: -5px;
-            }
         }
 
         .group_change_property_info,
