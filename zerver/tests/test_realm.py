@@ -337,6 +337,11 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, desdemona)
 
+        placeholder_realm = get_realm("zulip")
+        self.assertTrue(placeholder_realm.deactivated)
+        self.assertEqual(placeholder_realm.deactivated_redirect, realm.url)
+        self.assertIsNotNone(placeholder_realm.scheduled_deletion_date)
+
     def test_realm_name_length(self) -> None:
         new_name = "A" * (Realm.MAX_REALM_NAME_LENGTH + 1)
         data = dict(name=new_name)
@@ -415,6 +420,7 @@ class RealmTest(ZulipTestCase):
         placeholder_realm = get_realm("zulip")
         self.assertTrue(placeholder_realm.deactivated)
         self.assertEqual(placeholder_realm.deactivated_redirect, user.realm.url)
+        self.assertIsNone(placeholder_realm.scheduled_deletion_date)
 
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED, acting_user=iago
