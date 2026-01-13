@@ -554,6 +554,8 @@ def process_inline_images_to_thumbnails(
     image_link: Tag | None = None,
 ) -> tuple[bool, str | None]:
     if placeholder_image_tag is None:
+        # We have a link-based image <div class="message_inline_image"><a><img /></a></div>, but
+        # the image is not a placeholder.
         assert image_link is not None
         full_res_image_tag = image_link.find("img", src=image_link["href"])
         assert full_res_image_tag is None or isinstance(full_res_image_tag, Tag)
@@ -580,7 +582,7 @@ def process_inline_images_to_thumbnails(
 
     if to_delete and path_id in to_delete:
         # This was not a valid thumbnail target, for some reason.
-        # Trim out the whole "message_inline_image" or the "image"
+        # Trim out the whole "message_inline_image" div, or the "image"
         # element, since it's not going be renderable by clients
         # either.
         if inline_image_div is not None:
@@ -596,14 +598,18 @@ def process_inline_images_to_thumbnails(
         # one image, and it's not this one.  Leave this one as-is.
         return False, path_id
     elif image_data.url is None:
-        # We're re-rendering the whole message, so fetched all of
-        # the image metadata rows; this is one of the images we
+        # We're re-rendering the whole message, so fetched all of the
+        # image metadata rows; this is one of the images we care
         # about, but is not thumbnailed yet.
         return False, path_id
+
+    # This is a placeholder for an image which we now have a thumbnail
+    # for; replace the placeholder with the thumbnailed image.
 
     del placeholder_image_tag["class"]
 
     if inline_image_div is None:
+        # This is for `![...](...)` images, which don't have a div.
         placeholder_image_tag["class"] = "inline-image"
 
     placeholder_image_tag["src"] = image_data.url
@@ -620,11 +626,12 @@ def process_inline_images_to_thumbnails(
     return True, None
 
 
-def process_traditional_inline_images_to_thumbnails(
+def process_link_inline_images_to_thumbnails(
     images: dict[str, MarkdownImageMetadata],
     to_delete: set[str] | None,
     inline_image_div: Tag,
 ) -> tuple[bool, str | None] | None:
+    """This handles inline thumbnail images from [...](...) links."""
     image_link = inline_image_div.find("a")
     if (
         not isinstance(image_link, Tag)
@@ -665,9 +672,9 @@ def rewrite_thumbnailed_images(
 
     changed = False
 
-    # Loading placeholder images for previews of linked images use this code path.
+    # Loading placeholder images for previews of linked images (i.e., `[...](...)`, with no `!`) use this code path.
     for inline_image_div in parsed_message.find_all("div", class_="message_inline_image"):
-        processed_results = process_traditional_inline_images_to_thumbnails(
+        processed_results = process_link_inline_images_to_thumbnails(
             images, to_delete, inline_image_div
         )
 
@@ -681,7 +688,7 @@ def rewrite_thumbnailed_images(
         if unthumbnailed_path_id is not None:
             remaining_thumbnails.add(unthumbnailed_path_id)
 
-    # Loading placeholder images for modern Markdown images use this code path.
+    # Loading placeholder images for `![...](...)` style images
     for inline_placeholder_image in parsed_message.find_all(
         "img", class_="inline-image image-loading-placeholder"
     ):
