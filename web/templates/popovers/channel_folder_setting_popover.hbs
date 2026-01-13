@@ -41,5 +41,21 @@
                 {{/each}}
             </div>
         </li>
+
+        <li role="separator" class="popover-menu-separator"></li>
+        <!-- Channel links go to setting -->
+        <li role="none" class="popover-menu-list-item channel-links-selector">
+            <label class="channel-links-selector-header popover-menu-link" role="menuitem">
+                <span class="popover-menu-label">{{t "Channel links go to" }}</span>
+            </label>
+            <div class="sidebar-tab-picker">
+                {{#each channel_links_options}}
+                    <label class="popover-menu-link" role="menuitem" tabindex="0">
+                        <input type="radio" class="tab-option" name="channel-links-display-folders" value="{{this.code}}" {{#if (eq ../channel_links_display this.code)}}checked{{/if}} />
+                        <span class="popover-menu-label">{{this.description}}</span>
+                    </label>
+                {{/each}}
+            </div>
+        </li>
     </ul>
 </div>
