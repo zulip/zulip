@@ -18,7 +18,7 @@ export function get_stream_filters_max_height(): number {
     const GAP = 15;
 
     const $left_sidebar_search = $("#left-sidebar-search");
-    const is_search_visible = $left_sidebar_search.attr("display") !== "none";
+    const is_search_visible = $left_sidebar_search.css("display") !== "none";
 
     let stream_filters_max_height =
         viewport_height -
