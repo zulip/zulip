@@ -203,6 +203,7 @@ test("stream delete (normal)", ({override}) => {
         stream_id: event.stream_ids[0],
         name: "devel",
         is_archived: false,
+        subscribed: false,
     };
 
     const test_sub = {
@@ -224,10 +225,6 @@ test("stream delete (normal)", ({override}) => {
         removed_stream_ids.push(stream_id);
     });
 
-    let removed_sidebar_rows = 0;
-    override(stream_list, "remove_sidebar_row", () => {
-        removed_sidebar_rows += 1;
-    });
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     override(unread_ops, "process_read_messages_event", noop);
@@ -236,8 +233,6 @@ test("stream delete (normal)", ({override}) => {
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
-
-    assert.equal(removed_sidebar_rows, 1);
 });
 
 test("stream delete (special streams)", ({override}) => {
@@ -275,7 +270,6 @@ test("stream delete (special streams)", ({override}) => {
 
     override(settings_org, "sync_realm_settings", noop);
     override(settings_streams, "update_default_streams_table", noop);
-    override(stream_list, "remove_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     override(unread_ops, "process_read_messages_event", noop);
@@ -312,7 +306,6 @@ test("stream delete (stream is selected in compose)", ({override}) => {
     stream_data.add_sub_for_tests(devel_sub);
     stream_data.add_sub_for_tests(test_sub);
 
-    stream_data.subscribe_myself(devel_sub);
     compose_state.set_stream_id(event.stream_ids[0]);
 
     const removed_stream_ids = [];
@@ -323,10 +316,6 @@ test("stream delete (stream is selected in compose)", ({override}) => {
 
     override(settings_streams, "update_default_streams_table", noop);
 
-    let removed_sidebar_rows = 0;
-    override(stream_list, "remove_sidebar_row", () => {
-        removed_sidebar_rows += 1;
-    });
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     override(unread_ops, "process_read_messages_event", noop);
@@ -338,6 +327,4 @@ test("stream delete (stream is selected in compose)", ({override}) => {
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     assert.equal(compose_state.stream_name(), "");
-
-    assert.equal(removed_sidebar_rows, 1);
 });

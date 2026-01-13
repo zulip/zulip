@@ -81,6 +81,11 @@ function send_stream_typing_notification(
     operation: "start" | "stop",
 ): void {
     const stream = stream_data.get_sub_by_id(stream_id)!;
+    // If the user lost access to the stream while typing, stream might
+    // be undefined for us, in which case, we need to to return early.
+    if (stream === undefined) {
+        return;
+    }
     if (!stream_data.can_post_messages_in_stream(stream)) {
         return;
     }
