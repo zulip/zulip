@@ -551,11 +551,10 @@
     --user-group-popover-horizontal-padding: 0.6666em; /* 10px at 15px/1em */
     --user-group-popover-icon-text-gap: 0.3125em; /* 5px at 16px/1em */
 
+    /* flatpickr variable removed - now using native browser date picker */
     /*
-    This isn't scaled with font-size because the flatpickr is a third
-    party component that doesn't scale with font size.
-    */
     --flatpickr-confirm-button-font-size: 18px;
+    */
 
     /*
     Width to be reserved for document scrollbar when scrolling is disabled.

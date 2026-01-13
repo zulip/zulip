@@ -898,7 +898,8 @@ input[type="checkbox"] {
     align-items: center;
     width: var(--modal-input-width);
 
-    .flatpickr-wrapper {
+    /* Updated for native date picker */
+    .datepicker {
         grid-column: datepicker-start / close-button-end;
         grid-row: close-button;
     }

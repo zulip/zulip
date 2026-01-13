@@ -97,6 +97,10 @@ export function open_schedule_message_menu(
             $popper.on("click", ".send_later_custom", (e) => {
                 const $send_later_options_content = $popper.find(".popover-menu-list");
                 const current_time = new Date();
+                const min_date = new Date(
+                    current_time.getTime() +
+                        scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
+                );
                 flatpickr.show_flatpickr(
                     util.the($(".send_later_custom")),
                     (send_at_time) => {
@@ -105,16 +109,12 @@ export function open_schedule_message_menu(
                     },
                     new Date(current_time.getTime() + 60 * 60 * 1000),
                     {
-                        minDate: new Date(
-                            current_time.getTime() +
-                                scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
-                        ),
-                        onClose(selectedDates, _dateStr, instance) {
+                        minDate: min_date,
+                        onClose(selectedDates, _dateStr, _instance) {
                             // Return to normal state.
                             $send_later_options_content.css("pointer-events", "all");
                             const selected_date = selectedDates[0];
-                            assert(instance.config.minDate !== undefined);
-                            if (selected_date && selected_date < instance.config.minDate) {
+                            if (selected_date && selected_date < min_date) {
                                 scheduled_messages.set_minimum_scheduled_message_delay_minutes_note(
                                     true,
                                 );

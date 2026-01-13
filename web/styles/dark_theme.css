@@ -1,4 +1,5 @@
-@import url("flatpickr/dist/themes/dark.css");
+/* flatpickr dark theme removed - now using native browser date picker */
+/* @import url("flatpickr/dist/themes/dark.css"); */
 
 %dark-theme {
     color-scheme: dark;
