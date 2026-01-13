@@ -547,7 +547,7 @@ html_formatter = HTMLFormatter(
 
 
 def process_inline_images_to_thumbnails(
-    image_tag: Tag | None,
+    placeholder_image_tag: Tag | None,
     path_id: str,
     image_data: MarkdownImageMetadata | None,
     to_delete: set[str] | None,
@@ -557,22 +557,22 @@ def process_inline_images_to_thumbnails(
     changed = False
     remaining_thumbnails_to_add = None
 
-    if image_tag is None:
+    if placeholder_image_tag is None:
         assert image_link is not None
-        image_tag = cast(Tag | None, image_link.find("img", src=image_link["href"]))
-        if image_tag and image_data is not None:
+        full_res_image_tag = cast(Tag | None, image_link.find("img", src=image_link["href"]))
+        if full_res_image_tag and image_data is not None:
             # The <img> element has the same src as the link,
             # which means this is an older, non-thumbnailed
             # version.  Let's replace the image with a spinner,
             # and mark it as a pending thumbnail.
             changed = True
-            image_tag["src"] = "/static/images/loading/loader-black.svg"
-            image_tag["class"] = "image-loading-placeholder"
-            image_tag["data-original-dimensions"] = (
+            full_res_image_tag["src"] = "/static/images/loading/loader-black.svg"
+            full_res_image_tag["class"] = "image-loading-placeholder"
+            full_res_image_tag["data-original-dimensions"] = (
                 f"{image_data.original_width_px}x{image_data.original_height_px}"
             )
             if image_data.original_content_type:
-                image_tag["data-original-content-type"] = image_data.original_content_type
+                full_res_image_tag["data-original-content-type"] = image_data.original_content_type
 
             remaining_thumbnails_to_add = path_id
         else:
@@ -591,8 +591,8 @@ def process_inline_images_to_thumbnails(
         if inline_image_div is not None:
             inline_image_div.decompose()
         else:
-            assert image_tag is not None
-            image_tag.decompose()
+            assert placeholder_image_tag is not None
+            placeholder_image_tag.decompose()
 
         changed = True
         return changed, remaining_thumbnails_to_add
@@ -608,21 +608,21 @@ def process_inline_images_to_thumbnails(
         remaining_thumbnails_to_add = path_id
     else:
         changed = True
-        del image_tag["class"]
+        del placeholder_image_tag["class"]
 
         if inline_image_div is None:
-            image_tag["class"] = "inline-image"
+            placeholder_image_tag["class"] = "inline-image"
 
-        image_tag["src"] = image_data.url
-        image_tag["data-original-dimensions"] = (
+        placeholder_image_tag["src"] = image_data.url
+        placeholder_image_tag["data-original-dimensions"] = (
             f"{image_data.original_width_px}x{image_data.original_height_px}"
         )
         if image_data.original_content_type is not None:
-            image_tag["data-original-content-type"] = image_data.original_content_type
+            placeholder_image_tag["data-original-content-type"] = image_data.original_content_type
         if image_data.is_animated:
-            image_tag["data-animated"] = "true"
+            placeholder_image_tag["data-animated"] = "true"
         if image_data.transcoded_image is not None:
-            image_tag["data-transcoded-image"] = str(image_data.transcoded_image)
+            placeholder_image_tag["data-transcoded-image"] = str(image_data.transcoded_image)
 
     return changed, remaining_thumbnails_to_add
 
@@ -645,12 +645,12 @@ def process_traditional_inline_images_to_thumbnails(
 
     path_id = image_link["href"].removeprefix("/user_uploads/")
     image_data = images.get(path_id)
-    image_tag = image_link.find("img", class_="image-loading-placeholder")
+    placeholder_image_tag = image_link.find("img", class_="image-loading-placeholder")
 
-    assert image_tag is None or isinstance(image_tag, Tag)
+    assert placeholder_image_tag is None or isinstance(placeholder_image_tag, Tag)
 
     return process_inline_images_to_thumbnails(
-        image_tag,
+        placeholder_image_tag,
         path_id,
         image_data,
         to_delete,
@@ -689,10 +689,10 @@ def rewrite_thumbnailed_images(
             remaining_thumbnails.add(remaining_thumbnails_to_add)
 
     # Loading placeholder images for modern Markdown images use this code path.
-    for inline_image in parsed_message.find_all(
+    for inline_placeholder_image in parsed_message.find_all(
         "img", class_="inline-image image-loading-placeholder"
     ):
-        image_src = inline_image.get("data-original-src")
+        image_src = inline_placeholder_image.get("data-original-src")
 
         assert image_src is not None
 
@@ -700,7 +700,7 @@ def rewrite_thumbnailed_images(
         image_data = images.get(path_id)
 
         image_changed, remaining_thumbnails_to_add = process_inline_images_to_thumbnails(
-            inline_image, path_id, image_data, to_delete
+            inline_placeholder_image, path_id, image_data, to_delete
         )
 
         changed |= image_changed
