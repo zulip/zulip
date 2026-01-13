@@ -11,6 +11,7 @@ from zerver.data_import.slack_message_conversion import (
     SLACK_USERMENTION_REGEX,
     convert_slack_formatting,
     convert_slack_workspace_mentions,
+    process_slack_block_and_attachment,
     replace_links,
 )
 from zerver.decorator import webhook_view
@@ -262,15 +263,12 @@ def api_slack_webhook(
 
     raw_files = event_dict.get("files")
     files = convert_raw_file_data(raw_files) if raw_files else []
-    raw_text = event_dict.get("text", "").tame(check_string)
+    raw_text = process_slack_block_and_attachment(event_dict)
     text = convert_to_zulip_markdown(raw_text, slack_app_token)
     user_id = event_dict.get("user").tame(check_none_or(check_string))
     if user_id is None:
         # This is likely a Slack integration bot message. The sender of these
         # messages doesn't have a user profile.
-        # TODO: This class of message typically use more Slack blocks and
-        # attachments, which the Slack webhook integration currently doesn't
-        # support.
         sender = event_dict["username"].tame(check_string)
     else:
         sender = get_slack_sender_name(user_id, slack_app_token)
