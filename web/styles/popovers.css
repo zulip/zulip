@@ -286,6 +286,7 @@
     color: var(--color-text-popover-menu);
     line-height: 1.1;
     margin-top: 4px;
+    width: max-content;
 }
 
 .popover-group-menu-info {
