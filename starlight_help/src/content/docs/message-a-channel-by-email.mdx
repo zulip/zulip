@@ -4,6 +4,7 @@ title: Message a channel by email
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SelectChannelViewGeneral from "../include/_SelectChannelViewGeneral.mdx";
@@ -28,6 +29,11 @@ programming experience, another option is to use our [send message
 API](/api/send-message).
 
 ### Message a channel by email
+
+<ZulipNote>
+  You will see the button to generate an email address only if you
+  have permission to send messages to this channel.
+</ZulipNote>
 
 <FlattenedSteps>
   <NavigationSteps target="relative/gear/channel-settings" />

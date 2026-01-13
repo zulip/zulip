@@ -160,6 +160,7 @@ function create_and_update_message_list(
     restore_rendered_list: boolean;
 } {
     const excludes_muted_topics = filter.excludes_muted_topics();
+    const excludes_muted_users = filter.excludes_muted_users();
 
     // Check if we already have a rendered message list for the `filter`.
     // TODO: If we add a message list other than `is_in_home` to be save as rendered,
@@ -189,6 +190,7 @@ function create_and_update_message_list(
         let msg_data = new MessageListData({
             filter,
             excludes_muted_topics,
+            excludes_muted_users,
         });
 
         const original_id_info = {...id_info};
@@ -214,6 +216,7 @@ function create_and_update_message_list(
                 msg_data = new MessageListData({
                     filter,
                     excludes_muted_topics,
+                    excludes_muted_users,
                 });
             }
         }
@@ -228,6 +231,7 @@ function create_and_update_message_list(
             msg_data = new MessageListData({
                 filter,
                 excludes_muted_topics,
+                excludes_muted_users,
             });
         }
 
@@ -488,11 +492,18 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
     const coming_from_recent_view = recent_view_util.is_visible();
     const coming_from_inbox = inbox_util.is_visible();
 
+    const preserve_zoomed_in_channel =
+        stream_list.is_zoomed_in() &&
+        stream_list.get_sidebar_stream_topic_info(filter).stream_id === narrow_state.stream_id();
+    const show_more_topics = preserve_zoomed_in_channel || show_opts.show_more_topics === true;
     const opts = {
         change_hash: true,
         trigger: "unknown",
-        show_more_topics: false,
         ...show_opts,
+        // This is a bit awkward, since `show_opts` may have already
+        // included a show_more_topics value, but we always want to
+        // prefer the value above that avoids unzooming incorrectly.
+        show_more_topics,
         then_select_id: show_opts.then_select_id ?? -1,
     };
 
@@ -510,7 +521,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             id_info.target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
         }
         if (filter.has_operator("id")) {
-            id_info.target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
+            id_info.target_id = Number.parseInt(filter.terms_with_operator("id")[0]!.operand, 10);
         }
 
         if (
@@ -986,6 +997,7 @@ function navigate_to_anchor_message(opts: {
         const msg_list_data = new MessageListData({
             filter: message_lists.current.data.filter,
             excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
+            excludes_muted_users: message_lists.current.data.excludes_muted_users,
         });
         load_local_messages(msg_list_data, all_messages_data);
         // It is still possible that `all_messages_data` doesn't have any messages
@@ -999,6 +1011,7 @@ function navigate_to_anchor_message(opts: {
     const msg_list_data = new MessageListData({
         filter: message_lists.current.data.filter,
         excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
+        excludes_muted_users: message_lists.current.data.excludes_muted_users,
     });
 
     message_fetch.load_messages_around_anchor(

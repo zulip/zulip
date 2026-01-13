@@ -1,19 +1,3 @@
-## Integrations
-
-* [Overview](/api/integrations-overview)
-* [Incoming webhook integrations](/api/incoming-webhooks-overview)
-* [Hello world walkthrough](/api/incoming-webhooks-walkthrough)
-* [Non-webhook integrations](/api/non-webhook-integrations)
-
-## Interactive bots
-
-* [Writing bots](/api/writing-bots)
-* [Interactive bots API](/api/interactive-bots-api)
-* [Writing tests for bots](/api/writing-tests-for-interactive-bots)
-* [Running bots](/api/running-bots)
-* [Deploying bots](/api/deploying-bots)
-* [Outgoing webhooks](/api/outgoing-webhooks)
-
 ## REST API
 
 * [Overview](/api/rest)

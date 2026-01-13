@@ -14,6 +14,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import get_language
 
 from zerver.actions.message_delete import do_delete_messages_by_sender
+from zerver.actions.message_send import send_user_profile_update_notification
 from zerver.actions.streams import bulk_remove_subscriptions, send_peer_remove_events
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
@@ -46,7 +47,7 @@ from zerver.lib.streams import (
     stream_to_dict,
 )
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
-from zerver.lib.types import UserGroupMembersData
+from zerver.lib.types import UserGroupMembersData, UserProfileChangeDict
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
@@ -583,7 +584,7 @@ def send_stream_events_for_role_update(
 
 @transaction.atomic(savepoint=False)
 def do_change_user_role(
-    user_profile: UserProfile, value: int, *, acting_user: UserProfile | None
+    user_profile: UserProfile, value: int, *, acting_user: UserProfile | None, notify: bool
 ) -> None:
     # We want to both (a) take a lock on the UserProfile row, and (b)
     # modify the passed-in UserProfile object, so that callers see the
@@ -599,6 +600,8 @@ def do_change_user_role(
     old_value = user_profile.role
     if old_value == value:
         return
+
+    old_role_name = user_profile.get_role_name()
     old_system_group = get_system_user_group_for_user(user_profile)
 
     previously_accessible_streams = get_streams_for_user(
@@ -632,6 +635,18 @@ def do_change_user_role(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
     )
     send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
+
+    if notify:
+        changes: list[UserProfileChangeDict] = [
+            UserProfileChangeDict(
+                field_name="role",
+                old_value=old_role_name,
+                new_value=user_profile.get_role_name(),
+            )
+        ]
+        send_user_profile_update_notification(
+            user_profile=user_profile, acting_user=acting_user, changes=changes
+        )
 
     UserGroupMembership.objects.filter(
         user_profile=user_profile, user_group=old_system_group

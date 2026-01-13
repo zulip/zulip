@@ -58,7 +58,19 @@ class zulip::nginx {
   }
 
   $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
+  $raw_true_client_header = zulipconf('loadbalancer', 'true_client_header', '')
+  $true_client_header = regsubst(downcase($raw_true_client_header), '-', '_', 'G')
+  $true_client_header_from = split(zulipconf('loadbalancer', 'true_client_header_from', ''), ',')
   $lb_rejects_http_requests = zulipconf('loadbalancer', 'rejects_http_requests', false)
+  file { '/etc/nginx/zulip-include/trusted-ip':
+    ensure  => file,
+    require => Package[$zulip::common::nginx],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    notify  => Service['nginx'],
+    content => template('zulip/nginx/trusted-ip.template.erb'),
+  }
   file { '/etc/nginx/zulip-include/trusted-proto':
     ensure  => file,
     require => Package[$zulip::common::nginx],

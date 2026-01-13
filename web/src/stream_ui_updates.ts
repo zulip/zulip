@@ -229,13 +229,13 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     if (sub.subscribed) {
         $settings_button
             .text($t({defaultMessage: "Unsubscribe"}))
-            .removeClass("unsubscribed action-button-quiet-brand")
-            .addClass("action-button-quiet-neutral");
+            .removeClass("unsubscribed action-button-subtle-brand")
+            .addClass("action-button-subtle-neutral");
     } else {
         $settings_button
             .text($t({defaultMessage: "Subscribe"}))
-            .addClass("unsubscribed action-button-quiet-brand")
-            .removeClass("action-button-quiet-neutral");
+            .addClass("unsubscribed action-button-subtle-brand")
+            .removeClass("action-button-subtle-neutral");
     }
     if (stream_data.can_toggle_subscription(sub)) {
         $settings_button.prop("disabled", false);
@@ -281,7 +281,7 @@ export function update_settings_button_for_archive_and_unarchive(sub: StreamSubs
     }
 }
 
-export function update_regular_sub_settings(sub: StreamSubscription): void {
+export function update_channel_email_section(sub: StreamSubscription): void {
     // These are in the right panel.
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
         return;
@@ -293,28 +293,6 @@ export function update_regular_sub_settings(sub: StreamSubscription): void {
         $settings.find(".stream-email-box").show();
     } else {
         $settings.find(".stream-email-box").hide();
-    }
-}
-
-export function enable_or_disable_generate_email_button(sub: StreamSubscription): void {
-    if (!hash_parser.is_editing_stream(sub.stream_id)) {
-        return;
-    }
-
-    const $settings = $(
-        `.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id.toString())}']`,
-    );
-    const $generate_email_button_container = $settings.find(
-        ".generate-channel-email-button-container",
-    );
-    const $generate_email_button = $generate_email_button_container.find(".copy_email_button");
-
-    if (stream_data.can_access_stream_email(sub)) {
-        $generate_email_button.prop("disabled", false);
-        $generate_email_button_container.removeClass("disabled_setting_tooltip");
-    } else {
-        $generate_email_button.prop("disabled", true);
-        $generate_email_button_container.addClass("disabled_setting_tooltip");
     }
 }
 
@@ -523,7 +501,10 @@ export function update_stream_row_in_settings_tab(sub: StreamSubscription): void
                 !sub.subscribed &&
                 stream_data.can_toggle_subscription(sub))
         ) {
-            if (stream_settings_components.archived_status_filter_includes_channel(sub)) {
+            if (
+                stream_settings_components.archived_status_filter_includes_channel(sub) &&
+                stream_settings_components.folder_filter_includes_channel(sub)
+            ) {
                 $row.removeClass("notdisplayed");
             }
         } else if (current_user.is_guest || !stream_data.can_toggle_subscription(sub)) {

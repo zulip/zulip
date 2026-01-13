@@ -361,7 +361,7 @@ img.screenshot {
     width: 33%;
 }
 
-.portico-page h1 {
+.portico-container:not(.help) h1 {
     font-weight: 300;
 }
 

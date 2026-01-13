@@ -148,8 +148,6 @@ h3,
 }
 
 .admin-realm-description.rendered_markdown {
-    /* 5px at 16px and 10px at 16px */
-    padding: 0.3125em 0.625em;
     width: fit-content;
     /* 500px at 16px */
     max-width: 31.25em;
@@ -1587,6 +1585,10 @@ label.preferences-radio-choice-label {
             overflow: auto;
 
             background-color: hsl(0deg 0% 0% / 2%);
+
+            #channel-folder-settings .zulip-icon-preview {
+                font-size: 1.25em;
+            }
         }
     }
 }
@@ -1701,6 +1703,11 @@ label.preferences-radio-choice-label {
         .name-setting {
             margin-bottom: 10px;
         }
+    }
+
+    #edit-user-form-error:has(.banner),
+    #bot-edit-form-error:has(.banner) {
+        margin-bottom: 10px;
     }
 
     & input,
@@ -1863,8 +1870,20 @@ label.preferences-radio-choice-label {
     opacity: 0.5;
 }
 
+/* This nicely displays uneditable user-generated content, such as
+   rendered realm and channel descriptions. */
+.settings-view-only-textarea {
+    margin: 0;
+    /* 5px at 16px and 10px at 16px */
+    padding: 0.3125em 0.625em;
+    background-color: var(--background-color-view-only-textarea);
+    border: 1px solid var(--border-color-textarea);
+    border-radius: 4px;
+}
+
 .modal-textarea:disabled {
     background-color: var(--background-color-readonly-modal-input);
+    opacity: var(--opacity-readonly-modal-input);
 }
 
 @media (width < $lg_min) {
@@ -2309,6 +2328,7 @@ label.preferences-radio-choice-label {
         width: 50%;
     }
 
+    .topic-to-use-wrapper .dropdown_widget_value,
     .integration-url-name-wrapper .dropdown_widget_value,
     .integration-url-stream-wrapper .dropdown_widget_value {
         white-space: nowrap;
@@ -2316,6 +2336,7 @@ label.preferences-radio-choice-label {
         text-overflow: ellipsis;
     }
 
+    .topic-to-use-wrapper .dropdown-widget-button,
     .integration-url-stream-wrapper .dropdown-widget-button {
         width: 75%;
     }

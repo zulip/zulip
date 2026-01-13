@@ -5,10 +5,6 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class AzuredevopsHookTests(WebhookTestCase):
-    CHANNEL_NAME = "azure-devops"
-    URL_TEMPLATE = "/api/v1/external/azuredevops?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "azuredevops"
-
     def test_push_event_message(self) -> None:
         expected_topic_name = "test-zulip / main"
         expected_message = "Yuro Itaki [pushed](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/branchCompare?baseVersion=GC51515957669f93c543df09f8f3e7f47c3613c879&targetVersion=GCb0ce2f2009c3c87dbefadf61d7eb2c0697a6f369&_a=files) 1 commit to branch main.\n\n* Modify readme ([b0ce2f2009c](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/commit/b0ce2f2009c3c87dbefadf61d7eb2c0697a6f369))"

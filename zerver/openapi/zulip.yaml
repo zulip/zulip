@@ -13853,8 +13853,8 @@ paths:
                     for more details on what each type means.
 
                     - **1**: Short text
-                    - **2**: Long text
-                    - **3**: List of options
+                    - **2**: Paragraph
+                    - **3**: Dropdown
                     - **4**: Date picker
                     - **5**: Link
                     - **6**: Person picker
@@ -13866,10 +13866,10 @@ paths:
                   example: 3
                 field_data:
                   description: |
-                    Field types 3 (List of options) and 7 (External account) support storing
+                    Field types 3 (Dropdown) and 7 (External account) support storing
                     additional configuration for the field type in the `field_data` attribute.
 
-                    For field type 3 (List of options), this attribute is a JSON dictionary
+                    For field type 3 (Dropdown), this attribute is a JSON dictionary
                     defining the choices and the order they will be displayed in the
                     dropdown UI for individual users to select an option.
 
@@ -13886,7 +13886,7 @@ paths:
                     user's profile (or in a more easily accessible "small profile").
 
                     At most 2 profile fields may have this property be true in a given
-                    organization. The "Long text" [profile field types][profile-field-types]
+                    organization. The "Paragraph" [profile field types][profile-field-types]
                     profile field types cannot be selected to be displayed in profile summaries.
 
                     The "Person picker" profile field is also not supported, but that is likely to
@@ -21187,12 +21187,7 @@ paths:
         settings for specified users or members of user groups using
         the `target_users` parameter.
 
-        **Changes**: Added support for bulk updating the settings
-        for specified users or members of user groups in
-        Zulip 12.0 (feature level 444) using the `target_users`
-        and `skip_if_already_edited` parameters.
-
-        Removed `dense_mode` setting in Zulip 10.0 (feature level 364)
+        **Changes**: Removed `dense_mode` setting in Zulip 10.0 (feature level 364)
         as we now have `web_font_size_px` and `web_line_height_percent`
         settings for more control.
 
@@ -21275,7 +21270,7 @@ paths:
                     {
                       "user_ids": [6, 8],
                       "group_ids": [24],
-                      skip_if_alread_edited: false,
+                      "skip_if_already_edited": false,
                     }
                 full_name:
                   description: |
@@ -22011,8 +22006,6 @@ paths:
                   example: true
             encoding:
               target_users:
-                contentType: application/json
-              skip_if_already_edited:
                 contentType: application/json
               twenty_four_hour_time:
                 contentType: application/json
@@ -23041,7 +23034,14 @@ paths:
       description: |
         Get email address of a channel.
 
-        **Changes**: New in Zulip 8.0 (feature level 226).
+        Note that only users with permission to post messages in the channel
+        can access the channel's email address.
+
+        **Changes**: Prior to Zulip 12.0 (feature level 448), users without
+        permission to post messages in the channel could access the channel's email
+        if they had metadata access.
+
+        New in Zulip 8.0 (feature level 226).
       parameters:
         - $ref: "#/components/parameters/ChannelIdInPath"
         - name: sender_id
@@ -25765,8 +25765,8 @@ components:
             article for details on what each type means.
 
             - **1**: Short text
-            - **2**: Long text
-            - **3**: List of options
+            - **2**: Paragraph
+            - **3**: Dropdown
             - **4**: Date picker
             - **5**: Link
             - **6**: Person picker
@@ -25791,10 +25791,10 @@ components:
         field_data:
           type: string
           description: |
-            Field types 3 (List of options) and 7 (External account) support storing
+            Field types 3 (Dropdown) and 7 (External account) support storing
             additional configuration for the field type in the `field_data` attribute.
 
-            For field type 3 (List of options), this attribute is a JSON dictionary
+            For field type 3 (Dropdown), this attribute is a JSON dictionary
             defining the choices and the order they will be displayed in the
             dropdown UI for individual users to select an option.
 
@@ -25804,7 +25804,7 @@ components:
           description: |
             Whether the custom profile field, display or not on the user card.
 
-            Currently it's value not allowed to be `true` of `Long text` and `Person picker`
+            Must be false for `Paragraph` and `Person picker`
             [profile field types](/help/custom-profile-fields#profile-field-types).
 
             This field is only included when its value is `true`.

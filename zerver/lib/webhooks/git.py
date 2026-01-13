@@ -44,7 +44,6 @@ FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = (
     "{user_name} [force pushed]({url}) to branch {branch_name}. Head is now {head}."
 )
 CREATE_BRANCH_MESSAGE_TEMPLATE = "{user_name} created [{branch_name}]({url}) branch."
-CREATE_BRANCH_WITHOUT_URL_MESSAGE_TEMPLATE = "{user_name} created {branch_name} branch."
 REMOVE_BRANCH_MESSAGE_TEMPLATE = "{user_name} deleted branch {branch_name}."
 
 ISSUE_LABELED_OR_UNLABELED_MESSAGE_TEMPLATE = (
@@ -57,7 +56,6 @@ ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE_WITH_TITLE = "[{user_name}]({u
 
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action}{assignee} [{type}{id}{title}]({url})"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
-PULL_REQUEST_REVIEWER_INFO_TEMPLATE = "(assigned reviewers: {reviewer})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
 
 CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~"
@@ -179,11 +177,6 @@ def get_force_push_commits_event_message(
 
 
 def get_create_branch_event_message(user_name: str, url: str | None, branch_name: str) -> str:
-    if url is None:
-        return CREATE_BRANCH_WITHOUT_URL_MESSAGE_TEMPLATE.format(
-            user_name=user_name,
-            branch_name=branch_name,
-        )
     return CREATE_BRANCH_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         url=url,
@@ -210,7 +203,6 @@ def get_pull_request_event_message(
     assignee: str | None = None,
     assignees: list[dict[str, Any]] | None = None,
     assignee_updated: str | None = None,
-    reviewer: str | None = None,
     type: str = "PR",
     title: str | None = None,
     suffix: str | None = None,
@@ -255,10 +247,7 @@ def get_pull_request_event_message(
     elif assignee:
         assignee_info = PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignee)
 
-    elif reviewer:
-        assignee_info = PULL_REQUEST_REVIEWER_INFO_TEMPLATE.format(reviewer=reviewer)
-
-    if assignees or assignee or reviewer:
+    if assignees or assignee:
         main_message = f"{main_message} {assignee_info}"
 
     if suffix:

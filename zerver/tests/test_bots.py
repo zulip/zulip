@@ -1179,6 +1179,139 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch("/json/bots/{}".format(self.example_user("hamlet").id), bot_info)
         self.assert_json_error(result, "No such bot")
 
+    def test_patch_bot_short_name(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Bot owner can change short_name
+        bot_info = {
+            "short_name": "newbot",
+        }
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_success(result)
+
+        bot.refresh_from_db()
+        self.assertEqual(bot.email, "newbot-bot@zulip.testserver")
+
+    def test_patch_bot_short_name_admin(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Admin can change any bot's short_name
+        self.login("iago")
+        bot_info = {
+            "short_name": "adminchanged",
+        }
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_success(result)
+
+        bot.refresh_from_db()
+        self.assertEqual(bot.email, "adminchanged-bot@zulip.testserver")
+
+    def test_patch_bot_short_name_unauthorized(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Non-owner, non-admin cannot change
+        self.login("cordelia")
+        bot_info = {
+            "short_name": "unauthorized",
+        }
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "Insufficient permission")
+
+    def test_patch_bot_short_name_duplicate(self) -> None:
+        self.login("hamlet")
+        # Create first bot
+        bot_info = {
+            "full_name": "Bot 1",
+            "short_name": "bot1",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        # Create second bot
+        bot_info = {
+            "full_name": "Bot 2",
+            "short_name": "bot2",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot2 = self.get_bot_user("bot2-bot@zulip.testserver")
+
+        # Try to change bot2's short_name to bot1's
+        bot_info = {
+            "short_name": "bot1",
+        }
+        result = self.client_patch(f"/json/bots/{bot2.id}", bot_info)
+        self.assert_json_error(result, "Email address already in use")
+
+    def test_patch_bot_short_name_invalid(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Empty short_name should fail
+        bot_info = {
+            "short_name": "",
+        }
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "Bad name or username")
+
+    def test_patch_bot_short_name_no_change(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Changing to the same short_name should be a no-op
+        bot_info = {
+            "short_name": "hambot",
+        }
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_success(result)
+
+        bot.refresh_from_db()
+        self.assertEqual(bot.email, "hambot-bot@zulip.testserver")
+
+    def test_patch_bot_short_name_invalid_fake_email_domain(self) -> None:
+        self.login("hamlet")
+        # Create bot first without the invalid domain setting
+        self.create_bot()
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Now try to change short_name with invalid FAKE_EMAIL_DOMAIN
+        with override_settings(
+            FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"}
+        ):
+            bot_info = {
+                "short_name": "newbot",
+            }
+            result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+            error_message = (
+                "Can't change bot email until FAKE_EMAIL_DOMAIN is correctly configured.\n"
+                "Please contact your server administrator."
+            )
+            self.assert_json_error(result, error_message)
+
     def test_patch_bot_owner(self) -> None:
         self.login("hamlet")
         othello = self.example_user("othello")
@@ -1489,7 +1622,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = "default-bot@zulip.com"
         user_profile = self.get_bot_user(email)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=user_profile)
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MEMBER, acting_user=user_profile, notify=False
+        )
 
         req = dict(role=UserProfile.ROLE_GUEST)
 

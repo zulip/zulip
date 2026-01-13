@@ -147,7 +147,8 @@ from zproject.backends import (
     password_auth_enabled,
 )
 
-logger = logging.getLogger("")
+ldap_logger = logging.getLogger("zulip.ldap")
+logger = logging.getLogger("zulip.registration")
 
 
 @typed_endpoint
@@ -345,6 +346,7 @@ def registration_helper(
             prereg_realm.data_import_metadata["email_address_visibility"] = email_address_visibility
             prereg_realm.save(update_fields=["data_import_metadata"])
 
+            logger.info("(%s) Enqueueing Slack import", prereg_realm.string_id)
             queue_json_publish_rollback_unsafe(
                 "deferred_work",
                 {
@@ -422,6 +424,9 @@ def registration_helper(
                         check_slack_token_access(slack_access_token, SLACK_IMPORT_TOKEN_SCOPES)
                     except Exception as e:
                         context["slack_access_token_validation_error"] = str(e)
+                        logger.info(
+                            "(%s) Slack token failed validation: %s", prereg_realm.string_id, str(e)
+                        )
                         return TemplateResponse(
                             request,
                             "zerver/slack_import.html",
@@ -536,7 +541,9 @@ def registration_helper(
                     try:
                         ldap_username = backend.django_to_ldap_username(email)
                     except NoMatchingLDAPUserError:
-                        logger.warning("New account email %s could not be found in LDAP", email)
+                        ldap_logger.warning(
+                            "New account email %s could not be found in LDAP", email
+                        )
                         break
 
                     # Note that this `ldap_user` object is not a
@@ -788,9 +795,9 @@ def registration_helper(
                 # transaction, to avoid security issues if the process is interrupted halfway,
                 # e.g. leaving the user reactivated but with the wrong role.
                 do_activate_mirror_dummy_user(user_profile, acting_user=user_profile)
-                do_change_user_role(user_profile, role, acting_user=user_profile)
+                do_change_user_role(user_profile, role, acting_user=user_profile, notify=False)
             do_change_password(user_profile, password)
-            do_change_full_name(user_profile, full_name, user_profile)
+            do_change_full_name(user_profile, full_name, user_profile, notify=False)
             do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
             do_change_user_setting(
                 user_profile,
@@ -1254,10 +1261,15 @@ def realm_import_post_process(
             # to create this specific realm and cannot have been used
             # to finish creating an account yet.
             do_change_user_role(
-                importing_user, UserProfile.ROLE_REALM_OWNER, acting_user=importing_user
+                importing_user,
+                UserProfile.ROLE_REALM_OWNER,
+                acting_user=importing_user,
+                notify=False,
             )
             do_change_user_delivery_email(
-                importing_user, preregistration_realm.email, acting_user=importing_user
+                importing_user,
+                preregistration_realm.email,
+                acting_user=importing_user,
             )
 
             preregistration_realm.status = confirmation_settings.STATUS_USED

@@ -1693,6 +1693,7 @@ test("unparse", () => {
 test("describe", ({mock_template, override}) => {
     let narrow;
     let string;
+    let terms;
     mock_template("search_description.hbs", true, (_data, html) => html);
 
     narrow = [{operator: "channels", operand: "public"}];
@@ -1879,9 +1880,26 @@ test("describe", ({mock_template, override}) => {
     string = `topic <span class="empty-topic-display">translated: general chat</span>`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
-    narrow = [{operator: "topic", operand: ""}];
-    string = "topic ";
-    assert.equal(Filter.search_description_as_html(narrow, true), string);
+    /* Description for operator suggestion search terms */
+    terms = [{operator: "channels", operand: ""}];
+    string = "channel type";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "topic", operand: ""}];
+    string = "topic";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "near", operand: ""}];
+    string = "messages around";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "sender", operand: ""}];
+    string = "sent by";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "dm-including", operand: ""}];
+    string = "direct messages including";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
 });
 
 test("can_bucket_by", () => {
@@ -2071,7 +2089,7 @@ test("first_valid_id_from", ({override}) => {
     assert.equal(filter.first_valid_id_from(msg_ids), 20);
 });
 
-test("is_valid_search_term", () => {
+test("convert_suggestion_to_term", () => {
     const denmark = {
         stream_id: 100,
         name: "Denmark",
@@ -2100,16 +2118,17 @@ test("is_valid_search_term", () => {
     ];
     for (const [search_term_string, expected_is_valid] of test_data) {
         assert.equal(
-            Filter.is_valid_search_term(Filter.parse(search_term_string)[0]),
+            Filter.convert_suggestion_to_term(Filter.parse(search_term_string)[0]) !== undefined,
             expected_is_valid,
         );
     }
 
+    // Invalid operator.
     assert.equal(
-        Filter.is_valid_search_term({
+        Filter.convert_suggestion_to_term({
             operator: "foo",
             operand: "bar",
-        }),
+        }) !== undefined,
         false,
     );
 });

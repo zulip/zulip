@@ -98,7 +98,7 @@ class CustomProfileField(models.Model):
     # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
     SELECT_FIELD_TYPE_DATA: list[ExtendedFieldElement] = [
-        (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
+        (SELECT, gettext_lazy("Dropdown"), validate_select_field, str, "SELECT"),
     ]
     USER_FIELD_TYPE_DATA: list[UserFieldElement] = [
         (USER, gettext_lazy("Users"), check_valid_user_ids, orjson.loads, "USER"),
@@ -113,8 +113,8 @@ class CustomProfileField(models.Model):
 
     FIELD_TYPE_DATA: list[FieldElement] = [
         # Type, display name, validator, converter, keyword
-        (SHORT_TEXT, gettext_lazy("Text (short)"), check_short_string, str, "SHORT_TEXT"),
-        (LONG_TEXT, gettext_lazy("Text (long)"), check_long_string, str, "LONG_TEXT"),
+        (SHORT_TEXT, gettext_lazy("Short text"), check_short_string, str, "SHORT_TEXT"),
+        (LONG_TEXT, gettext_lazy("Paragraph"), check_long_string, str, "LONG_TEXT"),
         (DATE, gettext_lazy("Date"), check_date, str, "DATE"),
         (URL, gettext_lazy("Link"), check_url, str, "URL"),
         (

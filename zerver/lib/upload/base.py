@@ -47,7 +47,8 @@ class ZulipUploadBackend:
     def attachment_source(self, path_id: str) -> StreamingSourceWithSize:
         raise NotImplementedError
 
-    def delete_message_attachment(self, path_id: str) -> bool:
+    def delete_message_attachment(self, path_id: str) -> None:
+        """This must delete the attachment, any adjacent .info files, and any thumbnails."""
         raise NotImplementedError
 
     def delete_message_attachments(self, path_ids: list[str]) -> None:
@@ -133,5 +134,5 @@ class ZulipUploadBackend:
     ) -> str:
         raise NotImplementedError
 
-    def delete_export_tarball(self, export_path: str) -> str | None:
+    def delete_export_tarball(self, export_path: str) -> None:
         raise NotImplementedError

@@ -25,7 +25,7 @@ from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
-from zerver.actions.user_settings import do_scrub_avatar_image
+from zerver.actions.user_settings import do_scrub_avatar_images
 from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.avatar import (
     DEFAULT_AVATAR_FILE,
@@ -1567,7 +1567,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(os.path.isfile(avatar_original_path_id))
         self.assertTrue(os.path.isfile(avatar_medium_path_id))
 
-        do_scrub_avatar_image(user, acting_user=user)
+        do_scrub_avatar_images(user, acting_user=user)
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         self.assertFalse(os.path.isfile(avatar_path_id))

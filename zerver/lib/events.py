@@ -12,8 +12,12 @@ from typing_extensions import NotRequired, TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
-from zerver.actions.realm_settings import get_realm_authentication_methods_for_page_params_api
+from zerver.actions.realm_settings import (
+    do_set_realm_property,
+    get_realm_authentication_methods_for_page_params_api,
+)
 from zerver.actions.saved_snippets import do_get_saved_snippets
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
@@ -27,6 +31,7 @@ from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
+from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.integrations import (
     EMBEDDED_BOTS,
     INCOMING_WEBHOOK_INTEGRATIONS,
@@ -396,6 +401,25 @@ def fetch_initial_state_data(
         # Other settings, which are just server-level settings or data
         # about the version of Zulip, can be named without prefixes,
         # e.g. gif_rating_options or development_environment.
+
+        # If we no longer have a translation for the organization's language,
+        # correct the organization to have one; this block is a workaround for
+        # there not being a good time to run a migration to audit this after a
+        # new server version is deployed.
+        available_language_codes = get_available_language_codes()
+        if realm.default_language not in available_language_codes:
+            do_set_realm_property(realm, "default_language", "en", acting_user=None)
+
+        # Similar to the organization case above, if we no longer have translation
+        # for the user's language, update it to the organization's language.
+        if (
+            user_profile is not None
+            and user_profile.default_language not in available_language_codes
+        ):
+            do_change_user_setting(
+                user_profile, "default_language", realm.default_language, acting_user=None
+            )
+
         for property_name in Realm.property_types:
             state["realm_" + property_name] = getattr(realm, property_name)
 

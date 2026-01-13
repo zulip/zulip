@@ -80,6 +80,7 @@ from zerver.lib.test_helpers import (
     HostRequestMock,
     create_s3_buckets,
     load_subdomain_token,
+    most_recent_message,
     ratelimit_rule,
     read_test_image_file,
     use_s3_backend,
@@ -1816,7 +1817,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
                     "zproject.backends.ZulipDummyBackend",
                 ),
             ),
-            self.assertLogs(level="WARNING") as log_warn,
+            self.assertLogs("zulip.ldap", level="WARNING") as log_warn,
         ):
             result = self.social_auth_test(
                 account_data_dict,
@@ -1857,7 +1858,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
                 skip_registration_form=self.BACKEND_CLASS.full_name_validated,
             )
         self.assertEqual(
-            log_warn.output, [f"WARNING:root:New account email {email} could not be found in LDAP"]
+            log_warn.output,
+            [f"WARNING:zulip.ldap:New account email {email} could not be found in LDAP"],
         )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
@@ -1887,7 +1889,6 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
                 ),
             ),
             self.assertLogs("zulip.ldap", level="DEBUG") as log_debug,
-            self.assertLogs(level="WARNING") as log_warn,
         ):
             account_data_dict = self.get_account_data_dict(email=email, name=name)
             result = self.social_auth_test(
@@ -1908,12 +1909,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
                 skip_registration_form=self.BACKEND_CLASS.full_name_validated,
             )
         self.assertEqual(
-            log_warn.output, [f"WARNING:root:New account email {email} could not be found in LDAP"]
-        )
-        self.assertEqual(
             log_debug.output,
             [
-                f"DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: {email}. Input username: {email}"
+                f"WARNING:zulip.ldap:New account email {email} could not be found in LDAP",
+                f"DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: {email}. Input username: {email}",
             ],
         )
 
@@ -3672,7 +3671,6 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
             ),
             self.assertLogs(self.logger_string) as mock_log,
-            self.assertLogs("", level="WARNING") as mock_root_logger,
         ):
             account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
             result = self.social_auth_test(
@@ -3740,9 +3738,12 @@ class SAMLAuthBackendTest(SocialAuthBase):
             ),
             mock_log.output,
         )
-        self.assertEqual(
-            mock_root_logger.output[0],
-            "WARNING:root:ensure_missing_groups: received invalid groups names: ['@@@@']",
+        self.assertIn(
+            self.logger_output(
+                "ensure_missing_groups: received invalid groups names: ['@@@@']",
+                type="warning",
+            ),
+            mock_log.output,
         )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
@@ -3797,7 +3798,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 ),
             )
 
-        with self.assertLogs("", level="INFO") as mock_root_logger:
+        with self.assertLogs("zulip.ldap", level="INFO") as mock_ldap_logger:
             self.stage_two_of_registration(
                 result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
             )
@@ -3849,13 +3850,14 @@ class SAMLAuthBackendTest(SocialAuthBase):
         prereg_user = PreregistrationUser.objects.last()
         assert prereg_user is not None
         self.assertEqual(
-            mock_root_logger.output[0],
-            f"INFO:root:PreregistrationUser {prereg_user.id} should be added to groups ['newtestgroup'], but they don't exist. Creating them first.",
+            mock_ldap_logger.output[0],
+            f"INFO:zulip.ldap:PreregistrationUser {prereg_user.id} should be added to groups ['newtestgroup'], but they don't exist. Creating them first.",
         )
+
         self.assertEqual(
-            f"INFO:root:Synced user groups for PreregistrationUser {prereg_user.id} in {realm.id}: "
+            mock_ldap_logger.output[1],
+            f"INFO:zulip.ldap:Synced user groups for PreregistrationUser {prereg_user.id} in {realm.id}: "
             '{"newtestgroup": true, "testgroup1": true, "testgroup2": false}. Final groups set: [\'newtestgroup\', \'testgroup1\']',
-            mock_root_logger.output[1],
         )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
@@ -3911,7 +3913,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                     zulip_groups=["testgroup1"],
                 ),
             )
-        with self.assertLogs("", level="INFO") as mock_root_logger:
+        with self.assertLogs("zulip.ldap", level="INFO") as mock_logger:
             self.stage_two_of_registration(
                 result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
             )
@@ -3935,9 +3937,9 @@ class SAMLAuthBackendTest(SocialAuthBase):
         prereg_user = PreregistrationUser.objects.last()
         assert prereg_user is not None
         self.assertEqual(
-            f"INFO:root:Synced user groups for PreregistrationUser {prereg_user.id} in {realm.id}: "
+            f"INFO:zulip.ldap:Synced user groups for PreregistrationUser {prereg_user.id} in {realm.id}: "
             '{"testgroup1": true, "testgroup2": false}. Final groups set: [\'testgroup1\']',
-            mock_root_logger.output[0],
+            mock_logger.output[0],
         )
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
@@ -6996,12 +6998,15 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
             self.backend.django_to_ldap_username("aaron@zulip.com"), self.ldap_username("aaron")
         )
 
-        with self.assertLogs(level="WARNING") as m, self.assertRaises(NoMatchingLDAPUserError):
+        with (
+            self.assertLogs("zulip.ldap", level="WARNING") as m,
+            self.assertRaises(NoMatchingLDAPUserError),
+        ):
             self.backend.django_to_ldap_username("shared_email@zulip.com")
         self.assertEqual(
             m.output,
             [
-                "WARNING:root:Multiple users with email {} found in LDAP.".format(
+                "WARNING:zulip.ldap:Multiple users with email {} found in LDAP.".format(
                     "shared_email@zulip.com"
                 )
             ],
@@ -7785,6 +7790,10 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.perform_ldap_sync(self.example_user("hamlet"))
         hamlet = self.example_user("hamlet")
         self.assertEqual(hamlet.full_name, "New Name")
+        message = most_recent_message(hamlet)
+        self.assertIn("The following changes have been made to your account", message.content)
+        self.assertIn("**Old full name:** King Hamlet", message.content)
+        self.assertIn("**New full name:** New Name", message.content)
 
     def test_update_with_hidden_emails(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -7963,7 +7972,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             mock.patch("zerver.actions.user_settings.do_change_full_name") as f,
         ):
             self.perform_ldap_sync(hamlet2)
-            f.assert_called_once_with(*expected_call_args)
+            f.assert_called_once_with(*expected_call_args, notify=True)
 
             # Get the updated model and make sure the full name is changed correctly:
             hamlet2 = get_user_by_delivery_email(email, test_realm)
@@ -8048,12 +8057,12 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         # Try to use invalid data as the image:
         self.change_ldap_user_attr("hamlet", "jpegPhoto", b"00" + test_image_data)
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "avatar": "jpegPhoto"}):
-            with self.assertLogs(level="WARNING") as m:
+            with self.assertLogs("zulip.ldap", level="WARNING") as m:
                 self.perform_ldap_sync(self.example_user("hamlet"))
             self.assertEqual(
                 m.output,
                 [
-                    "WARNING:root:Could not parse {} field for user {}".format(
+                    "WARNING:zulip.ldap:Could not parse {} field for user {}".format(
                         "jpegPhoto", hamlet.id
                     )
                 ],
@@ -8094,6 +8103,15 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
                 user_profile=hamlet, field=field
             ).value
             self.assertEqual(field_value, test_case["expected_value"])
+        # Verify that notification was sent for custom profile field updates
+        message = most_recent_message(hamlet)
+        self.assertIn("The following changes have been made to your account", message.content)
+        # Check that both fields are mentioned in the notification
+        for data in test_data:
+            self.assertIn(f"**Old {data['field_name']}:**", message.content)
+            self.assertIn(
+                f"**New {data['field_name']}:** {data['expected_value']}", message.content
+            )
 
     def test_update_non_existent_profile_field(self) -> None:
         with (

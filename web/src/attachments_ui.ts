@@ -91,7 +91,7 @@ function set_upload_space_stats(): void {
             {
                 label: $t({defaultMessage: "Upgrade"}),
                 custom_classes: "request-upgrade",
-                attention: "quiet",
+                variant: "subtle",
             },
         ];
     }

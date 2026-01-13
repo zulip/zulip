@@ -95,7 +95,7 @@ const GROUP_INFO_BANNER: Banner = {
         {
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "banner-external-link",
-            attention: "quiet",
+            variant: "subtle",
         },
     ],
     close_button: false,
@@ -347,13 +347,13 @@ function update_group_membership_button(group_id: number): void {
     if (is_direct_member) {
         $group_settings_button
             .text($t({defaultMessage: "Leave group"}))
-            .removeClass("action-button-quiet-brand")
+            .removeClass("action-button-subtle-brand")
             .addClass("action-button-neutral");
     } else {
         $group_settings_button
             .text($t({defaultMessage: "Join group"}))
-            .removeClass("action-button-quiet-neutral")
-            .addClass("action-button-quiet-brand");
+            .removeClass("action-button-subtle-neutral")
+            .addClass("action-button-subtle-brand");
     }
 
     const can_join_group = settings_data.can_join_user_group(group_id);
@@ -579,33 +579,28 @@ function update_toggler_for_group_setting(group: UserGroup): void {
 function get_membership_status_context(group: UserGroup): {
     is_direct_member: boolean;
     is_member: boolean;
-    associated_subgroup_names_html: string | undefined;
+    associated_subgroup_names: string[] | undefined;
 } {
     const current_user_id = people.my_current_user_id();
     const is_direct_member = user_groups.is_direct_member_of(current_user_id, group.id);
 
     let is_member;
-    let associated_subgroup_names_html;
+    let associated_subgroup_names;
     if (is_direct_member) {
         is_member = true;
     } else {
         is_member = user_groups.is_user_in_group(group.id, current_user_id);
         if (is_member) {
-            const associated_subgroup_names = user_groups
+            associated_subgroup_names = user_groups
                 .get_associated_subgroups(group, current_user_id)
                 .map((subgroup) => user_groups.get_display_group_name(subgroup.name));
-            associated_subgroup_names_html = util.format_array_as_list_with_highlighted_elements(
-                associated_subgroup_names,
-                "long",
-                "unit",
-            );
         }
     }
 
     return {
         is_direct_member,
         is_member,
-        associated_subgroup_names_html,
+        associated_subgroup_names,
     };
 }
 

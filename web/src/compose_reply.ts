@@ -1,7 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
-import * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
@@ -16,7 +15,7 @@ import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
-import type {Message} from "./message_store.ts";
+import {type Message, single_message_content_schema} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
@@ -267,15 +266,14 @@ export function quote_message(opts: {
         compose_recipient.toggle_compose_recipient_dropdown();
     } else {
         if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
-            // The user has not started typing a message,
-            // but is quoting into the compose box,
-            // so we will re-open the compose box.
-            // (If you did re-open the compose box, you
-            // are prone to glitches where you select the
-            // text, plus it's a complicated codepath that
-            // can have other unintended consequences.)
+            // Whether or not the compose box is open, it's empty, so
+            // we start a new message replying to the quoted message.
             respond_to_message({
                 ...opts,
+                // Critically, we pass the message_id of the message we
+                // just quoted, to avoid incorrectly replying to an
+                // unrelated selected message in interleaved views.
+                message_id,
                 keep_composebox_empty: true,
             });
         }
@@ -322,10 +320,11 @@ export function quote_message(opts: {
 
     void channel.get({
         url: "/json/messages/" + message_id,
-        data: {allow_empty_topic_name: true},
+        data: {allow_empty_topic_name: true, apply_markdown: false},
         success(raw_data) {
-            const data = z.object({raw_content: z.string()}).parse(raw_data);
-            replace_content(message, data.raw_content);
+            const data = single_message_content_schema.parse(raw_data);
+            assert(data.message.content_type === "text/x-markdown");
+            replace_content(message, data.message.content);
         },
         error() {
             compose_ui.replace_syntax(
@@ -383,7 +382,7 @@ function get_range_intersection_with_element(range: Range, element: Node): Range
     return intersection;
 }
 
-export function get_message_selection(selection = window.getSelection()): string {
+export let get_message_selection = (selection = window.getSelection()): string => {
     assert(selection !== null);
     let selected_message_content_raw = "";
 
@@ -426,6 +425,10 @@ export function get_message_selection(selection = window.getSelection()): string
     }
     selected_message_content_raw = selected_message_content_raw.trim();
     return selected_message_content_raw;
+};
+
+export function rewire_get_message_selection(value: typeof get_message_selection): void {
+    get_message_selection = value;
 }
 
 export function initialize(): void {

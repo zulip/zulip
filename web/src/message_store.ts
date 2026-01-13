@@ -57,6 +57,13 @@ const message_reaction_schema = z.object({
 
 export type MessageReaction = z.infer<typeof message_reaction_schema>;
 
+export const single_message_content_schema = z.object({
+    message: z.object({
+        content: z.string(),
+        content_type: z.enum(["text/html", "text/x-markdown"]),
+    }),
+});
+
 export const submessage_schema = z.object({
     id: z.number(),
     sender_id: z.number(),

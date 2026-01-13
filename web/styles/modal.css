@@ -491,6 +491,10 @@
     will-change: transform;
 }
 
+.micromodal .modal__content.footer-hidden {
+    margin-bottom: 1.25em;
+}
+
 .modal__spinner .loading_indicator_spinner {
     height: 16px;
 
@@ -652,10 +656,21 @@
     }
 }
 
-#create_bot_short_name {
+#create_bot_short_name,
+#edit_bot_short_name {
     /* A shorter dropdown width (~200px at 14px em)
        to ensure the email all fits on one line. */
     width: 14em;
+}
+
+#edit_bot_short_name.invalid {
+    border-color: var(--color-invalid-input-border);
+    box-shadow: var(--invalid-input-box-shadow);
+}
+
+.email_change_container .settings-field-hint {
+    color: var(--color-text-settings-field-hint);
+    font-size: 0.9em;
 }
 
 #add-poll-modal,
@@ -812,6 +827,11 @@
             }
         }
     }
+}
+
+.slack-topics-dropdown-dropdown-list-container {
+    /* 250px at 14px */
+    width: 17.8571em;
 }
 
 #invite_users_option_tabs_container {

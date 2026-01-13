@@ -9,10 +9,6 @@ from zerver.webhooks.pivotal.view import api_pivotal_webhook_v5
 
 
 class PivotalV3HookTests(WebhookTestCase):
-    CHANNEL_NAME = "pivotal"
-    URL_TEMPLATE = "/api/v1/external/pivotal?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "pivotal"
-
     def test_accepted(self) -> None:
         expected_topic_name = "My new Feature story"
         expected_message = 'Leo Franchi accepted "My new Feature story" \
@@ -112,10 +108,6 @@ class PivotalV3HookTests(WebhookTestCase):
 
 
 class PivotalV5HookTests(WebhookTestCase):
-    CHANNEL_NAME = "pivotal"
-    URL_TEMPLATE = "/api/v1/external/pivotal?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "pivotal"
-
     def test_accepted(self) -> None:
         expected_topic_name = "#63486316: Story of the Year"
         expected_message = """Leo Franchi updated [Hard Code](https://www.pivotaltracker.com/s/projects/807213): [Story of the Year](http://www.pivotaltracker.com/story/show/63486316):

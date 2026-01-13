@@ -1,14 +1,23 @@
 <div id="bot-edit-form" data-user-id="{{user_id}}" data-email="{{email}}">
     <form class="edit_bot_form name-setting">
-        <div class="alert" id="bot-edit-form-error"></div>
+        <div id="bot-edit-form-error" class="banner-wrapper"></div>
         <div class="input-group name_change_container">
             <label for="edit_bot_full_name" class="modal-field-label">{{t "Name" }}</label>
             <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" maxlength="{{max_bot_name_length}}" />
         </div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group email_change_container">
-            <label for="email" class="modal-field-label">{{t "Email" }}</label>
-            <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
+            <label for="edit_bot_short_name" class="modal-field-label">
+                {{t "Bot email (a-z, 0-9, and dashes only)" }}
+                {{> ../help_link_widget link="/help/bots-overview" }}
+            </label>
+            <input type="text" autocomplete="off" name="bot_short_name" id="edit_bot_short_name"
+              class="modal_text_input"
+              value="{{ short_name }}" placeholder="{{t 'cookie' }}" maxlength="100" />
+            -bot@{{ realm_bot_domain }}
+            <div class="settings-field-hint">
+                {{t "Integrations will need to be updated to use the new email address." }}
+            </div>
         </div>
         <div class="input-group user_id_container">
             <label for="user_id" class="modal-field-label">{{t "User ID" }}</label>
@@ -43,13 +52,13 @@
             </div>
             {{> ../components/action_button
               label=(t "Change avatar")
-              attention="quiet"
+              variant="subtle"
               intent="neutral"
               custom_classes="edit_bot_avatar_upload_button"
               }}
             {{> ../components/action_button
               label=(t "Clear profile picture")
-              attention="quiet"
+              variant="subtle"
               intent="danger"
               custom_classes="edit_bot_avatar_clear_button"
               hidden=true
@@ -61,7 +70,7 @@
     <div class="input-group">
         {{> ../components/action_button
           label=(t "Generate URL for an integration")
-          attention="quiet"
+          variant="subtle"
           intent="neutral"
           custom_classes="generate_url_for_integration"
           }}
@@ -122,7 +131,7 @@
         {{#if is_active}}
         {{> ../components/action_button
           label=(t "Deactivate bot")
-          attention="quiet"
+          variant="subtle"
           intent="danger"
           custom_classes="deactivate-bot-button"
           }}
@@ -130,7 +139,7 @@
         <span>
             {{> ../components/action_button
               label=(t "Reactivate bot")
-              attention="quiet"
+              variant="subtle"
               intent="success"
               custom_classes="reactivate-user-button"
               }}

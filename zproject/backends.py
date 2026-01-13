@@ -815,7 +815,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                     # This is possible, but strange, so worth logging a warning about.
                     # We can't translate the email to a unique username,
                     # so we don't do anything else here.
-                    logging.warning("Multiple users with email %s found in LDAP.", username)
+                    ldap_logger.warning("Multiple users with email %s found in LDAP.", username)
                     result = username
 
         if _LDAPUser(self, result).attrs is None:
@@ -896,7 +896,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             user.avatar_hash = user_avatar_content_hash(ldap_avatar)
             user.save(update_fields=["avatar_hash"])
         else:
-            logging.warning("Could not parse %s field for user %s", avatar_attr_name, user.id)
+            ldap_logger.warning("Could not parse %s field for user %s", avatar_attr_name, user.id)
 
     def is_user_disabled_in_ldap(self, ldap_user: _LDAPUser) -> bool:
         """Implements checks for whether a user has been
@@ -993,7 +993,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 )
             except JsonableError as e:
                 raise ZulipLDAPError(e.msg)
-            do_change_full_name(user_profile, full_name, None)
+            do_change_full_name(user_profile, full_name, None, notify=True)
 
     def sync_custom_profile_fields_from_ldap(
         self, user_profile: UserProfile, ldap_user: _LDAPUser
@@ -1366,7 +1366,7 @@ class ZulipLDAPUser(_LDAPUser):
             # Change the role properly, updating system groups.
             updated_role = user_profile.role
             user_profile.role = original_role
-            do_change_user_role(user_profile, updated_role, acting_user=None)
+            do_change_user_role(user_profile, updated_role, acting_user=None, notify=True)
 
     def _get_groups(self) -> _LDAPUserGroups:
         groups = super()._get_groups()
@@ -1743,7 +1743,7 @@ def sync_user_profile_custom_fields(
                 "value": value,
             }
         )
-    do_update_user_custom_profile_data_if_changed(user_profile, profile_data)
+    do_update_user_custom_profile_data_if_changed(user_profile, profile_data, None, notify=True)
 
 
 @external_auth_method
@@ -1841,12 +1841,12 @@ def sync_groups_for_prereg_user(
         missing_group_names = set(group_names_to_ensure_member) - {
             group.name for group in groups_to_ensure_member
         }
-        logging.info(
+        ldap_logger.info(
             "PreregistrationUser %s should be added to groups %s, but they don't exist. Creating them first.",
             prereg_user.id,
             sorted(missing_group_names),
         )
-        groups_to_ensure_member += ensure_missing_groups(missing_group_names, realm)
+        groups_to_ensure_member += ensure_missing_groups(missing_group_names, realm, ldap_logger)
 
     groups_to_ensure_not_member = list(
         NamedUserGroup.objects.filter(
@@ -1860,7 +1860,7 @@ def sync_groups_for_prereg_user(
     final_group_names = set(prereg_user.groups.all().values_list("name", flat=True))
 
     stringified_dict = json.dumps(group_memberships_sync_map, sort_keys=True)
-    logging.info(
+    ldap_logger.info(
         "Synced user groups for PreregistrationUser %s in %s: %s. Final groups set: %s",
         prereg_user.id,
         realm.id,
@@ -1924,7 +1924,7 @@ def sync_groups(
                 user_id,
                 sorted(missing_group_names),
             )
-            add_groups += ensure_missing_groups(missing_group_names, realm)
+            add_groups += ensure_missing_groups(missing_group_names, realm, logger)
 
         bulk_add_members_to_user_groups(add_groups, [user_id], acting_user=None)
 
@@ -1939,7 +1939,9 @@ def sync_groups(
 
 
 @transaction.atomic(savepoint=False)
-def ensure_missing_groups(missing_group_names: set[str], realm: Realm) -> list[NamedUserGroup]:
+def ensure_missing_groups(
+    missing_group_names: set[str], realm: Realm, logger: logging.Logger
+) -> list[NamedUserGroup]:
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     group_owners = system_groups_name_dict[SystemGroups.OWNERS].usergroup_ptr
     group_settings_map = dict(
@@ -1954,7 +1956,7 @@ def ensure_missing_groups(missing_group_names: set[str], realm: Realm) -> list[N
             continue
         valid_groups_names.add(group_name)
     if valid_groups_names != missing_group_names:
-        logging.warning(
+        logger.warning(
             "ensure_missing_groups: received invalid groups names: %s",
             sorted(missing_group_names - valid_groups_names),
         )
@@ -2162,7 +2164,7 @@ def social_auth_sync_user_attributes(
     # Based on the information collected above, sync what's needed for the user_profile.
     old_role = user_profile.role
     if new_role is not None and old_role != new_role:
-        do_change_user_role(user_profile, new_role, acting_user=None)
+        do_change_user_role(user_profile, new_role, acting_user=None, notify=True)
         backend.logger.info(
             "Set role %s for user %s", UserProfile.ROLE_ID_TO_API_NAME[new_role], user_profile.id
         )

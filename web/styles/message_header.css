@@ -367,3 +367,13 @@
         }
     }
 }
+
+.spectator-view .recipient_bar_controls .recipient-bar-control {
+    &.recipient-bar-copy-link-to-topic {
+        display: flex;
+    }
+
+    &.recipient-row-topic-menu {
+        display: none;
+    }
+}

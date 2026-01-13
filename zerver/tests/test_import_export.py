@@ -22,10 +22,7 @@ from analytics.models import UserCount
 from version import ZULIP_VERSION
 from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_user import do_create_user
-from zerver.actions.custom_profile_fields import (
-    do_update_user_custom_profile_data_if_changed,
-    try_add_realm_custom_profile_field,
-)
+from zerver.actions.custom_profile_fields import try_add_realm_custom_profile_field
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.navigation_views import do_add_navigation_view
 from zerver.actions.presence import do_update_user_presence
@@ -1693,7 +1690,7 @@ class RealmImportExportTest(ExportFile):
             assert new_realm_emoji is not None
         original_realm_emoji_count = RealmEmoji.objects.count()
         self.assertGreaterEqual(original_realm_emoji_count, 2)
-        new_realm_emoji.author = None
+        new_realm_emoji.author = hamlet
         new_realm_emoji.save()
 
         RealmAuditLog.objects.create(
@@ -1862,17 +1859,17 @@ class RealmImportExportTest(ExportFile):
         # with is_user_active=True used for everything.
         self.assertTrue(Subscription.objects.filter(is_user_active=False).exists())
 
+        imported_hamlet = get_user_by_delivery_email(hamlet.delivery_email, imported_realm)
         all_imported_realm_emoji = RealmEmoji.objects.filter(realm=imported_realm)
         self.assertEqual(all_imported_realm_emoji.count(), original_realm_emoji_count)
         for imported_realm_emoji in all_imported_realm_emoji:
-            self.assertNotEqual(imported_realm_emoji.author, None)
+            self.assertEqual(imported_realm_emoji.author_id, imported_hamlet.id)
 
         self.assertEqual(
             original_realm.authentication_methods_dict(),
             imported_realm.authentication_methods_dict(),
         )
 
-        imported_hamlet = get_user_by_delivery_email(hamlet.delivery_email, imported_realm)
         realmauditlog = RealmAuditLog.objects.get(
             modified_user=imported_hamlet, event_type=AuditLogEventType.USER_CREATED
         )
@@ -3300,9 +3297,7 @@ class SingleUserExportTest(ExportFile):
         )
 
         def set_favorite_city(user: UserProfile, city: str) -> None:
-            do_update_user_custom_profile_data_if_changed(
-                user, [dict(id=favorite_city.id, value=city)]
-            )
+            self.set_user_custom_profile_data(user, [dict(id=favorite_city.id, value=city)])
 
         set_favorite_city(cordelia, "Seattle")
         set_favorite_city(othello, "Moscow")

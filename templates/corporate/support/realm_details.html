@@ -22,7 +22,7 @@
         <p class="support-section-header">Has a discount 💸</p>
     {% endif %}
     {% if demo_organization_deletion %}
-        <p class="support-section-header">Scheduled deletion on {{ demo_organization_deletion.strftime('%B %d, %Y') }} 🗑️</p>
+        <p class="support-section-header">Demo data deletion on {{ demo_organization_deletion.strftime('%B %d, %Y') }} 🗑️</p>
     {% endif %}
     {% set realm_is_scrubbed = realm_support_data[realm.id].is_scrubbed %}
     {% if realm_is_scrubbed %}
@@ -96,17 +96,31 @@
 <div>
     <div class="realm-management-actions">
         <p class="support-section-header">🛠️ Realm management:</p>
+        {% if realm.deactivated %}
         <form method="POST" class="support-form">
-            <b>Status</b>:<br />
+            <b>Reactivate</b>:<br />
             {{ csrf_input }}
             <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-            <select name="status">
-                <option value="active" {% if not realm.deactivated %}selected{% endif %}>Active</option>
-                <option value="deactivated" {% if realm.deactivated %}selected{% endif %}>Deactivated</option>
-            </select>
-            <button type="submit" class="support-submit-button">Update</button>
+            <input type="hidden" name="status" value="active" />
+            <button type="submit" class="support-submit-button">Send reactivation email to owners</button>
         </form>
-        {% if not realm.deactivated %}
+        {% else %}
+        <form method="POST" class="support-form">
+            <b>Deactivate</b>: (select reason)<br />
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <input type="hidden" name="status" value="deactivated" />
+            <select name="deactivation_reason" id="deactivation_reason">
+                {% for reason in DEACTIVATION_REASONS %}
+                    {% if reason == "owner_request" %}
+                        <option value="{{ reason }}" selected>{{ reason }}</option>
+                    {% else %}
+                        <option value="{{ reason }}">{{ reason }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <button type="submit" class="support-submit-button">Deactivate realm</button>
+        </form>
         <form method="POST" class="support-form">
             <b>Organization type</b>:<br />
             {{ csrf_input }}
@@ -220,13 +234,18 @@
     {% endif %}
     {% endif %}
     {% if realm.deactivated %}
-    <form method="POST" class="scrub-realm-form support-form">
-        <h3>❌ Scrub realm</h3>
-        {{ csrf_input }}
-        <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-        <input type="hidden" name="scrub_realm" value="true" />
-        <button data-string-id="{{realm.string_id}}" class="scrub-realm-button">Scrub realm (danger)</button>
-    </form>
+    <div class="deactivation-information-container">
+        {% with %}
+            {% set deactivation_data = realm_support_data[realm.id].deactivation_data %}
+            {% include 'corporate/support/deactivation_data.html' %}
+        {% endwith %}
+        <form method="POST" class="scrub-realm-form support-form">
+            {{ csrf_input }}
+            <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+            <input type="hidden" name="scrub_realm" value="true" />
+            <button data-string-id="{{realm.string_id}}" class="scrub-realm-button">Scrub realm (danger)</button>
+        </form>
+    </div>
     {% endif %}
 </div>
 {% endif %}

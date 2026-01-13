@@ -36,6 +36,11 @@ from zproject.config import get_config
 DEFAULT_PAGE_PARAMS: Mapping[str, Any] = {
     "page_type": "default",
     "development_environment": settings.DEVELOPMENT,
+    # This language is used to initialize i18n.ts to do translations
+    # in the user's language. Callers are expected to replace this
+    # with the user's detected language using get_language wherever
+    # possible.
+    "request_language": "en",
 }
 
 

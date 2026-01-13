@@ -221,7 +221,8 @@ docs = [
   "sphinx<8.2",  # 8.2.0 requires Python ≥ 3.11
   "sphinx-rtd-theme",
   "sphinx-design",
-
+  # Needed for copybutton
+  "sphinx-copybutton",
   # Needed to build Markdown docs
   "myst-parser",
 ]

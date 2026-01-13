@@ -17,6 +17,18 @@ export function suspects_user_is_offline(): boolean {
     return suspect_offline;
 }
 
+/**
+ * Clears the internal state of the watchdog module.
+ *
+ * This is used by tests to ensure a clean slate between test cases,
+ * since the module is not reloaded.
+ */
+export function _reset_for_testing(): void {
+    unsuspend_callbacks.length = 0;
+    watchdog_time = Date.now();
+    suspect_offline = false;
+}
+
 /*
 There are two ways for us to detect that the web app had been on a
 suspended device. The first is the `resume` event on Document, which
@@ -71,4 +83,24 @@ export function on_unsuspend(f: () => void): void {
     unsuspend_callbacks.push(f);
 }
 
-setInterval(check_for_unsuspend, CHECK_FREQUENCY_MILLISECONDS);
+export function initialize(): void {
+    setInterval(check_for_unsuspend, CHECK_FREQUENCY_MILLISECONDS);
+
+    // The Page Lifecycle API "resume" event.
+    // This handles when the page is "resumed" from a frozen state, such as when
+    // the user switches back to a tab that Chrome has discarded/frozen to save memory.
+    // Note: This event is currently only available on Chrome.
+    // See https://developer.chrome.com/docs/web-platform/page-lifecycle-api#event-resume
+    document.addEventListener("resume", () => {
+        check_for_unsuspend();
+    });
+
+    // The BFCache "pageshow" event.
+    // This handles when the page is restored from the Back-Forward Cache (BFCache),
+    // e.g. when the user navigates back to this page.
+    window.addEventListener("pageshow", (event) => {
+        if (event.persisted) {
+            check_for_unsuspend();
+        }
+    });
+}

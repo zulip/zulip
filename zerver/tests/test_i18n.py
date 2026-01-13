@@ -165,9 +165,15 @@ class TranslationTestCase(ZulipTestCase):
 
         # Case when language with percent_translated less than
         # 5 has higher weight.
+        mocked_language_list = [
+            {"code": "de", "locale": "de", "name": "Deutsch", "percent_translated": 97},
+            {"code": "en", "locale": "en", "name": "English"},
+            {"code": "no", "locale": "no", "name": "norsk", "percent_translated": 1},
+        ]
         req = HostRequestMock()
         req.META["HTTP_ACCEPT_LANGUAGE"] = "no;q=0.9,de;q=0.8"
-        self.assertEqual(get_browser_language_code(req), "de")
+        with mock.patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
+            self.assertEqual(get_browser_language_code(req), "de")
 
 
 class JsonTranslationTestCase(ZulipTestCase):

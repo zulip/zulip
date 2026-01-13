@@ -319,8 +319,7 @@ export function sort_groups(
         new_sections.entries().every(([i, new_section]) => {
             const current_section = current_sections.at(i);
             return (
-                current_section !== undefined &&
-                new_section.id === current_section.id &&
+                new_section.id === current_section?.id &&
                 new_section.section_title === current_section.section_title &&
                 util.array_compare(new_section.streams, current_section.streams) &&
                 util.array_compare(new_section.muted_streams, current_section.muted_streams) &&

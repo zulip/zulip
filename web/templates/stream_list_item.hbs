@@ -16,7 +16,7 @@
                     {{> components/icon_button  icon="close" custom_classes="hidden-remove-button remove-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Unsubscribe") data-tippy-content=(t "Unsubscribe") }}
                 {{/if}}
             {{/if}}
-            {{#if show_remove_channel_from_folder}}
+            {{#if can_manage_folder}}
                 {{> components/icon_button  icon="close" custom_classes="hidden-remove-button remove-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Remove channel") data-tippy-content=(t "Remove channel") }}
             {{/if}}
         </div>

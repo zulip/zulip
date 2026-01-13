@@ -190,9 +190,14 @@ export function initialize(): void {
             return;
         }
 
+        if (document.getSelection()?.type === "Range") {
+            // Drags and double/triple clicks on the message
+            // (to copy message text) shouldn't trigger a reply.
+            return;
+        }
+
         if (mouse_drag.is_drag(e)) {
-            // Drags on the message (to copy message text) shouldn't trigger a reply.
-            // This also prevents triggering a reply when you click and drag through
+            // This prevents triggering a reply when you click and drag through
             // an area that doesn't contain text.
             return;
         }
@@ -445,7 +450,7 @@ export function initialize(): void {
     });
 
     // SIDEBARS
-    $("body").on("click", "#compose-new-direct-message", (e) => {
+    $("body").on("click", ".compose-new-direct-message", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -852,7 +857,7 @@ export function initialize(): void {
     );
 
     $("body").on("click", "#direct-messages-section-header.zoom-out", (e) => {
-        if ($(e.target).closest("#show-all-direct-messages").length === 1) {
+        if ($(e.target).closest(".show-all-direct-messages").length === 1) {
             // Let the browser handle the "direct message feed" widget.
             return;
         }

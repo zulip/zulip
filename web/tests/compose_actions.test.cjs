@@ -8,6 +8,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -506,6 +507,15 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         success_function = opts.success;
     });
 
+    function run_success_callback() {
+        success_function({
+            message: {
+                content: "Testing.",
+                content_type: "text/x-markdown",
+            },
+        });
+    }
+
     override(compose_ui, "insert_syntax_and_focus", (syntax, _$textarea, mode) => {
         assert.equal(syntax, "translated: [Quoting…]");
         assert.equal(mode, "block");
@@ -531,9 +541,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
 
     quote_message(opts);
 
-    success_function({
-        raw_content: "Testing.",
-    });
+    run_success_callback();
     assert.ok(replaced);
 
     opts = {
@@ -547,9 +555,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
 
     quote_message(opts);
 
-    success_function({
-        raw_content: "Testing.",
-    });
+    run_success_callback();
     assert.ok(replaced);
 
     opts = {
@@ -584,7 +590,6 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         reply_type: "personal",
     };
     override(message_lists.current, "selected_id", () => 100);
-    override(message_lists.current, "selected_message", () => selected_message);
 
     selected_message = {
         type: "stream",
@@ -608,6 +613,50 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     replaced = false;
     quote_message(opts);
     assert.ok(replaced);
+
+    // Quoting a highlighted(selected) part of a message using the ">" hotkey trigger
+    // should pass the message_id of the message whose text is highlighted in
+    // the `opts` to respond_to_message, to ensure the recipients of that message
+    // are used as the recipients when opening the composebox to quote.
+    opts = {
+        trigger: "hotkey",
+    };
+    override_rewire(compose_reply, "selection_within_message_id", () => 50);
+    override_rewire(compose_reply, "get_message_selection", () => "Hello world");
+
+    const stub = make_stub();
+    override_rewire(compose_reply, "respond_to_message", stub.f);
+
+    const highlighted_message = {
+        type: "stream",
+        stream_id: denmark_stream.stream_id,
+        topic: "test",
+        sender_full_name: "Steve Stephenson",
+        sender_id: 90,
+        raw_content: "[unselected text] Hello world [some extra text that is also not selected]",
+    };
+    expected_replacement =
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\nHello world\n```";
+    override(message_lists.current, "get", (id) => (id === 50 ? highlighted_message : undefined));
+    quote_message(opts);
+    const {opts: opts_when_message_has_selection} = stub.get_args("opts");
+    assert.equal(opts_when_message_has_selection.trigger, "hotkey");
+    assert.equal(opts_when_message_has_selection.message_id, 50);
+    assert.ok(message_lists.current.selected_id() !== 50);
+
+    // If message text from some message is not highlighted(selected) when using the ">" hotkey
+    // to quote, then message_id passed to `respond_to_message` will be same as as the
+    // id of the message having the pointer.
+    const message_with_pointer = highlighted_message;
+    override_rewire(compose_reply, "selection_within_message_id", () => undefined);
+    override(message_lists.current, "selected_id", () => 100);
+    override(message_lists.current, "get", (id) => (id === 100 ? message_with_pointer : undefined));
+    expected_replacement =
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\n[unselected text] Hello world [some extra text that is also not selected]\n```";
+    quote_message(opts);
+    const {opts: opts_when_message_has_no_selection} = stub.get_args("opts");
+    assert.equal(opts_when_message_has_no_selection.trigger, "hotkey");
+    assert.equal(opts_when_message_has_no_selection.message_id, 100);
 });
 
 test("focus_in_empty_compose", () => {

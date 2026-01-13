@@ -442,12 +442,26 @@ export const external_account_field_schema = z.object({
 
 export type ExternalAccountFieldData = z.output<typeof external_account_field_schema>;
 
-function read_external_account_field_data($profile_field_form: JQuery): ExternalAccountFieldData {
-    const field_data: ExternalAccountFieldData = {
-        subtype: $profile_field_form
-            .find<HTMLSelectOneElement>("select:not([multiple])[name=external_acc_field_type]")
-            .val()!,
-    };
+function read_external_account_field_data(
+    $profile_field_form: JQuery,
+    old_field_data: ExternalAccountFieldData | undefined,
+): ExternalAccountFieldData {
+    let field_data: ExternalAccountFieldData;
+    // Use dropdown widget value in "create field form".
+    if (old_field_data === undefined) {
+        const widget = get_widget_for_dropdown_list_settings("external_accounts_type");
+        assert(widget !== null);
+        const value = widget.value();
+        assert(typeof value === "string");
+        field_data = {
+            subtype: value,
+        };
+    } // Use existing subtype in "edit field form".
+    else {
+        field_data = {
+            subtype: old_field_data.subtype,
+        };
+    }
     if (field_data.subtype === "custom") {
         field_data.url_pattern = $profile_field_form
             .find<HTMLInputElement>("input[name=url_pattern]")
@@ -469,7 +483,10 @@ export function read_field_data_from_form(
     if (field_type_id === field_types.SELECT.id) {
         return read_select_field_data_from_form($profile_field_form, old_field_data);
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
-        return read_external_account_field_data($profile_field_form);
+        const parsed_old_field_data = old_field_data
+            ? external_account_field_schema.parse(old_field_data)
+            : undefined;
+        return read_external_account_field_data($profile_field_form, parsed_old_field_data);
     }
     return undefined;
 }
@@ -501,6 +518,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_can_create_web_public_channel_group", null],
     ["folder_id", null],
     ["channel_privacy", null],
+    ["external_accounts_type", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
@@ -631,12 +649,12 @@ export function change_save_button_state($element: JQuery, state: string): void 
         $textEl.text(button_text);
         if (state === "succeeded") {
             buttons.modify_action_button_style($save_button, {
-                attention: "borderless",
+                variant: "text",
                 intent: "success",
             });
         } else {
             buttons.modify_action_button_style($save_button, {
-                attention: "primary",
+                variant: "solid",
                 intent: "brand",
             });
         }

@@ -2,10 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ThinkstHookTests(WebhookTestCase):
-    CHANNEL_NAME = "thinkst"
-    URL_TEMPLATE = "/api/v1/external/thinkst?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "thinkst"
-
     def test_canary_dummy(self) -> None:
         expected_message = (
             "**:alert: Canary *0000000testnode* has been triggered!**\n\n"

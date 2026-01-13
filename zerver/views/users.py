@@ -1,5 +1,4 @@
 from collections.abc import Mapping
-from email.headerregistry import Address
 from typing import Annotated, Any, TypeAlias
 
 from django.conf import settings
@@ -86,12 +85,12 @@ from zerver.lib.users import (
     check_can_access_user,
     check_can_create_bot,
     check_full_name,
-    check_short_name,
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
     get_users_for_api,
     max_message_id_for_user,
+    validate_short_name_and_construct_bot_email,
     validate_user_custom_profile_data,
 )
 from zerver.lib.utils import generate_api_key
@@ -300,7 +299,7 @@ def update_user_backend(
 
             check_spare_license_available_for_changing_guest_user_role(user_profile.realm)
 
-        do_change_user_role(target, role, acting_user=user_profile)
+        do_change_user_role(target, role, acting_user=user_profile, notify=True)
 
     if full_name is not None and target.full_name != full_name and full_name.strip() != "":
         # We don't respect `name_changes_disabled` here because the request
@@ -314,7 +313,9 @@ def update_user_backend(
             assert not isinstance(entry.value, int)
             if entry.value is None or not entry.value:
                 field_id = entry.id
-                check_remove_custom_profile_field_value(target, field_id, acting_user=user_profile)
+                check_remove_custom_profile_field_value(
+                    target, field_id, acting_user=user_profile, notify=True
+                )
             else:
                 clean_profile_data.append(
                     {
@@ -325,7 +326,9 @@ def update_user_backend(
         validate_user_custom_profile_data(
             target.realm.id, clean_profile_data, acting_user=user_profile
         )
-        do_update_user_custom_profile_data_if_changed(target, clean_profile_data)
+        do_update_user_custom_profile_data_if_changed(
+            target, clean_profile_data, user_profile, notify=True
+        )
 
     if new_email is not None and target.delivery_email != new_email:
         assert user_profile.can_change_user_emails and user_profile.is_realm_admin
@@ -461,8 +464,34 @@ def patch_bot_backend(
     role: Json[RoleParamType] | None = None,
     service_interface: Json[int] = 1,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
+    short_name: str | None = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
+
+    # Handle short_name change
+    if short_name is not None:
+        try:
+            _validated_short_name, new_email = validate_short_name_and_construct_bot_email(
+                short_name, user_profile.realm
+            )
+        except InvalidFakeEmailDomainError:
+            raise JsonableError(
+                _(
+                    "Can't change bot email until FAKE_EMAIL_DOMAIN is correctly configured.\n"
+                    "Please contact your server administrator."
+                )
+            )
+        if new_email != bot.email:
+            try:
+                validate_email_not_already_in_realm(
+                    user_profile.realm,
+                    new_email,
+                    verbose=False,
+                    allow_inactive_mirror_dummies=False,
+                )
+            except ValidationError:
+                raise JsonableError(_("Email address already in use"))
+            do_change_user_delivery_email(bot, new_email, acting_user=user_profile)
 
     if full_name is not None:
         check_change_bot_full_name(bot, full_name, user_profile)
@@ -474,7 +503,7 @@ def patch_bot_backend(
         elif not user_profile.is_realm_admin:
             raise OrganizationAdministratorRequiredError
 
-        do_change_user_role(bot, role, acting_user=user_profile)
+        do_change_user_role(bot, role, acting_user=user_profile, notify=False)
 
     if bot_owner_id is not None and bot.bot_owner_id != bot_owner_id:
         try:
@@ -526,7 +555,7 @@ def patch_bot_backend(
         [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         assert user_file.size is not None
-        upload_avatar_image(user_file, bot)
+        upload_avatar_image(user_file, bot, content_type=user_file.content_type)
         avatar_source = UserProfile.AVATAR_FROM_USER
         do_change_avatar_fields(bot, avatar_source, acting_user=user_profile)
     else:
@@ -588,15 +617,10 @@ def add_bot_backend(
 ) -> HttpResponse:
     if config_data is None:
         config_data = {}
-    short_name = check_short_name(short_name_raw)
-    if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
-        service_name = service_name or short_name
-    short_name += "-bot"
-    full_name = check_full_name(
-        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
-    )
     try:
-        email = Address(username=short_name, domain=user_profile.realm.get_bot_domain()).addr_spec
+        short_name, email = validate_short_name_and_construct_bot_email(
+            short_name_raw, user_profile.realm
+        )
     except InvalidFakeEmailDomainError:
         raise JsonableError(
             _(
@@ -604,8 +628,11 @@ def add_bot_backend(
                 "Please contact your server administrator."
             )
         )
-    except ValueError:
-        raise JsonableError(_("Bad name or username"))
+    if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
+        service_name = service_name or short_name
+    full_name = check_full_name(
+        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
+    )
     form = CreateUserForm({"full_name": full_name, "email": email})
 
     if bot_type == UserProfile.EMBEDDED_BOT:
@@ -674,7 +701,9 @@ def add_bot_backend(
         [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         assert user_file.size is not None
-        upload_avatar_image(user_file, bot_profile, future=False)
+        upload_avatar_image(
+            user_file, bot_profile, content_type=user_file.content_type, future=False
+        )
 
     if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
         assert isinstance(service_name, str)

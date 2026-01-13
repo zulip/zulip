@@ -6,6 +6,7 @@ import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as buddy_list_presence from "./buddy_list_presence.ts";
 import * as keydown_util from "./keydown_util.ts";
 import {ListCursor} from "./list_cursor.ts";
 import * as loading from "./loading.ts";
@@ -28,6 +29,10 @@ export let user_filter: UserSearch | undefined;
 
 // Function initialized from `ui_init` to avoid importing narrow.js and causing circular imports.
 let narrow_by_email: (email: string) => void;
+
+export function get_narrow_by_email_function_for_test_code(): (email: string) => void {
+    return narrow_by_email;
+}
 
 function get_pm_list_item(user_id: string): JQuery | undefined {
     return buddy_list.find_li({
@@ -60,29 +65,6 @@ export function clear_for_testing(): void {
     user_filter = undefined;
 }
 
-export let update_presence_indicators = (): void => {
-    $("[data-presence-indicator-user-id]").each(function () {
-        const user_id = Number.parseInt($(this).attr("data-presence-indicator-user-id") ?? "", 10);
-        const is_deactivated = !people.is_active_user_for_popover(user_id || 0);
-        assert(!Number.isNaN(user_id));
-        const user_circle_class = buddy_data.get_user_circle_class(user_id, is_deactivated);
-        const user_circle_class_with_icon = `${user_circle_class} zulip-icon-${user_circle_class}`;
-        $(this)
-            .removeClass(
-                `
-                user-circle-active zulip-icon-user-circle-active
-                user-circle-idle zulip-icon-user-circle-idle
-                user-circle-offline zulip-icon-user-circle-offline
-            `,
-            )
-            .addClass(user_circle_class_with_icon);
-    });
-};
-
-export function rewire_update_presence_indicators(value: typeof update_presence_indicators): void {
-    update_presence_indicators = value;
-}
-
 export function redraw_user(user_id: number): void {
     if (realm.realm_presence_disabled) {
         return;
@@ -95,7 +77,7 @@ export function redraw_user(user_id: number): void {
     }
 
     buddy_list.insert_or_move([user_id]);
-    update_presence_indicators();
+    buddy_list_presence.update_indicators();
 }
 
 export function rerender_user_sidebar_participants(): void {
@@ -185,7 +167,7 @@ function do_update_users_for_search(): void {
         (async () => {
             $("#buddy_list_wrapper").hide();
             loading.make_indicator($("#buddy-list-loading-subscribers"));
-            await peer_data.maybe_fetch_stream_subscribers(stream_id);
+            await peer_data.fetch_stream_subscribers(stream_id);
             all_pending_fetches_for_search.delete(stream_id);
 
             // If we changed narrows during the fetch, don't rebuild the sidebar
@@ -252,7 +234,7 @@ export function redraw(): void {
     assert(user_cursor !== undefined);
     user_cursor.redraw();
     pm_list.update_private_messages();
-    update_presence_indicators();
+    buddy_list_presence.update_indicators();
 }
 
 export function reset_users(): void {
@@ -289,7 +271,7 @@ function keydown_enter_key(): void {
     popovers.hide_all();
 }
 
-export function set_cursor_and_filter(): void {
+export let set_cursor_and_filter = (): void => {
     user_cursor = new ListCursor({
         list: buddy_list,
         highlight_class: "highlighted_user",
@@ -329,6 +311,10 @@ export function set_cursor_and_filter(): void {
             },
         },
     });
+};
+
+export function rewire_set_cursor_and_filter(value: typeof set_cursor_and_filter): void {
+    set_cursor_and_filter = value;
 }
 
 export function initiate_search(): void {

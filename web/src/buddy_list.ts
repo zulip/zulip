@@ -9,6 +9,7 @@ import render_empty_list_widget_for_list from "../templates/empty_list_widget_fo
 import render_presence_row from "../templates/presence_row.hbs";
 import render_presence_rows from "../templates/presence_rows.hbs";
 
+import * as background_task from "./background_task.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import type {BuddyUserInfo} from "./buddy_data.ts";
@@ -188,6 +189,51 @@ export class BuddyList extends BuddyListConf {
         const total_human_subscribers_count = (): number =>
             this.render_data.total_human_subscribers_count;
 
+        async function set_tooltip_text(instance: tippy.Instance): Promise<void> {
+            let tooltip_text;
+            const stream_sub = narrow_state.stream_sub();
+            if (stream_sub) {
+                // If we need to fetch the full data, show the total subscriber
+                // count in the meantime.
+                if (!peer_data.has_full_subscriber_data(stream_sub.stream_id)) {
+                    instance.setContent(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "{N, plural, one {# total subscriber} other {# total subscribers}}",
+                            },
+                            {N: total_human_subscribers_count()},
+                        ),
+                    );
+                }
+                const users_matching_view_count = await non_participant_users_matching_view_count();
+                // This means a request failed and we don't know the count. So we can
+                // leave the text as the total subscriber count.
+                if (users_matching_view_count === null) {
+                    return;
+                }
+                tooltip_text = $t(
+                    {
+                        defaultMessage:
+                            "{N, plural, one {# other subscriber} other {# other subscribers}}",
+                    },
+                    {N: users_matching_view_count},
+                );
+            } else {
+                // This will happen immediately because we don't need
+                // to fetch subscriber data.
+                const users_matching_view_count = await non_participant_users_matching_view_count();
+                assert(users_matching_view_count !== null);
+                tooltip_text = $t(
+                    {
+                        defaultMessage: "{N, plural, one {# participant} other {# participants}}",
+                    },
+                    {N: users_matching_view_count},
+                );
+            }
+            instance.setContent(tooltip_text);
+        }
+
         $("#right-sidebar").on(
             "mouseenter",
             ".buddy-list-heading",
@@ -233,53 +279,8 @@ export class BuddyList extends BuddyListConf {
                             );
                             instance.setContent(tooltip_text);
                         } else if (elem_id === "buddy-list-users-matching-view-section-heading") {
-                            void (async () => {
-                                let tooltip_text;
-                                const stream_sub = narrow_state.stream_sub();
-                                if (stream_sub) {
-                                    // If we need to fetch the full data, show the total subscriber
-                                    // count in the meantime.
-                                    if (!peer_data.has_full_subscriber_data(stream_sub.stream_id)) {
-                                        instance.setContent(
-                                            $t(
-                                                {
-                                                    defaultMessage:
-                                                        "{N, plural, one {# total subscriber} other {# total subscribers}}",
-                                                },
-                                                {N: total_human_subscribers_count()},
-                                            ),
-                                        );
-                                    }
-                                    const users_matching_view_count =
-                                        await non_participant_users_matching_view_count();
-                                    // This means a request failed and we don't know the count. So we can
-                                    // leave the text as the total subscriber count.
-                                    if (users_matching_view_count === null) {
-                                        return;
-                                    }
-                                    tooltip_text = $t(
-                                        {
-                                            defaultMessage:
-                                                "{N, plural, one {# other subscriber} other {# other subscribers}}",
-                                        },
-                                        {N: users_matching_view_count},
-                                    );
-                                } else {
-                                    // This will happen immediately because we don't need
-                                    // to fetch subscriber data.
-                                    const users_matching_view_count =
-                                        await non_participant_users_matching_view_count();
-                                    assert(users_matching_view_count !== null);
-                                    tooltip_text = $t(
-                                        {
-                                            defaultMessage:
-                                                "{N, plural, one {# participant} other {# participants}}",
-                                        },
-                                        {N: users_matching_view_count},
-                                    );
-                                }
-                                instance.setContent(tooltip_text);
-                            })();
+                            // Set the tooltip without awaiting for the async function to return.
+                            void set_tooltip_text(instance);
                         } else {
                             const other_users_count =
                                 people.get_active_human_count() - total_human_subscribers_count();
@@ -379,9 +380,13 @@ export class BuddyList extends BuddyListConf {
         // This must happen after `fill_screen_with_content`
         $("#buddy-list-users-matching-view-container .view-all-subscribers-link").empty();
         $("#buddy-list-other-users-container .view-all-users-link").empty();
-        void this.render_view_user_list_links();
+        background_task.run_async_function_without_await(
+            this.render_view_user_list_links.bind(this),
+        );
         this.display_or_hide_sections();
-        void this.update_empty_list_placeholders();
+        background_task.run_async_function_without_await(
+            this.update_empty_list_placeholders.bind(this),
+        );
 
         // `populate` always rerenders all user rows, so we need new load handlers.
         // This logic only does something is a user has enabled the setting to
@@ -1102,8 +1107,10 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.display_or_hide_sections();
-        void this.update_empty_list_placeholders();
-        void this.render_section_headers();
+        background_task.run_async_function_without_await(
+            this.update_empty_list_placeholders.bind(this),
+        );
+        background_task.run_async_function_without_await(this.render_section_headers.bind(this));
     }
 
     rerender_participants(): void {
@@ -1148,7 +1155,7 @@ export class BuddyList extends BuddyListConf {
                 chunk_size,
             });
         }
-        void this.render_section_headers();
+        background_task.run_async_function_without_await(this.render_section_headers.bind(this));
     }
 
     start_scroll_handler(): void {

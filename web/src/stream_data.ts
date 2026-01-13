@@ -395,7 +395,7 @@ export async function get_streams_for_user(user_id: number): Promise<{
     subscribed: StreamSubscription[];
     can_subscribe: StreamSubscription[];
 }> {
-    await peer_data.load_subscriptions_for_user(user_id);
+    await peer_data.fetch_subscriptions_for_user(user_id);
     return get_fetched_streams_for_user(user_id);
 }
 
@@ -732,7 +732,40 @@ export function get_current_user_and_their_bots_with_post_messages_permission(
 }
 
 export function can_access_stream_email(sub: StreamSubscription): boolean {
-    return get_current_user_and_their_bots_with_post_messages_permission(sub).length > 0;
+    // User can access stream email if they can send messages to that
+    // stream.
+
+    // Users without post permissions should not have email access
+    if (!can_post_messages_in_stream(sub, current_user.user_id)) {
+        return false;
+    }
+
+    // All users with posting permissions can access email of
+    // web-public streams.
+    if (sub.is_web_public) {
+        return true;
+    }
+
+    // All non-guest users with posting permissions can access
+    // email of public streams.
+    if (!sub.invite_only && !current_user.is_guest) {
+        return true;
+    }
+
+    // Subscribed users (including guests) have access to stream
+    // email for all types of streams.
+    if (sub.subscribed) {
+        return true;
+    }
+
+    // For private streams with public history, non subscribed
+    // users can access email if they have content access to
+    // streams via group permissions.
+    if (sub.invite_only && sub.history_public_to_subscribers && !current_user.is_guest) {
+        return has_content_access_via_group_permissions(sub);
+    }
+
+    return false;
 }
 
 export function can_access_topic_history(sub: StreamSubscription): boolean {

@@ -203,7 +203,8 @@
     }
 }
 
-.custom-user-url-field {
+.custom-user-url-field,
+.external-account-text-field {
     display: flex;
     align-items: center;
     /* Maintain space between URL and copy icon. */
@@ -216,7 +217,8 @@
         text-overflow: ellipsis;
     }
 
-    .copy-custom-field-url {
+    .copy-custom-field-url,
+    .copy-external-account-field {
         height: 1em;
     }
 }
@@ -561,14 +563,24 @@ ul.popover-group-menu-member-list {
             "bottom" auto
             / minmax(0, 1fr);
 
-        .stream_list_info,
-        .user-profile-group-list-alert {
+        .stream_list_info:has(.banner),
+        .user-profile-group-list-alert:has(.banner) {
             grid-area: alert;
             margin-bottom: 8px;
         }
 
         .stream-list-loader:not(:empty) {
-            margin: 10px auto;
+            margin: auto; /* center the spinner */
+
+            .loading_indicator_spinner {
+                margin-top: 10px;
+            }
+        }
+
+        .error-message:not(:empty) {
+            color: var(--color-alert-error-red);
+            text-align: center;
+            margin-top: 20px;
         }
 
         .stream-list-bottom-section,
@@ -754,11 +766,11 @@ ul.popover-group-menu-member-list {
     }
 
     .giphy-gif,
-    .tenor-gif {
+    .gif-picker-gif {
         cursor: pointer;
     }
 
-    .tenor-gif {
+    .gif-picker-gif {
         width: 100%;
         height: 100%;
         border-radius: 10px;
@@ -766,7 +778,7 @@ ul.popover-group-menu-member-list {
     }
 
     .giphy-gif:focus,
-    .tenor-gif:focus {
+    .gif-picker-gif:focus {
         /* Blue outline for clear visibility
          * of which image is in focus.
          */
@@ -774,7 +786,7 @@ ul.popover-group-menu-member-list {
     }
 
     .giphy-gif:hover,
-    .tenor-gif:hover {
+    .gif-picker-gif:hover {
         outline: 2px solid var(--color-hovered-gif-in-grid-picker);
     }
 

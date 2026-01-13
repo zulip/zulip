@@ -21,8 +21,9 @@ from corporate.models.customers import Customer
 from corporate.models.licenses import LicenseLedger
 from corporate.models.plans import CustomerPlan, CustomerPlanOffer, get_current_plan_by_customer
 from corporate.models.sponsorships import ZulipSponsorshipRequest
+from zerver.actions.realm_settings import RealmDeactivationReasonType
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models import Realm
+from zerver.models import Realm, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import get_org_type_display_name
 from zilencer.lib.remote_counts import MissingDataError
@@ -106,6 +107,13 @@ class MobilePushData:
 
 
 @dataclass
+class DeactivationData:
+    event_time: datetime
+    acting_user: UserProfile | None
+    reason: RealmDeactivationReasonType | None
+
+
+@dataclass
 class RemoteSupportData:
     date_created: datetime
     has_stale_audit_log: bool
@@ -128,6 +136,7 @@ class CloudSupportData:
     user_data: UserData
     file_upload_usage: str
     is_scrubbed: bool
+    deactivation_data: DeactivationData | None
 
 
 def get_stripe_customer_url(stripe_id: str) -> str:
@@ -457,6 +466,24 @@ def get_mobile_push_data(remote_entity: RemoteZulipServer | RemoteRealm) -> Mobi
         )
 
 
+def get_deactivation_data(audit_log: RealmAuditLog) -> DeactivationData:
+    event_time = audit_log.event_time
+
+    acting_user = None
+    if audit_log.acting_user:
+        acting_user = audit_log.acting_user
+
+    reason = None
+    if audit_log.extra_data:
+        reason = audit_log.extra_data.get("deactivation_reason", None)
+
+    return DeactivationData(
+        event_time=event_time,
+        acting_user=acting_user,
+        reason=reason,
+    )
+
+
 def get_data_for_remote_support_view(billing_session: BillingSession) -> RemoteSupportData:
     if isinstance(billing_session, RemoteServerBillingSession):
         user_data = get_remote_server_guest_and_non_guest_count(billing_session.remote_server.id)
@@ -498,6 +525,14 @@ def get_data_for_cloud_support_view(billing_session: BillingSession) -> CloudSup
     else:
         sponsorship_data = SponsorshipData()
 
+    deactivation_data = None
+    if billing_session.realm.deactivated:
+        deactivation_audit_log = RealmAuditLog.objects.filter(
+            realm=billing_session.realm, event_type=AuditLogEventType.REALM_DEACTIVATED
+        ).last()
+        if deactivation_audit_log:
+            deactivation_data = get_deactivation_data(deactivation_audit_log)
+
     return CloudSupportData(
         plan_data=plan_data,
         sponsorship_data=sponsorship_data,
@@ -506,4 +541,5 @@ def get_data_for_cloud_support_view(billing_session: BillingSession) -> CloudSup
         is_scrubbed=RealmAuditLog.objects.filter(
             realm=billing_session.realm, event_type=AuditLogEventType.REALM_SCRUBBED
         ).exists(),
+        deactivation_data=deactivation_data,
     )

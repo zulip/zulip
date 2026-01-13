@@ -11,6 +11,7 @@ from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django_stubs_ext import StrPromise
+from typing_extensions import override
 
 from zerver.lib.storage import static_path
 from zerver.lib.validator import check_bool, check_string
@@ -75,7 +76,6 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "github-actions",
     "google-calendar",
     "jenkins",
-    "jira-plugin",
     "mastodon",
     "mercurial",
     "nagios",
@@ -83,7 +83,6 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "openshift",
     "perforce",
     "puppet",
-    "redmine",
     "rss",
     "svn",
     "trac",
@@ -215,7 +214,7 @@ class Integration:
             doc = self.DEFAULT_DOC_PATH.format(name=self.name)
         self.doc = doc
 
-    def is_enabled(self) -> bool:
+    def is_enabled_in_catalog(self) -> bool:
         return True
 
     def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
@@ -460,6 +459,12 @@ class EmbeddedBotIntegration(Integration):
         kwargs["fallback_logo_path"] = self.ZULIP_LOGO_STATIC_PATH_PNG
         super().__init__(name, *args, **kwargs)
 
+    @override
+    def is_enabled_in_catalog(self) -> bool:
+        # Only integrations with docs can be part of the catalog
+        # Embedded bots do not have docs
+        return False
+
 
 EMBEDDED_BOTS: list[EmbeddedBotIntegration] = [
     EmbeddedBotIntegration("converter", []),
@@ -537,27 +542,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="Beeminder",
     ),
     IncomingWebhookIntegration(
-        "bitbucket",
-        ["version-control"],
-        [
-            WebhookScreenshotConfig(
-                "push.json",
-                "002.png",
-                channel="commits",
-                use_basic_auth=True,
-                payload_as_query_param=True,
-            )
-        ],
-        display_name="Bitbucket",
-        secondary_line_text="(Enterprise)",
-        legacy=True,
-    ),
-    IncomingWebhookIntegration(
         "bitbucket2",
         ["version-control"],
         [
             WebhookScreenshotConfig(
-                "issue_created.json",
+                "push.json",
                 "003.png",
                 "bitbucket",
                 bot_name="Bitbucket Bot",
@@ -566,22 +555,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         ],
         logo="images/integrations/logos/bitbucket.svg",
         display_name="Bitbucket",
-        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
-    ),
-    IncomingWebhookIntegration(
-        "bitbucket3",
-        ["version-control"],
-        [
-            WebhookScreenshotConfig(
-                "repo_push_update_single_branch.json",
-                "004.png",
-                "bitbucket",
-                bot_name="Bitbucket Server Bot",
-                channel="commits",
-            )
-        ],
-        logo="images/integrations/logos/bitbucket.svg",
-        display_name="Bitbucket Server",
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     IncomingWebhookIntegration(
@@ -760,12 +733,10 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         ["customer-support"],
         [WebhookScreenshotConfig("conversation_admin_replied.json")],
     ),
-    # Avoid collision with jira-plugin's doc "jira/doc.md".
     IncomingWebhookIntegration(
         "jira",
         ["project-management"],
         [WebhookScreenshotConfig("created_v1.json")],
-        doc="jira/jira-doc.md",
     ),
     IncomingWebhookIntegration(
         "jotform", ["productivity"], [WebhookScreenshotConfig("screenshot_response.multipart")]
@@ -859,6 +830,9 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     ),
     IncomingWebhookIntegration(
         "raygun", ["monitoring"], [WebhookScreenshotConfig("new_error.json")]
+    ),
+    IncomingWebhookIntegration(
+        "redmine", ["project-management"], [WebhookScreenshotConfig("issue_opened.json")]
     ),
     IncomingWebhookIntegration(
         "reviewboard",
@@ -1032,7 +1006,6 @@ STANDALONE_REPO_INTEGRATIONS: list[Integration] = [
     ),
     Integration("hubot", ["meta-integration", "bots"]),
     Integration("puppet", ["deployment"]),
-    Integration("redmine", ["project-management"]),
 ]
 
 ZULIP_SEND_INTEGRATIONS: list[Integration] = [
@@ -1049,7 +1022,11 @@ OTHER_INTEGRATIONS = [
 ]
 
 PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
-    PythonAPIIntegration("codebase", ["version-control", "project-management"]),
+    PythonAPIIntegration(
+        "codebase",
+        ["version-control", "project-management"],
+        [FixturelessScreenshotConfigOptions(channel="commits")],
+    ),
     PythonAPIIntegration(
         "git", ["version-control"], [FixturelessScreenshotConfigOptions(channel="commits")]
     ),
@@ -1062,16 +1039,6 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
     ),
     PythonAPIIntegration(
         "irc", ["communication"], display_name="IRC", directory_name="bridge_with_irc"
-    ),
-    PythonAPIIntegration(
-        "jira-plugin",
-        ["project-management"],
-        [FixturelessScreenshotConfigOptions(channel="jira")],
-        logo="images/integrations/logos/jira.svg",
-        secondary_line_text="(locally installed)",
-        display_name="Jira",
-        directory_name="jira",
-        legacy=True,
     ),
     PythonAPIIntegration("matrix", ["communication"], directory_name="bridge_with_matrix"),
     PythonAPIIntegration(
@@ -1088,9 +1055,16 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
         [FixturelessScreenshotConfigOptions(channel="deployments")],
         display_name="OpenShift",
     ),
-    PythonAPIIntegration("perforce", ["version-control"]),
+    PythonAPIIntegration(
+        "perforce", ["version-control"], [FixturelessScreenshotConfigOptions(channel="commits")]
+    ),
     PythonAPIIntegration("rss", ["communication"], display_name="RSS"),
-    PythonAPIIntegration("svn", ["version-control"], display_name="Subversion"),
+    PythonAPIIntegration(
+        "svn",
+        ["version-control"],
+        [FixturelessScreenshotConfigOptions(channel="commits")],
+        display_name="Subversion",
+    ),
     PythonAPIIntegration("trac", ["project-management"]),
 ]
 
@@ -1123,12 +1097,18 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
 
 
 INTEGRATIONS: dict[str, Integration] = {
-    integration.name: integration
+    (
+        # To avoid namespace collisions, use a prefix for embedded bots
+        f"embedded_bot_{integration.name}"
+        if isinstance(integration, EmbeddedBotIntegration)
+        else integration.name
+    ): integration
     for integration in chain(
         INCOMING_WEBHOOK_INTEGRATIONS,
         PYTHON_API_INTEGRATIONS,
         BOT_INTEGRATIONS,
         HUBOT_INTEGRATIONS,
+        EMBEDDED_BOTS,
         OTHER_INTEGRATIONS,
     )
 }

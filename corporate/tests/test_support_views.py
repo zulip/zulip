@@ -835,13 +835,14 @@ class TestSupportEndpoint(ZulipTestCase):
                     '<option value="2">Limited</option>',
                     'input type="number" name="monthly_discounted_price" value="None"',
                     'input type="number" name="annual_discounted_price" value="None"',
-                    '<option value="active" selected>Active</option>',
-                    '<option value="deactivated" >Deactivated</option>',
+                    '<button type="submit" class="support-submit-button">Deactivate realm</button>',
                     f'<option value="{zulip_realm.org_type}" selected>',
                 ],
                 result,
             )
-            self.assert_not_in_success_response(["scrub-realm-button"], result)
+            self.assert_not_in_success_response(
+                ["scrub-realm-button", "Send reactivation email to owners"], result
+            )
 
         def check_lear_realm_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
@@ -852,8 +853,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     '<option value="2">Limited</option>',
                     'input type="number" name="monthly_discounted_price" value="None"',
                     'input type="number" name="annual_discounted_price" value="None"',
-                    '<option value="active" selected>Active</option>',
-                    '<option value="deactivated" >Deactivated</option>',
+                    '<button type="submit" class="support-submit-button">Deactivate realm</button>',
                     "<b>Plan name</b>: Zulip Cloud Standard",
                     "<b>Status</b>: Active",
                     "<b>Billing schedule</b>: Annual",
@@ -866,7 +866,9 @@ class TestSupportEndpoint(ZulipTestCase):
                 ],
                 result,
             )
-            self.assert_not_in_success_response(["scrub-realm-button"], result)
+            self.assert_not_in_success_response(
+                ["scrub-realm-button", "Send reactivation email to owners"], result
+            )
 
         def check_preregistration_user_query_result(
             result: "TestHttpResponse", email: str, invite: bool = False
@@ -1809,7 +1811,7 @@ class TestSupportEndpoint(ZulipTestCase):
         next_plan = billing_session.get_next_plan(plan)
         self.assertIsNone(next_plan)
 
-    def test_approve_sponsorship_deactivated_realm(self) -> None:
+    def test_deactivated_realm_support_view_and_actions(self) -> None:
         support_admin = self.example_user("iago")
         with self.settings(BILLING_ENABLED=True):
             limited_realm = do_create_realm("limited", "limited")
@@ -1818,16 +1820,65 @@ class TestSupportEndpoint(ZulipTestCase):
                 user=support_admin, realm=limited_realm, support_session=True
             )
             billing_session.update_customer_sponsorship_status(True)
+
+        # This will not create an audit log for the realm's deactivation.
         limited_realm.deactivated = True
         limited_realm.save()
 
         iago = self.example_user("iago")
         self.login_user(iago)
 
-        # Confirm scrub realm button is shown for deactivated realms.
+        # Confirm reactivate and scrub realm buttons are shown, but as
+        # there is no audit log, that data isn't in the support view.
         result = self.client_get("/activity/support", {"q": "limited"})
-        self.assert_in_success_response(["scrub-realm-button"], result)
+        self.assert_in_success_response(
+            [
+                "scrub-realm-button",
+                "Send reactivation email to owners",
+                "❌ Scrub realm",
+            ],
+            result,
+        )
+        self.assert_not_in_success_response(
+            [
+                "Deactivation audit log data",
+                "<b>Deactivation reason</b>: owner_request",
+            ],
+            result,
+        )
 
+        # Undo manual deactivation and deactivate through the normal
+        # support action, which creates an audit log for the realm's
+        # deactivation.
+        limited_realm.deactivated = False
+        limited_realm.save()
+
+        result = self.client_post(
+            "/activity/support",
+            {
+                "realm_id": f"{limited_realm.id}",
+                "status": "deactivated",
+                "deactivation_reason": "owner_request",
+            },
+        )
+        self.assertIn(b"limited deactivated", result.content)
+
+        # Confirm reactivate and scrub realm buttons, as well as the audit log
+        # data for the realm's deactivation, are shown for deactivated realms.
+        result = self.client_get("/activity/support", {"q": "limited"})
+        self.assert_in_success_response(
+            [
+                "scrub-realm-button",
+                "Send reactivation email to owners",
+                "❌ Scrub realm",
+                "Deactivation audit log data",
+                "<b>Deactivation reason</b>: owner_request",
+            ],
+            result,
+        )
+
+        # Even if a sponsorship request was pending, it cannot be approved
+        # for a deactivated realm.
         result = self.client_post(
             "/activity/support",
             {"realm_id": f"{limited_realm.id}", "approve_sponsorship": "true"},
@@ -1851,12 +1902,17 @@ class TestSupportEndpoint(ZulipTestCase):
 
         with mock.patch("corporate.views.support.do_deactivate_realm") as m:
             result = self.client_post(
-                "/activity/support", {"realm_id": f"{lear_realm.id}", "status": "deactivated"}
+                "/activity/support",
+                {
+                    "realm_id": f"{lear_realm.id}",
+                    "status": "deactivated",
+                    "deactivation_reason": "inactivity",
+                },
             )
             m.assert_called_once_with(
                 lear_realm,
                 acting_user=self.example_user("iago"),
-                deactivation_reason="owner_request",
+                deactivation_reason="inactivity",
                 email_owners=True,
             )
             self.assert_in_success_response(["lear deactivated"], result)

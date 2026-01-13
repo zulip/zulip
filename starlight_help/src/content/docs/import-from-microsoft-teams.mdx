@@ -23,6 +23,7 @@ The import will include your organization's:
 * **Name**
 * **Users**, including names, emails, roles
 * **Teams** as Zulip channels, including all user subscriptions
+* **Message history**, excluding direct messages and messages in private channels.
 
 ## Import process overview
 
@@ -205,11 +206,16 @@ tool:
 Whether you are using Zulip Cloud or self-hosting Zulip, here are few notes to keep
 in mind about the import process:
 
+* Any kind of mentions in messages are not converted to Zulip mentions.
 * Custom emojis are not imported.
+* Direct messages are not imported.
 * Meeting chats and recordings are not imported.
 * Message attachments are not imported.
-* Message history are not imported.
+* Message edit history and system messages such as `@user_a added @user_b to the chat`
+  are not imported.
 * Message reactions are not imported.
+* Message thread replies will be combined to the main topic.
+* Messages in private channels are not imported.
 * Microsoft tenant's user roles are mapped to Zulip's [user
   roles](/help/user-roles) in the following way:
   | Microsoft Teams role | Zulip role |

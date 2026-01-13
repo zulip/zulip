@@ -2,10 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class UpdownHookTests(WebhookTestCase):
-    CHANNEL_NAME = "updown"
-    URL_TEMPLATE = "/api/v1/external/updown?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "updown"
-
     def test_updown_check_down_event(self) -> None:
         expected_topic_name = "https://updown.io"
         expected_message = (
@@ -31,7 +27,7 @@ class UpdownHookTests(WebhookTestCase):
         )
         up_content = "Service is `up` again after 1 second."
 
-        self.subscribe(self.test_user, self.CHANNEL_NAME)
+        self.subscribe(self.test_user, self.channel_name)
         payload = self.get_body("check_multiple_events")
 
         msg = self.send_webhook_payload(
@@ -44,7 +40,7 @@ class UpdownHookTests(WebhookTestCase):
         msg = self.get_second_to_last_message()
         self.assert_channel_message(
             message=msg,
-            channel_name=self.CHANNEL_NAME,
+            channel_name=self.channel_name,
             topic_name=topic_name,
             content=down_content,
         )
@@ -52,7 +48,7 @@ class UpdownHookTests(WebhookTestCase):
         msg = self.get_last_message()
         self.assert_channel_message(
             message=msg,
-            channel_name=self.CHANNEL_NAME,
+            channel_name=self.channel_name,
             topic_name=topic_name,
             content=up_content,
         )

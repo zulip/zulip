@@ -7,6 +7,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
+from django.db.models import F
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -431,6 +432,7 @@ def json_change_settings(
                         modified_user__in=users,
                         event_type=AuditLogEventType.USER_SETTING_CHANGED,
                         extra_data__property=setting_name,
+                        acting_user=F("modified_user"),
                     ).values_list("modified_user_id", flat=True)
                 )
 
@@ -555,7 +557,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
                 max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
             )
         )
-    upload_avatar_image(user_file, user_profile)
+    upload_avatar_image(user_file, user_profile, content_type=user_file.content_type)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     user_avatar_url = avatar_url(user_profile)
 

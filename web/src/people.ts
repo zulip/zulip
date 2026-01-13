@@ -154,6 +154,9 @@ export function get_users_from_ids(user_ids: number[]): User[] {
 // Use this function only when you are sure that user_id is valid.
 export function get_by_user_id(user_id: number): User {
     const person = people_by_user_id_dict.get(user_id);
+    if (person === undefined && is_valid_user_id(user_id)) {
+        blueslip.error(`User ID: ${user_id} is valid but not found in people_by_user_id_dict`);
+    }
     assert(person, `Unknown user_id in get_by_user_id: ${user_id}`);
     return person;
 }

@@ -115,13 +115,6 @@ JENKINS = ScreenshotContent(
     content=f"**Build:** [#{REVISION_NUMBER}](): FAILURE :cross_mark:",
 )
 
-JIRA_PLUGIN = ScreenshotContent(
-    topic=f"{TICKET_NUMBER}: {TASK_TITLE}",
-    content=f"""{BO_NAME} **created** [{TICKET_NUMBER}]() - priority Medium, assigned to @**{KEVIN_NAME}**:
-
-> {TASK_DESCRIPTION}""",
-)
-
 MASTODON = ScreenshotContent(
     topic="MIT Technology Review",
     content=f"""**[Don’t let hype about AI agents get ahead of reality](https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/)**
@@ -173,22 +166,6 @@ PERFORCE = ScreenshotContent(
 PUPPET = ScreenshotContent(
     topic="Reports",
     content=f"""Puppet production run for web-server-01 completed at {DATETIME_GLOBAL}. [GitHub Gist]() | [Report URL]()""",
-)
-
-REDMINE = ScreenshotContent(
-    topic=TASK_TITLE,
-    content=f"""{BO_NAME} **created** issue [{TICKET_NUMBER} {TASK_TITLE}]():
-
-~~~quote
-
-{TASK_DESCRIPTION}...
-
-~~~
-
-* **Assignee**: {KEVIN_NAME}
-* **Status**: New
-* **Target version**: {VERSION_NUMBER[1:]}
-* **Estimated hours**: 40""",
 )
 
 RSS = MASTODON

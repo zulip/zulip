@@ -3,7 +3,7 @@
 Zulip provides a set of tools that allows interacting with its API more
 easily, called the [Python bindings](https://pypi.python.org/pypi/zulip/).
 One of the most notable use cases for these bindings are bots developed
-using Zulip's [bot framework](/api/writing-bots).
+using Zulip's [bot framework](/help/writing-bots).
 
 In order to use them, you need to configure them with your identity
 (account, API key, and Zulip server URL). There are a few ways to
@@ -164,5 +164,5 @@ can be found in the following table:
 
 * [Installation instructions](/api/installation-instructions)
 * [API keys](/api/api-keys)
-* [Running bots](/api/running-bots)
-* [Deploying bots](/api/deploying-bots)
+* [Running bots](/help/running-bots)
+* [Deploying bots](/help/deploying-bots)

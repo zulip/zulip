@@ -288,7 +288,7 @@ const copy_invite_link_banner = (invite_link: string): Banner => ({
     ),
     buttons: [
         {
-            attention: "primary",
+            variant: "solid",
             icon: "copy",
             label: $t({defaultMessage: "Copy link"}),
             id: "copy_generated_invite_link",

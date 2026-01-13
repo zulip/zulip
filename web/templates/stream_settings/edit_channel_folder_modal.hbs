@@ -3,13 +3,13 @@
     <label for="edit_channel_folder_name" class="modal-field-label">
         {{t 'Channel folder name' }}
     </label>
-    <input type="text" id="edit_channel_folder_name" class="modal_text_input" name="channel_folder_name" maxlength="{{ max_channel_folder_name_length }}" value="{{name}}" />
+    <input type="text" id="edit_channel_folder_name" class="modal_text_input" name="channel_folder_name" maxlength="{{ max_channel_folder_name_length }}" value="{{name}}" {{#unless can_manage_folder}} disabled {{/unless}}/>
 </div>
 <div>
     <label for="edit_channel_folder_description" class="modal-field-label">
         {{t 'Description' }}
     </label>
-    <textarea id="edit_channel_folder_description" class="modal-textarea" name="channel_folder_description" maxlength="{{ max_channel_folder_description_length }}">{{~description~}}</textarea>
+    <textarea id="edit_channel_folder_description" class="modal-textarea" name="channel_folder_description" maxlength="{{ max_channel_folder_description_length }}" {{#unless can_manage_folder}} disabled {{/unless}}>{{~description~}}</textarea>
 </div>
 <div>
     <div>
@@ -30,6 +30,7 @@
         </div>
     </div>
 </div>
+{{#if can_manage_folder}}
 <div>
     <div>
         <h3 class="folder-channels-list-header">
@@ -38,6 +39,7 @@
     </div>
     <div class="add_channel_folder_widget">
         {{> ../dropdown_widget widget_name="add_channel_folder"}}
-        {{> ../components/action_button label=(t "Add") custom_classes="add-channel-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
+        {{> ../components/action_button label=(t "Add") custom_classes="add-channel-button" variant="subtle" intent="brand" aria-label=(t "Add") }}
     </div>
 </div>
+{{/if}}

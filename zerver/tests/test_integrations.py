@@ -78,7 +78,11 @@ class IntegrationsTestCase(ZulipTestCase):
             integration = Integration("alertmanager", ["misc"])
 
     def test_no_missing_doc_screenshot_config(self) -> None:
-        integration_names = {integration.name for integration in INTEGRATIONS.values()}
+        integration_names = {
+            integration.name
+            for integration in INTEGRATIONS.values()
+            if integration.is_enabled_in_catalog()
+        }
         integrations_with_screenshot_configs = {
             integration_name
             for integration_name, integration in INTEGRATIONS.items()
@@ -177,3 +181,10 @@ class IntegrationsTestCase(ZulipTestCase):
             )
 
         assert not errors, "\n".join(errors)
+
+    def test_embedded_bots_are_disabled_in_catalog(self) -> None:
+        for embedded_bot in EMBEDDED_BOTS:
+            self.assertFalse(
+                embedded_bot.is_enabled_in_catalog(),
+                f"Embedded bot '{embedded_bot.name}' should be disabled from the catalog.",
+            )

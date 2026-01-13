@@ -90,6 +90,7 @@ const settings_data = mock_esm("../src/settings_data");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_popover = mock_esm("../src/stream_popover");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
+const user_status_ui = mock_esm("../src/user_status_ui");
 
 mock_esm("../src/recent_view_ui", {
     is_in_focus: () => false,
@@ -186,6 +187,7 @@ run_test("mappings", () => {
         map_down("V", true).map((item) => item.name),
         ["view_selected_stream", "toggle_read_receipts"],
     );
+    assert.equal(map_down("Y", true).name, "set_status");
 
     assert.equal(map_down("/").name, "search");
     assert.equal(map_down("j").name, "vim_down");
@@ -269,6 +271,7 @@ run_test("mappings non-latin keyboard", () => {
         map_down("М", "KeyV", true).map((item) => item.name),
         ["view_selected_stream", "toggle_read_receipts"],
     );
+    assert.equal(map_down("Н", "KeyY", true).name, "set_status");
     assert.equal(map_down("о", "KeyJ").name, "vim_down");
     assert.equal(map_down("х", "BracketLeft", false, true).name, "escape");
     assert.equal(map_down("с", "KeyC", false, true).name, "copy_with_c");
@@ -362,7 +365,7 @@ run_test("unmapped keys return false easily", () => {
     // calling any functions outside of hotkey.ts.
     // (unless we are editing text)
     assert_unmapped("bfo");
-    assert_unmapped("BEFLOQTWXYZ");
+    assert_unmapped("BEFLOQTWXZ");
 });
 
 run_test("allow normal typing when editing text", ({override, override_rewire}) => {
@@ -415,6 +418,7 @@ test_while_not_editing_text("basic mappings", () => {
     assert_mapping("x", compose_actions, "start");
     assert_mapping("P", message_view, "show", true);
     assert_mapping("g", gear_menu, "toggle");
+    assert_mapping("Y", user_status_ui, "open_user_status_modal", true);
 });
 
 test_while_not_editing_text("drafts open", ({override}) => {

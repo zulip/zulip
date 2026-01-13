@@ -396,7 +396,7 @@ def get_visible_integrations_for_category(category_slug: str) -> list[Integratio
         (
             integration
             for integration in INTEGRATIONS.values()
-            if integration.is_enabled() and not integration.legacy
+            if integration.is_enabled_in_catalog() and not integration.legacy
         ),
         key=lambda integration: integration.name,
     )
@@ -408,7 +408,7 @@ def get_visible_integrations_for_category(category_slug: str) -> list[Integratio
 
 
 def add_catalog_integrations_context(request: HttpRequest, category_slug: str) -> dict[str, Any]:
-    enabled_integrations_count = sum(v.is_enabled() for v in INTEGRATIONS.values())
+    enabled_integrations_count = sum(v.is_enabled_in_catalog() for v in INTEGRATIONS.values())
     # Subtract 1 so saying "Over X integrations" is correct. Then,
     # round down to the nearest multiple of 10.
     integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10
@@ -475,7 +475,7 @@ def integrations_doc(
     integration_name: PathOnly[str],
 ) -> HttpResponse:
     integration = INTEGRATIONS.get(integration_name)
-    if integration is None or not integration.is_enabled():
+    if integration is None or not integration.is_enabled_in_catalog():
         return TemplateResponse(request, "404.html", status=404)
 
     return_category_slug = request.GET.get("category", "all")

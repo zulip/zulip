@@ -19,10 +19,6 @@ TOPIC_SPONSORS = "sponsors"
 
 
 class GitHubWebhookTest(WebhookTestCase):
-    CHANNEL_NAME = "github"
-    URL_TEMPLATE = "/api/v1/external/github?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "github"
-
     def test_ping_event(self) -> None:
         expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
         self.check_webhook("ping", TOPIC_REPO, expected_message)
@@ -641,7 +637,7 @@ A temporary team so that I can get some webhook fixtures!
             self.verify_post_is_ignored(payload, event)
 
     def test_team_edited_with_unsupported_keys(self) -> None:
-        self.subscribe(self.test_user, self.CHANNEL_NAME)
+        self.subscribe(self.test_user, self.channel_name)
 
         event = "team"
         payload = dict(
@@ -666,7 +662,7 @@ A temporary team so that I can get some webhook fixtures!
 
         self.assert_channel_message(
             message=channel_message,
-            channel_name=self.CHANNEL_NAME,
+            channel_name=self.channel_name,
             topic_name="team My Team",
             content="Team has changes to `bogus_key1/bogus_key2` data.",
         )
@@ -776,9 +772,7 @@ A temporary team so that I can get some webhook fixtures!
 
 
 class GitHubSponsorsHookTests(WebhookTestCase):
-    CHANNEL_NAME = "github"
     URL_TEMPLATE = "/api/v1/external/githubsponsors?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "github"
 
     def test_cancelled_message(self) -> None:
         expected_message = "monalisa cancelled their $5 a month subscription."

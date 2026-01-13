@@ -41,9 +41,6 @@ class PublicURLTest(ZulipTestCase):
             url = "/api/" + os.path.splitext(doc)[0]  # Strip the extension.
             api_doc_urls.append(url)
 
-        # We have lots of api_docs files, so this will be expensive!
-        self.assertGreater(len(api_doc_urls), 25)
-
         expected_tag = """<meta property="og:description" content="This is an API docs page" />"""
 
         for url in api_doc_urls:
@@ -183,8 +180,18 @@ class ErrorPageTest(ZulipTestCase):
 class RedirectURLTest(ZulipTestCase):
     def test_api_redirects(self) -> None:
         for redirect in API_DOCUMENTATION_REDIRECTS:
-            result = self.client_get(redirect.old_url, follow=True)
-            self.assert_in_success_response(["Zulip homepage", "API documentation home"], result)
+            if redirect.old_url not in [
+                "/api/incoming-webhooks-overview",
+                "/api/incoming-webhooks-walkthrough",
+            ]:
+                result = self.client_get(redirect.old_url, follow=True)
+                self.assert_in_success_response(
+                    ["Zulip homepage", "API documentation home"], result
+                )
+
+            result = self.client_get(redirect.old_url)
+            self.assertEqual(result.status_code, 301)
+            self.assertIn(redirect.new_url, result["Location"])
 
     def test_policy_redirects(self) -> None:
         for redirect in POLICY_DOCUMENTATION_REDIRECTS:

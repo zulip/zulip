@@ -41,7 +41,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.mention import MentionBackend, MentionData
+from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
 from zerver.lib.message import (
     SendMessageRequest,
     check_user_group_mention_allowed,
@@ -81,6 +81,7 @@ from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_stream_link_syntax
+from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     check_any_user_has_permission_by_role,
@@ -2209,3 +2210,44 @@ def maybe_send_channel_events_notice(
         archived_channel_notice=archived_channel_notice,
         acting_user=acting_user,
     )
+
+
+def send_user_profile_update_notification(
+    user_profile: UserProfile,
+    acting_user: UserProfile | None,
+    changes: list[UserProfileChangeDict],
+) -> None:
+    if (acting_user is not None and acting_user.id == user_profile.id) or user_profile.is_bot:
+        return
+
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
+
+    def format_empty_value(value: str) -> str:
+        """Return italicized 'None' for empty values, otherwise return the value."""
+        if value == "":
+            return "*None*"
+        return value
+
+    with override_language(user_profile.default_language):
+        # We can't name which user made the change, since it was done either on the command line or via an automated job like LDAP synchronization.
+        # It's still useful to tell the user about the update.
+        if acting_user is None:
+            message = _("The following changes have been made to your account.")
+        else:
+            user_mention = silent_mention_syntax_for_user(acting_user)
+            message = _("{user} has made the following changes to your account.").format(
+                user=user_mention
+            )
+
+        for i, change in enumerate(changes):
+            message += _(
+                "\n- **Old {field_name}:** {old_value}\n- **New {field_name}:** {new_value}\n"
+            ).format(
+                field_name=change["field_name"],
+                old_value=format_empty_value(change["old_value"]),
+                new_value=format_empty_value(change["new_value"]),
+            )
+            if i < len(changes) - 1:
+                message += "____\n\n"
+
+    internal_send_private_message(notification_bot, user_profile, message)

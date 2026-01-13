@@ -52,9 +52,9 @@ run_test("has_full_recipient", ({override}) => {
     assert.equal(compose_state.has_full_recipient(), true);
 
     compose_state.set_message_type("private");
-    compose_state.private_message_recipient_ids([]);
+    compose_state.set_private_message_recipient_ids([]);
     assert.equal(compose_state.has_full_recipient(), false);
 
-    compose_state.private_message_recipient_ids([123]);
+    compose_state.set_private_message_recipient_ids([123]);
     assert.equal(compose_state.has_full_recipient(), true);
 });

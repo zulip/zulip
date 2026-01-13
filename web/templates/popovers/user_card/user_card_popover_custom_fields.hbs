@@ -8,14 +8,15 @@
                 <i class="zulip-icon zulip-icon-copy" aria-hidden="true"></i>
             </span>
         {{else if this.is_external_account}}
-            <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="custom-profile-field-value custom-profile-field-link" data-tippy-content="{{this.name}}" tabindex="0">
-                {{#if (eq this.subtype "github") }}
-                    <i class="popover-menu-icon fa fa-github" aria-hidden="true"></i>
-                {{else if (eq this.subtype "twitter") }}
-                    <i class="popover-menu-icon fa fa-twitter" aria-hidden="true"></i>
-                {{/if}}
+            {{#if this.link}}
+                <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="custom-profile-field-value custom-profile-field-link" data-tippy-content="{{this.name}}" tabindex="0">
+                    {{> ../../default_external_account_icon subtype=this.subtype}}
+                    <span class="custom-profile-field-text">{{this.value}}</span>
+                </a>
+            {{else}}
+                {{> ../../default_external_account_icon subtype=this.subtype}}
                 <span class="custom-profile-field-text">{{this.value}}</span>
-            </a>
+            {{/if}}
         {{else if this.rendered_value}}
             <div class="custom-profile-field-value rendered_markdown" data-tippy-content="{{this.name}}">
                 {{rendered_markdown this.rendered_value}}

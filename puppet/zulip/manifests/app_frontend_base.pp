@@ -62,14 +62,6 @@ class zulip::app_frontend_base {
 
   $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
   if $loadbalancers != [] {
-    file { '/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf':
-      require => File['/etc/nginx/zulip-include/app.d'],
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0644',
-      content => template('zulip/accept-loadbalancer.conf.template.erb'),
-      notify  => Service['nginx'],
-    }
     file { '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf':
       require => File['/etc/nginx/zulip-include/app.d'],
       owner   => 'root',
@@ -79,11 +71,17 @@ class zulip::app_frontend_base {
       notify  => Service['nginx'],
     }
   } else {
-    file { ['/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf',
-            '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf']:
+    file { '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf':
       ensure => absent,
       notify => Service['nginx'],
     }
+  }
+  file { '/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf':
+    # This moved to /etc/nginx/zulip-include/trusted-ip, via
+    # nginx.pp. This block can be removed once direct Zulip upgrades
+    # from Zulip 11 are no longer supported.
+    ensure => absent,
+    notify => Service['nginx'],
   }
   file { '/etc/nginx/zulip-include/app.d/healthcheck.conf':
     require => File['/etc/nginx/zulip-include/app.d'],

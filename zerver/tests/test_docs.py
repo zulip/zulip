@@ -473,6 +473,8 @@ class DocPageTest(ZulipTestCase):
 
         bot_subdirs = [integration.name for integration in BOT_INTEGRATIONS]
         for integration in INTEGRATIONS:
+            if not INTEGRATIONS[integration].is_enabled_in_catalog():
+                continue
             url = f"/integrations/{integration}"
             response = self._test(url, expected_strings=[])
             doc = response.content.decode("utf-8")
@@ -501,7 +503,7 @@ class DocPageTest(ZulipTestCase):
         # for the PythonAPIIntegrations, so we cannot avoid going out of sync
         # when adding/deleting screenshots.
         # Use this set to temporarily add exclusions to this test.
-        exception_images: set[str] = {"jira-plugin/001.png", "git/001.png"}
+        exception_images: set[str] = {"git/001.png"}
         images_in_dir.update(exception_images)
         images_in_docs.update(exception_images)
 

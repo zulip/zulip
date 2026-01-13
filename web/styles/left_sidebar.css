@@ -305,8 +305,8 @@
         }
     }
 
-    #compose-new-direct-message,
-    #show-all-direct-messages {
+    .compose-new-direct-message,
+    .show-all-direct-messages {
         color: var(--color-sidebar-action);
         display: none;
         align-items: center;
@@ -329,8 +329,8 @@
     &.hover-over-dm-section,
     &.zoom-in,
     &:hover {
-        #compose-new-direct-message,
-        #show-all-direct-messages {
+        .compose-new-direct-message,
+        .show-all-direct-messages {
             display: flex;
         }
     }
@@ -352,6 +352,10 @@
     /* Must be padding not margin so that the sticky headers don't show behind it */
     padding: 0 var(--left-sidebar-right-margin)
         var(--sidebar-filter-bottom-spacing) 5px;
+
+    &.no-display {
+        display: none;
+    }
 
     .channel-folders-sidebar-menu-icon {
         grid-area: channel-folders-option;

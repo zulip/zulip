@@ -276,7 +276,7 @@ export function compare_people_for_relevance(
         //
         // (We will usually have it, since entering a channel triggers a fetch.)
         if (!peer_data.has_full_subscriber_data(current_stream_id)) {
-            void peer_data.maybe_fetch_stream_subscribers(current_stream_id);
+            void peer_data.fetch_stream_subscribers(current_stream_id);
         }
 
         // If the client does not yet have complete subscriber data,

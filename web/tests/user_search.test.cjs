@@ -4,9 +4,12 @@ const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
+const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {set_global, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
+
+const channel = mock_esm("../src/channel");
 
 const fake_buddy_list = {
     scroll_container_selector: "#whatever",
@@ -32,7 +35,6 @@ function mock_setTimeout() {
     });
 }
 
-const channel = mock_esm("../src/channel");
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
@@ -153,12 +155,12 @@ test("fetch on search", async ({override}) => {
         make_message_list([{operator: "stream", operand: office.stream_id.toString()}]),
     );
     let get_call_count = 0;
-    channel.get = () => {
+    mock_channel_get(channel, (opts) => {
         get_call_count += 1;
-        return {
+        opts.success({
             subscribers: [1, 2, 3, 4],
-        };
-    };
+        });
+    });
     // Only one fetch should happen.
     set_input_val("somevalu");
     set_input_val("somevalue");

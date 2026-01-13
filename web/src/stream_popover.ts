@@ -628,15 +628,9 @@ export async function build_move_topic_to_stream_popover(
             return;
         }
 
-        const participant_names = unsubscribed_participant_ids.map(
+        const unsubscribed_participant_names = unsubscribed_participant_ids.map(
             (user_id) => people.get_user_by_id_assert_valid(user_id).full_name,
         );
-        const unsubscribed_participant_formatted_names_list_html =
-            util.format_array_as_list_with_highlighted_elements(
-                participant_names,
-                "long",
-                "conjunction",
-            );
 
         const destination_stream = stream_data.get_sub_by_id(destination_stream_id)!;
         const can_subscribe_other_users = stream_data.can_subscribe_others(destination_stream);
@@ -653,7 +647,7 @@ export async function build_move_topic_to_stream_popover(
             hide_close_button: true,
             stream: destination_stream,
             selected_propagate_mode,
-            unsubscribed_participant_formatted_names_list_html,
+            unsubscribed_participant_names,
             unsubscribed_participants_count,
             few_unsubscribed_participants,
         };
@@ -838,13 +832,6 @@ export async function build_move_topic_to_stream_popover(
         }
 
         assert(new_topic_name !== undefined);
-        // Don't show warning for empty topic as the user is probably
-        // about to type a new topic name. Note that if topics are
-        // mandatory, then the submit button is disabled, which returns
-        // early above.
-        if (new_topic_name === "" || new_topic_name === "(no topic)") {
-            return false;
-        }
         let stream_id: number;
         if (stream_widget_value === undefined) {
             // Set stream_id to current_stream_id since the user is not

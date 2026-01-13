@@ -457,6 +457,23 @@ class GetStreamsTest(ZulipTestCase):
         )
         self.assertEqual(json["email"], hamlet_denmark_email)
 
+        # Users without permission to post cannot access the channel email.
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm_for_sharding=realm
+        )
+        do_change_stream_group_based_setting(
+            denmark_stream, "can_send_message_group", owners_group, acting_user=iago
+        )
+        result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
+        self.assert_json_error(result, "You do not have permission to post in this channel.")
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm
+        )
+        do_change_stream_group_based_setting(
+            denmark_stream, "can_send_message_group", everyone_group, acting_user=iago
+        )
+
         self.login("polonius")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
         self.assert_json_error(result, "Invalid channel ID")

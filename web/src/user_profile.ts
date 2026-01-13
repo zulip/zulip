@@ -18,6 +18,7 @@ import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 
 import * as avatar from "./avatar.ts";
+import * as banners from "./banners.ts";
 import * as bot_data from "./bot_data.ts";
 import * as bot_helper from "./bot_helper.ts";
 import * as browser_history from "./browser_history.ts";
@@ -355,6 +356,12 @@ async function render_or_update_user_streams_tab(user: User): Promise<void> {
     }
 
     loading.destroy_indicator($(".stream-list-loader"));
+    if (!peer_data.subscriber_data_loaded_for_user(user.user_id)) {
+        $(".stream-list-container .error-message").html(
+            $t_html({defaultMessage: "Failed to load subscribed channels."}),
+        );
+        return;
+    }
 
     if (!user_streams_list_widget) {
         render_user_stream_list(user_streams, user);
@@ -519,10 +526,13 @@ export function get_custom_profile_field_data(
             );
             profile_field.value = field_value.value;
             profile_field.subtype = field_data.subtype;
-            profile_field.link = settings_profile_fields.get_external_account_link(
+            const link = settings_profile_fields.get_external_account_link(
                 field_data,
                 field_value.value,
             );
+            if (link !== undefined) {
+                profile_field.link = link;
+            }
             break;
         }
         default:
@@ -601,10 +611,15 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
     function add_user_to_next_group(): void {
         if (group_ids_successfully_added.length >= group_ids.length) {
             if (group_ids_successfully_added.length > 0) {
-                ui_report.success(
-                    $t_html({
-                        defaultMessage: "Added successfully!",
-                    }),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Added successfully!",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
@@ -652,7 +667,15 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
                           },
                       );
 
-                ui_report.client_error(error_message, $alert_box);
+                banners.open(
+                    {
+                        intent: "danger",
+                        label: error_message,
+                        buttons: [],
+                        close_button: false,
+                    },
+                    $alert_box,
+                );
                 clear_successful_pills();
             },
         });
@@ -837,11 +860,14 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
     const is_active = people.is_person_active(user_id);
 
     assert(bot.is_bot);
+    // Extract short_name from email (format: {short_name}-bot@domain)
+    const short_name = bot.email.split("@")[0]!.slice(0, -4);
     const html_body = render_edit_bot_form({
         user_id,
         is_active,
         is_bot_owner_current_user,
         email: bot.email,
+        short_name,
         full_name: bot.full_name,
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
@@ -850,6 +876,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         api_key: bot_user.api_key,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
         max_bot_name_length: people.MAX_USER_NAME_LENGTH,
+        realm_bot_domain: realm.realm_bot_domain,
         zuliprc: "zuliprc",
     });
     $container.append($(html_body));
@@ -876,6 +903,10 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
     original_values = get_current_values($("#bot-edit-form"));
     $("#bot-edit-form").on("input", "input, select, button", (e) => {
         e.preventDefault();
+        // Clear invalid state when user starts typing
+        if ($(e.target).hasClass("invalid")) {
+            $(e.target).removeClass("invalid");
+        }
         toggle_submit_button($("#bot-edit-form"));
     });
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
@@ -884,6 +915,17 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             10,
         );
         const $full_name = $("#bot-edit-form").find<HTMLInputElement>("input[name='full_name']");
+        const $short_name = $("#bot-edit-form").find<HTMLInputElement>(
+            "input[name='bot_short_name']",
+        );
+
+        const short_name_value = $short_name.val()!.trim();
+        if (!bot_helper.validate_bot_short_name(short_name_value)) {
+            $short_name.addClass("invalid");
+            $short_name.trigger("focus");
+            return;
+        }
+
         const url = "/json/bots/" + encodeURIComponent(bot.user_id);
 
         const formData = new FormData();
@@ -891,6 +933,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         formData.append("csrfmiddlewaretoken", csrf_token);
         formData.append("full_name", $full_name.val()!);
         formData.append("role", JSON.stringify(role));
+        formData.append("short_name", short_name_value);
         const new_bot_owner_id = bot_owner_dropdown_widget!.value();
         if (new_bot_owner_id) {
             formData.append("bot_owner_id", new_bot_owner_id.toString());
@@ -943,9 +986,17 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 $cancel_button.prop("disabled", false);
             },
             error(xhr) {
-                ui_report.error(
+                const error_message = channel.xhr_error_message(
                     $t_html({defaultMessage: "Failed"}),
                     xhr,
+                );
+                banners.open(
+                    {
+                        intent: "danger",
+                        label: error_message,
+                        buttons: [],
+                        close_button: false,
+                    },
                     $("#bot-edit-form-error"),
                 );
                 // Scrolling modal to top, to make error visible to user.
@@ -1129,10 +1180,20 @@ function toggle_submit_button($edit_form: JQuery): void {
     const current_values = get_current_values($edit_form);
     const $submit_button = $("#user-profile-modal .dialog_submit_button");
     const full_name_value = $edit_form.find<HTMLInputElement>("input[name='full_name']").val()!;
+    const $short_name = $edit_form.find<HTMLInputElement>("input[name='bot_short_name']");
 
     if (full_name_value.trim() === "") {
         $submit_button.prop("disabled", true);
         return;
+    }
+
+    // Only check short_name for bot profiles
+    if ($short_name.length > 0) {
+        const short_name_value = $short_name.val()!.trim();
+        if (short_name_value === "") {
+            $submit_button.prop("disabled", true);
+            return;
+        }
     }
 
     if (_.isEqual(original_values, current_values)) {
@@ -1302,9 +1363,17 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                 $cancel_button.prop("disabled", false);
             },
             error(xhr) {
-                ui_report.error(
+                const error_message = channel.xhr_error_message(
                     $t_html({defaultMessage: "Failed"}),
                     xhr,
+                );
+                banners.open(
+                    {
+                        intent: "danger",
+                        label: error_message,
+                        buttons: [],
+                        close_button: false,
+                    },
                     $("#edit-user-form-error"),
                 );
                 // Scrolling modal to top, to make error visible to user.
@@ -1339,21 +1408,45 @@ export function initialize(): void {
                 .parse(raw_data);
             if (Object.keys(data.subscribed).length > 0) {
                 reset_subscribe_widget();
-                ui_report.success(
-                    $t_html({defaultMessage: "Subscribed successfully!"}),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Subscribed successfully!",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
             } else {
-                ui_report.client_error(
-                    $t_html({defaultMessage: "Already subscribed."}),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Already subscribed.",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
             }
         }
         function addition_failure(xhr: JQuery.jqXHR): void {
-            ui_report.error("", xhr, $alert_box, 1200);
+            const message = channel.xhr_error_message("", xhr);
+            banners.open_and_close(
+                {
+                    intent: "danger",
+                    label: message,
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
         subscriber_api.add_user_ids_to_stream(
             [target_user_id],
@@ -1385,14 +1478,28 @@ export function initialize(): void {
                 })
                 .parse(raw_data);
             if (data.removed.length > 0) {
-                ui_report.success(
-                    $t_html({defaultMessage: "Unsubscribed successfully!"}),
+                banners.open_and_close(
+                    {
+                        intent: "success",
+                        label: $t({
+                            defaultMessage: "Unsubscribed successfully!",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
             } else {
-                ui_report.client_error(
-                    $t_html({defaultMessage: "Already not subscribed."}),
+                banners.open_and_close(
+                    {
+                        intent: "danger",
+                        label: $t({
+                            defaultMessage: "Already not subscribed.",
+                        }),
+                        buttons: [],
+                        close_button: false,
+                    },
                     $alert_box,
                     1200,
                 );
@@ -1414,7 +1521,16 @@ export function initialize(): void {
                 );
             }
 
-            ui_report.client_error(error_message, $alert_box, 1200);
+            banners.open_and_close(
+                {
+                    intent: "danger",
+                    label: error_message,
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
         assert(sub !== undefined);
         if (
@@ -1442,7 +1558,18 @@ export function initialize(): void {
         const $alert_box = $("#user-profile-groups-tab .user-profile-group-list-alert");
 
         function removal_success(): void {
-            ui_report.success($t_html({defaultMessage: "Removed successfully!"}), $alert_box, 1200);
+            banners.open_and_close(
+                {
+                    intent: "success",
+                    label: $t({
+                        defaultMessage: "Removed successfully!",
+                    }),
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
 
         function removal_failure(): void {
@@ -1460,7 +1587,16 @@ export function initialize(): void {
                 );
             }
 
-            ui_report.client_error(error_message, $alert_box, 1200);
+            banners.open_and_close(
+                {
+                    intent: "danger",
+                    label: error_message,
+                    buttons: [],
+                    close_button: false,
+                },
+                $alert_box,
+                1200,
+            );
         }
 
         user_group_edit_members.edit_user_group_membership({
@@ -1535,6 +1671,13 @@ export function initialize(): void {
             return $custom_link.attr("href") ?? "";
         },
     }).on("success", (e) => {
+        assert(e.trigger instanceof HTMLElement);
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
+    });
+
+    new ClipboardJS(".copy-external-account-field").on("success", (e) => {
         assert(e.trigger instanceof HTMLElement);
         show_copied_confirmation(e.trigger, {
             show_check_icon: true,

@@ -35,6 +35,8 @@ def create_integration_bot_avatar(logo_path: str, bot_avatar_path: str) -> None:
 def generate_integration_bots_avatars(check_missing: bool = False) -> None:
     missing = set()
     for integration in INTEGRATIONS.values():
+        if not integration.is_enabled_in_catalog():
+            continue
         bot_avatar_path = integration.get_bot_avatar_path()
         bot_avatar_path = os.path.join(ZULIP_PATH, "static", bot_avatar_path)
         if check_missing:

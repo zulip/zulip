@@ -245,8 +245,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm.refresh_from_db()
         assert realm.deactivated
         assert realm.deactivated_redirect is None
-        with self.assertLogs(level="WARNING"):
-            do_scrub_realm(realm, acting_user=None)
+        do_scrub_realm(realm, acting_user=None)
 
         result = self.client_get("/login/", follow=True)
         self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
@@ -533,6 +532,10 @@ class PasswordResetTest(ZulipTestCase):
         final_reset_url = result["Location"]
         result = self.client_get(final_reset_url)
         self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Set a new password"], result)
+        self.assert_not_in_success_response(
+            ["low-traffic newsletter (a few emails a year)"], result
+        )
 
         # Reset your password
         with self.settings(PASSWORD_MIN_LENGTH=3, PASSWORD_MIN_GUESSES=1000):
@@ -1433,7 +1436,11 @@ class UserSignUpTest(ZulipTestCase):
             side_effect=EmailNotDeliveredError,
         )
 
-        with smtp_mock, self.assertLogs(level="ERROR") as m:
+        with (
+            smtp_mock,
+            self.assertLogs("zulip.registration", level="ERROR") as registration_logs,
+            self.assertLogs(level="ERROR"),
+        ):
             result = self.client_post("/accounts/home/", {"email": email})
 
         self.assertEqual(result.status_code, 500)
@@ -1441,7 +1448,8 @@ class UserSignUpTest(ZulipTestCase):
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result
         )
         self.assertTrue(
-            "ERROR:root:Failed to deliver email during user registration" in m.output[0]
+            "ERROR:zulip.registration:Failed to deliver email during user registration"
+            in registration_logs.output[0]
         )
 
     @override_settings(CORPORATE_ENABLED=True)
@@ -1456,7 +1464,11 @@ class UserSignUpTest(ZulipTestCase):
             side_effect=EmailNotDeliveredError,
         )
 
-        with smtp_mock, self.assertLogs(level="ERROR") as m:
+        with (
+            smtp_mock,
+            self.assertLogs("zulip.registration", level="ERROR") as registration_logs,
+            self.assertLogs(level="ERROR"),
+        ):
             result = self.client_post("/accounts/home/", {"email": email})
 
         self.assertEqual(result.status_code, 500)
@@ -1465,7 +1477,8 @@ class UserSignUpTest(ZulipTestCase):
         )
         self.assert_in_response("Something went wrong. Sorry about that!", result)
         self.assertTrue(
-            "ERROR:root:Failed to deliver email during user registration" in m.output[0]
+            "ERROR:zulip.registration:Failed to deliver email during user registration"
+            in registration_logs.output[0]
         )
 
     @override_settings(CORPORATE_ENABLED=False)
@@ -1480,7 +1493,11 @@ class UserSignUpTest(ZulipTestCase):
             side_effect=EmailNotDeliveredError,
         )
 
-        with smtp_mock, self.assertLogs(level="ERROR") as m:
+        with (
+            smtp_mock,
+            self.assertLogs("zulip.registration", level="ERROR") as registration_logs,
+            self.assertLogs(level="ERROR"),
+        ):
             result = self.submit_realm_creation_form(
                 email, realm_subdomain="custom-test", realm_name="Zulip test"
             )
@@ -1489,7 +1506,10 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_in_response(
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result
         )
-        self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
+        self.assertTrue(
+            "ERROR:zulip.registration:Failed to deliver email during realm creation"
+            in registration_logs.output[0]
+        )
 
     @override_settings(CORPORATE_ENABLED=True)
     def test_bad_email_configuration_for_corporate_create_realm(self) -> None:
@@ -1503,7 +1523,11 @@ class UserSignUpTest(ZulipTestCase):
             side_effect=EmailNotDeliveredError,
         )
 
-        with smtp_mock, self.assertLogs(level="ERROR") as m:
+        with (
+            smtp_mock,
+            self.assertLogs("zulip.registration", level="ERROR") as registration_logs,
+            self.assertLogs(level="ERROR"),
+        ):
             result = self.submit_realm_creation_form(
                 email, realm_subdomain="custom-test", realm_name="Zulip test"
             )
@@ -1513,7 +1537,10 @@ class UserSignUpTest(ZulipTestCase):
             "https://zulip.readthedocs.io/en/latest/subsystems/email.html", result.content.decode()
         )
         self.assert_in_response("Something went wrong. Sorry about that!", result)
-        self.assertTrue("ERROR:root:Failed to deliver email during realm creation" in m.output[0])
+        self.assertTrue(
+            "ERROR:zulip.registration:Failed to deliver email during realm creation"
+            in registration_logs.output[0]
+        )
 
     def test_user_default_language_and_timezone(self) -> None:
         """
@@ -2167,7 +2194,7 @@ class UserSignUpTest(ZulipTestCase):
 
         with (
             patch("zerver.views.registration.authenticate", side_effect=invalid_subdomain),
-            self.assertLogs(level="ERROR") as m,
+            self.assertLogs("zulip.registration", level="ERROR") as registration_logs,
         ):
             result = self.client_post(
                 "/accounts/register/",
@@ -2179,8 +2206,10 @@ class UserSignUpTest(ZulipTestCase):
                 },
             )
             self.assertEqual(
-                m.output,
-                ["ERROR:root:Subdomain mismatch in registration zulip: newuser@zulip.com"],
+                registration_logs.output,
+                [
+                    "ERROR:zulip.registration:Subdomain mismatch in registration zulip: newuser@zulip.com"
+                ],
             )
         self.assertEqual(result.status_code, 302)
 
@@ -2589,7 +2618,6 @@ class UserSignUpTest(ZulipTestCase):
                 AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
             ),
             self.assertLogs("zulip.ldap", level="DEBUG") as ldap_logs,
-            self.assertLogs(level="WARNING") as root_logs,
         ):
             # Click confirmation link
             result = self.submit_reg_form_for_user(
@@ -2622,14 +2650,9 @@ class UserSignUpTest(ZulipTestCase):
                 result["Location"], "/accounts/login/?email=no_such_user_in_ldap%40example.com"
             )
             self.assertEqual(
-                root_logs.output,
-                [
-                    "WARNING:root:New account email no_such_user_in_ldap@example.com could not be found in LDAP",
-                ],
-            )
-            self.assertEqual(
                 ldap_logs.output,
                 [
+                    "WARNING:zulip.ldap:New account email no_such_user_in_ldap@example.com could not be found in LDAP",
                     "DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email no_such_user_in_ldap@example.com does not match LDAP domain zulip.com.",
                 ],
             )
@@ -3005,7 +3028,7 @@ class UserSignUpTest(ZulipTestCase):
             LDAP_APPEND_DOMAIN="example.com",
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
-            with self.assertLogs(level="WARNING") as m:
+            with self.assertLogs("zulip.ldap", level="WARNING") as m:
                 result = self.submit_reg_form_for_user(
                     email,
                     password,
@@ -3016,7 +3039,9 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEqual(result.status_code, 200)
             self.assertEqual(
                 m.output,
-                ["WARNING:root:New account email newuser@zulip.com could not be found in LDAP"],
+                [
+                    "WARNING:zulip.ldap:New account email newuser@zulip.com could not be found in LDAP"
+                ],
             )
             with self.assertLogs("zulip.ldap", "DEBUG") as debug_log:
                 result = self.submit_reg_form_for_user(
@@ -3112,7 +3137,7 @@ class UserSignUpTest(ZulipTestCase):
             LDAP_EMAIL_ATTR="mail",
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
-            with self.assertLogs(level="WARNING") as m:
+            with self.assertLogs("zulip.ldap", level="WARNING") as m:
                 result = self.submit_reg_form_for_user(
                     email,
                     password,
@@ -3124,7 +3149,7 @@ class UserSignUpTest(ZulipTestCase):
                 self.assertEqual(
                     m.output,
                     [
-                        "WARNING:root:New account email nonexistent@zulip.com could not be found in LDAP"
+                        "WARNING:zulip.ldap:New account email nonexistent@zulip.com could not be found in LDAP"
                     ],
                 )
 

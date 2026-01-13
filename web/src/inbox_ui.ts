@@ -10,8 +10,9 @@ import render_inbox_row from "../templates/inbox_view/inbox_row.hbs";
 import render_inbox_stream_container from "../templates/inbox_view/inbox_stream_container.hbs";
 import render_inbox_view from "../templates/inbox_view/inbox_view.hbs";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
-import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
+import render_users_with_status_icons from "../templates/users_with_status_icons.hbs";
 
+import * as animate from "./animate.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -468,13 +469,14 @@ function format_dm(
         recipient_ids.push(people.my_current_user_id());
     }
 
-    const rendered_dm_with_html = recipient_ids
-        .map((recipient_id) => ({
-            name: people.get_display_full_name(recipient_id),
-            status_emoji_info: user_status.get_status_emoji(recipient_id),
-        }))
-        .toSorted((a, b) => util.strcmp(a.name, b.name))
-        .map((user_info) => render_user_with_status_icon(user_info));
+    const rendered_dm_with_html = render_users_with_status_icons({
+        users: recipient_ids
+            .map((recipient_id) => ({
+                name: people.get_display_full_name(recipient_id),
+                status_emoji_info: user_status.get_status_emoji(recipient_id),
+            }))
+            .toSorted((a, b) => util.strcmp(a.name, b.name)),
+    });
 
     let user_circle_class: string | false | undefined;
     let is_bot = false;
@@ -491,10 +493,7 @@ function format_dm(
     const context = {
         conversation_key: user_ids_string,
         is_direct: true,
-        rendered_dm_with_html: util.format_array_as_list_with_conjunction(
-            rendered_dm_with_html,
-            "long",
-        ),
+        rendered_dm_with_html,
         is_group: recipient_ids.length > 1,
         user_circle_class,
         is_bot,
@@ -1038,8 +1037,20 @@ function show_empty_inbox_text(has_visible_unreads: boolean): void {
             $("#inbox-empty-without-search").hide();
         } else {
             $("#inbox-empty-with-search").hide();
-            // Use display value specified in CSS.
+
+            // Undo .hide() by returning to display value specified in CSS.
             $("#inbox-empty-without-search").css("display", "");
+
+            // Check if current filter is "followed topics" so that we
+            // can show the appropriate empty view message.
+            const is_followed_filter_selected = filters.has(views_util.FILTERS.FOLLOWED_TOPICS);
+            if (is_followed_filter_selected) {
+                $(".inbox-empty-action-default").hide();
+                $(".inbox-empty-action-filtered").show();
+            } else {
+                $(".inbox-empty-action-default").show();
+                $(".inbox-empty-action-filtered").hide();
+            }
         }
     } else {
         $(".inbox-empty-text").hide();
@@ -1371,16 +1382,49 @@ function filter_should_hide_stream_row({
 }
 
 export function collapse_or_expand(container_id: string): void {
-    $(`#${container_id}`).toggleClass("inbox-collapsed-state");
+    const animation_duration = 200; // ms
+    const $toggle_container = $(`#${container_id}`);
+    let $all_elements = $(".inbox-header.inbox-folder, .inbox-folder-components");
+    const $blocker = $("#inbox-animation-extra-content-blocker");
+    $all_elements = $all_elements.add($blocker);
+    // If a folder was expanded/collapsed.
+    if ($toggle_container.hasClass("inbox-folder")) {
+        const $content = $toggle_container.next(".inbox-folder-components");
+        animate.collapse_or_expand({
+            toggle_class: "inbox-collapsed-state",
+            $toggle_container,
+            $content,
+            $all_elements,
+            duration: animation_duration,
+        });
+        // If a channel was expanded/collapsed.
+    } else {
+        const $content = $toggle_container.next(".inbox-topic-container");
+        // Remove parent`.inbox-folder-components` and
+        // add it's contents to `$all_elements`.
+        const $parent_folder_components = $toggle_container.closest(".inbox-folder-components");
+        $all_elements = $all_elements.not($parent_folder_components);
+        const $parent_folder_components_children = $parent_folder_components.children().children();
+        $all_elements = $all_elements.add($parent_folder_components_children);
+        animate.collapse_or_expand({
+            toggle_class: "inbox-collapsed-state",
+            $toggle_container,
+            $content,
+            $all_elements,
+            duration: animation_duration,
+        });
+    }
 
     if (collapsed_containers.has(container_id)) {
         collapsed_containers.delete(container_id);
+        update_collapsed_note_visibility();
     } else {
         collapsed_containers.add(container_id);
+        // Show after the animation is complete.
+        setTimeout(update_collapsed_note_visibility, animation_duration);
     }
 
     save_data_to_ls();
-    update_collapsed_note_visibility();
 }
 
 // We show the note "All of your unread conversations are hidden.
@@ -2436,6 +2480,14 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
             const $elt = $(e.currentTarget);
             $elt.trigger("click");
         }
+    });
+
+    $("body").on("click", ".inbox-toggle-followed-filter", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        filters.delete(views_util.FILTERS.FOLLOWED_TOPICS);
+        save_data_to_ls();
+        complete_rerender();
     });
 
     $(document).on("compose_canceled.zulip", () => {

@@ -59,6 +59,7 @@ mock_esm("../src/poll_widget", fake_poll_widget);
 
 set_global("document", "document-stub");
 
+const {GenericWidget} = zrequire("generic_widget");
 const widgetize = zrequire("widgetize");
 const widgets = zrequire("widgets");
 
@@ -87,7 +88,10 @@ test("activate", ({override}) => {
 
     const opts = {
         events: [...events],
-        extra_data: "",
+        any_data: {
+            widget_type: "poll",
+            extra_data: "",
+        },
         message: {
             id: 2001,
         },
@@ -96,7 +100,6 @@ test("activate", ({override}) => {
             assert.equal(data.data, "test_data");
         },
         $row,
-        widget_type: "poll",
     };
 
     let is_widget_elem_inserted;
@@ -110,14 +113,14 @@ test("activate", ({override}) => {
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
-    assert.ok(!widgetize.widget_event_handlers.has(opts.message.id));
+    assert.deepEqual(widgetize.get_message_ids(), []);
 
     widgetize.activate(opts);
 
     assert.ok(is_widget_elem_inserted);
     assert.ok(is_widget_activated);
     assert.ok(is_event_handled);
-    assert.equal(widgetize.widget_event_handlers.get(opts.message.id), handle_events);
+    assert.deepEqual(widgetize.get_message_ids(), [opts.message.id]);
 
     message_lists.current = undefined;
     is_widget_elem_inserted = false;
@@ -134,7 +137,7 @@ test("activate", ({override}) => {
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
-    opts.widget_type = "invalid_widget";
+    opts.any_data.widget_type = "invalid_widget";
 
     widgetize.activate(opts);
     assert.ok(!is_widget_elem_inserted);
@@ -142,14 +145,14 @@ test("activate", ({override}) => {
     assert.ok(!is_event_handled);
     assert.deepEqual(blueslip.get_test_logs("warn")[0].more_info, {widget_type: "invalid_widget"});
 
-    opts.widget_type = "tictactoe";
+    opts.any_data.widget_type = "tictactoe";
 
     widgetize.activate(opts);
     assert.ok(!is_widget_elem_inserted);
     assert.ok(!is_widget_activated);
     assert.ok(!is_event_handled);
 
-    /* Testing widgetize.handle_events */
+    /* Testing GenericWidget */
     message_lists.current = {id: 2};
     const post_activate_event = {
         data: {
@@ -159,11 +162,11 @@ test("activate", ({override}) => {
         message_id: 2001,
         sender_id: 102,
     };
-    handle_events = (e) => {
+    const handle_events = (e) => {
         is_event_handled = true;
         assert.deepEqual(e, [post_activate_event]);
     };
-    widgetize.widget_event_handlers.set(2001, handle_events);
+    widgetize.set_widget_for_tests(2001, new GenericWidget(handle_events));
     override(message_lists.current, "get_row", (idx) => {
         assert.equal(idx, 2001);
         return $row;

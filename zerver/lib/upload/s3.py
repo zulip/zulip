@@ -1,4 +1,3 @@
-import logging
 import os
 import secrets
 from collections.abc import Callable, Iterator
@@ -176,11 +175,8 @@ class S3UploadBackend(ZulipUploadBackend):
         try:
             key.load()
         except botocore.exceptions.ClientError:
-            file_name = path_id.split("/")[-1]
-            logging.warning(
-                "%s does not exist. Its entry in the database will be removed.", file_name
-            )
             return False
+
         key.delete()
         return True
 
@@ -293,13 +289,22 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_message_attachment(self, path_id: str) -> bool:
-        return self.delete_file_from_s3(path_id, self.uploads_bucket)
+    def delete_message_attachment(self, path_id: str) -> None:
+        self.delete_message_attachments([path_id])
 
     @override
     def delete_message_attachments(self, path_ids: list[str]) -> None:
+        all_paths = path_ids.copy()
+        for path_id in path_ids:
+            all_paths.append(f"{path_id}.info")
+            all_paths += [
+                thumb_path
+                for thumb_path, _ in self.all_message_attachments(
+                    include_thumbnails=True, prefix=f"thumbnail/{path_id}/"
+                )
+            ]
         self.uploads_bucket.delete_objects(
-            Delete={"Objects": [{"Key": path_id} for path_id in path_ids]}
+            Delete={"Objects": [{"Key": path_id} for path_id in all_paths], "Quiet": True},
         )
 
     @override
@@ -516,10 +521,8 @@ class S3UploadBackend(ZulipUploadBackend):
         return self.get_export_tarball_url(realm, key.key)
 
     @override
-    def delete_export_tarball(self, export_path: str) -> str | None:
+    def delete_export_tarball(self, export_path: str) -> None:
         assert export_path.startswith("/")
         path_id = export_path.removeprefix("/")
         bucket = self.export_bucket or self.avatar_bucket
-        if self.delete_file_from_s3(path_id, bucket):
-            return export_path
-        return None
+        self.delete_file_from_s3(path_id, bucket)

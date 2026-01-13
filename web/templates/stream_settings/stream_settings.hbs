@@ -11,7 +11,7 @@
                     {{/tr}}
                 </span>
             </template>
-            <button class="action-button subscribe-button sub_unsub_button {{#if subscribed}}action-button-quiet-neutral{{else}}action-button-quiet-brand{{/if}} {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
+            <button class="action-button subscribe-button sub_unsub_button {{#if subscribed}}action-button-subtle-neutral{{else}}action-button-subtle-brand{{/if}} {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
                 {{#if subscribed }}
                     {{t "Unsubscribe" }}
                 {{else}}
@@ -21,7 +21,7 @@
         </div>
         {{> ../components/action_button
           icon="eye"
-          attention="quiet"
+          variant="subtle"
           intent="neutral"
           custom_classes="tippy-zulip-delayed-tooltip"
           data-tooltip-template-id="view-stream-tooltip-template"
@@ -99,17 +99,14 @@
                         {{t "Email address" }}
                         {{> ../help_link_widget link="/help/message-a-channel-by-email" }}
                     </label>
-                    <span class="generate-channel-email-button-container {{#unless can_access_stream_email}}disabled_setting_tooltip{{/unless}}">
-                        {{> ../components/action_button
-                          label=(t "Generate email address")
-                          attention="quiet"
-                          intent="neutral"
-                          type="button"
-                          custom_classes="copy_email_button"
-                          id="copy_stream_email_button"
-                          disabled=(not can_access_stream_email)
-                          }}
-                    </span>
+                    {{> ../components/action_button
+                      label=(t "Generate email address")
+                      variant="subtle"
+                      intent="neutral"
+                      type="button"
+                      custom_classes="copy_email_button"
+                      id="copy_stream_email_button"
+                      }}
                 </div>
             </div>
         </div>
@@ -135,7 +132,7 @@
                 {{/each}}
                 <div class="input-group">
                     <label class="settings-field-label channel-color-label">{{t "Channel color" }}</label>
-                    <button class="action-button action-button-quiet-neutral stream-settings-color-selector choose_stream_color" data-stream-id="{{ sub.stream_id }}">
+                    <button class="action-button action-button-subtle-neutral stream-settings-color-selector choose_stream_color" data-stream-id="{{ sub.stream_id }}">
                         <span class="stream-settings-color-preview" style="background: {{sub.color}};"></span>
                         <span class="stream-settings-color-selector-label">{{t "Change color"}}</span>
                     </button>
@@ -150,7 +147,7 @@
                 <div class="input-group">
                     {{> ../components/action_button
                       label=(t "Reset to default notifications")
-                      attention="quiet"
+                      variant="subtle"
                       intent="neutral"
                       custom_classes="reset-stream-notifications-button"
                       type="button"

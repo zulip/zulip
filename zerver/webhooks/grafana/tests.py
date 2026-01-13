@@ -2,10 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class GrafanaHookTests(WebhookTestCase):
-    CHANNEL_NAME = "grafana"
-    URL_TEMPLATE = "/api/v1/external/grafana?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "grafana"
-
     def test_alert_v7(self) -> None:
         expected_topic_name = "[Alerting] Test notification"
         expected_message = """
@@ -208,7 +204,7 @@ Annotations:
 [Silence](https://play.grafana.org/alerting/silence/new?alertmanager=grafana&matchers=alertname%3DT1%2Cteam%3Dblue%2Czone%3Deu-1)
 """.strip()
 
-        self.subscribe(self.test_user, self.CHANNEL_NAME)
+        self.subscribe(self.test_user, self.channel_name)
         payload = self.get_body("alert_multiple_v8")
 
         msg = self.send_webhook_payload(
@@ -221,7 +217,7 @@ Annotations:
         msg = self.get_second_to_last_message()
         self.assert_channel_message(
             message=msg,
-            channel_name=self.CHANNEL_NAME,
+            channel_name=self.channel_name,
             topic_name=expected_topic_name_1,
             content=expected_message_1,
         )
@@ -229,7 +225,7 @@ Annotations:
         msg = self.get_last_message()
         self.assert_channel_message(
             message=msg,
-            channel_name=self.CHANNEL_NAME,
+            channel_name=self.channel_name,
             topic_name=expected_topic_name_2,
             content=expected_message_2,
         )

@@ -18,6 +18,7 @@ import {page_params} from "./page_params.ts";
 import * as settings_banner from "./settings_banner.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
 import type {SettingsPanel} from "./settings_preferences.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {realm} from "./state_data.ts";
@@ -50,7 +51,7 @@ const DESKTOP_NOTIFICATIONS_BANNER: banners.Banner = {
         {
             label: $t({defaultMessage: "Enable notifications"}),
             custom_classes: "desktop-notifications-request",
-            attention: "primary",
+            variant: "solid",
         },
     ],
     close_button: true,
@@ -66,7 +67,7 @@ const MOBILE_PUSH_NOTIFICATION_BANNER: banners.Banner = {
         {
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "banner-external-link",
-            attention: "quiet",
+            variant: "subtle",
         },
     ],
     custom_classes: "mobile-push-notifications-banner",
@@ -212,7 +213,11 @@ export function set_enable_digest_emails_visibility(
 export function set_enable_marketing_emails_visibility(): void {
     const $container = $("#user-notification-settings");
     if (page_params.corporate_enabled) {
-        $container.find(".enable_marketing_emails_label").parent().show();
+        if (settings_data.user_email_not_configured()) {
+            $container.find(".enable_marketing_emails_label").parent().hide();
+        } else {
+            $container.find(".enable_marketing_emails_label").parent().show();
+        }
     } else {
         $container.find(".enable_marketing_emails_label").parent().hide();
     }

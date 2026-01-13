@@ -7,7 +7,6 @@ from typing_extensions import override
 
 from zerver.actions.custom_profile_fields import (
     do_remove_realm_custom_profile_field,
-    do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
     try_reorder_realm_custom_profile_fields,
 )
@@ -183,7 +182,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         field_type: int = CustomProfileField.EXTERNAL_ACCOUNT
         field_data: str = orjson.dumps(
             {
-                "subtype": "twitter",
+                "subtype": "x",
             }
         ).decode()
         invalid_field_name: str = "Not required field name"
@@ -203,10 +202,10 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         # for default custom external account fields.
         with self.assertRaises(CustomProfileField.DoesNotExist):
             field = CustomProfileField.objects.get(name=invalid_field_name, realm=realm)
-        # The field is created with 'Twitter username' name as per values in default fields dict
-        field = CustomProfileField.objects.get(name="Twitter username")
-        self.assertEqual(field.name, DEFAULT_EXTERNAL_ACCOUNTS["twitter"].name)
-        self.assertEqual(field.hint, DEFAULT_EXTERNAL_ACCOUNTS["twitter"].hint)
+        # The field is created with 'X username' name as per values in default fields dict
+        field = CustomProfileField.objects.get(name="X username")
+        self.assertEqual(field.name, DEFAULT_EXTERNAL_ACCOUNTS["x"].name)
+        self.assertEqual(field.hint, DEFAULT_EXTERNAL_ACCOUNTS["x"].hint)
 
         result = self.client_delete(f"/json/realm/profile_fields/{field.id}")
         self.assert_json_success(result)
@@ -218,7 +217,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_success(result)
 
         # Default external account field data cannot be updated except "display_in_profile_summary" field
-        field = CustomProfileField.objects.get(name="Twitter username", realm=realm)
+        field = CustomProfileField.objects.get(name="X username", realm=realm)
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={"name": "Twitter", "field_type": CustomProfileField.EXTERNAL_ACCOUNT},
@@ -243,7 +242,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.login("iago")
         realm = get_realm("zulip")
         data: dict[str, str | int | dict[str, str]] = {}
-        data["name"] = "Twitter username"
+        data["name"] = "X username"
         data["field_type"] = CustomProfileField.EXTERNAL_ACCOUNT
 
         data["field_data"] = "invalid"
@@ -270,7 +269,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "Invalid external account type")
 
-        non_default_external_account = "linkedin"
+        non_default_external_account = "gitthub"
         data["field_data"] = orjson.dumps(
             {
                 "subtype": non_default_external_account,
@@ -281,26 +280,37 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = orjson.dumps(
             {
-                "subtype": "twitter",
+                "subtype": "x",
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
-        twitter_field = CustomProfileField.objects.get(name="Twitter username", realm=realm)
-        self.assertEqual(twitter_field.field_type, CustomProfileField.EXTERNAL_ACCOUNT)
-        self.assertEqual(twitter_field.name, "Twitter username")
-        self.assertEqual(orjson.loads(twitter_field.field_data)["subtype"], "twitter")
+        x_field = CustomProfileField.objects.get(name="X username", realm=realm)
+        self.assertEqual(x_field.field_type, CustomProfileField.EXTERNAL_ACCOUNT)
+        self.assertEqual(x_field.name, "X username")
+        self.assertEqual(orjson.loads(x_field.field_data)["subtype"], "x")
 
-        data["name"] = "Reddit"
+        data["name"] = "Reddit without URL"
         data["field_data"] = orjson.dumps(
             {
                 "subtype": "custom",
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "Custom external account must define URL pattern")
+        self.assert_json_success(result)
 
+        data["name"] = "Reddit with empty URL"
+        data["field_data"] = orjson.dumps(
+            {
+                "subtype": "custom",
+                "url_pattern": "",
+            }
+        ).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+        data["name"] = "Reddit"
         data["field_data"] = orjson.dumps(
             {
                 "subtype": "custom",
@@ -414,7 +424,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         data: list[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": [self.example_user("aaron").id]},
         ]
-        do_update_user_custom_profile_data_if_changed(iago, data)
+        self.set_user_custom_profile_data(iago, data)
 
         iago_value = CustomProfileFieldValue.objects.get(user_profile=iago, field=field)
         converter = field.FIELD_CONVERTERS[field.field_type]
@@ -444,7 +454,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         data: list[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": "123456"},
         ]
-        do_update_user_custom_profile_data_if_changed(user_profile, data)
+        self.set_user_custom_profile_data(user_profile, data)
 
         self.assertTrue(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count)
@@ -924,7 +934,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             "id": quote.id,
             "value": "***beware*** of jealousy...",
         }
-        do_update_user_custom_profile_data_if_changed(iago, [update_dict])
+        self.set_user_custom_profile_data(iago, [update_dict])
 
         iago_profile_quote = self.example_user("iago").profile_data()[-1]
         value = iago_profile_quote["value"]
@@ -943,14 +953,14 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data: list[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": [self.example_user("aaron").id]},
         ]
-        do_update_user_custom_profile_data_if_changed(iago, data)
+        self.set_user_custom_profile_data(iago, data)
 
         with mock.patch(
             "zerver.actions.custom_profile_fields.notify_user_update_custom_profile_data"
         ) as mock_notify:
             # Attempting to "update" the field value, when it wouldn't actually change,
             # shouldn't trigger notify.
-            do_update_user_custom_profile_data_if_changed(iago, data)
+            self.set_user_custom_profile_data(iago, data)
             mock_notify.assert_not_called()
 
     def test_removing_option_from_select_field(self) -> None:
@@ -982,7 +992,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         realm = get_realm("zulip")
         field_data = orjson.dumps(
             {
-                "subtype": "twitter",
+                "subtype": "x",
             }
         ).decode()
 

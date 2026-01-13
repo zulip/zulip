@@ -373,10 +373,6 @@ run_test("format_array_as_list", () => {
         util.format_array_as_list(array, "long", "conjunction"),
         "apple, banana, and orange",
     );
-    assert.equal(
-        util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-        '<b class="highlighted-element">apple</b>, <b class="highlighted-element">banana</b>, and <b class="highlighted-element">orange</b>',
-    );
 
     // Conjunction format
     assert.equal(
@@ -394,10 +390,6 @@ run_test("format_array_as_list", () => {
         assert.equal(
             util.format_array_as_list(array, "long", "conjunction"),
             "apple, banana, orange",
-        );
-        assert.equal(
-            util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-            '<b class="highlighted-element">apple</b>, <b class="highlighted-element">banana</b>, <b class="highlighted-element">orange</b>',
         );
 
         assert.equal(
@@ -604,6 +596,29 @@ run_test("sha256_hash", async ({override}) => {
     override(window, "isSecureContext", true);
     hash = await util.sha256_hash(data);
     assert.equal(hash, expected_hash);
+});
+
+run_test("call_function_periodically", () => {
+    let num_set_timeout_calls = 0;
+    let num_callback_calls = 0;
+
+    set_global("setTimeout", (callbacK_function, delay) => {
+        assert.equal(delay, 42);
+
+        num_set_timeout_calls += 1;
+        if (num_set_timeout_calls === 100) {
+            return;
+        }
+        callbacK_function();
+    });
+
+    function callback_func() {
+        num_callback_calls += 1;
+    }
+
+    util.call_function_periodically(callback_func, 42);
+    assert.equal(num_set_timeout_calls, 100);
+    assert.equal(num_callback_calls, 99);
 });
 
 run_test("unique_array_insert", () => {

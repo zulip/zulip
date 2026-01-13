@@ -1132,6 +1132,10 @@ p {
 
 ul {
     font-weight: normal;
+    /* Unordered lists relied on this bit of Bootstrap
+       reset, so we re-introduce it here to avoid
+       indenting vanilla and other bulleted lists. */
+    padding-left: 0;
 }
 
 span a:hover,
@@ -2171,7 +2175,11 @@ button {
     font-size: 1.1rem;
 }
 
-.portico-landing blockquote {
+/* We use simple markdown syntax for blockquotes on those marketing
+   pages (chiefly case studies), and we style them to look identical
+   to the intro quotes. */
+.markdown > blockquote,
+.intro_quote blockquote {
     background-color: var(--color-background-box);
     border-left: 5px solid var(--color-prominent-border);
     padding: 20px 30px;
@@ -3260,8 +3268,6 @@ button {
     border-radius: 1em;
     font-weight: 400;
     margin: 40px 5px;
-    display: flex;
-    flex-direction: column;
 
     &:has(.triangle) {
         background: var(--color-background-solid-hero);
@@ -3269,30 +3275,36 @@ button {
         blockquote {
             background: unset;
             color: var(--color-text-hero);
-            border-left-color: var(--color-text-hero);
+            padding-left: 10px;
+            border-left: 5px solid var(--color-text-hero);
         }
     }
 
     .case-study-link {
-        margin-left: 20px;
+        /* Keep on own line, and make box-model control possible. */
+        display: block;
+        padding-top: 20px;
         text-decoration: underline;
     }
 
-    .author,
-    blockquote {
-        margin: 5px 20px 20px;
+    .quote-with-attribution {
+        padding: 0 0 0 15px;
+        border-left: 5px solid var(--color-prominent-border);
+
+        .author,
+        blockquote {
+            margin: 0;
+            padding: 5px 20px 20px 10px;
+        }
+
+        .author {
+            padding-bottom: 10px;
+        }
     }
 
     & blockquote {
+        margin: 0;
         font-size: 18px;
-        padding: 0 0 0 15px;
-        border-left: 5px solid var(--color-prominent-border);
-    }
-
-    & blockquote::before {
-        font-size: 20px;
-        font-weight: 700;
-        content: "";
     }
 
     & cite {
@@ -3382,6 +3394,10 @@ button {
     .hero-buttons {
         margin: 20px;
     }
+}
+
+.call-to-action-subhead {
+    text-align: center;
 }
 
 .solutions-page .for-education-pricing-model {

@@ -764,6 +764,7 @@ TRACEMALLOC_DUMP_DIR = zulip_path("/var/log/zulip/tracemalloc")
 RETENTION_LOG_PATH = zulip_path("/var/log/zulip/message_retention.log")
 AUTH_LOG_PATH = zulip_path("/var/log/zulip/auth.log")
 SCIM_LOG_PATH = zulip_path("/var/log/zulip/scim.log")
+REGISTRATION_LOG_PATH = zulip_path("/var/log/zulip/registration.log")
 
 ZULIP_WORKER_TEST_FILE = zulip_path("/var/log/zulip/zulip-worker-test-file")
 
@@ -873,6 +874,7 @@ LOGGING: dict[str, Any] = {
         "ldap_file": file_handler(LDAP_LOG_PATH),
         "scim_file": file_handler(SCIM_LOG_PATH),
         "slow_queries_file": file_handler(SLOW_QUERIES_LOG_PATH, level="INFO"),
+        "registration_file": file_handler(REGISTRATION_LOG_PATH, level="INFO"),
         "webhook_anomalous_file": file_handler(
             WEBHOOK_ANOMALOUS_PAYLOADS_LOG_PATH, formatter="webhook_request_data"
         ),
@@ -1015,6 +1017,10 @@ LOGGING: dict[str, Any] = {
         },
         "zulip.queue": {
             "level": "WARNING",
+        },
+        "zulip.registration": {
+            "handlers": ["registration_file", "errors_file"],
+            "propagate": False,
         },
         "zulip.retention": {
             "handlers": ["file", "errors_file"],
