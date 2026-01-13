@@ -24,6 +24,7 @@ import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import type {PrivacySettingName} from "./server_events_dispatch.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -283,17 +284,6 @@ export function add_or_remove_owner_from_role_dropdown(): void {
             .show();
     }
 }
-
-// TODO/typescript: Move these to server_events_dispatch when it's converted to typescript.
-export const privacy_setting_name_schema = z.enum([
-    "send_stream_typing_notifications",
-    "send_private_typing_notifications",
-    "send_read_receipts",
-    "presence_enabled",
-    "email_address_visibility",
-    "allow_private_data_export",
-]);
-export type PrivacySettingName = z.infer<typeof privacy_setting_name_schema>;
 
 export function update_privacy_settings_box(property: PrivacySettingName): void {
     if (!overlays.settings_open()) {

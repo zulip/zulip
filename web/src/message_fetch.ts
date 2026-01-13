@@ -706,7 +706,7 @@ export function initialize(finished_initial_fetch: () => void): void {
     // get the initial message list
     function load_more(data: MessageFetchResponse): void {
         if (first_messages_fetch) {
-            // See server_events.js for this callback.
+            // See server_events.ts for this callback.
             // Start processing server events.
             finished_initial_fetch();
             recent_view_ui.hide_loading_indicator();

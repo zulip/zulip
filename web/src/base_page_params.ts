@@ -42,6 +42,7 @@ const home_params_schema = z.looseObject({
     narrow: z.optional(z.array(narrow_term_schema)),
     narrow_stream: z.optional(z.string()),
     narrow_topic: z.optional(z.string()),
+    no_event_queue: z.boolean(),
     presence_history_limit_days_for_web_app: z.number(),
     promote_sponsoring_zulip: z.boolean(),
     realm_rendered_description: z.string(),

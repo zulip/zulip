@@ -123,7 +123,7 @@ structures, and then it eventually shows or hides status messages.
 We'll describe the flow of data through the web app
 as a concrete example.
 
-The events will come in to `web/src/server_events_dispatch.js`.
+The events will come in to `web/src/server_events_dispatch.ts`.
 The `stop` and `start` operations get further handled by
 `web/src/typing_events.ts`.
 
