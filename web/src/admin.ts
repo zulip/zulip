@@ -151,7 +151,7 @@ export function build_page(): void {
         realm_org_type: realm.realm_org_type,
         realm_available_video_chat_providers: realm.realm_available_video_chat_providers,
         server_jitsi_server_url: realm.server_jitsi_server_url,
-        gif_rating_options: realm.gif_rating_options,
+        gif_rating_policy_options: realm.gif_rating_policy_options,
         gif_api_key_empty: realm.giphy_api_key === "" && realm.tenor_api_key === "",
         realm_description_text: realm.realm_description,
         realm_description_html: postprocess_content(page_params.realm_rendered_description),

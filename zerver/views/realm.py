@@ -243,7 +243,7 @@ def update_realm(
             )
         )
     if gif_rating_policy is not None and gif_rating_policy not in {
-        p["id"] for p in Realm.GIF_RATING_OPTIONS.values()
+        p["id"] for p in Realm.GIF_RATING_POLICY_OPTIONS.values()
     }:
         raise JsonableError(
             _("Invalid gif_rating_policy {gif_rating_policy}").format(

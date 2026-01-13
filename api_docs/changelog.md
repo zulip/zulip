@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 453**
+
+* [`POST /register`](/api/register-queue): `gif_rating_options`
+  was renamed to `gif_rating_policy_options`.
+* [`POST /register`](/api/register-queue): `realm_giphy_rating` was
+  renamed to `realm_gif_rating_policy` to reflect that it's shared
+  between all GIF picker integrations.
+* [`GET /events`](/api/get-events), `PATCH /realm`: `giphy_rating`
+  was renamed to `gif_rating_policy` to reflect that it's shared
+  between all GIF picker integrations.
+
 **Feature level 452**
 
 * [`GET /events`](/api/get-events): Prior to Zulip 12.0 (feature level 452)

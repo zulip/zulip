@@ -5091,7 +5091,7 @@ paths:
                                         Maximum rating of the GIFs that will be retrieved by the
                                         GIPHY and Tenor integrations in this organization.
 
-                                        **Changes**: Before Zulip 12.0 (feature level ZF-dd836d),
+                                        **Changes**: Before Zulip 12.0 (feature level 453),
                                         this was called `giphy_rating`.
 
                                         Before Zulip 12.0 (feature level 442), this was only used
@@ -19144,7 +19144,7 @@ paths:
                           Maximum rating of the GIFs that will be retrieved by the
                           GIPHY and Tenor integrations in this organization.
 
-                          **Changes**: Before Zulip 12.0 (feature level ZF-dd836d), this was called
+                          **Changes**: Before Zulip 12.0 (feature level 453), this was called
                           `realm_giphy_rating`.
 
                           **Changes**: Before Zulip 12.0 (feature level 442), this was only used by
@@ -19744,7 +19744,7 @@ paths:
                           This Zulip server's configured minimum `zxcvbn` minimum guesses.
                           Necessary for password change UI to show whether the password
                           will be accepted.
-                      gif_rating_options:
+                      gif_rating_policy_options:
                         type: object
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
@@ -19756,9 +19756,12 @@ paths:
                           Useful for administrative settings UI that allows changing the
                           allowed rating of GIFs.
 
-                          **Changes**: New in Zulip 12.0 (feature level 442). Previously,
-                          this was called `giphy_rating_options` and only supported the
-                          original GIPHY gif picker integration.
+                          **Changes**: Before Zulip 12.0 (feature level 453), this was
+                          called `gif_rating_options`.
+
+                          **Changes**: Before Zulip 12.0 (feature level 442), this was called
+                          `giphy_rating_options` and only supported the original GIPHY gif picker
+                          integration.
 
                           `giphy_rating_options` was new in Zulip 4.0 (feature level 55).
                         additionalProperties:

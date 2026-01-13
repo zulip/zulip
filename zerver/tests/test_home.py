@@ -90,7 +90,7 @@ class HomeTest(ZulipTestCase):
         "full_name",
         "giphy_api_key",
         "tenor_api_key",
-        "gif_rating_options",
+        "gif_rating_policy_options",
         "has_zoom_token",
         "is_admin",
         "is_guest",

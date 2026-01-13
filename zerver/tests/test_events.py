@@ -4399,7 +4399,7 @@ class RealmPropertyActionTest(BaseAction):
             ],
             jitsi_server_url=["https://jitsi1.example.com", "https://jitsi2.example.com", None],
             gif_rating_policy=[
-                Realm.GIF_RATING_OPTIONS["disabled"]["id"],
+                Realm.GIF_RATING_POLICY_OPTIONS["disabled"]["id"],
             ],
             default_code_block_language=["python", "javascript"],
             message_content_delete_limit_seconds=[1000, 1100, 1200, None],
