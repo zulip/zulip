@@ -2,7 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_about_zulip from "../templates/about_zulip.hbs";
+import render_about_zulip from "../templates/about_zulip.tsx";
 
 import * as browser_history from "./browser_history.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
@@ -39,7 +39,7 @@ export function initialize(): void {
     const rendered_about_zulip = render_about_zulip({
         zulip_version: realm.zulip_version,
         zulip_merge_base: realm.zulip_merge_base,
-        is_fork: realm.zulip_merge_base && realm.zulip_merge_base !== realm.zulip_version,
+        is_fork: realm.zulip_merge_base !== "" && realm.zulip_merge_base !== realm.zulip_version,
     });
     $("#about-zulip-modal-container").append($(rendered_about_zulip));
 }

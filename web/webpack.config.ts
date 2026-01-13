@@ -123,8 +123,11 @@ const config = (
                 },
                 // Transpile .js and .ts files with Babel
                 {
-                    test: /\.[cm]?[jt]s$/,
-                    include: [path.resolve(import.meta.dirname, "src")],
+                    test: /\.[cm]?[jt]sx?$/,
+                    include: [
+                        path.resolve(import.meta.dirname, "src"),
+                        path.resolve(import.meta.dirname, "templates"),
+                    ],
                     loader: "babel-loader",
                 },
                 // regular css files

@@ -4,6 +4,7 @@
   "type": "module",
   "dependencies": {
     "@babel/core": "^7.5.5",
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
     "@babel/preset-env": "^7.5.5",
     "@babel/preset-typescript": "^7.15.0",
     "@date-fns/tz": "^1.4.1",
@@ -49,6 +50,8 @@
     "ga-gtag": "^1.0.1",
     "handlebars": "^4.7.2",
     "handlebars-loader": "^1.7.1",
+    "hast-util-to-html": "^9.0.5",
+    "hastx": "^0.0.11",
     "html-webpack-plugin": "^5.3.2",
     "intl-messageformat": "^11.0.7",
     "is-url": "^1.2.4",
@@ -181,6 +184,7 @@
     },
     "patchedDependencies": {
       "handlebars": "patches/handlebars.patch",
+      "hastx": "patches/hastx.patch",
       "simplebar": "patches/simplebar.patch",
       "stylelint-high-performance-animation": "patches/stylelint-high-performance-animation.patch",
       "svgicons2svgfont": "patches/svgicons2svgfont.patch",

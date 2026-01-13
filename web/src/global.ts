@@ -52,3 +52,10 @@ declare global {
     const DEVELOPMENT: boolean;
     const ZULIP_VERSION: string;
 }
+
+declare module "hastx/html" {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+    interface HTMLAttributes {
+        role?: string;
+    }
+}
