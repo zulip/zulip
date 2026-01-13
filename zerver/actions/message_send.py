@@ -1520,43 +1520,35 @@ def send_pm_if_empty_stream(
 
     if sender.bot_owner is not None:
         with override_language(sender.bot_owner.default_language):
-            arg_dict: dict[str, Any] = {
-                "bot_identity": f"`{sender.delivery_email}`",
-            }
             if stream is None:
                 if stream_id is not None:
-                    arg_dict = {
-                        **arg_dict,
-                        "channel_id": stream_id,
-                    }
                     content = _(
-                        "Your bot {bot_identity} tried to send a message to channel ID "
-                        "{channel_id}, but there is no channel with that ID."
-                    ).format(**arg_dict)
+                        "@_**{bot_name}** failed to send a message to channel ID "
+                        "{channel_id} because the channel does not exist."
+                    ).format(
+                        bot_name=sender.full_name,
+                        channel_id=stream_id,
+                    )
                 else:
                     assert stream_name is not None
-                    arg_dict = {
-                        **arg_dict,
-                        "channel_name": f"#**{stream_name}**",
-                        "new_channel_link": "#channels/new",
-                    }
                     content = _(
-                        "Your bot {bot_identity} tried to send a message to channel "
-                        "{channel_name}, but that channel does not exist. "
-                        "Click [here]({new_channel_link}) to create it."
-                    ).format(**arg_dict)
+                        "@_**{bot_name}** failed to send a message to "
+                        "#**{channel_name}** because the channel does not exist. "
+                        "[Create it](#channels/new)"
+                    ).format(
+                        bot_name=sender.full_name,
+                        channel_name=stream_name,
+                    )
             else:
                 if num_subscribers_for_stream_id(stream.id) > 0:
                     return
-                arg_dict = {
-                    **arg_dict,
-                    "channel_name": f"{get_stream_link_syntax(stream.id, stream.name)}",
-                }
                 content = _(
-                    "Your bot {bot_identity} tried to send a message to "
-                    "channel {channel_name}. The channel exists but "
-                    "does not have any subscribers."
-                ).format(**arg_dict)
+                    "@_**{bot_name}** failed to send a message to "
+                    "{channel_link} because the channel does not have any subscribers."
+                ).format(
+                    bot_name=sender.full_name,
+                    channel_link=get_stream_link_syntax(stream.id, stream.name),
+                )
 
         send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
