@@ -199,7 +199,7 @@ prod = [
   "aiosmtpd>=1.4.6",
 
   # For using Missing sentinel
-  "pydantic-partials<3.0.0",  # https://github.com/joshorr/pydantic-partials/issues/42
+  "pydantic-partials",
 
   # For E2EE of push notifications
   "pynacl",
@@ -324,9 +324,10 @@ dev = [
 ]
 
 [tool.uv]
-no-binary-package = ["lxml", "xmlsec"]
-override-dependencies = [
-  "grpcio", # https://github.com/BerriAI/litellm/pull/18473
+no-binary-package = [
+  # https://github.com/xmlsec/python-xmlsec/issues/320
+  "lxml",
+  "xmlsec",
 ]
 
 [tool.uv.sources]
@@ -345,7 +346,7 @@ zulip = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.1.zip", s
 zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.1.zip", subdirectory = "zulip_bots" }
 
 # zulip's linting framework - zulint
-zulint = { url = "https://github.com/zulip/zulint/archive/41cea7c8f0e910b3b7790180fe5d207e5735276b.zip" }
+zulint = { url = "https://github.com/zulip/zulint/archive/0b2858f59c72dbe561052878bb2e458d563e6641.zip" }
 
 [tool.black]
 line-length = 100
