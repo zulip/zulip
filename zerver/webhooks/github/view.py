@@ -40,7 +40,7 @@ fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 
-# Mapping of GitHub check run conclusions to status emojis
+
 CHECK_RUN_CONCLUSION_EMOJI = {
     "success": ":check:",
     "failure": ":cross_mark:",
@@ -52,7 +52,7 @@ CHECK_RUN_CONCLUSION_EMOJI = {
     "stale": ":time_ticking:",
 }
 
-# Mapping of GitHub deployment status states to emojis
+
 DEPLOYMENT_STATUS_EMOJI = {
     "success": ":check:",
     "failure": ":cross_mark:",
@@ -60,7 +60,7 @@ DEPLOYMENT_STATUS_EMOJI = {
     "pending": ":time_ticking:",
 }
 
-# Mapping of GitHub commit status states to emojis
+
 STATUS_STATE_EMOJI = {
     "success": ":check:",
     "failure": ":cross_mark:",
@@ -68,27 +68,25 @@ STATUS_STATE_EMOJI = {
     "pending": ":time_ticking:",
 }
 
-# Mapping of GitHub Pages build status to emojis
+
 PAGE_BUILD_STATUS_EMOJI = {
     "built": ":check:",
     "errored": ":cross_mark:",
     "building": ":time_ticking:",
 }
 
-# Mapping of GitHub pull request review states to emojis
+
 PR_REVIEW_STATE_EMOJI = {
     "approved": ":thumbs_up:",
     "changes_requested": ":thumbs_down:",
     "commented": ":speech_balloon:",
 }
 
-# Mapping of GitHub pull request close actions to emojis
 PR_CLOSE_ACTION_EMOJI = {
     "merged": ":check:",
     "closed without merge": ":cross_mark:",
 }
 
-# Mapping of GitHub discussion status actions to emojis
 DISCUSSION_STATUS_EMOJI = {
     "answered": ":check:",
     "closed": ":cross_mark:",
