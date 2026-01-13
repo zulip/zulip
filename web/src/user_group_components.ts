@@ -28,6 +28,7 @@ export const show_user_group_settings_pane = {
             $t_html({defaultMessage: "User group settings"}),
         );
         $("#groups_overlay .deactivated-user-group-icon").hide();
+        $("#groups_overlay .user-group-settings-header-actions").hide();
         resize.resize_settings_overlay($("#groups_overlay_container"));
     },
     settings(group: UserGroup) {
@@ -37,6 +38,8 @@ export const show_user_group_settings_pane = {
         const group_name = user_groups.get_display_group_name(group.name);
         $("#groups_overlay .user-group-name-title").text(group_name);
         $("#groups_overlay .user-group-info-title").addClass("showing-info-title");
+        $("#groups_overlay .user-group-settings-header-actions").show();
+        $("#groups_overlay .user-group-settings-header-actions").attr("data-group-id", group.id);
         if (group.deactivated) {
             $("#groups_overlay .deactivated-user-group-icon").show();
         } else {
@@ -61,6 +64,7 @@ export const show_user_group_settings_pane = {
         reset_active_group_id();
         $("#user-group-creation").show();
         $("#groups_overlay .deactivated-user-group-icon").hide();
+        $("#groups_overlay .user-group-settings-header-actions").hide();
         resize.resize_settings_overlay($("#groups_overlay_container"));
         resize.resize_settings_creation_overlay($("#groups_overlay_container"));
     },
