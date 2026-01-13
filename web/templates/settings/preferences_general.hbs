@@ -14,7 +14,12 @@
     {{/unless}}
 
     <div class="input-group">
-        <label for="{{prefix}}twenty_four_hour_time" class="settings-field-label">{{ settings_label.twenty_four_hour_time }}</label>
+        <label for="{{prefix}}twenty_four_hour_time" class="settings-field-label">
+            {{ settings_label.twenty_four_hour_time }}
+            {{#if for_realm_settings}}
+                {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+            {{/if}}
+        </label>
         <select name="twenty_four_hour_time" class="setting_twenty_four_hour_time prop-element settings_select bootstrap-focus-style" id="{{prefix}}twenty_four_hour_time" data-setting-widget-type="string">
             {{#each (object_values twenty_four_hour_time_values)}}
                 <option value='{{#if this.value}}true{{else}}false{{/if}}'>{{ this.description }}</option>
@@ -22,7 +27,12 @@
         </select>
     </div>
     <div class="input-group">
-        <label for="{{prefix}}color_scheme" class="settings-field-label">{{t "Theme" }}</label>
+        <label for="{{prefix}}color_scheme" class="settings-field-label">
+            {{t "Theme" }}
+            {{#if for_realm_settings}}
+                {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+            {{/if}}
+        </label>
         <div id="{{prefix}}color_scheme" class="tab-picker prop-element" data-setting-widget-type="radio-group" data-setting-choice-type="number">
             <input type="radio" id="{{prefix}}theme_select_automatic" class="tab-option setting_color_scheme" data-setting-widget-type="number" name="{{prefix}}theme_select" value="{{color_scheme_values.automatic.code}}" />
             <label class="tab-option-content tippy-zulip-delayed-tooltip" for="{{prefix}}theme_select_automatic" aria-label="{{t 'Select automatic theme' }}" data-tooltip-template-id="automatic-theme-template" tabindex="0">
@@ -44,11 +54,17 @@
       setting_name="enter_sends"
       is_checked=settings_object.enter_sends
       label=settings_label.enter_sends
-      prefix=prefix}}
+      prefix=prefix
+      show_reset_button=for_realm_settings}}
 
     <div class="information-density-settings">
         <div class="font-size-setting info-density-controls">
-            <div class="title">{{t "Font size"}}</div>
+            <div class="title">
+                {{t "Font size"}}
+                {{#if for_realm_settings}}
+                {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+                {{/if}}
+            </div>
             {{> info_density_control_button_group
               property="web_font_size_px"
               default_icon_class="zulip-icon-type-big"
@@ -59,7 +75,12 @@
               }}
         </div>
         <div class="line-height-setting info-density-controls">
-            <div class="title">{{t "Line spacing"}}</div>
+            <div class="title">
+                {{t "Line spacing"}}
+                {{#if for_realm_settings}}
+                {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+                {{/if}}
+            </div>
             {{> info_density_control_button_group
               property="web_line_height_percent"
               default_icon_class="zulip-icon-line-height-big"

@@ -1014,6 +1014,17 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".reset-user-setting-to-default",
+        // Disable trigger on focus, to avoid displaying the tooltip
+        // after the confirmation modal closes.
+        trigger: "mouseenter",
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: "#recipient_box_clear_topic_button",
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
