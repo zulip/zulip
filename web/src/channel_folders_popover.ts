@@ -11,6 +11,7 @@ import * as popover_menus from "./popover_menus.ts";
 import * as stream_list from "./stream_list.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+import * as settings_config from "./settings_config.ts";
 
 function do_change_show_channel_folders_left_sidebar(instance: tippy.Instance): void {
     const show_channel_folders = user_settings.web_left_sidebar_show_channel_folders;
@@ -28,6 +29,21 @@ function do_change_show_channel_folders_inbox(instance: tippy.Instance): void {
     const show_channel_folders = user_settings.web_inbox_show_channel_folders;
     const data = {
         web_inbox_show_channel_folders: JSON.stringify(!show_channel_folders),
+    };
+    void channel.patch({
+        url: "/json/settings",
+        data,
+    });
+    popover_menus.hide_current_popover_if_visible(instance);
+}
+
+function do_change_unread_counts_display(instance: tippy.Instance): void {
+    const value = $("input[name='unread-counts-display-folders']:checked").val();
+    if (value === undefined) {
+        return;
+    }
+    const data = {
+        web_stream_unreads_count_display_policy: Number.parseInt(value as string, 10),
     };
     void channel.patch({
         url: "/json/settings",
@@ -81,12 +97,18 @@ export function initialize(): void {
             $popper.one("click", "#left_sidebar_collapse_all", () => {
                 collapse_all_sections(instance);
             });
+            $popper.one("click", ".unread-counts-selector .popover-menu-link:not(.unread-counts-selector-header)", function (e) {
+                e.preventDefault();
+                const $input = $(this).find(".tab-option");
+                $input.prop("checked", true);
+                do_change_unread_counts_display(instance);
+            });
         },
         onShow(instance) {
             const show_channel_folders = user_settings.web_left_sidebar_show_channel_folders;
             const show_collapse_expand_all_options = true;
-            // Assuming that the instance can be shown, track and
-            // prep the instance for showing
+
+            const unread_counts_display = user_settings.web_stream_unreads_count_display_policy;
             popover_menus.popover_instances.show_folders_sidebar = instance;
             instance.setContent(
                 parse_html(
@@ -94,6 +116,8 @@ export function initialize(): void {
                         show_channel_folders,
                         channel_folders_id: "left_sidebar_channel_folders",
                         show_collapse_expand_all_options,
+                        unread_counts_display,
+                        unread_counts_display_options: settings_config.web_stream_unreads_count_display_policy_values,
                     }),
                 ),
             );

@@ -24,5 +24,22 @@
                 {{/if}}
             </a>
         </li>
+        <!-- New sidebar display settings -->
+        <li role="separator" class="popover-menu-separator"></li>
+
+        <!-- Show unread counts for setting -->
+        <li role="none" class="popover-menu-list-item unread-counts-selector">
+            <label class="unread-counts-selector-header popover-menu-link" role="menuitem">
+                <span class="popover-menu-label">{{t "Show unread counts for" }}</span>
+            </label>
+            <div class="sidebar-tab-picker">
+                {{#each unread_counts_display_options}}
+                    <label class="popover-menu-link" role="menuitem" tabindex="0">
+                        <input type="radio" class="tab-option" name="unread-counts-display-folders" value="{{this.code}}" {{#if (eq ../unread_counts_display this.code)}}checked{{/if}} />
+                        <span class="popover-menu-label">{{this.description}}</span>
+                    </label>
+                {{/each}}
+            </div>
+        </li>
     </ul>
 </div>
