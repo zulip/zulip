@@ -240,7 +240,7 @@ export function update_dom_with_unread_counts(
     last_direct_message_count = new_direct_message_count;
 }
 
-export function highlight_all_private_messages_view(): void {
+function highlight_all_private_messages_view(): void {
     $(".direct-messages-container").addClass("active-direct-messages-section");
 }
 
