@@ -215,8 +215,8 @@ want to take some time to familiarize yourself with the code.
 
 #### Server and web app
 
-1. [Install the development
-   environment](https://zulip.readthedocs.io/en/latest/development/overview.html).
+1. Install the development environment.  
+Note: On Windows, this requires setting up WSL and Docker and can take significant time. New contributors who want to start with smaller contributions may prefer documentation-only pull requests before completing the full setup.
 1. Familiarize yourself with [using the development
    environment](https://zulip.readthedocs.io/en/latest/development/using.html).
 1. Go through the [new application feature
