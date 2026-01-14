@@ -61,7 +61,7 @@ mock_esm("../src/spectators", {
     login_to_access() {},
 });
 
-function empty_narrow_html(title, notice_html, search_data, title_html) {
+function empty_narrow_html(title, title_html, notice_html, search_data) {
     const opts = {
         title,
         title_html,
@@ -134,7 +134,12 @@ run_test("empty_narrow_html", ({mock_template}) => {
     );
 
     // Title and html
-    actual_html = empty_narrow_html("This is a title", "<h1> This is the html </h1>", undefined);
+    actual_html = empty_narrow_html(
+        "This is a title",
+        undefined,
+        "<h1> This is the html </h1>",
+        undefined,
+    );
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
@@ -154,7 +159,12 @@ run_test("empty_narrow_html", ({mock_template}) => {
             {query_word: "search", is_stop_word: false},
         ],
     };
-    actual_html = empty_narrow_html("This is a title", undefined, search_data_with_stop_word);
+    actual_html = empty_narrow_html(
+        "This is a title",
+        undefined,
+        undefined,
+        search_data_with_stop_word,
+    );
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
@@ -177,7 +187,12 @@ run_test("empty_narrow_html", ({mock_template}) => {
             {query_word: "return", is_stop_word: false},
         ],
     };
-    actual_html = empty_narrow_html("This is a title", undefined, search_data_with_stop_words);
+    actual_html = empty_narrow_html(
+        "This is a title",
+        undefined,
+        undefined,
+        search_data_with_stop_words,
+    );
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
@@ -197,7 +212,12 @@ run_test("empty_narrow_html", ({mock_template}) => {
         has_stop_word: false,
         query_words: [{query_word: "search", is_stop_word: false}],
     };
-    actual_html = empty_narrow_html("This is a title", undefined, search_data_without_stop_words);
+    actual_html = empty_narrow_html(
+        "This is a title",
+        undefined,
+        undefined,
+        search_data_without_stop_words,
+    );
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
@@ -246,6 +266,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages in your combined feed.",
+            undefined,
             'translated: Would you like to <a href="#narrow/channels/public">view messages in all public channels</a>?',
         ),
     );
@@ -284,6 +305,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages here.",
+            undefined,
             'translated: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
@@ -296,6 +318,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
+            undefined,
             'translated: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
         ),
     );
@@ -309,6 +332,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
+            undefined,
             'translated: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
         ),
     );
@@ -339,6 +363,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no starred messages.",
+            undefined,
             'translated: Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>. <a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">Learn more</a>',
         ),
     );
@@ -349,6 +374,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: This view will show messages where you are mentioned.",
+            undefined,
             'translated: To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a channel. Type @ in the compose box, and choose who you\'d like to mention from the list of suggestions. <a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">Learn more</a>',
         ),
     );
@@ -361,6 +387,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages yet!",
+            undefined,
             'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -416,6 +443,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
+            undefined,
             'translated: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
         ),
     );
@@ -429,6 +457,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages with Example Bot yet.",
+            undefined,
             'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -441,6 +470,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
+            undefined,
             'translated: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
         ),
     );
@@ -453,6 +483,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages with Alice Smith yet.",
+            undefined,
             'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -476,6 +507,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You haven't sent yourself any notes yet!",
+            undefined,
             "translated: Use this space for personal notes, or to test out Zulip features.",
         ),
     );
@@ -486,6 +518,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages with these users yet.",
+            undefined,
             'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
@@ -524,6 +557,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
+            undefined,
             'translated: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
         ),
     );
@@ -586,8 +620,6 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No messages in your message history mention Alice Smith yet.",
-            undefined,
-            undefined,
             'translated: No messages in <a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">your message history</a> mention Alice Smith yet.',
         ),
     );
@@ -605,6 +637,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages here.",
+            undefined,
             'translated: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
@@ -634,6 +667,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have muted all the topics in this channel.",
+            undefined,
             'translated: To view a muted topic, click <b>show all topics</b> in the left sidebar, and select one from the list. <a target="_blank" rel="noopener noreferrer" href="/help/mute-a-topic">Learn more</a>',
         ),
     );
@@ -644,6 +678,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages here.",
+            undefined,
             'translated: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
@@ -657,6 +692,15 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         ),
     );
 
+    current_filter = set_filter([["has", "images"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            undefined,
+            `translated: No search results from <a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">your message history</a>.`,
+        ),
+    );
     current_filter = set_filter([
         ["has", "reaction"],
         ["sender", me.user_id],
@@ -666,6 +710,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: None of your messages have emoji reactions yet.",
+            undefined,
             'translated: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
         ),
     );
@@ -734,7 +779,12 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results.", undefined, expected_search_data),
+        empty_narrow_html(
+            "translated: No search results.",
+            undefined,
+            undefined,
+            expected_search_data,
+        ),
     );
 
     const streamA_id = 88;
@@ -746,7 +796,12 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results.", undefined, expected_search_data),
+        empty_narrow_html(
+            "translated: No search results.",
+            undefined,
+            undefined,
+            expected_search_data,
+        ),
     );
 
     current_filter = set_filter([
@@ -757,7 +812,12 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results.", undefined, expected_search_data),
+        empty_narrow_html(
+            "translated: No search results.",
+            undefined,
+            undefined,
+            expected_search_data,
+        ),
     );
 });
 
@@ -778,6 +838,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
+            undefined,
             "translated: <p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
         ),
     );
@@ -791,6 +852,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
+            undefined,
             "translated: <p>You are searching for messages that belong to more than one topic, which is not possible.</p>",
         ),
     );
@@ -807,6 +869,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
+            undefined,
             "translated: <p>You are searching for messages that are sent by more than one person, which is not possible.</p>",
         ),
     );
