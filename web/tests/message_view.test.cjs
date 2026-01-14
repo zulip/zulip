@@ -59,11 +59,12 @@ mock_esm("../src/spectators", {
     login_to_access() {},
 });
 
-function empty_narrow_html(title, notice_html, search_data) {
+function empty_narrow_html(title_html, notice_html, search_data, show_action) {
     const opts = {
-        title,
+        title_html,
         notice_html,
         search_data,
+        show_action,
     };
     return require("../templates/empty_feed_notice.hbs")(opts);
 }
@@ -140,6 +141,33 @@ run_test("empty_narrow_html", ({mock_template}) => {
             <h1> This is the html </h1>
         </div>
     </div>
+`,
+    );
+
+    // Title, html and action
+    actual_html = empty_narrow_html(
+        "This is a title",
+        "<h1> This is the html </h1>",
+        undefined,
+        true,
+    );
+    assert.equal(
+        actual_html,
+        `<div class="empty_feed_notice">
+    <h4 class="empty-feed-notice-title"> This is a title </h4>
+        <div class="empty-feed-notice-description">
+            <h1> This is the html </h1>
+        </div>
+        <div class="empty-feed-notice-action">
+        <a class="search-shared-history hidden-for-spectators" href="">
+            <button
+              class="action-button action-button-subtle-neutral"
+              type="button">
+                translated: Search all public channels
+            </button>
+        </a>
+    </div>
+</div>
 `,
     );
 
@@ -642,7 +670,13 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results."),
+        empty_narrow_html(
+            `translated: No search results from <a href="/help/search-for-messages#searching-shared-history"
+                target="_blank" rel="noopener noreferrer">your message history</a>.`,
+            undefined,
+            undefined,
+            true,
+        ),
     );
     current_filter = set_filter([
         ["has", "reaction"],
@@ -686,7 +720,13 @@ run_test("show_empty_narrow_message_with_search", ({mock_template, override}) =>
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results."),
+        empty_narrow_html(
+            `translated: No search results from <a href="/help/search-for-messages#searching-shared-history"
+                target="_blank" rel="noopener noreferrer">your message history</a>.`,
+            undefined,
+            undefined,
+            true,
+        ),
     );
 });
 
@@ -712,7 +752,13 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results.", undefined, expected_search_data),
+        empty_narrow_html(
+            `translated: No search results from <a href="/help/search-for-messages#searching-shared-history"
+                target="_blank" rel="noopener noreferrer">your message history</a>.`,
+            undefined,
+            expected_search_data,
+            true,
+        ),
     );
 
     const streamA_id = 88;

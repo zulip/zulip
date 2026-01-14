@@ -1425,6 +1425,17 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
+.empty-feed-notice-action {
+    display: none;
+    font-size: 1.1em;
+
+    a.search-shared-history {
+        display: inline-block;
+        text-decoration: none;
+        margin-top: 10px;
+    }
+}
+
 .message-fade,
 .user_sidebar_entry.user-fade {
     opacity: 0.4;

@@ -50,7 +50,9 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         // for moderation of searching for all messages sent
         // by a potential spammer user.
         if (
-            filter && !filter.is_in_home() && filter.may_have_incomplete_message_history()
+            filter &&
+            !filter.is_in_home() &&
+            filter.may_have_incomplete_message_history()
         ) {
             show_end_of_results_notice();
         }
