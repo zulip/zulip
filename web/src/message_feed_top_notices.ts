@@ -19,10 +19,12 @@ function hide_history_limit_notice(): void {
 }
 
 function hide_end_of_results_notice(): void {
+    $(".top-messages-logo").show();
     $(".all-messages-search-caution").hide();
 }
 
 function show_end_of_results_notice(): void {
+    $(".top-messages-logo").hide();
     $(".all-messages-search-caution").show();
 
     // Set the link to point to this search with streams:public added.
