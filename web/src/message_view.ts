@@ -273,6 +273,17 @@ function create_and_update_message_list(
         opts.show_more_topics = browser_history.get_current_state_show_more_topics() ?? false;
     }
 
+    // To keep the behaviour of `n` key consistent and the memory of
+    // `topics_kept_unread_by_user` as recent as possible, we clear it.
+    if (
+        !opts.trigger ||
+        !["next_topic_unread_hotkey", "old_unreads_missing", "retarget message location"].includes(
+            opts.trigger,
+        )
+    ) {
+        topic_generator.reset_topics_kept_unread_by_user();
+    }
+
     // Show the new set of messages. It is important to set message_lists.current to
     // the view right as it's being shown, because we rely on message_lists.current
     // being shown for deciding when to condense messages.
