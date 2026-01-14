@@ -80,6 +80,17 @@ const MUTED_TOPICS_IN_CHANNEL_EMPTY_BANNER = {
 };
 
 const NO_SEARCH_RESULTS_TITLE = $t({defaultMessage: "No search results."});
+const NO_SEARCH_RESULTS_TITLE_HTML = $t_html(
+    {
+        defaultMessage: "No search results from <z-link>your message history</z-link>.",
+    },
+    {
+        "z-link": (content_html) =>
+            `<a href="/help/search-for-messages#searching-shared-history" target="_blank" rel="noopener noreferrer">${content_html.join(
+                "",
+            )}</a>`,
+    },
+);
 
 function empty_search_query_banner(current_filter: Filter): NarrowBannerData {
     const search_query = current_filter.terms_with_operator("search")[0]!.operand;
@@ -521,6 +532,11 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     },
                     {people: valid_people_in_dms.map((user) => user.full_name).join(", ")},
                 ),
+            };
+        }
+        case "has": {
+            return {
+                title_html: NO_SEARCH_RESULTS_TITLE_HTML,
             };
         }
     }
