@@ -531,6 +531,10 @@ export function create<Key, Item = Key>(
         clean_redraw() {
             widget.filter_and_sort();
             widget.clear();
+            // Reset scroll position to top when list is filtered/redrawn.
+            // This prevents the list from appearing empty when filtering reduces
+            // the number of items and the previous scroll position is beyond the new content height.
+            meta.$scroll_container[0]!.scrollTop = 0;
             widget.render(DEFAULTS.INITIAL_RENDER_COUNT);
         },
 
