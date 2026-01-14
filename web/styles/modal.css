@@ -631,6 +631,91 @@
     );
 }
 
+/* Stream description editor with markdown preview */
+.stream-description-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.stream-description-editor {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+}
+
+#change_stream_description {
+    font-family: monospace;
+    font-size: 0.9em;
+    min-height: 150px;
+    resize: vertical;
+}
+
+.markdown-formatting-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.markdown-formatting-toolbar button {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.9em;
+    border: 1px solid var(--input-border-color, hsl(0deg 0% 80%));
+    border-radius: 3px;
+    background-color: var(--background-color-input, hsl(0deg 0% 100%));
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+    min-width: 2rem;
+    text-align: center;
+    color: var(--color-text-default);
+}
+
+.markdown-formatting-toolbar button:hover {
+    background-color: var(--background-color-hover, hsl(0deg 0% 95%));
+    border-color: var(--input-border-color-focus, hsl(206deg 80% 62%));
+}
+
+.markdown-formatting-toolbar button:active {
+    background-color: var(--background-color-active, hsl(0deg 0% 90%));
+}
+
+.stream-description-preview {
+    flex: 1;
+    min-width: 250px;
+    border: 1px solid var(--input-border-color, hsl(0deg 0% 80%));
+    border-radius: 3px;
+    background-color: var(--background-color-input, hsl(0deg 0% 100%));
+    padding: 0.75rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.preview-label {
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--color-text-secondary, hsl(0deg 0% 40%));
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#stream_description_preview {
+    overflow-wrap: break-word;
+    line-height: 1.5;
+}
+
+#stream_description_preview a {
+    color: hsl(200deg 100% 40%);
+    text-decoration: none;
+}
+
+#stream_description_preview a:hover {
+    text-decoration: underline;
+}
+
 #add-realm-domain-widget {
     .modal_text_input {
         width: 14.7143em; /* 206px at 14px em */

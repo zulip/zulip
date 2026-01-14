@@ -26,11 +26,13 @@ import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as markdown from "./markdown.ts";
 import * as narrow_state from "./narrow_state.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import {postprocess_content} from "./postprocess_content.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
@@ -78,6 +80,128 @@ const realm_labels_schema = z.enum([
 ]);
 
 const notification_labels_schema = z.keyof(stream_specific_notification_settings_schema);
+
+function update_description_preview(): void {
+    // Render real-time markdown preview for stream description.
+    // This allows users to verify markdown links and formatting before saving.
+    const $textarea = $("#change_stream_description");
+    const $preview = $("#stream_description_preview");
+
+    if ($textarea.length === 0 || $preview.length === 0) {
+        return;
+    }
+
+    const description_text = String($textarea.val());
+
+    // Clear preview for empty descriptions
+    if (!description_text.trim()) {
+        $preview.html("");
+        return;
+    }
+
+    // Use Zulip's markdown renderer with current app context
+    const helper_config = markdown.web_app_helpers;
+    if (!helper_config) {
+        return;
+    }
+
+    try {
+        const rendered = markdown.render(description_text, helper_config);
+        const preview_html = rendered.content;
+        $preview.html(preview_html);
+
+        // Apply post-processing for embedded content (timestamps, mentions, etc.)
+        rendered_markdown.update_elements($preview);
+    } catch {
+        // Graceful fallback: show plain text if markdown rendering fails
+        // (e.g., malformed syntax or missing dependencies)
+        $preview.text(description_text);
+    }
+}
+
+function insert_markdown_formatting(
+    before_text: string,
+    after_text: string,
+    placeholder = "",
+): void {
+    // Insert markdown formatting around selected text or placeholder.
+    // Handles cursor positioning to improve UX (place cursor within formatted text).
+    const $textarea = $("#change_stream_description");
+    const textarea = $textarea[0];
+
+    // Verify textarea exists and is the correct type
+    if (!textarea || !(textarea instanceof HTMLTextAreaElement)) {
+        return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = String($textarea.val());
+    const selected_text = text.slice(start, end) || placeholder;
+
+    // Build new text with markdown formatting
+    const new_text =
+        text.slice(0, start) + before_text + selected_text + after_text + text.slice(end);
+
+    $textarea.val(new_text).trigger("input");
+
+    // Restore focus and position cursor inside the formatted text
+    // (after the opening markdown, before closing markdown)
+    textarea.focus();
+    const new_cursor_pos = start + before_text.length + selected_text.length;
+    textarea.setSelectionRange(new_cursor_pos, new_cursor_pos);
+
+    // Trigger preview update
+    update_description_preview();
+}
+
+function setup_stream_description_preview(): void {
+    // Initialize markdown preview and formatting buttons for stream description modal.
+    // Called from post_render callback to ensure DOM elements are available.
+    const $modal = $("#change_stream_info_modal");
+
+    if ($modal.length === 0) {
+        return;
+    }
+
+    const $textarea = $modal.find("#change_stream_description");
+    const $preview = $modal.find("#stream_description_preview");
+
+    if ($textarea.length === 0 || $preview.length === 0) {
+        return;
+    }
+
+    // Update preview as user types
+    $textarea.on("input", update_description_preview);
+
+    // Set up formatting buttons with keyboard/mouse event handling
+    // Link button: wraps selection with [text](url) syntax
+    $modal.on("click", ".markdown-link-button", (event: JQuery.ClickEvent) => {
+        event.preventDefault();
+        insert_markdown_formatting("[", "](url)", "Link text");
+    });
+
+    // Bold button: wraps selection with ** syntax
+    $modal.on("click", ".markdown-bold-button", (event: JQuery.ClickEvent) => {
+        event.preventDefault();
+        insert_markdown_formatting("**", "**", "bold text");
+    });
+
+    // Italic button: wraps selection with * syntax
+    $modal.on("click", ".markdown-italic-button", (event: JQuery.ClickEvent) => {
+        event.preventDefault();
+        insert_markdown_formatting("*", "*", "italic text");
+    });
+
+    // Code button: wraps selection with backticks
+    $modal.on("click", ".markdown-code-button", (event: JQuery.ClickEvent) => {
+        event.preventDefault();
+        insert_markdown_formatting("`", "`", "code");
+    });
+
+    // Render initial preview with existing description (if editing existing stream)
+    update_description_preview();
+}
 
 export function setup_subscriptions_tab_hash(tab_key_value: string): void {
     if ($("#subscription_overlay .right").hasClass("show")) {
@@ -132,6 +256,8 @@ export function open_stream_edit_modal(stream_id: number): void {
             $("#change_stream_info_modal .dialog_submit_button")
                 .addClass("save-button")
                 .attr("data-stream-id", stream_id);
+            // Set up markdown preview and formatting for description
+            setup_stream_description_preview();
         },
         update_submit_disabled_state_on_change: true,
     });

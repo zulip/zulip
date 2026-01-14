@@ -10,5 +10,27 @@
         {{t 'Description' }}
         {{> ../help_link_widget link="/help/change-the-channel-description" }}
     </label>
-    <textarea id="change_stream_description" class="modal-textarea" name="stream_description" maxlength="{{ max_stream_description_length }}">{{ stream_description }}</textarea>
+    <div class="stream-description-container">
+        <div class="stream-description-editor">
+            <textarea id="change_stream_description" class="modal-textarea" name="stream_description" maxlength="{{ max_stream_description_length }}">{{ stream_description }}</textarea>
+            <div class="markdown-formatting-toolbar">
+                <button type="button" class="markdown-link-button" title="{{t 'Insert link'}}">
+                    <i class="fa fa-link"></i>
+                </button>
+                <button type="button" class="markdown-bold-button" title="{{t 'Bold'}}">
+                    <i class="fa fa-bold"></i>
+                </button>
+                <button type="button" class="markdown-italic-button" title="{{t 'Italic'}}">
+                    <i class="fa fa-italic"></i>
+                </button>
+                <button type="button" class="markdown-code-button" title="{{t 'Code'}}">
+                    <i class="fa fa-code"></i>
+                </button>
+            </div>
+        </div>
+        <div class="stream-description-preview">
+            <div class="preview-label">{{t 'Preview' }}</div>
+            <div id="stream_description_preview" class="rendered_markdown"></div>
+        </div>
+    </div>
 </div>
