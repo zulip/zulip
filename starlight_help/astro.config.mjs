@@ -156,6 +156,7 @@ export default defineConfig({
             components: {
                 Footer: "./src/components/Footer.astro",
                 Head: "./src/components/Head.astro",
+                Sidebar: "./src/components/Sidebar.astro",
             },
             pagination: false,
             routeMiddleware: "./src/route_data.ts",
