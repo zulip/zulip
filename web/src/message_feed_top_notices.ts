@@ -21,18 +21,24 @@ function hide_history_limit_notice(): void {
 function hide_end_of_results_notice(): void {
     $(".top-messages-logo").show();
     $(".all-messages-search-caution").hide();
+    $(".combined-feed-notice").hide();
 }
 
 function show_end_of_results_notice(): void {
     $(".top-messages-logo").hide();
-    $(".all-messages-search-caution").show();
 
     // Set the link to point to this search with streams:public added.
     // Note that element we adjust is not visible to spectators.
     const narrow_filter = narrow_state.filter();
     assert(narrow_filter !== undefined);
+
+    if (narrow_filter.is_in_home()) {
+        $(".combined-feed-notice").show();
+        return;
+    }
     const terms = narrow_filter.terms();
     const update_hash = hash_util.search_public_streams_notice_url(terms);
+    $(".all-messages-search-caution").show();
     $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
 }
 
@@ -51,11 +57,7 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         // conditions, but there's a very legitimate use case
         // for moderation of searching for all messages sent
         // by a potential spammer user.
-        if (
-            filter &&
-            !filter.is_in_home() &&
-            filter.may_have_incomplete_message_history()
-        ) {
+        if (filter?.may_have_incomplete_message_history()) {
             show_end_of_results_notice();
         }
     }
