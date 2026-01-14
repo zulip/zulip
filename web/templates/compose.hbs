@@ -13,6 +13,28 @@
         </div>
     </div>
     <div id="closed-compose-controls">
+        <div id="skinned-closed-compose-box">
+            <div id="skinned-recipient-row">
+                <div id="skinned-channel-picker"></div>
+
+                <div id="skinned-marker-container">
+                    <div id="skinned-conversation-arrow" class="zulip-icon zulip-icon-chevron-right"></div>
+                </div>
+
+                <div id="skinned-topic-box">
+                    <div id="skinned-topic-box-label"></div>
+
+                    <div id="skinned-topic-box-controls-area">
+                        <button id="skinned-topic-box-new-topic-button" class="compose-new-recipient-button tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'New conversation' }}">
+                            <i class="zulip-icon zulip-icon-square-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="skinned-messagebox">
+                {{t 'Write a message...'}}
+            </div>
+        </div>
         <div id="legacy-closed-compose-box">
             <div class="reply_button_container">
                 <div class="compose-reply-button-wrapper" data-reply-button-type="selected_message">
