@@ -143,6 +143,10 @@ export function is_valid_user_id(user_id: number): boolean {
     return valid_user_ids.has(user_id);
 }
 
+export function is_valid_user_ids(user_ids: number[]): boolean {
+    return user_ids.every((user_id) => is_valid_user_id(user_id));
+}
+
 export function split_to_ints(lst: string): number[] {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
