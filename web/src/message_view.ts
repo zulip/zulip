@@ -1626,6 +1626,7 @@ function handle_post_view_change(
         compose_closed_ui.update_buttons();
     }
 
+    compose_closed_ui.update_skinned_or_closed_compose_recipient_display();
     message_view_header.render_title_area();
 
     narrow_title.update_narrow_title(filter);
