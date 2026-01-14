@@ -127,12 +127,12 @@ export let update_reply_button_state = (disable = false): void => {
     $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
     if (disable) {
         if (maybe_get_selected_message_stream_id() !== undefined) {
-            $("#compose_buttons .compose-reply-button-wrapper").attr(
+            $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
                 "data-reply-button-type",
                 "stream_disabled",
             );
         } else {
-            $("#compose_buttons .compose-reply-button-wrapper").attr(
+            $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
                 "data-reply-button-type",
                 "direct_disabled",
             );
@@ -140,12 +140,12 @@ export let update_reply_button_state = (disable = false): void => {
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
-        $("#compose_buttons .compose-reply-button-wrapper").attr(
+        $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
             "data-reply-button-type",
             "selected_message",
         );
     } else {
-        $("#compose_buttons .compose-reply-button-wrapper").attr(
+        $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
             "data-reply-button-type",
             "selected_conversation",
         );
