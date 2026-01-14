@@ -24,24 +24,30 @@ function hide_history_limit_notice(): void {
 
 function hide_end_of_results_notice(): void {
     $(".all-messages-search-caution").hide();
+    $(".combined-feed-notice").hide();
 }
 
 function show_end_of_results_notice(): void {
-    // end-of-results notices are hidden for spectators, so leave the
+    // Both end-of-results notices are hidden for spectators, so leave the
     // top-of-feed logo in place for them rather than hiding it and showing
     // nothing.
     if (page_params.is_spectator) {
         return;
     }
     $(".top-messages-logo").hide();
-    $(".all-messages-search-caution").show();
 
-    // Set the link to point to this search with streams:public added.
-    // Note that element we adjust is not visible to spectators.
     const narrow_filter = narrow_state.filter();
     assert(narrow_filter !== undefined);
+
+    if (narrow_filter.is_in_home()) {
+        $(".combined-feed-notice").show();
+        return;
+    }
     const terms = narrow_filter.terms();
+    // Set the link to point to this search with streams:public added.
+    // Note that element we adjust is not visible to spectators.
     const update_hash = hash_util.search_public_streams_notice_url(terms);
+    $(".all-messages-search-caution").show();
     $(".all-messages-search-caution .search-shared-history").attr("data-url", update_hash);
 }
 
@@ -60,7 +66,7 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         // conditions, but there's a very legitimate use case
         // for moderation of searching for all messages sent
         // by a potential spammer user.
-        if (filter?.may_have_incomplete_message_history()) {
+        if (filter?.may_have_incomplete_message_history(false)) {
             show_end_of_results_notice();
         }
     }

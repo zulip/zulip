@@ -1725,10 +1725,10 @@ export class Filter {
         );
     }
 
-    may_have_incomplete_message_history(): boolean {
+    may_have_incomplete_message_history(treat_combined_feed_as_complete = true): boolean {
         // Whether the filter may not include all messages.
         return (
-            !this.is_in_home() &&
+            (!treat_combined_feed_as_complete || !this.is_in_home()) &&
             !this.contains_only_private_messages() &&
             !this.includes_full_stream_history() &&
             !this.is_personal_filter() &&
