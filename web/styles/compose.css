@@ -1231,8 +1231,128 @@ textarea.new_message_textarea {
     outline-color: transparent;
 }
 
+/* Display styles for skinned compose box. */
+
+#skinned-closed-compose-box {
+    /* The skinned compose box is effectively one big button
+       for clicking into its open state. */
+    cursor: pointer;
+    display: none;
+}
+
+#skinned-recipient-row {
+    padding-top: 0.25em; /* 4px at 16px/1em, eyeballed for better centering. */
+    display: grid;
+    /* The fit-content() syntax here is really slick, and probably
+       should be used more broadly in grid definitions across the
+       codebase.
+
+       TODO: Match this to what we allow in the actual channel picker.
+    */
+    grid-template-columns: fit-content(40%) auto minmax(0, 1fr);
+    grid-template-rows: 1.875em; /* 30px at 16px/1em */
+    align-items: baseline;
+}
+
+#skinned-channel-picker {
+    display: grid;
+    /* Grid based on the open-compose channel picker. */
+    grid-template:
+        "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto / 0.35em [select-label-start] auto 0.2em minmax(
+            0,
+            1fr
+        )
+        [select-label-end]
+        0.35em;
+    align-items: baseline;
+
+    /* TODO: Add fiddly icon adjustments here. */
+    .channel-privacy-type-icon {
+        grid-area: privacy-icon;
+        font-size: 0.95em;
+        margin-top: -0.0579em; /* Eyeball work; 1.1px at 19px/1em */
+        align-self: center;
+        height: 1em;
+        width: 1em;
+        color: var(--privacy-icon-color-modified);
+    }
+
+    .decorated-channel-name {
+        grid-area: channel-name;
+        overflow-x: hidden;
+        text-wrap: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+#skinned-marker-container {
+    align-self: start;
+}
+
+#skinned-conversation-arrow {
+    font-size: 1.1429em; /* 16px / 14px em */
+    line-height: 1.3; /* Eyeball work. TODO: revisit alignment within grid. */
+    padding: 0 9px 0 2px;
+    margin: 0 3px;
+    color: var(--color-compose-chevron-arrow);
+    display: flex;
+    place-content: start center;
+}
+
+#skinned-topic-box {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+#skinned-topic-box-label {
+    overflow-x: hidden;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+}
+
+#skinned-topic-box-controls-area {
+    margin-right: 1px;
+
+    .compose-new-recipient-button {
+        padding: 4px;
+    }
+}
+
+#skinned-messagebox {
+    height: calc(
+        var(--base-line-height-unitless) * var(--base-font-size-px) * 1.25
+    );
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid var(--color-skinned-compose-messagebox-border);
+    background: var(--color-compose-message-content-background);
+    color: var(--color-text-placeholder);
+
+    /* TODO: More sensible variable names here. */
+    transition: var(--compose-recipient-row-transition);
+    transition-delay: var(--compose-recipient-row-transition-delay);
+    transition-property: border-color;
+}
+
+.composing-to-conversation-narrow #compose-content:hover {
+    #skinned-messagebox {
+        border-color: var(--color-message-content-container-border-focus);
+    }
+}
+
+.composing-to-conversation-narrow {
+    #legacy-closed-compose-box {
+        display: none;
+    }
+
+    #skinned-closed-compose-box {
+        display: block;
+    }
+}
+
 .compose-box-open {
-    #closed-compose-controls {
+    #skinned-closed-compose-box,
+    #legacy-closed-compose-box {
         display: none;
     }
 
@@ -1561,6 +1681,39 @@ textarea.new_message_textarea {
     }
 }
 
+.compose-new-recipient-button {
+    /* Set the border radius smaller, relative to the parent */
+    border-radius: 2px;
+    padding: 6px;
+    margin: 1px;
+    color: var(--color-compose-embedded-button-text-color);
+    font-size: inherit;
+
+    .zulip-icon {
+        display: block;
+    }
+
+    &:hover {
+        background-color: var(--color-compose-embedded-button-background-hover);
+        color: var(--color-compose-embedded-button-text-color-hover);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+}
+
+#stream_message_recipient_topic,
+.compose-new-recipient-button {
+    background: none;
+    border: none;
+
+    &:disabled {
+        cursor: default;
+        opacity: 1;
+    }
+}
+
 #compose-recipient {
     /* Set a line-height equal to the font-size to
        make a compact, predictably tall recipient row. */
@@ -1580,41 +1733,6 @@ textarea.new_message_textarea {
       themselves, where necessary. */
     min-height: var(--compose-recipient-box-min-height);
     min-width: 0;
-
-    .compose-new-recipient-button {
-        /* Set the border radius smaller, relative to the parent */
-        border-radius: 2px;
-        padding: 6px;
-        margin: 1px;
-        color: var(--color-compose-embedded-button-text-color);
-        font-size: inherit;
-
-        .zulip-icon {
-            display: block;
-        }
-
-        &:hover {
-            background-color: var(
-                --color-compose-embedded-button-background-hover
-            );
-            color: var(--color-compose-embedded-button-text-color-hover);
-        }
-
-        &:focus {
-            outline: 0;
-        }
-    }
-
-    #stream_message_recipient_topic,
-    .compose-new-recipient-button {
-        background: none;
-        border: none;
-
-        &:disabled {
-            cursor: default;
-            opacity: 1;
-        }
-    }
 }
 
 .compose-control-buttons-container {
