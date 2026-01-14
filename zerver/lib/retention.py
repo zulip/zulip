@@ -133,6 +133,7 @@ def run_archiving(
     type: int,
     realm: Realm,
     chunk_size: int | None = MESSAGE_BATCH_SIZE,
+    skip_notify: bool = False,
     acting_user: UserProfile | None = None,
     **kwargs: Composable,
 ) -> int:
@@ -162,7 +163,7 @@ def run_archiving(
             )
             if new_chunk:
                 move_related_objects_to_archive(new_chunk)
-                delete_messages(new_chunk, realm, acting_user=acting_user)
+                delete_messages(new_chunk, realm, skip_notify=skip_notify, acting_user=acting_user)
                 message_count += len(new_chunk)
             else:
                 archive_transaction.delete()  # Nothing was archived
@@ -332,6 +333,7 @@ def _process_grouped_messages_deletion(
     *,
     stream: Stream | None,
     topic: str | None,
+    skip_notify: bool,
     acting_user: UserProfile | None,
 ) -> None:
     """
@@ -357,27 +359,32 @@ def _process_grouped_messages_deletion(
     event["message_type"] = message_type
 
     # We exclude long-term idle users, since they by definition have no active clients.
-    users_to_notify = event_recipient_ids_for_action_on_messages(
-        message_ids,
-        is_channel_message=message_type == "stream",
-        channel=stream if message_type == "stream" else None,
-    )
-
-    if acting_user is not None:
-        # Always send event to the user who deleted the message.
-        users_to_notify.add(acting_user.id)
+    users_to_notify = set()
+    if not skip_notify:
+        users_to_notify = event_recipient_ids_for_action_on_messages(
+            message_ids,
+            is_channel_message=message_type == "stream",
+            channel=stream if message_type == "stream" else None,
+        )
+        if acting_user is not None:
+            # Always send event to the user who deleted the message.
+            users_to_notify.add(acting_user.id)
 
     # Uses index: zerver_message_pkey
     Message.objects.filter(id__in=message_ids).delete()
 
-    if stream is not None:
-        check_update_first_message_id(realm, stream, message_ids, users_to_notify)
+    if not skip_notify:
+        if stream is not None:
+            check_update_first_message_id(realm, stream, message_ids, users_to_notify)
 
-    send_event_on_commit(realm, event, users_to_notify)
+        send_event_on_commit(realm, event, users_to_notify)
 
 
 def delete_messages(
-    msg_ids: list[int], realm: Realm, acting_user: UserProfile | None = None
+    msg_ids: list[int],
+    realm: Realm,
+    skip_notify: bool = False,
+    acting_user: UserProfile | None = None,
 ) -> None:
     # Important note: This also deletes related objects with a foreign
     # key to Message (due to `on_delete=CASCADE` in our models
@@ -432,6 +439,7 @@ def delete_messages(
             message_ids,
             stream=stream,
             topic=topic_name,
+            skip_notify=skip_notify,
             acting_user=acting_user,
         )
 
@@ -568,12 +576,16 @@ def move_messages_to_archive(
     message_ids: list[int],
     realm: Realm,
     chunk_size: int = MESSAGE_BATCH_SIZE,
+    skip_notify: bool = False,
     acting_user: UserProfile | None = None,
 ) -> None:
     """
-    Callers using this to archive a large amount of messages should ideally make sure the message_ids are
-    ordered, as that'll allow better performance here by keeping the batches that'll be sent to the database
-    ordered rather than randomly scattered.
+    Callers using this to archive a large amount of messages should
+    send sorted message_ids, which can improve database performance by
+    accessing adjacent blocks at the same time.
+
+    If skip_notify=True is used, the caller is responsible for
+    updating Stream.first_message_id when deleting channel messages.
     """
     count = 0
     # In order to avoid sending a massive list of message ids to the database,
@@ -601,6 +613,7 @@ def move_messages_to_archive(
             message_ids=Literal(tuple(message_ids_chunk)),
             realm=realm,
             chunk_size=None,
+            skip_notify=skip_notify,
             acting_user=acting_user,
         )
         # Clean up attachments:
