@@ -281,12 +281,12 @@ importers:
       turndown:
         specifier: ^7.0.0
         version: 7.2.2
+      uri-template-lite:
+        specifier: ^23.4.0
+        version: 23.4.0
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(webpack@5.104.1)
-      url-template:
-        specifier: ^3.1.1
-        version: 3.1.1
       webfonts-loader:
         specifier: ^8.0.0
         version: 8.1.1
@@ -396,6 +396,9 @@ importers:
       '@types/turndown':
         specifier: ^5.0.1
         version: 5.0.6
+      '@types/uri-template-lite':
+        specifier: ^19.12.4
+        version: 19.12.4
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.2.0
         version: 8.53.0(@typescript-eslint/parser@8.53.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
@@ -2988,6 +2991,9 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
+
+  '@types/uri-template-lite@19.12.4':
+    resolution: {integrity: sha512-VH2NRKCLHIub2sK7NEURt5c09BsdXPPcduc1bY0w9PSbphs1zVDWf++rEn1LfV9PzU8yyoD1UyEkI0DcMnMnHw==}
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
@@ -9460,6 +9466,9 @@ packages:
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
+  uri-template-lite@23.4.0:
+    resolution: {integrity: sha512-JsAjquFMpSyZRWAUQguhHIRuh4jb/xDhwQyb1/7C42YLJgkc5WoBF3UkRRM1QtL6Vr9xBa9fB7q3xPzXRwvuUA==}
+
   url-join@4.0.1:
     resolution: {integrity: sha512-jk1+QP6ZJqyOiuEI9AEWQfju/nB2Pw466kbA0LEZljHwKeMgd9WrAEgEGxjPDD2+TNbbb37rTyhEfrCXfuKXnA==}
 
@@ -9475,10 +9484,6 @@ packages:
 
   url-parse@1.5.10:
     resolution: {integrity: sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==}
-
-  url-template@3.1.1:
-    resolution: {integrity: sha512-4oszoaEKE/mQOtAmdMWqIRHmkxWkUZMnXFnjQ5i01CuRSK3uluxcH1MRVVVWmhlnzT1SCDfKxxficm2G37qzCA==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -12763,6 +12768,8 @@ snapshots:
   '@types/unist@2.0.11': {}
 
   '@types/unist@3.0.3': {}
+
+  '@types/uri-template-lite@19.12.4': {}
 
   '@types/ws@8.18.1':
     dependencies:
@@ -21233,6 +21240,8 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
+  uri-template-lite@23.4.0: {}
+
   url-join@4.0.1: {}
 
   url-loader@4.1.1(webpack@5.104.1):
@@ -21246,8 +21255,6 @@ snapshots:
     dependencies:
       querystringify: 2.2.0
       requires-port: 1.0.0
-
-  url-template@3.1.1: {}
 
   util-deprecate@1.0.2: {}
 

@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 448
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (365, 0)  # bumped 2026-01-13 to upgrade Python requirements
+PROVISION_VERSION = (366, 0)  # bumped 2026-01-14 to add uri-template-lite
