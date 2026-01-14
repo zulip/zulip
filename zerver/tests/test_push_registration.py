@@ -274,7 +274,7 @@ class RegisterPushDeviceToServer(BouncerTestCase):
         self.assertEqual(push_devices[0].status, "active")
         self.assertEqual(
             events[0]["event"],
-            dict(type="push_device", push_account_id="2408", status="active"),
+            dict(type="push_device", push_account_id=2408, status="active"),
         )
 
         # Idempotent
@@ -299,7 +299,7 @@ class RegisterPushDeviceToServer(BouncerTestCase):
         self.assertEqual(push_devices[1].status, "active")
         self.assertEqual(
             events[0]["event"],
-            dict(type="push_device", push_account_id="5555", status="active"),
+            dict(type="push_device", push_account_id=5555, status="active"),
         )
 
     @override_settings(ZILENCER_ENABLED=False)
@@ -366,7 +366,7 @@ class RegisterPushDeviceToServer(BouncerTestCase):
             events[0]["event"],
             dict(
                 type="push_device",
-                push_account_id="2408",
+                push_account_id=2408,
                 status="failed",
                 error_code="INVALID_BOUNCER_PUBLIC_KEY",
             ),
@@ -407,7 +407,7 @@ class RegisterPushDeviceToServer(BouncerTestCase):
             events[0]["event"],
             dict(
                 type="push_device",
-                push_account_id="2408",
+                push_account_id=2408,
                 status="failed",
                 error_code="BAD_REQUEST",
             ),
@@ -441,7 +441,7 @@ class RegisterPushDeviceToServer(BouncerTestCase):
             events[0]["event"],
             dict(
                 type="push_device",
-                push_account_id="2408",
+                push_account_id=2408,
                 status="failed",
                 error_code="REQUEST_EXPIRED",
             ),

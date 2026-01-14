@@ -1791,12 +1791,15 @@ paths:
                                     - enum:
                                         - push_device
                                 push_account_id:
-                                  type: string
+                                  type: integer
                                   description: |
                                     The push account ID for this client registration.
 
                                     See [`POST /mobile_push/register`](/api/register-push-device)
                                     for details on push account IDs.
+
+                                    **Changes**: Prior to Zulip 12.0 (feature level 450),
+                                    the integer value was expressed as a string.
                                 status:
                                   type: string
                                   enum:
@@ -1823,7 +1826,7 @@ paths:
                                 {
                                   "id": 1,
                                   "type": "push_device",
-                                  "push_account_id": "1234",
+                                  "push_account_id": 1234,
                                   "status": "active",
                                 }
                             - type: object

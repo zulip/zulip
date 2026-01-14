@@ -292,7 +292,7 @@ class EventOnboardingSteps(BaseEvent):
 
 class EventPushDevice(BaseEvent):
     type: Literal["push_device"]
-    push_account_id: str
+    push_account_id: int
     status: Literal["active", "failed", "pending"]
     error_code: str | None = None
 
