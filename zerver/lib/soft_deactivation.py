@@ -1,7 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 import logging
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from typing import Any, TypedDict
 
 import sentry_sdk
@@ -364,10 +364,10 @@ def do_soft_activate_users(users: list[UserProfile]) -> list[UserProfile]:
     ]
 
 
-def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> None:
+def do_catch_up_soft_deactivated_users(users: QuerySet[UserProfile]) -> None:
     users_caught_up = 0
     failures = []
-    for user_profile in users:
+    for user_profile in users.iterator():
         if user_profile.long_term_idle:
             with sentry_sdk.isolation_scope() as scope:
                 scope.set_user({"id": str(user_profile.id)})
