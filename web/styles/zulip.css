@@ -195,14 +195,16 @@ p.n-margin {
     margin: 0;
 }
 
-.all-messages-search-caution {
+.all-messages-search-caution,
+.combined-feed-notice {
     display: none;
 
     a.search-shared-history {
         text-decoration: none;
     }
 
-    .all-messages-search-caution-info {
+    .all-messages-search-caution-info,
+    .combined-feed-notice-info {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
@@ -223,7 +225,8 @@ p.n-margin {
 }
 
 .history-limited-box,
-.all-messages-search-caution {
+.all-messages-search-caution,
+.combined-feed-notice {
     margin: 0 auto 12px;
     padding: 5px;
 
