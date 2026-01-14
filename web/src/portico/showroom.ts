@@ -106,7 +106,7 @@ const alert_banners: Record<string, AlertBanner> = {
         label: new Handlebars.SafeString(
             $t_html({
                 defaultMessage:
-                    "This demo organization will be automatically deactivated in 30 days, unless it's converted into a permanent organization.",
+                    "This demo organization will be automatically deleted in 30 days, unless it's converted into a permanent organization.",
             }),
         ),
         buttons: [
