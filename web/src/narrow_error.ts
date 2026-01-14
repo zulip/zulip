@@ -12,6 +12,7 @@ export type SearchData = {
 
 export type NarrowBannerData = {
     html?: string;
+    show_action?: boolean;
     search_data?: SearchData;
 } & ({title: string} | {title_html: string});
 

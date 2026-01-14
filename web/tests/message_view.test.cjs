@@ -61,12 +61,13 @@ mock_esm("../src/spectators", {
     login_to_access() {},
 });
 
-function empty_narrow_html(title, title_html, notice_html, search_data) {
+function empty_narrow_html(title, title_html, notice_html, search_data, show_action) {
     const opts = {
         title,
         title_html,
         notice_html,
         search_data,
+        show_action,
     };
     return require("../templates/empty_feed_notice.hbs")(opts);
 }
@@ -148,6 +149,42 @@ run_test("empty_narrow_html", ({mock_template}) => {
             <h1> This is the html </h1>
         </div>
     </div>
+`,
+    );
+
+    // Title, html and action
+    actual_html = empty_narrow_html(
+        "This is a title",
+        undefined,
+        "<h1> This is the html </h1>",
+        undefined,
+        true,
+    );
+    assert.equal(
+        actual_html,
+        `<div class="empty_feed_notice">
+    <h4 class="empty-feed-notice-title"> This is a title </h4>
+        <div class="empty-feed-notice-description">
+            <h1> This is the html </h1>
+        </div>
+        <div class="empty-feed-notice-action">
+        <button
+          class="search-shared-history hidden-for-spectators action-button action-button-subtle-neutral"
+          type="button">
+            translated: Search all public channels
+        </button>
+    </div>
+</div>
+`,
+    );
+
+    // title_html
+    actual_html = empty_narrow_html("Plain text title", "<h1> This is the title html </h1>");
+    assert.equal(
+        actual_html,
+        `<div class="empty_feed_notice">
+    <h4 class="empty-feed-notice-title"> <h1> This is the title html </h1> </h4>
+</div>
 `,
     );
 
@@ -406,6 +443,9 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         empty_narrow_html(
             undefined,
             `translated: No topics in <a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">your history</a> are marked as resolved.`,
+            undefined,
+            undefined,
+            true,
         ),
     );
 
@@ -605,7 +645,13 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: You haven't received any messages sent by Raymond yet."),
+        empty_narrow_html(
+            "translated: You haven't received any messages sent by Raymond yet.",
+            undefined,
+            undefined,
+            undefined,
+            true,
+        ),
     );
 
     current_filter = set_filter([["sender", 9999]]);
@@ -634,6 +680,9 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         empty_narrow_html(
             "translated: No messages in your message history mention Alice Smith yet.",
             'translated: No messages in <a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">your message history</a> mention Alice Smith yet.',
+            undefined,
+            undefined,
+            true,
         ),
     );
 
@@ -712,6 +761,9 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         empty_narrow_html(
             undefined,
             `translated: No search results from <a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">your message history</a>.`,
+            undefined,
+            undefined,
+            true,
         ),
     );
     current_filter = set_filter([
@@ -766,7 +818,13 @@ run_test("show_empty_narrow_message_with_search", ({mock_template, override}) =>
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results."),
+        empty_narrow_html(
+            undefined,
+            `translated: No search results from <a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">your message history</a>.`,
+            undefined,
+            undefined,
+            true,
+        ),
     );
 });
 
@@ -793,10 +851,11 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: No search results.",
             undefined,
+            `translated: No search results from <a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">your message history</a>.`,
             undefined,
             expected_search_data,
+            true,
         ),
     );
 
