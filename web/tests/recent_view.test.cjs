@@ -672,7 +672,7 @@ test("test_no_filter", ({mock_template}) => {
     row_data = generate_topic_data([[1, "topic-1", 0, all_visibility_policies.INHERIT]]);
     i = row_data.length;
     rt.set_default_focus();
-    $(".home-page-input").trigger("focus");
+    $("#search_query").trigger("focus");
     assert.equal(
         rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
         false,
@@ -778,7 +778,7 @@ test("test_filter_participated", ({mock_template}) => {
     expected_filter_participated = false;
     rt.process_messages(messages);
 
-    $(".home-page-input").trigger("focus");
+    $("#search_query").trigger("focus");
     assert.equal(
         rt.filters_should_hide_row({last_msg_id: 4, participated: true, type: "stream"}),
         false,
@@ -987,7 +987,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     // update_topic_visibility_policy now relies on external libraries completely
     // so we don't need to check anythere here.
     generate_topic_data([[1, topic1, 0, all_visibility_policies.INHERIT]]);
-    $(".home-page-input").trigger("focus");
+    $("#search_query").trigger("focus");
     assert.equal(rt.update_topic_visibility_policy(stream1, topic1), true);
     // a topic gets muted which we are not tracking
     assert.equal(rt.update_topic_visibility_policy(stream1, "topic-10"), false);
