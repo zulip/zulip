@@ -113,6 +113,9 @@ def fetch_api_key() -> dict[str, object]:
         "/messages/{message_id}:patch",
         "/messages/{message_id}:delete",
         "/messages/{message_id}/reactions:post",
+        "/messages/{message_id}/read_receipts:get",
+        "/messages/{message_id}/report:post",
+        "/messages/{message_id}/typing:post",
     ]
 )
 def iago_message_id() -> dict[str, object]:

@@ -254,12 +254,12 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.history_public_to_subscribers)
 
         messages = get_topic_messages(user_profile, stream, "channel events")
-        self.assert_length(messages, 1)
+        self.assert_length(messages, 2)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/channel-permissions) "
             "for this channel from **Private, protected history** to **Public**."
         )
-        self.assertEqual(messages[0].content, expected_notification)
+        self.assertEqual(messages[1].content, expected_notification)
 
         history_public_to_subscribers_log = RealmAuditLog.objects.filter(
             event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
@@ -539,12 +539,12 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.history_public_to_subscribers)
 
         messages = get_topic_messages(user_profile, stream, "channel events")
-        self.assert_length(messages, 1)
+        self.assert_length(messages, 2)
         expected_notification = (
             f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/channel-permissions) "
             "for this channel from **Private, protected history** to **Private, shared history**."
         )
-        self.assertEqual(messages[0].content, expected_notification)
+        self.assertEqual(messages[1].content, expected_notification)
 
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
@@ -693,12 +693,12 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.history_public_to_subscribers)
 
         messages = get_topic_messages(user_profile, stream, "channel events")
-        self.assert_length(messages, 1)
+        self.assert_length(messages, 2)
         expected_notification = (
             f"@_**Iago|{user_profile.id}** changed the [access permissions](/help/channel-permissions) "
             "for this channel from **Private, protected history** to **Private, shared history**."
         )
-        self.assertEqual(messages[0].content, expected_notification)
+        self.assertEqual(messages[1].content, expected_notification)
 
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
@@ -723,12 +723,12 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(stream.history_public_to_subscribers)
 
         messages = get_topic_messages(user_profile, stream, "channel events")
-        self.assert_length(messages, 2)
+        self.assert_length(messages, 3)
         expected_notification = (
             f"@_**Iago|{user_profile.id}** changed the [access permissions](/help/channel-permissions) "
             "for this channel from **Private, shared history** to **Private, protected history**."
         )
-        self.assertEqual(messages[1].content, expected_notification)
+        self.assertEqual(messages[2].content, expected_notification)
 
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
@@ -2947,6 +2947,7 @@ class StreamAdminTest(ZulipTestCase):
         If you're a realm admin, you can remove people from public streams, even
         those you aren't on.
         """
+        self.disable_channel_events_notifications()
         result = self.attempt_unsubscribe_of_principal(
             query_count=15,
             target_users=[self.example_user("cordelia")],
@@ -2970,6 +2971,7 @@ class StreamAdminTest(ZulipTestCase):
               do_mark_stream_messages_as_read, which gets deferred
               using a queue.
         """
+        self.disable_channel_events_notifications()
         target_users = [
             self.example_user(name)
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
@@ -2992,6 +2994,7 @@ class StreamAdminTest(ZulipTestCase):
         If you're a realm admin, you can remove other people from private streams you
         are on.
         """
+        self.disable_channel_events_notifications()
         result = self.attempt_unsubscribe_of_principal(
             query_count=18,
             target_users=[self.example_user("cordelia")],
@@ -3009,6 +3012,7 @@ class StreamAdminTest(ZulipTestCase):
         If you're a realm admin, you can remove people from private
         streams you aren't on.
         """
+        self.disable_channel_events_notifications()
         result = self.attempt_unsubscribe_of_principal(
             query_count=18,
             target_users=[self.example_user("cordelia")],
@@ -3035,6 +3039,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Insufficient permission")
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
+        self.disable_channel_events_notifications()
         result = self.attempt_unsubscribe_of_principal(
             query_count=15,
             target_users=[self.example_user("cordelia")],
@@ -3049,6 +3054,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(json["not_removed"], 0)
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
+        self.disable_channel_events_notifications()
         result = self.attempt_unsubscribe_of_principal(
             query_count=17,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
@@ -3063,6 +3069,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(json["not_removed"], 0)
 
     def test_remove_unsubbed_user_along_with_subbed(self) -> None:
+        self.disable_channel_events_notifications()
         result = self.attempt_unsubscribe_of_principal(
             query_count=14,
             target_users=[self.example_user("cordelia"), self.example_user("iago")],
@@ -3093,6 +3100,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(json["not_removed"], 1)
 
     def test_bot_owner_can_remove_bot_from_stream(self) -> None:
+        self.disable_channel_events_notifications()
         user_profile = self.example_user("hamlet")
         webhook_bot = self.example_user("webhook_bot")
         do_change_bot_owner(webhook_bot, bot_owner=user_profile, acting_user=user_profile)
@@ -4035,13 +4043,14 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
     def test_multi_user_subscription(self) -> None:
+        self.disable_channel_events_notifications()
         user1 = self.example_user("cordelia")
         user2 = self.example_user("iago")
         realm = get_realm("zulip")
         streams_to_sub = ["multi_user_stream"]
         with (
-            self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(44),
+            self.capture_send_event_calls(expected_num_events=4) as events,
+            self.assert_database_query_count(30),
         ):
             self.subscribe_via_post(
                 self.test_user,
@@ -4122,6 +4131,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_peer_event["event"]["user_ids"], [user_profile.id])
 
     def test_private_stream_subscription(self) -> None:
+        self.disable_channel_events_notifications()
         realm = get_realm("zulip")
 
         # Create a private stream with Hamlet subscribed
@@ -4347,6 +4357,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Check users getting add_peer_event is correct
         """
+        self.disable_channel_events_notifications()
         user1 = self.example_user("othello")
         user2 = self.example_user("cordelia")
         user3 = self.example_user("hamlet")
@@ -4542,6 +4553,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_bulk_subscribe_many(self) -> None:
         # Create a whole bunch of streams
+        self.disable_channel_events_notifications()
         streams = [f"stream_{i}" for i in range(30)]
         for stream_name in streams:
             self.make_stream(stream_name)
@@ -4800,6 +4812,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertIsNone(subscription.email_notifications)
 
     def test_mark_messages_as_unread_on_unsubscribe(self) -> None:
+        self.disable_channel_events_notifications()
         realm = get_realm("zulip")
         user = self.example_user("iago")
         random_user = self.example_user("hamlet")
@@ -4941,6 +4954,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Test database query count when creating stream with api/v1/users/me/subscriptions.
         """
+        self.disable_channel_events_notifications()
         user1 = self.example_user("cordelia")
         user2 = self.example_user("iago")
         new_streams = [
@@ -4950,7 +4964,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(44):
+        with self.assert_database_query_count(30):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[0]],
@@ -4958,7 +4972,7 @@ class SubscriptionAPITest(ZulipTestCase):
             )
 
         # Test creating private stream.
-        with self.assert_database_query_count(52):
+        with self.assert_database_query_count(38):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[1]],
@@ -5504,3 +5518,84 @@ class NoRecipientIDsTest(ZulipTestCase):
         #
         # This covers a rare corner case.
         self.assert_length(subs, 0)
+
+
+class PrivateStreamEventTest(ZulipTestCase):
+    def get_channel_event_message(self, stream_name: str) -> Message:
+        stream = get_stream(stream_name, self.example_user("hamlet").realm)
+        assert stream.recipient_id is not None
+        # Filter messages in the "channel events" topic
+        messages = Message.objects.filter(
+            realm=stream.realm,
+            recipient__type=Recipient.STREAM,
+            recipient_id=stream.recipient_id,
+        ).order_by("-id")
+
+        for message in messages:
+            if message.topic_name().lower() == "channel events":
+                return message
+
+        raise AssertionError("No channel events message found")
+
+    def test_private_stream_join_leave_notifications(self) -> None:
+        """
+        Verify that channel event notifications are sent to private streams
+        when users subscribe/unsubscribe themselves or when they are added/removed
+        by others.
+        """
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        realm = hamlet.realm
+
+        realm.send_channel_events_messages = True
+        realm.save(update_fields=["send_channel_events_messages"])
+
+        stream_name = "secret"
+        self.make_stream(stream_name, realm=realm, invite_only=True)
+
+        # Hamlet subscribes himself.
+        self.subscribe(hamlet, stream_name)
+        msg = self.get_channel_event_message(stream_name)
+        self.assertIn(hamlet.full_name, msg.content)
+        self.assertIn("subscribed to this channel", msg.content)
+        self.assertNotIn(iago.full_name, msg.content)
+
+        # Hamlet unsubscribes himself.
+        self.unsubscribe(hamlet, stream_name)
+        msg = self.get_channel_event_message(stream_name)
+        self.assertIn("unsubscribed from this channel", msg.content)
+        self.assertNotIn(iago.full_name, msg.content)
+
+        # Iago subscribes (needed to have permission to add others).
+        self.subscribe(iago, stream_name)
+
+        # Iago adds Hamlet.
+        self.login_user(iago)
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": f'[{{"name": "{stream_name}"}}]',
+                "principals": f"[{hamlet.id}]",
+            },
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_channel_event_message(stream_name)
+        self.assertIn(iago.full_name, msg.content)
+        self.assertIn(hamlet.full_name, msg.content)
+        self.assertIn("subscribed", msg.content)
+
+        # Iago removes Hamlet.
+        result = self.client_patch(
+            "/json/users/me/subscriptions",
+            {
+                "delete": f'["{stream_name}"]',
+                "principals": f"[{hamlet.id}]",
+            },
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_channel_event_message(stream_name)
+        self.assertIn(iago.full_name, msg.content)
+        self.assertIn(hamlet.full_name, msg.content)
+        self.assertIn("unsubscribed", msg.content)

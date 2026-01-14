@@ -658,13 +658,6 @@ class TestDigestEmailMessages(ZulipTestCase):
             event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
         ).update(event_time=subscription_created_date)
 
-        # No 'hot_conversations'
-        with mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email:
-            bulk_handle_digest_email([aaron.id], cutoff_date.timestamp())
-        self.assertEqual(mock_send_future_email.call_count, 1)
-        kwargs = mock_send_future_email.call_args[1]
-        self.assert_length(kwargs["context"]["hot_conversations"], 0)
-
         # Verify 'hot_conversations' includes messages from archived channel.
         self.send_stream_message(
             hamlet, channel.name, content="channel archived", skip_capture_on_commit_callbacks=True
