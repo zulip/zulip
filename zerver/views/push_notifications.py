@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from pydantic import Json
 
+from zerver.actions.push_notifications import do_register_push_device
 from zerver.decorator import human_users_only, zulip_login_required
 from zerver.lib import redis_utils
 from zerver.lib.exceptions import (
@@ -320,11 +321,7 @@ def register_push_device(
     if already_registered:
         return json_success(request)
 
-    PushDevice.objects.update_or_create(
-        user=user_profile,
-        push_account_id=push_account_id,
-        defaults={"token_kind": token_kind, "push_key": push_key_bytes, "error_code": None},
-    )
+    do_register_push_device(user_profile, push_account_id, token_kind, push_key_bytes)
 
     # We use a queue worker to make the request to the bouncer
     # to complete the registration, so that any transient failures
