@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 450**
+
+* [`GET /events`](/api/get-events): The `push_device` events now
+  encode `push_account_id` as an integer, not a string.
+
 **Feature level 449**
 
 * [`POST /export/realm`](/api/export-realm): The `export_type` parameter now
