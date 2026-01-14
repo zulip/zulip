@@ -31,7 +31,7 @@ function show_end_of_results_notice(): void {
     assert(narrow_filter !== undefined);
     const terms = narrow_filter.terms();
     const update_hash = hash_util.search_public_streams_notice_url(terms);
-    $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
+    $(".all-messages-search-caution .search-shared-history").attr("data-url", update_hash);
 }
 
 export function update_top_of_narrow_notices(msg_list: MessageList): void {

@@ -18,4 +18,13 @@
             {{{ notice_html }}}
         </div>
     {{/if}}
+    {{#if show_action}}
+    <div class="empty-feed-notice-action">
+        <button
+          class="search-shared-history hidden-for-spectators action-button action-button-subtle-neutral"
+          type="button">
+            {{t 'Search all public channels'}}
+        </button>
+    </div>
+    {{/if}}
 </div>
