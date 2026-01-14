@@ -111,7 +111,7 @@ questions you are looking for feedback on. Some advice:
   - Screen captures should demonstrate the feature with a minimal amount of
     extraneous content.
 
-  - See [here](../tutorials/screenshot-and-gif-software.md) for some
+  - See [here](../contributing/presenting-visual-changes.md) for some
     recommended tools.
 
 - Post a clear question or set of questions that you need help with. What

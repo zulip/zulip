@@ -158,5 +158,5 @@ for another review.
 [github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
 [keep-up-to-date]: using.md#keep-your-fork-up-to-date
 [self-push-commits]: using.md#push-your-commits-to-github
-[screenshots-gifs]: ../tutorials/screenshot-and-gif-software.md
+[screenshots-gifs]: ../contributing/presenting-visual-changes.md
 [reviewable-prs]: ../contributing/reviewable-prs.md

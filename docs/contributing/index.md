@@ -12,6 +12,7 @@ asking-great-questions
 design-discussions
 commit-discipline
 code-style
+presenting-visual-changes
 code-reviewing
 reviewable-prs
 review-process
