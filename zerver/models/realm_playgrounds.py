@@ -15,9 +15,7 @@ def SpecialKeywordValidator(value: str) -> None:
     special_keyword = ["math", "latex", "quote", "spoiler"]
     if value.lower() in special_keyword:
         raise ValidationError(
-            _(
-                "'{value}' is a reserved keyword and cannot be used as a playground language."
-            ).format(value=value)
+            _("You have used a reserved keyword and it cannot be used as a playground language.")
         )
 
 

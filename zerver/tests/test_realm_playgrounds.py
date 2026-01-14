@@ -100,13 +100,13 @@ class RealmPlaygroundTests(ZulipTestCase):
         self.assert_json_error(resp, 'Missing the required variable "code" in the URL template')
 
         payload = {
-            "name": "Template without the required variable",
+            "name": "Special keyword as pygments language",
             "pygments_language": "math",
-            "url_template": "https://template.com{?test}",
+            "url_template": "https://template.com{code}",
         }
         resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
         self.assert_json_error(
-            resp, "Special keyword is not allowed for pygments language (math/quote/latex/spoiler)"
+            resp, "You have used a reserved keyword and it cannot be used as a playground language."
         )
 
         payload = {

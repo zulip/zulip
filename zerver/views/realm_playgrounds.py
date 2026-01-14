@@ -24,7 +24,7 @@ def check_pygments_language(var_name: str, val: object) -> str:
     special_keyword = ["math", "latex", "quote", "spoiler"]
     if s.lower() in special_keyword:
         raise JsonableError(
-            _("Special keyword is not allowed for pygments language (math/quote/latex/spoiler)")
+            _("You have used a reserved keyword and it cannot be used as a playground language.")
         )
     valid_pygments_language = re.compile(r"^[a-zA-Z0-9_+-./#]*$")
     matched_results = valid_pygments_language.match(s)
