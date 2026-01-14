@@ -180,6 +180,10 @@ function toggle_picker_popover(target: HTMLElement): void {
                 const debounced_search = _.debounce((search_term: string) => {
                     update_grid_with_search_term(search_term);
                 }, 300);
+                $popper.on("input", "#gif-search-query", (e) => {
+                    assert(e.target instanceof HTMLInputElement);
+                    debounced_search(e.target.value);
+                });
                 $popper.on("keyup", "#gif-search-query", (e) => {
                     assert(e.target instanceof HTMLInputElement);
                     if (e.key === "ArrowDown") {
@@ -188,16 +192,10 @@ function toggle_picker_popover(target: HTMLElement): void {
                         focus_gif_at_index(0);
                         return;
                     }
-                    debounced_search(e.target.value);
                 });
                 $popper.on("click", ".gif-picker-gif", (e) => {
                     assert(e.currentTarget instanceof HTMLElement);
                     handle_gif_click(e.currentTarget);
-                });
-                $popper.on("click", ".input-close-filter-button", (e) => {
-                    e.stopPropagation();
-                    $("#gif-search-query").val("");
-                    update_grid_with_search_term("");
                 });
                 $popper.on("keydown", ".gif-picker-gif", handle_keyboard_navigation_on_gif);
             },
