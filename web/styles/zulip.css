@@ -1417,6 +1417,15 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin: 0 auto;
     padding: 3em 1em;
     text-align: center;
+
+    a.search-shared-history {
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    &:has(.empty-feed-notice-description) a.search-shared-history {
+        margin-top: 10px;
+    }
 }
 
 .empty-feed-notice-title {

@@ -24,15 +24,19 @@ function hide_end_of_results_notice(): void {
     $(".all-messages-search-caution").hide();
 }
 
-function show_end_of_results_notice(): void {
-    $(".all-messages-search-caution").show();
-
+function show_end_of_results_notice(msg_list: MessageList): void {
     // Set the link to point to this search with streams:public added.
     // Note that element we adjust is not visible to spectators.
     const narrow_filter = narrow_state.filter();
     assert(narrow_filter !== undefined);
     const terms = narrow_filter.terms();
     const update_hash = hash_util.search_public_streams_notice_url(terms);
+    if (msg_list.visibly_empty()) {
+        $(".empty_feed_notice a.search-shared-history").show();
+        $(".empty_feed_notice a.search-shared-history").attr("href", update_hash);
+        return;
+    }
+    $(".all-messages-search-caution").show();
     $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
 }
 
@@ -62,7 +66,7 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
                 filter.terms_with_operator("sender")[0]!.operand === people.my_current_email()
             )
         ) {
-            show_end_of_results_notice();
+            show_end_of_results_notice(msg_list);
         }
     }
 
