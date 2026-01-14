@@ -523,6 +523,11 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 ),
             };
         }
+        case "has": {
+            return {
+                title: NO_SEARCH_RESULTS_TITLE,
+            };
+        }
     }
     return default_banner;
 }

@@ -626,6 +626,12 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         ),
     );
 
+    current_filter = set_filter([["has", "images"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: No search results."),
+    );
     current_filter = set_filter([
         ["has", "reaction"],
         ["sender", "me"],
