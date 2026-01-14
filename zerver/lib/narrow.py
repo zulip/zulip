@@ -34,6 +34,7 @@ from sqlalchemy.types import ARRAY, Boolean, Integer, Text
 from typing_extensions import override
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
+from zerver.lib.emoji import get_emoji_data
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
 from zerver.lib.message import (
     access_message,
@@ -298,6 +299,7 @@ class NarrowBuilder:
             "sender": self.by_sender,
             "near": self.by_near,
             "id": self.by_id,
+            "reaction": self.by_reaction,
             "search": self.by_search,
             "dm": self.by_dm,
             # "pm-with:" is a legacy alias for "dm:"
@@ -363,6 +365,34 @@ class NarrowBuilder:
             maybe_negate = lambda cond: cond
 
         return method(query, operand, maybe_negate)
+
+    def by_reaction(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+        try:
+            emoji_data = get_emoji_data(self.realm.id, operand)
+        except JsonableError:
+            raise BadNarrowOperatorError("unknown emoji " + operand)
+
+        if self.msg_id_column.name == "message_id":
+            # If the initial query uses `zerver_usermessage`
+            check_col = literal_column("zerver_usermessage.message_id", Integer)
+        else:
+            # If the initial query doesn't use `zerver_usermessage`
+            check_col = literal_column("zerver_message.id", Integer)
+
+        exists_cond = (
+            select(1)
+            .select_from(table("zerver_reaction"))
+            .where(
+                and_(
+                    check_col == literal_column("zerver_reaction.message_id", Integer),
+                    literal_column("zerver_reaction.emoji_code", Text) == emoji_data.emoji_code,
+                    literal_column("zerver_reaction.reaction_type", Text)
+                    == emoji_data.reaction_type,
+                )
+            )
+            .exists()
+        )
+        return query.where(maybe_negate(exists_cond))
 
     def by_has(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         if operand not in ["attachment", "image", "link", "reaction"]:
