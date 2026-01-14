@@ -151,6 +151,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
 
     """
     assert user_profile.last_active_message_id is not None
+    assert user_profile.long_term_idle
     all_stream_subs = list(
         Subscription.objects.filter(
             user_profile=user_profile, recipient__type=Recipient.STREAM
@@ -368,17 +369,16 @@ def do_catch_up_soft_deactivated_users(users: QuerySet[UserProfile]) -> None:
     users_caught_up = 0
     failures = []
     for user_profile in users.iterator():
-        if user_profile.long_term_idle:
-            with sentry_sdk.isolation_scope() as scope:
-                scope.set_user({"id": str(user_profile.id)})
-                try:
-                    add_missing_messages(user_profile)
-                    users_caught_up += 1
-                except Exception:  # nocoverage
-                    logger.exception(
-                        "Failed to catch up %d@%s", user_profile.id, user_profile.realm.string_id
-                    )
-                    failures.append(user_profile)
+        with sentry_sdk.isolation_scope() as scope:
+            scope.set_user({"id": str(user_profile.id)})
+            try:
+                add_missing_messages(user_profile)
+                users_caught_up += 1
+            except Exception:  # nocoverage
+                logger.exception(
+                    "Failed to catch up %d@%s", user_profile.id, user_profile.realm.string_id
+                )
+                failures.append(user_profile)
     logger.info("Caught up %d soft-deactivated users", users_caught_up)
     if failures:
         logger.error("Failed to catch up %d soft-deactivated users", len(failures))  # nocoverage
