@@ -39,12 +39,21 @@ run_test("streams", ({override}) => {
 run_test("topics", () => {
     const {next_topic} = tg;
 
-    function make_next_topic(sorted_channels_info, topics_by_stream, unread_topic_names) {
+    function make_next_topic(
+        sorted_channels_info,
+        topics_by_stream,
+        unread_topic_names,
+        topics_kept_unread_by_user = new Set(),
+    ) {
         function get_topics(stream_id) {
             return topics_by_stream.get(stream_id) ?? [];
         }
 
         function has_unread_messages(_stream_id, topic) {
+            if (topics_kept_unread_by_user.has(topic)) {
+                topics_kept_unread_by_user.delete(topic);
+                return false;
+            }
             return unread_topic_names.has(topic);
         }
 
@@ -91,13 +100,27 @@ run_test("topics", () => {
             [2, ["b1"]],
         ]);
         const unread_topic_names = new Set(["a1", "a2", "b1"]);
+        const topics_kept_unread_by_user = new Set();
 
-        const next = make_next_topic(sorted_channels_info, topics_by_stream, unread_topic_names);
+        const next = make_next_topic(
+            sorted_channels_info,
+            topics_by_stream,
+            unread_topic_names,
+            topics_kept_unread_by_user,
+        );
 
-        assert.deepEqual(next(1, "a1"), {stream_id: 1, topic: "a2"});
-        assert.deepEqual(next(1, "a2"), {stream_id: 2, topic: "b1"});
-        assert.deepEqual(next(2, "b1"), {stream_id: 1, topic: "a1"});
-        assert.deepEqual(next(undefined, undefined), {stream_id: 1, topic: "a1"});
+        // User starts with 2nd topic but doesn't mark it as read.
+        topics_kept_unread_by_user.add("a2");
+        // `next` navigates to a1 since it is still unread.
+        assert.deepEqual(next(1, "a2"), {stream_id: 1, topic: "a1"});
+        // User marks a1 as read.
+        unread_topic_names.delete("a1");
+        // `a2` is unread but we skip it since user wants to keep it unread.
+        assert.deepEqual(next(1, "a1"), {stream_id: 2, topic: "b1"});
+        // Wrap around to read any topics left.
+        assert.deepEqual(next(2, "b1"), {stream_id: 1, topic: "a2"});
+
+        assert.deepEqual(next(undefined, undefined), {stream_id: 1, topic: "a2"});
     }
 
     // Case 3: collapsed channels
