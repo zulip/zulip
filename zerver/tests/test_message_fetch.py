@@ -626,6 +626,24 @@ class NarrowBuilderTest(ZulipTestCase):
             term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
         )
 
+    def test_add_term_using_reaction_operator(self) -> None:
+        term = NarrowParameter(operator="reaction", operand="octopus")
+        self._do_add_term_test(
+            term,
+            "EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id AND zerver_reaction.emoji_code = %(zerver_reaction.emoji_code_1)s AND zerver_reaction.reaction_type = %(zerver_reaction.reaction_type_1)s)",
+        )
+
+    def test_add_term_using_reaction_operator_negated(self) -> None:
+        term = NarrowParameter(operator="reaction", operand="octopus", negated=True)
+        self._do_add_term_test(
+            term,
+            "NOT (EXISTS (SELECT 1 \nFROM zerver_reaction \nWHERE zerver_message.id = zerver_reaction.message_id AND zerver_reaction.emoji_code = %(zerver_reaction.emoji_code_1)s AND zerver_reaction.reaction_type = %(zerver_reaction.reaction_type_1)s))",
+        )
+
+    def test_add_term_using_reaction_operator_invalid_emoji(self) -> None:
+        term = NarrowParameter(operator="reaction", operand="non_existent_emoji")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
     def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
         term = NarrowParameter(operator="has", operand="attachment")
         self._do_add_term_test(term, "WHERE has_attachment")
@@ -2894,6 +2912,19 @@ class GetOldMessagesTest(ZulipTestCase):
 
             for message in result["messages"]:
                 self.assertEqual(message["sender_id"], othello.id)
+
+    def test_get_messages_with_narrow_reaction(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        msg_id = self.send_stream_message(hamlet, "Verona")
+        check_add_reaction(iago, msg_id, "octopus", "1f419", "unicode_emoji")
+
+        narrow = [dict(operator="reaction", operand="octopus")]
+        results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+        self.assert_length(results["messages"], 1)
+        self.assertEqual(results["messages"][0]["id"], msg_id)
 
     def _update_tsvector_index(self) -> None:
         # We use brute force here and update our text search index

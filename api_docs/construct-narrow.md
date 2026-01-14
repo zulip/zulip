@@ -58,6 +58,9 @@ as an empty string.
 
 ## Changes
 
+* In Zulip 12.0 (feature level ZF-00039f), add the `reaction` operator,
+  matching messages that contain a reaction of the specified emoji.
+
 * In Zulip 12.0 (feature level 446), add the `mentions` operator,
   matching messages that contain a direct personal mention of the
   specified user.
