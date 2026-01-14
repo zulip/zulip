@@ -1144,6 +1144,16 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         return false;
     }
 
+    // Prevent non-menu hotkeys when gear menu popover is open.
+    // Only allow menu navigation hotkeys (arrow keys, enter) and the gear_menu toggle.
+    if (
+        popover_menus.is_gear_menu_popover_displayed() &&
+        !menu_dropdown_hotkeys.has(event_name) &&
+        event_name !== "gear_menu"
+    ) {
+        return false;
+    }
+
     // Shortcuts that don't require a message
     let list_of_channel_topics_channel_id;
     switch (event_name) {
