@@ -190,11 +190,42 @@ export function process_notification(notification: {
             message.type === "test-notification"
                 ? small_avatar_url_for_test_notification(message)
                 : people.small_avatar_url(message);
-        notification_object = new desktop_notifications.NotificationAPI(title, {
-            icon: icon_url,
-            body: content,
-            tag: message.id.toString(),
-        });
+
+        // Try to create notification using the NotificationAPI.
+        // On Chrome Android and in some service worker contexts, the Notification
+        // constructor is not allowed; instead we must use showNotification() on
+        // the service worker registration.
+        try {
+            notification_object = new desktop_notifications.NotificationAPI(title, {
+                icon: icon_url,
+                body: content,
+                tag: message.id.toString(),
+            });
+        } catch (error) {
+            // If direct construction fails (e.g., Chrome Android), try service worker
+            if (navigator.serviceWorker?.controller !== null) {
+                // We're in a service worker context, show notification through SW
+                void (async () => {
+                    const registration = await navigator.serviceWorker.ready;
+                    await registration.showNotification(title, {
+                        icon: icon_url,
+                        body: content,
+                        tag: message.id.toString(),
+                    });
+                })();
+                // Create a minimal mock notification object for tracking.
+                // Service worker notifications are closed by the user interaction.
+                const mockNotif = {
+                    close() {
+                        // Service worker notifications are closed via interaction
+                    },
+                };
+                // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                notification_object = mockNotif as ElectronBridgeNotification | Notification;
+            } else {
+                throw error;
+            }
+        }
         desktop_notifications.notice_memory.set(key, {
             obj: notification_object,
             msg_count,
