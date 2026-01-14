@@ -31,6 +31,15 @@
     }
 }
 
+.installation-activity-filter-container {
+    width: fit-content;
+    border-radius: 4px;
+    background-color: hsl(0deg 0% 92%);
+    border: 1px solid hsl(0deg 0% 68%);
+    padding: 0 8px;
+    margin: 8px;
+}
+
 .summary-table,
 .analytics-table {
     border: 1px solid hsl(0deg 0% 87%);
