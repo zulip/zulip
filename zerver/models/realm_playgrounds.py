@@ -11,6 +11,16 @@ from zerver.models.linkifiers import url_template_validator
 from zerver.models.realms import Realm
 
 
+def SpecialKeywordValidator(value: str) -> None:
+    special_keyword = ["math", "latex", "quote", "spoiler"]
+    if value.lower() in special_keyword:
+        raise ValidationError(
+            _(
+                "'{value}' is a reserved keyword and cannot be used as a playground language."
+            ).format(value=value)
+        )
+
+
 class RealmPlayground(models.Model):
     """Server side storage model to store playground information needed by our
     'view code in playground' feature in code blocks.
@@ -33,8 +43,9 @@ class RealmPlayground(models.Model):
         # language in the code block.
         validators=[
             RegexValidator(
-                regex=r"^[ a-zA-Z0-9_+-./#]*$", message=_("Invalid characters in pygments language")
-            )
+                regex=r"^[a-zA-Z0-9_+-./#]*$", message=_("Invalid characters in pygments language")
+            ),
+            SpecialKeywordValidator,
         ],
     )
 

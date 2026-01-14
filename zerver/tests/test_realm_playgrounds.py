@@ -1,11 +1,22 @@
+from django.core.exceptions import ValidationError
+
 from zerver.actions.realm_playgrounds import check_add_realm_playground
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmPlayground
+from zerver.models.realm_playgrounds import SpecialKeywordValidator
 from zerver.models.realms import get_realm
 
 
 class RealmPlaygroundTests(ZulipTestCase):
+    def test_special_keyword_validator(self) -> None:
+        with self.assertRaises(ValidationError) as cm:
+            SpecialKeywordValidator("math")
+        self.assertEqual(
+            cm.exception.message,
+            "You have used a reserved keyword and it cannot be used as a playground language.",
+        )
+
     def test_create_one_playground_entry(self) -> None:
         iago = self.example_user("iago")
 
@@ -87,6 +98,24 @@ class RealmPlaygroundTests(ZulipTestCase):
         }
         resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
         self.assert_json_error(resp, 'Missing the required variable "code" in the URL template')
+
+        payload = {
+            "name": "Template without the required variable",
+            "pygments_language": "math",
+            "url_template": "https://template.com{?test}",
+        }
+        resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(
+            resp, "Special keyword is not allowed for pygments language (math/quote/latex/spoiler)"
+        )
+
+        payload = {
+            "name": "Template without the required variable",
+            "pygments_language": "my lang",
+            "url_template": "https://template.com{?test}",
+        }
+        resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(resp, "Invalid characters in pygments language")
 
     def test_create_already_existing_playground(self) -> None:
         iago = self.example_user("iago")

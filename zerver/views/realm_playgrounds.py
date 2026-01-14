@@ -21,7 +21,12 @@ def check_pygments_language(var_name: str, val: object) -> str:
     # Pygments languages. Keeping it open would allow us to hook up a "playground"
     # for custom "languages" that aren't known to Pygments. We use a similar strategy
     # even in our fenced_code Markdown processor.
-    valid_pygments_language = re.compile(r"^[ a-zA-Z0-9_+-./#]*$")
+    special_keyword = ["math", "latex", "quote", "spoiler"]
+    if s.lower() in special_keyword:
+        raise JsonableError(
+            _("Special keyword is not allowed for pygments language (math/quote/latex/spoiler)")
+        )
+    valid_pygments_language = re.compile(r"^[a-zA-Z0-9_+-./#]*$")
     matched_results = valid_pygments_language.match(s)
     if not matched_results:
         raise JsonableError(_("Invalid characters in pygments language"))
