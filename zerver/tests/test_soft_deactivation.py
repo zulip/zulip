@@ -188,7 +188,9 @@ class UserSoftDeactivationTests(ZulipTestCase):
         already_received = UserMessage.objects.filter(message_id=message_id).count()
 
         with self.assertLogs(logger_string, level="INFO") as m:
-            do_catch_up_soft_deactivated_users(users)
+            do_catch_up_soft_deactivated_users(
+                UserProfile.objects.filter(id__in=[user.id for user in users])
+            )
         self.assertEqual(
             m.output, [f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users"]
         )
