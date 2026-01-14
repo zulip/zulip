@@ -1254,6 +1254,11 @@
         color-mix(in srgb, hsl(0deg 0% 0%) 10%, hsl(232deg 20% 92%)),
         hsl(0deg 0% 0% / 80%)
     );
+    /* We do the same thing for the faux message box on the skinned
+       compose. */
+    --color-skinned-compose-messagebox-border: var(
+        --color-compose-recipient-box-border-color
+    );
     --color-compose-recipient-box-hover: light-dark(
         hsl(0deg 0% 69%),
         hsl(0deg 0% 100% / 12%)

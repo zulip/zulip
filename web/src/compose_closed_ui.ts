@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_reply_recipient_label from "../templates/reply_recipient_label.hbs";
 
 import * as compose_actions from "./compose_actions.ts";
@@ -13,6 +14,7 @@ import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as util from "./util.ts";
 
@@ -31,6 +33,7 @@ type RecipientLabel = {
     label_text: string;
     has_empty_string_topic?: boolean;
     stream_name?: string;
+    topic_display_name?: string;
     is_dm_with_self?: boolean;
 };
 
@@ -42,6 +45,7 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
             label_text: "#" + stream.name + " > " + topic_display_name,
             has_empty_string_topic: topic === "",
             stream_name: stream.name,
+            topic_display_name,
         };
         return recipient_label;
     }
@@ -250,6 +254,69 @@ export function set_standard_text_for_reply_button(): void {
     set_reply_button_label($t({defaultMessage: "Compose message"}));
 }
 
+export function update_recipient_row_on_skinned_compose(
+    recipient_information?: ReplyRecipientInformation,
+): void {
+    // We're not currently working with ReplyRecipientInformation in the skinned
+    // compose box, as that isn't used inside of conversation views, but these
+    // lines make it so that we can cut over to that use in the future.
+    const stream_id =
+        recipient_information?.stream_id ?? narrow_state.stream_id(narrow_state.filter(), true);
+    const topic = recipient_information?.topic ?? narrow_state.topic();
+
+    const user_ids_string = narrow_state.pm_ids_string();
+    let user_ids: number[] = [];
+    let has_valid_user_ids = false;
+
+    if (recipient_information?.user_ids) {
+        user_ids = recipient_information?.user_ids;
+    } else if (typeof user_ids_string === "string") {
+        user_ids = people.user_ids_string_to_ids_array(user_ids_string);
+    }
+
+    has_valid_user_ids = people.is_valid_user_ids(user_ids);
+
+    if (stream_id !== undefined && topic !== undefined) {
+        // Update recipient row for stream/topic.
+        const stream = stream_data.get_sub_by_id(stream_id);
+        const has_empty_string_topic = topic === "";
+        const topic_display_name = util.get_final_topic_display_name(topic);
+
+        $("#skinned-channel-picker").html(
+            render_inline_decorated_channel_name({stream, show_colored_icon: true}),
+        );
+        $("#skinned-topic-box-label").text(topic_display_name);
+
+        // Properly display *general chat*
+        if (has_empty_string_topic) {
+            $("#skinned-topic-box-label").addClass("empty-topic-display");
+        } else {
+            $("#skinned-topic-box-label").removeClass("empty-topic-display");
+        }
+
+        // Show adjusted colors as in the low-attention recipient row
+        // of the open compose box.
+        stream_color.adjust_stream_privacy_icon_colors(
+            stream_id,
+            "#skinned-channel-picker .channel-privacy-type-icon",
+        );
+    } else if (has_valid_user_ids) {
+        // Update recipient row for DMs.
+        const direct_message_label = $t({defaultMessage: "DM"});
+        const dm_label = get_direct_message_recipient_label(user_ids);
+
+        $("#skinned-channel-picker").html(
+            `<i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i>
+            <span class="decorated-channel-name">${direct_message_label}</span>`,
+        );
+        $("#skinned-topic-box-label").text(dm_label.label_text);
+    } else {
+        // We had neither a stream_id or a valid set of user_ids, so we will
+        // fall back to displaying the legacy closed compose.
+        $("#compose").removeClass("composing-to-conversation-narrow");
+    }
+}
+
 export function update_recipient_text_for_reply_button(
     recipient_information?: ReplyRecipientInformation,
 ): void {
@@ -267,6 +334,36 @@ export function update_recipient_text_for_reply_button(
     } else {
         set_standard_text_for_reply_button();
     }
+}
+
+// Wrapper function to more gracefully handle updates across
+// the skinned and legacy closed compose boxes.
+export function update_skinned_or_closed_compose_recipient_display(
+    recipient_information?: ReplyRecipientInformation,
+): void {
+    const stream_id =
+        recipient_information?.stream_id ?? narrow_state.stream_id(narrow_state.filter(), true);
+    let user_can_post = true;
+
+    if (stream_id !== undefined) {
+        const stream = stream_data.get_sub_by_id(stream_id);
+        if (stream !== undefined) {
+            user_can_post = stream_data.can_post_messages_in_stream(stream);
+        }
+    }
+    // The skinned compose box doesn't yet support a state where
+    // we don't have a stream/topic or DM recipients.
+    if ($("#compose").hasClass("composing-to-conversation-narrow") && user_can_post) {
+        update_recipient_row_on_skinned_compose(recipient_information);
+    } else {
+        // If a user cannot post, then we want to fall back to displaying
+        // the legacy closed compose box
+        $("#compose").removeClass("composing-to-conversation-narrow");
+    }
+
+    // Follow the usual code path for the legacy closed compose
+    // without recipient information.
+    update_recipient_text_for_reply_button(recipient_information);
 }
 
 function can_user_reply_to_message(message_id: number): boolean {
@@ -290,7 +387,7 @@ export function initialize(): void {
             // message_selected events can occur with Recent Conversations
             // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
-            update_recipient_text_for_reply_button();
+            update_skinned_or_closed_compose_recipient_display();
             update_reply_button_state(
                 !can_user_reply_to_message(message_lists.current!.selected_id()),
             );
