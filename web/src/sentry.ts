@@ -101,6 +101,10 @@ if (sentry_params !== undefined && !is_browser_unsupported_old_version()) {
             scope.setUser(user_info);
             return scope;
         },
+        ignoreErrors: [
+            // https://github.com/tus/tus-js-client/issues/808
+            "ERR_UPLOAD_TERMINATION_REJECTED",
+        ],
     });
 } else {
     Sentry.init({});
