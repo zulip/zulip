@@ -8,6 +8,7 @@ import * as channel from "./channel.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
+import * as settings_config from "./settings_config.ts";
 import * as stream_list from "./stream_list.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
@@ -21,6 +22,45 @@ function do_change_show_channel_folders_left_sidebar(instance: tippy.Instance): 
         url: "/json/settings",
         data,
     });
+    popover_menus.hide_current_popover_if_visible(instance);
+}
+
+function do_change_web_stream_unreads_count_display_policy(
+    instance: tippy.Instance,
+    value: number,
+): void {
+    if (user_settings.web_stream_unreads_count_display_policy === value) {
+        // popover_menus.hide_current_popover_if_visible(instance);
+        return;
+    }
+
+    const data = {
+        web_stream_unreads_count_display_policy: value,
+    };
+
+    void channel.patch({
+        url: "/json/settings",
+        data,
+    });
+
+    popover_menus.hide_current_popover_if_visible(instance);
+}
+
+function do_change_web_channel_default_view(instance: tippy.Instance, value: number): void {
+    if (user_settings.web_channel_default_view === value) {
+        popover_menus.hide_current_popover_if_visible(instance);
+        return;
+    }
+
+    const data = {
+        web_channel_default_view: value,
+    };
+
+    void channel.patch({
+        url: "/json/settings",
+        data,
+    });
+
     popover_menus.hide_current_popover_if_visible(instance);
 }
 
@@ -81,6 +121,16 @@ export function initialize(): void {
             $popper.one("click", "#left_sidebar_collapse_all", () => {
                 collapse_all_sections(instance);
             });
+
+            $popper.one("click", ".web_stream_unreads_count_display_policy_selector", (e) => {
+                const value = Number($(e.currentTarget).attr("value"));
+                do_change_web_stream_unreads_count_display_policy(instance, value);
+            });
+
+            $popper.one("click", ".web_channel_default_view_selector", (e) => {
+                const value = Number($(e.currentTarget).attr("value"));
+                do_change_web_channel_default_view(instance, value);
+            });
         },
         onShow(instance) {
             const show_channel_folders = user_settings.web_left_sidebar_show_channel_folders;
@@ -94,6 +144,13 @@ export function initialize(): void {
                         show_channel_folders,
                         channel_folders_id: "left_sidebar_channel_folders",
                         show_collapse_expand_all_options,
+                        web_stream_unreads_count_display_policy_values:
+                            settings_config.web_stream_unreads_count_display_policy_values,
+                        web_stream_unreads_count_display_policy:
+                            user_settings.web_stream_unreads_count_display_policy,
+                        web_channel_default_view_values:
+                            settings_config.web_channel_default_view_values,
+                        web_channel_default_view: user_settings.web_channel_default_view,
                     }),
                 ),
             );
