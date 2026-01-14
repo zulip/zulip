@@ -1266,6 +1266,29 @@
             margin-left: 0.1667em; /* 2px at 12px / em */
         }
     }
+
+    /* Styles for the not-subscribed banner */
+    .bookend-not-subscribed-banner {
+        text-align: start;
+        margin: 0;
+
+        .banner-content {
+            align-items: center;
+        }
+
+        .banner-label {
+            text-align: start;
+
+            .stream-status {
+                display: inline;
+                opacity: 1; /* Override the 0.6 opacity from .bookend .stream-status */
+            }
+        }
+
+        .banner-action-buttons {
+            flex-shrink: 0;
+        }
+    }
 }
 
 .bookend-label {

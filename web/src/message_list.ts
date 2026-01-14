@@ -453,12 +453,8 @@ export class MessageList {
         // trailing bookend if user is subscribed.
         const sub = stream_data.get_sub_by_id(stream_id);
 
-        if (sub && !stream_data.can_toggle_subscription(sub)) {
-            // If the user is not subscribed and cannot subscribe
-            // (e.g., they don't have content access to the channel),
-            // then we don't show a trailing bookend.
-            return;
-        }
+        // Note: We used to return early if can_toggle_subscription was false,
+        // but now we show the banner even if user can't subscribe (just hide the Subscribe button).
 
         if (
             sub &&
@@ -481,6 +477,14 @@ export class MessageList {
             just_unsubscribed = true;
         }
 
+        const can_toggle_subscription = sub ? stream_data.can_toggle_subscription(sub) : false;
+
+        // If the user is not subscribed and cannot subscribe to the
+        // private channel, no bookend is shown.
+        if (!subscribed && invite_only && !can_toggle_subscription) {
+            return;
+        }
+
         this.view.render_trailing_bookend(
             stream_id,
             sub?.name,
@@ -490,6 +494,7 @@ export class MessageList {
             page_params.is_spectator,
             invite_only ?? false,
             is_web_public ?? false,
+            can_toggle_subscription,
         );
     }
 

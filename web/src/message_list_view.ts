@@ -14,6 +14,7 @@ import render_single_message from "../templates/single_message.hbs";
 
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
+import type {ActionButton} from "./buttons.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as condense from "./condense.ts";
 import * as hash_util from "./hash_util.ts";
@@ -1933,9 +1934,34 @@ export class MessageListView {
         is_spectator: boolean,
         invite_only: boolean,
         is_web_public: boolean,
+        can_toggle_subscription: boolean,
     ): void {
         // This is not the only place we render bookends; see also the
         // partial in message_group.hbs, which do not set is_trailing_bookend.
+
+        // Build buttons array for not subscribed case
+        const not_subscribed_buttons: ActionButton[] | undefined =
+            !subscribed && !deactivated && !just_unsubscribed
+                ? [
+                      {
+                          variant: "text" as const,
+                          intent: "info" as const,
+                          label: $t({defaultMessage: "Load updates"}),
+                          id: "bookend-load-updates-button",
+                      },
+                      ...(can_toggle_subscription
+                          ? [
+                                {
+                                    variant: "subtle" as const,
+                                    intent: "info" as const,
+                                    label: $t({defaultMessage: "Subscribe"}),
+                                    id: "bookend-subscribe-button",
+                                },
+                            ]
+                          : []),
+                  ]
+                : undefined;
+
         const $rendered_trailing_bookend = $(
             render_bookend({
                 stream_id,
@@ -1947,6 +1973,7 @@ export class MessageListView {
                 is_trailing_bookend: true,
                 invite_only,
                 is_web_public,
+                not_subscribed_buttons,
             }),
         );
         this.$list.append($rendered_trailing_bookend);
