@@ -201,7 +201,8 @@ p.n-margin {
     margin: 0;
 }
 
-.all-messages-search-caution {
+.all-messages-search-caution,
+.combined-feed-notice {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -224,7 +225,8 @@ p.n-margin {
 }
 
 .history-limited-box,
-.all-messages-search-caution {
+.all-messages-search-caution,
+.combined-feed-notice {
     margin: 0 auto 12px;
     padding: 5px;
 
