@@ -29,6 +29,15 @@
                 that block Referer headers, and disable them for
                 this site.
                 {% endtrans %}
+                {% if is_firefox %}
+                <br/><br/>
+                <strong>{% trans %}Firefox-specific issue:{% endtrans %}</strong>
+                {% trans %}
+                In Firefox, go to <code>about:config</code> and check if
+                <code>network.http.sendRefererHeader</code> is set to 0.
+                If so, change it to 2 (the default value) to enable Referer headers.
+                {% endtrans %}
+                {% endif %}
             </li>
         </ol>
         {% elif status_code == 405 %}

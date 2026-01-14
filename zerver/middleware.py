@@ -476,7 +476,14 @@ def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
     if RequestNotes.get_notes(request).error_format == "JSON":
         return json_response_from_error(CsrfFailureError(reason))
     else:
-        return render(request, "4xx.html", context={"csrf_failure": True}, status=403)
+        user_agent = request.META.get("HTTP_USER_AGENT", "")
+        is_firefox = "Firefox" in user_agent and "Seamonkey" not in user_agent
+        return render(
+            request,
+            "4xx.html",
+            context={"csrf_failure": True, "is_firefox": is_firefox},
+            status=403,
+        )
 
 
 class LocaleMiddleware(DjangoLocaleMiddleware):
