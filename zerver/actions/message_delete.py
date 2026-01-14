@@ -63,7 +63,7 @@ def do_delete_messages(
     )
 
 
-def do_delete_messages_by_sender(user: UserProfile) -> None:
+def do_delete_messages_by_sender(user: UserProfile, skip_notify: bool = False) -> None:
     message_ids = list(
         # Uses index: zerver_message_realm_sender_recipient (prefix)
         Message.objects.filter(realm_id=user.realm_id, sender=user)
@@ -71,5 +71,8 @@ def do_delete_messages_by_sender(user: UserProfile) -> None:
         .order_by("id")
     )
     move_messages_to_archive(
-        message_ids, user.realm, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE
+        message_ids,
+        user.realm,
+        chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE,
+        skip_notify=skip_notify,
     )

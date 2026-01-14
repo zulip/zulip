@@ -2155,8 +2155,12 @@ paths:
                                 such as when it is [moved to a channel][message-move-channel] that
                                 the user does not [have permission to access][channel-access].
 
-                                **Changes**: Before Zulip 9.0 (feature level 274), this
-                                event was only sent to subscribers of the message's recipient.
+                                **Changes**: Prior to Zulip 12.0 (feature level 452) messages
+                                deleted via a message retention policy incorrectly failed to
+                                generate `delete_message` events.
+
+                                Before Zulip 9.0 (feature level 274), this event was only sent to
+                                subscribers of the message's recipient.
 
                                 Before Zulip 5.0 (feature level 77), events
                                 for direct messages contained additional `sender_id` and
