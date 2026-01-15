@@ -1,4 +1,3 @@
-import json
 import re
 from datetime import datetime, timezone
 from itertools import zip_longest
@@ -18,7 +17,6 @@ from zerver.lib.validator import (
     check_string,
     check_string_in,
     check_url,
-    to_wild_value,
 )
 
 # stubs
@@ -470,13 +468,12 @@ def replace_links(text: str) -> str:
     return text
 
 
-def process_slack_block_and_attachment(message: ZerverFieldsT) -> str:
-    slack_message: WildValue = to_wild_value("slack_message", json.dumps(message))
+def process_slack_block_and_attachment(message: WildValue) -> str:
     pieces: list[str] = []
 
-    if slack_message.get("blocks"):
-        pieces += map(render_block, slack_message["blocks"])
+    if message.get("blocks"):
+        pieces += map(render_block, message["blocks"])
 
-    if slack_message.get("attachments"):
-        pieces += map(render_attachment, slack_message["attachments"])
+    if message.get("attachments"):
+        pieces += map(render_attachment, message["attachments"])
     return "\n".join(piece.strip() for piece in pieces if piece.strip() != "")
