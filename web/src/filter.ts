@@ -96,7 +96,7 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
                 case "reaction":
                     return message_parser.message_has_reaction(message);
                 default:
-                    return false; // has:something_else returns false
+                    return false;
             }
 
         case "is":
@@ -121,7 +121,7 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
                 case "muted":
                     return !message_in_home(message);
                 default:
-                    return false; // is:whatever returns false
+                    return false;
             }
 
         case "in":
@@ -131,11 +131,10 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
                 case "all":
                     return true;
                 default:
-                    return false; // in:whatever returns false
+                    return false;
             }
 
         case "near":
-            // this is all handled server side
             return true;
 
         case "id":
@@ -145,7 +144,6 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
             if (message.type !== "stream") {
                 return false;
             }
-
             return message.stream_id.toString() === term.operand;
         }
 
@@ -168,14 +166,12 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
             if (message.type !== "stream") {
                 return false;
             }
-
             return message.topic.toLowerCase() === term.operand.toLowerCase();
 
         case "sender":
             return people.id_matches_email_operand(message.sender_id, term.operand);
 
         case "dm": {
-            // TODO: use user_ids, not emails here
             if (message.type !== "private") {
                 return false;
             }
@@ -187,7 +183,6 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
             if (!user_ids) {
                 return false;
             }
-
             return _.isEqual(operand_ids, user_ids);
         }
 
@@ -204,9 +199,71 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
         }
     }
 
-    // We will never get here since operator type validation would fail.
-    // istanbul ignore next
-    return true; // unknown operators return true (effectively ignored)
+    return true;
+}
+
+function message_matches_with_cache(
+    message: Message,
+    term: NarrowTerm,
+    cached?: {
+        stream_id?: number;
+        topic_lower?: string;
+        dm_user_ids?: number[];
+        dm_including_user_ids?: number[];
+    },
+): boolean {
+    switch (term.operator) {
+        case "channel": {
+            if (message.type !== "stream") {
+                return false;
+            }
+            if (cached?.stream_id !== undefined) {
+                return message.stream_id === cached.stream_id;
+            }
+            return message.stream_id.toString() === term.operand;
+        }
+
+        case "topic": {
+            if (message.type !== "stream") {
+                return false;
+            }
+            if (cached?.topic_lower !== undefined) {
+                return message.topic.toLowerCase() === cached.topic_lower;
+            }
+            return message.topic.toLowerCase() === term.operand.toLowerCase();
+        }
+
+        case "dm": {
+            if (message.type !== "private") {
+                return false;
+            }
+            const operand_ids = cached?.dm_user_ids ?? people.pm_with_operand_ids(term.operand);
+            if (!operand_ids) {
+                return false;
+            }
+            const user_ids = people.pm_with_user_ids(message);
+            if (!user_ids) {
+                return false;
+            }
+            return _.isEqual(operand_ids, user_ids);
+        }
+
+        case "dm-including": {
+            const operand_ids =
+                cached?.dm_including_user_ids ?? people.pm_with_operand_ids(term.operand);
+            if (!operand_ids) {
+                return false;
+            }
+            const user_ids = people.all_user_ids_in_pm(message);
+            if (!user_ids) {
+                return false;
+            }
+            return operand_ids.every((operand_id) => user_ids.includes(operand_id));
+        }
+
+        default:
+            return message_matches_search_term(message, term);
+    }
 }
 
 const USER_OPERATORS = new Set([
@@ -226,13 +283,19 @@ export class Filter {
     requires_adjustment_for_moved_with_target?: boolean;
     narrow_requires_hash_change: boolean;
     cached_sorted_terms_for_comparison?: string[] | undefined = undefined;
+    _cached_term_data?: Map<number, {
+        stream_id?: number;
+        topic_lower?: string;
+        dm_user_ids?: number[];
+        dm_including_user_ids?: number[];
+    }>;
 
     constructor(terms: NarrowTerm[]) {
-        // `_terms` will be set in `setup_filter`.
         this._terms = [];
         this.setup_filter(terms);
         this.requires_adjustment_for_moved_with_target = this.has_operator("with");
         this.narrow_requires_hash_change = false;
+        this._cache_term_data();
     }
 
     static canonicalize_term({
@@ -1683,11 +1746,62 @@ export class Filter {
                         user_id,
                         new_email,
                     );
+                    break;
+            }
+        }
+        this._cache_term_data();
+        this._predicate = undefined;
+    }
+
+    _cache_term_data(): void {
+        this._cached_term_data = new Map();
+
+        for (let i = 0; i < this._terms.length; i++) {
+            const term = this._terms[i]!;
+            const data: {
+                stream_id?: number;
+                topic_lower?: string;
+                dm_user_ids?: number[];
+                dm_including_user_ids?: number[];
+            } = {};
+
+            switch (term.operator) {
+                case "channel": {
+                    const stream_id = Number.parseInt(term.operand, 10);
+                    if (!Number.isNaN(stream_id)) {
+                        data.stream_id = stream_id;
+                    }
+                    break;
+                }
+                case "topic":
+                    data.topic_lower = term.operand.toLowerCase();
+                    break;
+                case "dm": {
+                    if (people && typeof people.pm_with_operand_ids === "function") {
+                        const operand_ids = people.pm_with_operand_ids(term.operand);
+                        if (operand_ids) {
+                            data.dm_user_ids = operand_ids;
+                        }
+                    }
+                    break;
+                }
+                case "dm-including": {
+                    if (people && typeof people.pm_with_operand_ids === "function") {
+                        const operand_ids = people.pm_with_operand_ids(term.operand);
+                        if (operand_ids) {
+                            data.dm_including_user_ids = operand_ids;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            if (Object.keys(data).length > 0) {
+                this._cached_term_data.set(i, data);
             }
         }
     }
 
-    // Build a filter function from a list of operators.
     _build_predicate(): (message: Message) => boolean {
         const terms = this._terms;
 
@@ -1695,18 +1809,22 @@ export class Filter {
             return () => true;
         }
 
-        // FIXME: This is probably pretty slow.
-        // We could turn it into something more like a compiler:
-        // build JavaScript code in a string and then eval() it.
+        const cached = this._cached_term_data;
 
-        return (message: Message) =>
-            terms.every((term) => {
-                let ok = message_matches_search_term(message, term);
+        return (message: Message) => {
+            for (let i = 0; i < terms.length; i++) {
+                const term = terms[i]!;
+                const cache_data = cached?.get(i);
+                let ok = message_matches_with_cache(message, term, cache_data);
                 if (term.negated) {
                     ok = !ok;
                 }
-                return ok;
-            });
+                if (!ok) {
+                    return false;
+                }
+            }
+            return true;
+        };
     }
 
     can_show_next_unread_topic_conversation_button(): boolean {
