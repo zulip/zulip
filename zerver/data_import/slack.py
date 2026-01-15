@@ -1,4 +1,5 @@
 import itertools
+import json
 import logging
 import os
 import re
@@ -62,6 +63,7 @@ from zerver.lib.parallel import run_parallel_queue
 from zerver.lib.partial import partial
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
+from zerver.lib.validator import to_wild_value
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -1113,7 +1115,9 @@ def channel_message_to_zerver_message(
         ]:
             continue
 
-        formatted_block = process_slack_block_and_attachment(message)
+        formatted_block = process_slack_block_and_attachment(
+            to_wild_value("message", json.dumps(message))
+        )
 
         # Leave it as is if formatted_block is an empty string, it's likely
         # one of the unhandled_types.
