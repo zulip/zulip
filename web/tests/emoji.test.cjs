@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const events = require("./lib/events.cjs");
+const events = require("./lib/events.ts");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");

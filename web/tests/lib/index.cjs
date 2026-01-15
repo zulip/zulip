@@ -9,6 +9,7 @@ require("handlebars/runtime.js");
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
+require("./events.ts");
 const handlebars = require("./handlebars.cjs");
 const stub_i18n = require("./i18n.cjs");
 const namespace = require("./namespace.cjs");

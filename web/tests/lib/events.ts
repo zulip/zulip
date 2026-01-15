@@ -1,5 +1,3 @@
-"use strict";
-
 //  These events are not guaranteed to be perfectly
 //  representative of what the server sends.  We
 //  have a tool called check-schemas that tries
@@ -8,37 +6,40 @@
 //  skips.  And even when the data matches the schema,
 //  it may not be completely representative.
 
-const test_user = {
+import type {ServerEmoji} from "../../src/emoji";
+import type {Message} from "../../src/message_store";
+import type {User} from "../../src/people";
+import type {MessageDetails} from "../../src/server_event_types";
+import type {APIStream} from "../../src/stream_types";
+
+export const test_user = {
     email: "test@example.com",
     user_id: 101,
     full_name: "Test User",
-};
-exports.test_user = test_user;
+} satisfies Partial<User>;
 
-exports.test_message = {
+export const test_message = {
     sender_id: test_user.user_id,
     id: 99,
-};
+} satisfies Partial<Message>;
 
-const typing_person1 = {
+export const typing_person1 = {
     user_id: 1,
     email: "user1@example.com",
-};
+} satisfies Partial<User>;
 
-const typing_person2 = {
+export const typing_person2 = {
     user_id: 2,
     email: "user2@example.com",
-};
+} satisfies Partial<User>;
 
-exports.typing_person1 = typing_person1;
-exports.typing_person2 = typing_person2;
-exports.stream_typing_in_id = 1;
-exports.topic_typing_in = "Typing topic";
+export const stream_typing_in_id = 1;
+export const topic_typing_in = "Typing topic";
 
 const fake_then = 1596710000;
 const fake_now = 1596713966;
 
-exports.test_streams = {
+export const test_streams: {devel: APIStream; test: APIStream} = {
     devel: {
         is_archived: false,
         name: "devel",
@@ -49,22 +50,27 @@ exports.test_streams = {
         date_created: fake_now,
         creator_id: null,
         first_message_id: 1,
+        folder_id: null,
         history_public_to_subscribers: false,
         is_announcement_only: false,
         is_web_public: false,
         message_retention_days: null,
         stream_post_policy: 1,
         topics_policy: "inherit",
+        can_add_subscribers_group: 2,
         can_administer_channel_group: 2,
         can_create_topic_group: 2,
         can_delete_any_message_group: 2,
         can_delete_own_message_group: 2,
         can_move_messages_out_of_channel_group: 2,
         can_move_messages_within_channel_group: 2,
-        can_send_message_group: 2,
         can_remove_subscribers_group: 2,
+        can_resolve_topics_group: 2,
+        can_send_message_group: 2,
+        can_subscribe_group: 2,
         is_recently_active: true,
         subscriber_count: 10,
+        stream_weekly_traffic: null,
     },
     test: {
         is_archived: false,
@@ -76,38 +82,44 @@ exports.test_streams = {
         date_created: fake_then,
         creator_id: null,
         first_message_id: 1,
+        folder_id: null,
         history_public_to_subscribers: false,
         is_web_public: false,
         is_announcement_only: false,
         message_retention_days: null,
         stream_post_policy: 1,
         topics_policy: "inherit",
+        can_add_subscribers_group: 2,
         can_administer_channel_group: 2,
         can_create_topic_group: 2,
         can_delete_any_message_group: 2,
         can_delete_own_message_group: 2,
         can_move_messages_out_of_channel_group: 2,
         can_move_messages_within_channel_group: 2,
-        can_send_message_group: 2,
         can_remove_subscribers_group: 2,
+        can_resolve_topics_group: 2,
+        can_send_message_group: 2,
+        can_subscribe_group: 2,
         is_recently_active: true,
         subscriber_count: 2,
+        stream_weekly_traffic: null,
     },
 };
 
-const streams = exports.test_streams;
+const streams = test_streams;
 
 // TODO: we want to validate this better with check-schema.
 // The data should mostly be representative here, but we don't
 // really exercise it in our tests yet.
-const message_detail = {
+const message_detail: MessageDetails[number] = {
     type: "stream",
     mentioned: false,
-    sender_id: test_user.id,
-    stream_id: streams.devel.test_id,
+    stream_id: streams.devel.stream_id,
+    topic: "topic1",
+    unmuted_stream_msg: false,
 };
 
-exports.test_realm_emojis = {
+export const test_realm_emojis: {101: ServerEmoji; 102: ServerEmoji} = {
     101: {
         id: "101",
         name: "spain",
@@ -126,7 +138,7 @@ exports.test_realm_emojis = {
     },
 };
 
-exports.fixtures = {
+export const fixtures = {
     alert_words: {
         type: "alert_words",
         alert_words: ["fire", "lunch"],
@@ -190,8 +202,8 @@ exports.fixtures = {
         message_id: 128,
         recipient: {
             type: "channel",
-            channel_id: exports.stream_typing_in_id,
-            topic: exports.topic_typing_in,
+            channel_id: stream_typing_in_id,
+            topic: topic_typing_in,
         },
     },
 
@@ -202,8 +214,8 @@ exports.fixtures = {
         message_id: 128,
         recipient: {
             type: "channel",
-            channel_id: exports.stream_typing_in_id,
-            topic: exports.topic_typing_in,
+            channel_id: stream_typing_in_id,
+            topic: topic_typing_in,
         },
     },
 
@@ -597,7 +609,7 @@ exports.fixtures = {
     realm_emoji__update: {
         type: "realm_emoji",
         op: "update",
-        realm_emoji: exports.test_realm_emojis,
+        realm_emoji: test_realm_emojis,
     },
 
     realm_export: {
@@ -862,8 +874,8 @@ exports.fixtures = {
         op: "start",
         message_type: "stream",
         sender: typing_person1,
-        stream_id: exports.stream_typing_in_id,
-        topic: exports.topic_typing_in,
+        stream_id: stream_typing_in_id,
+        topic: topic_typing_in,
     },
 
     stream_typing__stop: {
@@ -871,8 +883,8 @@ exports.fixtures = {
         op: "stop",
         message_type: "stream",
         sender: typing_person1,
-        stream_id: exports.stream_typing_in_id,
-        topic: exports.topic_typing_in,
+        stream_id: stream_typing_in_id,
+        topic: topic_typing_in,
     },
 
     submessage: {
@@ -978,7 +990,7 @@ exports.fixtures = {
         op: "add",
         operation: "add",
         flag: "starred",
-        messages: [exports.test_message.id],
+        messages: [test_message.id],
         all: false,
     },
 
@@ -987,7 +999,7 @@ exports.fixtures = {
         op: "remove",
         operation: "remove",
         flag: "starred",
-        messages: [exports.test_message.id],
+        messages: [test_message.id],
         all: false,
     },
 
