@@ -32,6 +32,7 @@ def create_linkifier(
     pattern: str,
     url_template: str,
     example_input: str | None = None,
+    reverse_template: str | None = None,
 ) -> HttpResponse:
     try:
         linkifier_id = do_add_linkifier(
@@ -39,6 +40,7 @@ def create_linkifier(
             pattern=pattern,
             url_template=url_template,
             example_input=example_input,
+            reverse_template=reverse_template,
             acting_user=user_profile,
         )
         return json_success(request, data={"id": linkifier_id})
@@ -67,6 +69,7 @@ def update_linkifier(
     pattern: str,
     url_template: str,
     example_input: str | None = None,
+    reverse_template: str | None = None,
 ) -> HttpResponse:
     try:
         do_update_linkifier(
@@ -75,6 +78,7 @@ def update_linkifier(
             pattern=pattern,
             url_template=url_template,
             example_input=example_input,
+            reverse_template=reverse_template,
             acting_user=user_profile,
         )
         return json_success(request)

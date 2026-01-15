@@ -409,6 +409,7 @@ export const realm_linkifier_schema = z.object({
     url_template: z.string(),
     id: z.number(),
     example_input: z.optional(z.nullable(z.string())),
+    reverse_template: z.optional(z.nullable(z.string())),
 });
 
 export const realm_report_message_types = z.object({
