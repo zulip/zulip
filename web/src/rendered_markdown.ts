@@ -409,17 +409,21 @@ export const update_elements = ($content: JQuery): void => {
             if (!emoji_obj) {
                 return;
             }
-            const emoji_animation_setting = user_settings.web_animate_image_previews;
-            const $emoji_html = $(
-                render_realm_emoji({
-                    emoji_animation_setting,
-                    display_name: emoji_obj.emoji_name,
-                    still_url: emoji_obj.still_url,
-                    url: emoji_obj.emoji_url,
-                }),
-            );
+            // const emoji_animation_setting = user_settings.web_animate_image_previews;
+            // const $emoji_html = $(
+            //     render_realm_emoji({
+            //         emoji_animation_setting,
+            //         display_name: emoji_obj.emoji_name,
+            //         still_url: emoji_obj.still_url,
+            //         url: emoji_obj.emoji_url,
+            //     }),
+            // );
 
-            $emoji.replaceWith($emoji_html);
+            // $emoji.replaceWith($emoji_html);
+
+            $emoji.attr("data-animated-url", emoji_obj.emoji_url);
+            $emoji.attr("data-still-url", emoji_obj.still_url);
+            $emoji.attr("src", emoji_obj.still_url);
         });
     }
 };
