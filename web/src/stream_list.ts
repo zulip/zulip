@@ -68,6 +68,7 @@ export function is_zoomed_in(): boolean {
 }
 
 function zoom_in(): void {
+    zoomed_in = true;
     const stream_id = topic_list.active_stream_id();
     assert(stream_id !== undefined);
 
@@ -75,8 +76,6 @@ function zoom_in(): void {
     pm_list.close();
     topic_list.zoom_in();
     zoom_in_topics(stream_id);
-
-    zoomed_in = true;
 }
 
 export function set_pending_stream_list_rerender(value: boolean): void {
@@ -84,6 +83,7 @@ export function set_pending_stream_list_rerender(value: boolean): void {
 }
 
 export function zoom_out(): void {
+    zoomed_in = false;
     if (pending_stream_list_rerender) {
         update_streams_sidebar(true);
     }
@@ -91,19 +91,16 @@ export function zoom_out(): void {
     topic_list.zoom_out();
     zoom_out_topics();
     scroll_stream_into_view();
-
-    zoomed_in = false;
 }
 
 export function clear_topics(): void {
     topic_list.close();
 
     if (zoomed_in) {
+        zoomed_in = false;
         zoom_out_topics();
         scroll_stream_into_view();
     }
-
-    zoomed_in = false;
 }
 
 export let update_count_in_dom = (
