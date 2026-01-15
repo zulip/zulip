@@ -243,7 +243,7 @@ function open_uppy_editor(
                 };
             }
 
-            uppy_widget.once("file-editor:complete", (file) => {
+            uppy_widget.on("file-editor:complete", (file) => {
                 assert(file.data instanceof File);
                 let is_night = null;
                 let for_realm_icon = true;
