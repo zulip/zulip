@@ -60,10 +60,21 @@ class RealmFilterTest(ZulipTestCase):
             result, "Group 'id' in linkifier pattern is not present in URL template."
         )
 
-        data["url_template"] = "https://realm.com/my_realm_filter/#hashtag/{id}"
+        data["pattern"] = r"ZUL-(?P<id>\d+)"
+        data["url_template"] = "https://realm.com/my_realm_filter/{id}"
+        data["example_input"] = "no match"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Example input does not match the linkifier pattern.")
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/#hashtag/{id}",
+            "example_input": "ZUL-15",
+        }
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data["pattern"], "ZUL-15"))
+        data.pop("example_input")
 
         data["pattern"] = r"ZUL2-(?P<id>\d+)"
         data["url_template"] = "https://realm.com/my_realm_filter/?value={id}"
@@ -184,6 +195,7 @@ class RealmFilterTest(ZulipTestCase):
         data = {
             "pattern": "#(?P<id>[0-9]+)",
             "url_template": "https://realm.com/my_realm_filter/issues/{id}",
+            "example_input": "#1234",
         }
         result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
         self.assert_json_success(result)
@@ -197,6 +209,17 @@ class RealmFilterTest(ZulipTestCase):
         self.assertEqual(
             linkifier[0]["url_template"], "https://realm.com/my_realm_filter/issues/{id}"
         )
+        self.assertEqual(linkifier[0]["example_input"], "#1234")
+
+        # Resetting example_input should work.
+        data["example_input"] = ""
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_success(result)
+
+        result = self.client_get("/json/realm/linkifiers")
+        linkifier = self.assert_json_success(result)["linkifiers"]
+        self.assert_length(linkifier, 1)
+        self.assertIsNone(linkifier[0]["example_input"])
 
         data = {
             "pattern": r"ZUL-(?P<id>\d????)",

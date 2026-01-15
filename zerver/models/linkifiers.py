@@ -83,6 +83,11 @@ class RealmFilter(models.Model):
         pattern = filter_pattern_validator(self.pattern)
         group_set = set(pattern.groupindex.keys())
 
+        if self.example_input is not None:
+            example_input = self.example_input.strip()
+            if example_input and pattern.search(example_input) is None:
+                raise ValidationError(_("Example input does not match the linkifier pattern."))
+
         # Do not continue the check if the url template is invalid to begin with.
         # The ValidationError for invalid template will only be raised by the validator
         # set on the url_template field instead of here to avoid duplicates.
