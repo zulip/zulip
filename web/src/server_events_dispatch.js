@@ -174,9 +174,9 @@ export function dispatch_normal_event(event) {
             // which returns all the unread messages out of a given list.
             // So double marking something as read would not occur
             unread_ops.process_read_messages_event(msg_ids);
+            emoji_frequency.update_emoji_frequency_on_messages_deletion(msg_ids);
             // This methods updates message_list too and since stream_topic_history relies on it
             // this method should be called first.
-            emoji_frequency.update_emoji_frequency_on_messages_deletion(msg_ids);
             message_events.remove_messages(msg_ids);
 
             if (event.message_type === "stream") {

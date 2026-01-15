@@ -125,6 +125,13 @@ export function update_emoji_frequency_on_remove_reaction_event(
 export function update_emoji_frequency_on_messages_deletion(message_ids: number[]): void {
     for (const message_id of message_ids) {
         const message = message_store.get(message_id);
+        // It's normal to receive events about the deletion of
+        // messages that this client doesn't have locally cached. No
+        // action is required, since only messages that are locally
+        // cached are represented in our emoji frequency data.
+        if (message === undefined) {
+            continue;
+        }
         assert(message !== undefined);
         const message_reactions = message.clean_reactions.values();
         for (const emoji of message_reactions) {
