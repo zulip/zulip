@@ -238,7 +238,7 @@ function open_uppy_editor(
             const uppy_file = uppy_widget.getFile(uppy_file_id);
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.selectFile(uppy_file);
 
-            uppy_widget.once("file-editor:complete", (updated_file) => {
+            uppy_widget.on("file-editor:complete", (updated_file) => {
                 void (async () => {
                     assert(updated_file.data instanceof File);
                     const new_dimensions = await get_image_dimensions(updated_file.data);
