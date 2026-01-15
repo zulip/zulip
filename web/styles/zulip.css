@@ -2143,6 +2143,10 @@ body:not(.spectator-view) {
             opacity: 0.7;
             z-index: -1;
         }
+
+        &:hover #scroll-to-bottom-button {
+            backdrop-filter: blur(40px);
+        }
     }
 }
 
