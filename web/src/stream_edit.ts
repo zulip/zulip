@@ -106,6 +106,9 @@ function update_description_preview(): void {
     }
 
     try {
+        // markdown.render() uses marked.js with sanitize:true option enabled,
+        // which prevents XSS by sanitizing HTML in the rendered content.
+        // This is safe to use with untrusted user input.
         const rendered = markdown.render(description_text, helper_config);
         const preview_html = rendered.content;
         $preview.html(preview_html);
@@ -139,6 +142,10 @@ function insert_markdown_formatting(
     const text = String($textarea.val());
     const selected_text = text.slice(start, end) || placeholder;
 
+    // Preserve scroll position for long textareas
+    const scroll_top = textarea.scrollTop;
+    const scroll_left = textarea.scrollLeft;
+
     // Build new text with markdown formatting
     const new_text =
         text.slice(0, start) + before_text + selected_text + after_text + text.slice(end);
@@ -150,6 +157,10 @@ function insert_markdown_formatting(
     textarea.focus();
     const new_cursor_pos = start + before_text.length + selected_text.length;
     textarea.setSelectionRange(new_cursor_pos, new_cursor_pos);
+
+    // Restore scroll position (textarea.focus() can change it in long textareas)
+    textarea.scrollTop = scroll_top;
+    textarea.scrollLeft = scroll_left;
 
     // Trigger preview update
     update_description_preview();
