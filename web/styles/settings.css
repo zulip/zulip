@@ -188,8 +188,12 @@ h3,
 .play_notification_sound {
     .notification-sound-icon {
         font-size: 1.5714em; /* 22px at 14px / em */
-        /* Visually center with chevron in select */
-        line-height: 1.8571em; /* 26px at 14px / em */
+        /* Visually center with chevron in select
+        by setting the line-height equal to the height
+        of select which is equal to - 1.4em + 8px (4px
+        each for top and bottom paddings) + 2px (1px each
+        for top and bottom borders). */
+        line-height: calc(1.4 * var(--base-font-size-px) + 10px);
         cursor: pointer;
     }
 }
