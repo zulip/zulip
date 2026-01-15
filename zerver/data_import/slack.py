@@ -1115,20 +1115,13 @@ def channel_message_to_zerver_message(
         ]:
             continue
 
-        formatted_block = process_slack_block_and_attachment(
-            to_wild_value("message", json.dumps(message))
+        raw_content = process_slack_block_and_attachment(
+            (to_wild_value("message", json.dumps(message))),
         )
-
-        # Leave it as is if formatted_block is an empty string, it's likely
-        # one of the unhandled_types.
-        if formatted_block != "":
-            # For most cases, the value of message["text"] will be just an
-            # empty string.
-            message["text"] = formatted_block
 
         try:
             content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
-                message["text"], users, added_channels, slack_user_id_to_zulip_user_id
+                raw_content, users, added_channels, slack_user_id_to_zulip_user_id
             )
         except Exception:
             print("Slack message unexpectedly missing text representation:")
