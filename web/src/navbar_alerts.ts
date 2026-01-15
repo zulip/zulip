@@ -388,10 +388,10 @@ const demo_organization_deadline_banner = (): AlertBanner => {
         label: $t(
             {
                 defaultMessage:
-                    "This demo organization will be automatically deleted in {days_remaining} days, unless it's converted into a permanent organization.",
+                    "This demo organization will be automatically deleted in {N, plural, one {# day} other {# days}}, unless it's converted into a permanent organization.",
             },
             {
-                days_remaining,
+                N: days_remaining,
             },
         ),
         buttons,
