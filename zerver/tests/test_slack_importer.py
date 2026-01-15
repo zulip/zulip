@@ -2087,6 +2087,43 @@ class SlackImporter(ZulipTestCase):
                 "app_id": "A3G4A68V9",
                 "channel_name": "general",
             },
+            {
+                "subtype": "bot_message",
+                "text": "Hello there, I am a basic rich text block!",
+                "username": "ClickUp",
+                "attachments": [
+                    {
+                        "id": 1,
+                        "color": "656f7d",
+                        "fallback": "Buy Ingredients!",
+                        "text": "New comment:  where can I buy it?\n\nby Pieter\n_<https://app.clickup.com/25567147/v/s/43687023|Task one> &gt; <https://app.clickup.com/25567147/v/li/901601846060|dsad>_",
+                        "title": "Buy Ingredients!",
+                        "title_link": "https://app.clickup.com/t/86cuy8e4y?comment=90160026391938",
+                        "mrkdwn_in": ["text"],
+                    }
+                ],
+                "blocks": [
+                    {
+                        "type": "rich_text",
+                        "elements": [
+                            {
+                                "type": "rich_text_section",
+                                "elements": [
+                                    {
+                                        "type": "text",
+                                        "text": "Hello there, I am a basic rich text block!",
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ],
+                "type": "message",
+                "ts": "1811032565.114789",
+                "bot_id": "B06NWMNUQ3W",
+                "app_id": "A3G4A68V9",
+                "channel_name": "general",
+            },
         ]
 
         slack_recipient_name_to_zulip_recipient_id = {
@@ -2123,7 +2160,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 3)
+        self.assert_length(zerver_message, 4)
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
@@ -2157,6 +2194,18 @@ by Pieter
 """.strip()
         self.assertEqual(zerver_message[2]["content"], expected_message_block_2)
         self.assertEqual(zerver_message[2]["sender"], slack_user_id_to_zulip_user_id["B06NWMNUQ3W"])
+
+        expected_message_block_3 = """
+Hello there, I am a basic rich text block!
+## [Buy Ingredients!](https://app.clickup.com/t/86cuy8e4y?comment=90160026391938)
+
+New comment:  where can I buy it?
+
+by Pieter
+*[Task one](https://app.clickup.com/25567147/v/s/43687023) &gt; [dsad](https://app.clickup.com/25567147/v/li/901601846060)*
+""".strip()
+        self.assertEqual(zerver_message[3]["content"], expected_message_block_3)
+        self.assertEqual(zerver_message[3]["sender"], slack_user_id_to_zulip_user_id["B06NWMNUQ3W"])
 
     @mock.patch("zerver.data_import.slack.channel_message_to_zerver_message")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")

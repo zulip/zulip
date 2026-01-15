@@ -466,10 +466,16 @@ def replace_links(text: str) -> str:
 
 def process_slack_block_and_attachment(message: WildValue) -> str:
     pieces: list[str] = []
+    raw_text = message["text"].tame(check_string)
 
     if message.get("blocks"):
         pieces += map(render_block, message["blocks"])
 
+    if set(pieces) in ({""}, set()):
+        pieces.append(raw_text)
+
+    # The attachments are a lot safer to handle than the blocks since they typically
+    # don't have a corresponding raw value in message["text"] and only add to it.
     if message.get("attachments"):
         pieces += map(render_attachment, message["attachments"])
     return "\n".join(piece.strip() for piece in pieces if piece.strip() != "")
