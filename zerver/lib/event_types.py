@@ -522,6 +522,7 @@ class RealmLinkifier(BaseModel):
     pattern: str
     url_template: str
     id: int
+    example_input: str | None = None
 
 
 class EventRealmLinkifiers(BaseEvent):

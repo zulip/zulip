@@ -1911,13 +1911,22 @@ class MarkdownLinkifierTest(ZulipTestCase):
         ):
             self.assertEqual(linkifiers_for_realm(realm.id), [])
 
-        linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_template="whatever")
+        linkifier = RealmFilter(
+            realm=realm, pattern=r"whatever", url_template="whatever", example_input="whatever"
+        )
         linkifier.save()
 
         # cache gets properly invalidated by virtue of our save
         self.assertEqual(
             linkifiers_for_realm(realm.id),
-            [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
+            [
+                {
+                    "id": linkifier.id,
+                    "pattern": "whatever",
+                    "url_template": "whatever",
+                    "example_input": "whatever",
+                }
+            ],
         )
 
         # And the in-process cache works again.
@@ -1927,7 +1936,14 @@ class MarkdownLinkifierTest(ZulipTestCase):
         ):
             self.assertEqual(
                 linkifiers_for_realm(realm.id),
-                [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
+                [
+                    {
+                        "id": linkifier.id,
+                        "pattern": "whatever",
+                        "url_template": "whatever",
+                        "example_input": "whatever",
+                    }
+                ],
             )
 
 
