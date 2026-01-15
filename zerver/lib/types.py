@@ -77,6 +77,7 @@ class LinkifierDict(TypedDict):
     pattern: str
     url_template: str
     id: int
+    example_input: str | None
 
 
 class Unset:

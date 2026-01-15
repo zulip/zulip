@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.types import LinkifierDict
 from zerver.models import Realm, RealmAuditLog, RealmFilter, UserProfile
-from zerver.models.linkifiers import flush_linkifiers, linkifiers_for_realm
+from zerver.models.linkifiers import flush_linkifiers, linkifiers_for_realm, normalize_optional_text
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
@@ -26,19 +26,30 @@ def do_add_linkifier(
     realm: Realm,
     pattern: str,
     url_template: str,
+    example_input: str | None = None,
     *,
     acting_user: UserProfile | None,
 ) -> int:
     pattern = pattern.strip()
     url_template = url_template.strip()
+    example_input = normalize_optional_text(example_input)
     # This makes sure that the new linkifier is always ordered the last modulo
     # the rare race condition.
     max_order = RealmFilter.objects.aggregate(Max("order"))["order__max"]
     if max_order is None:
-        linkifier = RealmFilter(realm=realm, pattern=pattern, url_template=url_template)
+        linkifier = RealmFilter(
+            realm=realm,
+            pattern=pattern,
+            url_template=url_template,
+            example_input=example_input,
+        )
     else:
         linkifier = RealmFilter(
-            realm=realm, pattern=pattern, url_template=url_template, order=max_order + 1
+            realm=realm,
+            pattern=pattern,
+            url_template=url_template,
+            example_input=example_input,
+            order=max_order + 1,
         )
     linkifier.full_clean()
     linkifier.save()
@@ -55,6 +66,7 @@ def do_add_linkifier(
                 pattern=pattern,
                 url_template=url_template,
                 id=linkifier.id,
+                example_input=example_input,
             ),
         },
     )
@@ -92,6 +104,7 @@ def do_remove_linkifier(
             "removed_linkifier": {
                 "pattern": pattern,
                 "url_template": url_template,
+                "example_input": realm_linkifier.example_input,
             },
         },
     )
@@ -104,6 +117,7 @@ def do_update_linkifier(
     id: int,
     pattern: str,
     url_template: str,
+    example_input: str | None = None,
     *,
     acting_user: UserProfile | None,
 ) -> None:
@@ -112,8 +126,16 @@ def do_update_linkifier(
     linkifier = RealmFilter.objects.get(realm=realm, id=id)
     linkifier.pattern = pattern
     linkifier.url_template = url_template
+    linkifier.example_input = normalize_optional_text(example_input)
+
+    # Validation of fields is done by full_clean.
     linkifier.full_clean()
-    linkifier.save(update_fields=["pattern", "url_template"])
+    update_fields = ["pattern", "url_template"]
+    # None means unchanged. Empty string means null, normalize_optional_text
+    # takes care of converting empty string to None.
+    if example_input is not None:
+        update_fields.append("example_input")
+    linkifier.save(update_fields=update_fields)
 
     realm_linkifiers = linkifiers_for_realm(realm.id)
     RealmAuditLog.objects.create(
@@ -127,6 +149,7 @@ def do_update_linkifier(
                 pattern=pattern,
                 url_template=url_template,
                 id=linkifier.id,
+                example_input=linkifier.example_input,
             ),
         },
     )

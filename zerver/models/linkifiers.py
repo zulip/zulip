@@ -17,6 +17,13 @@ from zerver.lib.types import LinkifierDict
 from zerver.models.realms import Realm
 
 
+def normalize_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    value = value.strip()
+    return value or None
+
+
 def filter_pattern_validator(value: str) -> "re2._Regexp[str]":
     try:
         # Do not write errors to stderr (this still raises exceptions)
@@ -51,6 +58,7 @@ class RealmFilter(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     pattern = models.TextField()
     url_template = models.TextField(validators=[url_template_validator])
+    example_input = models.TextField(blank=True, null=True)
     # Linkifiers are applied in a message/topic in order; the processing order
     # is important when there are overlapping patterns.
     order = models.IntegerField(default=0)
@@ -118,6 +126,7 @@ def linkifiers_for_realm(realm_id: int) -> list[LinkifierDict]:
             pattern=linkifier.pattern,
             url_template=linkifier.url_template,
             id=linkifier.id,
+            example_input=linkifier.example_input,
         )
         for linkifier in RealmFilter.objects.filter(realm_id=realm_id).order_by("order")
     ]

@@ -3906,6 +3906,14 @@ paths:
                                         type: integer
                                         description: |
                                           The ID of the linkifier.
+                                      example_input:
+                                        type: string
+                                        nullable: true
+                                        description: |
+                                          An example input string that matches the linkifier's pattern.
+                                          This is required for reverse linkifiers.
+
+                                          **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
                               example:
                                 {
                                   "type": "realm_linkifiers",
@@ -3915,6 +3923,7 @@ paths:
                                         "pattern": "#(?P<id>[123])",
                                         "url_template": "https://realm.com/my_realm_filter/{id}",
                                         "id": 1,
+                                        "example_input": "#1234",
                                       },
                                     ],
                                   "id": 0,
@@ -15301,6 +15310,14 @@ paths:
                               type: integer
                               description: |
                                 The ID of the linkifier.
+                            example_input:
+                              type: string
+                              nullable: true
+                              description: |
+                                An example input string that matches the linkifier's pattern.
+                                This is required for reverse linkifiers.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
                     example:
                       {
                         "msg": "",
@@ -15310,6 +15327,7 @@ paths:
                               "pattern": "#(?P<id>[0-9]+)",
                               "url_template": "https://github.com/zulip/zulip/issues/{id}",
                               "id": 1,
+                              "example_input": "#1234",
                             },
                           ],
                         "result": "success",
@@ -15369,6 +15387,15 @@ paths:
                   $ref: "#/components/schemas/LinkifierPattern"
                 url_template:
                   $ref: "#/components/schemas/LinkifierURLTemplate"
+                example_input:
+                  type: string
+                  nullable: true
+                  example: "#1234"
+                  description: |
+                    An example input string that matches the linkifier's pattern.
+                    This is required for reverse linkifiers.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
               required:
                 - pattern
                 - url_template
@@ -15441,6 +15468,16 @@ paths:
                   $ref: "#/components/schemas/LinkifierPattern"
                 url_template:
                   $ref: "#/components/schemas/LinkifierURLTemplate"
+                example_input:
+                  type: string
+                  nullable: true
+                  example: "#1234"
+                  description: |
+                    An example input string that matches the linkifier's pattern.
+                    This is required for reverse linkifiers. Passing an empty string
+                    will set this field back to null.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
               required:
                 - pattern
                 - url_template
