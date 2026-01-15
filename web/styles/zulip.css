@@ -241,7 +241,6 @@ p.n-margin {
     display: none;
 }
 
-.alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
     width: 1.7143em; /* 24px at 14px/em */

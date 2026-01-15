@@ -4,7 +4,7 @@ import * as tippy from "tippy.js";
 import {$t} from "./i18n.ts";
 import * as util from "./util.ts";
 
-export const status_classes = "alert-error alert-success alert-info alert-warning alert-loading";
+export const status_classes = "alert-error alert-success alert-info alert-warning";
 
 export function phrase_match(query: string, phrase: string): boolean {
     // match "tes" to "test" and "stream test" but not "hostess"
