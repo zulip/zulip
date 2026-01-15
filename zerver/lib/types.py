@@ -78,6 +78,7 @@ class LinkifierDict(TypedDict):
     url_template: str
     id: int
     example_input: str | None
+    reverse_template: str | None
 
 
 class Unset:

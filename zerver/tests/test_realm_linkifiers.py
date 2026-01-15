@@ -63,18 +63,29 @@ class RealmFilterTest(ZulipTestCase):
         data["pattern"] = r"ZUL-(?P<id>\d+)"
         data["url_template"] = "https://realm.com/my_realm_filter/{id}"
         data["example_input"] = "no match"
+        data["reverse_template"] = "ZUL-{id}"
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_error(result, "Example input does not match the linkifier pattern.")
 
         data = {
             "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+            "reverse_template": "ZUL-{id}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "example_input is required when reverse_template is set.")
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
             "url_template": "https://realm.com/my_realm_filter/#hashtag/{id}",
             "example_input": "ZUL-15",
+            "reverse_template": "ZUL-{id}",
         }
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data["pattern"], "ZUL-15"))
         data.pop("example_input")
+        data.pop("reverse_template")
 
         data["pattern"] = r"ZUL2-(?P<id>\d+)"
         data["url_template"] = "https://realm.com/my_realm_filter/?value={id}"

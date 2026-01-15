@@ -1109,6 +1109,7 @@ class TestRealmAuditLog(ZulipTestCase):
             url_template="https://realm.com/my_realm_filter/{id}",
             id=linkifier_id,
             example_input="#1",
+            reverse_template=None,
         )
         expected_extra_data = {
             "realm_linkifiers": [*initial_linkifiers, added_linkfier],
@@ -1139,6 +1140,7 @@ class TestRealmAuditLog(ZulipTestCase):
             url_template="https://realm.com/my_realm_filter/issues/{id}",
             id=linkifier_id,
             example_input="#15",
+            reverse_template=None,
         )
         expected_extra_data = {
             "realm_linkifiers": [*initial_linkifiers, changed_linkifier],
@@ -1165,6 +1167,7 @@ class TestRealmAuditLog(ZulipTestCase):
             "pattern": "#(?P<id>[0-9]+)",
             "url_template": "https://realm.com/my_realm_filter/issues/{id}",
             "example_input": "#15",
+            "reverse_template": None,
         }
         expected_extra_data = {
             "realm_linkifiers": initial_linkifiers,

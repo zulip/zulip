@@ -27,12 +27,14 @@ def do_add_linkifier(
     pattern: str,
     url_template: str,
     example_input: str | None = None,
+    reverse_template: str | None = None,
     *,
     acting_user: UserProfile | None,
 ) -> int:
     pattern = pattern.strip()
     url_template = url_template.strip()
     example_input = normalize_optional_text(example_input)
+    reverse_template = normalize_optional_text(reverse_template)
     # This makes sure that the new linkifier is always ordered the last modulo
     # the rare race condition.
     max_order = RealmFilter.objects.aggregate(Max("order"))["order__max"]
@@ -42,6 +44,7 @@ def do_add_linkifier(
             pattern=pattern,
             url_template=url_template,
             example_input=example_input,
+            reverse_template=reverse_template,
         )
     else:
         linkifier = RealmFilter(
@@ -49,6 +52,7 @@ def do_add_linkifier(
             pattern=pattern,
             url_template=url_template,
             example_input=example_input,
+            reverse_template=reverse_template,
             order=max_order + 1,
         )
     linkifier.full_clean()
@@ -67,6 +71,7 @@ def do_add_linkifier(
                 url_template=url_template,
                 id=linkifier.id,
                 example_input=example_input,
+                reverse_template=reverse_template,
             ),
         },
     )
@@ -105,6 +110,7 @@ def do_remove_linkifier(
                 "pattern": pattern,
                 "url_template": url_template,
                 "example_input": realm_linkifier.example_input,
+                "reverse_template": realm_linkifier.reverse_template,
             },
         },
     )
@@ -118,6 +124,7 @@ def do_update_linkifier(
     pattern: str,
     url_template: str,
     example_input: str | None = None,
+    reverse_template: str | None = None,
     *,
     acting_user: UserProfile | None,
 ) -> None:
@@ -127,6 +134,7 @@ def do_update_linkifier(
     linkifier.pattern = pattern
     linkifier.url_template = url_template
     linkifier.example_input = normalize_optional_text(example_input)
+    linkifier.reverse_template = normalize_optional_text(reverse_template)
 
     # Validation of fields is done by full_clean.
     linkifier.full_clean()
@@ -135,6 +143,8 @@ def do_update_linkifier(
     # takes care of converting empty string to None.
     if example_input is not None:
         update_fields.append("example_input")
+    if reverse_template is not None:
+        update_fields.append("reverse_template")
     linkifier.save(update_fields=update_fields)
 
     realm_linkifiers = linkifiers_for_realm(realm.id)
@@ -150,6 +160,7 @@ def do_update_linkifier(
                 url_template=url_template,
                 id=linkifier.id,
                 example_input=linkifier.example_input,
+                reverse_template=linkifier.reverse_template,
             ),
         },
     )

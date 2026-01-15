@@ -3914,6 +3914,17 @@ paths:
                                           This is required for reverse linkifiers.
 
                                           **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
+                                      reverse_template:
+                                        type: string
+                                        nullable: true
+                                        description: |
+                                          A simple template using `{variable}` for variables that can
+                                          be used to generate the Markdown linkifier syntax, given a
+                                          URL matching the URL template.
+
+                                          `{{ "{{/}}" }}` can be used for literal `{/}` characters.
+
+                                          **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
                               example:
                                 {
                                   "type": "realm_linkifiers",
@@ -3924,6 +3935,7 @@ paths:
                                         "url_template": "https://realm.com/my_realm_filter/{id}",
                                         "id": 1,
                                         "example_input": "#1234",
+                                        "reverse_template": "#{id}",
                                       },
                                     ],
                                   "id": 0,
@@ -15318,6 +15330,17 @@ paths:
                                 This is required for reverse linkifiers.
 
                                 **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
+                            reverse_template:
+                              type: string
+                              nullable: true
+                              description: |
+                                A simple template using `{variable}` for variables that can
+                                be used to generate the Markdown linkifier syntax, given a
+                                URL matching the URL template.
+
+                                `{{ "{{/}}" }}` can be used for literal `{/}` characters.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
                     example:
                       {
                         "msg": "",
@@ -15328,6 +15351,7 @@ paths:
                               "url_template": "https://github.com/zulip/zulip/issues/{id}",
                               "id": 1,
                               "example_input": "#1234",
+                              "reverse_template": "#{id}",
                             },
                           ],
                         "result": "success",
@@ -15394,6 +15418,22 @@ paths:
                   description: |
                     An example input string that matches the linkifier's pattern.
                     This is required for reverse linkifiers.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
+                reverse_template:
+                  type: string
+                  nullable: true
+                  example: "#{id}"
+                  description: |
+                    A simple template using `{variable}` for variables that can
+                    be used to generate the Markdown linkifier syntax, given a
+                    URL matching the URL template.
+
+                    `{{ "{{/}}" }}` can be used for literal `{/}` characters.
+
+                    Server verifies that variables extracted from example_input using
+                    url_pattern when passed to reverse_template returns example_input
+                    back to us.
 
                     **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
               required:
@@ -15476,6 +15516,23 @@ paths:
                     An example input string that matches the linkifier's pattern.
                     This is required for reverse linkifiers. Passing an empty string
                     will set this field back to null.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
+                reverse_template:
+                  type: string
+                  nullable: true
+                  example: "#{id}"
+                  description: |
+                    A simple template using `{variable}` for variables that can
+                    be used to generate the Markdown linkifier syntax, given a
+                    URL matching the URL template. Passing an empty string
+                    will set this field back to null.
+
+                    Server verifies that variables extracted from example_input using
+                    url_pattern when passed to reverse_template returns example_input
+                    back to us.
+
+                    `{{ "{{/}}" }}` can be used for literal `{/}` characters.
 
                     **Changes**: New in Zulip 12.0 (feature level ZF-9993b5).
               required:

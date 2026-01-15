@@ -9,6 +9,7 @@ from typing_extensions import override
 
 from zerver.lib import cache
 from zerver.lib.cache import cache_delete, cache_with_key
+from zerver.lib.exceptions import MissingDependentParameterError
 from zerver.lib.per_request_cache import (
     flush_per_request_cache,
     return_same_value_during_entire_request,
@@ -59,6 +60,7 @@ class RealmFilter(models.Model):
     pattern = models.TextField()
     url_template = models.TextField(validators=[url_template_validator])
     example_input = models.TextField(blank=True, null=True)
+    reverse_template = models.TextField(blank=True, null=True)
     # Linkifiers are applied in a message/topic in order; the processing order
     # is important when there are overlapping patterns.
     order = models.IntegerField(default=0)
@@ -82,6 +84,9 @@ class RealmFilter(models.Model):
         # Extract variables present in the pattern
         pattern = filter_pattern_validator(self.pattern)
         group_set = set(pattern.groupindex.keys())
+
+        if self.reverse_template is not None and self.example_input is None:
+            raise MissingDependentParameterError("example_input", "reverse_template")
 
         if self.example_input is not None:
             example_input = self.example_input.strip()
@@ -132,6 +137,7 @@ def linkifiers_for_realm(realm_id: int) -> list[LinkifierDict]:
             url_template=linkifier.url_template,
             id=linkifier.id,
             example_input=linkifier.example_input,
+            reverse_template=linkifier.reverse_template,
         )
         for linkifier in RealmFilter.objects.filter(realm_id=realm_id).order_by("order")
     ]
