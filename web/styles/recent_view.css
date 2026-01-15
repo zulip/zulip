@@ -414,10 +414,14 @@
         line-height: 1.25em; /* 20px at 16px/1em */
         z-index: 1;
 
+        .recent-view-header-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
         .table-sortable-arrow {
-            /* Sub alignment works perfectly in this context,
-               where the table header is a text node. */
-            vertical-align: sub;
+            align-self: center;
+            font-size: 1.0667em; /* 16px at 15px/1em */
             transform: rotate(180deg);
             opacity: 0;
             transition: opacity 100ms ease-out;
@@ -463,11 +467,6 @@
         width: 7%;
         /* 64px at 20px/1em */
         min-width: 3.2em;
-
-        .zulip-icon-unread {
-            position: relative;
-            top: 3px;
-        }
     }
 
     .recent_topic_users,
