@@ -46,6 +46,16 @@
                     <input type="text" id="linkifier_template" class="settings_text_input" name="url_template" placeholder="https://github.com/zulip/zulip/issues/{id}" />
                     <div class="alert" id="admin-linkifier-template-status"></div>
                 </div>
+                <div class="input-group">
+                    <label for="linkifier_example_input">{{t "Example input" }}</label>
+                    <input type="text" id="linkifier_example_input" class="settings_text_input" name="example_input" placeholder="#D1234" />
+                    <div class="alert" id="admin-linkifier-example-status"></div>
+                </div>
+                <div class="input-group">
+                    <label for="linkifier_reverse_template">{{t "Reverse template" }}</label>
+                    <input type="text" id="linkifier_reverse_template" class="settings_text_input" name="reverse_template" placeholder="#D{id}" />
+                    <div class="alert" id="admin-linkifier-reverse-status"></div>
+                </div>
                 {{> ../components/action_button
                   label=(t 'Add linkifier')
                   variant="subtle"
