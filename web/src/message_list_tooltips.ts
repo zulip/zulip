@@ -476,4 +476,20 @@ export function initialize(): void {
             instance.destroy();
         },
     });
+
+    // Initialize tooltips for external links to show URL with no delay.
+    message_list_tooltip(".rendered_markdown a[data-url-tooltip]", {
+        delay: [0, 0], 
+        onShow(instance) {
+            const url_tooltip_content = $(instance.reference).attr("data-url-tooltip");
+            if (!url_tooltip_content) {
+                return false;
+            }
+            instance.setContent(url_tooltip_content);
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }
