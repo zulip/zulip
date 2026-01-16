@@ -14,8 +14,8 @@ step is described in detail below, with links to additional resources:
 1. [Organize your proposed changes](#organize-your-proposed-changes) into a
    series of commits that tell the story of how the codebase will change.
 1. [Explain your changes](#explain-your-changes) in the description for your
-   pull request, including [screenshots](#demonstrating-visual-changes) for
-   visual changes.
+   pull request, including [screenshots](#presenting-screenshots-on-your-pull-request)
+   for visual changes.
 1. Carefully [review your own work](#review-your-own-work).
 1. [Submit your pull request](#submit-your-pull-request-for-review) for review.
 
@@ -83,8 +83,8 @@ description for your pull request, you will:
   The review process will go a lot more smoothly if points of uncertainty are
   explicitly laid out.
 - Include screenshots for all visual changes, so that they can be reviewed
-  without running your code. See [below](#demonstrating-visual-changes) for
-  detailed instructions.
+  without running your code. See [below](#presenting-screenshots-on-your-pull-request)
+  for detailed instructions.
 
 If you have a question about a specific part of your code that you expect to be
 resolved during the review process, put it in a PR comment attached to a
@@ -156,7 +156,7 @@ review:
 
 [github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
 
-## Demonstrating visual changes
+## Presenting screenshots on your pull request
 
 - For [screenshots or screencasts][screenshots-gifs] of changes,
   putting them in details/summary tags reduces visual clutter
