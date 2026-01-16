@@ -450,6 +450,12 @@
         }
     }
 
+    &:has(.left_sidebar_menu_icon_visible) {
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        background-color: var(--color-background-hover-narrow-filter);
+        border-radius: 4px;
+    }
+
     .stream-list-section-toggle {
         color: var(--color-text-sidebar-heading);
         opacity: var(--opacity-sidebar-heading-icon);
@@ -1937,6 +1943,10 @@ li.active-sub-filter {
     grid-area: ending-anchor-element;
 }
 
+.stream-list-subsection-header .sidebar-menu-icon {
+    grid-area: three-dot-placeholder;
+}
+
 .stream-name {
     white-space: nowrap;
     overflow-x: hidden;
@@ -1969,7 +1979,8 @@ li.active-sub-filter {
     positioning.  We should fix that.
 */
 .bottom_left_row .sidebar-menu-icon,
-.top_left_row .sidebar-menu-icon {
+.top_left_row .sidebar-menu-icon,
+.stream-list-section-container .sidebar-menu-icon {
     display: none;
     cursor: pointer;
     /* Use a flex container to handle
@@ -2032,6 +2043,7 @@ li.active-sub-filter {
 #stream_filters li:hover .stream-sidebar-menu-icon,
 .top_left_row:hover .sidebar-menu-icon,
 .bottom_left_row:hover .sidebar-menu-icon,
+#stream_filters .stream-list-subsection-header:hover .sidebar-menu-icon,
 .app-main .column-left .left-sidebar .left_sidebar_menu_icon_visible {
     /* We push against `display: none` with
        `display: flex` because the sidebar vdots
