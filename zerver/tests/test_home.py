@@ -157,6 +157,7 @@ class HomeTest(ZulipTestCase):
         "realm_create_public_stream_policy",
         "realm_create_web_public_stream_policy",
         "realm_date_created",
+        "realm_default_avatar_source",
         "realm_default_code_block_language",
         "realm_default_external_accounts",
         "realm_default_language",

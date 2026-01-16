@@ -709,10 +709,22 @@ class Realm(models.Model):
     # Whether to notify client when a DM has a guest recipient.
     enable_guest_user_dm_warning = models.BooleanField(default=True)
 
+    # Avatar source for new users
+    AVATAR_FROM_GRAVATAR = "G"
+    AVATAR_FROM_JDENTICON = "J"
+    AVATAR_SOURCES = (
+        (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
+        (AVATAR_FROM_JDENTICON, "Generated using Jdenticon"),
+    )
+    default_avatar_source = models.CharField(
+        default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1
+    )
+
     # Define the types of the various automatically managed properties
     property_types: dict[str, type | UnionType] = dict(
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
+        default_avatar_source=str,
         default_code_block_language=str,
         default_language=str,
         description=str,
