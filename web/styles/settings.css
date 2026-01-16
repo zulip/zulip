@@ -1291,6 +1291,35 @@ label.preferences-radio-choice-label {
     }
 }
 
+.default_avatar_source_values {
+    width: 25em; /* 400px / 16px em */
+
+    .preferences-radio-choice-label {
+        align-items: center;
+
+        .radio-choice-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="radio"] {
+            top: 0;
+            margin-right: 0.5em; /* 8px / 16px em */
+        }
+    }
+
+    .right {
+        display: flex;
+        gap: 0.5em; /* 8px / 16px em */
+    }
+
+    .avatar {
+        height: 2.625em; /* 42px / 16px em */
+        width: 2.625em; /* 42px / 16px em */
+        border-radius: 0.25em; /* 4px / 16px em */
+    }
+}
+
 .user_list_style_values {
     max-width: 25em; /* 350px / 14px em */
 
