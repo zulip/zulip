@@ -162,7 +162,7 @@ from zerver.actions.users import (
     do_deactivate_user,
     do_update_outgoing_webhook_service,
 )
-from zerver.actions.video_calls import do_set_zoom_token
+from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.lib.drafts import DraftData, do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,
@@ -4367,11 +4367,11 @@ class NormalActionsTest(BaseAction):
 
     def test_has_zoom_token(self) -> None:
         with self.verify_action() as events:
-            do_set_zoom_token(self.user_profile, {"access_token": "token"})
+            do_set_video_call_provider_token(self.user_profile, "zoom", {"access_token": "token"})
         check_has_zoom_token("events[0]", events[0], value=True)
 
         with self.verify_action() as events:
-            do_set_zoom_token(self.user_profile, None)
+            do_set_video_call_provider_token(self.user_profile, "zoom", None)
         check_has_zoom_token("events[0]", events[0], value=False)
 
     def test_restart_event(self) -> None:

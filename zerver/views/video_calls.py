@@ -25,7 +25,7 @@ from requests import Response
 from requests_oauthlib import OAuth2Session
 from typing_extensions import TypedDict, override
 
-from zerver.actions.video_calls import do_set_zoom_token
+from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.decorator import zulip_login_required
 from zerver.lib.cache import (
     cache_with_key,
@@ -279,7 +279,7 @@ class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
 
     @override
     def update_token(self, user: UserProfile, token: dict[str, object] | None) -> None:
-        do_set_zoom_token(user, token)
+        do_set_video_call_provider_token(user, self.token_key_name, token)
 
     @override
     def get_meeting_details(self, request: HttpRequest, response: Response) -> HttpResponse:
