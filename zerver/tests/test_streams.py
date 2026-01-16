@@ -1,8 +1,10 @@
 import json
 
+from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.lib.exceptions import ChannelExistsError
 from zerver.lib.streams import check_stream_name_available
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.user_groups import UserGroupMembersData
 
 
 class CheckStreamNameAvailableTests(ZulipTestCase):
@@ -129,6 +131,117 @@ class StreamRenamePermissionTests(ZulipTestCase):
         self.assertEqual(response.status_code, 409)
         data = response.json()
         self.assertTrue(data.get("can_view_channel"))
+
+    def test_rename_to_public_as_channel_admin_not_realm_admin(self) -> None:
+        """Test channel admin (non-realm-admin) renaming to existing public stream.
+
+        This covers line 484-485: elif existing_stream.is_public(): can_view = True
+        """
+        from zerver.models import UserProfile
+
+        # Use a regular member (not realm admin)
+        user = self.example_user("hamlet")
+        self.set_user_role(user, UserProfile.ROLE_MEMBER)
+        self.login_user(user)
+        realm = user.realm
+
+        # Create the stream that user will try to rename
+        stream1 = self.make_stream("my_stream", realm=realm)
+        self.subscribe(user, "my_stream")
+
+        # Create a public stream that already exists with the target name
+        self.make_stream("existing_public", realm=realm, invite_only=False)
+
+        # Make user a channel admin of stream1 (but not realm admin)
+        user_group_data = UserGroupMembersData(direct_members=[user.id], direct_subgroups=[])
+        do_change_stream_group_based_setting(
+            stream1, "can_administer_channel_group", user_group_data, acting_user=user
+        )
+
+        # Now user (non-realm-admin but channel admin) tries to rename to existing public stream
+        response = self.client_patch(
+            f"/json/streams/{stream1.id}",
+            {"new_name": "existing_public"},
+        )
+        self.assertEqual(response.status_code, 409)
+        data = response.json()
+        # User can view public stream (hits line 484-485: is_public() check)
+        self.assertTrue(data.get("can_view_channel"))
+
+    def test_rename_to_private_with_sub_as_channel_admin_not_realm_admin(self) -> None:
+        """Test channel admin (non-realm-admin) renaming to private stream they're subscribed to.
+
+        This covers line 487: can_view = Subscription.objects.filter().exists()
+        """
+        from zerver.models import UserProfile
+
+        # Use a regular member (not realm admin)
+        user = self.example_user("hamlet")
+        self.set_user_role(user, UserProfile.ROLE_MEMBER)
+        self.login_user(user)
+        realm = user.realm
+
+        # Create the stream that user will try to rename
+        stream1 = self.make_stream("my_stream", realm=realm)
+        self.subscribe(user, "my_stream")
+
+        # Create a private stream and subscribe the user
+        self.make_stream("existing_private", realm=realm, invite_only=True)
+        self.subscribe(user, "existing_private")
+
+        # Make user a channel admin of stream1 (but not realm admin)
+        user_group_data = UserGroupMembersData(direct_members=[user.id], direct_subgroups=[])
+        do_change_stream_group_based_setting(
+            stream1, "can_administer_channel_group", user_group_data, acting_user=user
+        )
+
+        # Now user (non-realm-admin but channel admin) tries to rename
+        response = self.client_patch(
+            f"/json/streams/{stream1.id}",
+            {"new_name": "existing_private"},
+        )
+        self.assertEqual(response.status_code, 409)
+        data = response.json()
+        # User is subscribed, so can view (hits line 487: Subscription check returns True)
+        self.assertTrue(data.get("can_view_channel"))
+
+    def test_rename_to_private_without_sub_as_channel_admin_not_realm_admin(self) -> None:
+        """Test channel admin (non-realm-admin) renaming to private stream not subscribed.
+
+        This covers line 487: can_view = Subscription.objects.filter().exists() returns False
+        """
+        from zerver.models import UserProfile
+
+        # Use a regular member (not realm admin)
+        user = self.example_user("hamlet")
+        other_user = self.example_user("othello")
+        self.set_user_role(user, UserProfile.ROLE_MEMBER)
+        self.login_user(user)
+        realm = user.realm
+
+        # Create the stream that user will try to rename
+        stream1 = self.make_stream("my_stream", realm=realm)
+        self.subscribe(user, "my_stream")
+
+        # Create a private stream and subscribe only other_user
+        self.make_stream("existing_private", realm=realm, invite_only=True)
+        self.subscribe(other_user, "existing_private")
+
+        # Make user a channel admin of stream1 (but not realm admin)
+        user_group_data = UserGroupMembersData(direct_members=[user.id], direct_subgroups=[])
+        do_change_stream_group_based_setting(
+            stream1, "can_administer_channel_group", user_group_data, acting_user=user
+        )
+
+        # Now user (non-realm-admin but channel admin) tries to rename
+        response = self.client_patch(
+            f"/json/streams/{stream1.id}",
+            {"new_name": "existing_private"},
+        )
+        self.assertEqual(response.status_code, 409)
+        data = response.json()
+        # User is NOT subscribed, so cannot view (hits line 487: returns False)
+        self.assertFalse(data.get("can_view_channel"))
 
     def test_rename_stream_to_public_as_non_admin(self) -> None:
         """Test non-admin attempting to create stream with public channel name."""
