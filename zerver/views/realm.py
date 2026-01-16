@@ -92,6 +92,9 @@ def check_jitsi_url(value: str) -> str:
         raise JsonableError(_("{var_name} is not an allowed_type").format(var_name=var_name))
 
 
+DEFAULT_AVATAR_SOURCES = [key for key, _ in Realm.AVATAR_SOURCES]
+
+
 @require_realm_admin
 @typed_endpoint
 def update_realm(
@@ -123,6 +126,8 @@ def update_realm(
     can_set_topics_policy_group: Json[GroupSettingChangeRequest] | None = None,
     can_summarize_topics_group: Json[GroupSettingChangeRequest] | None = None,
     create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,
+    default_avatar_source: Annotated[str, check_string_in_validator(DEFAULT_AVATAR_SOURCES)]
+    | None = None,
     default_code_block_language: str | None = None,
     default_language: str | None = None,
     description: Annotated[
