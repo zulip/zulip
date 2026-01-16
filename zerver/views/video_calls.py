@@ -150,13 +150,11 @@ class OAuthVideoCallProvider(ABC):
     create_meeting_url: str = NotImplemented
     token_key_name: str = NotImplemented
 
-    @abstractmethod
     def get_token(self, user: UserProfile) -> object | None:
-        pass
+        return user.third_party_api_state.get(self.token_key_name)
 
-    @abstractmethod
     def update_token(self, user: UserProfile, token: dict[str, object] | None) -> None:
-        pass
+        do_set_video_call_provider_token(user, self.token_key_name, token)
 
     @abstractmethod
     def get_meeting_details(self, request: HttpRequest, response: Response) -> HttpResponse:
@@ -272,14 +270,6 @@ class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
         self.token_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
         self.auto_refresh_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
         self.create_meeting_url = urljoin(settings.VIDEO_ZOOM_API_URL, "/v2/users/me/meetings")
-
-    @override
-    def get_token(self, user: UserProfile) -> object | None:
-        return user.third_party_api_state.get(self.token_key_name)
-
-    @override
-    def update_token(self, user: UserProfile, token: dict[str, object] | None) -> None:
-        do_set_video_call_provider_token(user, self.token_key_name, token)
 
     @override
     def get_meeting_details(self, request: HttpRequest, response: Response) -> HttpResponse:
