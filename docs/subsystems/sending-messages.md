@@ -144,17 +144,17 @@ messages.
   visually).
 - The `POST /messages` API request to the server to send the message
   is passed two special parameters that clients not implementing local
-  echo don't use: `queue_id` and `local_id`. The `queue_id` is the ID
+  echo don't use: `queue_id` and `local_message_id`. The `queue_id` is the ID
   of the client's event queue; here, it is used just as a unique
   identifier for the specific client (e.g., a browser tab) that sent
-  the message. And the `local_id` is, by the construction above, a
+  the message. And the `local_message_id` is, by the construction above, a
   unique value within that namespace identifying the message.
 - The `do_send_messages` backend code path includes the `queue_id` and
-  `local_id` in the data it passes to the
+  `local_message_id` in the data it passes to the
   [events system](events-system.md). The events
   system will extend the `message` event dictionary it delivers to
   the client containing the `queue_id` with `local_message_id` field,
-  containing the `local_id` that the relevant client used when sending
+  containing the `local_message_id` that the relevant client used when sending
   the message. This allows the client to know that the `message`
   event it is receiving is the same message it itself had sent.
 - Using that information, rather than adding the "new message" to the
@@ -169,7 +169,7 @@ messages.
 Zulip also supports local echo in the message editing code path for
 edits to just the content of a message. The approach is analogous
 (using `markdown.contains_backend_only_syntax`, etc.), except we
-don't need any of the `local_id` tracking logic, because the message
+don't need any of the `local_message_id` tracking logic, because the message
 already has a permanent message id; as a result, the whole
 implementation was under 150 lines of code.
 
