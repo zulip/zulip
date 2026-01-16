@@ -1,8 +1,10 @@
 <div class="left-sidebar" id="left-sidebar" role="navigation">
     <div id="left-sidebar-search" class="zoom-in-hide">
         <div class="input-wrapper-for-tooltip tippy-zulip-delayed-tooltip" data-tooltip-template-id="filter-left-sidebar-tooltip-template">
-            {{#> components/input_wrapper input_type="filter-input" custom_classes="left-sidebar-search-section" icon="search" input_button_icon="close"}}
-                <input type="text" class="input-element left-sidebar-search-input home-page-input" autocomplete="off" placeholder="{{t 'Filter left sidebar' }}" />
+            {{#> components/input_wrapper input_type="filter-input" custom_classes="left-sidebar-search-section has-input-pills" icon="search" input_button_icon="close"}}
+                <div class="input-element left-sidebar-search-input home-page-input pill-container" id="left-sidebar-filter-input">
+                    <div class="input" contenteditable="true" id="left-sidebar-filter-query" data-placeholder="{{t 'Filter left sidebar' }}"></div>
+                </div>
             {{/components/input_wrapper}}
         </div>
         <span id="add_streams_tooltip" class="add-stream-icon-container hidden-for-spectators">

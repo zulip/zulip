@@ -120,6 +120,7 @@ type StreamListSortResult = {
 export function sort_groups(
     all_subscribed_stream_ids: number[],
     search_term: string,
+    topics_state = "",
 ): StreamListSortResult {
     const pinned_section: StreamListSection = {
         id: "pinned-streams",
@@ -170,7 +171,7 @@ export function sort_groups(
         // term, or a muted topic matches the current topic, we include
         // the channel in the list of matches.
         const topics = topic_list_data.get_filtered_topic_names(current_channel_id, (topic_names) =>
-            topic_list_data.filter_topics_by_search_term(topic_names, search_term),
+            topic_list_data.filter_topics_by_search_term(topic_names, search_term, topics_state),
         );
         if (
             topics.some(
