@@ -3907,6 +3907,8 @@ paths:
                                         nullable: true
                                         description: |
                                           A reverse URL pattern used to turn a URL into its abbreviated form.
+                                          We check that variables extracted from example_input using url_pattern
+                                          when passed to reverse_template returns example_input back to us.
                                           Use `{{ "{{" }}` to include a literal `{` and
                                           `{{ "}}" }}` for `}`.
 
@@ -15266,6 +15268,8 @@ paths:
                               nullable: true
                               description: |
                                 A reverse URL pattern used to turn a URL into its abbreviated form.
+                                We check that variables extracted from example_input using url_pattern
+                                when passed to reverse_template returns example_input back to us.
                                 Use `{{ "{{" }}` to include a literal `{` and
                                 `{{ "}}" }}` for `}`.
 
@@ -15355,6 +15359,8 @@ paths:
                   example: "#{id}"
                   description: |
                     A reverse URL pattern used to turn a URL into its abbreviated form.
+                    We check that variables extracted from example_input using url_pattern
+                    when passed to reverse_template returns example_input back to us.
                     Use `{{ "{{" }}` to include a literal `{` and
                     `{{ "}}" }}` for `}`.
 
@@ -15446,6 +15452,8 @@ paths:
                   example: "#{id}"
                   description: |
                     A reverse URL pattern used to turn a URL into its abbreviated form.
+                    We check that variables extracted from example_input using url_pattern
+                    when passed to reverse_template returns example_input back to us.
                     Use `{{ "{{" }}` to include a literal `{` and
                     `{{ "}}" }}` for `}`.
 
