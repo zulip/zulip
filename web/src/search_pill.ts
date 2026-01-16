@@ -113,7 +113,7 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
     const search_terms = Filter.parse(suggestion.search_string);
 
     type PillRenderData =
-        | ({type: "generic_operator"} & (NarrowCanonicalTerm | NarrowTermSuggestion) & {
+        | ({type: "generic_operator"} & NarrowTermSuggestion & {
                   display_value?: string;
                   is_empty_string_topic?: boolean;
                   sign?: string;
