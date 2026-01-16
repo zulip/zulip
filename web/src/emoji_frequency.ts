@@ -2,6 +2,7 @@ import assert from "minimalistic-assert";
 
 import * as all_messages_data from "./all_messages_data.ts";
 import * as emoji_picker from "./emoji_picker.ts";
+import type {Message} from "./message_store.ts";
 import * as message_store from "./message_store.ts";
 import * as reactions from "./reactions.ts";
 import {current_user} from "./state_data.ts";
@@ -21,7 +22,7 @@ const CURRENT_USER_REACTION_WEIGHT = 5;
 const POPULAR_EMOJIS_BONUS_WEIGHT = 12;
 export const reaction_data = new Map<string, ReactionUsage>();
 
-export function update_frequently_used_emojis_list(): void {
+function preferred_emoji_list(): typeahead.EmojiItem[] {
     const frequently_used_emojis = [...reaction_data.values()].toSorted(
         (a, b) => b.score - a.score,
     );
@@ -41,11 +42,13 @@ export function update_frequently_used_emojis_list(): void {
     const num_frequently_used_emojis =
         Math.floor(top_frequently_used_emojis.length / EMOJI_PICKER_ROW_LENGTH) *
         EMOJI_PICKER_ROW_LENGTH;
-    const final_frequently_used_emoji_list = top_frequently_used_emojis.slice(
-        0,
-        num_frequently_used_emojis,
-    );
-    typeahead.set_frequently_used_emojis(final_frequently_used_emoji_list);
+
+    return top_frequently_used_emojis.slice(0, num_frequently_used_emojis);
+}
+
+export function update_frequently_used_emojis_list(): void {
+    const emojis = preferred_emoji_list();
+    typeahead.set_frequently_used_emojis(emojis);
     emoji_picker.rebuild_catalog();
 }
 
@@ -65,31 +68,18 @@ export function update_emoji_frequency_on_add_reaction_event(event: reactions.Re
     const clean_reaction_object = message.clean_reactions.get(emoji_id);
 
     assert(clean_reaction_object !== undefined);
+    const emoji_code = clean_reaction_object.emoji_code;
+    const emoji_type = clean_reaction_object.reaction_type;
+    const is_me = event.user_id === current_user.user_id;
 
-    if (!reaction_data.has(emoji_id)) {
-        reaction_data.set(emoji_id, {
-            score: 0,
-            emoji_code: clean_reaction_object.emoji_code,
-            emoji_type: clean_reaction_object.reaction_type,
-            message_ids: new Set(),
-            current_user_reacted_message_ids: new Set(),
-        });
-    }
+    update_data_for_new_emoji_reaction_on_message({
+        message_id,
+        emoji_id,
+        emoji_code,
+        emoji_type,
+        is_me,
+    });
 
-    const reaction_usage = reaction_data.get(emoji_id);
-    assert(reaction_usage !== undefined);
-
-    if (reaction_usage.message_ids.has(message_id)) {
-        return;
-    }
-    reaction_usage.message_ids.add(message_id);
-
-    if (event.user_id === current_user.user_id) {
-        reaction_usage.score += CURRENT_USER_REACTION_WEIGHT;
-        reaction_usage.current_user_reacted_message_ids.add(message.id);
-    } else {
-        reaction_usage.score += 1;
-    }
     update_frequently_used_emojis_list();
 }
 
@@ -103,22 +93,14 @@ export function update_emoji_frequency_on_remove_reaction_event(
     }
 
     const emoji_id = reactions.get_local_reaction_id(event);
-    const reaction_usage = reaction_data.get(emoji_id);
-    if (reaction_usage === undefined) {
-        return;
-    }
+    const is_me = event.user_id === current_user.user_id;
 
-    if (!reaction_usage.message_ids.has(message_id)) {
-        return;
-    }
-    reaction_usage.message_ids.delete(message_id);
+    update_data_for_reaction_removal_on_message({
+        emoji_id,
+        message_id,
+        is_me,
+    });
 
-    if (event.user_id === current_user.user_id) {
-        reaction_usage.score -= CURRENT_USER_REACTION_WEIGHT;
-        reaction_usage.current_user_reacted_message_ids.delete(message.id);
-    } else {
-        reaction_usage.score -= 1;
-    }
     update_frequently_used_emojis_list();
 }
 
@@ -133,20 +115,13 @@ export function update_emoji_frequency_on_messages_deletion(message_ids: number[
             continue;
         }
         assert(message !== undefined);
-        const message_reactions = message.clean_reactions.values();
-        for (const emoji of message_reactions) {
-            const emoji_id = emoji.local_id;
-            const reaction_usage = reaction_data.get(emoji_id);
-            if (reaction_usage === undefined) {
-                return;
-            }
-            if (reaction_usage.message_ids.delete(message_id)) {
-                reaction_usage.score -= 1;
-            }
-            if (reaction_usage.current_user_reacted_message_ids.delete(message_id)) {
-                reaction_usage.score -= CURRENT_USER_REACTION_WEIGHT - 1;
-            }
-        }
+        const message_reactions = [...message.clean_reactions.values()];
+        const emoji_ids = message_reactions.map((reaction) => reaction.local_id);
+
+        remove_message_reactions({
+            message_id,
+            emoji_ids,
+        });
     }
     update_frequently_used_emojis_list();
 }
@@ -154,8 +129,19 @@ export function update_emoji_frequency_on_messages_deletion(message_ids: number[
 export function initialize_frequently_used_emojis(): void {
     const message_data = all_messages_data.all_messages_data;
     const messages = message_data.all_messages_after_mute_filtering();
+    const popular_emojis = typeahead.get_popular_emojis();
 
-    for (const {emoji_code, emoji_type} of typeahead.get_popular_emojis()) {
+    initialize_data({
+        messages,
+        popular_emojis,
+    });
+    update_frequently_used_emojis_list();
+}
+
+function initialize_data(info: {messages: Message[]; popular_emojis: typeahead.EmojiItem[]}): void {
+    const {messages, popular_emojis} = info;
+
+    for (const {emoji_code, emoji_type} of popular_emojis) {
         const emoji_id = [emoji_type, emoji_code].join(",");
         if (!reaction_data.has(emoji_id)) {
             reaction_data.set(emoji_id, {
@@ -197,5 +183,84 @@ export function initialize_frequently_used_emojis(): void {
             }
         }
     }
-    update_frequently_used_emojis_list();
+}
+
+function update_data_for_new_emoji_reaction_on_message(info: {
+    message_id: number;
+    emoji_id: string;
+    emoji_code: string;
+    emoji_type: string;
+    is_me: boolean;
+}): void {
+    const {message_id, emoji_id, emoji_code, emoji_type, is_me} = info;
+
+    if (!reaction_data.has(emoji_id)) {
+        reaction_data.set(emoji_id, {
+            score: 0,
+            emoji_code,
+            emoji_type,
+            message_ids: new Set(),
+            current_user_reacted_message_ids: new Set(),
+        });
+    }
+
+    const reaction_usage = reaction_data.get(emoji_id);
+    assert(reaction_usage !== undefined);
+
+    if (reaction_usage.message_ids.has(message_id)) {
+        return;
+    }
+    reaction_usage.message_ids.add(message_id);
+
+    if (is_me) {
+        reaction_usage.score += CURRENT_USER_REACTION_WEIGHT;
+        reaction_usage.current_user_reacted_message_ids.add(message_id);
+    } else {
+        reaction_usage.score += 1;
+    }
+}
+
+function update_data_for_reaction_removal_on_message(info: {
+    emoji_id: string;
+    message_id: number;
+    is_me: boolean;
+}): void {
+    const {emoji_id, message_id, is_me} = info;
+
+    const reaction_usage = reaction_data.get(emoji_id);
+    if (reaction_usage === undefined) {
+        return;
+    }
+
+    if (!reaction_usage.message_ids.has(message_id)) {
+        return;
+    }
+    reaction_usage.message_ids.delete(message_id);
+
+    if (is_me) {
+        reaction_usage.score -= CURRENT_USER_REACTION_WEIGHT;
+        reaction_usage.current_user_reacted_message_ids.delete(message_id);
+    } else {
+        reaction_usage.score -= 1;
+    }
+}
+
+function remove_message_reactions(info: {message_id: number; emoji_ids: string[]}): void {
+    const {message_id, emoji_ids} = info;
+
+    for (const emoji_id of emoji_ids) {
+        const reaction_usage = reaction_data.get(emoji_id);
+        if (reaction_usage === undefined) {
+            // This seems like it should be a continue, but I only
+            // am moving the code for now.  We may end up with a
+            // completely different algorithm here anyway.
+            return;
+        }
+        if (reaction_usage.message_ids.delete(message_id)) {
+            reaction_usage.score -= 1;
+        }
+        if (reaction_usage.current_user_reacted_message_ids.delete(message_id)) {
+            reaction_usage.score -= CURRENT_USER_REACTION_WEIGHT - 1;
+        }
+    }
 }
