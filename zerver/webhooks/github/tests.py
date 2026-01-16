@@ -4,6 +4,7 @@ import orjson
 
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.models import CustomProfileField
 from zerver.models.realms import get_realm
@@ -813,6 +814,33 @@ A temporary team so that I can get some webhook fixtures!
         )
         expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
         self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
+
+    def test_pull_request_merged_auto_resolve(self) -> None:
+        expected_message = (
+            "baxterthehacker merged [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        )
+        with self.captureOnCommitCallbacks(execute=True):
+            self.check_webhook("pull_request__merged", TOPIC_PR, expected_message)
+
+        last_message = self.get_last_message()
+        self.assertEqual(
+            last_message.topic_name(),
+            f"{RESOLVED_TOPIC_PREFIX}{TOPIC_PR}",
+        )
+
+    def test_pull_request_closed_auto_resolve(self) -> None:
+        expected_message = (
+            "baxterthehacker closed without merge [PR #1]"
+            "(https://github.com/baxterthehacker/public-repo/pull/1)."
+        )
+        with self.captureOnCommitCallbacks(execute=True):
+            self.check_webhook("pull_request__closed", TOPIC_PR, expected_message)
+
+        last_message = self.get_last_message()
+        self.assertEqual(
+            last_message.topic_name(),
+            f"{RESOLVED_TOPIC_PREFIX}{TOPIC_PR}",
+        )
 
 
 class GitHubSponsorsHookTests(WebhookTestCase):
