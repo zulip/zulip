@@ -16,6 +16,9 @@
                 <i class="zulip-icon zulip-icon-masked-unread"></i>
             </span>
         </div>
+        {{#if show_folder_action_icon}}
+        <span class="sidebar-menu-icon folder-section-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+        {{/if}}
     </div>
     <ul id="stream-list-{{id}}" class="stream-list-section"></ul>
 </div>
