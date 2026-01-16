@@ -23,7 +23,7 @@ from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationT
 from two_factor.utils import totp_digits
 from typing_extensions import override
 
-from zerver.actions.user_settings import do_change_password
+from zerver.actions.user_settings import do_change_password, do_change_user_setting
 from zerver.actions.users import do_send_password_reset_email
 from zerver.lib.email_validation import (
     email_allowed_for_realm,
@@ -33,7 +33,7 @@ from zerver.lib.email_validation import (
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import get_language_list
 from zerver.lib.name_restrictions import is_reserved_subdomain
-from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip
+from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip, should_rate_limit
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import PreregistrationRealm, Realm, UserProfile
@@ -141,7 +141,10 @@ class RealmDetailsForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields["realm_default_language"] = forms.ChoiceField(
             choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
+            required=self.realm_creation,
         )
+        self.fields["realm_type"].required = self.realm_creation
+        self.fields["realm_name"].required = self.realm_creation
 
     def clean_realm_subdomain(self) -> str:
         if not self.realm_creation:
@@ -156,13 +159,37 @@ class RealmDetailsForm(forms.Form):
         return subdomain
 
 
-class RegistrationForm(RealmDetailsForm):
+# These are the matching field names for the options in
+# RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS that
+# ask for more context when creating a new organization.
+HOW_FOUND_ZULIP_EXTRA_CONTEXT = {
+    "other": "how_realm_creator_found_zulip_other_text",
+    "ad": "how_realm_creator_found_zulip_where_ad",
+    "existing_user": "how_realm_creator_found_zulip_which_organization",
+    "review_site": "how_realm_creator_found_zulip_review_site",
+    "ai_chatbot": "how_realm_creator_found_zulip_which_ai_chatbot",
+}
+
+
+class HowFoundZulipFormMixin(forms.Form):
+    how_realm_creator_found_zulip = forms.ChoiceField(
+        choices=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items()
+    )
+    how_realm_creator_found_zulip_other_text = forms.CharField(max_length=100, required=False)
+    how_realm_creator_found_zulip_where_ad = forms.CharField(max_length=100, required=False)
+    how_realm_creator_found_zulip_which_organization = forms.CharField(
+        max_length=100, required=False
+    )
+    how_realm_creator_found_zulip_review_site = forms.CharField(max_length=100, required=False)
+    how_realm_creator_found_zulip_which_ai_chatbot = forms.CharField(max_length=100, required=False)
+
+
+class RegistrationForm(HowFoundZulipFormMixin, RealmDetailsForm):
     MAX_PASSWORD_LENGTH = 100
     full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
     # The required-ness of the password field gets overridden if it isn't
     # actually required for a realm
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH)
-    is_demo_organization = forms.BooleanField(required=False)
     enable_marketing_emails = forms.BooleanField(required=False)
     email_address_visibility = forms.TypedChoiceField(
         required=False,
@@ -179,37 +206,7 @@ class RegistrationForm(RealmDetailsForm):
         super().__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE_VERSION is not None:
             self.fields["terms"] = forms.BooleanField(required=True)
-        self.fields["realm_name"] = forms.CharField(
-            max_length=Realm.MAX_REALM_NAME_LENGTH, required=self.realm_creation
-        )
-        self.fields["realm_type"] = forms.TypedChoiceField(
-            coerce=int,
-            choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
-            required=self.realm_creation,
-        )
-        self.fields["realm_default_language"] = forms.ChoiceField(
-            choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
-            required=self.realm_creation,
-        )
-        self.fields["how_realm_creator_found_zulip"] = forms.ChoiceField(
-            choices=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
-            required=self.realm_creation,
-        )
-        self.fields["how_realm_creator_found_zulip_other_text"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_where_ad"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_which_organization"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_review_site"] = forms.CharField(
-            max_length=100, required=False
-        )
-        self.fields["how_realm_creator_found_zulip_which_ai_chatbot"] = forms.CharField(
-            max_length=100, required=False
-        )
+        self.fields["how_realm_creator_found_zulip"].required = self.realm_creation
 
     def clean_full_name(self) -> str:
         try:
@@ -227,6 +224,25 @@ class RegistrationForm(RealmDetailsForm):
             raise ValidationError(str(PASSWORD_TOO_WEAK_ERROR))
 
         return password
+
+
+class DemoRegistrationForm(HowFoundZulipFormMixin, forms.Form):
+    terms = forms.BooleanField(required=False)
+    realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
+    realm_type = forms.TypedChoiceField(
+        coerce=int, choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()]
+    )
+    realm_default_language = forms.ChoiceField(choices=[])
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.realm_creation = True
+        super().__init__(*args, **kwargs)
+        if settings.TERMS_OF_SERVICE_VERSION is not None:
+            self.fields["terms"] = forms.BooleanField(required=True)
+
+        self.fields["realm_default_language"] = forms.ChoiceField(
+            choices=[(lang["code"], lang["name"]) for lang in get_language_list()],
+        )
 
 
 class ToSForm(forms.Form):
@@ -320,7 +336,7 @@ class HomepageForm(forms.Form):
 
 
 class ImportRealmOwnerSelectionForm(forms.Form):
-    user_id = forms.IntegerField()
+    user_id = forms.IntegerField(required=False)
 
 
 class RealmCreationForm(RealmDetailsForm):
@@ -373,6 +389,34 @@ class AltchaWidget(forms.TextInput):
         )
 
 
+def validate_captcha_payload(request: HttpRequest, captcha_payload: str) -> None:
+    if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
+        raise forms.ValidationError(_("Challenges are not enabled."))
+
+    try:
+        ok, err = verify_solution(captcha_payload, settings.ALTCHA_HMAC_KEY, check_expires=True)
+        if not ok:
+            logging.warning("Invalid altcha solution: %s", err)
+            raise forms.ValidationError(_("Validation failed, please try again."))
+    except forms.ValidationError:
+        raise
+    except Exception as e:
+        logging.exception(e)
+        raise forms.ValidationError(_("Validation failed, please try again."))
+
+    captcha_data = orjson.loads(base64.b64decode(captcha_payload))
+    challenge = captcha_data["challenge"]
+    session_challenges = [e[0] for e in request.session.get("altcha_challenges", [])]
+    if challenge not in session_challenges:
+        logging.warning("Expired or replayed altcha solution")
+        raise forms.ValidationError(_("Validation failed, please try again."))
+
+    # Remove the successful solve from the session, to prevent replay
+    request.session["altcha_challenges"] = [
+        e for e in request.session.get("altcha_challenges", []) if e[0] != challenge
+    ]
+
+
 class CaptchaRealmCreationForm(RealmCreationForm):
     captcha = forms.CharField(required=True, widget=AltchaWidget)
 
@@ -394,32 +438,32 @@ class CaptchaRealmCreationForm(RealmCreationForm):
 
     def clean_captcha(self) -> str:
         payload = self.data.get("captcha", "")
-        if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
-            raise forms.ValidationError(_("Challenges are not enabled."))
+        validate_captcha_payload(self.request, payload)
+        return payload
 
-        try:
-            ok, err = verify_solution(payload, settings.ALTCHA_HMAC_KEY, check_expires=True)
-            if not ok:
-                logging.warning("Invalid altcha solution: %s", err)
-                raise forms.ValidationError(_("Validation failed, please try again."))
-        except forms.ValidationError:
-            raise
-        except Exception as e:
-            logging.exception(e)
-            raise forms.ValidationError(_("Validation failed, please try again."))
 
-        payload = orjson.loads(base64.b64decode(payload))
-        challenge = payload["challenge"]
-        session_challenges = [e[0] for e in self.request.session.get("altcha_challenges", [])]
-        if challenge not in session_challenges:
-            logging.warning("Expired or replayed altcha solution")
-            raise forms.ValidationError(_("Validation failed, please try again."))
+class CaptchaDemoRegistrationForm(DemoRegistrationForm):
+    captcha = forms.CharField(required=True, widget=AltchaWidget)
 
-        # Remove the successful solve from the session, to prevent replay
-        self.request.session["altcha_challenges"] = [
-            e for e in self.request.session.get("altcha_challenges", []) if e[0] != challenge
-        ]
+    def __init__(
+        self,
+        *,
+        request: HttpRequest,
+        data: dict[str, Any] | None = None,
+        initial: dict[str, Any] | None = None,
+    ) -> None:
+        super().__init__(data=data, initial=initial)
+        self.request = request
 
+    @override
+    def clean(self) -> None:
+        super().clean()
+        if not self.data.get("captcha"):
+            self.add_error("captcha", _("Validation failed, please try again."))
+
+    def clean_captcha(self) -> str:
+        payload = self.data.get("captcha", "")
+        validate_captcha_payload(self.request, payload)
         return payload
 
 
@@ -437,6 +481,17 @@ class LoggingSetPasswordForm(SetPasswordForm[UserProfile]):
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
         max_length=RegistrationForm.MAX_PASSWORD_LENGTH,
     )
+    enable_marketing_emails = forms.BooleanField(required=False)
+
+    def __init__(self, user: UserProfile, *args: Any, **kwargs: Any) -> None:
+        super().__init__(user, *args, **kwargs)
+        self.show_enable_marketing_emails = False
+        if (
+            settings.CORPORATE_ENABLED
+            and user.realm.demo_organization_scheduled_deletion_date is not None
+            and not user.enable_marketing_emails
+        ):
+            self.show_enable_marketing_emails = user.realm.get_first_human_user() == user
 
     def clean_new_password1(self) -> str:
         new_password = self.cleaned_data["new_password1"]
@@ -450,6 +505,15 @@ class LoggingSetPasswordForm(SetPasswordForm[UserProfile]):
     @override
     def save(self, commit: bool = True) -> UserProfile:
         do_change_password(self.user, self.cleaned_data["new_password1"], commit=commit)
+        enable_marketing_emails = self.cleaned_data["enable_marketing_emails"]
+        if enable_marketing_emails and not self.user.enable_marketing_emails:
+            do_change_user_setting(
+                self.user,
+                "enable_marketing_emails",
+                enable_marketing_emails,
+                acting_user=self.user,
+            )
+
         return self.user
 
 
@@ -500,7 +564,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
             logging.info("Realm is deactivated")
             return
 
-        if settings.RATE_LIMITING:
+        if should_rate_limit(request):
             try:
                 rate_limit_password_reset_form_by_email(email)
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")

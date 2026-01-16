@@ -9,9 +9,9 @@
     {{/if}}
     <td class="action-column">
         {{#if soft_removed}}
-            {{> ../components/action_button custom_classes="undo_soft_removed_potential_subscriber" label=(t "Add") attention="quiet" intent="neutral" aria-label=(t "Add") }}
+            {{> ../components/action_button custom_classes="undo_soft_removed_potential_subscriber" label=(t "Add") variant="subtle" intent="neutral" aria-label=(t "Add") }}
         {{else}}
-            {{> ../components/action_button custom_classes="remove_potential_subscriber" label=(t "Remove") attention="quiet" intent="neutral" aria-label=(t "Remove") }}
+            {{> ../components/action_button custom_classes="remove_potential_subscriber" label=(t "Remove") variant="subtle" intent="neutral" aria-label=(t "Remove") }}
         {{/if}}
     </td>
 </tr>

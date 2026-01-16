@@ -397,6 +397,10 @@ SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, Any] = {
         ## reads the secret with the specified name from zulip-secrets.conf.
         "client_id": "<your client id>",
         "secret": get_secret("social_auth_oidc_secret"),
+        ## If you want this IdP to only be enabled for authentication
+        ## to certain subdomains, uncomment and edit the setting below.
+        # "limit_to_subdomains": ["subdomain1", "subdomain2"],
+        ##
         ## Determines whether "Log in with OIDC" will automatically
         ## register a new account if one does not already exist. By
         ## default, Zulip asks the user whether they want to create an
@@ -611,7 +615,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##   https://www.postgresql.org/docs/9.5/static/libpq-ssl.html
 # REMOTE_POSTGRES_HOST = "dbserver.example.com"
 # REMOTE_POSTGRES_PORT = "5432"
-# REMOTE_POSTGRES_SSLMODE = "require"
+# REMOTE_POSTGRES_SSLMODE = "verify-full"
 
 ########
 ## RabbitMQ configuration.
@@ -672,21 +676,6 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## can also be disabled in a realm's organization settings.
 # INLINE_URL_EMBED_PREVIEW = True
 
-########
-## Twitter previews.
-##
-## Zulip supports showing inline Tweet previews when a tweet is linked
-## to in a message.  To support this, Zulip must have access to the
-## Twitter API via OAuth.  To obtain the various access tokens needed
-## below, you must register a new application under your Twitter
-## account by doing the following:
-##
-## 1. Log in to http://dev.twitter.com.
-## 2. In the menu under your username, click My Applications. From this page, create a new application.
-## 3. Click on the application you created and click "create my access token".
-## 4. Fill in the values for twitter_consumer_key, twitter_consumer_secret, twitter_access_token_key,
-##    and twitter_access_token_secret in /etc/zulip/zulip-secrets.conf.
-
 
 ################
 ## Logging and error reporting.
@@ -713,9 +702,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # LOGGING_SHOW_PID = False
 
 #################
-## Animated GIF integration powered by GIPHY.  See:
-## https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html
+## GIF picker / search engine integrations. To get an API key, see:
+## https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html
 # GIPHY_API_KEY = "<Your API key from GIPHY>"
+# TENOR_API_KEY = "<Your API key from Tenor>"
 
 ################
 ## Video call integrations.
@@ -724,6 +714,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## https://zulip.readthedocs.io/en/latest/production/video-calls.html
 # VIDEO_ZOOM_CLIENT_ID = "<your Zoom client ID>"
 # VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = "<your Zoom account ID>"
+## Set these if using a Zoom host that is not https://zoom.us.
+# VIDEO_ZOOM_OAUTH_URL = "https://zoom.example.com"
+# VIDEO_ZOOM_API_URL = "https://api.zoom.example.com"
 
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify

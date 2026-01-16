@@ -4,12 +4,11 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import * as typeahead from "../shared/src/typeahead.ts";
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
 import render_recent_view_filters from "../templates/recent_view_filters.hbs";
 import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
-import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
+import render_users_with_status_icons from "../templates/users_with_status_icons.hbs";
 
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
@@ -38,8 +37,10 @@ import * as recent_view_data from "./recent_view_data.ts";
 import type {ConversationData} from "./recent_view_data.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import * as typeahead from "./typeahead.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
@@ -674,7 +675,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const topic = last_msg.topic;
         const topic_display_name = util.get_final_topic_display_name(topic);
         const is_empty_string_topic = topic === "";
-        const topic_url = hash_util.by_channel_topic_permalink(stream_id, topic);
+        const topic_url = stream_topic_history.channel_topic_permalink_hash(stream_id, topic);
 
         // We hide the row according to filters or if it's muted.
         // We only supply the data to the topic rows and let jquery
@@ -712,18 +713,19 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // Direct message info
         const user_ids_string = last_msg.to_user_ids;
         assert(typeof last_msg.display_recipient !== "string");
-        const rendered_pm_with_html = last_msg.display_recipient
-            .filter(
-                (recipient: DisplayRecipientUser) =>
-                    !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
-            )
-            .map((user: DisplayRecipientUser) =>
-                render_user_with_status_icon({
+        const rendered_pm_with_html = render_users_with_status_icons({
+            users: last_msg.display_recipient
+                .filter(
+                    (recipient: DisplayRecipientUser) =>
+                        !people.is_my_user_id(recipient.id) ||
+                        last_msg.display_recipient.length === 1,
+                )
+                .map((user: DisplayRecipientUser) => ({
                     name: people.get_display_full_name(user.id),
                     status_emoji_info: user_status.get_status_emoji(user.id),
-                }),
-            );
-        rendered_pm_with_html.sort();
+                }))
+                .toSorted((a, b) => util.strcmp(a.name, b.name)),
+        });
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
         const has_unread_mention =
@@ -757,11 +759,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
 
         dm_context = {
             user_ids_string,
-            rendered_pm_with_html: util.format_array_as_list(
-                rendered_pm_with_html,
-                "long",
-                "conjunction",
-            ),
+            rendered_pm_with_html,
             pm_url,
             is_group,
             is_bot,
@@ -1913,18 +1911,17 @@ export function initialize({
 
     $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
 
-    $("body").on("click", ".button-recent-filters", (e) => {
+    $("body").on("click", ".button-recent-filters", function (this: HTMLElement, e) {
         e.stopPropagation();
         if (page_params.is_spectator) {
             // Filter buttons are disabled for spectator.
             return;
         }
 
-        assert(e.target instanceof HTMLElement);
-        change_focused_element($(e.target), "click");
-        assert(e.currentTarget instanceof HTMLElement);
-        assert(e.currentTarget.dataset.filter !== undefined);
-        set_filter(e.currentTarget.dataset.filter);
+        change_focused_element($(this), "click");
+        const filter = this.getAttribute("data-filter");
+        assert(filter !== null);
+        set_filter(filter);
         update_filters_view();
         revive_current_focus();
     });

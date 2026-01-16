@@ -314,8 +314,9 @@
                 {{> settings_checkbox
                   setting_name="realm_name_changes_disabled"
                   prefix="id_"
-                  is_checked=realm_name_changes_disabled
-                  label=admin_settings_label.realm_name_changes_disabled}}
+                  is_checked=(or realm_name_changes_disabled server_name_changes_disabled)
+                  label=admin_settings_label.realm_name_changes_disabled
+                  is_disabled=server_name_changes_disabled}}
 
                 {{> settings_checkbox
                   setting_name="realm_email_changes_disabled"
@@ -326,8 +327,9 @@
                 {{> settings_checkbox
                   setting_name="realm_avatar_changes_disabled"
                   prefix="id_"
-                  is_checked=realm_avatar_changes_disabled
-                  label=admin_settings_label.realm_avatar_changes_disabled}}
+                  is_checked=(or realm_avatar_changes_disabled server_avatar_changes_disabled)
+                  label=admin_settings_label.realm_avatar_changes_disabled
+                  is_disabled=server_avatar_changes_disabled}}
 
             </div>
         </div>

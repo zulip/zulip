@@ -1,9 +1,12 @@
+// See the Zulip URL spec at https://zulip.com/api/zulip-urls
+//
 // Keep this synchronized with zerver/lib/topic_link_util.py
 
 import assert from "minimalistic-assert";
 
 import * as hash_util from "./hash_util.ts";
 import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as util from "./util.ts";
 
 const invalid_stream_topic_regex = /[`>*&[\]]|(\$\$)/g;
@@ -54,14 +57,34 @@ export function html_escape_markdown_syntax_characters(text: string): string {
     return text.replaceAll(invalid_stream_topic_regex, escape_invalid_stream_topic_characters);
 }
 
-export function get_topic_link_content(
-    stream_name: string,
-    topic_name?: string,
-    message_id?: string,
-): {text: string; url: string} {
-    const stream = stream_data.get_sub(stream_name);
-    const stream_id = stream?.stream_id;
-    assert(stream_id !== undefined);
+export function get_topic_link_content_with_stream_name(opts: {
+    stream_name: string;
+    topic_name: string | undefined;
+    message_id: string | undefined;
+}): {text: string; url: string} {
+    const stream = stream_data.get_sub(opts.stream_name);
+    assert(stream !== undefined);
+    return _get_topic_link_content({stream, ...opts});
+}
+
+export function get_topic_link_content_with_stream_id(opts: {
+    stream_id: number;
+    topic_name: string | undefined;
+    message_id: string | undefined;
+}): {text: string; url: string} {
+    const stream = stream_data.get_sub_by_id(opts.stream_id);
+    assert(stream !== undefined);
+    return _get_topic_link_content({stream, ...opts});
+}
+
+function _get_topic_link_content(opts: {
+    stream: StreamSubscription;
+    topic_name: string | undefined;
+    message_id: string | undefined;
+}): {text: string; url: string} {
+    const {stream, topic_name, message_id} = opts;
+    const stream_name = stream.name;
+    const stream_id = stream.stream_id;
     const escape = html_escape_markdown_syntax_characters;
     if (topic_name !== undefined) {
         const stream_topic_url = hash_util.by_stream_topic_url(stream_id, topic_name);
@@ -103,7 +126,11 @@ export function get_fallback_markdown_link(
     // Generates the vanilla markdown link syntax for a stream/topic/message link, as
     // a fallback for cases where the nicer Zulip link syntax would not
     // render properly due to special characters in the channel or topic name.
-    const {text, url} = get_topic_link_content(stream_name, topic_name, message_id);
+    const {text, url} = get_topic_link_content_with_stream_name({
+        stream_name,
+        topic_name,
+        message_id,
+    });
     return as_markdown_link_syntax(text, url);
 }
 

@@ -25,9 +25,9 @@ from zerver.lib.integrations import (
     INTEGRATIONS,
     META_CATEGORY,
     HubotIntegration,
+    IncomingWebhookIntegration,
     Integration,
     PythonAPIIntegration,
-    WebhookIntegration,
     get_all_event_types_for_integration,
 )
 from zerver.lib.subdomains import get_subdomain
@@ -364,7 +364,7 @@ def build_integration_doc_html(integration: Integration, request: HttpRequest) -
 
     context["integration_name"] = integration.name
     context["integration_display_name"] = integration.display_name
-    if isinstance(integration, WebhookIntegration):
+    if isinstance(integration, IncomingWebhookIntegration):
         assert integration.url.startswith("api/")
         context["integration_url"] = integration.url.removeprefix("api")
         all_event_types = get_all_event_types_for_integration(integration)
@@ -396,7 +396,7 @@ def get_visible_integrations_for_category(category_slug: str) -> list[Integratio
         (
             integration
             for integration in INTEGRATIONS.values()
-            if integration.is_enabled() and not integration.legacy
+            if integration.is_enabled_in_catalog() and not integration.legacy
         ),
         key=lambda integration: integration.name,
     )
@@ -408,7 +408,7 @@ def get_visible_integrations_for_category(category_slug: str) -> list[Integratio
 
 
 def add_catalog_integrations_context(request: HttpRequest, category_slug: str) -> dict[str, Any]:
-    enabled_integrations_count = sum(v.is_enabled() for v in INTEGRATIONS.values())
+    enabled_integrations_count = sum(v.is_enabled_in_catalog() for v in INTEGRATIONS.values())
     # Subtract 1 so saying "Over X integrations" is correct. Then,
     # round down to the nearest multiple of 10.
     integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10
@@ -475,13 +475,13 @@ def integrations_doc(
     integration_name: PathOnly[str],
 ) -> HttpResponse:
     integration = INTEGRATIONS.get(integration_name)
-    if integration is None or not integration.is_enabled():
+    if integration is None or not integration.is_enabled_in_catalog():
         return TemplateResponse(request, "404.html", status=404)
 
     return_category_slug = request.GET.get("category", "all")
-    categorie_slugs = [category[0] for category in get_categories_for_integration(integration)]
+    category_slugs = [category[0] for category in get_categories_for_integration(integration)]
     # If we have an invalid slug, back to list points to the root integrations page.
-    if return_category_slug != "all" and return_category_slug not in categorie_slugs:
+    if return_category_slug != "all" and return_category_slug not in category_slugs:
         return_category_slug = "all"
 
     return TemplateResponse(

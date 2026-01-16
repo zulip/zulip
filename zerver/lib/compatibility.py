@@ -128,7 +128,7 @@ def is_outdated_desktop_app(user_agent_str: str) -> tuple[bool, bool, bool]:
     return (False, False, False)
 
 
-def is_unsupported_browser(user_agent: str) -> tuple[bool, str | None]:
+def is_banned_browser(user_agent: str) -> tuple[bool, str | None]:
     browser_name = get_device_browser(user_agent)
     if browser_name == "Internet Explorer":
         return (True, browser_name)

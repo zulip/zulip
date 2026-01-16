@@ -24,10 +24,10 @@ if TYPE_CHECKING:
 class DeleteMessageTest(ZulipTestCase):
     def test_do_delete_messages_with_empty_list(self) -> None:
         realm = get_realm("zulip")
-        inital_count = Message.objects.count()
+        initial_count = Message.objects.count()
         do_delete_messages(realm, [], acting_user=None)
         final_count = Message.objects.count()
-        self.assertEqual(inital_count, final_count)
+        self.assertEqual(initial_count, final_count)
 
     def test_do_delete_private_messages_with_acting_user(self) -> None:
         realm = get_realm("zulip")
@@ -915,7 +915,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assertEqual(stream.first_message_id, message_ids[1])
 
         all_messages = Message.objects.filter(id__in=message_ids)
-        with self.assert_database_query_count(26):
+        with self.assert_database_query_count(25):
             do_delete_messages(realm, all_messages, acting_user=None)
         stream = get_stream(stream_name, realm)
         self.assertEqual(stream.first_message_id, None)

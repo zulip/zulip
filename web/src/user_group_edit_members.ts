@@ -1,4 +1,3 @@
-import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -26,7 +25,6 @@ import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
-import * as util from "./util.ts";
 
 export let pill_widget: CombinedPillContainer;
 let current_group_id: number;
@@ -180,16 +178,11 @@ export function rerender_members_list({
     });
 }
 
-function generate_group_link_html(group: UserGroup): string {
-    const group_name = user_groups.get_display_group_name(group.name);
-    return `<a data-user-group-id="${group.id}" class="view_user_group">${Handlebars.Utils.escapeExpression(group_name)}</a>`;
-}
+type MemberLinkContext =
+    | {type: "user"; user: User}
+    | {type: "user_group"; id: number; name: string};
 
-function generate_user_link_html(user: User): string {
-    return `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`;
-}
-
-function generate_members_added_success_messages(
+function generate_members_added_contexts(
     newly_added_users: User[],
     newly_added_subgroups: UserGroup[],
     already_added_users: User[],
@@ -197,43 +190,33 @@ function generate_members_added_success_messages(
     ignored_deactivated_groups: UserGroup[],
     ignored_deactivated_users: User[],
 ): {
-    newly_added_members_message_html: string;
-    already_added_members_message_html: string;
-    ignored_deactivated_users_message_html: string;
-    ignored_deactivated_groups_message_html: string;
+    newly_added_members: MemberLinkContext[];
+    already_added_members: MemberLinkContext[];
+    ignored_deactivated_users: MemberLinkContext[];
+    ignored_deactivated_groups: MemberLinkContext[];
 } {
-    const new_user_links = newly_added_users.map((user) => generate_user_link_html(user));
-    const new_group_links = newly_added_subgroups.map((group) => generate_group_link_html(group));
-    const old_user_links = already_added_users.map((user) => generate_user_link_html(user));
-    const old_group_links = already_added_subgroups.map((group) => generate_group_link_html(group));
-    const ignored_group_links = ignored_deactivated_groups.map((group) =>
-        generate_group_link_html(group),
-    );
-    const ignored_user_links = ignored_deactivated_users.map((user) =>
-        generate_user_link_html(user),
-    );
+    function user_contexts(users: User[]): MemberLinkContext[] {
+        return users.map((user) => ({type: "user", user}));
+    }
+    function group_contexts(groups: UserGroup[]): MemberLinkContext[] {
+        return groups.map((group) => ({
+            type: "user_group",
+            id: group.id,
+            name: user_groups.get_display_group_name(group.name),
+        }));
+    }
 
-    const newly_added_members_message_html = util.format_array_as_list_with_conjunction(
-        [...new_user_links, ...new_group_links],
-        "long",
-    );
-    const already_added_members_message_html = util.format_array_as_list_with_conjunction(
-        [...old_user_links, ...old_group_links],
-        "long",
-    );
-    const ignored_deactivated_users_message_html = util.format_array_as_list_with_conjunction(
-        ignored_user_links,
-        "long",
-    );
-    const ignored_deactivated_groups_message_html = util.format_array_as_list_with_conjunction(
-        ignored_group_links,
-        "long",
-    );
     return {
-        newly_added_members_message_html,
-        already_added_members_message_html,
-        ignored_deactivated_users_message_html,
-        ignored_deactivated_groups_message_html,
+        newly_added_members: [
+            ...user_contexts(newly_added_users),
+            ...group_contexts(newly_added_subgroups),
+        ],
+        already_added_members: [
+            ...user_contexts(already_added_users),
+            ...group_contexts(already_added_subgroups),
+        ],
+        ignored_deactivated_users: user_contexts(ignored_deactivated_users),
+        ignored_deactivated_groups: group_contexts(ignored_deactivated_groups),
     };
 }
 
@@ -285,9 +268,9 @@ function show_user_group_membership_request_success_result({
     const already_added_member_count = already_added_user_count + already_added_subgroups_count;
     const ignored_deactivated_member_count =
         ignored_deactivated_users_count + ignored_deactivated_groups_count;
-    let addition_success_messages;
+    let additions;
     if (!total_member_count_exceeds_five) {
-        addition_success_messages = generate_members_added_success_messages(
+        additions = generate_members_added_contexts(
             newly_added_users,
             newly_added_subgroups,
             already_added_users,
@@ -302,7 +285,7 @@ function show_user_group_membership_request_success_result({
     ).expectOne();
     const rendered_success_banner = render_membership_banner({
         intent: "success",
-        addition_success_messages,
+        additions,
         newly_added_member_count,
         already_added_member_count,
         newly_added_user_count,

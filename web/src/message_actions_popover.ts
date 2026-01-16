@@ -199,24 +199,6 @@ export function initialize({
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
-            $popper.one("click", ".rehide_muted_user_message", (e) => {
-                const message_id = Number($(e.currentTarget).attr("data-message-id"));
-                assert(message_lists.current !== undefined);
-                const $row = message_lists.current.get_row(message_id);
-                const message = message_lists.current.get(rows.id($row));
-                assert(message !== undefined);
-                const message_container = message_lists.current.view.message_containers.get(
-                    message.id,
-                );
-                assert(message_container !== undefined);
-                if ($row && !message_container.is_hidden) {
-                    message_lists.current.view.hide_revealed_message(message_id);
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                popover_menus.hide_current_popover_if_visible(instance);
-            });
-
             $popper.one("click", ".view_read_receipts", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 read_receipts.show_user_list(message_id);
@@ -246,28 +228,25 @@ export function initialize({
 
             $popper.one("click", ".reaction_button", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
-                // Don't propagate the click event since `toggle_emoji_popover` opens a
-                // emoji_picker which we don't want to hide after actions popover is hidden.
+                // Don't propagate the click event since the emoji_picker code opens a
+                // popover which we don't want to hide after actions popover is hidden.
                 e.stopPropagation();
                 e.preventDefault();
                 assert(instance.reference.parentElement !== null);
-                emoji_picker.toggle_emoji_popover(instance.reference.parentElement, message_id, {
-                    placement: "bottom",
-                });
+                emoji_picker.start_picker_for_message_reaction(
+                    instance.reference.parentElement,
+                    message_id,
+                );
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
-            $popper.on("click", ".copy_link", (e) => {
-                assert(e.currentTarget instanceof HTMLElement);
-                clipboard_handler.popover_copy_link_to_clipboard(
-                    instance,
-                    $(e.currentTarget),
-                    () => {
-                        show_copied_confirmation(
-                            the($(instance.reference).closest(".message_controls")),
-                        );
-                    },
-                );
+            $popper.on("click", ".copy_link", function (this: HTMLElement) {
+                void (async () => {
+                    await clipboard_handler.popover_copy_link_to_clipboard(instance, $(this));
+                    show_copied_confirmation(
+                        the($(instance.reference).closest(".message_controls")),
+                    );
+                })();
             });
         },
         onHidden(instance) {

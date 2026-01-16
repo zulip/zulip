@@ -9,11 +9,14 @@ import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
 let first_render_completed = false;
 let current_sections: StreamListSection[] = [];
 let all_rows: number[] = [];
+// Will normal section be visible if search_term is empty with "other" title?
+let other_section_visible_without_search_term = false;
 
 // Because we need to check whether we are filtering inactive streams
 // in a loop over all streams to render the left sidebar, and the
@@ -28,6 +31,10 @@ export function get_stream_ids(): number[] {
 
 export function section_ids(): string[] {
     return current_sections.map((section) => section.id);
+}
+
+export function get_current_sections(): StreamListSection[] {
+    return current_sections;
 }
 
 function current_section_ids_for_streams(): Map<number, StreamListSection> {
@@ -114,44 +121,6 @@ export function sort_groups(
     all_subscribed_stream_ids: number[],
     search_term: string,
 ): StreamListSortResult {
-    const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
-    // Use -, _, : and / as word separators apart from the default space character
-    const word_separator_regex = /[\s/:_-]/;
-    let matching_stream_ids = util.filter_by_word_prefix_match(
-        all_subscribed_stream_ids,
-        search_term,
-        stream_id_to_name,
-        word_separator_regex,
-    );
-
-    const current_channel_id = narrow_state.stream_id(narrow_state.filter(), true);
-    if (
-        current_channel_id !== undefined &&
-        stream_data.is_subscribed(current_channel_id) &&
-        !matching_stream_ids.includes(current_channel_id) &&
-        // If any of the topics of the channel match the search term, we need to
-        // include the channel in the list of streams.
-        topic_list_data.get_list_info(current_channel_id, false, (topic_names) =>
-            topic_list_data.filter_topics_by_search_term(topic_names, search_term),
-        ).items.length > 0
-    ) {
-        matching_stream_ids.push(current_channel_id);
-    }
-
-    // If the channel folder matches the search term, include all channels
-    // of that folder.
-    if (user_settings.web_left_sidebar_show_channel_folders && search_term) {
-        matching_stream_ids = [
-            ...new Set([
-                ...matching_stream_ids,
-                ...channel_folders.get_channels_in_folders_matching_search_term_in_folder_name(
-                    search_term,
-                    new Set(all_subscribed_stream_ids),
-                ),
-            ]),
-        ];
-    }
-
     const pinned_section: StreamListSection = {
         id: "pinned-streams",
         folder_id: null,
@@ -168,8 +137,89 @@ export function sort_groups(
         muted_streams: [],
         inactive_streams: [],
     };
+    const NORMAL_SECTION_TITLE_WITH_OTHER_FOLDERS = $t({defaultMessage: "OTHER"});
+
+    const show_all_channels = util.prefix_match({value: normal_section.section_title, search_term});
+    const include_all_pinned_channels =
+        show_all_channels || util.prefix_match({value: pinned_section.section_title, search_term});
+    const search_term_prefix_matches_other_section_title =
+        search_term &&
+        other_section_visible_without_search_term &&
+        util.prefix_match({value: NORMAL_SECTION_TITLE_WITH_OTHER_FOLDERS, search_term});
+
+    const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
+    // Use -, _, : and / as word separators apart from the default space character
+    const word_separator_regex = /[\s/:_-]/;
+    let matching_stream_ids = show_all_channels
+        ? all_subscribed_stream_ids
+        : util.filter_by_word_prefix_match(
+              all_subscribed_stream_ids,
+              search_term,
+              stream_id_to_name,
+              word_separator_regex,
+          );
+
+    const current_channel_id = narrow_state.stream_id(narrow_state.filter(), true);
+    const current_topic_name = narrow_state.topic()?.toLowerCase();
+    if (
+        current_channel_id !== undefined &&
+        stream_data.is_subscribed(current_channel_id) &&
+        !matching_stream_ids.includes(current_channel_id)
+    ) {
+        // If any of the unmuted topics of the channel match the search
+        // term, or a muted topic matches the current topic, we include
+        // the channel in the list of matches.
+        const topics = topic_list_data.get_filtered_topic_names(current_channel_id, (topic_names) =>
+            topic_list_data.filter_topics_by_search_term(topic_names, search_term),
+        );
+        if (
+            topics.some(
+                (topic) =>
+                    topic.toLowerCase() === current_topic_name ||
+                    !user_topics.is_topic_muted(current_channel_id, topic),
+            )
+        ) {
+            matching_stream_ids.push(current_channel_id);
+        }
+    }
+
+    // If the channel folder matches the search term, include all channels
+    // of that folder.
+    if (user_settings.web_left_sidebar_show_channel_folders && search_term) {
+        matching_stream_ids = [
+            ...new Set([
+                ...matching_stream_ids,
+                ...channel_folders.get_channels_in_folders_matching_search_term_in_folder_name(
+                    search_term,
+                    new Set(all_subscribed_stream_ids),
+                ),
+            ]),
+        ];
+    }
 
     const folder_sections = new Map<number, StreamListSection>();
+
+    if (!show_all_channels && include_all_pinned_channels) {
+        matching_stream_ids = [
+            ...matching_stream_ids,
+            ...all_subscribed_stream_ids.filter(
+                (stream_id) => sub_store.get(stream_id)!.pin_to_top,
+            ),
+        ];
+    }
+
+    if (!show_all_channels && search_term_prefix_matches_other_section_title) {
+        matching_stream_ids = [
+            ...matching_stream_ids,
+            ...all_subscribed_stream_ids.filter((stream_id) => {
+                const is_pinned = sub_store.get(stream_id)!.pin_to_top;
+                const is_in_folder =
+                    user_settings.web_left_sidebar_show_channel_folders &&
+                    sub_store.get(stream_id)!.folder_id !== null;
+                return !is_pinned && !is_in_folder;
+            }),
+        ];
+    }
 
     for (const stream_id of matching_stream_ids) {
         const sub = sub_store.get(stream_id);
@@ -236,9 +286,18 @@ export function sort_groups(
         pinned_section.streams.length > 0 ||
         pinned_section.muted_streams.length > 0 ||
         pinned_section.inactive_streams.length > 0 ||
-        folder_sections.size > 0
+        folder_sections.size > 0 ||
+        // To meet the user's expectation, we show "Other" as
+        // section title if it matches the search term.
+        search_term_prefix_matches_other_section_title
     ) {
-        normal_section.section_title = $t({defaultMessage: "OTHER"});
+        normal_section.section_title = NORMAL_SECTION_TITLE_WITH_OTHER_FOLDERS;
+
+        if (search_term === "") {
+            other_section_visible_without_search_term = true;
+        }
+    } else if (search_term === "") {
+        other_section_visible_without_search_term = false;
     }
 
     // This needs to have the same ordering as the order they're displayed in the sidebar.
@@ -260,8 +319,7 @@ export function sort_groups(
         new_sections.entries().every(([i, new_section]) => {
             const current_section = current_sections.at(i);
             return (
-                current_section !== undefined &&
-                new_section.id === current_section.id &&
+                new_section.id === current_section?.id &&
                 new_section.section_title === current_section.section_title &&
                 util.array_compare(new_section.streams, current_section.streams) &&
                 util.array_compare(new_section.muted_streams, current_section.muted_streams) &&

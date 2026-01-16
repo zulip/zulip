@@ -149,18 +149,99 @@ run_test("paste_handler_converter", () => {
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
     assert.equal(
         compose_paste.paste_handler_converter(input, {
-            caret: () => 6,
-            val: () => "e.g. `",
+            val() {
+                return "e.g. `";
+            },
+            0: {
+                selectionStart: 6,
+                value: "e.g. `",
+            },
+            length: 1,
         }),
         "single line",
     );
 
-    // Yes code formatting if the given text area has a backtick but not at the cursor position
+    // No code formatting if the given text area has a backtick at the cursor position
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
     assert.equal(
         compose_paste.paste_handler_converter(input, {
-            caret: () => 0,
+            val() {
+                return "`e.g. ` ```hi`` ``";
+            },
+            0: {
+                selectionStart: 19,
+                value: "`e.g. ` ```hi`` ``",
+            },
+            length: 1,
+        }),
+        "single line",
+    );
+
+    // No code formatting if the given text area has a opening backtick before the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "e.g. ` ";
+            },
+            0: {
+                selectionStart: 7,
+                value: "e.g. ` ",
+            },
+            length: 1,
+        }),
+        "single line",
+    );
+
+    // Yes code formatting if the given text area does not have a backtick at the cursor position.
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "";
+            },
+            0: {
+                selectionStart: 0,
+                value: "",
+            },
+            length: 1,
+        }),
+        "`single line`",
+    );
+
+    // Yes code formatting if the given text area closes the code block before the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "` e.g. ` ";
+            },
+            0: {
+                selectionStart: 9,
+                value: "` e.g. ` ",
+            },
+            length: 1,
+        }),
+        "`single line`",
+    );
+
+    // Yes code formatting if the given text area closes the code block before the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "``` e.g. ``` ``hi`` ";
+            },
+            0: {
+                selectionStart: 20,
+                value: "``` e.g. ``` ``hi`` ",
+            },
+            length: 1,
         }),
         "`single line`",
     );
@@ -274,6 +355,13 @@ run_test("paste_handler_converter", () => {
         '<div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z ace-ltr focused-line" dir="auto" id="editor-3-ace-line-41"><span>Test list:</span></div><div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z line-list-type-bullet ace-ltr" dir="auto" id="editor-3-ace-line-42"><ul class="listtype-bullet listindent1 list-bullet1"><li><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="end"></span><span class="ace-line-pocket" data-faketext="" contenteditable="false"></span><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="start"></span><span>Item 1</span></li></ul></div><div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z line-list-type-bullet ace-ltr" dir="auto" id="editor-3-ace-line-43"><ul class="listtype-bullet listindent1 list-bullet1"><li><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="end"></span><span class="ace-line-pocket" data-faketext="" contenteditable="false"></span><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="start"></span><span>Item 2</span></li></ul></div>';
     assert.equal(compose_paste.paste_handler_converter(input), "Test list:\n* Item 1\n* Item 2");
 
+    // Pasting markdown from VS Code where each line is wrapped by a <div> shouldn't insert an extra newline.
+    input = `<html>\r\n<body>\r\n<!--StartFragment--><div style="color: #cccccc;background-color: #1f1f1f;font-family: 'Fira Code Retina', Consolas, 'Courier New', monospace;font-weight: 350;font-size: 12.852px;line-height: 17px;white-space: pre;"><div><span style="color: #cccccc;">authentication-methods</span></div><div><span style="color: #cccccc;">export-and-import</span></div><div><span style="color: #cccccc;">postgresql</span></div><div><span style="color: #cccccc;">upload-backends</span></div><div><span style="color: #cccccc;">ssl-certificates</span></div><div><span style="color: #cccccc;">email</span></div></div><!--EndFragment-->\r\n</body>\r\n</html>`;
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "authentication-methods\nexport-and-import\npostgresql\nupload-backends\nssl-certificates\nemail",
+    );
+
     // Pasting from Google Sheets (remove <style> elements completely)
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><style type="text/css"><!--td {border: 1px solid #cccccc;}br {mso-data-placement:same-cell;}--></style><span style="font-size:10pt;font-family:Arial;font-style:normal;text-align:right;" data-sheets-value="{&quot;1&quot;:3,&quot;3&quot;:123}" data-sheets-userformat="{&quot;2&quot;:769,&quot;3&quot;:{&quot;1&quot;:0},&quot;11&quot;:3,&quot;12&quot;:0}">123</span>';
@@ -312,6 +400,11 @@ run_test("paste_handler_converter", () => {
     // detected as a LibreOffice Calc table.
     // See https://github.com/zulip/zulip/pull/34752/#discussion_r2113598064
     input = `<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"/><title></title><meta name="generator" content="LibreOffice 25.2.3.2 (Windows)"/><style type="text/css">@page { size: 8.5in 11in; margin: 0.79in }p { line-height: 115%; margin-bottom: 0.1in; background: transparent }</style></head><body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><table width="258" cellpadding="2" cellspacing="0"><col width="83"/><col width="81"/><col width="81"/><tr valign="bottom"><td width="83" height="16" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Melgar</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Female</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">UnitedStates</font></p></td></tr><tr valign="bottom"><td width="83" height="16" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Weiland</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Female</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">UnitedStates</font></p></td></tr><tr valign="bottom"><td width="83" height="16" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Winward</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Female</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">GreatBritain</font></p></td></tr></table></body></html>`;
+    assert.ok(compose_paste.is_single_image(input));
+
+    // Copying an image and pasting it with `paste_html` containing other empty text nodes and
+    // comment nodes should still classify the `paste_html` as an image that needs to be uploaded.
+    input = `<html>\n<body>\n<!--StartFragment--><img src="http://zulip.zulipdev.com:9991/user_uploads/thumbnail/2/a0/wETeF-Yv2wmMM6289kO9VC0s/image.png/840x560.webp"/><!--EndFragment-->\n</body>\n</html>`;
     assert.ok(compose_paste.is_single_image(input));
 
     // Pasting from the mac terminal

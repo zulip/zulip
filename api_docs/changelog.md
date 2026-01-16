@@ -20,6 +20,142 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 449**
+
+* [`POST /export/realm`](/api/export-realm): The `export_type` parameter now
+  takes string values (`public`, `full_with_consent`, `full_without_consent`)
+  instead of integers. The new `full_without_consent` option requests a full
+  export that includes private data for all users and requires the organization
+  to have the `owner_full_content_access` flag set to True.
+* [`GET /export/realm`](/api/get-realm-exports), [`GET /events`](/api/get-events):
+  `export_type` fields now contain the new string values, matching the
+  `POST /export/realm` parameter format. These endpoints now report
+  `export_type=full_without_consent` for a full export that includes private data
+  for all users.
+
+**Feature level 448**
+
+* [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):
+  Users have access to a channel's email address only if they have permission
+  to post messages in the channel.
+
+**Feature level 447**
+
+* `PATCH /bots/{bot_id}`: Added `short_name` parameter to support updating bot's email.
+
+**Feature level 446**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /messages/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added support for a new [search/narrow filter](/api/construct-narrow#changes),
+  `mentions`. This operator filters messages that contain a direct,
+  visible personal mention of the specified user.
+
+**Feature level 445**
+
+* [`GET /messages`](/api/get-messages): Added a new `date` value for
+   the `anchor` parameter, and new `anchor_date` parameter, to support
+   fetching messages around a specific date/time.
+
+**Feature level 444**
+
+* [`PATCH /settings`](/api/update-settings): Added support for bulk updating
+  settings for specified users or members of user groups using `target_users`
+  and `skip_if_already_edited` parameters.
+
+**Feature level 443**
+
+* [`GET /attachments`](/api/get-attachments), [`GET /events`](/api/get-events):
+  The `create_time` and `date_sent` fields in `attachment` objects will now
+  return UNIX timestamps in seconds. Previously, these values were returned in
+  milliseconds.
+* [`PATCH /messages/{message_id}`](/api/update-message): The `create_time` and
+  `date_sent` fields in `detached_uploads` object will now return UNIX timestamps
+  in seconds. Previously, these values were returned in milliseconds.
+
+**Feature level 442**
+
+* [`GET /events`](/api/get-events): `giphy_rating` is now used to denote
+  the common rating configured for both Tenor and GIPHY integrations.
+* [`POST /register`](/api/register-queue): Added new `tenor_api_key`
+  field, which is required to fetch GIFs using the Tenor API.
+* [`POST /register`](/api/register-queue): Renamed
+  `giphy_rating_options` to `gif_rating_options` to generalize the
+  ratings for both GIPHY and Tenor integrations. `realm_giphy_rating`
+  is now used for both the Tenor and GIPHY integrations.
+
+**Feature level 441**
+
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `can_create_topic_group`
+  field which is a [group-setting value](/api/group-setting-values) describing
+  the set of users with permissions to create new topics in the channel.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added `can_create_topic_group`
+  parameter to support setting and changing the user group whose members can create
+  new topics in the specified channel.
+
+**Feature level 440**
+
+* [`GET users/<user_id>/channels`](/api/get-user-channels)
+  Added a new endpoint to get the channels another user is subscribed to.
+
+**Feature level 439**
+
+* [`GET /events`](/api/get-events): The deprecated `update_display_settings`
+  and `update_global_notifications` event types are no longer sent to any
+  clients. These legacy event types were deprecated in Zulip 5.0 (feature
+  level 89) and replaced by the `user_settings` event type.
+
+**Feature level 438**
+
+* [`POST /register`](/api/register-queue): Added
+  `realm_owner_full_content_access` field indicating whether the
+  organization's security model allows owners to access all private
+  content in this organization.
+
+**Feature level 437**
+
+* [`GET /users`](/api/get-users), [`GET
+  /users/{user_id}`](/api/get-user), [`GET
+  /users/{email}`](/api/get-user-by-email): Fixed a bug dating to
+  feature level 232, where guest users might incorrectly receive fake
+  backwards-compatibility users in the format intended for clients
+  using `POST /register` without the `user_list_incomplete` client
+  capability.
+
+**Feature level 436**
+
+* [Message formatting](/api/message-formatting): Added new
+  specification that emoji-only messages should show enlarged emoji.
+
+**Feature level 435**
+
+* [`POST /register`](/api/register-queue): Added `server_report_message_types`
+  field which contains a list of supported report types for the [message
+  report](/help/report-a-message) feature.
+
+**Feature level 434**
+
+* [`POST /register`](/api/register-queue), [`POST /events`](/api/get-events),
+  `PATCH /realm`: Added a new `send_channel_events_messages` realm setting indicating
+  whether channel event messages are sent in the organization.
+
+**Feature level 433**
+
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email) and
+  [`GET /users/me`](/api/get-own-user): Added `is_imported_stub` field to
+  returned user objects.
+* [`POST /register`](/api/register-queue): Added `is_imported` field
+  in the user objects returned in the `realm_users` field and in the bot
+  objects returned in `cross_realm_bots` field.
+* [`GET /events`](/api/get-events): Added `is_imported_stub` field to
+  user objects sent in `realm_user` events.
+
 **Feature level 432**
 
 * [`POST /mobile_push/register`](/api/register-push-device): Replaced
@@ -1493,10 +1629,10 @@ deactivated groups.
 
 * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
   [`GET /messages/{message_id}`](/api/get-message),
-  [`POST /zulip-outgoing-webhook`](/api/zulip-outgoing-webhooks): Removed
-  the `prev_rendered_content_version` field from the `edit_history` object
-  within message objects and the `update_message` event type as it is an
-  internal server implementation detail not used by any client.
+  [outgoing webhook payloads](/api/outgoing-webhook-payload#zulip-format):
+  Removed the `prev_rendered_content_version` field from the `edit_history`
+  object within message objects and the `update_message` event type as it
+  is an internal server implementation detail not used by any client.
 
 **Feature level 283**
 

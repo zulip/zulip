@@ -28,10 +28,12 @@
                         <div class="text">{{t "Notifications" }}</div>
                     </li>
                     {{#unless is_guest}}
-                    <li class="sidebar-item" tabindex="0" data-section="your-bots">
-                        <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
-                        <div class="text">{{t "Bots" }}</div>
-                    </li>
+                        <li class="redirected-sidebar-item" tabindex="0">
+                            <a href="#organization/bots/your-bots" class="your-bots-link sidebar-item">
+                                <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                                <div class="text">{{t 'Bots'}}</div>
+                            </a>
+                        </li>
                     {{/unless}}
                     <li class="sidebar-item" tabindex="0" data-section="alert-words">
                         <i class="sidebar-item-icon fa fa-book" aria-hidden="true"></i>
@@ -92,7 +94,7 @@
                     </li>
                     {{/unless}}
                     {{#unless is_guest}}
-                    <li class="sidebar-item" tabindex="0" data-section="bot-list-admin">
+                    <li class="sidebar-item" tabindex="0" data-section="bots">
                         <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                         <div class="text">{{t "Bots" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if can_create_new_bots}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
@@ -146,7 +148,7 @@
     </div>
     <div class="content-wrapper right">
         <div class="settings-header">
-            <h1>{{t "Settings" }}<span class="section"></span></h1>
+            <h1><span class="header-prefix"></span><span class="section"></span></h1>
             <div class="exit">
                 <span class="exit-sign">&times;</span>
             </div>

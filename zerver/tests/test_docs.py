@@ -1,6 +1,7 @@
 import os
 import re
 from collections.abc import Sequence
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 from unittest import mock, skipUnless
 from urllib.parse import urlsplit
@@ -13,7 +14,7 @@ from django.utils.timezone import now as timezone_now
 from corporate.models.customers import Customer
 from corporate.models.plans import CustomerPlan
 from zerver.context_processors import get_apps_page_url
-from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, META_CATEGORY
+from zerver.lib.integrations import BOT_INTEGRATIONS, CATEGORIES, INTEGRATIONS, META_CATEGORY
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.url_redirects import INTEGRATION_CATEGORY_SLUGS
@@ -254,7 +255,7 @@ class DocPageTest(ZulipTestCase):
 
     def test_dev_environment_endpoints(self) -> None:
         self._test("/devlogin/", ["Normal users"])
-        self._test("/devtools/", ["Useful development URLs"])
+        self._test("/devtools/", ["Development tools"])
         self._test("/emails/", ["Manually generate most emails"])
 
     def test_dev_help_default_page_endpoints(self) -> None:
@@ -318,6 +319,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/features/", ["Organized team chat solution"])
         self._test("/jobs/", ["Work with us"])
         self._test("/self-hosting/", ["Self-host Zulip"])
+        self._test("/zulip-cloud/", ["Zulip Cloud"])
         self._test("/security/", ["TLS encryption"])
         self._test("/use-cases/", ["Use cases and customer stories"])
         self._test("/why-zulip/", ["Why Zulip?"])
@@ -331,6 +333,9 @@ class DocPageTest(ZulipTestCase):
         # case-studies
         self._test("/case-studies/tum/", ["Technical University of Munich"])
         self._test("/case-studies/ucsd/", ["UCSD"])
+        self._test(
+            "/case-studies/university-of-cordoba/", ["National University of C\\xc3\\xb3rdoba"]
+        )
         self._test("/case-studies/rust/", ["Rust programming language"])
         self._test("/case-studies/recurse-center/", ["Recurse Center"])
         self._test("/case-studies/lean/", ["Lean theorem prover"])
@@ -373,6 +378,15 @@ class DocPageTest(ZulipTestCase):
         realm.save()
         self._test(
             "/communities/", ["Open communities directory", "Zulip Dev", 'data-category="research"']
+        )
+
+        # Demo organizations are not shown.
+        demo_deletion_date = timezone_now() + timedelta(days=15)
+        realm.demo_organization_scheduled_deletion_date = demo_deletion_date
+        realm.save()
+        result = self.client_get("/communities/")
+        self.assert_not_in_success_response(
+            ["Zulip Dev", "Some description", 'data-category="research"'], result
         )
 
     def test_integration_doc_endpoints(self) -> None:
@@ -446,7 +460,7 @@ class DocPageTest(ZulipTestCase):
             response,
         )
 
-        # Mis-matched category should also return back to all.
+        # Mismatched category should also return back to all.
         result = self.client_get(
             "/integrations/asana?category=communication",
         )
@@ -457,27 +471,39 @@ class DocPageTest(ZulipTestCase):
             response,
         )
 
+        bot_subdirs = [integration.name for integration in BOT_INTEGRATIONS]
         for integration in INTEGRATIONS:
+            if not INTEGRATIONS[integration].is_enabled_in_catalog():
+                continue
             url = f"/integrations/{integration}"
             response = self._test(url, expected_strings=[])
             doc = response.content.decode("utf-8")
-            for image in re.findall(r"/static/images/integrations/(.*)\"", doc):
-                images_in_docs.add(image)
 
-        directory = "static/images/integrations"
+            patterns = [r"/static/images/integrations/(.*?)\""] + [
+                rf"/static/generated/bots/{bot_dir}/(.*?)\"" for bot_dir in bot_subdirs
+            ]
+            for pattern in patterns:
+                for image in re.findall(pattern, doc):
+                    images_in_docs.add(image)
+
         images_in_dir = {
             image_path
+            for directory, exclude_md in [
+                ("static/images/integrations", False),
+            ]
+            + [(f"static/generated/bots/{bot_dir}", True) for bot_dir in bot_subdirs]
             for root, _, files in os.walk(directory)
             for file in files
             if "bot_avatars"
             not in (image_path := os.path.relpath(os.path.join(root, file), directory))
+            and (not exclude_md or not image_path.endswith(".md"))
         }
 
         # The integration docs and the screenshot images are in different repos
         # for the PythonAPIIntegrations, so we cannot avoid going out of sync
         # when adding/deleting screenshots.
         # Use this set to temporarily add exclusions to this test.
-        exception_images: set[str] = {"jira-plugin/001.png", "git/001.png"}
+        exception_images: set[str] = {"git/001.png"}
         images_in_dir.update(exception_images)
         images_in_docs.update(exception_images)
 

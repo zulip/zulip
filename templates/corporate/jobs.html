@@ -1,18 +1,12 @@
-{% extends "zerver/portico.html" %}
-{% set entrypoint = "landing-page" %}
+{% extends "zerver/marketing_page.html" %}
 
 {% set PAGE_TITLE = "Jobs | Zulip" %}
 
 {% set PAGE_DESCRIPTION = "We're hiring! Learn about our openings and how to
   apply." %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
 
-{% block portico_content %}
-
-{% include 'zerver/landing_nav.html' %}
+{% block marketing_content %}
 
 <div class="portico-landing jobs why-page">
     <div class="hero bg-pycon drone">
@@ -47,7 +41,8 @@
                         with your resume and cover letter.
                     </p>
                     <p>
-                        All openings are remote, or partially in-person in our San Francisco, CA office.
+                        All openings are remote, or partially in-person in our
+                        San Francisco, CA office, unless indicated otherwise.
                     </p>
                     <hr/>
                     <h2 id="gtm">Go-to-market leader (full-time)</h2>
@@ -91,7 +86,7 @@
                         </li>
                         <li>
                             Drive a substantial increase in revenue by the end
-                            of 2025.
+                            of 2026.
                         </li>
                     </ul>
                     <h3>Essential qualifications:</h3>
@@ -261,6 +256,77 @@
                         with your resume and cover letter to apply, or learn
                         more about
                         <a href="/jobs/#how-we-work">how we work</a>.
+                    </p>
+                    <hr />
+                    <h2 id="frontend-engineer">
+                        Senior Frontend Engineer (full-time)
+                    </h2>
+                    <p><b>Employer:</b> Kandra Labs, Inc.</p>
+                    <p><b>Job location:</b> San Francisco, CA</p>
+                    <p>
+                        <a href="/">Zulip</a> is an open-source team chat
+                        application designed for seamless remote and hybrid
+                        work. With conversations organized by topic, Zulip is <a
+                        href="/why-zulip">ideal</a> for both live and
+                        asynchronous communication. Zulip’s 100% open-source
+                        software is available as a <a href="/plans/#cloud">cloud
+                        service</a> or a
+                        <a href="/self-hosting">self-hosted solution</a>, and is
+                        used by thousands of organizations around the world.
+                    </p>
+                    <h3>What you’ll do:</h3>
+                    <ul>
+                        <li>
+                            Work directly with Zulip&#39;s product and design
+                            leads to drive work on elements of major initiative
+                            to redesign Zulip&#39;s core surface areas.
+                        </li>
+                        <li>
+                            Write hundreds of Git commits a year in a
+                            fast-moving SaaS codebase where changes are
+                            typically deployed to production less than a week
+                            after completing code review.
+                        </li>
+                        <li>
+                            Design new features and subsystems, write design
+                            proposals for discussion, and build them. Diagnose
+                            and fix bugs small and large and across several
+                            layers of our stack, including spelunking in
+                            third-party dependencies to find the best possible
+                            solution.
+                        </li>
+                        <li>
+                            Share your expertise (both newly-acquired and
+                            longstanding) with the rest of the team, through
+                            short- and long-form written communication.
+                        </li>
+                        <li>
+                            Write primarily Typescript, HTML, CSS, and
+                            occasionally Python.
+                        </li>
+                        <li>
+                            Position is mostly remote.
+                        </li>
+                    </ul>
+                    <h3>Essential qualifications:</h3>
+                    <ul>
+                        <li>
+                            A Bachelor’s degree in Computer Science or a closely
+                            related field.
+                        </li>
+                        <li>
+                            60 months of software engineering experience,
+                            including 36 months of experience writing in
+                            JavaScript, 36 months of experience writing in HTML,
+                            and 24 months of experience using threads-first team
+                            chat applications.
+                        </li>
+                    </ul>
+                    <p>
+                        Email us at <a
+                        href="mailto:jobs+frontend@zulip.com">jobs+frontend@zulip.com</a>
+                        with your resume and cover letter to apply. Please
+                        include desired position in the subject line.
                     </p>
                 </div>
                 <div class="how-we-work">

@@ -99,6 +99,7 @@ def realm_summary_table(export: bool) -> str:
         """
         SELECT
             realm.string_id,
+            realm.demo_organization_scheduled_deletion_date,
             realm.date_created,
             realm.plan_type,
             realm.org_type,
@@ -238,6 +239,9 @@ def realm_summary_table(export: bool) -> str:
 
     for row in rows:
         realm_string_id = row.pop("string_id")
+        demo_organization_scheduled_deletion_date = row.pop(
+            "demo_organization_scheduled_deletion_date"
+        )
 
         # Format fields and add links.
         row["date_created_day"] = format_datetime_as_date(row["date_created"])
@@ -269,7 +273,10 @@ def realm_summary_table(export: bool) -> str:
 
         # Estimate annual recurring revenue.
         if settings.BILLING_ENABLED:
-            row["plan_type_string"] = get_plan_type_string(row["plan_type"])
+            if demo_organization_scheduled_deletion_date is None:
+                row["plan_type_string"] = get_plan_type_string(row["plan_type"])
+            else:
+                row["plan_type_string"] = "Demo"
 
             if realm_string_id in estimated_arrs:
                 row["arr"] = f"${cents_to_dollar_string(estimated_arrs[realm_string_id])}"
@@ -328,7 +335,7 @@ def realm_summary_table(export: bool) -> str:
             rows=rows,
             totals=total_row,
             num_active_sites=num_active_sites,
-            utctime=now.strftime("%Y-%m-%d %H:%M %Z"),
+            utctime=now.isoformat(" ", "minutes"),
             billing_enabled=settings.BILLING_ENABLED,
             export=export,
         ),

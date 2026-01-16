@@ -121,7 +121,8 @@ and professionalism of your work.
 
 The pull request template in the `zulip/zulip` repository has a checklist of
 reminders for points you need to cover in your review. Make sure that all the
-relevant items on the self-review checklist have been addressed.
+relevant items on the self-review checklist have been addressed, and check them
+off on the list.
 
 ## Submit your pull request for review
 

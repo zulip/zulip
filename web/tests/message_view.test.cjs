@@ -222,17 +222,6 @@ run_test("urls", () => {
 
     emails = hash_util.decode_operand("dm", "5-group");
     assert.equal(emails, "me@example.com");
-
-    // Even though we renamed "pm-with" to "dm", preexisting
-    // links/URLs with "pm-with" operator are decoded correctly.
-    emails = hash_util.decode_operand("pm-with", "22,23-group");
-    assert.equal(emails, "alice@example.com,ray@example.com");
-
-    emails = hash_util.decode_operand("pm-with", "5,22,23-group");
-    assert.equal(emails, "alice@example.com,ray@example.com");
-
-    emails = hash_util.decode_operand("pm-with", "5-group");
-    assert.equal(emails, "me@example.com");
 });
 
 run_test("show_empty_narrow_message", ({mock_template, override}) => {
@@ -505,6 +494,13 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // prioritize information about invalid user in narrow/search
     current_filter = set_filter([["dm-including", "Yo"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: This user does not exist!"),
+    );
+
+    current_filter = set_filter([["dm-including", "false@blah.com,foo@fake.com"]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),

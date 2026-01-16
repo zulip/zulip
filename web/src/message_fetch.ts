@@ -7,7 +7,9 @@ import * as channel from "./channel.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
-import {Filter} from "./filter.ts";
+import * as emoji_frequency from "./emoji_frequency.ts";
+import type {Filter} from "./filter.ts";
+import * as filter_util from "./filter_util.ts";
 import * as message_feed_loading from "./message_feed_loading.ts";
 import * as message_feed_top_notices from "./message_feed_top_notices.ts";
 import * as message_helper from "./message_helper.ts";
@@ -23,6 +25,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
@@ -285,7 +288,10 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
             negated?: boolean | undefined;
         } = raw_term;
 
-        const canonical_operator = Filter.canonicalize_operator(raw_term.operator);
+        const parsed_narrow_operator = narrow_operator_schema.parse(
+            raw_term.operator.toLowerCase(),
+        );
+        const canonical_operator = filter_util.canonicalize_operator(parsed_narrow_operator);
 
         if (operators_supporting_ids.has(canonical_operator)) {
             const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
@@ -329,7 +335,20 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
 }
 
 export function get_narrow_for_message_fetch(filter: Filter): string {
-    let narrow_data = filter.public_terms();
+    let narrow_data: NarrowTerm[] = [];
+    for (const term of filter.public_terms()) {
+        if (term.operator === "dm-including") {
+            for (const operand of term.operand.split(",")) {
+                narrow_data.push({
+                    ...term,
+                    operand,
+                });
+            }
+        } else {
+            narrow_data.push(term);
+        }
+    }
+
     if (page_params.narrow !== undefined) {
         narrow_data = [...narrow_data, ...page_params.narrow];
     }
@@ -696,6 +715,7 @@ export function initialize(finished_initial_fetch: () => void): void {
 
         if (data.found_oldest) {
             initial_backfill_for_all_messages_done = true;
+            emoji_frequency.initialize_frequently_used_emojis();
             return;
         }
 
@@ -709,11 +729,13 @@ export function initialize(finished_initial_fetch: () => void): void {
             latest_message.timestamp < fetch_target_day_timestamp
         ) {
             initial_backfill_for_all_messages_done = true;
+            emoji_frequency.initialize_frequently_used_emojis();
             return;
         }
 
         if (all_messages_data.num_items() >= consts.maximum_initial_backfill_size) {
             initial_backfill_for_all_messages_done = true;
+            emoji_frequency.initialize_frequently_used_emojis();
             return;
         }
 

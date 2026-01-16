@@ -774,6 +774,7 @@ export const all_group_setting_labels = {
     },
     stream: {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
+        can_create_topic_group: $t({defaultMessage: "Who can start new topics"}),
         can_delete_any_message_group: $t({
             defaultMessage: "Who can delete any message in this channel",
         }),
@@ -884,16 +885,17 @@ export const owner_editable_realm_group_permission_settings = new Set([
 // Order of settings is important, as this list is used to
 // render assigned permissions in permissions panel.
 export const stream_group_permission_settings: StreamGroupSettingName[] = [
-    "can_send_message_group",
-    "can_administer_channel_group",
-    "can_delete_any_message_group",
-    "can_delete_own_message_group",
-    "can_move_messages_out_of_channel_group",
-    "can_move_messages_within_channel_group",
     "can_subscribe_group",
     "can_add_subscribers_group",
     "can_remove_subscribers_group",
+    "can_send_message_group",
+    "can_create_topic_group",
+    "can_move_messages_within_channel_group",
+    "can_move_messages_out_of_channel_group",
     "can_resolve_topics_group",
+    "can_delete_any_message_group",
+    "can_delete_own_message_group",
+    "can_administer_channel_group",
 ];
 
 export const stream_group_permission_settings_requiring_content_access: StreamGroupSettingName[] = [
@@ -1310,44 +1312,48 @@ export const stream_privacy_policy_values = {
         code: "web-public",
         name: $t({defaultMessage: "Web-public"}),
         description: $t({
-            defaultMessage:
-                "Anyone on the internet can view messages; members of your organization can join.",
+            defaultMessage: "Anyone on the internet can view",
         }),
     },
     public: {
         code: "public",
         name: $t({defaultMessage: "Public"}),
         description: $t({
-            defaultMessage: "Members of your organization can view messages and join",
-        }),
-    },
-    private_with_public_history: {
-        code: "invite-only-public-history",
-        name: $t({defaultMessage: "Private, shared history"}),
-        description: $t({
-            defaultMessage: "Joining and viewing messages requires being invited",
+            defaultMessage: "Everyone except guests can view and join",
         }),
     },
     private: {
         code: "invite-only",
-        name: $t({defaultMessage: "Private, protected history"}),
+        name: $t({defaultMessage: "Private"}),
         description: $t({
-            defaultMessage:
-                "Joining and viewing messages requires being invited; users can only view messages sent while they were subscribed",
+            defaultMessage: "Requires permission to view and join",
         }),
     },
 };
 
-export const export_type_values = {
-    export_public: {
-        value: 1,
+export type ExportTypeSlug = "public" | "full_with_consent" | "full_without_consent";
+
+export type ExportTypeOption = {
+    slug: ExportTypeSlug;
+    description: string;
+    default: boolean;
+};
+
+export const export_type_values: Record<ExportTypeSlug, ExportTypeOption> = {
+    public: {
+        slug: "public",
         description: $t({defaultMessage: "Public data"}),
         default: false,
     },
-    export_full_with_consent: {
-        value: 2,
-        description: $t({defaultMessage: "Standard"}),
+    full_with_consent: {
+        slug: "full_with_consent",
+        description: $t({defaultMessage: "Public and private data (with consent)"}),
         default: true,
+    },
+    full_without_consent: {
+        slug: "full_without_consent",
+        description: $t({defaultMessage: "All public and private data"}),
+        default: false,
     },
 };
 

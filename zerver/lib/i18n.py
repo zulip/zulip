@@ -34,7 +34,11 @@ def get_language_name(code: str) -> str:
 
 def get_available_language_codes() -> list[str]:
     language_list = get_language_list()
-    codes = [language["code"] for language in language_list]
+    codes = [
+        language["code"]
+        for language in language_list
+        if language["code"] == "en" or language["percent_translated"] >= 5
+    ]
     return codes
 
 

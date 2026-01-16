@@ -37,6 +37,7 @@ class AuditLogEventType(IntEnum):
     USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED = 131
     USER_SETTING_CHANGED = 132
     USER_DIGEST_EMAIL_CREATED = 133
+    USER_IS_IMPORTED_STUB_CHANGED = 134
 
     REALM_DEACTIVATED = 201
     REALM_REACTIVATED = 202
@@ -258,6 +259,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
         on_delete=CASCADE,
     )
     event_last_message_id = models.IntegerField(null=True)
+    scrubbed = models.BooleanField(db_default=False, default=False)
 
     class Meta:
         ordering = ["id"]

@@ -29,10 +29,15 @@ export type SettingsSubscription = StreamSubscription & {
     subscriber_count: number;
 };
 
-export const FILTERS = {
+export const ARCHIVED_STATUS_FILTERS = {
     ALL_CHANNELS: "all_channels",
     NON_ARCHIVED_CHANNELS: "non_archived_channels",
     ARCHIVED_CHANNELS: "archived_channels",
+};
+
+export const FOLDER_FILTERS = {
+    UNCATEGORIZED_DROPDOWN_OPTION: -1,
+    ANY_FOLDER_DROPDOWN_OPTION: -2,
 };
 
 export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscription {
@@ -144,14 +149,12 @@ export function get_unmatched_streams_for_notification_settings(): ({
 }
 
 export function get_streams_for_settings_page(): SettingsSubscription[] {
-    // TODO: This function is only used for copy-from-stream, so
-    //       the current name is slightly misleading now, plus
-    //       it's not entirely clear we need unsubscribed streams
-    //       for that.  Also we may be revisiting that UI.
-
-    // Build up our list of subscribed streams from the data we already have.
-    const subscribed_rows = stream_data.subscribed_subs();
-    const unsubscribed_rows = stream_data.unsubscribed_subs();
+    // Build up our list of non-archived subscribed and unsubscribed
+    // streams from the data we already have.
+    const subscribed_rows = stream_data.subscribed_subs().filter((stream) => !stream.is_archived);
+    const unsubscribed_rows = stream_data
+        .unsubscribed_subs()
+        .filter((stream) => !stream.is_archived);
 
     // Sort and combine all our streams.
     function by_name(a: StreamSubscription, b: StreamSubscription): number {
@@ -159,9 +162,7 @@ export function get_streams_for_settings_page(): SettingsSubscription[] {
     }
     subscribed_rows.sort(by_name);
     unsubscribed_rows.sort(by_name);
-    const all_subs = [...unsubscribed_rows, ...subscribed_rows].filter(
-        (stream) => !stream.is_archived,
-    );
+    const all_subs = [...unsubscribed_rows, ...subscribed_rows];
 
     return get_subs_for_settings(all_subs);
 }

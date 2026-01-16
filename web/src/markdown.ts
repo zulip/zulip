@@ -2,14 +2,14 @@ import {getUnixTime, isValid} from "date-fns";
 import katex from "katex";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import type {Template} from "url-template";
+import type Template from "uri-template-lite";
 
-import * as fenced_code from "../shared/src/fenced_code.ts";
 import render_channel_message_link from "../templates/channel_message_link.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 import marked from "../third/marked/lib/marked.cjs";
 import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
 
+import * as fenced_code from "./fenced_code.ts";
 import * as util from "./util.ts";
 
 // This contains zulip's frontend Markdown implementation; see

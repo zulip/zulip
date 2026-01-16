@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
 
+require("@date-fns/tz"); // To prevent mockdate from interfering with it
 require("css.escape");
 require("handlebars/runtime.js");
 const {JSDOM} = require("jsdom");
@@ -34,10 +35,7 @@ Object.defineProperty(global, "navigator", {
 
 require("@babel/register")({
     extensions: [".cjs", ".cts", ".js", ".mjs", ".mts", ".ts"],
-    only: [
-        new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../shared/src") + path.sep)),
-        new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../src") + path.sep)),
-    ],
+    only: [new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../src") + path.sep))],
     plugins: [
         ...(process.env.USING_INSTRUMENTED_CODE ? [["istanbul", {exclude: []}]] : []),
         ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],

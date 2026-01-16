@@ -6,6 +6,7 @@ import orjson
 import time_machine
 from django.conf import settings
 from django.core import mail
+from django.http import HttpRequest
 from django.utils.html import escape
 from django.utils.timezone import now
 
@@ -22,7 +23,7 @@ from zerver.actions.user_settings import do_change_user_setting, do_start_email_
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import EmailChangeStatus, UserProfile
-from zerver.models.realms import get_realm
+from zerver.models.realms import Realm, get_realm
 from zerver.models.scheduled_jobs import ScheduledEmail
 from zerver.models.users import get_user, get_user_by_delivery_email, get_user_profile_by_id
 
@@ -404,27 +405,38 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(get_user_by_delivery_email(new_email, user_profile.realm), user_profile)
 
     def test_configure_demo_organization_owner_email(self) -> None:
-        desdemona = self.example_user("desdemona")
-        desdemona.realm.demo_organization_scheduled_deletion_date = now() + timedelta(days=30)
-        desdemona.realm.save()
-        assert desdemona.realm.demo_organization_scheduled_deletion_date is not None
+        demo_name = "demo owner email test"
+        result = self.submit_demo_creation_form(demo_name)
+        realm = Realm.objects.filter(name=demo_name).latest("date_created")
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].startswith(
+                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
+            )
+        )
+        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
 
-        self.login("desdemona")
-        desdemona.delivery_email = ""
-        desdemona.save()
-        self.assertEqual(desdemona.delivery_email, "")
+        result = self.client_get(result["Location"], subdomain=realm.string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
 
-        data = {"email": "desdemona-new@zulip.com"}
+        user_profile = realm.get_first_human_user()
+        assert user_profile is not None
+        self.assert_logged_in_user_id(user_profile.id)
+        self.assertEqual(user_profile.delivery_email, "")
+        self.assertFalse(user_profile.enable_marketing_emails)
+
+        data = {"email": "demo-owner@example.com"}
         url = "/json/settings"
         self.assert_length(mail.outbox, 0)
-        result = self.client_patch(url, data)
+        result = self.client_patch(url, data, subdomain=realm.string_id)
         self.assert_json_success(result)
         self.assert_length(mail.outbox, 1)
 
         email_message = mail.outbox[0]
         self.assertEqual(
             email_message.subject,
-            "Verify your new email address for your demo Zulip organization",
+            "Verify your email address for your Zulip demo organization",
         )
         body = email_message.body
         self.assertIn(
@@ -436,15 +448,28 @@ class EmailChangeTestCase(ZulipTestCase):
             self.email_display_from(email_message),
             rf"^testserver account security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
-        self.assertEqual(email_message.extra_headers["List-Id"], "Zulip Dev <zulip.testserver>")
+        self.assertEqual(
+            email_message.extra_headers["List-Id"], f"{realm.name} <{realm.subdomain}.testserver>"
+        )
 
+        # Email confirmation link
         confirmation_url = [s for s in body.split("\n") if s][2]
-        response = self.use_email_change_confirmation_link(confirmation_url, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assert_in_success_response(["Set a new password"], response)
+        result = self.use_email_change_confirmation_link(confirmation_url, follow=False)
 
-        user_profile = get_user_profile_by_id(desdemona.id)
-        self.assertEqual(user_profile.delivery_email, "desdemona-new@zulip.com")
+        # Redirects user to set a password
+        self.assertEqual(result.status_code, 302)
+        result = self.client_get(result["Location"])
+        self.assertEqual(result.status_code, 302)
+
+        password_set_url = result["Location"]
+        result = self.client_get(password_set_url, subdomain=realm.string_id)
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(
+            ["Set a new password", "low-traffic newsletter (a few emails a year)"], result
+        )
+
+        user_profile.refresh_from_db()
+        self.assertEqual(user_profile.delivery_email, "demo-owner@example.com")
 
         scheduled_emails = ScheduledEmail.objects.filter(users=user_profile).order_by(
             "scheduled_timestamp"
@@ -462,3 +487,33 @@ class EmailChangeTestCase(ZulipTestCase):
             orjson.loads(scheduled_emails[2].data)["template_prefix"],
             "zerver/emails/onboarding_team_to_zulip",
         )
+
+        # Set password
+        with self.settings(PASSWORD_MIN_LENGTH=3, PASSWORD_MIN_GUESSES=1000):
+            result = self.client_post(
+                password_set_url,
+                {
+                    "new_password1": "f657gdGGk9",
+                    "new_password2": "f657gdGGk9",
+                    "enable_marketing_emails": "true",
+                },
+                subdomain=realm.string_id,
+            )
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result["Location"].endswith("/password/done/"))
+            self.assert_logged_in_user_id(None)
+
+            # Log in with new password
+            request = HttpRequest()
+            request.session = self.client.session
+            self.assertTrue(
+                self.client.login(
+                    request=request,
+                    username="demo-owner@example.com",
+                    password="f657gdGGk9",
+                    realm=realm,
+                ),
+            )
+            self.assert_logged_in_user_id(user_profile.id)
+            user_profile.refresh_from_db()
+            self.assertTrue(user_profile.enable_marketing_emails)

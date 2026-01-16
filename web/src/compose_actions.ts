@@ -15,6 +15,7 @@ import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as drafts from "./drafts.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import {$t} from "./i18n.ts";
@@ -26,6 +27,7 @@ import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as popovers from "./popovers.ts";
+import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import * as resize from "./resize.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
@@ -89,12 +91,8 @@ function hide_box(): void {
     // This is the main hook for saving drafts when closing the compose box.
     drafts.update_draft();
     blur_compose_inputs();
-    $("#compose_recipient_box").hide();
-    $("#compose-direct-recipient").hide();
     $(".new_message_textarea").css("min-height", "");
     compose_fade.clear_compose();
-    $(".message_comp").hide();
-    $("#compose_controls").show();
     // Assume a muted recipient row for the next time
     // the compose box is reopened
     $("#compose-recipient").addClass("low-attention-recipient-row");
@@ -131,7 +129,7 @@ function show_compose_box(opts: ComposeActionsOpts): void {
         compose_ui.set_focus(opts_by_message_type);
     }
     // Transitions in the recipient row of the compose box are attached
-    // to this class we add a slight delay to avoid transitions firing
+    // to this class; we add a slight delay to avoid transitions firing
     // immediately.
     requestAnimationFrame(() => {
         $("#compose").addClass("compose-box-open");
@@ -201,8 +199,7 @@ export function rewire_autosize_message_content(value: typeof autosize_message_c
 
 export let expand_compose_box = (): void => {
     $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
-    $("#compose_controls").hide();
-    $(".message_comp").show();
+    $("#compose").addClass("compose-box-open");
 };
 
 export function rewire_expand_compose_box(value: typeof expand_compose_box): void {
@@ -216,7 +213,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
 
     maybe_scroll_up_selected_message(opts);
     compose_fade.start_compose(opts.message_type);
-    $(document).trigger(new $.Event("compose_started.zulip", opts));
+    reload.maybe_reset_pending_reload_timeout("compose_start");
     compose_recipient.update_compose_area_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
     compose_recipient.update_recipient_row_attention_level();
@@ -412,6 +409,15 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
             opts.topic = "";
             compose_recipient.toggle_compose_recipient_dropdown();
         }
+
+        if (
+            is_clear_topic_button_triggered &&
+            stream &&
+            !stream_data.can_create_new_topics_in_stream(stream.stream_id)
+        ) {
+            // Open the typahead so that user can select an existing topic.
+            composebox_typeahead.stream_message_topic_typeahead.lookup(false, true);
+        }
     } else {
         // Open stream selection dropdown if no stream is selected.
         compose_state.set_stream_id("");
@@ -419,7 +425,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     }
     compose_recipient.update_topic_displayed_text(opts.topic);
 
-    compose_state.private_message_recipient_ids(opts.private_message_recipient_ids);
+    compose_state.set_private_message_recipient_ids(opts.private_message_recipient_ids);
 
     // If we're not explicitly opening a different draft, restore the last
     // saved draft (if it exists).
@@ -526,6 +532,7 @@ export let cancel = (): void => {
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");
+    reload.maybe_reset_pending_reload_timeout("compose_end");
 };
 
 export function rewire_cancel(value: typeof cancel): void {

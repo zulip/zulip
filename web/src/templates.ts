@@ -1,10 +1,11 @@
 import Handlebars from "handlebars/runtime.js";
-
-import render_input_wrapper from "../templates/components/input_wrapper.hbs";
+import assert from "minimalistic-assert";
+import {z} from "zod/mini";
 
 import * as common from "./common.ts";
 import {default_html_elements, intl} from "./i18n.ts";
 import {postprocess_content} from "./postprocess_content.ts";
+import {user_settings} from "./user_settings.ts";
 
 // Below, we register Zulip-specific extensions to the Handlebars API.
 //
@@ -176,12 +177,47 @@ Handlebars.registerHelper("popover_hotkey_hints", (...args) => {
     );
 });
 
-// The below section is for registering global Handlebar partials.
+const list_format_options_schema = z.object({
+    style: z.optional(z.enum(["narrow", "long", "short"])),
+    type: z.optional(z.enum(["conjunction", "disjunction", "unit"])),
+});
 
-// The "input_wrapper" partial block located at web/templates/components/input_wrapper.hbs
-// is used to wrap any input element that needs to be styled as a Zulip input.
-// Usage example:
-//    {{#> input_wrapper . input_type="filter-input" custom_classes="inbox-search-wrapper" icon="search" input_button_icon="close"}}
-//        <input type="text" id="{{INBOX_SEARCH_ID}}" class="input-element" value="{{search_val}}" autocomplete="off" placeholder="{{t 'Filter' }}" />
-//    {{/input_wrapper}}
-Handlebars.registerPartial("input_wrapper", render_input_wrapper);
+Handlebars.registerHelper(
+    "list_each",
+    function (this: unknown, context: unknown, options: Handlebars.HelperOptions) {
+        const {fn, inverse} = options;
+        const items_html: string[] = [];
+        let empty = false;
+        assert("each" in Handlebars.helpers);
+        const ret: unknown = Handlebars.helpers["each"].call(this, context, {
+            ...options,
+            fn(item_context: unknown, item_options?: Handlebars.RuntimeOptions) {
+                items_html.push(fn(item_context, item_options));
+                return "";
+            },
+            inverse(item_context: unknown, item_options?: Handlebars.RuntimeOptions) {
+                empty = true;
+                return inverse(item_context, item_options);
+            },
+        });
+        if (empty) {
+            return ret;
+        }
+        assert.equal(ret, "");
+        /* istanbul ignore if */
+        if (Intl.ListFormat === undefined) {
+            return items_html.join(", ");
+        }
+        return new Intl.ListFormat(
+            user_settings.default_language,
+            list_format_options_schema.parse(options.hash),
+        )
+            .formatToParts(items_html)
+            .map((part) =>
+                part.type === "element"
+                    ? part.value
+                    : Handlebars.Utils.escapeExpression(part.value),
+            )
+            .join("");
+    },
+);

@@ -83,6 +83,7 @@ export type RealmGroupSettingNameSupportingAnonymousGroups = z.infer<
 export const stream_group_setting_name_schema = z.enum([
     "can_add_subscribers_group",
     "can_administer_channel_group",
+    "can_create_topic_group",
     "can_delete_any_message_group",
     "can_delete_own_message_group",
     "can_move_messages_out_of_channel_group",

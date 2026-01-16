@@ -4,10 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class SlackIncomingHookTests(WebhookTestCase):
-    CHANNEL_NAME = "slack_incoming"
-    URL_TEMPLATE = "/api/v1/external/slack_incoming?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "slack_incoming"
-
     def test_message(self) -> None:
         expected_topic_name = ""
         expected_message = """
@@ -28,7 +24,7 @@ Hello, world.
             ("*foo*a*bar*", "*foo*a*bar*"),
             ("some _foo_ word", "some *foo* word"),
         ]
-        self.subscribe(self.test_user, self.CHANNEL_NAME)
+        self.subscribe(self.test_user, self.channel_name)
         for input_value, output_value in tests:
             payload = {"text": input_value}
             msg = self.send_webhook_payload(
@@ -39,7 +35,7 @@ Hello, world.
             )
             self.assert_channel_message(
                 message=msg,
-                channel_name=self.CHANNEL_NAME,
+                channel_name=self.channel_name,
                 topic_name="",
                 content=output_value,
             )
@@ -225,7 +221,7 @@ Value without title
 
 [](https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg)
 
-<time:1655945306>
+<time:2022-06-23T00:48:26+00:00>
         """.strip()
 
         self.check_webhook(
@@ -253,7 +249,7 @@ Sample text.
 
 Sample footer.
 
-<time:1655945306>
+<time:2022-06-23T00:48:26+00:00>
         """.strip()
 
         self.check_webhook(
@@ -273,7 +269,7 @@ Sample text.
 
 Sample footer.
 
-<time:1655945306>
+<time:2022-06-23T00:48:26+00:00>
         """.strip()
 
         self.check_webhook(
@@ -313,7 +309,7 @@ Sample pretext.
 
 Sample footer.
 
-<time:1655945306>
+<time:2022-06-23T00:48:26+00:00>
         """.strip()
 
         self.check_webhook(
@@ -333,7 +329,7 @@ Sample text.
 
 Sample footer.
 
-<time:1655945306>
+<time:2022-06-23T00:48:26+00:00>
         """.strip()
 
         self.check_webhook(
@@ -353,7 +349,7 @@ Sample text.
 
 [](https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg)
 
-<time:1655945306>
+<time:2022-06-23T00:48:26+00:00>
         """.strip()
 
         self.check_webhook(
@@ -375,7 +371,7 @@ Sample text.
 
 Sample footer.
 
-<time:1655945306>
+<time:2022-06-23T00:48:26+00:00>
         """.strip()
 
         self.check_webhook(

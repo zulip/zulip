@@ -201,6 +201,11 @@
             background-color: var(--color-background-poll-vote-focus);
             border-color: var(--color-border-poll-vote-focus);
         }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     }
 
     .poll-names {
@@ -267,7 +272,7 @@ input {
     &.poll-question,
     &.todo-task-list-title {
         flex: 1 0 auto;
-        padding: 4px 6px;
+        padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     }
 }
 

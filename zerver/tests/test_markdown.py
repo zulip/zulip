@@ -42,7 +42,6 @@ from zerver.lib.markdown import (
     content_has_emoji_syntax,
     image_preview_enabled,
     markdown_convert,
-    maybe_update_markdown_engines,
     possible_linked_stream_names,
     render_message_markdown,
     topic_links,
@@ -829,6 +828,29 @@ class MarkdownEmbedsTest(ZulipTestCase):
         self.assertEqual(
             converted,
             f"""<p><a href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw">http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw</a></p>\n<div class="youtube-video message_inline_image"><a data-id="nOJgD4fcZhI" href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw"><img src="{get_camo_url("https://i.ytimg.com/vi/nOJgD4fcZhI/mqdefault.jpg")}"></a></div>""",
+        )
+
+    def test_inline_image(self) -> None:
+        image_url = "https://www.google.com/images/srpr/logo4w.png"
+        msg = f"The Google logo looks like this: ![Google logo]({image_url}) and..."
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            f"""<p>The Google logo looks like this: <img alt="Google logo" data-original-src="{image_url}" src="{get_camo_url(image_url)}"> and...</p>""",
+        )
+
+        msg = '![foo](/url "the title")'
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<p><img alt="foo" data-original-src="/url" src="/url" title="the title"></p>',
+        )
+
+        msg = "![](/url)"
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<p><img alt="" data-original-src="/url" src="/url"></p>',
         )
 
     def test_inline_image_preview(self) -> None:
@@ -2237,7 +2259,6 @@ class MarkdownCodeBlockTest(ZulipTestCase):
         realm = do_create_realm(
             string_id="code_block_processor_test", name="code_block_processor_test"
         )
-        maybe_update_markdown_engines(realm.id, True)
         rendering_result = markdown_convert(msg, message_realm=realm, email_gateway=True)
         expected_output = (
             "<p>Hello,</p>\n"

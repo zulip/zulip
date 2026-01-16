@@ -13,7 +13,8 @@ import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
-import type {Event} from "./poll_widget.ts";
+import type {Event} from "./widget_data.ts";
+import type {AnyWidgetData} from "./widget_schema.ts";
 
 // Any single user should send add a finite number of tasks
 // to a todo list. We arbitrarily pick this value.
@@ -318,23 +319,16 @@ export class TaskData {
 export function activate({
     $elem,
     callback,
-    extra_data,
+    any_data,
     message,
 }: {
     $elem: JQuery;
-    callback: (data: TodoWidgetOutboundData | undefined) => void;
-    extra_data: unknown;
+    callback: (data: TodoWidgetOutboundData) => void;
+    any_data: AnyWidgetData;
     message: Message;
 }): (events: Event[]) => void {
-    const parse_result = z.nullable(todo_widget_extra_data_schema).safeParse(extra_data);
-    if (!parse_result.success) {
-        blueslip.warn("invalid todo extra data", {issues: parse_result.error.issues});
-        return () => {
-            /* we send a dummy function when extra data is invalid */
-        };
-    }
-    const {data} = parse_result;
-    const {task_list_title = "", tasks = []} = data ?? {};
+    assert(any_data.widget_type === "todo");
+    const {task_list_title = "", tasks = []} = any_data.extra_data ?? {};
     const is_my_task_list = people.is_my_user_id(message.sender_id);
     const task_data = new TaskData({
         message_sender_id: message.sender_id,
@@ -401,7 +395,33 @@ export function activate({
 
         // Broadcast the new task list title to our peers.
         const data = task_data.handle.new_task_list_title.outbound(new_task_list_title);
-        callback(data);
+        if (data) {
+            callback(data);
+        }
+    }
+
+    function add_task(): void {
+        $elem.find(".widget-error").text("");
+        const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+        const desc = $elem.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
+        if (task === "") {
+            return;
+        }
+
+        $elem.find("input.add-task").val("").trigger("focus");
+        $elem.find("input.add-desc").val("");
+
+        // This case should not generally occur.
+        const task_exists = task_data.name_in_use(task);
+        if (task_exists) {
+            $elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
+            return;
+        }
+
+        const data = task_data.handle.new_task.outbound(task, desc);
+        if (data) {
+            callback(data);
+        }
     }
 
     function build_widget(): void {
@@ -451,22 +471,15 @@ export function activate({
 
         $elem.find("button.add-task").on("click", (e) => {
             e.stopPropagation();
-            $elem.find(".widget-error").text("");
-            const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
-            const desc = $elem.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
+            add_task();
+        });
 
-            $elem.find("input.add-task").val("").trigger("focus");
-            $elem.find("input.add-desc").val("");
-
-            // This case should not generally occur.
-            const task_exists = task_data.name_in_use(task);
-            if (task_exists) {
-                $elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
-                return;
+        $elem.find("input.add-task, input.add-desc").on("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.stopPropagation();
+                e.preventDefault();
+                add_task();
             }
-
-            const data = task_data.handle.new_task.outbound(task, desc);
-            callback(data);
         });
     }
 

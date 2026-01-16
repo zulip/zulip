@@ -41,7 +41,11 @@ from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_u
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingRemoteRealmError
-from zerver.lib.message import access_message_and_usermessage, direct_message_group_users
+from zerver.lib.message import (
+    OnlyMessageFields,
+    access_message_and_usermessage,
+    direct_message_group_users,
+)
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.remote_server import (
     PushNotificationBouncerError,
@@ -1059,7 +1063,11 @@ def get_message_payload(
     return data
 
 
-def get_apns_alert_title(message: Message, language: str) -> str:
+def get_apns_alert_title(
+    message: Message,
+    channel_name: str | None = None,
+    topic_display_name: str | None = None,
+) -> str:
     """
     On an iOS notification, this is the first bolded line.
     """
@@ -1069,9 +1077,8 @@ def get_apns_alert_title(message: Message, language: str) -> str:
         if len(recipients) > 2:
             return ", ".join(sorted(r["full_name"] for r in recipients))
     elif message.is_channel_message:
-        stream_name = get_message_stream_name_from_database(message)
-        topic_display_name = get_topic_display_name(message.topic_name(), language)
-        return f"#{stream_name} > {topic_display_name}"
+        assert channel_name is not None and topic_display_name is not None
+        return f"#{channel_name} > {topic_display_name}"
     # For 1:1 direct messages, we just show the sender name.
     return message.sender.full_name
 
@@ -1079,7 +1086,6 @@ def get_apns_alert_title(message: Message, language: str) -> str:
 def get_apns_alert_subtitle(
     message: Message,
     trigger: str,
-    user_profile: UserProfile,
     mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> str:
@@ -1148,58 +1154,53 @@ def get_apns_badge_count_future(
 
 
 def get_message_payload_apns(
+    message_payload: Mapping[str, Any],
     user_profile: UserProfile,
     message: Message,
     trigger: str,
-    mentioned_user_group_id: int | None = None,
-    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> dict[str, Any]:
     """A `message` payload for iOS, via APNs."""
-    zulip_data = get_message_payload(
-        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
-    )
-    zulip_data.update(
+    message_payload = dict(copy.deepcopy(message_payload))
+    message_payload.update(
         message_ids=[message.id],
     )
-    remove_obsolete_fields_apns(zulip_data)
+    mentioned_user_group_name = message_payload.get("mentioned_user_group_name")
+    remove_obsolete_fields_apns(message_payload)
+
+    if message.is_channel_message:
+        alert_title = get_apns_alert_title(
+            message, message_payload["stream"], message_payload["topic"]
+        )
+    else:
+        alert_title = get_apns_alert_title(message)
 
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
         content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
         apns_data = {
             "alert": {
-                "title": get_apns_alert_title(message, user_profile.default_language),
+                "title": alert_title,
                 "subtitle": get_apns_alert_subtitle(
-                    message, trigger, user_profile, mentioned_user_group_name, can_access_sender
+                    message, trigger, mentioned_user_group_name, can_access_sender
                 ),
                 "body": content,
             },
             "sound": "default",
             "badge": get_apns_badge_count(user_profile),
-            "custom": {"zulip": zulip_data},
+            "custom": {"zulip": message_payload},
         }
     return apns_data
 
 
 def get_message_payload_gcm(
+    message_payload: Mapping[str, Any],
     user_profile: UserProfile,
     message: Message,
-    mentioned_user_group_id: int | None = None,
-    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
     for_legacy_clients: bool = True,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """A `message` payload + options, for Android via FCM."""
-    data = get_message_payload(
-        user_profile,
-        message,
-        mentioned_user_group_id,
-        mentioned_user_group_name,
-        can_access_sender,
-        for_legacy_clients,
-    )
-
     if not can_access_sender:
         # A guest user can only receive a stream message from an
         # inaccessible user as we allow unsubscribed users to send
@@ -1208,45 +1209,28 @@ def get_message_payload_gcm(
         sender_avatar_url = get_avatar_for_inaccessible_user()
         sender_name = str(UserProfile.INACCESSIBLE_USER_NAME)
     else:
-        sender_avatar_url = absolute_avatar_url(message.sender)
+        sender_avatar_url = absolute_avatar_url(message.sender, message.realm.url)
         sender_name = message.sender.full_name
 
+    message_payload = dict(copy.deepcopy(message_payload))
     if for_legacy_clients:
-        data["event"] = "message"
-        data["zulip_message_id"] = message.id  # message_id is reserved for CCS
+        message_payload["event"] = "message"
+        message_payload["zulip_message_id"] = message.id  # message_id is reserved for CCS
     else:
-        data["type"] = "message"
-        data["message_id"] = message.id
+        message_payload["type"] = "message"
+        message_payload["message_id"] = message.id
 
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
         content, _truncated = truncate_content(get_mobile_push_content(message.rendered_content))
-        data.update(
+        message_payload.update(
             time=datetime_to_timestamp(message.date_sent),
             content=content,
             sender_full_name=sender_name,
             sender_avatar_url=sender_avatar_url,
         )
     gcm_options = {"priority": "high"}
-    return data, gcm_options
-
-
-def get_payload_data_to_encrypt(
-    user_profile: UserProfile,
-    message: Message,
-    mentioned_user_group_id: int | None = None,
-    mentioned_user_group_name: str | None = None,
-    can_access_sender: bool = True,
-) -> dict[str, Any]:
-    payload_data_to_encrypt, _gcm_options = get_message_payload_gcm(
-        user_profile,
-        message,
-        mentioned_user_group_id,
-        mentioned_user_group_name,
-        can_access_sender,
-        for_legacy_clients=False,
-    )
-    return payload_data_to_encrypt
+    return message_payload, gcm_options
 
 
 def get_remove_payload_gcm(
@@ -1713,6 +1697,29 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage
 
+    required_message_fields = OnlyMessageFields(
+        select_related=["sender", "realm", "recipient"],
+        fields=[
+            "sender_id",
+            "realm_id",
+            "recipient_id",
+            "is_channel_message",
+            "subject",
+            "rendered_content",
+            "date_sent",
+            "sender__recipient_id",
+            "sender__realm_id",
+            "sender__is_bot",
+            "sender__email",
+            "sender__full_name",
+            "sender__delivery_email",
+            "sender__avatar_source",
+            "sender__avatar_version",
+            "realm__string_id",
+            "realm__can_access_all_users_group_id",
+        ],
+    )
+
     with transaction.atomic(durable=True):
         try:
             (message, user_message) = access_message_and_usermessage(
@@ -1720,6 +1727,7 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
                 missed_message["message_id"],
                 lock_message=True,
                 is_modifying_message=False,
+                only_message_fields=required_message_fields,
             )
         except JsonableError:
             if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
@@ -1800,7 +1808,7 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         # the sender because they are sending a message to a public
         # stream that you are subscribed to but they are not.
 
-        can_access_sender = check_can_access_user(message.sender, user_profile)
+        can_access_sender = check_can_access_user(message.sender, user_profile, message.realm)
     else:
         # For private messages, the recipient will gain access
         # to the sender if they did not had access previously.
@@ -1811,13 +1819,20 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     def get_payload_legacy(
         apple_device_exists: bool, android_device_exists: bool
     ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        assert apple_device_exists or android_device_exists
+        message_payload = get_message_payload(
+            user_profile,
+            message,
+            mentioned_user_group_id,
+            mentioned_user_group_name,
+            can_access_sender,
+        )
         apns_payload = (
             get_message_payload_apns(
+                message_payload,
                 user_profile,
                 message,
                 trigger,
-                mentioned_user_group_id,
-                mentioned_user_group_name,
                 can_access_sender,
             )
             if apple_device_exists
@@ -1825,10 +1840,9 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         )
         gcm_payload, gcm_options = (
             get_message_payload_gcm(
+                message_payload,
                 user_profile,
                 message,
-                mentioned_user_group_id,
-                mentioned_user_group_name,
                 can_access_sender,
             )
             if android_device_exists
@@ -1837,12 +1851,20 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         return apns_payload, gcm_payload, gcm_options
 
     def get_payload_to_encrypt() -> dict[str, Any]:
-        payload_data_to_encrypt = get_payload_data_to_encrypt(
+        message_payload = get_message_payload(
             user_profile,
             message,
             mentioned_user_group_id,
             mentioned_user_group_name,
             can_access_sender,
+            for_legacy_clients=False,
+        )
+        payload_data_to_encrypt, _gcm_options = get_message_payload_gcm(
+            message_payload,
+            user_profile,
+            message,
+            can_access_sender,
+            for_legacy_clients=False,
         )
         return payload_data_to_encrypt
 

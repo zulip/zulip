@@ -64,7 +64,8 @@ export type DialogWidgetConfig = {
     html_heading?: string;
     text_heading?: string;
     html_body: string;
-    on_click: (e: JQuery.ClickEvent) => void;
+    on_click?: (e: JQuery.ClickEvent) => void;
+    hide_footer?: boolean;
     html_submit_button?: string;
     html_exit_button?: string;
     close_on_submit?: boolean;
@@ -163,12 +164,13 @@ export function launch(conf: DialogWidgetConfig): string {
     // Mandatory fields:
     // * html_heading | text_heading
     // * html_body
-    // * on_click
     // The html_ fields should be safe HTML. If callers
     // interpolate user data into strings, they should use
     // templates.
 
     // Optional parameters:
+    // * on_click: Callback to run when submit button is clicked and footer is enabled.
+    // * hide_footer: Whether to disable footer and hide its associated buttons.
     // * html_submit_button: Submit button text.
     // * html_exit_button: Exit button text.
     // * close_on_submit: Whether to close modal on clicking submit.
@@ -209,6 +211,7 @@ export function launch(conf: DialogWidgetConfig): string {
         always_visible_scrollbar: conf.always_visible_scrollbar,
         footer_minor_text: conf.footer_minor_text,
         close_on_overlay_click: conf.close_on_overlay_click ?? true,
+        hide_footer: conf.hide_footer,
     });
     const $dialog = $(html);
     $("body").append($dialog);
@@ -218,6 +221,21 @@ export function launch(conf: DialogWidgetConfig): string {
             conf.post_render(modal_unique_id);
         }
     }, 0);
+
+    if (conf.hide_footer) {
+        modals.open(modal_unique_id, {
+            autoremove: true,
+            on_show() {
+                if (conf.on_show) {
+                    conf.on_show();
+                }
+            },
+            on_hide: conf?.on_hide,
+            on_shown: conf?.on_shown,
+            on_hidden: conf?.on_hidden,
+        });
+        return modal_unique_id;
+    }
 
     const $submit_button = $dialog.find(".dialog_submit_button");
 
@@ -249,6 +267,7 @@ export function launch(conf: DialogWidgetConfig): string {
     // Set up handlers.
     $submit_button.on("click", (e: JQuery.ClickEvent) => {
         e.preventDefault();
+        assert(conf.on_click !== undefined);
 
         if (conf.validate_input && !conf.validate_input(e)) {
             return;

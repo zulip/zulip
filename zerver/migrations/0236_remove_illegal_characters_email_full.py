@@ -11,7 +11,7 @@ NAME_INVALID_CHARS = ["*", "`", "\\", ">", '"', "@"]
 
 def remove_name_illegal_chars(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model("zerver", "UserProfile")
-    for user in UserProfile.objects.all():
+    for user in UserProfile.objects.all().iterator():
         user.full_name = "".join(
             char
             for char in user.full_name

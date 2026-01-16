@@ -16,6 +16,15 @@ async function get_decoded_url_in_selector(page: Page, selector: string): Promis
     return decodeURIComponent(await (await a!.getProperty("href")).jsonValue());
 }
 
+async function open_manage_bot_tab(page: Page, user_id: number): Promise<void> {
+    const manage_button_selector = `#admin_your_bots_table .user_row[data-user-id="${user_id}"] .manage-user-button`;
+    await page.waitForSelector(manage_button_selector, {visible: true});
+    await page.click(manage_button_selector);
+
+    // Wait for modal, then go to tab
+    await common.wait_for_micromodal_to_open(page);
+}
+
 async function open_settings(page: Page): Promise<void> {
     await common.open_personal_menu(page);
 
@@ -106,7 +115,7 @@ async function test_get_api_key(page: Page): Promise<void> {
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
-    await page.click("#bot-settings .add-a-new-bot");
+    await page.click("#admin-bot-list .add-a-new-bot");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
@@ -127,26 +136,30 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
-    const bot_email = "1-bot@zulip.testserver";
-    const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
-        bot_email,
-    )}"]`;
+    const user_id = await common.get_user_id_from_name(page, "Bot 1");
+    await open_manage_bot_tab(page, user_id!);
+
     const outgoing_webhook_zuliprc_regex =
         /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
+
+    const zuliprc_url_selector = `.micromodal .hidden-zuliprc-download`;
+    const download_zuliprc_selector = `.download-bot-zuliprc`;
 
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
 
-    const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
+    const zuliprc_decoded_url = await get_decoded_url_in_selector(page, zuliprc_url_selector);
     assert.match(
         zuliprc_decoded_url,
         outgoing_webhook_zuliprc_regex,
         "Incorrect outgoing webhook bot zuliprc format",
     );
+    await page.click(".micromodal .modal__close");
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_normal_bot_creation(page: Page): Promise<void> {
-    await page.click("#bot-settings .add-a-new-bot");
+    await page.click("#admin-bot-list .add-a-new-bot");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
@@ -154,7 +167,7 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
         "Unexpected title for deactivate user modal",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
+        await common.get_text_from_selector(page, ".micromodal .dialog_submit_button span"),
         "Add",
         "Deactivate button has incorrect text.",
     );
@@ -166,23 +179,26 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
-    const bot_email = "2-bot@zulip.testserver";
-    const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
-        bot_email,
-    )}"]`;
+    const user_id = await common.get_user_id_from_name(page, "Bot 2");
+    await open_manage_bot_tab(page, user_id!);
+
+    const zuliprc_url_selector = `.micromodal .hidden-zuliprc-download`;
+    const download_zuliprc_selector = `.download-bot-zuliprc`;
 
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
-    const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
+    const zuliprc_decoded_url = await get_decoded_url_in_selector(page, zuliprc_url_selector);
     assert.match(zuliprc_decoded_url, zuliprc_regex, "Incorrect zuliprc format for bot.");
+    await page.click(".micromodal .modal__close");
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_botserverrc(page: Page): Promise<void> {
-    await page.click("#download_botserverrc");
-    await page.waitForSelector('#download_botserverrc[href^="data:application"]', {visible: true});
+    await page.click("#download-botserverrc-file");
+    await page.waitForSelector('#hidden-botserverrc-download[href^="data:application"]');
     const botserverrc_decoded_url = await get_decoded_url_in_selector(
         page,
-        "#download_botserverrc",
+        "#hidden-botserverrc-download",
     );
     const botserverrc_regex =
         /^data:application\/octet-stream;charset=utf-8,\[]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
@@ -272,7 +288,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
 }
 
 async function test_your_bots_section(page: Page): Promise<void> {
-    await page.click('[data-section="your-bots"]');
+    await page.click(".your-bots-link");
     await test_webhook_bot_creation(page);
     await test_normal_bot_creation(page);
     await test_botserverrc(page);
@@ -375,8 +391,8 @@ async function assert_language_changed_to_chinese(page: Page): Promise<void> {
     });
     const default_language = await common.get_text_from_selector(page, ".dropdown_widget_value");
     assert.strictEqual(
-        default_language.slice(0, 4),
-        "简体中文",
+        default_language.slice(0, 7),
+        "中文 (简体)",
         "Default language has not been changed to Chinese.",
     );
 }
@@ -390,6 +406,12 @@ async function test_i18n_language_precedence(page: Page): Promise<void> {
 }
 
 async function test_default_language_setting(page: Page): Promise<void> {
+    // Since the "Bots" section of Personal Settings redirects us to Organization Settings > Bots with the "Your Bots" tab preselected,
+    // we need to switch back to the Personal Settings tab to proceed with further testing.
+    await page.waitForSelector('.tab-switcher .ind-tab[data-tab-key="settings"]', {visible: true});
+    await page.click('.tab-switcher .ind-tab[data-tab-key="settings"]');
+    await page.waitForSelector("#settings_overlay_container", {visible: true});
+
     const preferences_section = '[data-section="preferences"]';
     await page.click(preferences_section);
 
@@ -468,4 +490,4 @@ async function settings_tests(page: Page): Promise<void> {
     // returning a 401. (We reset the test database after each file).
 }
 
-common.run_test(settings_tests);
+await common.run_test(settings_tests);

@@ -1,17 +1,19 @@
+import {tz, tzOffset} from "@date-fns/tz";
 import {
+    differenceInCalendarDays,
     differenceInHours,
     differenceInMinutes,
     formatISO,
     isEqual,
     isValid,
     parseISO,
+    startOfToday,
 } from "date-fns";
 import $ from "jquery";
 
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
 import {$t} from "./i18n.ts";
-import {difference_in_calendar_days, get_offset, start_of_day} from "./time_zone_util.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -19,6 +21,7 @@ import * as util from "./util.ts";
 let next_timerender_id = 0;
 
 export let display_time_zone = browser_time_zone();
+export let display_tz = tz(display_time_zone);
 
 const formatter_map = new Map<string, Intl.DateTimeFormat>();
 
@@ -33,6 +36,7 @@ export function clear_for_testing(): void {
 // Exported for testing only; we do not support live-updating the time zone.
 export function set_display_time_zone(time_zone: string): void {
     display_time_zone = time_zone;
+    display_tz = tz(display_time_zone);
     formatter_map.clear();
 }
 
@@ -137,7 +141,7 @@ export function get_localized_date_or_time_for_format(
 }
 
 // Exported for tests only.
-export function get_tz_with_UTC_offset(time: number | Date): string {
+export function get_tz_with_UTC_offset(time: Date): string {
     let timezone = new Intl.DateTimeFormat(user_settings.default_language, {
         timeZone: display_time_zone,
         timeZoneName: "short",
@@ -154,7 +158,7 @@ export function get_tz_with_UTC_offset(time: number | Date): string {
     // show that along with (UTC+x:y)
     timezone = /GMT[+-][\d:]*/.test(timezone ?? "") ? "" : timezone;
 
-    const offset_minutes = Math.round(get_offset(time, display_time_zone) / 60000);
+    const offset_minutes = tzOffset(display_time_zone, time);
     const tz_UTC_offset = `(UTC${offset_minutes < 0 ? "-" : "+"}${String(
         Math.floor(Math.abs(offset_minutes) / 60),
     ).padStart(2, "0")}:${String(Math.abs(offset_minutes) % 60).padStart(2, "0")})`;
@@ -190,7 +194,7 @@ export let render_now = (time: Date, today = new Date(), display_year?: boolean)
     // Presumably the result of diffDays will be an integer in this
     // case, but round it to be sure before comparing to integer
     // constants.
-    const days_old = difference_in_calendar_days(today, time, display_time_zone);
+    const days_old = differenceInCalendarDays(today, time, {in: display_tz});
 
     if (days_old === 0) {
         time_str = $t({defaultMessage: "Today"});
@@ -231,7 +235,7 @@ export function relative_time_string_from_date(date: Date): string {
         return $t({defaultMessage: "{minutes} minutes ago"}, {minutes});
     }
 
-    const days_old = difference_in_calendar_days(current_date, date, display_time_zone);
+    const days_old = differenceInCalendarDays(current_date, date, {in: display_tz});
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
@@ -271,7 +275,9 @@ export function last_seen_status_from_date(last_active_date: Date): string {
         return $t({defaultMessage: "Active {minutes} minutes ago"}, {minutes});
     }
 
-    const days_old = difference_in_calendar_days(current_date, last_active_date, display_time_zone);
+    const days_old = differenceInCalendarDays(current_date, last_active_date, {
+        in: display_tz,
+    });
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
@@ -333,15 +339,15 @@ export function initialize(): void {
         display_time_zone === undefined || // https://bugs.chromium.org/p/chromium/issues/detail?id=1487920
         display_time_zone === "Etc/Unknown" // https://bugs.chromium.org/p/chromium/issues/detail?id=1473422
     ) {
-        display_time_zone = user_settings.timezone;
+        set_display_time_zone(user_settings.timezone);
         try {
             new Intl.DateTimeFormat(undefined, {timeZone: display_time_zone});
         } catch {
-            display_time_zone = "UTC";
+            set_display_time_zone("UTC");
         }
     }
 
-    last_update = start_of_day(new Date(), display_time_zone);
+    last_update = startOfToday({in: display_tz});
 }
 
 function maybe_add_update_list_entry(entry: UpdateEntry): void {
@@ -382,7 +388,7 @@ export function format_markdown_time(time: number | Date): string {
     return get_localized_date_or_time_for_format(time, "weekday_dayofyear_year_time");
 }
 
-export function get_markdown_time_tooltip(reference: HTMLElement): DocumentFragment | string {
+export function get_markdown_time_tooltip(reference: Element): DocumentFragment | string {
     if (reference instanceof HTMLTimeElement) {
         const time = parseISO(reference.dateTime);
         const tz_offset_str = get_tz_with_UTC_offset(time);
@@ -394,7 +400,7 @@ export function get_markdown_time_tooltip(reference: HTMLElement): DocumentFragm
 // This isn't expected to be called externally except manually for
 // testing purposes.
 export function update_timestamps(): void {
-    const today = start_of_day(new Date(), display_time_zone);
+    const today = startOfToday({in: display_tz});
     if (!isEqual(today, last_update)) {
         const to_process = update_list;
         update_list = [];
@@ -465,7 +471,7 @@ export function stringify_time(time: number | Date): string {
 
 export function format_time_modern(time: number | Date, today = new Date()): string {
     const hours = differenceInHours(today, time);
-    const days_old = difference_in_calendar_days(today, time, display_time_zone);
+    const days_old = differenceInCalendarDays(today, time, {in: display_tz});
 
     if (time > today) {
         /* For timestamps in the future, we always show the year*/

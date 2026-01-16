@@ -1,6 +1,6 @@
 <div id="edit-user-form" data-user-id="{{user_id}}">
     <form class="name-setting">
-        <div class="alert" id="edit-user-form-error"></div>
+        <div id="edit-user-form-error" class="banner-wrapper"></div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group name_change_container">
             <label for="edit_user_full_name" class="modal-field-label">{{t "Name" }}</label>
@@ -27,10 +27,12 @@
         <div class="custom-profile-field-form"></div>
     </form>
     <div class="input-group {{#if hide_deactivate_button}}hide{{/if}}">
-        {{#if is_active}}
-        {{> ../components/action_button custom_classes="deactivate-user-button" attention="quiet" intent="danger" label=(t "Deactivate user") aria-label=(t "Deactivate user") }}
-        {{else}}
-        {{> ../components/action_button custom_classes="reactivate-user-button" attention="quiet" intent="success" label=(t "Reactivate user") aria-label=(t "Reactivate user") }}
-        {{/if}}
+        <div class="deactivate-user-container {{#if user_is_only_organization_owner}}disabled_setting_tooltip{{/if}}">
+            {{#if is_active}}
+            {{> ../components/action_button custom_classes="deactivate-user-button" variant="subtle" intent="danger" label=(t "Deactivate user") aria-label=(t "Deactivate user") disabled=user_is_only_organization_owner }}
+            {{else}}
+            {{> ../components/action_button custom_classes="reactivate-user-button" variant="subtle" intent="success" label=(t "Reactivate user") aria-label=(t "Reactivate user") }}
+            {{/if}}
+        </div>
     </div>
 </div>

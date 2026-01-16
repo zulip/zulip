@@ -22,6 +22,7 @@ import * as settings_ui from "./settings_ui.ts";
 import * as ui_report from "./ui_report.ts";
 import {user_settings, user_settings_schema} from "./user_settings.ts";
 import type {UserSettings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export type SettingsPanel = {
     container: string;
@@ -104,7 +105,9 @@ export function launch_default_language_setting_modal_for_spectator(): void {
     const selected_language = user_settings.default_language;
 
     const html_body = render_dialog_default_language({
-        language_list: get_language_list_columns(selected_language),
+        language_list: get_language_list_columns(selected_language).toSorted((a, b) =>
+            util.strcmp(a.name_with_percent, b.name_with_percent),
+        ),
     });
 
     dialog_widget.launch({

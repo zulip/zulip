@@ -4,7 +4,6 @@ import hmac
 import importlib
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
 from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
@@ -30,7 +29,6 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
-from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile
@@ -59,7 +57,7 @@ OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig(
 class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
-    MAPPING = "mapping"
+    CHANNEL_MAPPING = "mapping"
 
 
 @dataclass
@@ -81,7 +79,7 @@ class WebhookUrlOption:
         This creates a pre-configured WebhookUrlOption object to be used
         in various incoming webhook integrations.
 
-        See https://zulip.com/api/incoming-webhooks-walkthrough#webhookurloption-presets
+        See https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-walkthrough.html#webhookurloption-presets
         for more details on this system and what each option does.
         """
         match config:
@@ -97,7 +95,7 @@ class WebhookUrlOption:
                     label="Exclude notifications from private repositories",
                     validator=check_bool,
                 )
-            case PresetUrlOption.MAPPING:  # nocoverage # Not used yet
+            case PresetUrlOption.CHANNEL_MAPPING:
                 return cls(
                     name=config.value,
                     label="",
@@ -152,7 +150,7 @@ def check_send_webhook_message(
     exclude_events: Json[list[str]] | None = None,
     unquote_url_parameters: bool = False,
     no_previews: bool = False,
-) -> None:
+) -> int | None:
     if complete_event_type is not None and (
         # Here, we implement Zulip's generic support for filtering
         # events sent by the third-party service.
@@ -173,13 +171,13 @@ def check_send_webhook_message(
             and any(fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events)
         )
     ):
-        return
+        return None
 
     client = RequestNotes.get_notes(request).client
     assert client is not None
     if stream is None:
         assert user_profile.bot_owner is not None
-        check_send_private_message(
+        return check_send_private_message(
             user_profile, client, user_profile.bot_owner, body, no_previews=no_previews
         )
     else:
@@ -197,11 +195,11 @@ def check_send_webhook_message(
 
         try:
             if stream.isdecimal():
-                check_send_stream_message_by_id(
+                return check_send_stream_message_by_id(
                     user_profile, client, int(stream), topic, body, no_previews=no_previews
                 )
             else:
-                check_send_stream_message(
+                return check_send_stream_message(
                     user_profile, client, stream, topic, body, no_previews=no_previews
                 )
         except StreamDoesNotExistError:
@@ -209,7 +207,7 @@ def check_send_webhook_message(
             # notifying that the webhook bot just tried to send a message to a
             # non-existent stream, so we don't need to re-raise it since it
             # clutters up webhook-errors.log
-            pass
+            return None
 
 
 def standardize_headers(input_headers: None | dict[str, Any]) -> dict[str, str]:
@@ -237,9 +235,7 @@ def standardize_headers(input_headers: None | dict[str, Any]) -> dict[str, str]:
     return canonical_headers
 
 
-def validate_extract_webhook_http_header(
-    request: HttpRequest, header: str, integration_name: str
-) -> str:
+def get_event_header(request: HttpRequest, header: str, integration_name: str) -> str:
     assert request.user.is_authenticated
 
     extracted_header = request.headers.get(header)
@@ -260,7 +256,7 @@ def validate_extract_webhook_http_header(
     return extracted_header
 
 
-def get_fixture_http_headers(integration_dir_name: str, fixture_name: str) -> dict["str", "str"]:
+def call_fixture_to_headers(integration_dir_name: str, fixture_name: str) -> dict["str", "str"]:
     """For integrations that require custom HTTP headers for some (or all)
     of their test fixtures, this method will call a specially named
     function from the target integration module to determine what set
@@ -277,7 +273,7 @@ def get_fixture_http_headers(integration_dir_name: str, fixture_name: str) -> di
     return fixture_to_headers(fixture_name)
 
 
-def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], dict[str, str]]:
+def default_fixture_to_headers(http_header_key: str) -> Callable[[str], dict[str, str]]:
     """If an integration requires an event type kind of HTTP header which can
     be easily (statically) determined, then name the fixtures in the format
     of "header_value__other_details" or even "header_value" and the use this
@@ -291,21 +287,6 @@ def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], dict
         return {http_header_key: event_type}
 
     return fixture_to_headers
-
-
-def unix_milliseconds_to_timestamp(milliseconds: Any, webhook: str) -> datetime:
-    """If an integration requires time input in unix milliseconds, this helper
-    checks to ensure correct type and will catch any errors related to type or
-    value and raise a JsonableError.
-    Returns a datetime representing the time."""
-    try:
-        # timestamps are in milliseconds so divide by 1000
-        seconds = milliseconds / 1000
-        return timestamp_to_datetime(seconds)
-    except (ValueError, TypeError):
-        raise JsonableError(
-            _("The {webhook} webhook expects time in milliseconds.").format(webhook=webhook)
-        )
 
 
 def parse_multipart_string(body: str) -> dict[str, str]:

@@ -215,6 +215,27 @@ def do_send_create_user_group_event(
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
+def check_add_user_group_core(
+    realm: Realm,
+    name: str,
+    initial_members: list[UserProfile],
+    description: str = "",
+    group_settings_map: Mapping[str, UserGroup] = {},
+    *,
+    acting_user: UserProfile | None,
+) -> NamedUserGroup:
+    user_group = create_user_group_in_database(
+        name,
+        initial_members,
+        realm,
+        description=description,
+        group_settings_map=group_settings_map,
+        acting_user=acting_user,
+    )
+    do_send_create_user_group_event(user_group, [member.id for member in initial_members])
+    return user_group
+
+
 def check_add_user_group(
     realm: Realm,
     name: str,
@@ -225,16 +246,9 @@ def check_add_user_group(
     acting_user: UserProfile | None,
 ) -> NamedUserGroup:
     try:
-        user_group = create_user_group_in_database(
-            name,
-            initial_members,
-            realm,
-            description=description,
-            group_settings_map=group_settings_map,
-            acting_user=acting_user,
+        return check_add_user_group_core(
+            realm, name, initial_members, description, group_settings_map, acting_user=acting_user
         )
-        do_send_create_user_group_event(user_group, [member.id for member in initial_members])
-        return user_group
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{group_name}' already exists.").format(group_name=name))
 
@@ -349,7 +363,7 @@ def bulk_add_members_to_user_groups(
 
     subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
     new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
-    recent_traffic = get_streams_traffic({stream.id for stream in streams}, realm)
+    recent_traffic = get_streams_traffic(realm, {stream.id for stream in streams})
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)
 
     for user_group in user_groups:
@@ -493,7 +507,7 @@ def add_subgroups_to_user_group(
 
     subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
     new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
-    recent_traffic = get_streams_traffic({stream.id for stream in streams}, realm)
+    recent_traffic = get_streams_traffic(realm, {stream.id for stream in streams})
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams(streams)
 
     do_send_subgroups_update_event("add_subgroups", user_group, subgroup_ids)

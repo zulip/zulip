@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
@@ -14,7 +14,7 @@ from zerver.lib.validator import WildValue, check_int, check_none_or, check_stri
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
-    validate_extract_webhook_http_header,
+    get_event_header,
 )
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
@@ -442,11 +442,7 @@ def get_access_token_page_url(payload: WildValue) -> str:
 def get_resource_access_token_expiry_event_body(payload: WildValue, include_title: bool) -> str:
     access_token = payload["object_attributes"]
     expiry_date = access_token["expires_at"].tame(check_string)
-    formatted_date = (
-        datetime.strptime(expiry_date, "%Y-%m-%d")
-        .replace(tzinfo=timezone.utc)
-        .strftime("%b %d, %Y")
-    )
+    formatted_date = datetime.fromisoformat(expiry_date).strftime("%b %d, %Y")
 
     return ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE.format(
         name=access_token["name"].tame(check_string),
@@ -688,7 +684,7 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
 
 
 def get_event(request: HttpRequest, payload: WildValue, branches: str | None) -> str | None:
-    event = validate_extract_webhook_http_header(request, "X-GitLab-Event", "GitLab")
+    event = get_event_header(request, "X-GitLab-Event", "GitLab")
     if event == "System Hook":
         # Convert the event name to a GitLab event title
         if "event_name" in payload:

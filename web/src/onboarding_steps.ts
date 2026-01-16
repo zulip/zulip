@@ -175,7 +175,7 @@ function show_navigation_tour_video(navigation_tour_video_url: string | null): v
             },
             on_hide() {
                 // `narrow_to_dm_with_welcome_bot_new_user` triggers a focus change from
-                // #compose_recipient_box to #compose-textarea (see `compose_actions.show_compose_box`
+                // #compose-channel-recipient to #compose-textarea (see `compose_actions.show_compose_box`
                 // with `opts.defer_focus = true`). We start initializing this modal while the
                 // focus transition is in progress, resulting in a flaky behaviour of the
                 // element that will be in focus when modal is closed.

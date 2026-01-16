@@ -1,42 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-10-29.clover",
-      "created": 1000000000,
-      "data": {
-        "object": {
-          "amount_paid": 56000,
-          "amount_requested": 56000,
-          "created": 1000000000,
-          "currency": "usd",
-          "id": "validate_licenses_for_manual_plan_management--Event.list.3.json",
-          "invoice": "in_NORMALIZED",
-          "is_default": false,
-          "livemode": false,
-          "object": "invoice_payment",
-          "payment": {
-            "payment_record": "pr_test_NORMALIZEDR0ZxlKl41RVfKEFJaqcEHo",
-            "type": "payment_record"
-          },
-          "status": "paid",
-          "status_transitions": {
-            "canceled_at": null,
-            "paid_at": 1000000000
-          }
-        }
-      },
-      "id": "validate_licenses_for_manual_plan_management--Event.list.3.json",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": "validate_licenses_for_manual_plan_management--Event.list.2.json",
-        "idempotency_key": "00000000-0000-0000-0000-000000000000"
-      },
-      "type": "invoice_payment.paid"
-    },
-    {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -69,7 +34,7 @@
           "on_behalf_of": null,
           "payment_details": {
             "customer_reference": null,
-            "order_reference": "in_1SPOy8RVfKEFJaqcWoRmKk"
+            "order_reference": "in_1SVXTVDwzgQ85STgB0kcCL"
           },
           "payment_method": null,
           "payment_method_configuration_details": null,

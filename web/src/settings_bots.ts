@@ -1,143 +1,139 @@
-import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import * as z from "zod/mini";
+import type * as tippy from "tippy.js";
 
 import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
-import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
 import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
+import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
 
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
+import type {Bot} from "./bot_data.ts";
+import * as bot_helper from "./bot_helper.ts";
 import * as channel from "./channel.ts";
-import * as components from "./components.ts";
-import {show_copied_confirmation} from "./copied_tooltip.ts";
 import {csrf_token} from "./csrf.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as integration_url_modal from "./integration_url_modal.ts";
-import * as list_widget from "./list_widget.ts";
+import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as ListWidget from "./list_widget.ts";
+import * as loading from "./loading.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import {realm} from "./state_data.ts";
+import * as settings_users from "./settings_users.ts";
+import {current_user, realm} from "./state_data.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
-import * as user_profile from "./user_profile.ts";
+import * as user_sort from "./user_sort.ts";
+import * as util from "./util.ts";
 
+const GENERIC_BOT_TYPE = 1;
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
 const EMBEDDED_BOT_TYPE = "4";
 
-type BotInfo = {
-    name: string;
-    email: string;
-    user_id: number;
-    type: string;
-    avatar_url: string;
-    api_key: string;
-    is_active: boolean;
-    is_incoming_webhook_bot: boolean;
-    zuliprc: string;
-};
+export const all_bots_list_dropdown_widget_name = "all_bots_list_select_bot_status";
+export const your_bots_list_dropdown_widget_name = "your_bots_list_select_bot_status";
 
 type BotType = {
     type_id: number;
     name: string;
 };
 
-function add_bot_row(info: BotInfo): void {
-    const $row = $(render_bot_avatar_row(info));
-    if (info.is_active) {
-        $("#active_bots_list").append($row);
-    } else {
-        $("#inactive_bots_list").append($row);
-    }
-}
-
-function is_local_part(value: string): boolean {
-    // Adapted from Django's EmailValidator
-    return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
-}
-
-export function render_bots(): void {
-    $("#active_bots_list").empty();
-    $("#inactive_bots_list").empty();
-
-    const all_bots_for_current_user = bot_data.get_all_bots_for_current_user();
-    let user_owns_an_active_outgoing_webhook_bot = false;
-
-    for (const elem of all_bots_for_current_user) {
-        const type = settings_data.bot_type_id_to_string(elem.bot_type);
-        assert(type !== undefined);
-        add_bot_row({
-            name: elem.full_name,
-            email: elem.email,
-            user_id: elem.user_id,
-            type,
-            avatar_url: elem.avatar_url,
-            api_key: elem.api_key,
-            is_active: elem.is_active,
-            is_incoming_webhook_bot: elem.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
-            zuliprc: "zuliprc", // Most browsers do not allow filename starting with `.`
-        });
-        user_owns_an_active_outgoing_webhook_bot =
-            user_owns_an_active_outgoing_webhook_bot ||
-            (elem.is_active && elem.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT);
-    }
-
-    if (user_owns_an_active_outgoing_webhook_bot) {
-        $("#active_bots_list_container .config-download-text").show();
-    } else {
-        $("#active_bots_list_container .config-download-text").hide();
-    }
-
-    list_widget.render_empty_list_message_if_needed($("#active_bots_list"));
-    list_widget.render_empty_list_message_if_needed($("#inactive_bots_list"));
-}
-
-export function generate_zuliprc_url(bot_id: number): string {
-    const bot = bot_data.get(bot_id);
-    assert(bot !== undefined);
-    const data = generate_zuliprc_content(bot);
-    return encode_zuliprc_as_url(data);
-}
-
-export function encode_zuliprc_as_url(zuliprc: string): string {
-    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
-}
-
-export function generate_zuliprc_content(bot: {
-    bot_type?: number;
+type BotInfo = {
+    is_bot: boolean;
+    role: number;
+    status_code: number;
+    is_active: boolean;
     user_id: number;
-    email: string;
-    api_key: string;
-}): string {
-    let token;
-    // For outgoing webhooks, include the token in the zuliprc.
-    // It's needed for authenticating to the Botserver.
-    if (bot.bot_type === 3) {
-        const services = bot_data.get_services(bot.user_id);
-        assert(services !== undefined);
-        const service = services[0];
-        assert(service && "token" in service);
-        token = service.token;
+    full_name: string;
+    user_role_text: string | undefined;
+    img_src: string;
+    bot_type: string | undefined;
+    bot_owner_full_name: string;
+    no_owner: boolean;
+    is_current_user: boolean;
+    can_modify: boolean;
+    cannot_deactivate: boolean;
+    cannot_edit: boolean;
+    display_email: string;
+    show_download_zuliprc_button: boolean;
+    show_generate_integration_url_button: boolean;
+} & (
+    | {
+          bot_owner_id: number;
+          is_bot_owner_active: boolean;
+          owner_img_src: string;
+      }
+    | {
+          bot_owner_id: null;
+      }
+);
+
+type BotSettingsSection = {
+    dropdown_widget_name: string;
+    filters: {
+        text_search: string;
+        status_code: number;
+    };
+    handle_events: () => void;
+    create_table: () => void;
+    list_widget: ListWidgetType<number, BotInfo> | undefined;
+};
+
+const all_bots_section: BotSettingsSection = {
+    dropdown_widget_name: all_bots_list_dropdown_widget_name,
+    filters: {
+        text_search: "",
+        // 0 status_code signifies Active status for our filter.
+        status_code: 0,
+    },
+    handle_events: all_bots_handle_events,
+    create_table: create_all_bots_table,
+    list_widget: undefined,
+};
+
+const your_bots_section: BotSettingsSection = {
+    dropdown_widget_name: your_bots_list_dropdown_widget_name,
+    filters: {
+        text_search: "",
+        status_code: 0,
+    },
+    handle_events: your_bots_handle_events,
+    create_table: create_your_bots_table,
+    list_widget: undefined,
+};
+
+function sort_bot_email(a: BotInfo, b: BotInfo): number {
+    function email(bot: BotInfo): string {
+        return (bot.display_email ?? "").toLowerCase();
     }
-    return (
-        "[api]" +
-        "\nemail=" +
-        bot.email +
-        "\nkey=" +
-        bot.api_key +
-        "\nsite=" +
-        realm.realm_url +
-        (token === undefined ? "" : "\ntoken=" + token) +
-        // Some tools would not work in files without a trailing new line.
-        "\n"
+
+    return util.compare_a_b(email(a), email(b));
+}
+
+function sort_bot_owner(a: BotInfo, b: BotInfo): number {
+    // Always show bots without owner at bottom
+    if (a.no_owner && b.no_owner) {
+        return 0;
+    }
+    if (a.no_owner) {
+        return 1;
+    }
+    if (b.no_owner) {
+        return -1;
+    }
+
+    return util.compare_a_b(
+        a.bot_owner_full_name.toLowerCase(),
+        b.bot_owner_full_name.toLocaleLowerCase(),
     );
 }
 
@@ -197,24 +193,16 @@ export function update_bot_settings_tip($tip_container: JQuery): void {
 
 function update_add_bot_button(): void {
     if (can_create_incoming_webhooks()) {
-        $("#bot-settings .add-a-new-bot").show();
-        $("#admin-bot-list .add-new-bots").show();
-        $("#admin-bot-list .manage-your-bots").hide();
-        $(".org-settings-list li[data-section='bot-list-admin'] .locked").hide();
+        $("#admin-bot-list .add-a-new-bot").show();
+        $(".org-settings-list li[data-section='bots'] .locked").hide();
     } else {
-        $("#bot-settings .add-a-new-bot").hide();
-        $("#admin-bot-list .add-new-bots").hide();
-        $(".org-settings-list li[data-section='bot-list-admin'] .locked").show();
-
-        if (bot_data.get_all_bots_for_current_user().length > 0) {
-            $("#admin-bot-list .manage-your-bots").show();
-        }
+        $("#admin-bot-list .add-a-new-bot").hide();
+        $(".org-settings-list li[data-section='bots'] .locked").show();
     }
 }
 
 export function update_bot_permissions_ui(): void {
     update_bot_settings_tip($("#admin-bot-settings-tip"));
-    update_bot_settings_tip($("#personal-bot-settings-tip"));
     update_add_bot_button();
 }
 
@@ -234,6 +222,19 @@ export function get_allowed_bot_types(): BotType[] {
         allowed_bot_types.push(bot_types.incoming_webhook_bot);
     }
     return allowed_bot_types;
+}
+
+function bot_owner_full_name(owner_id: number | null): string | undefined {
+    if (!owner_id) {
+        return undefined;
+    }
+
+    const bot_owner = people.maybe_get_user_by_id(owner_id);
+    if (!bot_owner) {
+        return undefined;
+    }
+
+    return bot_owner.full_name;
 }
 
 export function add_a_new_bot(): void {
@@ -349,7 +350,7 @@ export function add_a_new_bot(): void {
     function validate_input(): boolean {
         const bot_short_name = $<HTMLInputElement>("input#create_bot_short_name").val()!;
 
-        if (is_local_part(bot_short_name)) {
+        if (bot_helper.validate_bot_short_name(bot_short_name)) {
             return true;
         }
         ui_report.error(
@@ -376,8 +377,326 @@ export function add_a_new_bot(): void {
     });
 }
 
-export function set_up(): void {
-    $("#download_botserverrc").on("click", function () {
+function bot_info(bot_user_id: number): BotInfo {
+    const bot_user = people.get_by_user_id(bot_user_id);
+    assert(bot_user.is_bot);
+
+    const owner_id = bot_user.bot_owner_id;
+    const owner_full_name = bot_owner_full_name(owner_id);
+
+    const is_bot_owner = owner_id === current_user.user_id;
+    const can_modify_bot = current_user.is_admin || is_bot_owner;
+
+    return {
+        is_bot: true,
+        role: bot_user.role,
+        is_active: people.is_person_active(bot_user.user_id),
+        status_code: people.is_person_active(bot_user.user_id) ? 0 : 1,
+        user_id: bot_user.user_id,
+        full_name: bot_user.full_name,
+        user_role_text: people.get_user_type(bot_user_id),
+        img_src: people.small_avatar_url_for_person(bot_user),
+        // Convert bot type id to string for viewing to the users.
+        bot_type: settings_data.bot_type_id_to_string(bot_user.bot_type),
+        bot_owner_full_name: owner_full_name ?? $t({defaultMessage: "No owner"}),
+        no_owner: !owner_full_name,
+        is_current_user: false,
+        can_modify: can_modify_bot,
+        cannot_deactivate: (bot_user.is_system_bot ?? false) || !can_modify_bot,
+        cannot_edit: (bot_user.is_system_bot ?? false) || !can_modify_bot,
+        // It's always safe to show the real email addresses for bot users
+        display_email: bot_user.email,
+        ...(owner_id
+            ? {
+                  bot_owner_id: owner_id,
+                  is_bot_owner_active: people.is_person_active(owner_id),
+                  owner_img_src: people.small_avatar_url_for_person(
+                      people.get_by_user_id(owner_id),
+                  ),
+              }
+            : {
+                  bot_owner_id: null,
+              }),
+        show_download_zuliprc_button: is_bot_owner && bot_user.bot_type === GENERIC_BOT_TYPE,
+        show_generate_integration_url_button:
+            can_modify_bot && bot_user.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+    };
+}
+
+function handle_bot_deactivation($tbody: JQuery): void {
+    $tbody.on("click", ".deactivate", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $button_elem = $(e.target);
+        const $row = $button_elem.closest(".user_row");
+        const bot_id = Number.parseInt($row.attr("data-user-id")!, 10);
+
+        function handle_confirm(): void {
+            const url = "/json/bots/" + encodeURIComponent(bot_id);
+            dialog_widget.submit_api_request(channel.del, url, {});
+        }
+
+        user_deactivation_ui.confirm_bot_deactivation(bot_id, handle_confirm, true);
+    });
+}
+
+function predicate_for_bot_filtering(item: BotInfo, section: BotSettingsSection): boolean {
+    if (!item) {
+        return false;
+    }
+    const search_query = section.filters.text_search.toLowerCase();
+    const filter_searches =
+        item.full_name.toLowerCase().includes(search_query) ||
+        item.display_email.toLowerCase().includes(search_query);
+
+    const filter_status = item.status_code === section.filters.status_code;
+    return filter_searches && filter_status;
+}
+
+export function toggle_bot_config_download_container(): void {
+    const bots = bot_data.get_all_bots_for_current_user().filter((elem: Bot) => {
+        const is_active = people.is_person_active(elem.user_id);
+        return elem.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT && is_active;
+    });
+    $("#botserverrc-text-container").toggle(bots.length > 0);
+}
+
+export function redraw_all_bots_list(): void {
+    // In order to properly redraw after a user may have been added,
+    // we need to update the all_bots_section.list_widget with the new
+    // set of bot user IDs to display.
+    if (!all_bots_section.list_widget) {
+        return;
+    }
+
+    const bot_user_ids = people.get_bot_ids();
+    all_bots_section.list_widget.replace_list_data(bot_user_ids);
+}
+
+export function redraw_your_bots_list(): void {
+    // In order to properly redraw after a user may have been added,
+    // we need to update the your_bots_list_widget with the new set of bot
+    // user IDs to display.
+    if (!your_bots_section.list_widget) {
+        return;
+    }
+
+    const bot_user_ids_for_current_owner = bot_data.get_all_bots_ids_for_current_user();
+    your_bots_section.list_widget.replace_list_data(bot_user_ids_for_current_owner);
+}
+
+function add_value_to_filters(
+    section: BotSettingsSection,
+    key: "status_code" | "text_search",
+    value: number | string,
+): void {
+    if (key === "status_code") {
+        assert(typeof value === "number");
+        section.filters.status_code = value;
+    } else {
+        assert(key === "text_search");
+        assert(typeof value === "string");
+        section.filters.text_search = value;
+    }
+    // This hard_redraw will rerun the relevant predicate function
+    // and in turn apply the new filters.
+    assert(section.list_widget !== undefined);
+    section.list_widget.hard_redraw();
+}
+
+function handle_filter_change($tbody: JQuery, section: BotSettingsSection): void {
+    // This duplicates the built-in search filter live-update logic in
+    // ListWidget for the input.list_widget_filter event type, but we
+    // can't use that, because we're also filtering on Role with our
+    // custom predicate.
+    $tbody
+        .closest(".user-or-bot-settings-section")
+        .find<HTMLInputElement>(".search")
+        .on("input.list_widget_filter", function (this: HTMLInputElement) {
+            add_value_to_filters(section, "text_search", this.value.toLocaleLowerCase());
+        });
+}
+
+function get_bot_status_options(): {unique_id: number; name: string}[] {
+    return [
+        {unique_id: 0, name: $t({defaultMessage: "Active"})},
+        {unique_id: 1, name: $t({defaultMessage: "Deactivated"})},
+    ];
+}
+
+function status_selected_handler(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const status_code = Number($(event.currentTarget).attr("data-unique-id"));
+    if (widget.widget_name === all_bots_section.dropdown_widget_name) {
+        add_value_to_filters(all_bots_section, "status_code", status_code);
+    } else if (widget.widget_name === your_bots_section.dropdown_widget_name) {
+        add_value_to_filters(your_bots_section, "status_code", status_code);
+    }
+    dropdown.hide();
+    widget.render();
+}
+
+function create_status_filter_dropdown(
+    $events_container: JQuery,
+    section: BotSettingsSection,
+): void {
+    new dropdown_widget.DropdownWidget({
+        widget_name: section.dropdown_widget_name,
+        unique_id_type: "number",
+        get_options: get_bot_status_options,
+        $events_container,
+        item_click_callback: status_selected_handler,
+        default_id: section.filters.status_code,
+        hide_search_box: true,
+        tippy_props: {
+            offset: [0, 0],
+        },
+    }).setup();
+}
+
+function are_filters_active(
+    filters: BotSettingsSection["filters"],
+    $search_input: JQuery,
+): boolean {
+    const search_value = String($search_input.val()).trim();
+    return Boolean(search_value) || filters.status_code !== 0;
+}
+
+function reset_scrollbar($sel: JQuery): () => void {
+    return function () {
+        scroll_util.reset_scrollbar($sel);
+    };
+}
+
+function create_all_bots_table(): void {
+    loading.make_indicator($("#admin_page_all_bots_loading_indicator"), {
+        text: $t({defaultMessage: "Loading…"}),
+    });
+    const $all_bots_table = $("#admin_all_bots_table");
+    $all_bots_table.hide();
+    const bot_user_ids = people.get_bot_ids();
+
+    all_bots_section.list_widget = ListWidget.create($all_bots_table, bot_user_ids, {
+        name: "admin_bot_list",
+        get_item: bot_info,
+        modifier_html: render_settings_user_list_row,
+        html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
+        filter: {
+            predicate(item) {
+                return predicate_for_bot_filtering(item, all_bots_section);
+            },
+            is_active() {
+                const $search_input = $("#admin-all-bots-list .search");
+                return are_filters_active(all_bots_section.filters, $search_input);
+            },
+            onupdate: reset_scrollbar($all_bots_table),
+        },
+        $parent_container: $("#admin-all-bots-list").expectOne(),
+        init_sort: "full_name_alphabetic",
+        sort_fields: {
+            email: sort_bot_email,
+            bot_owner: sort_bot_owner,
+            role: user_sort.sort_role,
+            ...ListWidget.generic_sort_functions("alphabetic", ["full_name", "bot_type"]),
+        },
+        $simplebar_container: $("#admin-all-bots-list .progressive-table-wrapper"),
+    });
+    settings_users.set_text_search_value($all_bots_table, all_bots_section.filters.text_search);
+
+    loading.destroy_indicator($("#admin_page_all_bots_loading_indicator"));
+    $all_bots_table.show();
+}
+
+function create_your_bots_table(): void {
+    loading.make_indicator($("#admin_page_your_bots_loading_indicator"), {
+        text: $t({defaultMessage: "Loading…"}),
+    });
+    const $your_bots_table = $("#admin_your_bots_table");
+    $your_bots_table.hide();
+    const bot_user_ids = bot_data.get_all_bots_ids_for_current_user();
+    your_bots_section.list_widget = ListWidget.create($your_bots_table, bot_user_ids, {
+        name: "admin_your_bot_list",
+        get_item: bot_info,
+        modifier_html: render_settings_user_list_row,
+        html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
+        filter: {
+            predicate(item) {
+                return predicate_for_bot_filtering(item, your_bots_section);
+            },
+            is_active() {
+                const $search_input = $("#admin-your-bots-list .search");
+                return are_filters_active(your_bots_section.filters, $search_input);
+            },
+            onupdate: reset_scrollbar($your_bots_table),
+        },
+        $parent_container: $("#admin-your-bots-list").expectOne(),
+        init_sort: "full_name_alphabetic",
+        sort_fields: {
+            email: sort_bot_email,
+            bot_owner: sort_bot_owner,
+            role: user_sort.sort_role,
+            ...ListWidget.generic_sort_functions("alphabetic", ["full_name", "bot_type"]),
+        },
+        $simplebar_container: $("#admin-your-bots-list .progressive-table-wrapper"),
+    });
+    settings_users.set_text_search_value($your_bots_table, your_bots_section.filters.text_search);
+
+    loading.destroy_indicator($("#admin_page_your_bots_loading_indicator"));
+    $your_bots_table.show();
+}
+
+export function update_bot_data(bot_user_id: number): void {
+    if (all_bots_section.list_widget) {
+        all_bots_section.list_widget.render_item(bot_info(bot_user_id));
+    }
+
+    if (your_bots_section.list_widget) {
+        your_bots_section.list_widget.render_item(bot_info(bot_user_id));
+    }
+}
+
+function all_bots_handle_events(): void {
+    const $tbody = $("#admin_all_bots_table").expectOne();
+
+    handle_filter_change($tbody, all_bots_section);
+    handle_bot_deactivation($tbody);
+    settings_users.handle_reactivation($tbody);
+    settings_users.handle_edit_form($tbody);
+    settings_users.handle_clear_button_for_table_search_input($tbody);
+}
+
+function your_bots_handle_events(): void {
+    const $tbody = $("#admin_your_bots_table").expectOne();
+
+    handle_filter_change($tbody, your_bots_section);
+    handle_bot_deactivation($tbody);
+    settings_users.handle_reactivation($tbody);
+    settings_users.handle_edit_form($tbody);
+    settings_users.handle_clear_button_for_table_search_input($tbody);
+}
+
+export function set_up_bots(): void {
+    all_bots_section.handle_events();
+    your_bots_section.handle_events();
+    all_bots_section.create_table();
+    your_bots_section.create_table();
+
+    $("#admin-bot-list .add-a-new-bot").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        add_a_new_bot();
+    });
+    create_status_filter_dropdown($("#admin-all-bots-list"), all_bots_section);
+    create_status_filter_dropdown($("#admin-your-bots-list"), your_bots_section);
+
+    $("#download-botserverrc-file").on("click", () => {
         let content = "";
 
         for (const bot of bot_data.get_all_bots_for_current_user()) {
@@ -391,143 +710,27 @@ export function set_up(): void {
             }
         }
 
-        $(this).attr(
+        $("#hidden-botserverrc-download").attr(
             "href",
             "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content),
         );
+        $("#hidden-botserverrc-download")[0]?.click();
+    });
+    toggle_bot_config_download_container();
+
+    $("#admin-bot-list").on("click", ".download-bot-zuliprc-button", (e) => {
+        const $row = $(e.target).closest(".user_row");
+        const $zuliprc_link = $row.find(".hidden-zuliprc-download");
+        const bot_id = Number.parseInt($zuliprc_link.attr("data-user-id")!, 10);
+        $zuliprc_link.attr("href", bot_helper.generate_zuliprc_url(bot_id));
+        $zuliprc_link[0]?.click();
     });
 
-    const toggler = components.toggle({
-        child_wants_focus: true,
-        values: [
-            {label: $t({defaultMessage: "Active bots"}), key: "active-bots"},
-            {label: $t({defaultMessage: "Inactive bots"}), key: "inactive-bots"},
-        ],
-        callback(_name, key) {
-            $(".bots_section").hide();
-            $(`[data-bot-settings-section="${CSS.escape(key)}"]`).show();
-        },
-    });
-
-    toggler.get().prependTo($("#bot-settings .tab-container"));
-    toggler.goto("active-bots");
-
-    render_bots();
-
-    $("#active_bots_list").on("click", "button.deactivate_bot", function () {
-        const bot_id = Number.parseInt($(this).attr("data-user-id")!, 10);
-        const $row = $(this).closest("li");
-
-        function handle_confirm(): void {
-            const url = "/json/bots/" + encodeURIComponent(bot_id);
-            const opts = {
-                success_continuation() {
-                    $row.hide("slow", () => {
-                        $row.remove();
-                    });
-                },
-            };
-            dialog_widget.submit_api_request(channel.del, url, {}, opts);
-        }
-        user_deactivation_ui.confirm_bot_deactivation(bot_id, handle_confirm, true);
-    });
-
-    $("#inactive_bots_list").on("click", "button.reactivate_bot", function (e) {
-        const user_id = Number.parseInt($(this).attr("data-user-id")!, 10);
-        e.stopPropagation();
-        e.preventDefault();
-
-        function handle_confirm(): void {
-            void channel.post({
-                url: "/json/users/" + encodeURIComponent(user_id) + "/reactivate",
-                success() {
-                    dialog_widget.close();
-                },
-                error(xhr) {
-                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
-                    dialog_widget.hide_dialog_spinner();
-                },
-            });
-        }
-
-        user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
-    });
-
-    $("#active_bots_list").on("click", "button.bot-card-regenerate-bot-api-key", function () {
-        const bot_id = Number.parseInt($(this).attr("data-user-id")!, 10);
-        const $row = $(this).closest("li");
-        void channel.post({
-            url: "/json/bots/" + encodeURIComponent(bot_id) + "/api_key/regenerate",
-            success(raw_data) {
-                const data = z
-                    .object({
-                        api_key: z.string(),
-                    })
-                    .parse(raw_data);
-                $row.find(".bot-card-api-key").find(".value").text(data.api_key);
-                $row.find(".bot-card-api-key-error").hide();
-            },
-            error(xhr) {
-                const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
-                if (parsed.success && parsed.data.msg) {
-                    $row.find(".bot-card-api-key-error").text(parsed.data.msg).show();
-                }
-            },
-        });
-    });
-
-    $("#active_bots_list").on("click", "button.open_edit_bot_form", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const $li = $(e.currentTarget).closest("li");
-        const bot_id = Number.parseInt($li.find(".bot-card-info").attr("data-user-id")!, 10);
-        const bot = people.get_by_user_id(bot_id);
-        user_profile.show_user_profile(bot, "manage-profile-tab");
-    });
-
-    $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
-        const $bot_info = $(this).closest(".bot-information-box").find(".bot-card-info");
-        const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
-        $(this).attr("href", generate_zuliprc_url(bot_id));
-    });
-
-    $("#active_bots_list").on("click", "button.open_bots_subscribed_streams", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const bot_id = Number.parseInt($(this).attr("data-user-id")!, 10);
-        const bot = people.get_by_user_id(bot_id);
-        user_profile.show_user_profile(bot, "user-profile-streams-tab");
-    });
-
-    $("#active_bots_list").on("click", "button.open-generate-integration-url-modal", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const api_key = $(this).attr("data-api-key")!;
-        integration_url_modal.show_generate_integration_url_modal(api_key);
-    });
-
-    const clipboard = new ClipboardJS("#copy_zuliprc", {
-        text(trigger) {
-            const $bot_info = $(trigger).closest(".bot-information-box").find(".bot-card-info");
-            const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
-            const bot = bot_data.get(bot_id);
-            assert(bot !== undefined);
-            const data = generate_zuliprc_content(bot);
-            return data;
-        },
-    });
-
-    // Show a tippy tooltip when the bot zuliprc is copied
-    clipboard.on("success", (e) => {
-        assert(e.trigger instanceof HTMLElement);
-        show_copied_confirmation(e.trigger, {
-            show_check_icon: true,
-        });
-    });
-
-    $("#bot-settings .add-a-new-bot").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        add_a_new_bot();
+    $("#admin-bot-list").on("click", ".generate-integration-url-button", (e) => {
+        const $row = $(e.target).closest(".user_row");
+        const bot_id = Number.parseInt($row.attr("data-user-id")!, 10);
+        const current_bot_data = bot_data.get(bot_id);
+        assert(current_bot_data !== undefined);
+        integration_url_modal.show_generate_integration_url_modal(current_bot_data.api_key);
     });
 }

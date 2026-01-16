@@ -11,6 +11,7 @@ import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
+import type {NarrowTerm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 
@@ -83,8 +84,10 @@ export let update_dom_with_unread_counts = function (
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
 
     if (!skip_animations) {
-        animate_mention_changes($mentioned_li, counts.mentioned_message_count);
+        animate_unread_changes($mentioned_li, counts.mentioned_message_count, last_mention_count);
     }
+
+    last_mention_count = counts.mentioned_message_count;
 };
 
 export function rewire_update_dom_with_unread_counts(
@@ -107,21 +110,21 @@ export function rewire_select_top_left_corner_item(
 }
 
 export function handle_narrow_activated(filter: Filter): void {
-    let ops: string[];
+    let terms: NarrowTerm[];
     let filter_name: string;
 
     // TODO: handle confused filters like "in:all stream:foo"
-    ops = filter.operands("in");
-    if (ops[0] !== undefined) {
-        filter_name = ops[0];
+    terms = filter.terms_with_operator("in");
+    if (terms[0] !== undefined) {
+        filter_name = terms[0].operand;
         if (filter_name === "home") {
             highlight_all_messages_view();
             return;
         }
     }
-    ops = filter.operands("is");
-    if (ops[0] !== undefined) {
-        filter_name = ops[0];
+    terms = filter.terms_with_operator("is");
+    if (terms[0] !== undefined) {
+        filter_name = terms[0].operand;
         if (filter_name === "starred") {
             select_top_left_corner_item(".top_left_starred_messages");
             return;
@@ -133,7 +136,7 @@ export function handle_narrow_activated(filter: Filter): void {
     const term_types = filter.sorted_term_types();
     if (
         _.isEqual(term_types, ["sender", "has-reaction"]) &&
-        filter.operands("sender")[0] === people.my_current_email()
+        filter.terms_with_operator("sender")[0]!.operand === people.my_current_email()
     ) {
         select_top_left_corner_item(".top_left_my_reactions");
         return;
@@ -150,9 +153,47 @@ export function expand_views($views_label_container: JQuery, $views_label_icon: 
     $views_label_icon.removeClass("rotate-icon-right");
 }
 
-function toggle_condensed_navigation_area(): void {
+export function collapse_views($views_label_container: JQuery, $views_label_icon: JQuery): void {
+    $views_label_container.addClass("showing-condensed-navigation");
+    $views_label_container.removeClass("showing-expanded-navigation");
+    $views_label_icon.addClass("rotate-icon-right");
+    $views_label_icon.removeClass("rotate-icon-down");
+}
+
+export function force_expand_views(): void {
+    if (page_params.is_spectator) {
+        // We don't support collapsing VIEWS for spectators, so exit early.
+        return;
+    }
+
     const $views_label_container = $("#views-label-container");
     const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+
+    if ($views_label_container.hasClass("showing-condensed-navigation")) {
+        expand_views($views_label_container, $views_label_icon);
+        save_state(STATES.EXPANDED);
+        resize.resize_stream_filters_container();
+    }
+}
+
+export function force_collapse_views(): void {
+    if (page_params.is_spectator) {
+        // We don't support collapsing VIEWS for spectators, so exit early.
+        return;
+    }
+
+    const $views_label_container = $("#views-label-container");
+    const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+
+    if ($views_label_container.hasClass("showing-expanded-navigation")) {
+        collapse_views($views_label_container, $views_label_icon);
+        save_state(STATES.CONDENSED);
+        resize.resize_stream_filters_container();
+    }
+}
+
+function toggle_condensed_navigation_area(): void {
+    const $views_label_container = $("#views-label-container");
 
     if (page_params.is_spectator) {
         // We don't support collapsing VIEWS for spectators, so exit early.
@@ -160,24 +201,20 @@ function toggle_condensed_navigation_area(): void {
     }
 
     if ($views_label_container.hasClass("showing-expanded-navigation")) {
-        // Toggle into the condensed state
-        $views_label_container.addClass("showing-condensed-navigation");
-        $views_label_container.removeClass("showing-expanded-navigation");
-        $views_label_icon.addClass("rotate-icon-right");
-        $views_label_icon.removeClass("rotate-icon-down");
-        save_state(STATES.CONDENSED);
+        force_collapse_views();
     } else {
-        expand_views($views_label_container, $views_label_icon);
-        save_state(STATES.EXPANDED);
+        force_expand_views();
     }
-    resize.resize_stream_filters_container();
 }
 
-export function animate_mention_changes($li: JQuery, new_mention_count: number): void {
-    if (new_mention_count > last_mention_count) {
+export function animate_unread_changes(
+    $li: JQuery,
+    new_count: number,
+    previous_count: number,
+): void {
+    if (new_count > previous_count) {
         ui_util.do_new_unread_animation($li);
     }
-    last_mention_count = new_mention_count;
 }
 
 export function highlight_inbox_view(): void {

@@ -1,9 +1,7 @@
 import assert from "minimalistic-assert";
 
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
-
-import * as hash_util from "./hash_util.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import * as unread from "./unread.ts";
@@ -135,7 +133,7 @@ function choose_topics(
             is_followed: is_topic_followed,
             is_unmuted_or_followed: is_topic_unmuted_or_followed,
             is_active_topic,
-            url: hash_util.by_channel_topic_permalink(stream_id, topic_name),
+            url: stream_topic_history.channel_topic_permalink_hash(stream_id, topic_name),
             contains_unread_mention,
         };
 
@@ -183,12 +181,31 @@ export function filter_topics_by_search_term(
     return topic_names;
 }
 
+export function get_filtered_topic_names(
+    stream_id: number,
+    filter_topics: (topic_names: string[]) => string[],
+): string[] {
+    const topic_names = stream_topic_history.get_recent_topic_names(stream_id);
+    const narrowed_topic = narrow_state.topic();
+
+    // If the user is viewing a topic with no messages, include
+    // the topic name to the beginning of the list of topics.
+    if (
+        stream_id === narrow_state.stream_id() &&
+        narrowed_topic !== undefined &&
+        !contains_topic(topic_names, narrowed_topic)
+    ) {
+        topic_names.unshift(narrowed_topic);
+    }
+
+    return filter_topics(topic_names);
+}
+
 export function get_list_info(
     stream_id: number,
     zoomed: boolean,
     filter_topics: (topic_names: string[]) => string[],
 ): TopicListInfo {
-    const narrowed_topic = narrow_state.topic();
     const topic_choice_state: TopicChoiceState = {
         items: [],
         topics_selected: 0,
@@ -204,17 +221,7 @@ export function get_list_info(
     assert(sub !== undefined);
     const stream_muted = sub.is_muted;
 
-    let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
-
-    if (
-        stream_id === narrow_state.stream_id() &&
-        narrowed_topic !== undefined &&
-        !contains_topic(topic_names, narrowed_topic)
-    ) {
-        topic_names.unshift(narrowed_topic);
-    }
-
-    topic_names = filter_topics(topic_names);
+    const topic_names = get_filtered_topic_names(stream_id, filter_topics);
 
     if (stream_muted && !zoomed) {
         const unmuted_or_followed_topics = topic_names.filter((topic) =>

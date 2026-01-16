@@ -1,14 +1,13 @@
-import type {GifsResult, GiphyFetch, Rating} from "@giphy/js-fetch-api";
+import type {GifsResult, GiphyFetch} from "@giphy/js-fetch-api";
 import type {IGif} from "@giphy/js-types";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_giphy_picker from "../templates/giphy_picker.hbs";
-
-import * as blueslip from "./blueslip.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
+import * as gif_state from "./gif_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
@@ -32,31 +31,6 @@ export function focus_current_edit_message(): void {
     $(`#edit_form_${CSS.escape(`${edit_message_id}`)} .message_edit_content`).trigger("focus");
 }
 
-export function update_giphy_rating(): void {
-    if (
-        realm.realm_giphy_rating === realm.giphy_rating_options.disabled.id ||
-        realm.giphy_api_key === ""
-    ) {
-        $(".compose_gif_icon").hide();
-    } else {
-        $(".compose_gif_icon").show();
-    }
-}
-
-function get_rating(): Rating {
-    const options = realm.giphy_rating_options;
-    for (const rating of ["pg", "g", "y", "pg-13", "r"] as const) {
-        if (options[rating]?.id === realm.realm_giphy_rating) {
-            return rating;
-        }
-    }
-
-    // The below should never run unless a server bug allowed a
-    // `giphy_rating` value not present in `giphy_rating_options`.
-    blueslip.error("Invalid giphy_rating value: " + realm.realm_giphy_rating);
-    return "g";
-}
-
 async function renderGIPHYGrid(targetEl: HTMLElement): Promise<{remove: () => void}> {
     const {renderGrid} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-components");
     const {GiphyFetch} = await import(/* webpackChunkName: "giphy-sdk" */ "@giphy/js-fetch-api");
@@ -68,7 +42,7 @@ async function renderGIPHYGrid(targetEl: HTMLElement): Promise<{remove: () => vo
         const config = {
             offset,
             limit: 25,
-            rating: get_rating(),
+            rating: gif_state.get_rating(),
             // We don't pass random_id here, for privacy reasons.
         };
         if (search_term === "") {
@@ -130,13 +104,13 @@ async function update_grid_with_search_term(): Promise<void> {
         return;
     }
 
-    const $search_elem = $<HTMLInputElement>("input#giphy-search-query");
+    const $search_elem = $<HTMLInputElement>("input#gif-search-query");
     // GIPHY popover may have been hidden by the
     // time this function is called.
     if ($search_elem.length > 0) {
         search_term = the($search_elem).value;
         gifs_grid.remove();
-        gifs_grid = await renderGIPHYGrid(the($("#giphy_grid_in_popover .giphy-content")));
+        gifs_grid = await renderGIPHYGrid(the($(".gif-grid-in-popover .giphy-content")));
         return;
     }
 
@@ -163,7 +137,7 @@ function toggle_giphy_popover(target: HTMLElement): void {
             theme: "popover-menu",
             placement: "top",
             onCreate(instance) {
-                instance.setContent(ui_util.parse_html(render_giphy_picker()));
+                instance.setContent(gif_picker_popover_content.get_gif_popover_content(true));
                 $(instance.popper).addClass("giphy-popover");
             },
             onShow(instance) {
@@ -185,7 +159,7 @@ function toggle_giphy_popover(target: HTMLElement): void {
 
                 $popper.on(
                     "keyup",
-                    "#giphy-search-query",
+                    "#gif-search-query",
                     // Use debounce to create a 300ms interval between
                     // every search. This makes the UX of searching pleasant
                     // by allowing user to finish typing before search
@@ -194,11 +168,10 @@ function toggle_giphy_popover(target: HTMLElement): void {
                 );
 
                 $popper.on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
-                $popper.on("keydown", ".compose_gif_icon", ui_util.convert_enter_to_click);
-
-                $popper.on("click", "#giphy_search_clear", (e) => {
+                $popper.on("keydown", ".compose-gif-icon-giphy", ui_util.convert_enter_to_click);
+                $popper.on("click", "#gif-search-clear", (e) => {
                     e.stopPropagation();
-                    $("#giphy-search-query").val("");
+                    $("#gif-search-query").val("");
                     void update_grid_with_search_term();
                 });
 
@@ -208,7 +181,7 @@ function toggle_giphy_popover(target: HTMLElement): void {
                     // Focus on search box by default.
                     // This is specially helpful for users
                     // navigating via keyboard.
-                    $("#giphy-search-query").trigger("focus");
+                    $("#gif-search-query").trigger("focus");
                 })();
             },
             onHidden() {
@@ -223,9 +196,13 @@ function toggle_giphy_popover(target: HTMLElement): void {
 }
 
 function register_click_handlers(): void {
-    $("body").on("click", ".compose_control_button.compose_gif_icon", function (this: HTMLElement) {
-        toggle_giphy_popover(this);
-    });
+    $("body").on(
+        "click",
+        ".compose_control_button.compose-gif-icon-giphy",
+        function (this: HTMLElement) {
+            toggle_giphy_popover(this);
+        },
+    );
 }
 
 export function initialize(): void {

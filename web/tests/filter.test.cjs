@@ -14,10 +14,11 @@ const {page_params} = require("./lib/zpage_params.cjs");
 const message_store = mock_esm("../src/message_store");
 const user_topics = mock_esm("../src/user_topics");
 
-const resolved_topic = zrequire("../shared/src/resolved_topic");
+const resolved_topic = zrequire("resolved_topic");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
-const {Filter} = zrequire("../src/filter");
+const {Filter} = zrequire("filter");
+const filter_util = zrequire("filter_util");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const muted_users = zrequire("muted_users");
@@ -138,7 +139,10 @@ test("basics", () => {
     let filter = new Filter(terms);
 
     assert_same_terms(filter.terms(), terms);
-    assert.deepEqual(filter.operands("channel"), [foo_stream_id.toString()]);
+    let channel_terms = filter.terms_with_operator("channel");
+    assert.deepEqual(channel_terms, [
+        {operator: "channel", operand: foo_stream_id.toString(), negated: false},
+    ]);
 
     assert.ok(filter.has_operator("channel"));
     assert.ok(!filter.has_operator("search"));
@@ -168,7 +172,10 @@ test("basics", () => {
     terms = [{operator: "stream", operand: foo_stream_id.toString()}];
     filter = new Filter(terms);
     assert.ok(filter.has_operator("channel"));
-    assert.deepEqual(filter.operands("channel"), [foo_stream_id.toString()]);
+    channel_terms = filter.terms_with_operator("channel");
+    assert.deepEqual(channel_terms, [
+        {operator: "channel", operand: foo_stream_id.toString(), negated: false},
+    ]);
     assert.ok(filter.includes_full_stream_history());
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.can_show_next_unread_topic_conversation_button());
@@ -182,7 +189,10 @@ test("basics", () => {
     ];
     filter = new Filter(terms);
 
-    assert.deepEqual(filter.operands("channel"), [foo_stream_id.toString()]);
+    channel_terms = filter.terms_with_operator("channel");
+    assert.deepEqual(channel_terms, [
+        {operator: "channel", operand: foo_stream_id.toString(), negated: false},
+    ]);
 
     assert.ok(filter.has_operator("channel"));
     assert.ok(!filter.has_operator("search"));
@@ -884,8 +894,12 @@ test("filter_with_new_params_topic", () => {
         operand: "new topic",
     });
 
-    assert.deepEqual(new_filter.operands("channel"), [foo_stream_id.toString()]);
-    assert.deepEqual(new_filter.operands("topic"), ["new topic"]);
+    const channel_terms = new_filter.terms_with_operator("channel");
+    assert.deepEqual(channel_terms, [
+        {operator: "channel", operand: foo_stream_id.toString(), negated: false},
+    ]);
+    const topic_terms = new_filter.terms_with_operator("topic");
+    assert.deepEqual(topic_terms, [{operator: "topic", operand: "new topic", negated: false}]);
 });
 
 test("filter_with_new_params_channel", () => {
@@ -904,8 +918,12 @@ test("filter_with_new_params_channel", () => {
         operand: "new channel",
     });
 
-    assert.deepEqual(new_filter.operands("channel"), ["new channel"]);
-    assert.deepEqual(new_filter.operands("topic"), ["old topic"]);
+    const channel_terms = new_filter.terms_with_operator("channel");
+    assert.deepEqual(channel_terms, [
+        {operator: "channel", operand: "new channel", negated: false},
+    ]);
+    const topic_terms = new_filter.terms_with_operator("topic");
+    assert.deepEqual(topic_terms, [{operator: "topic", operand: "old topic", negated: false}]);
 });
 
 test("new_style_terms", () => {
@@ -916,7 +934,10 @@ test("new_style_terms", () => {
     const terms = [term];
     const filter = new Filter(terms);
 
-    assert.deepEqual(filter.operands("channel"), [foo_stream_id.toString()]);
+    const channel_terms = filter.terms_with_operator("channel");
+    assert.deepEqual(channel_terms, [
+        {operator: "channel", operand: foo_stream_id.toString(), negated: false},
+    ]);
     assert.ok(filter.can_bucket_by("channel"));
 });
 
@@ -971,17 +992,17 @@ test("redundancies", () => {
 });
 
 test("canonicalization", () => {
-    assert.equal(Filter.canonicalize_operator("Is"), "is");
-    assert.equal(Filter.canonicalize_operator("Stream"), "channel");
-    assert.equal(Filter.canonicalize_operator("Subject"), "topic");
-    assert.equal(Filter.canonicalize_operator("FROM"), "sender");
+    assert.equal(filter_util.canonicalize_operator("is"), "is");
+    assert.equal(filter_util.canonicalize_operator("stream"), "channel");
+    assert.equal(filter_util.canonicalize_operator("subject"), "topic");
+    assert.equal(filter_util.canonicalize_operator("from"), "sender");
 
     let term;
-    term = Filter.canonicalize_term({operator: "Stream", operand: "Denmark"});
+    term = Filter.canonicalize_term({operator: "stream", operand: "Denmark"});
     assert.equal(term.operator, "channel");
     assert.equal(term.operand, "Denmark");
 
-    term = Filter.canonicalize_term({operator: "Channel", operand: "Denmark"});
+    term = Filter.canonicalize_term({operator: "channel", operand: "Denmark"});
     assert.equal(term.operator, "channel");
     assert.equal(term.operand, "Denmark");
 
@@ -1336,8 +1357,10 @@ test("predicate_basics", ({override}) => {
     assert.ok(!predicate({type: stream_message}));
 
     const img_msg = {
+        // Even though the HTML class `message_inline_image` is modified
+        // in post_process for rendered message, the raw content stays the same.
         content:
-            '<p><a href="/user_uploads/randompath/test.jpeg">test.jpeg</a></p><div class="message-media-preview-image"><a href="/user_uploads/randompath/test.jpeg" title="test.jpeg"><img src="/user_uploads/randompath/test.jpeg"></a></div>',
+            '<p><a href="/user_uploads/randompath/test.jpeg">test.jpeg</a></p><div class="message_inline_image"><a href="/user_uploads/randompath/test.jpeg" title="test.jpeg"><img src="/user_uploads/randompath/test.jpeg"></a></div>',
     };
 
     const link_msg = {
@@ -1410,17 +1433,13 @@ test("predicate_basics", ({override}) => {
     assert.ok(!has_attachment(no_has_filter_matching_msg));
 
     const has_image = get_predicate([["has", "image"]]);
-    set_find_results_for_msg_content(img_msg, ".message-media-preview-image", ["stub"]);
+    set_find_results_for_msg_content(img_msg, ".message_inline_image", ["stub"]);
     assert.ok(has_image(img_msg));
-    set_find_results_for_msg_content(non_img_attachment_msg, ".message-media-preview-image", false);
+    set_find_results_for_msg_content(non_img_attachment_msg, ".message_inline_image", false);
     assert.ok(!has_image(non_img_attachment_msg));
-    set_find_results_for_msg_content(link_msg, ".message-media-preview-image", false);
+    set_find_results_for_msg_content(link_msg, ".message_inline_image", false);
     assert.ok(!has_image(link_msg));
-    set_find_results_for_msg_content(
-        no_has_filter_matching_msg,
-        ".message-media-preview-image",
-        false,
-    );
+    set_find_results_for_msg_content(no_has_filter_matching_msg, ".message_inline_image", false);
     assert.ok(!has_image(no_has_filter_matching_msg));
 
     const has_reaction = get_predicate([["has", "reaction"]]);
@@ -1607,6 +1626,10 @@ test("parse", () => {
         {operator: "is", operand: "starred"},
     ];
     _test();
+
+    string = "https://www.google.com";
+    terms = [{operator: "search", operand: "https://www.google.com"}];
+    _test();
 });
 
 test("unparse", () => {
@@ -1670,6 +1693,7 @@ test("unparse", () => {
 test("describe", ({mock_template, override}) => {
     let narrow;
     let string;
+    let terms;
     mock_template("search_description.hbs", true, (_data, html) => html);
 
     narrow = [{operator: "channels", operand: "public"}];
@@ -1735,7 +1759,7 @@ test("describe", ({mock_template, override}) => {
     string = "direct messages, search for lunch";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
-    narrow = [{operator: "id", operand: 99}];
+    narrow = [{operator: "id", operand: "99"}];
     string = "message ID 99";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
@@ -1772,8 +1796,11 @@ test("describe", ({mock_template, override}) => {
     string = "invalid something_we_do_not_support operand for is operator";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
-    // this should be unreachable, but just in case
-    narrow = [{operator: "bogus", operand: "foo"}];
+    // All the `is` operands are handled in search_suggestions. This is just
+    // for coverage.
+    assert.equal(Filter.operator_to_prefix("is"), "messages that are");
+
+    narrow = [{operator: "with", operand: "12"}];
     string = "unknown operator";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
@@ -1853,9 +1880,26 @@ test("describe", ({mock_template, override}) => {
     string = `topic <span class="empty-topic-display">translated: general chat</span>`;
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
-    narrow = [{operator: "topic", operand: ""}];
-    string = "topic ";
-    assert.equal(Filter.search_description_as_html(narrow, true), string);
+    /* Description for operator suggestion search terms */
+    terms = [{operator: "channels", operand: ""}];
+    string = "channel type";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "topic", operand: ""}];
+    string = "topic";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "near", operand: ""}];
+    string = "messages around";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "sender", operand: ""}];
+    string = "sent by";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "dm-including", operand: ""}];
+    string = "direct messages including";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
 });
 
 test("can_bucket_by", () => {
@@ -2045,7 +2089,7 @@ test("first_valid_id_from", ({override}) => {
     assert.equal(filter.first_valid_id_from(msg_ids), 20);
 });
 
-test("is_valid_search_term", () => {
+test("convert_suggestion_to_term", () => {
     const denmark = {
         stream_id: 100,
         name: "Denmark",
@@ -2074,17 +2118,17 @@ test("is_valid_search_term", () => {
     ];
     for (const [search_term_string, expected_is_valid] of test_data) {
         assert.equal(
-            Filter.is_valid_search_term(Filter.parse(search_term_string)[0]),
+            Filter.convert_suggestion_to_term(Filter.parse(search_term_string)[0]) !== undefined,
             expected_is_valid,
         );
     }
 
-    blueslip.expect("error", "Unexpected search term operator: foo");
+    // Invalid operator.
     assert.equal(
-        Filter.is_valid_search_term({
+        Filter.convert_suggestion_to_term({
             operator: "foo",
             operand: "bar",
-        }),
+        }) !== undefined,
         false,
     );
 });
@@ -2097,9 +2141,17 @@ test("update_email", () => {
     ];
     const filter = new Filter(terms);
     filter.update_email(steve.user_id, "showell@foo.com");
-    assert.deepEqual(filter.operands("dm"), ["showell@foo.com"]);
-    assert.deepEqual(filter.operands("sender"), ["showell@foo.com"]);
-    assert.deepEqual(filter.operands("channel"), ["steve@foo.com"]);
+
+    const dm_terms = filter.terms_with_operator("dm");
+    assert.deepEqual(dm_terms, [{operator: "dm", operand: "showell@foo.com", negated: false}]);
+    const sender_terms = filter.terms_with_operator("sender");
+    assert.deepEqual(sender_terms, [
+        {operator: "sender", operand: "showell@foo.com", negated: false},
+    ]);
+    const channel_terms = filter.terms_with_operator("channel");
+    assert.deepEqual(channel_terms, [
+        {operator: "channel", operand: "steve@foo.com", negated: false},
+    ]);
 });
 
 test("try_adjusting_for_moved_with_target", ({override}) => {
@@ -3017,7 +3069,9 @@ run_test("adjusted_terms_if_moved", ({override}) => {
         display_recipient: "general",
         topic: "discussion",
     };
-    let expected = [{operator: "channel", operand: general_sub.stream_id.toString()}];
+    let expected = [
+        {negated: false, operator: "channel", operand: general_sub.stream_id.toString()},
+    ];
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
     assert.deepStrictEqual(result, expected);
 
@@ -3029,7 +3083,7 @@ run_test("adjusted_terms_if_moved", ({override}) => {
         display_recipient: "general",
         topic: "discussion",
     };
-    expected = [{operator: "topic", operand: "discussion"}];
+    expected = [{negated: false, operator: "topic", operand: "discussion"}];
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
     assert.deepStrictEqual(result, expected);
 
@@ -3045,8 +3099,8 @@ run_test("adjusted_terms_if_moved", ({override}) => {
         topic: "discussion",
     };
     expected = [
-        {operator: "channel", operand: general_sub.stream_id.toString()},
-        {operator: "topic", operand: "discussion"},
+        {negated: false, operator: "channel", operand: general_sub.stream_id.toString()},
+        {negated: false, operator: "topic", operand: "discussion"},
     ];
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
     assert.deepStrictEqual(result, expected);
@@ -3064,9 +3118,9 @@ run_test("adjusted_terms_if_moved", ({override}) => {
         topic: "discussion",
     };
     expected = [
-        {operator: "channel", operand: general_sub.stream_id.toString()},
-        {operator: "topic", operand: "discussion"},
-        {operator: "sender", operand: "alice"},
+        {negated: false, operator: "channel", operand: general_sub.stream_id.toString()},
+        {negated: false, operator: "topic", operand: "discussion"},
+        {negated: false, operator: "sender", operand: "alice"},
     ];
     result = Filter.adjusted_terms_if_moved(raw_terms, message);
     assert.deepStrictEqual(result, expected);
@@ -3109,6 +3163,6 @@ run_test("get_stringified_narrow_for_server_query", () => {
     const narrow = filter.get_stringified_narrow_for_server_query();
     assert.equal(
         narrow,
-        '[{"negated":false,"operator":"channel","operand":1},{"negated":false,"operator":"topic","operand":"bar"}]',
+        '[{"operator":"channel","operand":1,"negated":false},{"operator":"topic","operand":"bar","negated":false}]',
     );
 });

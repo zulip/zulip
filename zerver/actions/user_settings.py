@@ -9,12 +9,13 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
 from confirmation.settings import STATUS_REVOKED, STATUS_USED
+from zerver.actions.message_send import send_user_profile_update_notification
 from zerver.actions.presence import do_update_user_presence
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
+    bulk_flush_users,
     cache_delete,
     delete_user_profile_caches,
-    flush_user_profile,
     user_profile_by_api_key_cache_key,
 )
 from zerver.lib.create_user import get_display_email_address
@@ -22,6 +23,7 @@ from zerver.lib.i18n import get_language_name
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.timezone import canonicalize_timezone
+from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.upload import delete_avatar_image
 from zerver.lib.users import (
     can_access_delivery_email,
@@ -35,6 +37,7 @@ from zerver.lib.utils import generate_api_key
 from zerver.models import (
     Draft,
     EmailChangeStatus,
+    Realm,
     RealmAuditLog,
     ScheduledEmail,
     ScheduledMessageNotificationEmail,
@@ -222,7 +225,7 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool = 
 
 @transaction.atomic(savepoint=False)
 def do_change_full_name(
-    user_profile: UserProfile, full_name: str, acting_user: UserProfile | None
+    user_profile: UserProfile, full_name: str, acting_user: UserProfile | None, notify: bool
 ) -> None:
     old_name = user_profile.full_name
     if old_name == full_name:
@@ -252,6 +255,17 @@ def do_change_full_name(
             bot_owner_user_ids(user_profile),
         )
 
+    if notify:
+        changes: list[UserProfileChangeDict] = [
+            UserProfileChangeDict(
+                field_name="full name",
+                old_value=old_name,
+                new_value=full_name,
+            )
+        ]
+
+        send_user_profile_update_notification(user_profile, acting_user, changes)
+
 
 def check_change_full_name(
     user_profile: UserProfile, full_name_raw: str, acting_user: UserProfile | None
@@ -263,7 +277,7 @@ def check_change_full_name(
     new_full_name = check_full_name(
         full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
     )
-    do_change_full_name(user_profile, new_full_name, acting_user)
+    do_change_full_name(user_profile, new_full_name, acting_user, notify=True)
     return new_full_name
 
 
@@ -285,11 +299,12 @@ def check_change_bot_full_name(
         full_name=new_full_name,
         is_activation=False,
     )
-    do_change_full_name(user_profile, new_full_name, acting_user)
+    do_change_full_name(user_profile, new_full_name, acting_user, notify=False)
 
 
 @transaction.atomic(durable=True)
 def do_change_tos_version(user_profile: UserProfile, tos_version: str | None) -> None:
+    old_value = user_profile.tos_version
     user_profile.tos_version = tos_version
     user_profile.save(update_fields=["tos_version"])
     event_time = timezone_now()
@@ -299,6 +314,10 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str | None) ->
         modified_user=user_profile,
         event_type=AuditLogEventType.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
         event_time=event_time,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: tos_version,
+        },
     )
 
 
@@ -408,10 +427,13 @@ def do_change_avatar_fields(
         notify_avatar_url_change(user_profile)
 
 
-def do_delete_avatar_image(user: UserProfile, *, acting_user: UserProfile | None) -> None:
+def do_scrub_avatar_images(user: UserProfile, *, acting_user: UserProfile | None) -> None:
     old_version = user.avatar_version
-    do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user)
-    delete_avatar_image(user, old_version)
+    do_change_avatar_fields(
+        user, UserProfile.AVATAR_FROM_GRAVATAR, skip_notify=True, acting_user=acting_user
+    )
+    for version in range(1, old_version + 1):
+        delete_avatar_image(user, version)
 
 
 def update_scheduled_email_notifications_time(
@@ -430,7 +452,6 @@ def update_scheduled_email_notifications_time(
     )
 
 
-@transaction.atomic(savepoint=False)
 def do_change_user_setting(
     user_profile: UserProfile,
     setting_name: str,
@@ -438,8 +459,23 @@ def do_change_user_setting(
     *,
     acting_user: UserProfile | None,
 ) -> None:
-    old_value = getattr(user_profile, setting_name)
+    bulk_change_user_setting(
+        user_profile.realm, [user_profile], setting_name, setting_value, acting_user=acting_user
+    )
+
+
+@transaction.atomic(savepoint=False)
+def bulk_change_user_setting(
+    realm: Realm,
+    user_profiles: list[UserProfile],
+    setting_name: str,
+    setting_value: bool | str | int | Enum,
+    *,
+    acting_user: UserProfile | None,
+) -> None:
     event_time = timezone_now()
+    audit_logs = []
+    old_values = {}
 
     if isinstance(setting_value, Enum):
         db_setting_value = setting_value.value
@@ -460,32 +496,43 @@ def do_change_user_setting(
         else:
             assert isinstance(db_setting_value, property_type)
             assert isinstance(event_value, property_type)
-    setattr(user_profile, setting_name, db_setting_value)
 
-    # TODO: Move these database actions into a transaction.atomic block.
-    user_profile.save(update_fields=[setting_name])
+    for user in user_profiles:
+        old_value = getattr(user, setting_name)
+        old_values[user.id] = old_value
 
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        event_type=AuditLogEventType.USER_SETTING_CHANGED,
-        event_time=event_time,
-        acting_user=acting_user,
-        modified_user=user_profile,
-        extra_data={
-            RealmAuditLog.OLD_VALUE: old_value,
-            RealmAuditLog.NEW_VALUE: db_setting_value,
-            "property": setting_name,
-        },
-    )
+        setattr(user, setting_name, db_setting_value)
+
+        audit_logs.append(
+            RealmAuditLog(
+                realm=user.realm,
+                event_type=AuditLogEventType.USER_SETTING_CHANGED,
+                event_time=event_time,
+                acting_user=acting_user,
+                modified_user=user,
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: db_setting_value,
+                    "property": setting_name,
+                },
+            )
+        )
+
+    UserProfile.objects.bulk_update(user_profiles, [setting_name])
+    RealmAuditLog.objects.bulk_create(audit_logs)
 
     # Disabling digest emails should clear a user's email queue
     if setting_name == "enable_digest_emails" and not db_setting_value:
+        assert len(user_profiles) == 1
+        user_profile = user_profiles[0]
         clear_scheduled_emails([user_profile.id], ScheduledEmail.DIGEST)
 
     if setting_name == "email_notifications_batching_period_seconds":
-        assert isinstance(old_value, int)
-        assert isinstance(db_setting_value, int)
-        update_scheduled_email_notifications_time(user_profile, old_value, db_setting_value)
+        for user_profile in user_profiles:
+            old_value = old_values[user_profile.id]
+            assert isinstance(old_value, int)
+            assert isinstance(db_setting_value, int)
+            update_scheduled_email_notifications_time(user_profile, old_value, db_setting_value)
 
     event = {
         "type": "user_settings",
@@ -498,39 +545,14 @@ def do_change_user_setting(
         assert isinstance(db_setting_value, str)
         event["language_name"] = get_language_name(db_setting_value)
 
-    transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
+    transaction.on_commit(lambda: bulk_flush_users(user_profiles=user_profiles, realm=realm))
 
-    send_event_on_commit(user_profile.realm, event, [user_profile.id])
-
-    if setting_name in UserProfile.notification_settings_legacy:
-        # This legacy event format is for backwards-compatibility with
-        # clients that don't support the new user_settings event type.
-        # We only send this for settings added before Feature level 89.
-        legacy_event = {
-            "type": "update_global_notifications",
-            "user": user_profile.email,
-            "notification_name": setting_name,
-            "setting": event_value,
-        }
-        send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
-
-    if setting_name in UserProfile.display_settings_legacy or setting_name == "timezone":
-        # This legacy event format is for backwards-compatibility with
-        # clients that don't support the new user_settings event type.
-        # We only send this for settings added before Feature level 89.
-        legacy_event = {
-            "type": "update_display_settings",
-            "user": user_profile.email,
-            "setting_name": setting_name,
-            "setting": event_value,
-        }
-        if setting_name == "default_language":
-            assert isinstance(db_setting_value, str)
-            legacy_event["language_name"] = get_language_name(db_setting_value)
-
-        send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
+    user_ids = [u.id for u in user_profiles]
+    send_event_on_commit(realm, event, user_ids)
 
     if setting_name == "allow_private_data_export":
+        assert len(user_profiles) == 1
+        user_profile = user_profiles[0]
         realm_export_event = {
             "type": "realm_export_consent",
             "user_id": user_profile.id,
@@ -539,11 +561,13 @@ def do_change_user_setting(
         send_event_on_commit(
             user_profile.realm,
             realm_export_event,
-            list(user_profile.realm.get_human_admin_users().values_list("id", flat=True)),
+            list(realm.get_human_admin_users().values_list("id", flat=True)),
         )
 
     # Updates to the time zone display setting are sent to all users
     if setting_name == "timezone":
+        assert len(user_profiles) == 1
+        user_profile = user_profiles[0]
         payload = dict(
             email=user_profile.email,
             user_id=user_profile.id,
@@ -551,12 +575,15 @@ def do_change_user_setting(
         )
         timezone_event = dict(type="realm_user", op="update", person=payload)
         send_event_on_commit(
-            user_profile.realm,
+            realm,
             timezone_event,
             get_user_ids_who_can_access_user(user_profile),
         )
 
     if setting_name == "email_address_visibility":
+        assert len(user_profiles) == 1
+        user_profile = user_profiles[0]
+        old_value = old_values[user_profile.id]
         send_delivery_email_update_events(
             user_profile, old_value, user_profile.email_address_visibility
         )
@@ -579,7 +606,7 @@ def do_change_user_setting(
         # for them since all that's happened is that we stopped syncing changes,
         # not deleted every previously synced draft - to do that use the DELETE
         # endpoint.
-        Draft.objects.filter(user_profile=user_profile).delete()
+        Draft.objects.filter(user_profile__in=user_profiles).delete()
 
     if setting_name == "presence_enabled":
         # The presence_enabled setting's primary function is to stop
@@ -590,6 +617,10 @@ def do_change_user_setting(
         # user's current presence state as consistent with the new
         # setting; not doing so can make it look like the settings
         # change didn't have any effect.
+
+        assert len(user_profiles) == 1
+        user_profile = user_profiles[0]
+
         if db_setting_value:
             status = UserPresence.LEGACY_STATUS_ACTIVE_INT
             presence_time = timezone_now()

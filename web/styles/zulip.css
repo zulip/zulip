@@ -132,8 +132,7 @@ button {
 
 input,
 button,
-select,
-textarea {
+select {
     font-family: "Source Sans 3 VF", sans-serif;
     /* Disable bootstrap size CSS; we want to use our default font size on
        body for input elements. */
@@ -298,16 +297,23 @@ p.n-margin {
     }
 }
 
-#feedback_container {
-    display: none;
+#feedback-container-content-wrapper {
     position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
     width: 400px;
-    top: 0;
-    left: calc(50vw - 220px);
+    max-width: calc(100% - 20px);
     padding: 15px;
     background-color: var(--color-background-modal);
     border-radius: 5px;
     box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
+    box-sizing: border-box;
+}
+
+#feedback_container {
+    display: none;
+    position: fixed;
+    width: 100%;
     z-index: 110;
 
     @container app (width < $cq_md_min) {
@@ -675,7 +681,6 @@ body.has-overlay-scrollbar {
     position: relative;
 }
 
-textarea,
 input {
     font-family: "Source Sans 3 VF", sans-serif;
 }
@@ -688,7 +693,6 @@ button {
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
-textarea,
 label {
     font-size: inherit;
     line-height: inherit;
@@ -1379,20 +1383,17 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 #invite_welcome_custom_message_text {
-    resize: vertical;
     height: 8em;
-    width: 100%;
-    box-sizing: border-box;
 }
 
 .custom-time-input-value {
     width: 5ch;
     margin-right: 15px;
 
-    padding: 4px 6px;
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
         border-color linear 0.2s,
@@ -1466,7 +1467,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-right: 0;
 }
 
-/* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
     width: 100%;
     height: 10px;
@@ -2206,6 +2206,10 @@ body:not(.spectator-view) {
         .dropdown-list {
             list-style: none;
             margin: 0;
+
+            .zulip-icon-preview {
+                font-size: 1.125em;
+            }
         }
     }
 
@@ -2333,7 +2337,8 @@ body:not(.spectator-view) {
             outline: none;
 
             .dropdown-list-delete,
-            .dropdown-list-edit {
+            .dropdown-list-edit,
+            .dropdown-list-manage-folder {
                 visibility: visible;
             }
         }
@@ -2351,7 +2356,10 @@ body:not(.spectator-view) {
 }
 
 .inbox-filter-dropdown-list-container,
-.recent-view-filter-dropdown-list-container {
+.recent-view-filter-dropdown-list-container,
+.folder-filter-dropdown-list-container,
+.stream_settings_filter-dropdown-list-container,
+.user_group_visibility_settings-dropdown-list-container {
     overflow: visible;
 
     .list-item {
@@ -2370,7 +2378,7 @@ body:not(.spectator-view) {
 }
 
 .dropdown-list-item-common-styles .dropdown-list-text-selected {
-    font-weight: 700;
+    font-weight: 600;
 }
 
 #scheduled_messages_overlay .error-icon-message-recipient {

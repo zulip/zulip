@@ -3,6 +3,7 @@
    popovers system in popovers.js. */
 
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
@@ -219,16 +220,14 @@ export const default_popover_props: Partial<tippy.Props> = {
                 fn({state}) {
                     // Since the reference element can be removed from DOM, we rely on popper
                     // here to access the tippy instance which is reliable.
-                    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                    const instance = (state.elements.popper as tippy.PopperElement)._tippy!;
-                    const $popover = $(state.elements.popper);
+                    assert(state.elements.popper instanceof HTMLDivElement);
+                    const popper: tippy.PopperElement = state.elements.popper;
+                    const instance = popper._tippy;
+                    assert(instance !== undefined);
+                    const $popover = $(popper);
                     const $tippy_box = $popover.find(".tippy-box");
-                    // $tippy_box[0].hasAttribute("data-reference-hidden"); is the real check
-                    // but linter wants us to write it like this.
-                    const is_reference_outside_window = Object.hasOwn(
-                        util.the($tippy_box).dataset,
-                        "referenceHidden",
-                    );
+                    const is_reference_outside_window =
+                        $tippy_box.attr("data-reference-hidden") !== undefined;
 
                     if ($tippy_box.hasClass("show-when-reference-hidden")) {
                         // Show user card popover as an overlay if we are not sure about position of the

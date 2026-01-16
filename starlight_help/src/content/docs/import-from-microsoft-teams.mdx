@@ -1,0 +1,282 @@
+---
+title: Import from Microsoft Teams
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import ImportHowUsersWillLogIn from "../include/_ImportHowUsersWillLogIn.mdx";
+import ImportIntoASelfHostedServerDescription from "../include/_ImportIntoASelfHostedServerDescription.mdx";
+import ImportIntoASelfHostedServerInstructions from "../include/_ImportIntoASelfHostedServerInstructions.mdx";
+import ImportIntoAZulipCloudOrganization from "../include/_ImportIntoAZulipCloudOrganization.mdx";
+import ImportSelfHostedServerTips from "../include/_ImportSelfHostedServerTips.mdx";
+import ImportYourDataIntoZulip from "../include/_ImportYourDataIntoZulip.mdx";
+import ImportZulipCloudOrganizationWarning from "../include/_ImportZulipCloudOrganizationWarning.mdx";
+
+You can import your current workspace into a Zulip organization. It's a great way
+to preserve your workspace history when you migrate to Zulip, and to
+make the transition easy for the members of your organization.
+
+The import will include your organization's:
+
+* **Name**
+* **Users**, including names, emails, roles
+* **Teams** as Zulip channels, including all user subscriptions
+* **Message history**, excluding direct messages and messages in private channels.
+
+## Import process overview
+
+To import your Microsoft Teams data into Zulip, you will need to take the following
+steps, which are described in more detail below:
+
+<Steps>
+  1. [Export your Microsoft Teams data](#export-your-microsoft-teams-data).
+  1. [Authorize a Microsoft Graph API token](#authorize-a-microsoft-graph-api-token).
+  1. [Import your Microsoft Teams data into Zulip](#import-your-data-into-zulip).
+  1. [Clean up after the Microsoft Teams export](#clean-up-after-the-microsoft-teams-export).
+  1. [Get your organization started with Zulip](#get-your-organization-started-with-zulip)!
+</Steps>
+
+When planning to migrate from Microsoft Teams to Zulip, make sure your Microsoft tenant
+is active and still has access to Microsoft services for at least a couple of months.
+The process to gain access to the Teams data export tool can take around a month, and
+Zulip's import tool for Microsoft Teams requires an active Microsoft Entra ID application.
+Additionally, since the imported users' email addresses will be their Microsoft tenant
+emails, they will still need access to those accounts to [update their Zulip email
+addresses](/help/change-your-email-address).
+
+## Import your organization from Microsoft Teams into Zulip
+
+### Export your Microsoft Teams data
+
+The [Teams data export
+tool](https://learn.microsoft.com/en-us/microsoftteams/migration-from-teams#steps-to-access-the-teams-data-export-tool) supports
+the export of data for tenants of up to 500 users. If your organization has more than
+500 users, you can try the [Teams export
+APIs](https://learn.microsoft.com/en-us/microsoftteams/migration-from-teams#steps-to-access-the-teams-export-apis).
+
+#### Export message history using Teams data export tool
+
+<Steps>
+  1. Make sure that you are an admin of your Microsoft organization. If you are one,
+     go to this [link](https://aka.ms/AccessTeamsDataExportTool) and contact support
+     through the Teams admin center.
+  1. File a ticket using the predefined title. In the description, provide an
+     estimate of the size of your tenant and confirmation that you are accessing
+     the tool for the purpose of switching from Teams.
+  1. Once your request is approved, go to the [Microsoft Teams admin
+     center](https://admin.teams.microsoft.com/) as the **global administrator**.
+  1. In the **dashboard**, find the user interface for the **Teams data export**.
+  1. Select the date range and export your data. You should be able to download a
+     `zip` file with your data a few minutes after you start the export process.
+</Steps>
+
+### Authorize a Microsoft Graph API token
+
+Some organization data are not exported by the Teams data export tool. The Zulip import
+tool will call several Microsoft Graph APIs to collect the following data:
+
+* **User roles**. The [import details](#import-details) section details how  Microsoft
+  Teams users roles and user types are mapped to Zulip user roles.
+
+To access those APIs, the following instructions will guide you through creating a Microsoft Entra ID application
+with the required permissions and [authorizing an access
+token](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow):
+
+<Steps>
+  1. Log in to the [Microsoft Entra ID](https://entra.microsoft.com/) portal as
+     the **global administrator**.
+  1. Navigate to the sidebar → **Entra ID** → **App registrations** and click **New
+     registration**.
+  1. In the **Register an application** menu, enter the application's name, it can be
+     anything.
+  1. In the **Supported accounts types** section, select **Accounts in this organizational
+     directory only**.
+  1. In the **Redirect URI** section, select **Web** as the platform type and enter
+     `"https://chat.zulip.org/"`.
+  1. In the app's menu, navigate to the **API permissions** menu.
+  1. Click **Add a permission** and select **Microsoft Graph**.
+  1. Select the **Application permissions** as the permission type.
+  1. Search and add these permissions:
+
+     * `User.Read.All`
+     * `RoleManagement.Read.Directory`
+
+     See the [required token permissions](#required-token-permissions) section for more
+     details about these tokens and the endpoints that the import tool calls.
+  1. Click the **Grant admin consent for *org\_name*** button in the **API
+     permissions** menu to grant admin consent to all scopes.
+  1. Take note of the application's `redirect_uri`, `tenant_id`, `client_id`, and
+     `client_secret`.
+  1. To gain administrator permission, make the following HTTP request using
+     the details from your Microsoft Entra ID application:
+     ```bash "<client_id>" "<tenant_id>" "<redirect_uri>"
+     https://login.microsoftonline.com/<tenant_id>/adminconsent?
+     client_id=<client_id>
+     &redirect_uri=<redirect_uri>
+     ```
+  1. You will be redirected to the Microsoft sign in page. Log in using a
+     **global administrator** account and approve all the application permissions
+     that you have requested. If successful, you will be redirected to your
+     application's `redirect_uri` with the following parameters:
+     ```bash "<redirect_uri>" "<tenant_id>"
+     GET <redirect_uri>?tenant=<tenant_id>&admin_consent=True
+     ```
+  1. To get the access token, make the following request:
+     ```bash "<redirect_uri>" "<tenant_id>" "<client_id>" "<client_secret>"
+     curl --location --request POST 'https://login.microsoftonline.com/<tenant_id>/oauth2/v2.0/token' \
+       --header 'Content-Type: application/x-www-form-urlencoded' \
+       --data-urlencode 'client_id=<client_id>' \
+       --data-urlencode 'scope=https://graph.microsoft.com/.default' \
+       --data-urlencode 'client_secret=<client_secret>' \
+       --data-urlencode 'grant_type=client_credentials'
+     ```
+     A successful response looks like this:
+     ```bash
+       {
+         "token_type": "Bearer",
+         "expires_in": 3599,
+         "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik1uQ19WWmNBVGZNNXBP..."
+       }
+     ```
+  1. Take note of the `access_token`.
+</Steps>
+
+<ZulipNote>
+  If the token expires and you need a new one, you can just repeat step 14.
+</ZulipNote>
+
+#### Required token permissions
+
+The following Microsoft Graph API endpoints are used by the Zulip import
+tool:
+
+| Endpoint                                                                                                                            | Uses                                                   | Least-privileged permission     |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------- |
+| [directory role list member](https://learn.microsoft.com/en-us/graph/api/directoryrole-list-members?view=graph-rest-1.0\&tabs=http) | Used to find users who are global administrators.      | `User.Read.All`                 |
+| [list directory role](https://learn.microsoft.com/en-us/graph/api/directoryrole-list?view=graph-rest-1.0\&tabs=http)                | Used to find the ID for the global administrator role. | `RoleManagement.Read.Directory` |
+| [list user](https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0\&tabs=http)                                   | Used to find guest accounts.                           | `User.Read.All`                 |
+
+### Import your data into Zulip
+
+<ImportYourDataIntoZulip />
+
+<Tabs>
+  <TabItem label="Zulip Cloud">
+    <ImportIntoAZulipCloudOrganization />
+
+    <ImportZulipCloudOrganizationWarning />
+  </TabItem>
+
+  <TabItem label="Self hosting">
+    <ImportIntoASelfHostedServerDescription />
+
+    <FlattenedSteps>
+      <ImportIntoASelfHostedServerInstructions />
+
+      1. To import into an organization hosted on the root domain
+         (`EXTERNAL_HOST`) of the Zulip installation, run the following
+         commands, replacing `<token>` with your Microsoft Graph API access token.
+         <ImportSelfHostedServerTips />
+         ```bash "<token>"
+         cd /home/zulip/deployments/current
+         ./scripts/stop-server
+         ./manage.py convert_microsoft_teams_data /tmp/TeamsData/ --token <token> --output /tmp/converted_microsoft_teams_data
+         ./manage.py import '' /tmp/converted_microsoft_teams_data
+         ./scripts/start-server
+         ```
+         Alternatively, to import into a custom subdomain, run:
+         ```bash "<token>" "<subdomain>"
+         cd /home/zulip/deployments/current
+         ./scripts/stop-server
+         ./manage.py convert_microsoft_teams_data /tmp/TeamsData/ --token <token> --output /tmp/converted_microsoft_teams_data
+         ./manage.py import <subdomain> /tmp/converted_microsoft_teams_data
+         ./scripts/start-server
+         ```
+      1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
+         of the guide for [installing a new Zulip
+         server](https://zulip.readthedocs.io/en/stable/production/install.html).
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+#### Import details
+
+Whether you are using Zulip Cloud or self-hosting Zulip, here are few notes to keep
+in mind about the import process:
+
+* Any kind of mentions in messages are not converted to Zulip mentions.
+* Custom emojis are not imported.
+* Direct messages are not imported.
+* Meeting chats and recordings are not imported.
+* Message attachments are not imported.
+* Message edit history and system messages such as `@user_a added @user_b to the chat`
+  are not imported.
+* Message reactions are not imported.
+* Message thread replies will be combined to the main topic.
+* Messages in private channels are not imported.
+* Microsoft tenant's user roles are mapped to Zulip's [user
+  roles](/help/user-roles) in the following way:
+  | Microsoft Teams role | Zulip role |
+  | -------------------- | ---------- |
+  | Global Administrator | Owner      |
+  | Member               | Member     |
+  | Guest                | Guest      |
+* The Teams export tool does not export organization settings, so you will need to
+  [configure the settings for your Zulip
+  organization](/help/customize-organization-settings).
+  This includes settings like [email visibility](/help/configure-email-visibility),
+  [message editing permissions](/help/restrict-message-editing-and-deletion),
+  and [how users can join your organization](/help/restrict-account-creation).
+* The Teams export tool does not export the full user settings, so users in your
+  organization may want to [customize their account
+  settings](/help/getting-started-with-zulip).
+* User avatars are not imported.
+
+## Clean up after the Microsoft Teams export
+
+Once your organization has been successfully imported in to Zulip, you should
+delete [the Microsoft Entra ID
+application](https://entra.microsoft.com/#view/Microsoft_AAD_IAM/StartboardApplicationsMenuBlade/~/AppAppsPreview) that you created in order to
+export your Microsoft Teams data.
+
+## Get your organization started with Zulip
+
+Once the import process is completed, you will need to:
+
+<Steps>
+  1. [Configure the settings for your organization](/help/customize-organization-settings),
+     which are not exported. This includes settings like [email
+     visibility](/help/configure-email-visibility), [message editing
+     permissions](/help/restrict-message-editing-and-deletion),
+     and [how users can join your organization](/help/restrict-account-creation).
+  1. All users from your previous workspace will have accounts in your new Zulip
+     organization. However, you will need to let users know about their new
+     accounts, and [decide how they will log
+     in](/help/import-from-microsoft-teams#decide-how-users-will-log-in) for the first time.
+  1. Share the URL for your new Zulip organization, and (recommended) the [Getting
+     started with Zulip guide](/help/getting-started-with-zulip).
+  1. **Important**, make sure all users [change their Zulip
+     email addresses](/help/change-your-email-address) from their Microsoft tenant
+     emails to ones they can continue to access before your organization's Microsoft
+     subscription expires.
+  1. Migrate any [integrations](/integrations/).
+</Steps>
+
+## Decide how users will log in
+
+<ImportHowUsersWillLogIn>
+  ### Allow users to log in with non-password authentication
+
+  ### Send password reset emails to all users
+
+  ### Manual password resets
+</ImportHowUsersWillLogIn>
+
+## Related articles
+
+* [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
+* [Moving to Zulip](/help/moving-to-zulip)
+* [Getting started with Zulip](/help/getting-started-with-zulip)
+* [Change your email address](/help/change-your-email-address)

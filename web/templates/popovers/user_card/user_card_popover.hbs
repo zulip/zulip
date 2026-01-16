@@ -65,6 +65,7 @@
                     <a role="menuitem" tabindex="0" class="update_status_text popover-menu-link">
                         <i class="popover-menu-icon zulip-icon zulip-icon-smile-smaller" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t 'Edit status' }}</span>
+                        {{popover_hotkey_hints "Shift" "Y"}}
                     </a>
                 </li>
             {{else}}
@@ -72,6 +73,7 @@
                     <a role="menuitem" tabindex="0" class="update_status_text popover-menu-link">
                         <i class="popover-menu-icon zulip-icon zulip-icon-smile-smaller" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t 'Set status' }}</span>
+                        {{popover_hotkey_hints "Shift" "Y"}}
                     </a>
                 </li>
             {{/if}}

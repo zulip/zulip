@@ -12,13 +12,13 @@ import AddUsersToAGroup from "../include/_AddUsersToAGroup.mdx";
 import AdminOnly from "../include/_AdminOnly.mdx";
 import CloudPaidPlansOnly from "../include/_CloudPaidPlansOnly.mdx";
 import HowToCreateAUserGroup from "../include/_HowToCreateAUserGroup.mdx";
+import RemoveUsersFromAGroup from "../include/_RemoveUsersFromAGroup.mdx";
 import RightSidebarViewProfile from "../include/_RightSidebarViewProfile.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
 import UserGroupsApplications from "../include/_UserGroupsApplications.mdx";
 import UserGroupsIntro from "../include/_UserGroupsIntro.mdx";
 import UserSubgroupsIntro from "../include/_UserSubgroupsIntro.mdx";
 
-import CloseIcon from "~icons/zulip-icon/close";
 import ExpandBothDiagonalsIcon from "~icons/zulip-icon/expand-both-diagonals";
 import UserGroupEditIcon from "~icons/zulip-icon/user-group-edit";
 
@@ -111,29 +111,7 @@ import UserGroupEditIcon from "~icons/zulip-icon/user-group-edit";
 
 ## Remove user or group from a group
 
-<Tabs>
-  <TabItem label="Via group settings">
-    <FlattenedSteps>
-      <NavigationSteps target="relative/group/all" />
-
-      1. Select a user group.
-      1. Select the **Members** tab on the right.
-      1. Under **Members**, find the user or group you would like to remove.
-      1. Click the **Remove** (<CloseIcon />) icon in that row. Zulip will notify everyone who is
-         removed from the group.
-    </FlattenedSteps>
-  </TabItem>
-
-  <TabItem label="Via user profile">
-    <FlattenedSteps>
-      <RightSidebarViewProfile />
-
-      1. Select the **User groups** tab.
-      1. Find the group you would like to remove the user from.
-      1. Click the **Remove** (<CloseIcon />) icon in that row.
-    </FlattenedSteps>
-  </TabItem>
-</Tabs>
+<RemoveUsersFromAGroup />
 
 ## Review and remove permissions assigned to a group
 

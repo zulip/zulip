@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import * as activity from "./activity.ts";
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
+import * as clipboard_handler from "./clipboard_handler.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
 import * as compose from "./compose.ts";
@@ -15,6 +16,7 @@ import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_textarea from "./compose_textarea.ts";
 import * as condense from "./condense.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as deprecated_feature_notice from "./deprecated_feature_notice.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as emoji from "./emoji.ts";
@@ -24,6 +26,7 @@ import * as gear_menu from "./gear_menu.ts";
 import * as giphy from "./giphy.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
+import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as lightbox from "./lightbox.ts";
 import * as list_util from "./list_util.ts";
@@ -59,11 +62,13 @@ import {realm} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
+import * as tenor from "./tenor.ts";
 import * as topic_list from "./topic_list.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
 import * as util from "./util.ts";
 
@@ -163,6 +168,7 @@ const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
         {name: "view_selected_stream", message_view_only: false},
         {name: "toggle_read_receipts", message_view_only: true},
     ],
+    "Shift+Y": {name: "set_status", message_view_only: false},
     "Shift+Tab": {name: "shift_tab", message_view_only: false},
     "Shift+ ": {name: "shift_spacebar", message_view_only: true},
     "Shift+ArrowLeft": {name: "left_arrow", message_view_only: false},
@@ -419,6 +425,22 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         return true;
     }
 
+    if (giphy.is_popped_from_edit_message()) {
+        giphy.focus_current_edit_message();
+        // Hide after setting focus so that `edit_message_id` is
+        // still set in giphy.
+        giphy.hide_giphy_popover();
+        return true;
+    }
+
+    if (tenor.is_popped_from_edit_message()) {
+        tenor.focus_current_edit_message();
+        // Hide after setting focus so that `edit_message_id` is
+        // still set in giphy.
+        tenor.hide_picker_popover();
+        return true;
+    }
+
     if (popovers.any_active()) {
         popovers.hide_all();
         return true;
@@ -453,14 +475,6 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         // Emoji picker goes before compose so compose emoji picker is closed properly.
         if (emoji_picker.is_open()) {
             emoji_picker.hide_emoji_popover();
-            return true;
-        }
-
-        if (giphy.is_popped_from_edit_message()) {
-            giphy.focus_current_edit_message();
-            // Hide after setting focus so that `edit_message_id` is
-            // still set in giphy.
-            giphy.hide_giphy_popover();
             return true;
         }
 
@@ -1166,6 +1180,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "gear_menu":
             gear_menu.toggle();
             return true;
+        case "set_status":
+            if (page_params.is_spectator) {
+                return false;
+            }
+            user_status_ui.open_user_status_modal();
+            return true;
         case "show_shortcuts": // Show keyboard shortcuts page
             browser_history.go_to_location("keyboard-shortcuts");
             return true;
@@ -1390,10 +1410,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             } else {
                 emoji_picker_reference = util.the($row.find(".message-actions-menu-button"));
             }
-
-            emoji_picker.toggle_emoji_popover(emoji_picker_reference, msg.id, {
-                placement: "bottom",
-            });
+            emoji_picker.start_picker_for_message_reaction(emoji_picker_reference, msg.id);
             return true;
         }
         case "thumbs_up_emoji": {
@@ -1475,6 +1492,21 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             // but we use `message_view.show` to pass in the `trigger` parameter
             message_view.narrow_to_message_near(msg, "hotkey");
             return true;
+        }
+        case "vim_right": {
+            const url = msg.url;
+            if (url && !msg.locally_echoed) {
+                const $row = message_lists.current.selected_row();
+                const $message_time = $row.find("a.message-time");
+                void (async () => {
+                    await clipboard_handler.copy_link_to_clipboard(url);
+                    show_copied_confirmation(util.the($message_time), {
+                        custom_content: $t({defaultMessage: "Message link copied!"}),
+                    });
+                })();
+                return true;
+            }
+            return false;
         }
     }
 

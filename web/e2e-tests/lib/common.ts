@@ -23,11 +23,12 @@ type Message = Record<string, string | boolean> & {
     recipient?: string;
     content: string;
     stream_name?: string;
+    topic?: string;
 };
 
 let browser: Browser | null = null;
 let screenshot_id = 0;
-export const is_firefox = process.env.PUPPETEER_PRODUCT === "firefox";
+export const is_firefox = process.env["PUPPETEER_PRODUCT"] === "firefox";
 let realm_url = "http://zulip.zulipdev.com:9981/";
 const gps = new StackTraceGPS({ajax: async (url) => (await fetch(url)).text()});
 
@@ -227,7 +228,7 @@ export async function check_compose_state(
         );
     }
     if (params.topic) {
-        form_params.stream_message_recipient_topic = params.topic;
+        form_params["stream_message_recipient_topic"] = params.topic;
     }
     await check_form_contents(page, "form#send_message_form", form_params);
 }
@@ -440,7 +441,7 @@ export async function send_message(
     }
 
     if (params.topic) {
-        params.stream_message_recipient_topic = params.topic;
+        params["stream_message_recipient_topic"] = params.topic;
         delete params.topic;
     }
 
@@ -600,12 +601,7 @@ export async function select_item_via_typeahead(
     );
     assert.ok(entry);
     await entry.hover();
-    await page.evaluate((entry) => {
-        if (!(entry instanceof HTMLElement)) {
-            throw new TypeError("expected HTMLElement");
-        }
-        entry.click();
-    }, entry);
+    await entry.click();
 }
 
 export async function wait_for_modal_to_close(page: Page): Promise<void> {
@@ -625,7 +621,7 @@ export async function wait_for_micromodal_to_close(page: Page): Promise<void> {
     await page.waitForFunction(() => document.querySelector(".modal--open") === null);
 }
 
-export async function run_test_async(test_function: (page: Page) => Promise<void>): Promise<void> {
+export async function run_test(test_function: (page: Page) => Promise<void>): Promise<void> {
     // Pass a page instance to test so we can take
     // a screenshot of it when the test fails.
     const browser = await ensure_browser();
@@ -732,13 +728,6 @@ export async function run_test_async(test_function: (page: Page) => Promise<void
         await console_ready;
         await browser.close();
     }
-}
-
-export function run_test(test_function: (page: Page) => Promise<void>): void {
-    run_test_async(test_function).catch((error: unknown) => {
-        console.error(error);
-        process.exit(1);
-    });
 }
 
 export async function get_current_msg_list_id(

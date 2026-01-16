@@ -1,0 +1,24 @@
+<li class="stream-list-item" role="presentation" data-stream-id="{{stream_id}}">
+    <a class="stream-row hidden-remove-button-row" href="{{stream_edit_url}}">
+        <span class="stream-row-content">
+            <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
+                {{> stream_privacy . }}
+            </span>
+            <span class="stream-name">{{name}}</span>
+        </span>
+        <div class="remove-button-wrapper">
+            {{#if show_unsubscribe_button}}
+                {{#if show_private_stream_unsub_tooltip}}
+                    {{> components/icon_button  icon="close" custom_classes="hidden-remove-button remove-button tippy-zulip-tooltip" intent="danger" aria-label=(t "Unsubscribe") data-tippy-content=(t "Use channel settings to unsubscribe from private channels.") }}
+                {{else if show_last_user_in_private_stream_unsub_tooltip}}
+                    {{> components/icon_button  icon="close" custom_classes="hidden-remove-button remove-button tippy-zulip-tooltip" intent="danger" aria-label=(t "Unsubscribe") data-tippy-content=(t "Use channel settings to unsubscribe the last user from a private channel.") }}
+                {{else}}
+                    {{> components/icon_button  icon="close" custom_classes="hidden-remove-button remove-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Unsubscribe") data-tippy-content=(t "Unsubscribe") }}
+                {{/if}}
+            {{/if}}
+            {{#if can_manage_folder}}
+                {{> components/icon_button  icon="close" custom_classes="hidden-remove-button remove-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Remove channel") data-tippy-content=(t "Remove channel") }}
+            {{/if}}
+        </div>
+    </a>
+</li>

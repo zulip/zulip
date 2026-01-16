@@ -121,12 +121,24 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
     const stream_unread = unread.unread_count_info_for_stream(stream_id);
     const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
     const has_unread_messages = stream_unread_count > 0;
+
+    // Admin can change any stream's name & description either stream is public or
+    // private, subscribed or unsubscribed.
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+
+    const can_change_permissions =
+        stream_data.can_change_permissions_requiring_metadata_access(sub);
+    const settings_section = can_change_permissions ? "general" : "personal";
+    const stream_edit_hash = hash_util.channels_settings_edit_url(sub, settings_section);
+
     const content = render_left_sidebar_stream_actions_popover({
         stream: {
-            ...sub_store.get(stream_id),
+            ...sub,
             url: browser_history.get_full_url(stream_hash),
             list_of_topics_view_url: hash_util.by_channel_topic_list_url(stream_id),
         },
+        stream_edit_hash,
         has_unread_messages,
         show_go_to_channel_feed,
         show_go_to_list_of_topics,
@@ -168,22 +180,6 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             $popper.on("click", ".stream-popover-go-to-list-of-topics", (e) => {
                 e.stopPropagation();
                 hide_stream_popover(instance);
-            });
-
-            // Stream settings
-            $popper.on("click", ".open_stream_settings", (e) => {
-                const sub = stream_popover_sub(e);
-                hide_stream_popover(instance);
-
-                // Admin can change any stream's name & description either stream is public or
-                // private, subscribed or unsubscribed.
-                const can_change_stream_permissions =
-                    stream_data.can_change_permissions_requiring_metadata_access(sub);
-                let stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
-                if (!can_change_stream_permissions) {
-                    stream_edit_hash = hash_util.channels_settings_edit_url(sub, "personal");
-                }
-                browser_history.go_to_location(stream_edit_hash);
             });
 
             // Pin/unpin
@@ -230,9 +226,8 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 e.stopPropagation();
             });
 
-            $popper.on("click", ".copy_stream_link", (e) => {
-                assert(e.currentTarget instanceof HTMLElement);
-                clipboard_handler.popover_copy_link_to_clipboard(instance, $(e.currentTarget));
+            $popper.on("click", ".copy_stream_link", function (this: HTMLElement) {
+                void clipboard_handler.popover_copy_link_to_clipboard(instance, $(this));
             });
         },
         onHidden(instance) {
@@ -302,7 +297,7 @@ async function get_message_placement_in_conversation(
         // we can find the adjacent messages in the current view
         // through which we can determine if the message is an
         // intermediate message or not.
-        const msg_list = message_lists.current.data.all_messages();
+        const msg_list = message_lists.current.all_messages();
         let found_newer_matching_message = false;
         let found_older_matching_message = false;
         const current_dict = {
@@ -516,6 +511,39 @@ export async function build_move_topic_to_stream_popover(
         ) {
             is_disabled = true;
         }
+
+        if (!stream_data.can_create_new_topics_in_stream(select_stream_id)) {
+            const existing_topics_in_stream = stream_topic_history
+                .get_recent_topic_names(select_stream_id)
+                .map((topic) => topic.toLowerCase());
+
+            // new_topic_name can be undefined if user is not allowed
+            // to edit topic, but we still need to check the permission
+            // to create new topics if only stream is changed since it
+            // is possible that original topic does not exist already
+            // for the new stream.
+            const topic_name = new_topic_name ?? old_topic_name;
+            if (
+                !existing_topics_in_stream.includes(topic_name.trim().toLowerCase()) &&
+                stream_topic_history.has_history_for(select_stream_id)
+            ) {
+                is_disabled = true;
+                $("#move_topic_modal .new-topic-name-error").text(
+                    $t({
+                        defaultMessage:
+                            "You are not allowed to start new topics in this channel. Choose an existing topic from the typeahead.",
+                    }),
+                );
+                $("#move_topic_modal .move_messages_edit_topic").addClass("invalid-topic-input");
+            } else {
+                $("#move_topic_modal .new-topic-name-error").empty();
+                $("#move_topic_modal .move_messages_edit_topic").removeClass("invalid-topic-input");
+            }
+        } else {
+            $("#move_topic_modal .new-topic-name-error").empty();
+            $("#move_topic_modal .move_messages_edit_topic").removeClass("invalid-topic-input");
+        }
+
         util.the($<HTMLButtonElement>("#move_topic_modal button.dialog_submit_button")).disabled =
             is_disabled;
     }
@@ -600,15 +628,9 @@ export async function build_move_topic_to_stream_popover(
             return;
         }
 
-        const participant_names = unsubscribed_participant_ids.map(
+        const unsubscribed_participant_names = unsubscribed_participant_ids.map(
             (user_id) => people.get_user_by_id_assert_valid(user_id).full_name,
         );
-        const unsubscribed_participant_formatted_names_list_html =
-            util.format_array_as_list_with_highlighted_elements(
-                participant_names,
-                "long",
-                "conjunction",
-            );
 
         const destination_stream = stream_data.get_sub_by_id(destination_stream_id)!;
         const can_subscribe_other_users = stream_data.can_subscribe_others(destination_stream);
@@ -625,7 +647,7 @@ export async function build_move_topic_to_stream_popover(
             hide_close_button: true,
             stream: destination_stream,
             selected_propagate_mode,
-            unsubscribed_participant_formatted_names_list_html,
+            unsubscribed_participant_names,
             unsubscribed_participants_count,
             few_unsubscribed_participants,
         };
@@ -810,13 +832,6 @@ export async function build_move_topic_to_stream_popover(
         }
 
         assert(new_topic_name !== undefined);
-        // Don't show warning for empty topic as the user is probably
-        // about to type a new topic name. Note that if topics are
-        // mandatory, then the submit button is disabled, which returns
-        // early above.
-        if (new_topic_name === "" || new_topic_name === "(no topic)") {
-            return false;
-        }
         let stream_id: number;
         if (stream_widget_value === undefined) {
             // Set stream_id to current_stream_id since the user is not

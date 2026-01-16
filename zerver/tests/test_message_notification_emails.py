@@ -1161,16 +1161,12 @@ class TestMessageNotificationEmails(ZulipTestCase):
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
         # Emails have missed message content when message content is enabled by the user
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", True, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", True)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(show_message_content=True)
 
         # Emails don't have missed message content when message content is disabled by the user
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", False, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", False)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False, message_content_disabled_by_user=True
@@ -1182,17 +1178,13 @@ class TestMessageNotificationEmails(ZulipTestCase):
         realm.message_content_allowed_in_email_notifications = False
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", True, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", True)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False, message_content_disabled_by_realm=True
         )
 
-        do_change_user_setting(
-            user, "message_content_in_email_notifications", False, acting_user=None
-        )
+        self.set_user_setting(user, "message_content_in_email_notifications", False)
         mail.outbox = []
         self._extra_context_in_missed_personal_messages(
             show_message_content=False,
@@ -1297,6 +1289,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = "Group DMs with iago and Iago"
         self._test_cases(msg_id, verify_body_include, email_subject)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_pm_link_in_missed_message_header_using_direct_message_group(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
@@ -1360,6 +1353,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             mail.outbox[2].alternatives[0][0],
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_sender_name_in_missed_pm_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
@@ -1382,6 +1376,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             mail.outbox[0].alternatives[0][0],
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_your_name_in_missed_pm_to_self_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
 

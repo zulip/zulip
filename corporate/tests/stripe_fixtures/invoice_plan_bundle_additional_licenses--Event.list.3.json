@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -170,7 +170,7 @@
       "type": "invoice.payment_succeeded"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -339,7 +339,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {

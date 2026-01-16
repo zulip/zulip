@@ -51,7 +51,7 @@ mock_esm("../src/settings_data", {
 const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const linkifiers = zrequire("linkifiers");
-const fenced_code = zrequire("../shared/src/fenced_code");
+const fenced_code = zrequire("fenced_code");
 const markdown_config = zrequire("markdown_config");
 const markdown = zrequire("markdown");
 const people = zrequire("people");

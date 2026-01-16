@@ -311,7 +311,7 @@ input[name="licenses"] {
 #confirm-licenses-modal .dialog_submit_button:active {
     /* This is needed to avoid button background changing
     when clicking on it due to "button:active" CSS in
-    landing_page.css. */
+    legacy_landing_page.css. */
     background-color: hsl(240deg 96% 68%);
 }
 
@@ -649,7 +649,7 @@ input[name="licenses"] {
     padding-top: 2px;
 }
 
-#upgrade-page-details #upgrade-payment-menthod-wrapper {
+#upgrade-page-details #upgrade-payment-method-wrapper {
     margin-left: 0;
     grid-area: payment-info;
     width: 100%;

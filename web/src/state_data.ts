@@ -20,33 +20,135 @@ const group_permission_setting_schema = z.object({
 });
 export type GroupPermissionSetting = z.output<typeof group_permission_setting_schema>;
 
-export const narrow_term_schema = z.object({
-    negated: z.optional(z.boolean()),
-    operator: z.enum([
-        "", // Used for search suggestions.
-        "channel",
-        "channels",
-        "dm",
-        "dm-including",
-        "from",
-        "group-pm-with",
-        "has",
-        "id",
-        "in",
-        "is",
-        "near",
-        "pm",
-        "pm-including",
-        "pm-with",
-        "search",
-        "sender",
-        "stream",
-        "streams",
-        "topic",
-        "with",
-    ]),
-    operand: z.string(),
-});
+// We cannot parse the operand since it is incomplete,
+// only used for generating suggestions.
+export type NarrowTermSuggestion = {
+    operator: NarrowTerm["operator"];
+    operand: string;
+    negated?: boolean | undefined;
+};
+
+export type NarrowCanonicalTermSuggestion = {
+    operator: NarrowCanonicalTerm["operator"];
+    operand: string;
+    negated?: boolean | undefined;
+};
+
+export const narrow_canonical_operator_schema = z.enum([
+    "", // Used for search suggestions.
+    "channel",
+    "channels",
+    "dm",
+    "dm-including",
+    "has",
+    "id",
+    "in",
+    "is",
+    "near",
+    "search",
+    "sender",
+    "topic",
+    "with",
+]);
+export type NarrowCanonicalOperator = z.output<typeof narrow_canonical_operator_schema>;
+
+const narrow_legacy_operator_schema = z.enum([
+    "pm-with",
+    "group-pm-with",
+    "from",
+    "stream",
+    "streams",
+    "subject",
+]);
+
+export const narrow_operator_schema = z.union([
+    narrow_canonical_operator_schema,
+    narrow_legacy_operator_schema,
+]);
+export type NarrowOperator = z.output<typeof narrow_operator_schema>;
+
+export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
+    z.object({
+        operator: z.literal(""),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("channel"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("channels"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("has"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("id"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("in"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("is"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("near"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("search"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("topic"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("with"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("sender"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("dm-including"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("dm"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+]);
+export type NarrowCanonicalTerm = z.output<typeof narrow_canonical_term_schema>;
+
+export const narrow_term_schema = z.union([
+    narrow_canonical_term_schema,
+    z.object({
+        negated: z.optional(z.boolean()),
+        operator: narrow_legacy_operator_schema,
+        operand: z.string(),
+    }),
+]);
 export type NarrowTerm = z.output<typeof narrow_term_schema>;
 
 export const custom_profile_field_schema = z.object({
@@ -185,9 +287,11 @@ export const channel_folder_schema = z.object({
 
 export const navigation_view_schema = z.object({
     fragment: z.string(),
-    name: z.string(),
+    name: z.nullable(z.string()),
     is_pinned: z.boolean(),
 });
+
+export type NavigationView = z.infer<typeof navigation_view_schema>;
 
 export const user_topic_schema = z.object({
     stream_id: z.number(),
@@ -305,13 +409,18 @@ export const realm_linkifier_schema = z.object({
     id: z.number(),
 });
 
+export const realm_report_message_types = z.object({
+    key: z.string(),
+    name: z.string(),
+});
+
 // Sync this with zerver.lib.events.do_events_register.
 export const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
     custom_profile_field_types: custom_profile_field_types_schema,
     demo_organization_scheduled_deletion_date: z.optional(z.number()),
     giphy_api_key: z.string(),
-    giphy_rating_options: z.intersection(
+    gif_rating_options: z.intersection(
         z.record(z.string(), z.object({id: z.number(), name: z.string()})),
         z.object({disabled: z.object({id: z.number(), name: z.string()})}),
     ),
@@ -452,6 +561,7 @@ export const realm_schema = z.object({
     realm_night_logo_source: z.string(),
     realm_night_logo_url: z.string(),
     realm_org_type: z.number(),
+    realm_owner_full_content_access: z.boolean(),
     realm_password_auth_enabled: z.boolean(),
     realm_plan_type: z.number(),
     realm_playgrounds: z.array(realm_playground_schema),
@@ -460,6 +570,7 @@ export const realm_schema = z.object({
     realm_push_notifications_enabled_end_timestamp: z.nullable(z.number()),
     realm_require_e2ee_push_notifications: z.boolean(),
     realm_require_unique_names: z.boolean(),
+    realm_send_channel_events_messages: z.boolean(),
     realm_send_welcome_emails: z.boolean(),
     realm_signup_announcements_stream_id: z.number(),
     realm_topics_policy: z.enum(["allow_empty_topic", "disable_empty_topic"]),
@@ -482,6 +593,7 @@ export const realm_schema = z.object({
     server_needs_upgrade: z.boolean(),
     server_presence_offline_threshold_seconds: z.number(),
     server_presence_ping_interval_seconds: z.number(),
+    server_report_message_types: z.array(realm_report_message_types),
     server_supported_permission_settings: z.object({
         realm: z.record(z.string(), group_permission_setting_schema),
         stream: z.record(z.string(), group_permission_setting_schema),
@@ -494,6 +606,7 @@ export const realm_schema = z.object({
     server_web_public_streams_enabled: z.boolean(),
     settings_send_digest_emails: z.boolean(),
     stop_words: z.array(z.string()),
+    tenor_api_key: z.string(),
     upgrade_text_for_wide_organization_logo: z.string(),
     zulip_feature_level: z.number(),
     zulip_merge_base: z.string(),

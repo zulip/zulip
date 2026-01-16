@@ -16,9 +16,11 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 # General configuration
 
 extensions = [
+    "sphinx.ext.autosectionlabel",
     "myst_parser",
     "sphinx_rtd_theme",
     "sphinx_design",
+    "sphinx_copybutton",
 ]
 templates_path = ["_templates"]
 project = "Zulip"
@@ -29,8 +31,12 @@ release = ZULIP_VERSION
 exclude_patterns = ["_build", "README.md"]
 suppress_warnings = [
     "myst.header",
+    "autosectionlabel.git/terminology",  # HEAD vs head
 ]
 pygments_style = "sphinx"
+
+autosectionlabel_prefix_document = True
+autosectionlabel_maxdepth = 2
 
 # Options for Markdown parser
 
@@ -52,6 +58,8 @@ html_theme_options = {
 }
 html_logo = "images/zulip-logo.svg"
 html_static_path = ["_static"]
+# When copying code blocks, ignore line numbers and prompts
+copybutton_exclude = ".linenos, .gp"
 
 
 def setup(app: Any) -> None:

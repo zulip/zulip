@@ -1501,7 +1501,7 @@ earl-test@zulip.com""",
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         # Test we properly handle links in user full names
-        do_change_full_name(hamlet, "</a> https://www.google.com", hamlet)
+        do_change_full_name(hamlet, "</a> https://www.google.com", hamlet, notify=False)
 
         result = self.invite("newuser@zulip.com", ["Denmark"])
         self.assert_json_success(result)
@@ -2240,7 +2240,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         )
 
     def test_invite_welcome_bot_custom_message_from_member(self) -> None:
-        # If a non-admin member is creating an invitaion the Welcome Bot
+        # If a non-admin member is creating an invitation the Welcome Bot
         # custom message is sent if it is configured in the realm.
 
         # If the `welcome_message_custom_text` is configured for the realm.
@@ -3066,7 +3066,7 @@ class MultiuseInviteTest(ZulipTestCase):
         )
 
     def test_multiuse_invite_welcome_bot_custom_message_from_member(self) -> None:
-        # If a non-admin member is creating an invitaion the Welcome Bot
+        # If a non-admin member is creating an invitation the Welcome Bot
         # custom message is sent if it is configured in the realm.
 
         # If the `welcome_message_custom_text` is configured for the realm.

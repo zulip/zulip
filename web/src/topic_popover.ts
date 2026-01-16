@@ -7,7 +7,6 @@ import render_left_sidebar_topic_actions_popover from "../templates/popovers/lef
 
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
-import * as hash_util from "./hash_util.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
@@ -17,6 +16,7 @@ import * as popover_menus_data from "./popover_menus_data.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
 import * as stream_popover from "./stream_popover.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as user_topics from "./user_topics.ts";
@@ -36,7 +36,10 @@ function get_conversation(instance: tippy.Instance): {
         const $message_header = $elt.closest(".message_header").expectOne();
         stream_id = Number.parseInt($message_header.attr("data-stream-id")!, 10);
         topic_name = $message_header.attr("data-topic-name")!;
-        const topic_narrow_url = hash_util.by_channel_topic_permalink(stream_id, topic_name);
+        const topic_narrow_url = stream_topic_history.channel_topic_permalink_hash(
+            stream_id,
+            topic_name,
+        );
         url = new URL(topic_narrow_url, realm.realm_url).href;
     } else if (!instance.reference.classList.contains("topic-sidebar-menu-icon")) {
         const $elt = $(instance.reference);
@@ -55,6 +58,33 @@ function get_conversation(instance: tippy.Instance): {
 }
 
 export function initialize(): void {
+    $("body").on("click", ".recipient-bar-copy-link-to-topic", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        assert(e.currentTarget instanceof HTMLElement);
+        const $copy_button = $(e.currentTarget);
+        const topic_a_tag = util.the(
+            $copy_button.closest(".message-header-contents").find("a.narrows_by_topic"),
+        );
+        assert(topic_a_tag instanceof HTMLAnchorElement);
+        const topic_url = topic_a_tag.href;
+
+        void (async () => {
+            await clipboard_handler.copy_link_to_clipboard(topic_url);
+
+            // After copying successfully, change the tooltip text to "Copied!".
+            const tippy_reference: tippy.ReferenceElement | undefined = $copy_button.get(0);
+            const tippy_instance: tippy.Instance | undefined = tippy_reference!._tippy;
+            if (tippy_instance) {
+                tippy_instance.setContent($t_html({defaultMessage: "Copied!"}));
+                tippy_instance.show();
+                setTimeout(() => {
+                    tippy_instance.hide();
+                }, 1000);
+            }
+        })();
+    });
+
     popover_menus.register_popover_menu(
         "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu, .recent_view_focusable .visibility-status-icon",
         {
@@ -220,10 +250,13 @@ export function initialize(): void {
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
 
-                $popper.on("click", ".sidebar-popover-copy-link-to-topic", (e) => {
-                    assert(e.currentTarget instanceof HTMLElement);
-                    clipboard_handler.popover_copy_link_to_clipboard(instance, $(e.currentTarget));
-                });
+                $popper.on(
+                    "click",
+                    ".sidebar-popover-copy-link-to-topic",
+                    function (this: HTMLElement) {
+                        void clipboard_handler.popover_copy_link_to_clipboard(instance, $(this));
+                    },
+                );
             },
             onHidden(instance) {
                 const $elt = $(instance.reference).closest(".recent_view_focusable");

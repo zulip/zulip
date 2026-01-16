@@ -148,7 +148,6 @@ prod = [
 
   # For OpenAPI schema validation.
   "openapi-core",
-  "werkzeug<3.1.2", # https://github.com/python-openapi/openapi-core/issues/938
 
   # For reporting errors to sentry.io
   "sentry-sdk",
@@ -213,13 +212,17 @@ prod = [
 
   # Internationalization
   "pyicu",
+
+  # Backport datetime.fromisoformat fixes to Python < 3.11
+  "backports-datetime-fromisoformat; python_version < '3.11'",
 ]
 docs = [
   # Needed to build RTD docs
   "sphinx<8.2",  # 8.2.0 requires Python ≥ 3.11
   "sphinx-rtd-theme",
   "sphinx-design",
-
+  # Needed for copybutton
+  "sphinx-copybutton",
   # Needed to build Markdown docs
   "myst-parser",
 ]
@@ -332,7 +335,11 @@ dev = [
 ]
 
 [tool.uv]
-no-binary-package = ["lxml", "xmlsec"]
+no-binary-package = [
+  # https://github.com/xmlsec/python-xmlsec/issues/320
+  "lxml",
+  "xmlsec",
+]
 
 [tool.uv.sources]
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
@@ -346,11 +353,11 @@ talon-core = { url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8e
 # version from Git rather than a PyPI release. Keeping everything in one
 # repository simplifies the process of implementing and documenting new bots for
 # new contributors.
-zulip = { url = "https://github.com/zulip/python-zulip-api/archive/b7fbf1b4299bf225597e45b567e058387d5feee1.zip", subdirectory = "zulip" }
-zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/b7fbf1b4299bf225597e45b567e058387d5feee1.zip", subdirectory = "zulip_bots" }
+zulip = { url = "https://github.com/zulip/python-zulip-api/archive/eec0ef233dbbaeffe1f5afc9dcc06a45da2bd687.zip", subdirectory = "zulip" }
+zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/eec0ef233dbbaeffe1f5afc9dcc06a45da2bd687.zip", subdirectory = "zulip_bots" }
 
 # zulip's linting framework - zulint
-zulint = { url = "https://github.com/zulip/zulint/archive/448e36a1e50e79c82257ed3d65fcf5c8591cdb61.zip" }
+zulint = { url = "https://github.com/zulip/zulint/archive/0b2858f59c72dbe561052878bb2e458d563e6641.zip" }
 
 [tool.black]
 line-length = 100
@@ -409,6 +416,7 @@ plugins = [
 [[tool.mypy.overrides]]
 module = [
     "ahocorasick.*",
+    "backports.datetime_fromisoformat.*",
     "bitfield.*",
     "bmemcached.*",
     "circuitbreaker.*",
@@ -431,7 +439,6 @@ module = [
     "pyuca.*",
     "pyvips.*",
     "scim2_filter_parser.attr_paths",
-    "social_django.*",
     "talon_core.*",
     "tlds.*",
     "two_factor.*",

@@ -20,7 +20,6 @@ from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime
 from email.headerregistry import Address
-from functools import cache
 from itertools import chain, islice
 from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypedDict, TypeVar, cast
 from urllib.parse import urlsplit
@@ -39,6 +38,7 @@ import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
 from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
+from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.migration_status import MigrationStatusJson, parse_migration_status
 from zerver.lib.parallel import run_parallel, run_parallel_queue
 from zerver.lib.pysa import mark_sanitized
@@ -89,11 +89,12 @@ from zerver.models import (
     UserStatus,
     UserTopic,
 )
+from zerver.models.messages import SubMessage
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import get_fake_email_domain, get_realm
+from zerver.models.realms import DEFAULT_REALM_EXPORT_TYPE_SLUG, get_fake_email_domain, get_realm
 from zerver.models.saved_snippets import SavedSnippet
-from zerver.models.users import ExternalAuthID, get_system_bot
+from zerver.models.users import ExternalAuthID, get_system_bot, is_cross_realm_bot_email
 
 if TYPE_CHECKING:
     from mypy_boto3_s3.service_resource import Bucket, Object
@@ -286,7 +287,6 @@ NON_EXPORTED_TABLES = {
     # export before they reach full production status.
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
-    "zerver_submessage",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
     "zerver_draft",
     # The importer cannot trust ImageAttachment objects anyway and needs to check
@@ -314,9 +314,10 @@ MESSAGE_TABLES = {
     # largest tables and need to be paginated.
     "zerver_message",
     "zerver_usermessage",
-    # zerver_reaction belongs here, since it's added late because it
-    # has a foreign key into the Message table.
+    # zerver_reaction and zerver_submessage are effectively metadata
+    # attached to messages that are used to display the message.
     "zerver_reaction",
+    "zerver_submessage",
     # zerver_client is also written after we know what clients got
     # used
     "zerver_client",
@@ -347,7 +348,12 @@ DATE_FIELDS: dict[TableName, list[Field]] = {
     "zerver_message": ["last_edit_time", "date_sent"],
     "zerver_muteduser": ["date_muted"],
     "zerver_realmauditlog": ["event_time"],
-    "zerver_realm": ["date_created"],
+    "zerver_realm": [
+        "date_created",
+        "demo_organization_scheduled_deletion_date",
+        "push_notifications_enabled_end_timestamp",
+        "scheduled_deletion_date",
+    ],
     "zerver_realmexport": [
         "date_requested",
         "date_started",
@@ -1452,7 +1458,11 @@ def custom_fetch_user_profile_cross_realm(response: TableData, context: Context)
         bot_default_email = bot_name_to_default_email[bot_name]
         bot_user_id = get_system_bot(bot_email, internal_realm.id).id
 
-        recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
+        try:
+            recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
+        except Recipient.DoesNotExist:
+            recipient_id = None
+
         crossrealm_bots.append(
             dict(
                 email=bot_default_email,
@@ -1519,6 +1529,11 @@ def fetch_client_data(response: TableData, client_ids: set[int]) -> None:
     response["zerver_client"] = make_raw(query.iterator())
 
 
+def fetch_submessage_data(response: TableData, message_ids: set[int]) -> None:
+    query = SubMessage.objects.filter(message_id__in=list(message_ids))
+    response["zerver_submessage"] = make_raw(query.iterator())
+
+
 def custom_fetch_direct_message_groups(response: TableData, context: Context) -> None:
     realm = context["realm"]
     export_type = context["export_type"]
@@ -1537,6 +1552,7 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
         r["id"]
         for r in list(response["zerver_userprofile"])
         + list(response["zerver_userprofile_mirrordummy"])
+        + list(response["zerver_userprofile_crossrealm"])
     }
 
     recipient_filter = Q()
@@ -1573,17 +1589,21 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
     for sub in Subscription.objects.select_related("user_profile").filter(
         recipient__in=realm_direct_message_group_recipient_ids
     ):
-        if sub.user_profile.realm_id != realm.id:
+        if sub.user_profile.realm_id != realm.id and not is_cross_realm_bot_email(
+            sub.user_profile.delivery_email
+        ):
             # In almost every case the other realm will be zulip.com
             unsafe_direct_message_group_recipient_ids.add(sub.recipient_id)
 
     # Now filter down to just those direct message groups that are
     # entirely within the realm.
     #
-    # This is important for ensuring that the User objects needed
-    # to import it on the other end exist (since we're only
-    # exporting the users from this realm), at the cost of losing
-    # some of these cross-realm messages.
+    # This is important for ensuring that the User objects needed to
+    # import it on the other end exist (since we're only exporting the
+    # users from this realm), at the cost of losing any true
+    # cross-realm messages. (As of 2025, true cross-realm messages,
+    # not involving system bots cannot exist without a bug or fork of
+    # Zulip).
     direct_message_group_subs = [
         sub
         for sub in realm_direct_message_group_subs
@@ -2412,12 +2432,9 @@ def export_emoji_from_local(
 
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             shutil.copy2(local_path, output_path)
-            # Realm emoji author is optional.
-            author = realm_emoji_object.author
-            author_id = author.id if author else None
             record = dict(
                 realm_id=realm.id,
-                author=author_id,
+                author=realm_emoji_object.author_id,
                 path=emoji_path,
                 s3_path=emoji_path,
                 file_name=realm_emoji_object.file_name,
@@ -2548,6 +2565,8 @@ def do_export_realm(
     fetch_reaction_data(response=response, message_ids=message_ids)
 
     fetch_client_data(response=response, client_ids=collected_client_ids)
+
+    fetch_submessage_data(response=response, message_ids=message_ids)
 
     # Override the "deactivated" flag on the realm
     if export_as_active is not None:
@@ -2764,6 +2783,17 @@ def get_single_user_config() -> Config:
         use_iterator=False,
     )
 
+    Config(
+        table="zerver_submessage",
+        model=SubMessage,
+        normal_parent=user_profile_config,
+        include_rows="sender_id__in",
+        # Like reactions, submessages are metadata like poll votes
+        # that are readable by anyone who can access the message.
+        limit_to_consenting_users=False,
+        use_iterator=False,
+    )
+
     add_user_profile_child_configs(user_profile_config)
 
     return user_profile_config
@@ -2821,22 +2851,18 @@ def batched(iterable: Iterable[T], n: int) -> Iterable[tuple[T, ...]]:
 def export_messages_single_user(
     user_profile: UserProfile, *, output_dir: Path, reaction_message_ids: set[int]
 ) -> None:
-    @cache
-    def get_recipient(recipient_id: int) -> str:
-        recipient = Recipient.objects.get(id=recipient_id)
-
+    def get_recipient(recipient: Recipient, sender: UserProfile) -> str:
         if recipient.type == Recipient.STREAM:
             stream = Stream.objects.values("name").get(id=recipient.type_id)
             return stream["name"]
 
-        user_names = (
-            UserProfile.objects.filter(
-                subscription__recipient_id=recipient.id,
-            )
-            .order_by("full_name")
-            .values_list("full_name", flat=True)
-        )
+        display_recipients = get_display_recipient(recipient)
 
+        if len(display_recipients) == 2:
+            other_user = next(user for user in display_recipients if user["id"] != sender.id)
+            return other_user["full_name"]
+
+        user_names = [user["full_name"] for user in display_recipients]
         return ", ".join(user_names)
 
     messages_from_me = Message.objects.filter(
@@ -2878,7 +2904,9 @@ def export_messages_single_user(
             item["flags_mask"] = user_message.flags.mask
             # Add a few nice, human-readable details
             item["sending_client_name"] = user_message.message.sending_client.name
-            item["recipient_name"] = get_recipient(user_message.message.recipient_id)
+            item["recipient_name"] = get_recipient(
+                user_message.message.recipient, user_message.message.sender
+            )
             return floatify_datetime_fields(item, "zerver_message")
 
         message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
@@ -3088,6 +3116,15 @@ def export_realm_wrapper(
         raise
 
 
+def get_export_type_slug(export_type: int) -> str:
+    result = DEFAULT_REALM_EXPORT_TYPE_SLUG
+    for export_type_slug, export_type_value in RealmExport.EXPORT_TYPES.items():
+        if export_type == export_type_value:
+            result = export_type_slug
+
+    return result
+
+
 def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
     # Exclude exports made via shell. 'acting_user=None', since they
     # aren't supported in the current API format.
@@ -3120,7 +3157,7 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
             deleted_timestamp=deleted_timestamp,
             failed_timestamp=failed_timestamp,
             pending=pending,
-            export_type=export.type,
+            export_type=get_export_type_slug(export.type),
         )
     return sorted(exports_dict.values(), key=lambda export_dict: export_dict["id"])
 

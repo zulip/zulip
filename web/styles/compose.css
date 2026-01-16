@@ -1,4 +1,4 @@
-#compose_buttons {
+#legacy-closed-compose-box {
     text-align: right;
     display: flex;
     column-gap: 4px;
@@ -472,12 +472,6 @@
     margin-bottom: calc(
         (var(--compose-formatting-buttons-row-height) + 1px) * -1
     );
-
-    textarea {
-        /* Flatten the bottom edge of the textarea to
-           merge with the flat top edge of the buttons row */
-        border-radius: 3px 3px 0 0;
-    }
 }
 
 #preview-message-area-container {
@@ -1015,6 +1009,10 @@
             }
         }
     }
+
+    .secondary-button {
+        margin-left: 10px;
+    }
 }
 
 .upload_banner {
@@ -1074,22 +1072,21 @@ textarea.new_message_textarea {
     scrollbar-color: hsl(0deg 0% 50%) transparent;
     box-shadow: none;
 
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+    font-family: "Source Sans 3 VF", sans-serif;
+
     &:focus {
         outline: 0;
-    }
-
-    &:read-only,
-    &:disabled {
-        background-color: hsl(0deg 0% 93%);
     }
 }
 
 #message-content-container,
-#compose_recipient_box {
+#compose-channel-recipient {
     color: var(--color-text-default);
 }
 
-#compose_recipient_box {
+#compose-channel-recipient {
     display: grid;
     /* When displaying #topic-not-mandatory-placeholder,
        we let it occupy the entire topic box. Otherwise,
@@ -1226,16 +1223,27 @@ textarea.new_message_textarea {
     outline-color: transparent;
 }
 
+.compose-box-open {
+    #closed-compose-controls {
+        display: none;
+    }
+
+    .message_comp {
+        display: block;
+    }
+}
+
 /* We want transitions to run only on user interactions with
    the mouse, once the compose box is open. Any keyboard
    interactions (e.g., Shift-Tabbing from the compose textarea
    to the topic box) show instant changes, so we don't need to
    accommodate them here, which we prevent by applying the
-   transitions only when focus isn't within the recipient row. */
+   transitions only when focus isn't within the recipient row,
+   or hasn't recently been within the topic box. */
 #compose.compose-box-open {
-    .low-attention-recipient-row:hover:not(:focus-within) {
+    .low-attention-recipient-row:not(.recently-focused, :focus-within) {
         #compose_select_recipient_widget,
-        #compose_recipient_box,
+        #compose-channel-recipient,
         #compose-direct-recipient .pill-container {
             transition: var(--compose-recipient-row-transition);
             transition-delay: var(--compose-recipient-row-transition-delay);
@@ -1290,7 +1298,7 @@ textarea.new_message_textarea {
     }
 
     #compose_select_recipient_widget,
-    #compose_recipient_box,
+    #compose-channel-recipient,
     #compose-direct-recipient .pill-container {
         background-color: transparent;
         border-color: transparent;
@@ -1959,12 +1967,15 @@ textarea.new_message_textarea {
 #add-new-saved-snippet-modal,
 #edit-saved-snippet-modal {
     & .saved-snippet-title {
-        width: 97%;
+        /* Subtract (2 * horizontal padding) + (2 * border width) */
+        width: calc(
+            100% - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
         margin-bottom: 20px;
     }
 
     & .saved-snippet-content {
-        width: 97%;
         resize: vertical;
     }
 }

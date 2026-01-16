@@ -1,5 +1,5 @@
 import re
-from typing import Any, TypeAlias
+from typing import Annotated, Any, TypeAlias
 
 from django.http import HttpRequest
 from django.http.response import HttpResponse
@@ -17,7 +17,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError, UnsupportedWebhookEventTypeError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
@@ -184,6 +184,7 @@ def api_slack_webhook(
     *,
     slack_app_token: str = "",
     channels_map_to_topics: str | None = None,
+    map_to_channels: Annotated[str | None, ApiParamConfig("mapping")] = None,
 ) -> HttpResponse:
     if request.content_type != "application/json":
         # Handle Slack's legacy Outgoing Webhook Service payload.
@@ -276,6 +277,12 @@ def api_slack_webhook(
         )
     sender = get_slack_sender_name(user_id, slack_app_token)
     content = get_message_body(text, sender, files)
+
+    # channels_map_to_topics=0 is ported to use PresetUrlOption.CHANNEL_MAPPING
+    # (map_to_channels).
+    if map_to_channels == "channels" and channels_map_to_topics is None:
+        channels_map_to_topics = VALID_OPTIONS["SHOULD_NOT_BE_MAPPED"]
+
     channel_id = event_dict.get("channel").tame(check_string)
     channel = (
         get_slack_channel_name(channel_id, slack_app_token) if channels_map_to_topics else None

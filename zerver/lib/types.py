@@ -43,6 +43,12 @@ class ProfileDataElementUpdateDict(TypedDict):
     value: ProfileDataElementValue
 
 
+class UserProfileChangeDict(TypedDict):
+    field_name: str
+    old_value: str
+    new_value: str
+
+
 ProfileData: TypeAlias = list[ProfileDataElement]
 
 FieldElement: TypeAlias = tuple[
@@ -160,6 +166,7 @@ class RawStreamDict(TypedDict):
 
     can_add_subscribers_group_id: int
     can_administer_channel_group_id: int
+    can_create_topic_group_id: int
     can_delete_any_message_group_id: int
     can_delete_own_message_group_id: int
     can_move_messages_out_of_channel_group_id: int
@@ -214,6 +221,7 @@ class SubscriptionStreamDict(TypedDict):
     audible_notifications: bool | None
     can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
+    can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
@@ -257,6 +265,7 @@ class NeverSubscribedStreamDict(TypedDict):
     is_archived: bool
     can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
+    can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
@@ -296,6 +305,7 @@ class DefaultStreamDict(TypedDict):
     is_archived: bool
     can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
+    can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
@@ -395,6 +405,7 @@ class RawUserDict(TypedDict):
     bot_type: int | None
     long_term_idle: bool
     email_address_visibility: int
+    is_imported_stub: bool
 
 
 class RemoteRealmDictValue(TypedDict):

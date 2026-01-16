@@ -19,9 +19,10 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
+import * as emoji_frequency from "./emoji_frequency.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
-import * as giphy from "./giphy.ts";
+import * as gif_state from "./gif_state.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
@@ -74,7 +75,6 @@ import * as settings_profile_fields from "./settings_profile_fields.ts";
 import * as settings_realm_domains from "./settings_realm_domains.ts";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
 import * as settings_streams from "./settings_streams.ts";
-import * as settings_users from "./settings_users.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
@@ -174,6 +174,7 @@ export function dispatch_normal_event(event) {
             // which returns all the unread messages out of a given list.
             // So double marking something as read would not occur
             unread_ops.process_read_messages_event(msg_ids);
+            emoji_frequency.update_emoji_frequency_on_messages_deletion(msg_ids);
             // This methods updates message_list too and since stream_topic_history relies on it
             // this method should be called first.
             message_events.remove_messages(msg_ids);
@@ -254,9 +255,11 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     reactions.add_reaction(event);
+                    emoji_frequency.update_emoji_frequency_on_add_reaction_event(event);
                     break;
                 case "remove":
                     reactions.remove_reaction(event);
+                    emoji_frequency.update_emoji_frequency_on_remove_reaction_event(event);
                     break;
                 default:
                     blueslip.error("Unexpected event type reaction/" + event.op);
@@ -325,12 +328,13 @@ export function dispatch_normal_event(event) {
                 require_e2ee_push_notifications: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
+                send_channel_events_messages: noop,
                 signup_announcements_stream_id: noop,
                 zulip_update_announcements_stream_id: noop,
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
                 jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
-                giphy_rating: giphy.update_giphy_rating,
+                giphy_rating: gif_state.update_gif_rating,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
                 welcome_message_custom_text: noop,
@@ -347,12 +351,6 @@ export function dispatch_normal_event(event) {
 
                         if (event.property === "name") {
                             electron_bridge?.send_event("realm_name", event.value);
-                        }
-
-                        if (event.property === "enable_spectator_access") {
-                            stream_ui_updates.update_stream_privacy_choices(
-                                "can_create_web_public_channel_group",
-                            );
                         }
                     }
                     break;
@@ -394,14 +392,6 @@ export function dispatch_normal_event(event) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();
-                                }
-
-                                if (
-                                    key === "can_create_public_channel_group" ||
-                                    key === "can_create_private_channel_group" ||
-                                    key === "can_create_web_public_channel_group"
-                                ) {
-                                    stream_ui_updates.update_stream_privacy_choices(key);
                                 }
 
                                 if (
@@ -494,15 +484,25 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     bot_data.add(event.bot);
-                    settings_bots.render_bots();
+                    if (event.bot.owner_id === current_user.user_id) {
+                        settings_bots.redraw_your_bots_list();
+                        settings_bots.toggle_bot_config_download_container();
+                    }
                     break;
                 case "delete":
                     bot_data.del(event.bot.user_id);
-                    settings_bots.render_bots();
+                    settings_bots.redraw_your_bots_list();
+                    settings_bots.toggle_bot_config_download_container();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
-                    settings_bots.render_bots();
+                    if ("owner_id" in event.bot) {
+                        settings_bots.redraw_your_bots_list();
+                        settings_bots.toggle_bot_config_download_container();
+                    }
+                    if ("is_active" in event.bot) {
+                        settings_bots.toggle_bot_config_download_container();
+                    }
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_bot/" + event.op);
@@ -604,7 +604,7 @@ export function dispatch_normal_event(event) {
                     people.add_active_user(event.person, "server_events");
                     settings_account.maybe_update_deactivate_account_button();
                     if (event.person.is_bot) {
-                        settings_users.redraw_bots_list();
+                        settings_bots.redraw_all_bots_list();
                     }
 
                     if (should_redraw) {
@@ -623,7 +623,7 @@ export function dispatch_normal_event(event) {
                     user_events.update_person(event.person);
                     settings_account.maybe_update_deactivate_account_button();
                     if (people.is_valid_bot_user(event.person.user_id)) {
-                        settings_users.update_bot_data(event.person.user_id);
+                        settings_bots.update_bot_data(event.person.user_id);
                     }
                     break;
                 case "remove": {
@@ -1035,6 +1035,7 @@ export function dispatch_normal_event(event) {
                 stream_list.update_unread_counts_visibility();
             }
             if (event.property === "web_left_sidebar_show_channel_folders") {
+                stream_list.update_collapsed_state_on_show_channel_folders_change();
                 stream_list.build_stream_list(true);
             }
             if (event.property === "web_inbox_show_channel_folders") {

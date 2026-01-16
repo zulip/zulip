@@ -105,7 +105,7 @@ async function test_deactivated_users_section(page: Page): Promise<void> {
 }
 
 async function test_bot_deactivation_and_reactivation(page: Page): Promise<void> {
-    await page.click("li[data-section='bot-list-admin']");
+    await page.click("li[data-section='bots']");
 
     const default_bot_user_row = await user_row(page, "Zulip Default Bot");
 
@@ -143,4 +143,4 @@ async function user_deactivation_test(page: Page): Promise<void> {
     await test_bot_deactivation_and_reactivation(page);
 }
 
-common.run_test(user_deactivation_test);
+await common.run_test(user_deactivation_test);

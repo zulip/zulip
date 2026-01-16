@@ -10,6 +10,7 @@ import formatjs from "eslint-plugin-formatjs";
 import importPlugin from "eslint-plugin-import";
 import * as mdx from "eslint-plugin-mdx";
 import noJquery from "eslint-plugin-no-jquery";
+import promise from "eslint-plugin-promise";
 import unicorn from "eslint-plugin-unicorn";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -35,6 +36,7 @@ export default defineConfig(
     compat.config(noJquery.configs.recommended),
     compat.config(noJquery.configs.deprecated),
     unicorn.configs.recommended,
+    promise.configs["flat/recommended"],
     prettier,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,
@@ -162,6 +164,8 @@ export default defineConfig(
             "one-var": ["error", "never"],
             "prefer-arrow-callback": "error",
             "prefer-const": ["error", {ignoreReadBeforeAssign: true}],
+            "promise/no-promise-in-callback": "off",
+            "promise/prefer-await-to-then": ["error", {stict: true}],
             radix: "error",
             "sort-imports": ["error", {ignoreDeclarationSort: true}],
             "spaced-comment": ["error", "always", {markers: ["/"]}],
@@ -174,6 +178,7 @@ export default defineConfig(
             "unicorn/no-process-exit": "off",
             "unicorn/no-useless-undefined": "off",
             "unicorn/numeric-separators-style": "off",
+            "unicorn/prefer-dom-node-dataset": "off",
             "unicorn/prefer-global-this": "off",
             "unicorn/prefer-string-raw": "off",
             "unicorn/prefer-ternary": "off",
@@ -214,6 +219,12 @@ export default defineConfig(
         },
     },
     {
+        files: ["**/*.md"],
+        rules: {
+            "import/unambiguous": "off",
+        },
+    },
+    {
         files: ["web/tests/**"],
         rules: {
             "@typescript-eslint/no-empty-function": "off",
@@ -237,7 +248,7 @@ export default defineConfig(
         },
     },
     {
-        ignores: ["web/shared/**", "web/src/**"],
+        ignores: ["web/src/**"],
         languageOptions: {
             globals: globals.node,
         },
@@ -266,7 +277,7 @@ export default defineConfig(
         },
     },
     {
-        files: ["web/shared/**", "web/src/**"],
+        files: ["web/src/**"],
         settings: {
             "import/resolver": {
                 webpack: {
@@ -299,27 +310,6 @@ export default defineConfig(
                 ...globals.browser,
             },
             sourceType: "script",
-        },
-    },
-    {
-        files: ["web/shared/**"],
-        languageOptions: {
-            globals: globals["shared-node-browser"],
-        },
-        rules: {
-            "import/no-restricted-paths": [
-                "error",
-                {
-                    zones: [
-                        {
-                            target: "./web/shared",
-                            from: ".",
-                            except: ["./node_modules", "./web/shared"],
-                        },
-                    ],
-                },
-            ],
-            "unicorn/prefer-string-replace-all": "off",
         },
     },
     astroConfigs.recommended,

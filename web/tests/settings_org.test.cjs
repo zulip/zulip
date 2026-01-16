@@ -98,7 +98,7 @@ function createSaveButtons(subsection) {
 
     $save_button_controls.closest = () => $stub_save_button_header;
     $stub_save_button_header.set_find_results(".time-limit-setting", []);
-    $stub_save_button_header.set_find_results(".pill-container", []);
+    $stub_save_button_header.set_find_results(".pill-container.prop-element", []);
     $stub_save_button_header.set_find_results(".subsection-changes-save button", $stub_save_button);
     $stub_save_button_header.set_find_results(".save-button", $stub_save_button);
 
@@ -571,6 +571,7 @@ test("set_up", ({override, override_rewire}) => {
     $("#id_realm_welcome_message_custom_text").set_parent(
         $.create("<stub welcome message custom text>"),
     );
+    override_rewire(settings_components, "resize_textareas_in_subsection", noop);
 
     // Make our plan not limited so we don't have to stub all the
     // elements involved in disabling the can_create_groups input.

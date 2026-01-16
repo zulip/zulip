@@ -1,4 +1,4 @@
-# Create a pull request
+# Pull requests
 
 When you're ready for feedback, submit a pull request. Pull requests
 are a feature specific to GitHub. They provide a simple, web-based way
@@ -152,7 +152,7 @@ follow-up comment in which you: a) ask for any clarifications you need, b)
 explain to the reviewer how you solved any problems they mentioned, and c) ask
 for another review.
 
-[edx-howto-rebase-pr]: https://github.com/openedx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
+[edx-howto-rebase-pr]: https://web.archive.org/web/20240204225038/https://github.com/openedx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
 [github-help-about-pr]: https://help.github.com/en/articles/about-pull-requests
 [github-help-create-pr-fork]: https://help.github.com/en/articles/creating-a-pull-request-from-a-fork
 [github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests

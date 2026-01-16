@@ -21,6 +21,7 @@ IGNORED_PHRASES = [
     r"Esc",
     r"GCM",
     r"GitHub",
+    r"GitLab",
     r"Gravatar",
     r"HTTP",
     r"ID",
@@ -42,10 +43,12 @@ IGNORED_PHRASES = [
     r"Slack",
     r"Google",
     r"Terms of Service",
+    r"TikTok",
     r"Tuesday",
     r"URL",
     r"UUID",
     r"WordPress",
+    r"YouTube",
     r"Zoom",
     r"Zulip",
     r"Zulip Server",
@@ -147,6 +150,8 @@ IGNORED_PHRASES = [
     # Used in GIPHY popover.
     r"GIFs",
     r"GIPHY",
+    # Used for Tenor attributions
+    r"Search Tenor",
     # Used in our case studies
     r"Technical University of Munich",
     r"University of California San Diego",
@@ -192,6 +197,14 @@ IGNORED_PHRASES = [
     r"comma-separated list",
     # Used in info_overlay.
     r"then",
+    r"Joe Smith",
+    r"bold",
+    r"channel name",
+    r"is busy working",
+    r"italic",
+    r"strikethrough",
+    r"support team",
+    r"topic name",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from typing import TypedDict
 
+from zerver.lib.timestamp import datetime_to_global_time
+
 # For integrations that don't have example webhook fixtures/payloads,
 # we create an Zulip notification message content and topic here in
 # order to generate an example screenshot to include in the documentation
@@ -50,10 +52,9 @@ TICKET_NUMBER = THREE_DIGIT_NUMBER
 # Example datetime content
 _DT = datetime(2025, 5, 30, 2, 0, 0, tzinfo=timezone.utc)
 
-DATETIME_STAMP = _DT.strftime("%Y-%m-%d %H:%M:%S")
-DATETIME_GLOBAL = f"<time:{_DT.strftime('%Y-%m-%dT%H:%M:%S%z')}>"
+DATETIME_GLOBAL = datetime_to_global_time(_DT)
 
-DATE_ISO_8601 = _DT.strftime("%Y-%m-%d")
+DATE_ISO_8601 = _DT.date().isoformat()
 DATE_LONG = _DT.strftime("%A, %B %d, %Y")
 
 
@@ -97,7 +98,7 @@ GIT = ScreenshotContent(
 
 GITHUB_ACTIONS = ScreenshotContent(
     topic="scheduled backups",
-    content=f"""Backup [failed]() at {DATETIME_STAMP}.
+    content=f"""Backup [failed]() at {DATETIME_GLOBAL}.
 > Unable to connect.""",
 )
 
@@ -112,13 +113,6 @@ GOOGLE_CALENDAR = ScreenshotContent(
 JENKINS = ScreenshotContent(
     topic=PROJECT_NAME,
     content=f"**Build:** [#{REVISION_NUMBER}](): FAILURE :cross_mark:",
-)
-
-JIRA_PLUGIN = ScreenshotContent(
-    topic=f"{TICKET_NUMBER}: {TASK_TITLE}",
-    content=f"""{BO_NAME} **created** [{TICKET_NUMBER}]() - priority Medium, assigned to @**{KEVIN_NAME}**:
-
-> {TASK_DESCRIPTION}""",
 )
 
 MASTODON = ScreenshotContent(
@@ -155,7 +149,7 @@ Can we reschedule this to next week?""",
 
 OPENSHIFT = ScreenshotContent(
     topic=PROJECT_NAME,
-    content=f"""Deployment [{REVISION_NUMBER}]() triggered by a push to **{BRANCH_GIT}** by commit [{COMMIT_HASH_A[:7]}]() at {DATETIME_STAMP} has **failed**.""",
+    content=f"""Deployment [{REVISION_NUMBER}]() triggered by a push to **{BRANCH_GIT}** by commit [{COMMIT_HASH_A[:7]}]() at {DATETIME_GLOBAL} has **failed**.""",
 )
 
 PERFORCE = ScreenshotContent(
@@ -172,22 +166,6 @@ PERFORCE = ScreenshotContent(
 PUPPET = ScreenshotContent(
     topic="Reports",
     content=f"""Puppet production run for web-server-01 completed at {DATETIME_GLOBAL}. [GitHub Gist]() | [Report URL]()""",
-)
-
-REDMINE = ScreenshotContent(
-    topic=TASK_TITLE,
-    content=f"""{BO_NAME} **created** issue [{TICKET_NUMBER} {TASK_TITLE}]():
-
-~~~quote
-
-{TASK_DESCRIPTION}...
-
-~~~
-
-* **Assignee**: {KEVIN_NAME}
-* **Status**: New
-* **Target version**: {VERSION_NUMBER[1:]}
-* **Estimated hours**: 40""",
 )
 
 RSS = MASTODON

@@ -89,21 +89,6 @@
     }
 }
 
-.user-profile-name-heading {
-    max-width: 80%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    /* This line-height is to increase the vertical clickable areas on the icons. */
-    line-height: 1.2727em; /* 28px at 22px font-size at 14px em */
-
-    .user-profile-name {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-}
-
 .modal__close {
     &::before {
         content: "\2715";
@@ -129,6 +114,12 @@
     /* Set a max-width, less the 1.5em of left and right
        padding specified above. */
     max-width: calc(100% - 3em);
+
+    > .simplebar-wrapper {
+        /* Compensate the 3em reduced in modal_content so it positions
+           itself correctly */
+        max-width: calc(100% + 3em);
+    }
 
     &.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid var(--color-border-modal-footer);
@@ -202,6 +193,132 @@
     margin-left: 12px;
     background-color: hsl(240deg 96% 68%);
     color: hsl(0deg 0% 100%) !important;
+}
+
+/* Modal-specific CSS belongs below this point. */
+
+.folder-channels-list-header {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.125em; /* 18px at 16px em */
+}
+
+#user-profile-modal .group-list-container,
+#user-profile-modal .stream-list-container {
+    height: calc(100% - var(--header-line-height));
+}
+
+#edit_channel_folder {
+    .stream-list-container {
+        height: 30vh;
+    }
+
+    .add_channel_folder_widget {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        gap: 10px;
+
+        .dropdown-widget-button,
+        .dropdown_widget_with_label_wrapper {
+            max-width: 100%;
+            width: var(--modal-input-width);
+        }
+    }
+}
+
+#channel_folder_banner {
+    &:has(.banner) {
+        margin-bottom: 10px;
+    }
+}
+
+#user-profile-modal .group-list-container,
+#user-profile-modal .stream-list-container,
+#edit_channel_folder .stream-list-container {
+    border-radius: 4px;
+    background-color: var(--background-color-user-profile-list-container);
+    border: 1px solid var(--color-border-user-profile-list-container);
+    padding: 0.25em 0.25em 0;
+    margin-bottom: 5px;
+    -webkit-overflow-scrolling: touch;
+
+    .user-profile-group-row,
+    .stream-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.3125em 0.625em;
+        align-items: center;
+        text-decoration: none;
+        border-bottom: none;
+        border-radius: 4px;
+        color: var(--color-dropdown-item);
+        cursor: pointer;
+
+        .user-group-list-item,
+        .stream-row-content {
+            display: flex;
+            overflow: hidden;
+        }
+
+        .stream-privacy {
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-icon i {
+            padding-right: 3px;
+        }
+
+        &:hover {
+            background-color: var(--color-user-profile-list-item-hover);
+        }
+
+        &:focus-visible {
+            outline: 1px solid var(--color-outline-user-profile-list-item);
+            outline-offset: -2px;
+        }
+
+        .user-group-name,
+        .stream-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 2px;
+        }
+    }
+
+    .subscription-group-list,
+    .subscription-stream-list,
+    .edit-channel-folder-stream-list {
+        /* We set max-height to remaining height of stream-list-container
+            so that we don't clip it. Search field height takes up 2em of total. */
+        height: calc(100% - 2em);
+
+        .user-group-list,
+        .user-stream-list,
+        .folder-stream-list {
+            list-style: none;
+            margin: 0;
+        }
+    }
+}
+
+.user-profile-name-heading {
+    max-width: 80%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* Padding for icon outlines to occupy the space so that they don't get clipped. */
+    padding: 0 1px;
+    /* This line-height is to increase the vertical clickable areas on the icons. */
+    line-height: 1.2727em; /* 28px at 22px font-size at 14px em */
+
+    .user-profile-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 #user-profile-modal .save-success {
@@ -312,8 +429,6 @@
     margin-top: 10px;
 
     .email_field_textarea {
-        width: 97%;
-        resize: vertical;
         margin-bottom: 10px;
     }
 
@@ -376,6 +491,10 @@
 .micromodal .modal__container,
 .micromodal .modal__overlay {
     will-change: transform;
+}
+
+.micromodal .modal__content.footer-hidden {
+    margin-bottom: 1.25em;
 }
 
 .modal__spinner .loading_indicator_spinner {
@@ -468,18 +587,24 @@
 .modal_password_input,
 .modal_url_input,
 .modal_text_input {
-    padding: 4px 6px;
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
     margin-bottom: 10px;
-    /* subtract padding (6px each side) and border (1px each side) */
-    width: calc(var(--modal-input-width) - 14px);
-    max-width: calc(100% - 14px);
+    /* Subtract (2 * horizontal padding) + (2 * border width) */
+    width: calc(
+        var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
+            var(--input-border-width)
+    );
+    max-width: calc(
+        100% - 2 * var(--input-horizontal-padding) - 2 *
+            var(--input-border-width)
+    );
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -493,6 +618,19 @@
 .modal__container .modal_text_input:read-only {
     background-color: var(--background-color-readonly-modal-input);
     opacity: var(--opacity-readonly-modal-input);
+}
+
+.modal-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    /* We set the minimum height of textarea to be enough for two lines
+    of text. Since box-sizing is set to "border-box", we also add
+    2 * var(--input-vertical-padding) + 2 * var(--input-border-width). */
+    min-height: calc(
+        2em * var(--base-line-height-unitless) + 2 *
+            var(--input-vertical-padding) + 2 * var(--input-border-width)
+    );
 }
 
 #add-realm-domain-widget {
@@ -520,10 +658,21 @@
     }
 }
 
-#create_bot_short_name {
+#create_bot_short_name,
+#edit_bot_short_name {
     /* A shorter dropdown width (~200px at 14px em)
        to ensure the email all fits on one line. */
     width: 14em;
+}
+
+#edit_bot_short_name.invalid {
+    border-color: var(--color-invalid-input-border);
+    box-shadow: var(--invalid-input-box-shadow);
+}
+
+.email_change_container .settings-field-hint {
+    color: var(--color-text-settings-field-hint);
+    font-size: 0.9em;
 }
 
 #add-poll-modal,
@@ -682,6 +831,11 @@
     }
 }
 
+.slack-topics-dropdown-dropdown-list-container {
+    /* 250px at 14px */
+    width: 17.8571em;
+}
+
 #invite_users_option_tabs_container {
     margin-bottom: 20px;
 }
@@ -801,10 +955,4 @@ ul.modal-options-list {
     &:active {
         background: var(--color-background-active-popover-menu);
     }
-}
-
-#change_stream_name,
-#change_user_group_name {
-    /* 14px = 2 * 6px + 2 * 1px (6px padding and 1px border on left and right). */
-    max-width: calc(100% - 14px);
 }

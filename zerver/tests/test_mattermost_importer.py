@@ -5,8 +5,9 @@ from typing import Any
 from unittest.mock import call, patch
 
 import orjson
+from django.test import override_settings
 
-from zerver.data_import.import_util import SubscriberHandler, ZerverFieldsT
+from zerver.data_import.import_util import SubscriberHandler, UploadRecordData, ZerverFieldsT
 from zerver.data_import.mattermost import (
     build_reactions,
     check_user_in_team,
@@ -109,6 +110,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "harry")
         self.assertEqual(user["timezone"], "UTC")
+        self.assertEqual(user["is_imported_stub"], True)
 
         # A user with a `null` team value shouldn't be an admin.
         harry_dict["teams"] = None
@@ -130,6 +132,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "snape")
         self.assertEqual(user["timezone"], "UTC")
+        self.assertEqual(user["is_imported_stub"], True)
 
     def test_process_guest_user(self) -> None:
         user_id_mapper = IdMapper[str]()
@@ -154,6 +157,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(user["realm"], 3)
         self.assertEqual(user["short_name"], "sirius")
         self.assertEqual(user["timezone"], "UTC")
+        self.assertEqual(user["is_imported_stub"], True)
 
         # A guest user with a `null` team value should be a regular
         # user. (It's a bit of a mystery why the Mattermost export
@@ -429,6 +433,65 @@ class MatterMostImporter(ZulipTestCase):
             ["INFO:root:Duplicate direct message group found in the export data. Skipping."],
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_convert_direct_message_group_data_without_personal_recipient(self) -> None:
+        fixture_file_name = self.fixture_file_name(
+            "export.json", "mattermost_fixtures/direct_channel"
+        )
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+        username_to_user = create_username_to_user_mapping(mattermost_data["user"])
+        reset_mirror_dummy_users(username_to_user)
+
+        user_handler = UserHandler()
+        subscriber_handler = SubscriberHandler()
+        direct_message_group_id_mapper = IdMapper[frozenset[str]]()
+        user_id_mapper = IdMapper[str]()
+        team_name = "gryffindor"
+
+        convert_user_data(
+            user_handler=user_handler,
+            user_id_mapper=user_id_mapper,
+            user_data_map=username_to_user,
+            realm_id=3,
+            team_name=team_name,
+        )
+
+        with self.assertLogs(level="INFO") as mock_log:
+            zerver_huddle = convert_direct_message_group_data(
+                direct_message_group_data=mattermost_data["direct_channel"],
+                user_data_map=username_to_user,
+                subscriber_handler=subscriber_handler,
+                direct_message_group_id_mapper=direct_message_group_id_mapper,
+                user_id_mapper=user_id_mapper,
+                realm_id=3,
+                team_name=team_name,
+            )
+
+        self.assert_length(zerver_huddle, 3)
+
+        expected_dm_groups = [
+            (0, {2, 3}),  # direct_channel[0] should have users 2, 3
+            (1, {1, 2, 3}),  # direct_channel[1] should have users 1, 2, 3
+            (3, {3, 4}),  # direct_channel[3] should have users 3, 4
+        ]
+
+        for channel_index, expected_users in expected_dm_groups:
+            direct_message_group_members = frozenset(
+                mattermost_data["direct_channel"][channel_index]["members"]
+            )
+            self.assertTrue(direct_message_group_id_mapper.has(direct_message_group_members))
+            actual_users = subscriber_handler.get_users(
+                direct_message_group_id=direct_message_group_id_mapper.get(
+                    direct_message_group_members
+                )
+            )
+            self.assertEqual(actual_users, expected_users)
+
+        self.assertEqual(
+            mock_log.output,
+            ["INFO:root:Duplicate direct message group found in the export data. Skipping."],
+        )
+
     def test_write_emoticon_data(self) -> None:
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
@@ -493,7 +556,7 @@ class MatterMostImporter(ZulipTestCase):
         )
 
         zerver_attachments: list[ZerverFieldsT] = []
-        uploads_list: list[ZerverFieldsT] = []
+        uploads_list: list[UploadRecordData] = []
 
         process_message_attachments(
             attachments=mattermost_data["post"]["direct_post"][0]["attachments"],
@@ -516,7 +579,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertTrue(zerver_attachments[0]["is_realm_public"])
 
         self.assert_length(uploads_list, 1)
-        self.assertEqual(uploads_list[0]["user_profile_id"], 2)
+        self.assertEqual(uploads_list[0].user_profile_id, 2)
 
         attachment_path = self.fixture_file_name(
             mattermost_data["post"]["direct_post"][0]["attachments"][0]["path"],
@@ -966,6 +1029,127 @@ class MatterMostImporter(ZulipTestCase):
         self.assertTrue(personal_messages[0].has_image)
         self.assertTrue(personal_messages[0].has_link)
         self.assertEqual(personal_messages[0].topic_name(), Message.DM_TOPIC)
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_do_convert_data_with_prefering_direct_messages_for_1_to_1_messages(self) -> None:
+        mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
+        output_dir = self.make_import_output_dir("mattermost")
+
+        with patch("builtins.print"), self.assertLogs(level="INFO"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+
+        harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
+        realm = self.read_file(harry_team_output_dir, "realm.json")
+
+        self.assertEqual(
+            "Organization imported from Mattermost!", realm["zerver_realm"][0]["description"]
+        )
+
+        exported_user_ids = self.get_set(realm["zerver_userprofile"], "id")
+        exported_user_full_names = self.get_set(realm["zerver_userprofile"], "full_name")
+        self.assertEqual(
+            {"Harry Potter", "Ron Weasley", "Ginny Weasley", "Tom Riddle"}, exported_user_full_names
+        )
+
+        exported_user_emails = self.get_set(realm["zerver_userprofile"], "email")
+        self.assertEqual(
+            {"harry@zulip.com", "ron@zulip.com", "ginny@zulip.com", "voldemort@zulip.com"},
+            exported_user_emails,
+        )
+
+        self.assert_length(realm["zerver_stream"], 3)
+        exported_stream_names = self.get_set(realm["zerver_stream"], "name")
+        self.assertEqual(
+            exported_stream_names,
+            {"Gryffindor common room", "Gryffindor quidditch team", "Dumbledores army"},
+        )
+        self.assertEqual(
+            self.get_set(realm["zerver_stream"], "realm"), {realm["zerver_realm"][0]["id"]}
+        )
+        self.assertEqual(self.get_set(realm["zerver_stream"], "deactivated"), {False})
+
+        self.assert_length(realm["zerver_defaultstream"], 0)
+
+        exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
+        self.assert_length(exported_recipient_ids, 10)
+        exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
+        self.assertEqual(
+            exported_recipient_types,
+            {Recipient.PERSONAL, Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP},
+        )
+        exported_recipient_type_ids = self.get_set(realm["zerver_recipient"], "type_id")
+        self.assert_length(exported_recipient_type_ids, 4)
+
+        exported_subscription_userprofile = self.get_set(
+            realm["zerver_subscription"], "user_profile"
+        )
+        self.assert_length(exported_subscription_userprofile, 4)
+        exported_subscription_recipients = self.get_set(realm["zerver_subscription"], "recipient")
+        self.assert_length(exported_subscription_recipients, 10)
+
+        messages = self.read_file(harry_team_output_dir, "messages-000001.json")
+
+        exported_messages_id = self.get_set(messages["zerver_message"], "id")
+        self.assertIn(messages["zerver_message"][0]["sender"], exported_user_ids)
+        self.assertIn(messages["zerver_message"][0]["recipient"], exported_recipient_ids)
+        self.assertIn(messages["zerver_message"][0]["content"], "ron joined the channel.\n\n")
+
+        exported_usermessage_userprofiles = self.get_set(
+            messages["zerver_usermessage"], "user_profile"
+        )
+        self.assert_length(exported_usermessage_userprofiles, 3)
+        exported_usermessage_messages = self.get_set(messages["zerver_usermessage"], "message")
+        self.assertEqual(exported_usermessage_messages, exported_messages_id)
+
+        with self.assertLogs(level="INFO"):
+            do_import_realm(
+                import_dir=harry_team_output_dir,
+                subdomain="gryffindor",
+            )
+
+        realm = get_realm("gryffindor")
+
+        messages = Message.objects.filter(realm=realm)
+        for message in messages:
+            self.assertIsNotNone(message.rendered_content)
+        self.assert_length(messages, 24)
+
+        stream_messages = messages.filter(recipient__type=Recipient.STREAM).order_by("date_sent")
+        stream_recipients = stream_messages.values_list("recipient", flat=True)
+        self.assert_length(stream_messages, 13)
+        self.assert_length(set(stream_recipients), 2)
+
+        group_direct_messages = messages.filter(
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP
+        ).order_by("date_sent")
+        self.assert_length(group_direct_messages, 7)
+
+        direct_message_group_recipients = group_direct_messages.values_list("recipient", flat=True)
+        self.assert_length(set(direct_message_group_recipients), 3)
+
+        self.assertEqual(group_direct_messages[0].sender.email, "ron@zulip.com")
+        self.assertRegex(
+            group_direct_messages[0].content, "hey harry\n\n\\[harry-ron.jpg\\]\\(.*\\)"
+        )
+        self.assertTrue(group_direct_messages[0].has_attachment)
+        self.assertTrue(group_direct_messages[0].has_image)
+        self.assertTrue(group_direct_messages[0].has_link)
+        self.assertEqual(group_direct_messages[0].topic_name(), Message.DM_TOPIC)
+
+        self.assertEqual(group_direct_messages[1].sender.email, "ginny@zulip.com")
+        self.assertEqual(
+            group_direct_messages[1].content, "Who is going to Hogsmeade this weekend?\n\n"
+        )
+        self.assertEqual(group_direct_messages[1].topic_name(), Message.DM_TOPIC)
+
+        personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by(
+            "date_sent"
+        )
+        self.assert_length(personal_messages, 4)
 
     def test_do_convert_data_with_masking(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")

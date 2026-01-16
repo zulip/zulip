@@ -12,7 +12,7 @@
        `auto`. */
     grid-template: auto auto / 2px minmax(0, 1fr);
     grid-template-areas:
-        "date_unread_marker    date_row  "
+        "message_divider_unread_marker message_feed_divider_content"
         "message_unread_marker messagebox";
 
     border-left: 1px solid var(--color-message-list-border);
@@ -67,6 +67,12 @@
             cursor: pointer;
         }
     }
+
+    #report-message-preview-container & {
+        /* A message preview only contains a single row of message */
+        border-radius: var(--last-message-row-border-radius);
+        border: 1px solid var(--color-message-list-border);
+    }
 }
 
 .messagebox {
@@ -83,6 +89,25 @@
             opacity: 1;
             visibility: visible;
         }
+    }
+
+    &:hover .reveal-hidden-message {
+        opacity: 1;
+    }
+}
+
+.reveal-hidden-message {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 0.1em;
+    /* This is meant to offset the vertical padding of 0.125rem introduced
+    by the action button, which otherwise makes this button look at a
+    slightly lower height than the muted message notice. */
+    margin-top: -0.125em;
+    /* Source : https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/hover */
+    @media (hover: none) {
+        opacity: 1;
+        transition: none;
     }
 }
 
@@ -205,6 +230,37 @@
         }
     }
 
+    .muted-message-notice-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.2em;
+
+        > .muted-message-notice {
+            opacity: 0.5;
+            user-select: none;
+        }
+    }
+
+    /* Leading whitespaces are collapsed if they are at the start of a line.
+    This lets us conditionally add a space to the left of `.inline-hide-button`,
+    only when there is some preceding text on the same line before the button.
+    */
+    .inline-hide-button-space-wrapper {
+        margin-right: 0.2em;
+    }
+
+    .rehide-muted-user-message {
+        &.inline-hide-button {
+            display: inline-flex;
+        }
+
+        &.block-hide-button {
+            display: flex;
+            margin-bottom: var(--markdown-interelement-space-px);
+        }
+        align-items: center;
+    }
+
     .message_reactions {
         grid-area: reactions;
         display: flex;
@@ -267,6 +323,9 @@
         border-radius: 4px;
         border: none;
         outline: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        overflow-wrap: normal;
         font-variant: all-small-caps;
 
         &:hover {
@@ -311,15 +370,12 @@
             grid-template-areas:
                 ".      .         .        . .   "
                 "avatar sender    controls . time"
-                "avatar sender    .        . .   "
                 ".      more      .        . .   "
                 ".      reactions .        . .   "
                 ".      reminders .        . .   ";
             grid-template-rows:
-                var(--message-box-vertical-margin) var(
-                    --message-box-avatar-height
-                )
-                minmax(0, auto) repeat(4, auto);
+                var(--message-box-vertical-margin)
+                minmax(var(--message-box-avatar-height), auto) repeat(3, auto);
             /* We align items to the baseline on me messages,
                and unset the align-content property. */
             align-items: baseline;
@@ -347,6 +403,11 @@
                    available grid row height on me-messages, we
                    align to center here. */
                 align-self: center;
+                /* But, we need to adjust the bottom margin by the
+                   message box's vertical margin so that the controls
+                   appear properly aligned with both the time stamp
+                   and any me-message content--including inline images. */
+                margin-bottom: var(--message-box-vertical-margin);
             }
 
             .message_edit_notice {
@@ -408,6 +469,10 @@
                    sender-line elements on the .messagebox-content
                    grid. */
                 margin-top: var(--message-box-vertical-margin);
+            }
+
+            .muted-sender-avatar {
+                opacity: 0.5;
             }
         }
 
@@ -490,6 +555,10 @@
                     .user-name {
                         overflow: hidden;
                         text-overflow: ellipsis;
+                    }
+
+                    .muted {
+                        opacity: 0.5;
                     }
                 }
             }
@@ -674,8 +743,8 @@
         transition: opacity 0.3s ease-out;
     }
 
-    &.date_unread_marker {
-        grid-area: date_unread_marker;
+    &.message_divider_unread_marker {
+        grid-area: message_divider_unread_marker;
 
         .unread-marker-fill {
             border-radius: 0 !important;
@@ -842,12 +911,11 @@
     min-width: 206px;
     min-height: 52px;
     box-sizing: border-box;
-    /* Setting resize as none hides the bottom right diagonal box
-       (which even has a background color of its own!). */
-    resize: none !important;
     color: var(--color-text-default);
-    background-color: hsl(0deg 0% 100%);
-    border-radius: 3px;
+    background-color: var(--background-color-textarea);
+    /* Flatten the bottom edge of the textarea to
+    merge with the flat top edge of the buttons row */
+    border-radius: 3px 3px 0 0;
     vertical-align: middle;
     border: none;
     /* Match textarea padding to compose box and
@@ -857,20 +925,22 @@
 
     box-shadow: none;
 
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+    font-family: "Source Sans 3 VF", sans-serif;
+
     &:focus {
         outline: 0;
+    }
+
+    &:read-write {
+        resize: vertical !important;
     }
 
     &:read-only,
     &:disabled {
         cursor: not-allowed;
     }
-}
-
-/* The selector needs to be written this way to override the specificity
-of the base style defined for a read-only textarea in dark mode. */
-.message_edit_form .edit-controls textarea.message_edit_content:read-only {
-    opacity: 1;
 }
 
 .message-editing-animation {
@@ -1069,7 +1139,7 @@ of the base style defined for a read-only textarea in dark mode. */
     /* See https://stackoverflow.com/questions/2717480/css-selector-for-first-element-with-class/8539107#8539107
        for details on how this works */
     .message_row.unread {
-        .date_unread_marker {
+        .message_divider_unread_marker {
             display: none;
         }
     }
@@ -1077,31 +1147,70 @@ of the base style defined for a read-only textarea in dark mode. */
     /* Select all but the first .message_row.unread,
        and remove the properties set from the previous rule. */
     .message_row.unread ~ .message_row.unread {
-        .date_unread_marker {
+        .message_divider_unread_marker {
             display: block;
         }
     }
 }
 
-.date_row {
-    grid-area: date_row;
+.message_feed_divider {
+    display: grid;
+    grid-area: message_feed_divider_content;
+    grid-template: auto / minmax(20px, 1fr) auto minmax(max-content, 1fr);
+    grid-template-areas: "left_divider_content middle_divider_content right_divider_content";
+    align-items: center;
+    padding: 8px 0;
 
-    & .timerender-content {
-        display: block;
-        overflow: hidden;
-        text-transform: uppercase;
-        font-size: calc(12em / 14);
-        font-style: normal;
-        font-weight: 600;
-        line-height: 17px; /* identical to box height, or 131% */
-        text-align: right;
+    &::before {
+        grid-area: left_divider_content;
+        content: " ";
+        height: 0;
+        border-bottom: 1px solid var(--color-border-message-group-spacer-line);
+    }
+
+    &:has(.timerender-content)::after {
+        display: none;
+    }
+
+    &:not(:has(.timerender-content))::after {
+        grid-area: right_divider_content;
+        min-width: 20px;
+        content: " ";
+        height: 0;
+        width: calc(100% - 2px);
+        border-bottom: 1px solid var(--color-border-message-group-spacer-line);
+    }
+
+    .stream-status {
+        grid-area: middle_divider_content;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        /* Same as timerender-content at 16px */
+        letter-spacing: 0.5486px;
+        padding: 0 0.25em;
+
+        & i {
+            font-size: 0.7143em; /* 10px at 14px / em */
+            /* TODO: Don't use relative positioning here. */
+            position: relative;
+            margin-left: 0.2em; /* 2px at 10px / em */
+        }
+    }
+
+    .timerender-content {
+        grid-area: right_divider_content;
+        display: flex;
+        align-items: center;
+        justify-content: end;
         letter-spacing: 0.04em;
-        color: var(--color-date);
         /* Right padding matches time in message row and date in recipient row. */
-        padding: 8px 6px 8px 4px;
+        padding-right: 6px;
 
         &::before {
+            min-width: 20px;
             width: 100%;
+            right: 0.25em;
+            margin-left: -50%;
         }
 
         &::after {
@@ -1110,6 +1219,27 @@ of the base style defined for a read-only textarea in dark mode. */
             /* Align date with message time and recipient bar date. */
             margin-right: -1px;
         }
+
+        &::before,
+        &::after {
+            position: relative;
+            content: " ";
+            height: 0;
+            border-bottom: 1px solid
+                var(--color-border-message-group-spacer-line);
+        }
+    }
+
+    .stream-status,
+    .timerender-content {
+        overflow: hidden;
+        text-transform: uppercase;
+        font-size: calc(12em / 14);
+        font-style: normal;
+        font-weight: 600;
+        line-height: 17px; /* identical to box height, or 131% */
+        text-align: right;
+        color: var(--color-date);
     }
 }
 
@@ -1146,7 +1276,18 @@ of the base style defined for a read-only textarea in dark mode. */
 
     &::before,
     &::after {
+        display: inline-block;
+        position: relative;
+        content: " ";
+        vertical-align: middle;
+        height: 0;
+        border-bottom: 1px solid var(--color-border-message-group-spacer-line);
         width: 50%;
+    }
+
+    &::before {
+        right: 0.25em;
+        margin-left: -50%;
     }
 
     &::after {
@@ -1164,20 +1305,30 @@ of the base style defined for a read-only textarea in dark mode. */
     display: inline;
 }
 
-.bookend-label::before,
-.bookend-label::after,
-.date_row .timerender-content::before,
-.date_row .timerender-content::after {
-    display: inline-block;
-    position: relative;
-    content: " ";
-    vertical-align: middle;
-    height: 0;
-    border-bottom: 1px solid var(--color-border-message-group-spacer-line);
+#report-message-preview-container {
+    /* Hide most UI for interacting with a message in the report message preview UI. */
+    .add-task-bar,
+    .change_visibility_policy,
+    .recipient-row-topic-menu,
+    .todo-edit-task-list-title,
+    .message_controls,
+    .message-reminders,
+    .message_reactions {
+        display: none;
+    }
 }
 
-.bookend-label::before,
-.date_row .timerender-content::before {
-    right: 0.25em;
-    margin-left: -50%;
+@container message-lists (width < $cq_ml_min) {
+    .muted-message-notice {
+        display: none;
+    }
+}
+
+/* Fallback for hiding the muted message notice. */
+@media (width < $ml_min) {
+    .without-container-query-support {
+        .muted-message-notice {
+            display: none;
+        }
+    }
 }

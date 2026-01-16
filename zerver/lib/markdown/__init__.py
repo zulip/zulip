@@ -57,7 +57,7 @@ from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import (
     AttachmentData,
-    get_user_upload_previews,
+    manifest_and_get_user_upload_previews,
     rewrite_thumbnailed_images,
 )
 from zerver.lib.timeout import unsafe_timeout
@@ -97,7 +97,7 @@ html_safelisted_schemes = (
     "wtai",
     "xmpp",
 )
-allowed_schemes = ("http", "https", "ftp", "file", *html_safelisted_schemes)
+allowed_schemes = ("http", "https", "ftp", "file", "mid", *html_safelisted_schemes)
 
 
 class LinkInfo(TypedDict):
@@ -262,8 +262,10 @@ def get_web_link_regex() -> Pattern[str]:
                     (?:{tlds})        # TLDs
                 )
             )
-            (?:/             # A path, beginning with /
-                {nested_paren_chunk}           # zero-to-6 sets of paired parens
+            (?:
+                (?:/ {nested_paren_chunk} )      # A path, beginning with /; zero-to-6 sets of paired parens
+                |
+                (?: \? (?![)\"\s]|\Z) {nested_paren_chunk} ) # Query starting with ? (must not be trailing punctuation)
             )?)              # Path is optional
             | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
             {file_links}               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
@@ -1655,6 +1657,20 @@ def prepare_linkifier_pattern(source: str) -> str:
     return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|{next_line}|\pZ|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
 
 
+# We use maxsize of 10000. We need to prevent against admins
+# accidentally churning their linkifier configurations, so
+# we have to impose a reasonable max.  Having said that,
+# we want a pretty aggressive cache, since markdown
+# rendering is a critical performance path with regard to
+# latency.
+@lru_cache(maxsize=10000)
+def get_compiled_linkifier_regex(source_pattern: str) -> "re2._Regexp[str]":
+    # Do not write errors to stderr (this still raises exceptions)
+    options = re2.Options()
+    options.log_errors = False
+    return re2.compile(prepare_linkifier_pattern(source_pattern), options=options)
+
+
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
 class LinkifierPattern(CompiledInlineProcessor):
@@ -1666,14 +1682,8 @@ class LinkifierPattern(CompiledInlineProcessor):
         url_template: str,
         zmd: "ZulipMarkdown",
     ) -> None:
-        # Do not write errors to stderr (this still raises exceptions)
-        options = re2.Options()
-        options.log_errors = False
-
-        compiled_re2 = re2.compile(prepare_linkifier_pattern(source_pattern), options=options)
-
+        compiled_re2 = get_compiled_linkifier_regex(source_pattern)
         self.prepared_url_template = uri_template.URITemplate(url_template)
-
         super().__init__(compiled_re2, zmd)
 
     @override
@@ -2122,6 +2132,77 @@ class AudioInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         return None, None, None
 
 
+class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
+    def __init__(self, pattern: str, zmd: "ZulipMarkdown") -> None:
+        super().__init__(pattern, zmd)
+        self.zmd = zmd
+
+    def zulip_specific_src_changes(self, img: Element) -> None | Element:
+        # function partially copied from LinkInlineProcessor.zulip_specific_link_changes
+        src = img.get("src")
+        assert src is not None
+
+        # Sanitize URL or don't parse image. See linkify_tests in markdown_test_cases for banned syntax.
+        src = sanitize_url(self.unescape(src.strip()))
+        if src is None:
+            return None  # no-op; the image is not processed.
+
+        # Rewrite local links to be relative
+        db_data: DbData | None = self.zmd.zulip_db_data
+        src = rewrite_local_links_to_relative(db_data, src)
+        maybe_add_attachment_path_id(src, self.zmd)
+        img.set("data-original-src", src)
+
+        # We try to use image thumbnails for previews of the user
+        # upload images rather than original images when available.
+        if src.startswith("/user_uploads/") and db_data:
+            path_id = src[len("/user_uploads/") :]
+
+            # We should have pulled the preview data for this image
+            # (even if that's "no preview yet") from the database
+            # before rendering; Else, its header didn't parse as
+            # a valid image type which libvips handles.
+            if path_id not in db_data.user_upload_previews.image_metadata:
+                return None
+            else:
+                assert path_id in db_data.user_upload_previews.image_metadata
+                metadata = db_data.user_upload_previews.image_metadata[path_id]
+
+            # Insert a placeholder image spinner.  We post-process
+            # this content (see rewrite_thumbnailed_images in
+            # zerver.lib.thumbnail), looking specifically for this
+            # tag, and may re-write it into the thumbnail URL if it
+            # already exists when the message is sent.
+            img.set("class", "inline-image image-loading-placeholder")
+            img.set("src", "/static/images/loading/loader-black.svg")
+            img.set(
+                "data-original-dimensions",
+                f"{metadata.original_width_px}x{metadata.original_height_px}",
+            )
+            if metadata.original_content_type:
+                img.set(
+                    "data-original-content-type",
+                    metadata.original_content_type,
+                )
+        else:
+            img.set("src", src)
+
+        return img
+
+    @override
+    def handleMatch(  # type: ignore[override] # https://github.com/python/mypy/issues/10197
+        self, m: Match[str], data: str
+    ) -> tuple[Element | str | None, int | None, int | None]:
+        ret = super().handleMatch(m, data)
+        if ret[0] is not None:
+            img, match_start, index = ret
+            assert isinstance(img, Element)
+            img = self.zulip_specific_src_changes(img)
+            if img is not None:
+                return img, match_start, index
+        return None, None, None
+
+
 def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.util.Registry[T]:
     # Registry is a new class added by Python-Markdown to replace OrderedDict.
     # Since Registry doesn't support .keys(), it is easier to make a new
@@ -2132,8 +2213,8 @@ def get_sub_registry(r: markdown.util.Registry[T], keys: list[str]) -> markdown.
     return new_r
 
 
-# These are used as keys ("linkifiers_keys") to md_engines and the respective
-# linkifier caches
+# This is used as a "linkifiers_key" for linkifiers_for_realm when
+# there is no realm (e.g. docs)
 DEFAULT_MARKDOWN_KEY = -1
 
 
@@ -2283,7 +2364,10 @@ class ZulipMarkdown(markdown.Markdown):
             UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
-        reg.register(AudioInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "audio", 57)
+        # We register higher priority on audio patterns, as the processing logic will pass things
+        # onto image patterns in the absence of a supported audio type
+        reg.register(AudioInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "audio", 58)
+        reg.register(ImageInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "image", 57)
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
         # Reserve priority 45-54 for linkifiers
         reg = self.register_linkifiers(reg)
@@ -2345,17 +2429,9 @@ class ZulipMarkdown(markdown.Markdown):
         return postprocessors
 
 
-md_engines: dict[tuple[int, bool], ZulipMarkdown] = {}
-linkifier_data: dict[int, list[LinkifierDict]] = {}
-
-
-def make_md_engine(linkifiers_key: int, email_gateway: bool) -> None:
-    md_engine_key = (linkifiers_key, email_gateway)
-    md_engines.pop(md_engine_key, None)
-
-    linkifiers = linkifier_data[linkifiers_key]
-    md_engines[md_engine_key] = ZulipMarkdown(
-        linkifiers=linkifiers,
+def make_md_engine(linkifiers_key: int, email_gateway: bool) -> ZulipMarkdown:
+    return ZulipMarkdown(
+        linkifiers=linkifiers_for_realm(linkifiers_key),
         linkifiers_key=linkifiers_key,
         email_gateway=email_gateway,
     )
@@ -2499,22 +2575,6 @@ def topic_links(linkifiers_key: int, topic_name: str) -> list[dict[str, str]]:
     return [{"url": match.url, "text": match.text} for match in applied_matches]
 
 
-def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> None:
-    linkifiers = linkifiers_for_realm(linkifiers_key)
-    if linkifiers_key not in linkifier_data or linkifier_data[linkifiers_key] != linkifiers:
-        # Linkifier data has changed, update `linkifier_data` and any
-        # of the existing Markdown engines using this set of linkifiers.
-        linkifier_data[linkifiers_key] = linkifiers
-        for email_gateway_flag in [True, False]:
-            if (linkifiers_key, email_gateway_flag) in md_engines:
-                # Update only existing engines(if any), don't create new one.
-                make_md_engine(linkifiers_key, email_gateway_flag)
-
-    if (linkifiers_key, email_gateway) not in md_engines:
-        # Markdown engine corresponding to this key doesn't exists so create one.
-        make_md_engine(linkifiers_key, email_gateway)
-
-
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
 # characters with 'x'.
@@ -2558,11 +2618,7 @@ def do_convert(
     else:
         logging_message_id = "unknown"
 
-    maybe_update_markdown_engines(linkifiers_key, email_gateway)
-    md_engine_key = (linkifiers_key, email_gateway)
-    _md_engine = md_engines[md_engine_key]
-    # Reset the parser; otherwise it will get slower over time.
-    _md_engine.reset()
+    md_engine = make_md_engine(linkifiers_key, email_gateway)
 
     # Filters such as UserMentionPattern need a message.
     rendering_result: MessageRenderingResult = MessageRenderingResult(
@@ -2578,15 +2634,15 @@ def do_convert(
         thumbnail_spinners=set(),
     )
 
-    _md_engine.zulip_message = message
-    _md_engine.zulip_rendering_result = rendering_result
-    _md_engine.zulip_realm = message_realm
-    _md_engine.zulip_db_data = None  # for now
-    _md_engine.image_preview_enabled = image_preview_enabled(message, message_realm, no_previews)
-    _md_engine.url_embed_preview_enabled = url_embed_preview_enabled(
+    md_engine.zulip_message = message
+    md_engine.zulip_rendering_result = rendering_result
+    md_engine.zulip_realm = message_realm
+    md_engine.zulip_db_data = None  # for now
+    md_engine.image_preview_enabled = image_preview_enabled(message, message_realm, no_previews)
+    md_engine.url_embed_preview_enabled = url_embed_preview_enabled(
         message, message_realm, no_previews
     )
-    _md_engine.url_embed_data = url_embed_data
+    md_engine.url_embed_data = url_embed_data
 
     # Pre-fetch data from the DB that is used in the Markdown thread
     user_upload_previews = None
@@ -2621,8 +2677,8 @@ def do_convert(
         else:
             active_realm_emoji = {}
 
-        user_upload_previews = get_user_upload_previews(message_realm.id, content)
-        _md_engine.zulip_db_data = DbData(
+        user_upload_previews = manifest_and_get_user_upload_previews(message_realm.id, content)
+        md_engine.zulip_db_data = DbData(
             realm_alert_words_automaton=realm_alert_words_automaton,
             mention_data=mention_data,
             active_realm_emoji=active_realm_emoji,
@@ -2640,7 +2696,7 @@ def do_convert(
         # extremely inefficient in corner cases) as well as user
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
-        rendering_result.rendered_content = unsafe_timeout(5, lambda: _md_engine.convert(content))
+        rendering_result.rendered_content = unsafe_timeout(5, lambda: md_engine.convert(content))
 
         # Post-process the result with the rendered image previews:
         if user_upload_previews is not None:
@@ -2669,13 +2725,6 @@ def do_convert(
         )
 
         raise MarkdownRenderingError
-    finally:
-        # These next three lines are slightly paranoid, since
-        # we always set these right before actually using the
-        # engine, but better safe then sorry.
-        _md_engine.zulip_message = None
-        _md_engine.zulip_realm = None
-        _md_engine.zulip_db_data = None
 
 
 markdown_time_start = 0.0
@@ -2770,3 +2819,11 @@ def render_message_markdown(
     )
 
     return rendering_result
+
+
+def get_markdown_link_for_url(filename: str, url: str) -> str:
+    # Our markdown has no escaping, so we cannot link any
+    # text containing brackets; strip them from the
+    # filename we're linking.
+    filename = re.sub(r"\[|\]", "", filename)
+    return f"[{filename}]({url})"

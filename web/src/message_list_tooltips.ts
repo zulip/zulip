@@ -348,8 +348,7 @@ export function initialize(): void {
     });
 
     message_list_tooltip(".rendered_markdown time", {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        content: timerender.get_markdown_time_tooltip as tippy.Content,
+        content: timerender.get_markdown_time_tooltip,
         onHidden(instance) {
             instance.destroy();
         },
@@ -467,8 +466,8 @@ export function initialize(): void {
     message_list_tooltip(".message_expander, .message_condenser", {
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
-            const is_disabed = $(instance.reference).attr("data-enable-tooltip") === "false";
-            if (is_disabed) {
+            const is_disabled = $(instance.reference).attr("data-enable-tooltip") === "false";
+            if (is_disabled) {
                 return false;
             }
             return undefined;

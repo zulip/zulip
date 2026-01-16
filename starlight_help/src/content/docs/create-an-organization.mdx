@@ -1,0 +1,57 @@
+---
+title: Create an organization
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import ZulipNote from "../../components/ZulipNote.astro";
+import CreateADemoOrganization from "../include/_CreateADemoOrganization.mdx";
+import DemoOrgsConversion from "../include/_DemoOrgsConversion.mdx";
+import DemoOrgsIntro from "../include/_DemoOrgsIntro.mdx";
+import ZulipCloudOnly from "../include/_ZulipCloudOnly.mdx";
+
+It only takes a minute to create a new organization on Zulip Cloud, or on a
+self-hosted Zulip server you've set up.
+
+<DemoOrgsIntro />
+
+## Create a demo organization
+
+<ZulipCloudOnly />
+
+<DemoOrgsConversion />
+
+<CreateADemoOrganization />
+
+## Create a regular organization
+
+<Tabs>
+  <TabItem label="Zulip Cloud">
+    <ZulipNote>
+      To import data from another app, follow the import instructions for
+      [Slack](/help/import-from-slack), [Mattermost](/help/import-from-mattermost)
+      or [Rocket.Chat](/help/import-from-rocketchat).
+    </ZulipNote>
+
+    1. Decide on a name and subdomain for your organization.
+    1. Fill out the form at [https://zulip.com/new/](https://zulip.com/new/), and click **Create organization**.
+    1. Click **Complete registration** in the confirmation email you received.
+    1. Fill out your account information, and click **Sign up**.
+  </TabItem>
+
+  <TabItem label="Self hosting">
+    1. Follow the [guide to install your server](https://zulip.readthedocs.io/en/stable/production/install.html)
+    1. Decide on a name and subdomain for your organization.
+    1. Fill out the form at the URL provided by the installation script, and click **Create organization**.
+    1. Click **Complete registration** in the confirmation email you received.
+    1. Fill out your account information, and click **Sign up**.
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Getting started with Zulip](/help/getting-started-with-zulip)
+* [Trying out Zulip](/help/trying-out-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
+* [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
+* [Migrating from other chat tools](/help/migrating-from-other-chat-tools)

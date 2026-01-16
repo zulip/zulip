@@ -364,8 +364,25 @@ html {
     }
 }
 
-.register-account {
-    .terms-of-service .input-group,
+#demo-realm-creation {
+    .terms-of-service.input-group {
+        width: 330px;
+        margin: 25px auto 10px;
+    }
+
+    .input-box .register-button {
+        margin-top: 0;
+
+        &[disabled] {
+            cursor: default;
+            opacity: 0.6;
+        }
+    }
+}
+
+.register-account #registration {
+    .terms-of-service,
+    .input-group .marketing-emails,
     .default-stream-groups .input-group,
     .default-stream-groups p {
         width: 330px;
@@ -684,6 +701,37 @@ html {
 
 /* -- /accounts/register/ page -- */
 .portico-page {
+    .registration-lead-section {
+        margin: 10px 0;
+        text-align: center;
+        width: 100%;
+        max-width: 100%;
+
+        .registration-lead-title {
+            margin: 5px 0;
+            font-family: inherit;
+            font-weight: 300;
+            font-size: 32px;
+            line-height: 40px;
+            color: hsl(0deg 0% 40%);
+            text-rendering: optimizelegibility;
+        }
+
+        .registration-lead-subtitle {
+            margin: 0;
+            font-family: inherit;
+            font-weight: 400;
+            font-size: 16px;
+            line-height: 150%;
+            color: hsl(0deg 0% 40%);
+
+            .registration-lead-subtitle-link {
+                color: hsl(200deg 100% 40%);
+                text-decoration: none;
+            }
+        }
+    }
+
     .pitch {
         & h1 {
             margin-bottom: 5px;
@@ -933,7 +981,8 @@ button#register_auth_button_gitlab {
 #sponsorship-form,
 #sponsorship-status-page-details,
 #registration,
-#new-realm-creation {
+#new-realm-creation,
+#demo-realm-creation {
     width: auto;
     padding: 0;
     margin: 30px;
@@ -1002,6 +1051,7 @@ button#register_auth_button_gitlab {
             }
 
             & textarea {
+                resize: vertical;
                 color: hsl(0deg 0% 33%);
                 vertical-align: middle;
                 background-color: hsl(0deg 0% 100%);
@@ -1164,6 +1214,21 @@ button#register_auth_button_gitlab {
 
     .org-url {
         margin-bottom: 5px !important;
+    }
+}
+
+#password_reset .input-group {
+    & label {
+        font-size: 1rem;
+
+        &.inline-block {
+            margin-top: -1px;
+        }
+
+        &.marketing_emails_checkbox {
+            text-indent: -24px;
+            margin-left: 24px;
+        }
     }
 }
 
@@ -1505,12 +1570,16 @@ button#register_auth_button_gitlab {
     padding-top: 5px;
 }
 
-#slack-import-drag-drop-wrapper {
+#slack-import-dashboard-wrapper {
     width: 100%;
     margin: 10px 0 0 5px;
 
-    #slack-import-drag-and-drop {
+    #slack-import-dashboard {
         margin-right: 5px;
+    }
+
+    &.hidden {
+        display: none;
     }
 }
 
@@ -1537,7 +1606,7 @@ button#register_auth_button_gitlab {
     }
 }
 
-#slack-import-drag-and-drop .uppy-DragDrop-container {
+#slack-import-dashboard .uppy-DragDrop-container {
     border: 1px dashed hsl(0deg 0% 0%);
     background-color: hsl(0deg 0% 0% / 5%);
     color: hsl(0deg 0% 40%);
@@ -1644,10 +1713,38 @@ button#register_auth_button_gitlab {
     }
 }
 
+#demo-realm-creation .new-organization-button,
 #new-realm-creation .new-organization-button {
     margin-bottom: 0;
 }
 
+#demo-realm-creation #demo-submit-button-container,
 #new-realm-creation #altcha-submit-button-container {
     margin-bottom: 30px;
+}
+
+#slack-import-dashboard .uppy-Dashboard-note {
+    font-size: 1rem;
+    font-weight: 450;
+    color: inherit;
+}
+
+.slack-import-file-upload-instruction {
+    margin-top: 1rem;
+}
+
+#realm-creation-form-slack-import {
+    /* Set a minimum height that's roughly ~2x the height of status page
+       with maximum content in English, to avoid the page height jumping
+       distractingly. */
+    min-height: 400px;
+}
+
+#bottom-hint-slack-import-page {
+    display: flex;
+    justify-content: center;
+
+    .bottom-text {
+        text-align: left;
+    }
 }

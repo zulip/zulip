@@ -159,8 +159,6 @@ Set up authentication with Microsoft Entra ID (AzureAD) by modifying the
 `AzureADAuthBackend` configuration in `settings.py`, as well as a secret in
 `zulip-secrets.conf`. Details are documented in your `settings.py`.
 
-(ldap)=
-
 ## LDAP (including Active Directory)
 
 Zulip supports retrieving information about users via LDAP, and
@@ -386,6 +384,10 @@ groups. To configure this feature:
    `subdomain1`, user membership in the Zulip groups named `group1`
    and `group2` will match their membership in LDAP groups with those
    names.
+
+   If a group listed here does not already exist in Zulip, it will be
+   created automatically when syncing a user who should be a member of
+   that group.
 
 1. Test your configuration and restart the server into the new
    configuration as [documented above](#synchronizing-data).
@@ -853,14 +855,19 @@ Your SAML IdP will need to provide the list of SAML group names in the
 `zulip_groups` attribute of the `SAMLResponse`. When a user logs in
 using SAML, groups are synced as follows:
 
-1. If a Zulip group name does not occur in the
-   `SOCIAL_AUTH_SYNC_ATTRS_DICT` groups list, that group's membership
-   is managed entirely in Zulip.
-1. Otherwise, if the group appears in `zulip_groups` in the
+1. Zulip checks `SOCIAL_AUTH_SYNC_ATTRS_DICT` for whether the group is
+   a "SAML synced group": one whose membership should be synced from
+   SAML. The special `"groups": "*",` wildcard syntax means all Zulip
+   groups are SAML synced groups. Otherwise, all groups not explicitly
+   listed in the `groups` list for the organization will have their
+   membership managed entirely in Zulip and will never be synced.
+1. If a SAML synced group appears in `zulip_groups` in the
    `SAMLResponse`, the user is added to that group (if not already a
-   member).
-1. Otherwise, the user is removed from that group (if currently a
-   member).
+   member). If the SAML synced group doesn't yet exist in Zulip, it
+   will be created automatically, with a default configuration where
+   only organization owners can manage the group.
+1. Otherwise, the user is removed from the SAML synced group (if
+   currently a member).
 
 Only direct membership of groups is synced through this protocol;
 subgroups of Zulip groups are managed entirely [inside
@@ -1175,8 +1182,6 @@ If your server was originally installed from a release in the
 `4.x` series or earlier, you will need to update your `settings.py`
 file. You can find instructions on how to do that in a
 [separate doc][update-inline-comments].
-
-Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single IdP currently.
 
 The Return URL to authorize with the provider is
 `https://yourzulipdomain.example.com/complete/oidc/`.

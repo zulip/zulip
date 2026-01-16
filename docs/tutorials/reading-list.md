@@ -3,8 +3,8 @@
 Here you can find a list of relevant resources that you may find useful for
 learning new skills, or polishing the ones you already have.
 
-The topics cover a wide variety of topics, from basic Python coding to
-general developing guidelines.
+The list covers a wide variety of topics, from basic Python coding to
+general development guidelines.
 
 Feel free to create a pull request in Zulip's [GitHub repository](https://github.com/zulip/zulip/) with any interesting books, articles or
 videos you would like to see in this list.

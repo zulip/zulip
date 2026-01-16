@@ -1,12 +1,6 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
-import {PollData} from "../shared/src/poll_data.ts";
-import type {
-    InboundData,
-    NewOptionOutboundData,
-    QuestionOutboundData,
-    VoteOutboundData,
-} from "../shared/src/poll_data.ts";
 import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
@@ -14,44 +8,41 @@ import render_widgets_poll_widget_results from "../templates/widgets/poll_widget
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
-import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
-
-export type Event = {sender_id: number; data: InboundData};
-
-export type PollWidgetExtraData = {
-    question?: string | undefined;
-    options?: string[] | undefined;
-};
-
-export type PollWidgetOutboundData =
-    | NewOptionOutboundData
-    | QuestionOutboundData
-    | VoteOutboundData;
+import type {PollWidgetOutboundData} from "./poll_data.ts";
+import {PollData, new_option_schema, question_schema, vote_schema} from "./poll_data.ts";
+import {ZulipWidgetContext} from "./widget_context.ts";
+import type {Event} from "./widget_data.ts";
+import type {AnyWidgetData} from "./widget_schema.ts";
 
 export function activate({
     $elem,
     callback,
-    extra_data: {question = "", options = []} = {},
+    any_data,
     message,
 }: {
     $elem: JQuery;
-    callback: (data: PollWidgetOutboundData | undefined) => void;
-    extra_data: PollWidgetExtraData;
+    callback: (data: PollWidgetOutboundData) => void;
+    any_data: AnyWidgetData;
     message: Message;
 }): (events: Event[]) => void {
-    const is_my_poll = people.is_my_user_id(message.sender_id);
+    assert(any_data.widget_type === "poll");
+    const {extra_data} = any_data;
+    const widget_context = new ZulipWidgetContext(message);
+    const container_is_hidden = widget_context.is_container_hidden();
+    const is_my_poll = widget_context.is_my_poll();
+    const poll_owner_user_id = widget_context.owner_user_id();
+
     const poll_data = new PollData({
-        message_sender_id: message.sender_id,
+        message_sender_id: poll_owner_user_id,
         current_user_id: people.my_current_user_id(),
         is_my_poll,
-        question,
-        options,
+        question: extra_data.question ?? "",
+        options: extra_data.options ?? [],
         comma_separated_names: people.get_full_names_for_poll_option,
         report_error_function: blueslip.warn,
     });
-    const message_container = message_lists.current?.view.message_containers.get(message.id);
 
     function update_edit_controls(): void {
         const has_question =
@@ -112,8 +103,10 @@ export function activate({
         }
 
         // Broadcast the new question to our peers.
-        const data = poll_data.handle.question.outbound(new_question);
-        callback(data);
+        const data = poll_data.question_event(new_question);
+        if (data) {
+            callback(data);
+        }
     }
 
     function submit_option(): void {
@@ -131,12 +124,12 @@ export function activate({
 
         $poll_option_input.val("").trigger("focus");
 
-        const data = poll_data.handle.new_option.outbound(option);
+        const data = poll_data.new_option_event(option);
         callback(data);
     }
 
     function submit_vote(key: string): void {
-        const data = poll_data.handle.vote.outbound(key);
+        const data = poll_data.vote_event(key);
         callback(data);
     }
 
@@ -232,22 +225,49 @@ export function activate({
             });
     }
 
-    const handle_events = function (events: Event[]): void {
+    function update_state_from_event(sender_id: number, data: unknown): void {
+        assert(
+            typeof data === "object" &&
+                data !== null &&
+                "type" in data &&
+                typeof data.type === "string",
+        );
+        const type = data.type;
+        switch (type) {
+            case "new_option": {
+                poll_data.handle_new_option_event(sender_id, new_option_schema.parse(data));
+                break;
+            }
+            case "question": {
+                poll_data.handle_question_event(sender_id, question_schema.parse(data));
+                break;
+            }
+            case "vote": {
+                poll_data.handle_vote_event(sender_id, vote_schema.parse(data));
+                break;
+            }
+            default: {
+                blueslip.warn(`poll widget: unknown inbound type: ${type}`);
+            }
+        }
+    }
+
+    function handle_events(events: Event[]): void {
         // We don't have to handle events now since we go through
         // handle_event loop again when we unmute the message.
-        if (message_container?.is_hidden) {
+        if (container_is_hidden) {
             return;
         }
 
         for (const event of events) {
-            poll_data.handle_event(event.sender_id, event.data);
+            update_state_from_event(event.sender_id, event.data);
         }
 
         render_question();
         render_results();
-    };
+    }
 
-    if (message_container?.is_hidden) {
+    if (container_is_hidden) {
         const html = render_message_hidden_dialog();
         $elem.html(html);
     } else {

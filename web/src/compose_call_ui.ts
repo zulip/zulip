@@ -59,11 +59,9 @@ export function generate_and_insert_audio_or_video_call_link(
     }
 
     const available_providers = realm.realm_available_video_chat_providers;
-    const provider_is_zoom =
-        available_providers.zoom && realm.realm_video_chat_provider === available_providers.zoom.id;
+    const provider_is_zoom = realm.realm_video_chat_provider === available_providers.zoom?.id;
     const provider_is_zoom_server_to_server =
-        available_providers.zoom_server_to_server &&
-        realm.realm_video_chat_provider === available_providers.zoom_server_to_server.id;
+        realm.realm_video_chat_provider === available_providers.zoom_server_to_server?.id;
 
     if (provider_is_zoom || provider_is_zoom_server_to_server) {
         compose_call.abort_video_callbacks(edit_message_id);
@@ -124,10 +122,7 @@ export function generate_and_insert_audio_or_video_call_link(
                 "width=800,height=500,noopener,noreferrer",
             );
         }
-    } else if (
-        available_providers.big_blue_button &&
-        realm.realm_video_chat_provider === available_providers.big_blue_button.id
-    ) {
+    } else if (realm.realm_video_chat_provider === available_providers.big_blue_button?.id) {
         const meeting_name = `${get_recipient_label()?.label_text ?? ""} meeting`;
         const request = {
             meeting_name,

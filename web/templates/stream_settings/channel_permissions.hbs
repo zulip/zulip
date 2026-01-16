@@ -1,0 +1,149 @@
+<div id="channel-subscription-permissions" class="settings-subsection-parent">
+    <div class="channel-subscription-permissions-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
+        <h4 class="stream_setting_subsection_title">{{t "Subscription permissions"}}</h4>
+        {{#if is_stream_edit}}
+            {{> ../settings/settings_save_discard_widget section_name="subscription-permissions"}}
+        {{/if}}
+    </div>
+
+    {{#if is_stream_edit}}
+        <div class="stream-permissions-warning-banner"></div>
+        {{> channel_type .
+          channel_privacy_widget_name="channel_privacy" }}
+
+        <div class="default-stream">
+            {{> ../settings/settings_checkbox
+              prefix=prefix
+              setting_name="is_default_stream"
+              is_checked=check_default_stream
+              label=(t "Default channel for new users")
+              help_link="/help/set-default-channels-for-new-users"
+              }}
+        </div>
+    {{/if}}
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_subscribe_group"
+      label=group_setting_labels.can_subscribe_group
+      prefix=prefix }}
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_add_subscribers_group"
+      label=group_setting_labels.can_add_subscribers_group
+      prefix=prefix }}
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_remove_subscribers_group"
+      label=group_setting_labels.can_remove_subscribers_group
+      prefix=prefix }}
+</div>
+
+<div id="channel-messaging-permissions" class="settings-subsection-parent">
+    <div class="channel-messaging-permissions-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
+        <h4 class="stream_setting_subsection_title">{{t "Messaging permissions"}}</h4>
+        {{#if is_stream_edit}}
+            {{> ../settings/settings_save_discard_widget section_name="messaging-permissions"}}
+        {{/if}}
+    </div>
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_send_message_group"
+      label=group_setting_labels.can_send_message_group
+      prefix=prefix
+      help_link="/help/channel-posting-policy" }}
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_create_topic_group"
+      label=group_setting_labels.can_create_topic_group
+      prefix=prefix
+      help_link="/help/configure-who-can-start-new-topics" }}
+
+    <div class="input-group">
+        <label for="{{prefix}}topics_policy" class="settings-field-label">{{> stream_topics_policy_label .}}</label>
+        <select name="stream-topics-policy-setting" id="{{prefix}}topics_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
+            {{> ../settings/dropdown_options_widget option_values=stream_topics_policy_values}}
+        </select>
+        {{> topics_already_exist_error .}}
+    </div>
+</div>
+
+<div id="channel-moderation-permissions" class="settings-subsection-parent">
+    <div class="channel-moderation-permissions-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
+        <h4 class="stream_setting_subsection_title">{{t "Moderation permissions"}}</h4>
+        {{#if is_stream_edit}}
+            {{> ../settings/settings_save_discard_widget section_name="moderation-permissions"}}
+        {{/if}}
+    </div>
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_move_messages_within_channel_group"
+      label=group_setting_labels.can_move_messages_within_channel_group
+      prefix=prefix }}
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_move_messages_out_of_channel_group"
+      label=group_setting_labels.can_move_messages_out_of_channel_group
+      prefix=prefix }}
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_resolve_topics_group"
+      label=group_setting_labels.can_resolve_topics_group
+      prefix=prefix }}
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_delete_any_message_group"
+      label=group_setting_labels.can_delete_any_message_group
+      prefix=prefix }}
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_delete_own_message_group"
+      label=group_setting_labels.can_delete_own_message_group
+      prefix=prefix }}
+</div>
+
+<div id="channel-administrative-permissions" class="settings-subsection-parent">
+    <div class="channel-administrative-permissions-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
+        <h4 class="stream_setting_subsection_title">{{t "Administrative permissions"}}</h4>
+        {{#if is_stream_edit}}
+            {{> ../settings/settings_save_discard_widget section_name="administrative-permissions"}}
+        {{/if}}
+    </div>
+    <div class="admin-permissions-tip">
+        {{t 'Organization administrators can automatically administer all channels.'}}
+    </div>
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_administer_channel_group"
+      label=group_setting_labels.can_administer_channel_group
+      prefix=prefix }}
+
+    {{#if (or is_owner is_stream_edit)}}
+        <div>
+            <div class="input-group message-retention-setting-group time-limit-setting">
+                <label class="dropdown-title settings-field-label" for="{{prefix}}message_retention_days">{{t "Message retention period" }}
+                    {{> ../help_link_widget link="/help/message-retention-policy" }}
+                </label>
+
+                {{> ../settings/upgrade_tip_widget .}}
+
+                <select name="stream_message_retention_setting"
+                  class="stream_message_retention_setting prop-element settings_select bootstrap-focus-style"
+                  id="{{prefix}}message_retention_days"
+                  data-setting-widget-type="message-retention-setting">
+                    <option value="realm_default">{{t "Organization default {org_level_message_retention_setting}" }}</option>
+                    <option value="unlimited">{{t 'Retain forever' }}</option>
+                    <option value="custom_period">{{t 'Custom' }}</option>
+                </select>
+
+                <div class="dependent-settings-block stream-message-retention-days-input">
+                    <label class="inline-block" for="{{prefix}}stream_message_retention_custom_input">
+                        {{t 'Retention period (days)' }}:
+                    </label>
+                    <input type="text" autocomplete="off"
+                      name="stream-message-retention-days"
+                      class="stream-message-retention-days message-retention-setting-custom-input time-limit-custom-input"
+                      id="{{prefix}}stream_message_retention_custom_input" />
+                </div>
+            </div>
+        </div>
+    {{/if}}
+</div>

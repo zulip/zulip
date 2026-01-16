@@ -27,7 +27,7 @@ function get_date(time_ISO, DOW) {
 const date_2017 = get_date("2017-05-18T07:12:53.000Z", "Thursday");
 
 // Check there is no UTC offset.
-assert.equal(timerender.get_tz_with_UTC_offset(date_2017.getTime()), "UTC");
+assert.equal(timerender.get_tz_with_UTC_offset(date_2017), "UTC");
 
 const date_2017_PM = get_date("2017-05-18T21:12:53.000Z", "Thursday");
 

@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -41,7 +41,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": 1000000000,
@@ -162,7 +162,7 @@
       "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
         "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -170,7 +170,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -210,7 +210,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": 1000000000,
@@ -340,7 +340,7 @@
       "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 2,
+      "pending_webhooks": 0,
       "request": {
         "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -348,7 +348,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -388,7 +388,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": 1000000000,
@@ -517,7 +517,7 @@
       "type": "invoice.finalized"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -557,7 +557,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": 1000000000,
@@ -703,7 +703,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -775,7 +775,7 @@
       "type": "payment_intent.created"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -815,7 +815,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": null,
@@ -930,7 +930,7 @@
           "total_excluding_tax": 800000,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         },
         "previous_attributes": {
           "amount_due": 0,
@@ -956,7 +956,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1003,7 +1003,7 @@
       "type": "invoiceitem.created"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1043,7 +1043,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": null,
@@ -1117,7 +1117,7 @@
           "total_excluding_tax": 0,
           "total_pretax_credit_amounts": [],
           "total_taxes": [],
-          "webhooks_delivered_at": null
+          "webhooks_delivered_at": 1000000000
         }
       },
       "id": "update_licenses_of_manual_plan_from_billing_page--Event.list.2.json",
@@ -1131,7 +1131,7 @@
       "type": "invoice.created"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1181,7 +1181,7 @@
       "type": "customer.updated"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {

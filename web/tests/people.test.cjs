@@ -669,7 +669,7 @@ run_test("get_custom_fields_by_type", ({override}) => {
 run_test("bot_custom_profile_data", () => {
     initialize();
     // If this test fails, then try opening organization settings > bots
-    // http://localhost:9991/#organization/bot-list-admin
+    // http://localhost:9991/#organization/bots/all-bots
     // and then try to edit any of the bots.
     people.add_active_user(bot_botson);
     assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), undefined);
@@ -784,6 +784,38 @@ run_test("is_current_user_only_owner", ({override}) => {
 
     people.add_active_user(realm_owner);
     assert.ok(!people.is_current_user_only_owner());
+});
+
+run_test("user_can_change_their_own_role", ({override}) => {
+    initialize();
+    const bob = {
+        email: "bob@example.com",
+        user_id: 1,
+        full_name: "Bob",
+        is_owner: false,
+        is_admin: false,
+    };
+    people.add_active_user(bob);
+
+    const person = people.get_by_email(bob.email);
+    assert.ok(person);
+
+    person.is_owner = false;
+    override(current_user, "is_owner", true);
+    assert.ok(!people.user_can_change_their_own_role());
+
+    override(current_user, "is_owner", false);
+    override(current_user, "is_admin", true);
+    assert.ok(people.user_can_change_their_own_role());
+
+    override(current_user, "is_owner", false);
+    override(current_user, "is_admin", false);
+    assert.ok(!people.user_can_change_their_own_role());
+
+    person.is_owner = true;
+    override(current_user, "is_owner", true);
+    override(current_user, "is_admin", true);
+    assert.ok(people.user_can_change_their_own_role());
 });
 
 run_test("recipient_counts", () => {
@@ -954,6 +986,9 @@ run_test("multi_user_methods", () => {
 
     assert.equal(people.user_ids_string_to_slug("401,402"), "401,402-group");
     assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
+    assert.equal(people.user_ids_to_slug([401, 402]), "401,402-group");
+    assert.equal(people.user_ids_to_slug([402]), "402-whatever-402");
+    assert.equal(people.user_ids_to_slug([]), undefined);
 });
 
 run_test("user_ids_to_full_names_string", () => {
@@ -1001,6 +1036,7 @@ run_test("message_methods", () => {
     people.add_active_user(leo);
     people.add_active_user(ashton);
 
+    assert.equal(people.get_muted_user_avatar_url(), "/static/images/muted-user/muted-sender.png");
     // We don't rely on Maria to have all flags set explicitly--
     // undefined values are just treated as falsy.
     assert.equal(maria.is_guest, undefined);
@@ -1426,6 +1462,10 @@ run_test("initialize", () => {
     assert.ok(!people.is_valid_user_id_for_compose(9999));
     assert.ok(people.is_valid_bulk_emails_for_compose(["bot@example.com", "alice@example.com"]));
     assert.ok(!people.is_valid_bulk_emails_for_compose(["not@valid.com", "alice@example.com"]));
+    assert.ok(people.is_valid_bulk_user_ids_for_compose([17, 16, 15]));
+    blueslip.reset();
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
+    assert.ok(!people.is_valid_bulk_user_ids_for_compose([17, 9999, 15]));
     assert.ok(people.is_my_user_id(42));
 
     const fetched_retiree = people.get_by_user_id(15);
@@ -2014,25 +2054,23 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
     let third_promise_resolved = false;
     let first_promise_resolved = false;
 
-    const promise_first = people.get_or_fetch_users_from_ids([1, 2]);
-    promise_first.then(() => {
-        first_promise_resolved = true;
-        assert.ok(third_promise_resolved);
-    });
-    const promise_second = people.get_or_fetch_users_from_ids([1, 2, 3]);
-    promise_second.then(() => {
-        assert.ok(first_promise_resolved);
-        assert.ok(third_promise_resolved);
-    });
-    const promise_third = people.get_or_fetch_users_from_ids([3]);
-    promise_third.then(() => {
-        third_promise_resolved = true;
-        assert.ok(!first_promise_resolved);
-    });
-
-    // Only wait for second promise as we expect it be resolved at last.
-    await promise_second;
-    assert.ok(third_promise_resolved);
+    await Promise.all([
+        (async () => {
+            await people.get_or_fetch_users_from_ids([1, 2]);
+            first_promise_resolved = true;
+            assert.ok(third_promise_resolved);
+        })(),
+        (async () => {
+            await people.get_or_fetch_users_from_ids([1, 2, 3]);
+            assert.ok(first_promise_resolved);
+            assert.ok(third_promise_resolved);
+        })(),
+        (async () => {
+            await people.get_or_fetch_users_from_ids([3]);
+            third_promise_resolved = true;
+            assert.ok(!first_promise_resolved);
+        })(),
+    ]);
 
     const user1 = people.get_by_user_id(1);
     const user2 = people.get_by_user_id(2);
@@ -2040,4 +2078,44 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
     assert.equal(user1.full_name, "Retiree");
     assert.equal(user2.full_name, "Alice");
     assert.equal(user3.full_name, "Third user");
+});
+
+run_test("fetch inaccessible user", async ({override, override_rewire}) => {
+    initialize();
+    override_rewire(people, "fetch_users_from_ids_internal", noop);
+    people.add_valid_user_id(1);
+
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    const [inaccessible_user] = await people.get_or_fetch_users_from_ids([1]);
+    assert.equal(inaccessible_user.user_id, 1);
+    assert.equal(inaccessible_user.is_inaccessible_user, true);
+});
+
+run_test("get_by_user_id", () => {
+    initialize();
+    people.add_active_user(maria);
+
+    const user = people.get_by_user_id(maria.user_id);
+    assert.equal(user.full_name, maria.full_name);
+    assert.throws(
+        () => {
+            people.get_by_user_id(9999);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 9999",
+        },
+    );
+
+    blueslip.expect("error", "User ID: 8888 is valid but not found in people_by_user_id_dict");
+    people.add_valid_user_id(8888);
+    assert.throws(
+        () => {
+            people.get_by_user_id(8888);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 8888",
+        },
+    );
 });

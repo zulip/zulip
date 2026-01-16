@@ -9,6 +9,7 @@ import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 import render_topics_not_allowed_error from "../templates/topics_not_allowed_error.hbs";
 
+import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
@@ -23,9 +24,13 @@ import * as util from "./util.ts";
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
 export function get_tooltip_content(reference: Element): string | Element | DocumentFragment {
-    if (reference instanceof HTMLElement && reference.dataset.tooltipTemplateId !== undefined) {
+    let template_id;
+    if (
+        reference instanceof HTMLElement &&
+        (template_id = reference.getAttribute("data-tooltip-template-id")) !== null
+    ) {
         const template = document.querySelector<HTMLTemplateElement>(
-            `template#${CSS.escape(reference.dataset.tooltipTemplateId)}`,
+            `template#${CSS.escape(template_id)}`,
         );
         if (template !== null) {
             const fragment = template.content.cloneNode(true);
@@ -91,6 +96,8 @@ tippy.default.setDefaultProps({
     // Or, override this with a function returning string (text) or DocumentFragment (HTML).
     content: get_tooltip_content,
 });
+
+export let typeahead_status_emoji_tooltip: tippy.Instance | undefined;
 
 export const topic_visibility_policy_tooltip_props = {
     delay: LONG_HOVER_DELAY,
@@ -184,17 +191,17 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#subscription_overlay .subscription_settings .sub-stream-name",
+        target: "#subscription_overlay .subscription_settings .sub-stream-name, #groups_overlay .user_group_settings_wrapper .group-name",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "top",
         onShow(instance) {
-            const stream_name_element = instance.reference;
-            assert(stream_name_element instanceof HTMLElement);
-            // Only show tooltip if the stream name is truncated.
+            const name_element = instance.reference;
+            assert(name_element instanceof HTMLElement);
+            // Only show tooltip if the stream or group name is truncated.
             // See https://stackoverflow.com/questions/21064101/understanding-offsetwidth-clientwidth-scrollwidth-and-height-respectively
             // for more details.
-            if (stream_name_element.offsetWidth >= stream_name_element.scrollWidth) {
+            if (name_element.offsetWidth >= name_element.scrollWidth) {
                 return false;
             }
 
@@ -407,32 +414,10 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#deactivate_account_container.disabled_setting_tooltip",
+        target: "#deactivate_account_container.disabled_setting_tooltip, .deactivate-user-container.disabled_setting_tooltip",
         content: $t({
             defaultMessage:
                 "Because you are the only organization owner, you cannot deactivate your account.",
-        }),
-        appendTo: () => document.body,
-        onHidden(instance) {
-            instance.destroy();
-        },
-    });
-
-    tippy.delegate("body", {
-        target: "#deactivate_realm_button_container.disabled_setting_tooltip",
-        content: $t({
-            defaultMessage: "Only organization owners may deactivate an organization.",
-        }),
-        appendTo: () => document.body,
-        onHidden(instance) {
-            instance.destroy();
-        },
-    });
-
-    tippy.delegate("body", {
-        target: ".settings-radio-input-parent.default_stream_private_tooltip",
-        content: $t({
-            defaultMessage: "Default channels for new users cannot be made private.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -447,6 +432,30 @@ export function initialize(): void {
         ].join(","),
         content: $t({
             defaultMessage: "You can only view channels that you are subscribed to.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".history-public-to-subscribers.protected_history_with_new_topics_permission_tooltip",
+        content: $t({
+            defaultMessage:
+                "This setting can be changed only in channels where everyone including guests can start new topics.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".can_create_topic_group_container.can_create_topic_group_disabled_tooltip",
+        content: $t({
+            defaultMessage:
+                "This setting can be changed only in channels where subscribers can view messages sent before they joined.",
         }),
         appendTo: () => document.body,
         onHidden(instance) {
@@ -628,7 +637,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".status-emoji-name",
+        target: ".status-emoji-name:not(.typeahead-item .status-emoji-name)",
         placement: "top",
         delay: INSTANT_HOVER_DELAY,
         appendTo: () => document.body,
@@ -643,6 +652,26 @@ export function initialize(): void {
 
         onHidden(instance) {
             instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".typeahead-item .status-emoji-name",
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        appendTo: () => document.body,
+
+        /*
+            Status emoji tooltips for emojis inside typeahead to
+            separately handle emoji instance.
+        */
+
+        onShow(instance) {
+            typeahead_status_emoji_tooltip = instance;
+        },
+        onHidden(instance) {
+            instance.destroy();
+            typeahead_status_emoji_tooltip = undefined;
         },
     });
 
@@ -810,8 +839,13 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".folder_id-dropdown-list-container .dropdown-list-edit, .new_channel_folder_id-dropdown-list-container .dropdown-list-edit",
-        content: $t({defaultMessage: "Edit folder"}),
+        target: ".folder_id-dropdown-list-container .dropdown-list-manage-folder, .new_channel_folder_id-dropdown-list-container .dropdown-list-manage-folder",
+        content(reference) {
+            if (reference.querySelector(".zulip-icon-preview")) {
+                return $t({defaultMessage: "View details"});
+            }
+            return $t({defaultMessage: "Manage folder"});
+        },
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {
@@ -909,13 +943,24 @@ export function initialize(): void {
         target: ".topic-edit-save-wrapper",
         onShow(instance) {
             const $elem = $(instance.reference);
-            if ($($elem).find(".topic_edit_save").prop("disabled")) {
+            const $save_button = $elem.find(".topic_edit_save");
+            if (!$save_button.prop("disabled")) {
+                return false;
+            }
+
+            if ($save_button.hasClass("topic-required")) {
                 const error_message =
                     compose_validate.get_topics_required_error_tooltip_message_html();
                 instance.setContent(ui_util.parse_html(error_message));
                 return undefined;
             }
-            return false;
+
+            const content = $elem.attr("data-tippy-content");
+            if (content === undefined) {
+                return false;
+            }
+            instance.setContent(content);
+            return undefined;
         },
         appendTo: () => document.body,
         onHidden(instance) {
@@ -946,7 +991,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#compose_recipient_box, #move-topic-new-topic-input-wrapper",
+        target: "#compose-channel-recipient, #move-topic-new-topic-input-wrapper",
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
             const $elem = $(instance.reference);
@@ -961,6 +1006,23 @@ export function initialize(): void {
                 return undefined;
             }
             return false;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#recipient_box_clear_topic_button",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const stream_id = compose_state.stream_id();
+            let content = $t({defaultMessage: "New topic"});
+            if (stream_id && !stream_data.can_create_new_topics_in_stream(stream_id)) {
+                content = $t({defaultMessage: "Clear topic"});
+            }
+            instance.setContent(content);
         },
         appendTo: () => document.body,
         onHidden(instance) {

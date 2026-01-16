@@ -8,6 +8,7 @@ import render_message_history_overlay from "../templates/message_history_overlay
 import {exit_overlay} from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as lightbox from "./lightbox.ts";
 import * as loading from "./loading.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -297,6 +298,23 @@ export function fetch_and_render_message_history(message: Message): void {
                 .each(function () {
                     rendered_markdown.update_elements($(this));
                 });
+
+            // When an image is deleted before thumbnailing is completed, we can
+            // end up with the loading spinner HTML syntax stuck in message edit
+            // history indefinitely. Mask this by replacing thumbnailing loading
+            // spinners in edit history with the deleted image placeholder.
+            $("#message-history-overlay")
+                .find("img.image-loading-placeholder")
+                .each(function () {
+                    const $img = $(this);
+                    $img.attr("src", "/static/images/errors/image-not-exist.png");
+                    $img.attr(
+                        "alt",
+                        $t({defaultMessage: "This file does not exist or has been deleted."}),
+                    );
+                    $img.removeClass("image-loading-placeholder");
+                });
+
             const first_element_id = content_edit_history[0]!.timestamp;
             messages_overlay_ui.set_initial_element(
                 String(first_element_id),
@@ -391,4 +409,23 @@ export function initialize(): void {
             messages_overlay_ui.activate_element(this, keyboard_handling_context);
         },
     );
+
+    $("body").on("click", "#message-history-overlay .message_edit_history_content", (e) => {
+        const $img = $(e.target).closest("img");
+        if ($img.length > 0) {
+            e.stopPropagation();
+            e.preventDefault();
+            overlays.close_overlay("message_edit_history");
+            lightbox.handle_inline_media_element_click($img, true);
+            return;
+        }
+
+        const $video = $(e.target).closest("video");
+        if ($video.length > 0) {
+            e.stopPropagation();
+            e.preventDefault();
+            overlays.close_overlay("message_edit_history");
+            lightbox.handle_inline_media_element_click($video, true);
+        }
+    });
 }

@@ -15,7 +15,7 @@ from django.utils.module_loading import import_string
 from django.views.generic import RedirectView
 
 from zerver.forms import LoggingSetPasswordForm
-from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS, get_integration_category_redirects
 from zerver.tornado.views import (
@@ -158,6 +158,7 @@ from zerver.views.registration import (
     accounts_home,
     accounts_home_from_multiuse_invite,
     accounts_register,
+    create_demo_organization,
     create_realm,
     find_account,
     get_prereg_key_and_redirect,
@@ -256,6 +257,7 @@ from zerver.views.users import (
     get_member_backend,
     get_members_backend,
     get_profile_backend,
+    get_subscribed_channels_backend,
     get_subscription_backend,
     get_user_by_email,
     patch_bot_backend,
@@ -361,6 +363,7 @@ v1_api_and_json_patterns = [
         PATCH=update_user_by_id_api,
         DELETE=deactivate_user_backend,
     ),
+    rest_path("users/<int:user_id>/channels", GET=get_subscribed_channels_backend),
     rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),
     rest_path("users/<email>", GET=get_user_by_email, PATCH=update_user_by_email_api),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
@@ -710,6 +713,7 @@ i18n_urls = [
     # Realm creation
     path("json/antispam_challenge", get_challenge),
     path("new/", create_realm),
+    path("new/demo/", create_demo_organization),
     path("new/<confirmation_key>", create_realm, name="create_realm"),
     # Realm reactivation
     path("reactivate/", realm_reactivation, name="realm_reactivation"),
@@ -833,7 +837,7 @@ urls += [
 # Incoming webhook URLs
 # We don't create URLs for particular Git integrations here
 # because of generic one below
-urls.extend(incoming_webhook.url_object for incoming_webhook in WEBHOOK_INTEGRATIONS)
+urls.extend(incoming_webhook.url_object for incoming_webhook in INCOMING_WEBHOOK_INTEGRATIONS)
 
 # Desktop-specific authentication URLs
 urls += [

@@ -9,13 +9,7 @@
             </select>
         </div>
         <div class="input-group" id="profile_field_external_accounts">
-            <label for="profile_field_external_accounts_type" class="modal-field-label">{{t "External account type" }}</label>
-            <select id="profile_field_external_accounts_type" name="external_acc_field_type" class="modal_select bootstrap-focus-style">
-                {{#each realm_default_external_accounts}}
-                    <option value='{{@key}}'>{{this.text}}</option>
-                {{/each}}
-                <option value="custom">{{t 'Custom' }}</option>
-            </select>
+            {{> ../dropdown_widget_with_label widget_name="external_accounts_type" label=(t "External accounts")}}
         </div>
         <div class="input-group">
             <label for="profile_field_name" class="modal-field-label">{{t "Label" }}</label>
@@ -35,7 +29,7 @@
               label=(t "Alphabetize choices")
               custom_classes="alphabetize-choices-button"
               intent="neutral"
-              attention="quiet"
+              variant="subtle"
               }}
         </div>
         <div class="input-group" id="custom_external_account_url_pattern">

@@ -127,7 +127,7 @@ type RealmUserSettingDefaultProperties = z.infer<
 
 export const stream_settings_property_schema = z.union([
     z.keyof(stream_subscription_schema),
-    z.enum(["stream_privacy", "is_default_stream"]),
+    z.enum(["channel_privacy", "is_default_stream"]),
 ]);
 type StreamSettingProperty = z.infer<typeof stream_settings_property_schema>;
 
@@ -156,7 +156,7 @@ export function get_stream_settings_property_value(
     property_name: StreamSettingProperty,
     sub: StreamSubscription,
 ): valueof<StreamSubscription> {
-    if (property_name === "stream_privacy") {
+    if (property_name === "channel_privacy") {
         return stream_data.get_stream_privacy_policy(sub.stream_id);
     }
     if (property_name === "is_default_stream") {
@@ -442,12 +442,26 @@ export const external_account_field_schema = z.object({
 
 export type ExternalAccountFieldData = z.output<typeof external_account_field_schema>;
 
-function read_external_account_field_data($profile_field_form: JQuery): ExternalAccountFieldData {
-    const field_data: ExternalAccountFieldData = {
-        subtype: $profile_field_form
-            .find<HTMLSelectOneElement>("select:not([multiple])[name=external_acc_field_type]")
-            .val()!,
-    };
+function read_external_account_field_data(
+    $profile_field_form: JQuery,
+    old_field_data: ExternalAccountFieldData | undefined,
+): ExternalAccountFieldData {
+    let field_data: ExternalAccountFieldData;
+    // Use dropdown widget value in "create field form".
+    if (old_field_data === undefined) {
+        const widget = get_widget_for_dropdown_list_settings("external_accounts_type");
+        assert(widget !== null);
+        const value = widget.value();
+        assert(typeof value === "string");
+        field_data = {
+            subtype: value,
+        };
+    } // Use existing subtype in "edit field form".
+    else {
+        field_data = {
+            subtype: old_field_data.subtype,
+        };
+    }
     if (field_data.subtype === "custom") {
         field_data.url_pattern = $profile_field_form
             .find<HTMLInputElement>("input[name=url_pattern]")
@@ -469,7 +483,10 @@ export function read_field_data_from_form(
     if (field_type_id === field_types.SELECT.id) {
         return read_select_field_data_from_form($profile_field_form, old_field_data);
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
-        return read_external_account_field_data($profile_field_form);
+        const parsed_old_field_data = old_field_data
+            ? external_account_field_schema.parse(old_field_data)
+            : undefined;
+        return read_external_account_field_data($profile_field_form, parsed_old_field_data);
     }
     return undefined;
 }
@@ -500,6 +517,8 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_can_access_all_users_group", null],
     ["realm_can_create_web_public_channel_group", null],
     ["folder_id", null],
+    ["channel_privacy", null],
+    ["external_accounts_type", null],
 ]);
 
 export function get_widget_for_dropdown_list_settings(
@@ -630,12 +649,12 @@ export function change_save_button_state($element: JQuery, state: string): void 
         $textEl.text(button_text);
         if (state === "succeeded") {
             buttons.modify_action_button_style($save_button, {
-                attention: "borderless",
+                variant: "text",
                 intent: "success",
             });
         } else {
             buttons.modify_action_button_style($save_button, {
-                attention: "primary",
+                variant: "solid",
                 intent: "brand",
             });
         }
@@ -922,8 +941,8 @@ export function check_stream_settings_property_changed(
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_message_retention_setting_value($(elem), false);
             break;
-        case "stream_privacy":
-            proposed_val = get_input_element_value(elem, "radio-group");
+        case "channel_privacy":
+            proposed_val = get_dropdown_list_widget_setting_value($(elem));
             break;
         case "folder_id":
             proposed_val = get_channel_folder_value_from_dropdown_widget($(elem));
@@ -1160,7 +1179,7 @@ export function populate_data_for_stream_settings_request(
             const input_value = get_input_element_value(input_elem);
             if (input_value !== undefined && input_value !== null) {
                 const property_name = extract_property_name($input_elem);
-                if (property_name === "stream_privacy") {
+                if (property_name === "channel_privacy") {
                     assert(typeof input_value === "string");
                     data = {
                         ...data,
@@ -1184,6 +1203,11 @@ export function populate_data_for_stream_settings_request(
                 if (property_name === "folder_id") {
                     const folder_id = get_channel_folder_value_from_dropdown_widget($input_elem);
                     data[property_name] = JSON.stringify(folder_id);
+                    continue;
+                }
+
+                if (property_name === "history_public_to_subscribers") {
+                    data[property_name] = JSON.stringify(input_value);
                     continue;
                 }
 
@@ -1263,11 +1287,11 @@ function switching_to_private(properties_elements: HTMLElement[]): boolean {
     for (const elem of properties_elements) {
         const $elem = $(elem);
         const property_name = extract_property_name($elem);
-        if (property_name !== "stream_privacy") {
+        if (property_name !== "channel_privacy") {
             continue;
         }
-        const proposed_val = get_input_element_value(elem, "radio-group");
-        return proposed_val === "invite-only-public-history" || proposed_val === "invite-only";
+        const proposed_val = get_input_element_value(elem);
+        return proposed_val === "invite-only";
     }
     return false;
 }
@@ -1495,7 +1519,7 @@ function should_disable_save_button_for_stream_settings(stream_id: number): bool
 function enable_or_disable_save_button($subsection_elem: JQuery): void {
     const $save_button = $subsection_elem.find(".save-button");
 
-    if ($subsection_elem.closest(".advanced-configurations-container").length > 0) {
+    if ($subsection_elem.closest(".channel-permissions").length > 0) {
         const $settings_container = $subsection_elem.closest(".subscription_settings");
         const stream_id_string = $settings_container.attr("data-stream-id");
         assert(stream_id_string !== undefined);
@@ -1538,7 +1562,7 @@ function enable_or_disable_save_button($subsection_elem: JQuery): void {
         return;
     }
 
-    const group_settings = [...$subsection_elem.find(".pill-container")].map((elem) =>
+    const group_settings = [...$subsection_elem.find(".pill-container.prop-element")].map((elem) =>
         extract_property_name($(elem)),
     );
     if (
@@ -1609,6 +1633,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["can_add_members_group", null],
     ["can_add_subscribers_group", null],
     ["can_administer_channel_group", null],
+    ["can_create_topic_group", null],
     ["can_join_group", null],
     ["can_leave_group", null],
     ["can_manage_group", null],
@@ -1794,10 +1819,12 @@ export function create_stream_group_setting_widget({
     $pill_container,
     setting_name,
     sub,
+    pill_update_callback,
 }: {
     $pill_container: JQuery;
     setting_name: StreamPermissionGroupSetting;
     sub?: StreamSubscription;
+    pill_update_callback?: () => void;
 }): GroupSettingPillContainer {
     const pill_widget = group_setting_pill.create_pills($pill_container, setting_name, "stream");
     const opts: {
@@ -1820,12 +1847,21 @@ export function create_stream_group_setting_widget({
         const $subsection = $pill_container.closest(".settings-subsection-parent");
 
         pill_widget.onTextInputHook(() => {
+            if (pill_update_callback !== undefined) {
+                pill_update_callback();
+            }
             save_discard_stream_settings_widget_status_handler($subsection, sub);
         });
         pill_widget.onPillCreate(() => {
+            if (pill_update_callback !== undefined) {
+                pill_update_callback();
+            }
             save_discard_stream_settings_widget_status_handler($subsection, sub);
         });
         pill_widget.onPillRemove(() => {
+            if (pill_update_callback !== undefined) {
+                pill_update_callback();
+            }
             save_discard_stream_settings_widget_status_handler($subsection, sub);
         });
     } else {
@@ -2023,9 +2059,50 @@ export function get_channel_folder_value_from_dropdown_widget($elem: JQuery): nu
 }
 
 export const language_options = (): Option[] => {
-    const languages = get_language_list_columns(realm.realm_default_language);
+    const languages = get_language_list_columns(realm.realm_default_language).toSorted((a, b) =>
+        util.strcmp(a.name_with_percent, b.name_with_percent),
+    );
     return languages.map((language) => ({
         name: language.name_with_percent,
         unique_id: language.code,
     }));
 };
+
+export function resize_textareas_in_section($section: JQuery): void {
+    const $subsections = $section.find(".settings-subsection-parent");
+    if ($subsections.length === 0) {
+        return;
+    }
+
+    $subsections.each(function () {
+        resize_textareas_in_subsection($(this));
+    });
+}
+
+export let resize_textareas_in_subsection = ($subsection: JQuery): void => {
+    const $textareas = $subsection.find("textarea");
+
+    if ($textareas.length === 0) {
+        return;
+    }
+
+    $textareas.each(function () {
+        const $el = $<HTMLTextAreaElement>(this);
+
+        const min_rows = 2;
+        const max_rows = 5;
+        $el.attr("rows", min_rows);
+        const scrollheight = util.the($el).scrollHeight;
+        const line_height = Number.parseFloat($el.css("line-height"));
+        const needed_rows = Math.ceil(scrollheight / line_height) - 1;
+
+        const new_rows = Math.min(Math.max(needed_rows, min_rows), max_rows);
+        $el.attr("rows", new_rows);
+    });
+};
+
+export function rewire_resize_textareas_in_subsection(
+    value: typeof resize_textareas_in_subsection,
+): void {
+    resize_textareas_in_subsection = value;
+}

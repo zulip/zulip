@@ -13,6 +13,7 @@ export type StreamPostPolicy = (typeof StreamPostPolicy)[keyof typeof StreamPost
 export const stream_permission_group_settings_schema = z.enum([
     "can_add_subscribers_group",
     "can_administer_channel_group",
+    "can_create_topic_group",
     "can_delete_any_message_group",
     "can_delete_own_message_group",
     "can_move_messages_out_of_channel_group",
@@ -36,6 +37,7 @@ export type StreamTopicsPolicy = z.infer<typeof stream_topics_policy_schema>;
 export const stream_schema = z.object({
     can_add_subscribers_group: group_setting_value_schema,
     can_administer_channel_group: group_setting_value_schema,
+    can_create_topic_group: group_setting_value_schema,
     can_delete_any_message_group: group_setting_value_schema,
     can_delete_own_message_group: group_setting_value_schema,
     can_move_messages_out_of_channel_group: group_setting_value_schema,

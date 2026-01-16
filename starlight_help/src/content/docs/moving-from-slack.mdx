@@ -4,9 +4,11 @@ title: Moving from Slack
 
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
+import FlattenedList from "../../components/FlattenedList.astro";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
-import CommunicationPolicies from "../include/_CommunicationPolicies.mdx";
+import CommunicationPoliciesIntro from "../include/_CommunicationPoliciesIntro.mdx";
+import CommunicationPoliciesList from "../include/_CommunicationPoliciesList.mdx";
 import ConfigureYourOrganization from "../include/_ConfigureYourOrganization.mdx";
 import HowToInviteUsersToJoinImport from "../include/_HowToInviteUsersToJoinImport.mdx";
 import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
@@ -96,13 +98,17 @@ made the decision to move to Zulip.
 
 ## Review and update communication policies
 
-<CommunicationPolicies />
+<CommunicationPoliciesIntro />
 
-* Zulip makes it easy to find conversations and follow up. To avoid disrupting
-  focus work, @-mentions in Zulip should generally be reserved for
-  time-sensitive messages. [Silent
-  mentions](/help/mention-a-user-or-group#silently-mention-a-user) make it easy
-  to refer to someone without calling for their attention.
+<FlattenedList>
+  <CommunicationPoliciesList />
+
+  * Zulip makes it easy to find conversations and follow up. To avoid disrupting
+    focus work, @-mentions in Zulip should generally be reserved for
+    time-sensitive messages. [Silent
+    mentions](/help/mention-a-user-or-group#silently-mention-a-user) make it easy
+    to refer to someone without calling for their attention.
+</FlattenedList>
 
 ## Prepare users for the transition
 
@@ -114,7 +120,9 @@ cover include:
   <PrepareForTransition1 />
 
   1. Pointers to additional resources, such as Zulip's [getting started
-     guide](/help/getting-started-with-zulip).
+     guide](/help/getting-started-with-zulip), and [the guide on how threading
+     works in Zulip](/help/introduction-to-topics#what-about-threads) for folks
+     who are used to Slack's threads.
 
   <PrepareForTransition2 />
 </FlattenedSteps>

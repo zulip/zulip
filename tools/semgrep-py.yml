@@ -391,3 +391,14 @@ rules:
       replacement: ""
     languages: [python]
     severity: ERROR
+
+  - id: iterator-all
+    message: Use .iterator() when iterating over large sets once
+    pattern: |-
+      for $VAR in $THING.objects.all():
+          $BODY
+    fix: |-
+      for $VAR in $THING.objects.all().iterator():
+          $BODY
+    languages: [python]
+    severity: ERROR

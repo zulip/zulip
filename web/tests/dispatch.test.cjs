@@ -29,6 +29,7 @@ const {electron_bridge} = mock_esm("../src/electron_bridge", {
     electron_bridge: {},
 });
 const theme = mock_esm("../src/theme");
+const emoji_frequency = mock_esm("../src/emoji_frequency");
 const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
 mock_esm("../src/inbox_ui", {
@@ -81,10 +82,11 @@ const settings_realm_user_settings_defaults = mock_esm(
 );
 const settings_realm_domains = mock_esm("../src/settings_realm_domains");
 const settings_streams = mock_esm("../src/settings_streams");
-const settings_users = mock_esm("../src/settings_users");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_data = mock_esm("../src/stream_data");
-const stream_list = mock_esm("../src/stream_list");
+const stream_list = mock_esm("../src/stream_list", {
+    update_collapsed_state_on_show_channel_folders_change: noop,
+});
 const stream_settings_components = mock_esm("../src/stream_settings_components");
 const stream_settings_data = mock_esm("../src/stream_settings_data");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
@@ -106,7 +108,6 @@ const unread_ui = mock_esm("../src/unread_ui");
 const user_events = mock_esm("../src/user_events");
 const user_group_edit = mock_esm("../src/user_group_edit");
 const overlays = mock_esm("../src/overlays");
-mock_esm("../src/giphy");
 const {Filter} = zrequire("filter");
 const {initialize: initialize_realm_user_settings_defaults} = zrequire(
     "realm_user_settings_defaults",
@@ -478,6 +479,7 @@ run_test("reaction", ({override}) => {
     {
         const stub = make_stub();
         override(reactions, "add_reaction", stub.f);
+        override(emoji_frequency, "update_emoji_frequency_on_add_reaction_event", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("event");
@@ -489,6 +491,7 @@ run_test("reaction", ({override}) => {
     {
         const stub = make_stub();
         override(reactions, "remove_reaction", stub.f);
+        override(emoji_frequency, "update_emoji_frequency_on_remove_reaction_event", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("event");
@@ -729,21 +732,9 @@ run_test("realm settings", ({override, override_rewire}) => {
     dispatch(event);
     assert_same(realm.realm_default_code_block_language, "javascript");
 
-    let update_called = false;
-    stream_ui_updates.update_stream_privacy_choices = (property) => {
-        assert_same(property, "can_create_web_public_channel_group");
-        update_called = true;
-    };
     event = event_fixtures.realm__update__enable_spectator_access;
     dispatch(event);
     assert_same(realm.realm_enable_spectator_access, true);
-    assert_same(update_called, true);
-
-    let update_stream_privacy_choices_called = false;
-    stream_ui_updates.update_stream_privacy_choices = (property) => {
-        assert_same(property, "can_create_public_channel_group");
-        update_stream_privacy_choices_called = true;
-    };
 
     event = event_fixtures.realm__update_dict__default;
     override(realm, "realm_create_multiuse_invite_group", 1);
@@ -801,7 +792,6 @@ run_test("realm settings", ({override, override_rewire}) => {
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
     assert_same(realm.max_file_upload_size_mib, 1024);
-    assert_same(update_stream_privacy_choices_called, true);
     assert_same(add_subscribers_element_updated, true);
 
     event = event_fixtures.realm__update_dict__icon;
@@ -836,8 +826,11 @@ run_test("realm settings", ({override, override_rewire}) => {
 run_test("realm_bot add", ({override}) => {
     const event = event_fixtures.realm_bot__add;
     const bot_stub = make_stub();
+    override(current_user, "user_id", test_user.user_id);
     override(bot_data, "add", bot_stub.f);
-    override(settings_bots, "render_bots", noop);
+    override(settings_bots, "redraw_your_bots_list", noop);
+    override(settings_bots, "toggle_bot_config_download_container", noop);
+
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
@@ -849,7 +842,8 @@ run_test("realm_bot delete", ({override}) => {
     const event = event_fixtures.realm_bot__delete;
     const bot_stub = make_stub();
     override(bot_data, "del", bot_stub.f);
-    override(settings_bots, "render_bots", noop);
+    override(settings_bots, "redraw_your_bots_list", noop);
+    override(settings_bots, "toggle_bot_config_download_container", noop);
 
     dispatch(event);
     assert.equal(bot_stub.num_calls, 1);
@@ -858,17 +852,45 @@ run_test("realm_bot delete", ({override}) => {
 });
 
 run_test("realm_bot update", ({override}) => {
-    const event = event_fixtures.realm_bot__update;
-    const bot_stub = make_stub();
+    let event = event_fixtures.realm_bot__update;
+    let bot_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
-    override(settings_bots, "render_bots", noop);
 
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
-    const args = bot_stub.get_args("user_id", "bot");
+    let args = bot_stub.get_args("user_id", "bot");
     assert_same(args.user_id, event.bot.user_id);
     assert_same(args.bot, event.bot);
+
+    bot_stub = make_stub();
+    override(bot_data, "update", bot_stub.f);
+    let toggle_download_container_stub = make_stub();
+    override(
+        settings_bots,
+        "toggle_bot_config_download_container",
+        toggle_download_container_stub.f,
+    );
+
+    event = event_fixtures.realm_bot__update_owner;
+    override(settings_bots, "redraw_your_bots_list", noop);
+    dispatch(event);
+    assert.equal(toggle_download_container_stub.num_calls, 1);
+    assert.equal(bot_stub.num_calls, 1);
+    args = bot_stub.get_args("user_id", "bot");
+    assert_same(args.user_id, event.bot.user_id);
+    assert_same(args.bot, event.bot);
+
+    toggle_download_container_stub = make_stub();
+    override(
+        settings_bots,
+        "toggle_bot_config_download_container",
+        toggle_download_container_stub.f,
+    );
+
+    event = event_fixtures.realm_bot__update_is_active;
+    dispatch(event);
+    assert.equal(toggle_download_container_stub.num_calls, 1);
 });
 
 run_test("realm_emoji", ({override}) => {
@@ -990,13 +1012,13 @@ run_test("realm_user", ({override}) => {
     // Test bot related functions are being called.
     const add_bot_stub = make_stub();
     event = event_fixtures.realm_user__add_bot;
-    override(settings_users, "redraw_bots_list", add_bot_stub.f);
+    override(settings_bots, "redraw_all_bots_list", add_bot_stub.f);
     dispatch({...event});
     assert.equal(add_bot_stub.num_calls, 1);
 
     const update_bot_stub = make_stub();
     event = event_fixtures.realm_user__update;
-    override(settings_users, "update_bot_data", update_bot_stub.f);
+    override(settings_bots, "update_bot_data", update_bot_stub.f);
     dispatch(event);
     assert.equal(update_bot_stub.num_calls, 1);
     args = update_bot_stub.get_args("update_user_id", "update_bot_data");
@@ -1530,6 +1552,8 @@ run_test("delete_message", ({override}) => {
 
     const stream_topic_history_stub = make_stub();
     override(stream_topic_history, "remove_messages", stream_topic_history_stub.f);
+
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
 
     dispatch(event);
 

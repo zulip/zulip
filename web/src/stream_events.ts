@@ -6,6 +6,7 @@ import render_first_stream_created_modal from "../templates/stream_settings/firs
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as color_data from "./color_data.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
@@ -122,6 +123,12 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             // rerender the entire message feed.
             message_live_update.rerender_messages_view();
         }
+        if (property === "can_create_topic_group") {
+            stream_ui_updates.update_history_public_to_subscribers_state(
+                $("#stream_settings"),
+                sub,
+            );
+        }
         user_group_edit.update_stream_setting_in_permissions_panel(
             stream_permission_group_settings_schema.parse(property),
             group_setting_value_schema.parse(value),
@@ -227,6 +234,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         },
         folder_id(value) {
             stream_settings_ui.update_channel_folder(sub, value);
+            channel_folders_ui.update_channel_folder_channels_list(stream_id, value);
         },
     };
 

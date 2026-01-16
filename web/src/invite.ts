@@ -288,7 +288,7 @@ const copy_invite_link_banner = (invite_link: string): Banner => ({
     ),
     buttons: [
         {
-            attention: "primary",
+            variant: "solid",
             icon: "copy",
             label: $t({defaultMessage: "Copy link"}),
             id: "copy_generated_invite_link",
@@ -338,6 +338,8 @@ function generate_multiuse_invite(): void {
 }
 
 function valid_to(): string {
+    const $custom_expiration_time_elm = $<HTMLInputElement>("input#custom-expiration-time-input");
+    $custom_expiration_time_elm.removeClass("invalid-input");
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     const time_input_value = $expires_in.val()!;
 
@@ -348,7 +350,8 @@ function valid_to(): string {
     let time_in_minutes: number;
     if (time_input_value === "custom") {
         if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
-            return $t({defaultMessage: "Invalid custom time"});
+            $custom_expiration_time_elm.addClass("invalid-input");
+            return "";
         }
         time_in_minutes = util.get_custom_time_in_minutes(
             custom_expiration_time_unit,
@@ -429,7 +432,11 @@ async function update_guest_visible_users_count_and_stream_ids(): Promise<void> 
     loading.destroy_indicator($(".guest_visible_users_loading"));
 }
 
-function generate_invite_tips_data(): Record<string, boolean> {
+function generate_invite_tips_data(): {
+    realm_has_description: boolean;
+    realm_has_user_set_icon: boolean;
+    realm_has_custom_profile_fields: boolean;
+} {
     const {realm_description, realm_icon_source, custom_profile_fields} = realm;
 
     return {
@@ -650,13 +657,12 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 invite_tips_data.realm_has_user_set_icon &&
                 invite_tips_data.realm_has_custom_profile_fields
             );
-            if (!should_show_invite_tips_banner) {
-                return;
+            if (should_show_invite_tips_banner) {
+                banners.open(
+                    invite_tips_banner(),
+                    $("#invite-user-modal .invite-setup-tips-container"),
+                );
             }
-            banners.open(
-                invite_tips_banner(),
-                $("#invite-user-modal .invite-setup-tips-container"),
-            );
         }
 
         const toggler = components.toggle({

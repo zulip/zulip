@@ -1,5 +1,4 @@
-{% extends "zerver/portico.html" %}
-{% set entrypoint = "landing-page" %}
+{% extends "zerver/marketing_page.html" %}
 
 {% set PAGE_TITLE = "Security | Zulip" %}
 
@@ -7,13 +6,8 @@
   highest priority. Learn how Zulip’s security strategy covers all aspects of our
   product and business." %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
 
-{% block portico_content %}
-
-{% include 'zerver/landing_nav.html' %}
+{% block marketing_content %}
 
 <div class="portico-landing why-page">
     <div class="hero bg-pycon security">

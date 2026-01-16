@@ -33,15 +33,6 @@ const supported_types = [
     "image/webp",
 ];
 
-const cropper_opts = {
-    viewMode: 1,
-    autoCropArea: 1,
-    croppedCanvasOptions: {},
-    dragMode: "move",
-    minCropBoxHeight: 50,
-    background: true,
-};
-
 function is_image_format(file: File): boolean {
     const type = file.type;
     if (!type) {
@@ -154,7 +145,7 @@ export function build_widget(
     };
 }
 
-function set_up_uppy_widget(): void {
+function set_up_uppy_widget(property_name: "realm_icon" | "realm_logo" | "user_avatar"): void {
     uppy_widget = new Uppy<Meta, Body>({
         restrictions: {
             allowedFileTypes: supported_types,
@@ -174,6 +165,15 @@ function set_up_uppy_widget(): void {
             rotate: false,
             granularRotate: false,
             flip: false,
+        },
+        cropperOptions: {
+            viewMode: 1,
+            autoCropArea: 1,
+            croppedCanvasOptions: {},
+            dragMode: "move",
+            minCropBoxHeight: 50,
+            background: true,
+            aspectRatio: property_name === "realm_logo" ? 8 : 1,
         },
     });
 }
@@ -196,18 +196,8 @@ function open_uppy_editor(
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.save();
         },
         post_render() {
-            set_up_uppy_widget();
+            set_up_uppy_widget(property_name);
             assert(uppy_widget !== undefined);
-
-            if (property_name === "realm_logo") {
-                uppy_widget.getPlugin("ImageEditor")!.setOptions({
-                    cropperOptions: {...cropper_opts, aspectRatio: 8},
-                });
-            } else {
-                uppy_widget.getPlugin("ImageEditor")!.setOptions({
-                    cropperOptions: {...cropper_opts, aspectRatio: 1},
-                });
-            }
 
             const uppy_file_id = uppy_widget.addFile({
                 name: file.name,

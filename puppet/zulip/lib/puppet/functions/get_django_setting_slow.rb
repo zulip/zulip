@@ -9,7 +9,13 @@ require "shellwords"
 Puppet::Functions.create_function(:get_django_setting_slow) do
   def get_django_setting_slow(name)
     if File.exist?("/etc/zulip/settings.py")
-      output = `/home/zulip/deployments/current/scripts/get-django-setting #{name.shellescape} 2>&1`
+      if Dir.exist?("/home/zulip/deployments/current")
+        deploy_dir = "current"
+      else
+        # First puppet runs during install don't have a "current" yet, only a "next"
+        deploy_dir = "next"
+      end
+      output = `/home/zulip/deployments/#{deploy_dir}/scripts/get-django-setting #{name.shellescape} 2>&1`
       if $?.success?
         output.strip
       else

@@ -38,6 +38,13 @@
                   value_type="number"
                   custom_classes="decorated-stream-name-dropdown-widget"}}
 
+                {{> settings_checkbox
+                  setting_name="realm_send_channel_events_messages"
+                  prefix="id_"
+                  is_checked=realm_send_channel_events_messages
+                  label=admin_settings_label.realm_send_channel_events_messages
+                  help_link="/help/configure-automated-notices#notices-about-channels"}}
+
                 {{#if settings_send_digest_emails }}
                 {{> settings_checkbox
                   setting_name="realm_digest_emails_enabled"
@@ -69,7 +76,7 @@
                 <h3>{{t "Onboarding" }}</h3>
                 {{> settings_save_discard_widget section_name="onboarding" }}
             </div>
-            <div class="inline-block organization-settings-parent">
+            <div class="organization-settings-parent">
                 {{> settings_checkbox
                   setting_name="realm_enable_welcome_message_custom_text"
                   prefix="id_"
@@ -81,10 +88,10 @@
                         {{t "Message text" }}
                     </label>
                     <textarea id="id_realm_welcome_message_custom_text" name="welcome_message_custom_text"
-                      class="admin-realm-welcome-message-custom-text setting-widget prop-element settings_textarea display-block" maxlength="8000"
-                      data-setting-widget-type="string" rows="3">{{ realm_welcome_message_custom_text }}</textarea>
+                      class="admin-realm-welcome-message-custom-text setting-widget prop-element settings-textarea display-block" maxlength="8000"
+                      data-setting-widget-type="string">{{ realm_welcome_message_custom_text }}</textarea>
                     <div id="welcome_message_custom_text_buttons_container">
-                        {{> ../components/action_button attention="quiet" intent="neutral" label=(t "Send me a test message") id="send_test_welcome_bot_custom_message"}}
+                        {{> ../components/action_button variant="subtle" intent="neutral" label=(t "Send me a test message") id="send_test_welcome_bot_custom_message"}}
                     </div>
                 </div>
 
@@ -163,11 +170,11 @@
                 </div>
                 <div class="input-group">
                     <label for="id_realm_giphy_rating" class="settings-field-label">
-                        {{t 'GIPHY integration' }}
-                        {{> ../help_link_widget link=giphy_help_link }}
+                        {{t 'GIF integration' }}
+                        {{> ../help_link_widget link=gif_help_link }}
                     </label>
-                    <select name="realm_giphy_rating" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_giphy_rating" data-setting-widget-type="number" {{#if giphy_api_key_empty}}disabled{{/if}}>
-                        {{#each giphy_rating_options}}
+                    <select name="realm_giphy_rating" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_giphy_rating" data-setting-widget-type="number" {{#if gif_api_key_empty}}disabled{{/if}}>
+                        {{#each gif_rating_options}}
                             <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
                     </select>

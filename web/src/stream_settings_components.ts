@@ -5,6 +5,7 @@ import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_ui from "./channel_folders_ui.ts";
@@ -25,10 +26,13 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_groups from "./user_groups.ts";
 
-export let filter_dropdown_widget: DropdownWidget;
+export let archived_status_filter_dropdown_widget: DropdownWidget;
+export let channel_creation_privacy_widget: DropdownWidget;
+let folder_filter_dropdown_widget: DropdownWidget;
 
 export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";
@@ -150,11 +154,7 @@ function hide_subscribe_toggle_spinner($stream_row: JQuery): void {
     loading.destroy_indicator($spinner);
 }
 
-export function ajaxSubscribe(
-    stream: string,
-    color: string | undefined = undefined,
-    $stream_row: JQuery | undefined = undefined,
-): void {
+export function ajaxSubscribe(stream: string, color?: string, $stream_row?: JQuery): void {
     // Subscribe yourself to a single stream.
     let true_stream_name;
 
@@ -272,10 +272,7 @@ export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
     });
 }
 
-export function sub_or_unsub(
-    sub: StreamSubscription,
-    $stream_row: JQuery | undefined = undefined,
-): void {
+export function sub_or_unsub(sub: StreamSubscription, $stream_row?: JQuery): void {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
         if (
@@ -291,25 +288,41 @@ export function sub_or_unsub(
     }
 }
 
-export function set_filter_dropdown_widget(widget: DropdownWidget): void {
-    filter_dropdown_widget = widget;
+export function set_archived_status_filter_dropdown_widget(widget: DropdownWidget): void {
+    archived_status_filter_dropdown_widget = widget;
 }
 
-export function get_filter_dropdown_value(): string {
-    return z.string().parse(filter_dropdown_widget.value());
+export function get_archived_status_filter_dropdown_value(): string {
+    return z.string().parse(archived_status_filter_dropdown_widget.value());
 }
 
-export function set_filter_dropdown_value(value: string): void {
-    filter_dropdown_widget.render(value);
+export function set_archived_status_filter_dropdown_value(value: string): void {
+    archived_status_filter_dropdown_widget.render(value);
 }
 
-export function set_filters_for_tests(filter_widget: DropdownWidget): void {
-    filter_dropdown_widget = filter_widget;
+export function set_archived_status_filters_for_tests(filter_widget: DropdownWidget): void {
+    archived_status_filter_dropdown_widget = filter_widget;
 }
 
-export function filter_includes_channel(sub: StreamSubscription): boolean {
-    const filter_value = get_filter_dropdown_value();
-    const FILTERS = stream_settings_data.FILTERS;
+export function set_folder_filter_dropdown_widget(widget: DropdownWidget): void {
+    folder_filter_dropdown_widget = widget;
+}
+
+export function get_folder_filter_dropdown_value(): number {
+    return z.number().parse(folder_filter_dropdown_widget.value());
+}
+
+export function set_folder_filter_dropdown_value(value: number): void {
+    folder_filter_dropdown_widget.render(value);
+}
+
+export function set_folder_filter_for_tests(filter_widget: DropdownWidget): void {
+    folder_filter_dropdown_widget = filter_widget;
+}
+
+export function archived_status_filter_includes_channel(sub: StreamSubscription): boolean {
+    const filter_value = get_archived_status_filter_dropdown_value();
+    const FILTERS = stream_settings_data.ARCHIVED_STATUS_FILTERS;
     if (
         (filter_value === FILTERS.NON_ARCHIVED_CHANNELS && sub.is_archived) ||
         (filter_value === FILTERS.ARCHIVED_CHANNELS && !sub.is_archived)
@@ -319,16 +332,34 @@ export function filter_includes_channel(sub: StreamSubscription): boolean {
     return true;
 }
 
+export function folder_filter_includes_channel(sub: StreamSubscription): boolean {
+    const filters = stream_settings_data.FOLDER_FILTERS;
+    const filter_value = get_folder_filter_dropdown_value();
+    if (filter_value === filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        return true;
+    }
+
+    if (filter_value === filters.UNCATEGORIZED_DROPDOWN_OPTION) {
+        return sub.folder_id === null;
+    }
+    return filter_value === sub.folder_id;
+}
+
 export function set_up_folder_dropdown_widget(sub?: StreamSubscription): DropdownWidget {
     const folder_options = (): dropdown_widget.Option[] => {
         const folders = channel_folders.get_channel_folders();
+        const can_manage_folder = current_user.is_admin;
+        const manage_folder_icon_label = can_manage_folder
+            ? $t({defaultMessage: "Manage folder"})
+            : $t({defaultMessage: "Preview folder"});
         const options: dropdown_widget.Option[] = folders.map((folder) => ({
             name: folder.name,
             unique_id: folder.id,
-            has_delete_icon: true,
-            has_edit_icon: true,
+            has_delete_icon: can_manage_folder,
+            manage_folder_icon: can_manage_folder ? "folder-cog" : "preview",
+            has_manage_folder_icon: true,
             delete_icon_label: $t({defaultMessage: "Delete folder"}),
-            edit_icon_label: $t({defaultMessage: "Edit folder"}),
+            manage_folder_icon_label,
         }));
 
         const disabled_option = {
@@ -367,7 +398,7 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
             if (sub !== undefined) {
                 const $edit_container = stream_settings_containers.get_edit_container(sub);
                 settings_components.save_discard_stream_settings_widget_status_handler(
-                    $edit_container.find(".channel-folder-subsection"),
+                    $edit_container.find(".stream-settings-subsection"),
                     stream_data.get_sub_by_id(sub.stream_id),
                 );
             }
@@ -391,7 +422,7 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
 
             if (
                 $(event.target).closest(
-                    `.${CSS.escape(widget_name)}-dropdown-list-container .dropdown-list-edit`,
+                    `.${CSS.escape(widget_name)}-dropdown-list-container .dropdown-list-manage-folder`,
                 ).length > 0
             ) {
                 const folder_id = Number.parseInt(
@@ -411,4 +442,41 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
     }
     folder_widget.setup();
     return folder_widget;
+}
+
+export function set_channel_creation_privacy_widget(widget: DropdownWidget): void {
+    channel_creation_privacy_widget = widget;
+}
+
+const new_stream_group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
+    ["can_add_subscribers_group", null],
+    ["can_administer_channel_group", null],
+    ["can_create_topic_group", null],
+    ["can_delete_any_message_group", null],
+    ["can_delete_own_message_group", null],
+    ["can_move_messages_out_of_channel_group", null],
+    ["can_move_messages_within_channel_group", null],
+    ["can_remove_subscribers_group", null],
+    ["can_resolve_topics_group", null],
+    ["can_send_message_group", null],
+]);
+
+export function get_group_setting_widget_for_new_stream(
+    setting_name: string,
+): GroupSettingPillContainer | null {
+    const pill_widget = new_stream_group_setting_widget_map.get(setting_name);
+
+    if (pill_widget === undefined) {
+        blueslip.error("No group setting pill widget for property", {setting_name});
+        return null;
+    }
+
+    return pill_widget;
+}
+
+export function set_group_setting_widget_for_new_stream(
+    setting_name: string,
+    widget: GroupSettingPillContainer,
+): void {
+    new_stream_group_setting_widget_map.set(setting_name, widget);
 }

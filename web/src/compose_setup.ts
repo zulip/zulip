@@ -3,7 +3,6 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import {unresolve_name} from "../shared/src/resolved_topic.ts";
 import render_add_poll_modal from "../templates/add_poll_modal.hbs";
 import render_add_todo_list_modal from "../templates/add_todo_list_modal.hbs";
 
@@ -26,11 +25,13 @@ import * as flatpickr from "./flatpickr.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_view from "./message_view.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import {page_params} from "./page_params.ts";
 import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
+import {unresolve_name} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as stream_data from "./stream_data.ts";
@@ -117,6 +118,7 @@ export function initialize(): void {
     });
 
     resize.watch_manual_resize("#compose-textarea");
+    message_viewport.register_resize_handler(message_edit.maybe_autosize_message_edit_box);
 
     // Updates compose max-height and scroll to bottom button position when
     // there is a change in compose height like when a compose banner is displayed.
@@ -151,7 +153,7 @@ export function initialize(): void {
             compose_validate.set_user_acknowledged_stream_wildcard_flag(true);
             if (is_edit_input) {
                 void message_edit.save_message_row_edit($row);
-            } else if (event.target.dataset.validationTrigger === "schedule") {
+            } else if (event.target.getAttribute("data-validation-trigger") === "schedule") {
                 compose_send_menu_popover.open_schedule_message_menu(
                     undefined,
                     util.the($("#send_later i")),
@@ -599,6 +601,15 @@ export function initialize(): void {
     });
 
     $("textarea#compose-textarea").on("focus", () => {
+        // To shortcut a delay otherwise introduced when the topic
+        // input is blurred, we immediately update the topic's
+        // displayed text and compose-area placeholder when the
+        // compose textarea is focused. We only do this in channels
+        // that allow topics.
+        if (!stream_data.is_empty_topic_only_channel(compose_state.stream_id())) {
+            const $input = $<HTMLInputElement>("input#stream_message_recipient_topic");
+            compose_recipient.update_topic_displayed_text($input.val());
+        }
         compose_recipient.update_compose_area_placeholder_text();
         compose_fade.do_update_all();
         if (narrow_state.narrowed_by_reply()) {
@@ -615,7 +626,7 @@ export function initialize(): void {
         }, 150),
     );
 
-    $("#compose_recipient_box").on("click", "#recipient_box_clear_topic_button", () => {
+    $("#compose-channel-recipient").on("click", "#recipient_box_clear_topic_button", () => {
         const $input = $("input#stream_message_recipient_topic");
         // This should work similar to just manually deleting the
         // topic
@@ -626,6 +637,11 @@ export function initialize(): void {
         // chat* is permitted.
         compose_recipient.update_narrow_to_recipient_visibility();
         compose_validate.validate_and_update_send_button_status();
+        const stream_id = compose_state.stream_id()!;
+        if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
+            // Open the typahead so that user can select an existing topic.
+            composebox_typeahead.stream_message_topic_typeahead.lookup(false, true);
+        }
     });
 
     $("#compose-direct-recipient").on("click", "#compose-new-direct-recipient-button", (e) => {
@@ -637,20 +653,25 @@ export function initialize(): void {
         composebox_typeahead.private_message_recipient_typeahead.lookup(false, true);
     });
 
+    // To track delayed effects originating from the "blur" event
+    // and its use of setTimeout, we need to set up a variable to
+    // reference the timeout's ID across events.
+    let recipient_focused_timeout: ReturnType<typeof setTimeout>;
     $("input#stream_message_recipient_topic").on("focus", () => {
+        // We don't want the `recently-focused` class removed via
+        // a setTimeout from the "blur" event, if we're suddenly
+        // focused again.
+        clearTimeout(recipient_focused_timeout);
+        const $compose_recipient = $("#compose-recipient");
         const $input = $<HTMLInputElement>("input#stream_message_recipient_topic");
         compose_recipient.update_topic_displayed_text($input.val(), true);
         compose_recipient.update_compose_area_placeholder_text();
         // When the topic input is focused, we no longer treat
         // the recipient row as low attention, as we assume the user
         // is doing something that requires keeping attention called
-        // to the recipient row
+        // to the recipient row.
         compose_recipient.set_high_attention_recipient_row();
-
-        $("input#stream_message_recipient_topic").one("blur", () => {
-            compose_recipient.update_topic_displayed_text($input.val());
-            compose_recipient.update_compose_area_placeholder_text();
-        });
+        $compose_recipient.addClass("recently-focused");
     });
 
     $("input#stream_message_recipient_topic").on("input", () => {
@@ -659,14 +680,41 @@ export function initialize(): void {
     });
 
     $("#private_message_recipient").on("focus", () => {
+        // We don't want the `.recently-focused` class removed via
+        // setTimeout from the "blur" event, if we're suddenly
+        // focused again.
+        clearTimeout(recipient_focused_timeout);
+        const $compose_recipient = $("#compose-recipient");
         // When the DM input is focused, we no longer treat
         // the recipient row as low attention, as we assume the user
         // is doing something that requires keeping attention called
         // to the recipient row
         compose_recipient.set_high_attention_recipient_row();
+        $compose_recipient.addClass("recently-focused");
     });
 
     $("input#stream_message_recipient_topic, #private_message_recipient").on("blur", () => {
+        const $compose_recipient = $("#compose-recipient");
+        const $input = $<HTMLInputElement>("input#stream_message_recipient_topic");
+        // To correct for an edge case when clearing the topic box
+        // via the left sidebar, we do the following actions after a
+        // delay; these will not have an effect for DMs, and so can
+        // safely be referenced here. Note, too, that if focus shifts
+        // immediately from the topic box to the compose textarea,
+        // we update these things immediately so that no delay is
+        // apparent on the topic's displayed text or the placeholder
+        // in the empty compose textarea.
+        // Also, in case a user quickly opens and closes the compose
+        // box, we need to clear a previously set timeout before
+        // setting a new one. Otherwise, the compose box can open
+        // in a strange state displaying *general chat* and italicizing
+        // the topic input.
+        clearTimeout(recipient_focused_timeout);
+        recipient_focused_timeout = setTimeout(() => {
+            compose_recipient.update_topic_displayed_text($input.val());
+            compose_recipient.update_compose_area_placeholder_text();
+            $compose_recipient.removeClass("recently-focused");
+        }, 500);
         compose_recipient.update_recipient_row_attention_level();
     });
 

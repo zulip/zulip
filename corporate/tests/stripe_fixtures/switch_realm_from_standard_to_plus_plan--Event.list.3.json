@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -41,7 +41,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -162,7 +162,7 @@
       "id": "switch_realm_from_standard_to_plus_plan--Event.list.3.json",
       "livemode": false,
       "object": "event",
-      "pending_webhooks": 1,
+      "pending_webhooks": 0,
       "request": {
         "id": "switch_realm_from_standard_to_plus_plan--Event.list.2.json",
         "idempotency_key": "00000000-0000-0000-0000-000000000000"
@@ -170,7 +170,7 @@
       "type": "invoice.payment_succeeded"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -210,7 +210,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,
@@ -339,7 +339,7 @@
       "type": "invoice.paid"
     },
     {
-      "api_version": "2025-10-29.clover",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -379,7 +379,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": null,
           "effective_at": 1000000000,

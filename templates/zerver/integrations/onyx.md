@@ -28,7 +28,7 @@ Congrats, you're done! You should be able to index Zulip from your Onyx
 
 ### Related documentation
 
-* [Zulip Connector documentation](https://docs.onyx.app/connectors/zulip)
-* [About Onyx Connectors](https://docs.onyx.app/connectors/overview)
+* [Zulip Connector documentation](https://docs.onyx.app/admins/connectors/official/zulip)
+* [About Onyx Connectors](https://docs.onyx.app/admins/connectors/overview)
 
 [subscribe-channels]: /help/manage-user-channel-subscriptions#subscribe-a-user-to-a-channel

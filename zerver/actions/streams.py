@@ -13,7 +13,7 @@ from zerver.actions.default_streams import (
     do_remove_default_stream,
     do_remove_streams_from_default_stream_group,
 )
-from zerver.actions.message_send import internal_send_stream_message
+from zerver.actions.message_send import maybe_send_channel_events_notice
 from zerver.lib.cache import (
     cache_delete_many,
     cache_set,
@@ -38,7 +38,6 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     can_access_stream_metadata_user_ids,
-    channel_events_topic_name,
     check_basic_stream_access,
     get_anonymous_group_membership_dict_for_streams,
     get_stream_permission_policy_key,
@@ -188,10 +187,9 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):
-        internal_send_stream_message(
+        maybe_send_channel_events_notice(
             sender,
             stream,
-            topic_name=channel_events_topic_name(stream),
             content=_("Channel #**{channel_name}** has been archived.").format(
                 channel_name=stream.name
             ),
@@ -286,7 +284,7 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
         event_time=timezone_now(),
     )
 
-    recent_traffic = get_streams_traffic({stream.id}, realm)
+    recent_traffic = get_streams_traffic(realm, {stream.id})
 
     notify_user_ids = list(can_access_stream_metadata_user_ids(stream))
 
@@ -312,10 +310,9 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):
-        internal_send_stream_message(
+        maybe_send_channel_events_notice(
             sender,
             stream,
-            channel_events_topic_name(stream),
             _("Channel #**{channel_name}** has been unarchived.").format(channel_name=new_name),
         )
 
@@ -414,7 +411,7 @@ def send_subscription_add_events(
         info_by_user[sub_info.user.id].append(sub_info)
 
     stream_ids = {sub_info.stream.id for sub_info in sub_info_list}
-    recent_traffic = get_streams_traffic(stream_ids=stream_ids, realm=realm)
+    recent_traffic = get_streams_traffic(realm=realm, stream_ids=stream_ids)
 
     # We generally only have a few streams, so we compute subscriber
     # data in its own loop.
@@ -456,6 +453,7 @@ def send_subscription_add_events(
                 is_archived=stream_dict["is_archived"],
                 can_add_subscribers_group=stream_dict["can_add_subscribers_group"],
                 can_administer_channel_group=stream_dict["can_administer_channel_group"],
+                can_create_topic_group=stream_dict["can_create_topic_group"],
                 can_delete_any_message_group=stream_dict["can_delete_any_message_group"],
                 can_delete_own_message_group=stream_dict["can_delete_own_message_group"],
                 can_move_messages_out_of_channel_group=stream_dict[
@@ -542,7 +540,7 @@ def send_stream_creation_events_for_previously_inaccessible_streams(
     users_with_metadata_access_via_permission_groups: dict[int, set[int]] | None = None,
 ) -> None:
     stream_ids = set(altered_user_dict.keys())
-    recent_traffic = get_streams_traffic(stream_ids, realm)
+    recent_traffic = get_streams_traffic(realm, stream_ids)
 
     streams = [stream_dict[stream_id] for stream_id in stream_ids]
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None
@@ -960,12 +958,27 @@ def send_subscription_remove_events(
     users: list[UserProfile],
     streams: list[Stream],
     removed_subs: list[tuple[UserProfile, Stream]],
+    skip_events_for_removed_user: bool = False,
 ) -> None:
     altered_user_dict: dict[int, set[int]] = defaultdict(set)
     streams_by_user: dict[int, list[Stream]] = defaultdict(list)
     for user, stream in removed_subs:
         streams_by_user[user.id].append(stream)
         altered_user_dict[stream.id].add(user.id)
+
+    send_peer_remove_events(
+        realm=realm,
+        streams=streams,
+        altered_user_dict=altered_user_dict,
+    )
+
+    if skip_events_for_removed_user:
+        # If we don't need to bother sending events or marking messages as read
+        # for the user whose subscriptions are being removed,
+        # we can just return early.
+        # This is used during deletion of a user.
+        assert len(users) == 1
+        return
 
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
@@ -992,12 +1005,6 @@ def send_subscription_remove_events(
 
             if inaccessible_streams:
                 send_stream_deletion_event(realm, [user_profile.id], inaccessible_streams)
-
-    send_peer_remove_events(
-        realm=realm,
-        streams=streams,
-        altered_user_dict=altered_user_dict,
-    )
 
 
 def send_user_remove_events_on_removing_subscriptions(
@@ -1065,6 +1072,7 @@ def bulk_remove_subscriptions(
     streams: Iterable[Stream],
     *,
     acting_user: UserProfile | None,
+    skip_events_for_removed_user: bool = False,
 ) -> SubAndRemovedT:
     users = list(users)
     streams = list(streams)
@@ -1144,7 +1152,13 @@ def bulk_remove_subscriptions(
         RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
     removed_sub_tuples = [(sub_info.user, sub_info.stream) for sub_info in subs_to_deactivate]
-    send_subscription_remove_events(realm, users, streams, removed_sub_tuples)
+    send_subscription_remove_events(
+        realm,
+        users,
+        streams,
+        removed_sub_tuples,
+        skip_events_for_removed_user=skip_events_for_removed_user,
+    )
 
     if not all_users_accessible_by_everyone_in_realm(realm):
         altered_user_dict: dict[UserProfile, set[int]] = defaultdict(set)
@@ -1242,10 +1256,9 @@ def send_change_stream_permission_notification(
             old_policy=old_policy_name,
             new_policy=new_policy_name,
         )
-        internal_send_stream_message(
+        maybe_send_channel_events_notice(
             sender,
             stream,
-            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1360,7 +1373,7 @@ def do_change_stream_permission(
             - user_ids_with_metadata_access_via_permission_groups
         )
 
-        recent_traffic = get_streams_traffic({stream.id}, realm)
+        recent_traffic = get_streams_traffic(realm, {stream.id})
         anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
         send_stream_creation_event(
             realm,
@@ -1476,10 +1489,9 @@ def send_stream_posting_permission_update_notification(
             old_setting_description=old_setting_description,
             new_setting_description=new_setting_description,
         )
-        internal_send_stream_message(
+        maybe_send_channel_events_notice(
             sender,
             stream,
-            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1531,10 +1543,9 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
     send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
     with override_language(stream.realm.default_language):
-        internal_send_stream_message(
+        maybe_send_channel_events_notice(
             sender,
             stream,
-            channel_events_topic_name(stream),
             _("{user_name} renamed channel {old_channel_name} to {new_channel_name}.").format(
                 user_name=silent_mention_syntax_for_user(user_profile),
                 old_channel_name=f"**{old_name}**",
@@ -1568,10 +1579,9 @@ def send_change_stream_description_notification(
             + f"\n```` quote\n{new_description}\n````"
         )
 
-        internal_send_stream_message(
+        maybe_send_channel_events_notice(
             sender,
             stream,
-            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1662,10 +1672,9 @@ def send_change_stream_message_retention_days_notification(
             new_retention_period=new_retention_period,
             summary_line=summary_line,
         )
-        internal_send_stream_message(
+        maybe_send_channel_events_notice(
             sender,
             stream,
-            channel_events_topic_name(stream),
             notification_string,
             archived_channel_notice=stream.deactivated,
         )
@@ -1770,10 +1779,9 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
     }
     if NOTIFICATION_MESSAGES.get(name) is not None:
         with override_language(stream.realm.default_language):
-            internal_send_stream_message(
+            maybe_send_channel_events_notice(
                 sender,
                 stream,
-                channel_events_topic_name(stream),
                 NOTIFICATION_MESSAGES[name],
             )
 
@@ -1853,7 +1861,7 @@ def do_change_stream_group_based_setting(
         )
 
         if len(user_ids_gaining_metadata_access) > 0:
-            recent_traffic = get_streams_traffic({stream.id}, stream.realm)
+            recent_traffic = get_streams_traffic(stream.realm, {stream.id})
             anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
             send_stream_creation_event(
                 stream.realm,

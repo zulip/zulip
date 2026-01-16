@@ -3,9 +3,11 @@
 const assert = require("node:assert/strict");
 
 const {$t} = require("./lib/i18n.cjs");
-const {mock_jquery, zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, mock_jquery, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
+
+const ui_util = mock_esm("../src/ui_util");
 
 let env;
 
@@ -52,6 +54,9 @@ function make_tab(i) {
     $self.trigger = (type) => {
         if (type === "focus") {
             env.focused_tab = i;
+        }
+        if (type === "click") {
+            env.click_f.call(env.tabs[i]);
         }
     };
 
@@ -170,6 +175,7 @@ const components = zrequire("components");
 
 const LEFT_KEY = {key: "ArrowLeft", preventDefault: noop, stopPropagation: noop};
 const RIGHT_KEY = {key: "ArrowRight", preventDefault: noop, stopPropagation: noop};
+const ENTER_KEY = {key: "Enter", preventDefault: noop, stopPropagation: noop};
 
 run_test("basics", () => {
     env = {
@@ -270,6 +276,13 @@ run_test("basics", () => {
 
     env.keydown_f.call(env.tabs[env.focused_tab], LEFT_KEY);
     assert.equal(widget.value(), "translated: Keyboard shortcuts");
+
+    ui_util.convert_enter_to_click = () => {
+        env.tabs[2].trigger("click");
+    };
+    callback_args = undefined;
+    env.keydown_f.call(env.tabs[2], ENTER_KEY);
+    assert.equal(widget.value(), "translated: Search filters");
 
     widget.enable_tab("message-formatting");
 

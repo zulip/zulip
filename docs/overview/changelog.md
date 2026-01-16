@@ -15,7 +15,11 @@ _Unreleased_
 
 ### Upgrade notes for 12.0
 
-- None yet.
+- The `LDAP_SYNCHRONIZED_GROUPS_BY_REALM` setting for LDAP group
+  synchronization no longer ignores groups that are configured to be
+  synced but don't exist in the Zulip organization. Starting in 12.0,
+  such groups will be created automatically when syncing the groups
+  for a user who should be a member of that group.
 
 ## Zulip Server 11.x series
 
@@ -2287,7 +2291,7 @@ _Released 2022-07-21_
 _Released 2022-07-11_
 
 - CVE-2022-31134: Exclude private file uploads from [exports of public
-  data](https://zulip.com/help/export-your-organization#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server).
+  data](https://zulip.com/help/export-your-organization#export-data-in-an-importable-format).
   We would like to thank Antoine Benoist for bringing this issue to our attention.
 - Upgraded python requirements.
 - Improved documentation for load balancers to mention CIDR address
@@ -3681,7 +3685,7 @@ _Released 2019-12-12_
 - Extended buttons to visit links in topics to all URLs, not just
   URLs added by a linkifier.
 - Extended several integrations to cover more events and fix bugs, and
-  rewrote formatting for dozens of integraitons for cleaner punctuation.
+  rewrote formatting for dozens of integrations for cleaner punctuation.
 - The beta "weekly digest emails" feature is again available as an
   organization-level configuration option, after several improvements.
 - The administrative UI for managing bots now nicely links to the

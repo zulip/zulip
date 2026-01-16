@@ -17,7 +17,6 @@ from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.streams import do_change_stream_folder
 from zerver.actions.user_settings import do_change_user_setting
-from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_web_reload_client_event
 from zerver.lib.events import fetch_initial_state_data, post_process_state
 from zerver.lib.exceptions import AccessDeniedError
@@ -661,7 +660,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     # Admin users have access to all bots in the realm_bots field
     def test_realm_bots_admin(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertGreater(len(result["realm_bots"]), 2)
@@ -781,33 +780,6 @@ class FetchInitialStateDataTest(ZulipTestCase):
                 self.assertIsNone(user_dict["avatar_url"])
             else:
                 self.assertFalse("avatar_url" in user_dict)
-
-    def test_user_settings_based_on_client_capabilities(self) -> None:
-        hamlet = self.example_user("hamlet")
-        result = fetch_initial_state_data(
-            user_profile=hamlet,
-            realm=hamlet.realm,
-            user_settings_object=True,
-        )
-        self.assertIn("user_settings", result)
-        for prop in UserProfile.property_types:
-            self.assertNotIn(prop, result)
-            self.assertIn(prop, result["user_settings"])
-
-        result = fetch_initial_state_data(
-            user_profile=hamlet,
-            realm=hamlet.realm,
-            user_settings_object=False,
-        )
-        self.assertIn("user_settings", result)
-        for prop in UserProfile.property_types:
-            if prop in {
-                **UserProfile.display_settings_legacy,
-                **UserProfile.notification_settings_legacy,
-            }:
-                # Only legacy settings are included in the top level.
-                self.assertIn(prop, result)
-            self.assertIn(prop, result["user_settings"])
 
     def test_realm_linkifiers_based_on_client_capabilities(self) -> None:
         user = self.example_user("iago")
@@ -1254,6 +1226,7 @@ class FetchQueriesTest(ZulipTestCase):
             default_stream_groups=1,
             drafts=1,
             giphy=0,
+            tenor=0,
             message=1,
             muted_topics=1,
             muted_users=1,
@@ -1290,8 +1263,6 @@ class FetchQueriesTest(ZulipTestCase):
             # 3 of the 9 queries here are shared with other event types
             # as mentioned above.
             subscription=9,
-            update_display_settings=0,
-            update_global_notifications=0,
             update_message_flags=7,
             user_settings=0,
             user_status=1,

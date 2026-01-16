@@ -14,6 +14,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db.models import Q, QuerySet
 from django.forms.models import model_to_dict
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -21,10 +22,7 @@ from analytics.models import UserCount
 from version import ZULIP_VERSION
 from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_user import do_create_user
-from zerver.actions.custom_profile_fields import (
-    do_update_user_custom_profile_data_if_changed,
-    try_add_realm_custom_profile_field,
-)
+from zerver.actions.custom_profile_fields import try_add_realm_custom_profile_field
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.navigation_views import do_add_navigation_view
 from zerver.actions.presence import do_update_user_presence
@@ -48,6 +46,7 @@ from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
+from zerver.lib.emoji import get_emoji_file_name, get_emoji_url
 from zerver.lib.export import (
     PRESERVED_AUDIT_LOG_EVENT_TYPES,
     Record,
@@ -69,6 +68,7 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 from zerver.lib.thumbnail import BadImageError
+from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_attachment
 from zerver.lib.utils import assert_is_not_none, get_fk_field_name
 from zerver.models import (
@@ -108,11 +108,15 @@ from zerver.models import (
 )
 from zerver.models.clients import Client, get_client
 from zerver.models.groups import SystemGroups
-from zerver.models.messages import ImageAttachment
+from zerver.models.messages import ImageAttachment, SubMessage
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_direct_message_group_hash
+from zerver.models.recipients import (
+    get_direct_message_group_hash,
+    get_or_create_direct_message_group,
+)
 from zerver.models.streams import get_active_streams, get_stream
 from zerver.models.users import ExternalAuthID, get_system_bot, get_user_by_delivery_email
 
@@ -1015,6 +1019,12 @@ class RealmImportExportTest(ExportFile):
 
         self.assertEqual(get_consented_user_ids(realm), consented_user_ids)
 
+        # Remove the recipient of the welcome bot to test exporting bots without personal recipients.
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+        welcome_bot.recipient = None
+        welcome_bot.save(update_fields=["recipient"])
+
         self.export_realm_and_create_auditlog(
             realm,
             export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
@@ -1508,6 +1518,32 @@ class RealmImportExportTest(ExportFile):
         special_characters_message = "```\n'\n```\n@**Polonius**"
         self.send_stream_message(self.example_user("iago"), "Denmark", special_characters_message)
 
+        todo_message_topic = "TODO message"
+        todo_message_sender_name = "iago"
+        todo_widget_message = "/todo Example Task List Title\n\n    task without description\ntask: with description    \n\n - task as list : also with description"
+        todo_message_id = self.send_stream_message(
+            self.example_user(todo_message_sender_name),
+            "Denmark",
+            todo_widget_message,
+            todo_message_topic,
+        )
+        todo_submessage = SubMessage.objects.get(message_id=todo_message_id)
+        todo_message = Message.objects.get(id=todo_message_id, realm=original_realm)
+
+        poll_message_topic = "Poll message"
+        poll_message_sender_name = "hamlet"
+        poll_widget_message = (
+            "/poll What is your favorite color?\n\nRed\nGreen  \n\n   Blue\n - Yellow"
+        )
+        poll_message_id = self.send_stream_message(
+            self.example_user(poll_message_sender_name),
+            "Denmark",
+            poll_widget_message,
+            poll_message_topic,
+        )
+        poll_submessage = SubMessage.objects.get(message_id=poll_message_id)
+        poll_message = Message.objects.get(id=poll_message_id, realm=original_realm)
+
         sample_user = self.example_user("hamlet")
 
         check_add_reaction(
@@ -1654,7 +1690,7 @@ class RealmImportExportTest(ExportFile):
             assert new_realm_emoji is not None
         original_realm_emoji_count = RealmEmoji.objects.count()
         self.assertGreaterEqual(original_realm_emoji_count, 2)
-        new_realm_emoji.author = None
+        new_realm_emoji.author = hamlet
         new_realm_emoji.save()
 
         RealmAuditLog.objects.create(
@@ -1780,6 +1816,11 @@ class RealmImportExportTest(ExportFile):
                 ).count(),
             )
 
+        # Check is_imported_stub is False for users imported from another
+        # Zulip organization.
+        for user_profile in UserProfile.objects.filter(realm=imported_realm):
+            self.assertFalse(user_profile.is_imported_stub)
+
         # Check folder field for imported streams
         for stream in Stream.objects.filter(realm=imported_realm):
             if stream.name == "Verona":
@@ -1789,7 +1830,7 @@ class RealmImportExportTest(ExportFile):
             else:
                 self.assertIsNone(stream.folder_id)
 
-        for dm_group in DirectMessageGroup.objects.all():
+        for dm_group in DirectMessageGroup.objects.all().iterator():
             # Direct Message groups don't have a realm column, so we just test all
             # Direct Message groups for simplicity.
             self.assertEqual(
@@ -1818,17 +1859,17 @@ class RealmImportExportTest(ExportFile):
         # with is_user_active=True used for everything.
         self.assertTrue(Subscription.objects.filter(is_user_active=False).exists())
 
+        imported_hamlet = get_user_by_delivery_email(hamlet.delivery_email, imported_realm)
         all_imported_realm_emoji = RealmEmoji.objects.filter(realm=imported_realm)
         self.assertEqual(all_imported_realm_emoji.count(), original_realm_emoji_count)
         for imported_realm_emoji in all_imported_realm_emoji:
-            self.assertNotEqual(imported_realm_emoji.author, None)
+            self.assertEqual(imported_realm_emoji.author_id, imported_hamlet.id)
 
         self.assertEqual(
             original_realm.authentication_methods_dict(),
             imported_realm.authentication_methods_dict(),
         )
 
-        imported_hamlet = get_user_by_delivery_email(hamlet.delivery_email, imported_realm)
         realmauditlog = RealmAuditLog.objects.get(
             modified_user=imported_hamlet, event_type=AuditLogEventType.USER_CREATED
         )
@@ -1902,6 +1943,62 @@ class RealmImportExportTest(ExportFile):
 
         imported_prospero_user = get_user_by_delivery_email(prospero_email, imported_realm)
         self.assertIsNotNone(imported_prospero_user.recipient)
+
+        # SubMessage table is imported and message with widgets are rendered properly.
+        todo_message_sender = UserProfile.objects.get(
+            realm=imported_realm, delivery_email=self.example_user_map[todo_message_sender_name]
+        )
+        imported_todo_message = Message.objects.get(
+            realm=imported_realm,
+            sender=todo_message_sender,
+            **{
+                DB_TOPIC_NAME: todo_message_topic,
+            },
+        )
+
+        poll_message_sender = UserProfile.objects.get(
+            realm=imported_realm, delivery_email=self.example_user_map[poll_message_sender_name]
+        )
+        imported_poll_message = Message.objects.get(
+            realm=imported_realm,
+            sender=poll_message_sender,
+            **{
+                DB_TOPIC_NAME: poll_message_topic,
+            },
+        )
+
+        self.assert_length(
+            SubMessage.objects.filter(
+                message_id__in=[imported_poll_message.id, imported_todo_message.id]
+            ),
+            2,
+        )
+
+        imported_todo_submessage = SubMessage.objects.get(message_id=imported_todo_message.id)
+        self.assertEqual(imported_todo_submessage.sender, todo_message_sender)
+        self.assertDictEqual(
+            orjson.loads(imported_todo_submessage.content),
+            orjson.loads(todo_submessage.content),
+        )
+        assert imported_todo_message.rendered_content is not None
+        assert todo_message.rendered_content is not None
+        self.assertHTMLEqual(
+            imported_todo_message.rendered_content,
+            todo_message.rendered_content,
+        )
+
+        imported_poll_submessage = SubMessage.objects.get(message_id=imported_poll_message.id)
+        self.assertEqual(imported_poll_submessage.sender, poll_message_sender)
+        self.assertDictEqual(
+            orjson.loads(imported_poll_submessage.content),
+            orjson.loads(poll_submessage.content),
+        )
+        assert imported_poll_message.rendered_content is not None
+        assert poll_message.rendered_content is not None
+        self.assertHTMLEqual(
+            imported_poll_message.rendered_content,
+            poll_message.rendered_content,
+        )
 
     def test_import_message_edit_history(self) -> None:
         realm = get_realm("zulip")
@@ -2887,6 +2984,106 @@ class RealmImportExportTest(ExportFile):
             )
             do_import_realm(get_output_dir(), "test-zulip")
 
+    def test_get_all_custom_emoji_for_realm_cache_after_import(self) -> None:
+        """
+        The import logic needs to be careful not to cause a call to get_all_custom_emoji
+        before all RealmEmoji have been imported. The function caches its results, so calling
+        it too early will load an empty result into the cache.
+        We had a bug involving this before, which caused channel description rendering to fail
+        to correctly render emojis and the custom emoji list shown to users to be empty in
+        imported realms until the expiry of the cache.
+
+        This test will verify that after an export->import cycle:
+        1. get_all_custom_emoji_for_realm returns the correct result when called.
+        2. channel descriptions with emojis are rendered correctly.
+        """
+        original_realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(iago)
+
+        emoji_1 = "hawaii"
+        with get_test_image_file("img.png") as img_file:
+            check_add_realm_emoji(
+                realm=hamlet.realm,
+                name=emoji_1,
+                author=hamlet,
+                image_file=img_file,
+                content_type="image/png",
+            )
+        emoji_2 = "guatemala"
+        with get_test_image_file("img.png") as img_file:
+            check_add_realm_emoji(
+                realm=iago.realm,
+                name=emoji_2,
+                author=iago,
+                image_file=img_file,
+                content_type="image/png",
+            )
+
+        self.subscribe(iago, "Emoji channel")
+        emoji_channel = get_stream("Emoji channel", original_realm)
+        result = self.client_patch(
+            f"/json/streams/{emoji_channel.id}",
+            {"description": f"Render realm emoji here! :{emoji_2}:"},
+        )
+        self.assert_json_success(result)
+        emoji_channel = get_stream(emoji_channel.name, original_realm)
+
+        self.assertIn(
+            (
+                "<p>Render realm emoji here! "
+                f'<img alt=":{emoji_2}:" class="emoji" '
+                f'src="/user_avatars/{original_realm.id}/emoji/images/'
+            ),
+            emoji_channel.rendered_description,
+        )
+
+        original_realm_emoji_count = RealmEmoji.objects.count()
+        self.assertGreaterEqual(original_realm_emoji_count, 2)
+
+        self.export_realm_and_create_auditlog(original_realm)
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        all_imported_realm_emoji = RealmEmoji.objects.filter(realm=imported_realm)
+        self.assertEqual(all_imported_realm_emoji.count(), original_realm_emoji_count)
+        imported_realm_emoji_dict = get_all_custom_emoji_for_realm(imported_realm.id)
+        self.assertEqual(all_imported_realm_emoji.count(), len(imported_realm_emoji_dict))
+
+        # Check cached realm emoji is not stale.
+        for imported_realm_emoji in all_imported_realm_emoji:
+            emoji_id = str(imported_realm_emoji.id)
+            self.assertIn(emoji_id, imported_realm_emoji_dict)
+            realm_emoji_info = imported_realm_emoji_dict[emoji_id]
+            self.assertEqual(emoji_id, realm_emoji_info["id"])
+            assert imported_realm_emoji.author is not None
+            assert isinstance(imported_realm_emoji.author.id, int)
+            assert isinstance(realm_emoji_info["author_id"], int)
+            self.assertEqual(imported_realm_emoji.author.id, int(realm_emoji_info["author_id"]))
+            self.assertEqual(imported_realm_emoji.name, realm_emoji_info["name"])
+            imported_emoji_path = os.path.dirname(
+                get_emoji_url(
+                    get_emoji_file_name("image/png", imported_realm_emoji.id), imported_realm.id
+                )
+            )
+            self.assertEqual(
+                imported_emoji_path,
+                os.path.dirname(realm_emoji_info["source_url"]),
+            )
+
+        # Imported channel description with emoji is rendered correctly.
+        imported_emoji_channel = get_stream(emoji_channel.name, imported_realm)
+        self.assertIn(
+            (
+                "<p>Render realm emoji here! "
+                f'<img alt=":{emoji_2}:" class="emoji" '
+                f'src="/user_avatars/{imported_realm.id}/emoji/images/'
+            ),
+            imported_emoji_channel.rendered_description,
+        )
+
 
 class SingleUserExportTest(ExportFile):
     def do_files_test(self, is_s3: bool) -> None:
@@ -2987,6 +3184,55 @@ class SingleUserExportTest(ExportFile):
             ],
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_1_to_1_message_data_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        bot = self.create_test_bot("test-bot", hamlet)
+
+        get_or_create_direct_message_group([hamlet.id, cordelia.id])
+        get_or_create_direct_message_group([hamlet.id, bot.id])
+        get_or_create_direct_message_group([hamlet.id])
+
+        hi_hamlet_message_id = self.send_personal_message(othello, hamlet, "hi hamlet")
+        hi_cordelia_message_id = self.send_personal_message(hamlet, cordelia, "hi cordelia")
+        bye_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "bye hamlet")
+        test_bot_message_id = self.send_personal_message(hamlet, bot, "test bot message")
+        self.send_personal_message(othello, cordelia, "an irrelevant message")
+        bye_peeps_message_id = self.send_group_direct_message(
+            othello, [cordelia, hamlet], "bye peeps"
+        )
+        self_message_id = self.send_personal_message(hamlet, hamlet, "hi myself")
+
+        output_dir = make_export_output_dir()
+        hamlet = self.example_user("hamlet")
+
+        with self.assertLogs(level="INFO"):
+            do_export_user(hamlet, output_dir)
+
+        messages = read_json("messages-000001.json")
+
+        excerpt = [
+            (rec["id"], rec["content"], rec["recipient_name"])
+            for rec in messages["zerver_message"][-6:]
+        ]
+        self.assertEqual(
+            excerpt,
+            [
+                (hi_hamlet_message_id, "hi hamlet", hamlet.full_name),
+                (hi_cordelia_message_id, "hi cordelia", cordelia.full_name),
+                (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
+                (test_bot_message_id, "test bot message", bot.full_name),
+                (
+                    bye_peeps_message_id,
+                    "bye peeps",
+                    f"{cordelia.full_name}, {hamlet.full_name}, {othello.full_name}",
+                ),
+                (self_message_id, "hi myself", hamlet.full_name),
+            ],
+        )
+
     def test_user_data(self) -> None:
         # We register checkers during test setup, and then we call them at the end.
         checkers = {}
@@ -3051,9 +3297,7 @@ class SingleUserExportTest(ExportFile):
         )
 
         def set_favorite_city(user: UserProfile, city: str) -> None:
-            do_update_user_custom_profile_data_if_changed(
-                user, [dict(id=favorite_city.id, value=city)]
-            )
+            self.set_user_custom_profile_data(user, [dict(id=favorite_city.id, value=city)])
 
         set_favorite_city(cordelia, "Seattle")
         set_favorite_city(othello, "Moscow")
@@ -3137,6 +3381,27 @@ class SingleUserExportTest(ExportFile):
             self.assertEqual(last_recipient.type, Recipient.STREAM)
             stream_id = last_recipient.type_id
             self.assertEqual(stream_id, get_stream("Scotland", realm).id)
+
+        widget_message_id = self.send_stream_message(
+            cordelia,
+            "Scotland",
+            "/todo Example Task List Title",
+        )
+        submessage = SubMessage.objects.filter(message_id=widget_message_id).last()
+
+        @checker
+        def zerver_submessage(records: list[Record]) -> None:
+            assert submessage
+            self.assertEqual(
+                records[-1],
+                dict(
+                    id=submessage.id,
+                    sender=submessage.sender.id,
+                    msg_type="widget",
+                    content='{"widget_type": "todo", "extra_data": {"task_list_title": "Example Task List Title", "tasks": []}}',
+                    message=widget_message_id,
+                ),
+            )
 
         UserActivity.objects.create(
             user_profile_id=cordelia.id,

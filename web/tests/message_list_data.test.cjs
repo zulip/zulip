@@ -25,7 +25,7 @@ function make_msgs(msg_ids) {
 }
 
 function assert_contents(mld, msg_ids) {
-    const msgs = mld.all_messages();
+    const msgs = mld.all_messages_after_mute_filtering();
     assert.deepEqual(msgs, make_msgs(msg_ids));
 }
 
@@ -120,7 +120,7 @@ run_test("basics", () => {
     mld.change_message_id(125.01, 145);
     assert_contents(mld, [120, 130, 140, 145]);
 
-    for (const msg of mld.all_messages()) {
+    for (const msg of mld.all_messages_after_mute_filtering()) {
         msg.unread = false;
     }
 
@@ -129,9 +129,11 @@ run_test("basics", () => {
 });
 
 run_test("muting", () => {
+    const dm_filter = new Filter([{operator: "dm", operand: "alice@example.com"}]);
     let mld = new MessageListData({
-        excludes_muted_topics: false,
-        filter: new Filter([{operator: "dm", operand: "alice@example.com"}]),
+        excludes_muted_topics: dm_filter.excludes_muted_topics(),
+        excludes_muted_users: dm_filter.excludes_muted_users(),
+        filter: dm_filter,
     });
 
     const msgs = [
@@ -177,6 +179,7 @@ run_test("muting", () => {
     // Test actual behaviour of `messages_filtered_for_*` methods.
     mld.excludes_muted_topics = true;
     mld.filter = new Filter([{operator: "stream", operand: "general"}]);
+    mld.excludes_muted_users = mld.filter.excludes_muted_users();
     const res = mld.messages_filtered_for_topic_mutes(msgs);
     assert.deepEqual(res, [
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},

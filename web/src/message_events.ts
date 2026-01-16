@@ -3,8 +3,6 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
-
 import * as activity from "./activity.ts";
 import * as alert_words from "./alert_words.ts";
 import * as channel from "./channel.ts";
@@ -41,6 +39,7 @@ import * as pm_list from "./pm_list.ts";
 import * as recent_senders from "./recent_senders.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import type {UpdateMessageEvent} from "./server_event_types.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as starred_messages from "./starred_messages.ts";
@@ -415,6 +414,26 @@ function topic_resolve_toggled(new_topic: string, original_topic: string): boole
         return true;
     }
     return false;
+}
+
+function get_post_edit_topic(
+    topic_edited: boolean,
+    event: UpdateMessageEvent,
+    new_topic: string | undefined,
+    anchor_message: Message | undefined,
+): string {
+    const pre_edit_topic = util.get_edit_event_orig_topic(event);
+    assert(pre_edit_topic !== undefined);
+
+    if (topic_edited) {
+        assert(new_topic !== undefined);
+        return new_topic;
+    }
+    if (anchor_message !== undefined) {
+        assert(anchor_message.type === "stream");
+        return anchor_message.topic;
+    }
+    return pre_edit_topic;
 }
 
 export function update_messages(events: UpdateMessageEvent[]): void {
@@ -803,20 +822,14 @@ export function update_messages(events: UpdateMessageEvent[]): void {
         if (topic_edited || stream_changed) {
             // We must be moving stream messages.
             assert(old_stream_id !== undefined);
-            let pre_edit_topic = util.get_edit_event_orig_topic(event);
+            const pre_edit_topic = util.get_edit_event_orig_topic(event);
             assert(pre_edit_topic !== undefined);
-
-            let post_edit_topic: string;
-            if (topic_edited) {
-                assert(new_topic !== undefined);
-                post_edit_topic = new_topic;
-            } else {
-                if (anchor_message !== undefined) {
-                    assert(anchor_message.type === "stream");
-                    pre_edit_topic = anchor_message.topic;
-                }
-                post_edit_topic = pre_edit_topic;
-            }
+            const post_edit_topic = get_post_edit_topic(
+                topic_edited,
+                event,
+                new_topic,
+                anchor_message,
+            );
 
             // new_stream_id is undefined if this is only a topic edit.
             const post_edit_stream_id = new_stream_id ?? old_stream_id;

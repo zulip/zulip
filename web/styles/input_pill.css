@@ -51,6 +51,12 @@
             }
         }
 
+        /* Ensure a hover state on pills that can be clicked
+           to reveal a user card. */
+        &.view_user_profile:hover {
+            background-color: var(--color-background-input-pill-hover);
+        }
+
         .pill-image {
             height: var(--height-input-pill);
             width: var(--height-input-pill);
@@ -337,6 +343,7 @@
 
 /* These pill are similar to .not-editable, but are meant to show
    profile cards when clicked. */
+.user-type-custom-field-pill-container > .display_only_pill,
 .panel_user_list > .pill-container,
 .creator_details > .display_only_pill {
     gap: 2px;
@@ -349,6 +356,13 @@
 
     &:hover {
         color: inherit;
+    }
+
+    /* `settings.css` applies a :focus-within box-shadow to `.custom_user_field .pill-container`
+    and `.bot_owner_user_field .pill-container`.That effect conflicts with the unified pill
+    styling (no shadow), so we override it here. */
+    &:focus-within {
+        box-shadow: none;
     }
 
     > .pill {
@@ -366,6 +380,30 @@
                 padding: 5px;
                 max-width: 165px;
             }
+        }
+    }
+}
+
+#user-profile-modal {
+    .user-type-custom-field-pill-container {
+        display: inline-flex;
+        gap: var(--vertical-spacing-input-pill)
+            var(--horizontal-spacing-input-pill);
+        max-width: 100%;
+        flex-wrap: wrap;
+
+        /* We override the `.pill-container` style defined in
+         `settings.css` to ensure it expands to full width, preventing
+        names in the pill from being cut off in the user profile modal. */
+        .pill-container {
+            max-width: 100%;
+        }
+
+        /* We're overriding the `.pill-value` style defined
+        in `settings.css` to ensure that names inside the pill
+        render fully and aren't cut off in the user profile modal. */
+        .pill-value {
+            max-width: 100%;
         }
     }
 }

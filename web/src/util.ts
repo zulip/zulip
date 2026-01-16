@@ -1,4 +1,3 @@
-import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import * as z from "zod/mini";
 
@@ -282,6 +281,9 @@ export function canonicalize_channel_synonyms(text: string): string {
     return text;
 }
 
+export function prefix_match({value, search_term}: {value: string; search_term: string}): boolean {
+    return filter_by_word_prefix_match([value], search_term, (s) => s).length === 1;
+}
 export function filter_by_word_prefix_match<T>(
     items: T[],
     search_term: string,
@@ -449,38 +451,6 @@ export function format_array_as_list_with_conjunction(
     return format_array_as_list(array, join_strategy, "conjunction");
 }
 
-export function format_array_as_list_with_highlighted_elements(
-    array: string[],
-    style: Intl.ListFormatStyle,
-    type: Intl.ListFormatType,
-): string {
-    // If Intl.ListFormat is not supported
-    if (Intl.ListFormat === undefined) {
-        return array
-            .map(
-                (item) =>
-                    `<b class="highlighted-element">${Handlebars.Utils.escapeExpression(item)}</b>`,
-            )
-            .join(", ");
-    }
-
-    // Use Intl.ListFormat to format the array as a Internationalized list.
-    const list_formatter = new Intl.ListFormat(user_settings.default_language, {style, type});
-
-    const formatted_parts = list_formatter.formatToParts(array);
-    return formatted_parts
-        .map((part) => {
-            // There are two types of parts: elements (the actual
-            // items), and literals (commas, etc.). We need to
-            // HTML-escape the elements, but not the literals.
-            if (part.type === "element") {
-                return `<b class="highlighted-element">${Handlebars.Utils.escapeExpression(part.value)}</b>`;
-            }
-            return part.value;
-        })
-        .join("");
-}
-
 // Returns the remaining time in milliseconds from the start_time and duration.
 export function get_remaining_time(start_time: number, duration: number): number {
     return Math.max(0, start_time + duration - Date.now());
@@ -625,4 +595,15 @@ export async function sha256_hash(text: string): Promise<string | undefined> {
     const hashArray = [...new Uint8Array(hashBuffer)];
     const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
     return hashHex;
+}
+
+// This should only be used in loops with small collections, since it
+// runs in linear time.
+export function unique_array_insert<T>(array: T[], new_item: T): void {
+    for (const item of array) {
+        if (_.isEqual(item, new_item)) {
+            return;
+        }
+    }
+    array.push(new_item);
 }

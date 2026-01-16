@@ -59,6 +59,7 @@ def do_change_realm_subdomain(
     """
     old_subdomain = realm.subdomain
     old_url = realm.url
+    was_demo_organization = realm.demo_organization_scheduled_deletion_date is not None
     # If the realm had been a demo organization scheduled for
     # deleting, clear that state.
     realm.demo_organization_scheduled_deletion_date = None
@@ -70,7 +71,13 @@ def do_change_realm_subdomain(
             event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED,
             event_time=timezone_now(),
             acting_user=acting_user,
-            extra_data={"old_subdomain": old_subdomain, "new_subdomain": new_subdomain},
+            # Old RealmAuditLog entries for this used "old_subdomain" and
+            # "new_subdomain" keys to store this data.
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_subdomain,
+                RealmAuditLog.NEW_VALUE: new_subdomain,
+                "was_demo_organization": was_demo_organization,
+            },
         )
 
         # If a realm if being renamed multiple times, we should find all the placeholder
@@ -87,11 +94,19 @@ def do_change_realm_subdomain(
     # it's deactivated redirect to new_subdomain so that we can tell the users that
     # the realm has been moved to a new subdomain.
     if add_deactivated_redirect:
+        scheduled_deletion_days = None
+        if was_demo_organization:
+            # For converted demo organizations, we schedule the placeholder realm to be
+            # deleted/scrubbed after a set number of days, so that our finite possible
+            # options for demo organization subdomains don't get used up over time.
+            scheduled_deletion_days = settings.DEMO_ORG_DEADLINE_DAYS
+
         placeholder_realm = do_create_realm(old_subdomain, realm.name)
         do_deactivate_realm(
             placeholder_realm,
             acting_user=None,
             deactivation_reason="subdomain_change",
+            deletion_delay_days=scheduled_deletion_days,
             email_owners=False,
         )
         do_add_deactivated_redirect(placeholder_realm, realm.url)
@@ -217,6 +232,12 @@ def do_create_realm(
         assert not settings.PRODUCTION
         kwargs["date_created"] = date_created
 
+    if is_demo_organization:
+        # To enable creating demo organizations, a deadline of the number
+        # of days after creation that a demo organization should be deleted
+        # needs to be set on the server.
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+
     # Generally, closed organizations like companies want read
     # receipts, whereas it's unclear what an open organization's
     # preferences will be. We enable the setting by default only for
@@ -236,6 +257,7 @@ def do_create_realm(
     with transaction.atomic(durable=True):
         realm = Realm(string_id=string_id, name=name, **kwargs)
         if is_demo_organization:
+            assert settings.DEMO_ORG_DEADLINE_DAYS is not None
             realm.demo_organization_scheduled_deletion_date = realm.date_created + timedelta(
                 days=settings.DEMO_ORG_DEADLINE_DAYS
             )
@@ -364,7 +386,7 @@ def do_create_realm(
         from corporate.lib.stripe import RealmBillingSession
 
         billing_session = RealmBillingSession(user=None, realm=realm)
-        billing_session.send_realm_created_internal_admin_message()
+        billing_session.send_realm_created_internal_admin_message(is_demo_organization)
 
     setup_realm_internal_bots(realm)
     return realm

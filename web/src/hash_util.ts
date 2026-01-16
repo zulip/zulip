@@ -1,19 +1,24 @@
+// See the Zulip URL spec at https://zulip.com/api/zulip-urls
+
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import * as internal_url from "../shared/src/internal_url.ts";
-
 import * as blueslip from "./blueslip.ts";
 import * as channel_folders from "./channel_folders.ts";
+import * as filter_util from "./filter_util.ts";
+import * as internal_url from "./internal_url.ts";
 import type {Message} from "./message_store.ts";
-import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
-import {narrow_term_schema, realm} from "./state_data.ts";
-import type {NarrowTerm} from "./state_data.ts";
+import {
+    current_user,
+    narrow_canonical_term_schema,
+    narrow_operator_schema,
+    realm,
+} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as user_groups from "./user_groups.ts";
@@ -59,14 +64,11 @@ export function encode_stream_id(stream_id: number): string {
     return internal_url.encodeHashComponent(slug);
 }
 
-export function decode_operand(operator: string, operand: string): string {
-    if (
-        operator === "group-pm-with" ||
-        operator === "dm-including" ||
-        operator === "dm" ||
-        operator === "sender" ||
-        operator === "pm-with"
-    ) {
+export function decode_operand(
+    operator: NarrowCanonicalTerm["operator"],
+    operand: NarrowCanonicalTerm["operand"],
+): string {
+    if (operator === "dm-including" || operator === "dm" || operator === "sender") {
         const emails = people.slug_to_emails(operand);
         if (emails) {
             return emails;
@@ -75,7 +77,7 @@ export function decode_operand(operator: string, operand: string): string {
 
     operand = internal_url.decodeHashComponent(operand);
 
-    if (util.canonicalize_channel_synonyms(operator) === "channel") {
+    if (operator === "channel") {
         return stream_data.slug_to_stream_id(operand)?.toString() ?? "";
     }
 
@@ -105,29 +107,6 @@ export function channel_url_by_user_setting(channel_id: number): string {
 export function by_stream_topic_url(stream_id: number, topic: string): string {
     // Wrapper for web use of internal_url.by_stream_topic_url
     return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
-}
-
-// We use the topic permalinks if we have access to the last message
-// id of the topic in the cache, by encoding it at the end of the
-// traditional channel-topic url using a `with` operator. If client
-// cache doesn't have a message, we use the traditional link format.
-export function by_channel_topic_permalink(stream_id: number, topic: string): string {
-    // From an API perspective, any message ID in the topic is a valid
-    // choice. In the client code, we choose the latest message ID in
-    // the topic, since display in recent conversations, the left
-    // sidebar, and most other elements are placed in a way reflecting
-    // the recency of the latest message in the topic.
-    const target_message_id = stream_topic_history.get_latest_known_message_id_in_topic(
-        stream_id,
-        topic,
-    );
-
-    return internal_url.by_stream_topic_url(
-        stream_id,
-        topic,
-        sub_store.maybe_get_stream_name,
-        target_message_id,
-    );
 }
 
 // Encodes a term list into the
@@ -203,7 +182,7 @@ export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
     return search_terms_to_hash([public_operator, ...terms]);
 }
 
-export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
+export function parse_narrow(hash: string[]): NarrowCanonicalTerm[] | undefined {
     // There's a Python copy of this function in `zerver/lib/url_decoding.py`
     // called `parse_narrow_url`, the two should be kept roughly in sync.
 
@@ -238,10 +217,17 @@ export function parse_narrow(hash: string[]): NarrowTerm[] | undefined {
             return undefined;
         }
 
-        const operand = decode_operand(operator, raw_operand);
-        terms.push({negated, operator, operand});
+        const canonical_operator = filter_util.canonicalize_operator(
+            narrow_operator_schema.parse(operator),
+        );
+        const operand = decode_operand(canonical_operator, raw_operand);
+        terms.push({
+            negated,
+            operator: canonical_operator,
+            operand,
+        });
     }
-    return z.array(narrow_term_schema).parse(terms);
+    return z.array(narrow_canonical_term_schema).parse(terms);
 }
 
 export function channels_settings_edit_url(
@@ -306,12 +292,17 @@ export function validate_channels_settings_hash(hash: string): string {
         //    not be in sub_store).
         //
         // In both cases we redirect the user to 'subscribed' tab.
-        if (sub === undefined || (page_params.is_guest && !stream_data.is_subscribed(stream_id))) {
+        if (sub === undefined || (current_user.is_guest && !stream_data.is_subscribed(stream_id))) {
             return channels_settings_section_url();
         }
 
         let right_side_tab = hash_components[3];
-        const valid_right_side_tab_values = new Set(["general", "personal", "subscribers"]);
+        const valid_right_side_tab_values = new Set([
+            "general",
+            "personal",
+            "subscribers",
+            "permissions",
+        ]);
         if (right_side_tab === undefined || !valid_right_side_tab_values.has(right_side_tab)) {
             right_side_tab = "general";
         }
@@ -415,7 +406,7 @@ export function decode_stream_topic_from_url(
         }
         // This check is important as a malformed url
         // may have `stream` / `channel`, `topic` or `near:` in a wrong order
-        if (terms[0]?.operator !== "stream" && terms[0]?.operator !== "channel") {
+        if (terms[0]?.operator !== "channel") {
             return null;
         }
         const stream_id = Number.parseInt(terms[0].operand, 10);
@@ -442,5 +433,13 @@ export function decode_stream_topic_from_url(
         return {stream_id, topic_name: terms[1].operand, message_id: terms[2].operand};
     } catch {
         return null;
+    }
+}
+
+export function get_link_hash(link: string): string {
+    try {
+        return new URL(link, window.location.origin).hash;
+    } catch {
+        return "";
     }
 }

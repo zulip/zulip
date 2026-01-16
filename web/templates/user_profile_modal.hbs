@@ -69,7 +69,13 @@
                                         {{/if}}
                                     </div>
                                     <div id="date-joined" class="default-field">
-                                        <div class="name">{{t "Joined" }}</div>
+                                        <div class="name">
+                                            {{#if is_bot}}
+                                                {{t "Created"}}
+                                            {{else}}
+                                                {{t "Joined"}}
+                                            {{/if}}
+                                        </div>
                                         <div class="value">{{date_joined}}</div>
                                     </div>
                                     {{#if user_time}}
@@ -109,7 +115,7 @@
                     </div>
 
                     <div class="tabcontent" id="user-profile-streams-tab">
-                        <div class="alert stream_list_info"></div>
+                        <div class="stream_list_info banner-wrapper"></div>
                         <div class="stream-list-top-section">
                             <div class="header-section">
                                 <h3 class="stream-tab-element-header">{{t 'Subscribed channels' }}</h3>
@@ -118,27 +124,27 @@
                                 <div class="stream-search-container filter-input has-input-icon has-input-button input-element-wrapper">
                                     <i class="input-icon zulip-icon zulip-icon-search" aria-hidden="true"></i>
                                     <input type="text" class="input-element stream-search" placeholder="{{t 'Filter' }}" />
-                                    <button type="button" class="input-button input-close-filter-button icon-button icon-button-square icon-button-neutral " id="clear_stream_search">
+                                    <button type="button" class="input-button input-close-filter-button icon-button icon-button-square icon-button-neutral">
                                         <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
                                     </button>
                                 </div>
+                                <div class="stream-list-loader"></div>
+                                <div class="error-message"></div>
                                 <div class="subscription-stream-list" data-simplebar data-simplebar-tab-index="-1">
                                     <ul class="user-stream-list" data-empty="{{t 'No channel subscriptions.' }}" data-search-results-empty="{{t 'No matching channels.' }}"></ul>
                                 </div>
                             </div>
                         </div>
-                        {{#if show_user_subscribe_widget}}
-                            <div class="stream-list-bottom-section">
-                                <div class="header-section">
-                                    <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
-                                </div>
-                                {{> user_profile_subscribe_widget}}
+                        <div class="stream-list-bottom-section">
+                            <div class="header-section">
+                                <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
                             </div>
-                        {{/if}}
+                            {{> user_profile_subscribe_widget}}
+                        </div>
                     </div>
 
                     <div class="tabcontent" id="user-profile-groups-tab">
-                        <div class="alert user-profile-group-list-alert"></div>
+                        <div class="user-profile-group-list-alert banner-wrapper"></div>
                         <div class="group-list-top-section">
                             <div class="header-section">
                                 <h3 class="group-tab-element-header">{{t 'Group membership' }}</h3>
@@ -147,7 +153,7 @@
                                 <div class="group-search-container filter-input has-input-icon has-input-button input-element-wrapper">
                                     <i class="input-icon zulip-icon zulip-icon-search"></i>
                                     <input type="text" class="input-element group-search" placeholder="{{t 'Filter' }}" />
-                                    <button type="button" class="input-button input-close-filter-button icon-button icon-button-square icon-button-neutral " id="clear_groups_search">
+                                    <button type="button" class="input-button input-close-filter-button icon-button icon-button-square icon-button-neutral">
                                         <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
                                     </button>
                                 </div>
@@ -156,26 +162,24 @@
                                 </div>
                             </div>
                         </div>
-                        {{#if show_user_group_container}}
-                            <div class="group-list-bottom-section">
-                                <div class="header-section">
-                                    <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
-                                </div>
-                                <div id="groups-to-add" class="add-button-container">
-                                    <div id="user-group-to-add">
-                                        <div class="add-user-group-container">
-                                            <div class="pill-container">
-                                                <div class="input" contenteditable="true"
-                                                  data-placeholder="{{t 'Add user groups' }}">
-                                                    {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
-                                                </div>
+                        <div class="group-list-bottom-section">
+                            <div class="header-section">
+                                <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
+                            </div>
+                            <div id="groups-to-add" class="add-button-container">
+                                <div id="user-group-to-add">
+                                    <div class="add-user-group-container">
+                                        <div class="pill-container">
+                                            <div class="input" contenteditable="true"
+                                              data-placeholder="{{t 'Add user groups' }}">
+                                                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
                                             </div>
                                         </div>
                                     </div>
-                                    {{> components/action_button label=(t "Add") custom_classes="add-groups-button" attention="quiet" intent="brand" aria-label=(t "Add") }}
                                 </div>
+                                {{> components/action_button label=(t "Add") custom_classes="add-groups-button" variant="subtle" intent="brand" aria-label=(t "Add") }}
                             </div>
-                        {{/if}}
+                        </div>
                     </div>
                     <div class="tabcontent" id="manage-profile-tab"></div>
                 </div>

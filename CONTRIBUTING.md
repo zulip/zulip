@@ -10,6 +10,61 @@ To learn about ways to contribute without writing code, please see our
 suggestions for how you can [support the Zulip
 project](https://zulip.com/help/support-zulip-project).
 
+## How to use Zulip's documentation for contributors
+
+::: note
+
+**Reading and following our written guidelines** to the very best of your ability is
+the only way to become a successful Zulip contributor.
+
+:::
+
+Zulip has a documentation-based approach to onboarding new contributors. As you
+are getting started, this page will be your go-to for figuring out what to do
+next. You will also explore other guides, learning about how to put together
+your first pull request, diving into [Zulip's
+subsystems](https://zulip.readthedocs.io/en/latest/subsystems/index.html), and
+much more.
+
+We hope you'll find this process to be a great learning experience. If you
+_aren't_ excited to learn from our series of contributor guides, then Zulip is
+not the right project for you.
+
+Please read the following sections of this guide at the times described (or
+earlier!).
+
+Prior to picking up your first issue:
+
+- [How to be a successful contributor](#how-to-be-a-successful-contributor)
+- [AI use policy and guidelines](#ai-use-policy-and-guidelines)
+- [Getting started](#getting-started)
+- [Finding an issue to work on](#finding-an-issue-to-work-on)
+
+When starting to work on your first issue:
+
+- [Getting help](#getting-help) as you work on your first pull request
+- Learning [best practices](#best-practices)
+
+When getting ready to submit your first pull request:
+
+- [Submitting a pull request](#submitting-a-pull-request)
+
+After submitting your first pull request:
+
+- [Going beyond the first issue](#beyond-the-first-issue)
+
+Any time you feel lost, come back to this guide. The information you need is
+likely somewhere on this page (perhaps in the list of [common
+questions](#common-questions)), or in one of the many references it points to.
+
+If you've done all you can with the documentation and are still feeling stuck,
+join the [Zulip development community](https://zulip.com/development-community/)
+to ask for help! Before you post, be sure to review [community
+norms](https://zulip.com/development-community/#community-norms) and [where to
+post](https://zulip.com/development-community/#where-do-i-send-my-message) your
+question. The Zulip community is governed by a [code of
+conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
+
 ## How to be a successful contributor
 
 In our experience, to become an effective Zulip contributor, you should be
@@ -26,7 +81,8 @@ excited to:
 - **Take pride in your work**. Strive to write the best
   [commits][commit discipline] you can, carefully [review][reviewing code] your
   own work, and take the time to [explain][submitting a PR] it clearly to
-  project maintainers.
+  project maintainers. Do your very best to overcome any challenges you run in
+  to before asking for help.
 - **Learn from feedback.** Every pull request undergoes a rigorous [review
   process][review process]. We need contributors to carefully apply and respond
   to the feedback they receive, and to take advantage of the learning experience
@@ -56,36 +112,87 @@ and focus on learning the relevant software engineering skills for now.
 [review process]: https://zulip.readthedocs.io/en/latest/contributing/review-process.html
 [how we communicate]: https://zulip.readthedocs.io/en/latest/contributing/how-we-communicate.html
 
-## Learning from the docs
+## AI use policy and guidelines
 
-Zulip has a documentation-based approach to onboarding new contributors. As you
-are getting started, this page will be your go-to for figuring out what to do
-next. You will also explore other guides, learning about how to put together
-your first pull request, diving into [Zulip's
-subsystems](https://zulip.readthedocs.io/en/latest/subsystems/index.html), and
-much more. We hope you'll find this process to be a great learning experience.
+Our goal in the Zulip project is to develop an excellent software
+system. This requires careful attention to detail in every change we
+integrate. Maintainer time and attention is very limited, so it's
+important that changes you ask us to review represent
+your _best_ work.
 
-This page will guide you through the following topics:
+You can use any tools that help you understand the Zulip codebase and
+write good code, including AI tools. However, as noted above, you
+always need to understand and explain the changes you're proposing to
+make, whether or not you used an LLM as part of your process to
+produce them. The answer to “Why is X an improvement?” should never be
+“I'm not sure. The AI did it.”
 
-1. [Getting started](#getting-started)
-1. [Finding an issue to work on](#finding-an-issue-to-work-on)
-1. [Getting help](#getting-help) as you work on your first pull request
-1. Learning [best practices](#best-practices)
-1. [AI use policy and guidelines](#ai-use-policy-and-guidelines)
-1. [Submitting a pull request](#submitting-a-pull-request)
-1. [Going beyond the first issue](#beyond-the-first-issue)
+::: warning
+**Do not submit an AI-generated PR you haven't personally understood and
+tested**, as this wastes maintainers' time. PRs that appear to violate this
+guideline will be closed without review.
+:::
 
-Any time you feel lost, come back to this guide. The information you need is
-likely somewhere on this page (perhaps in the list of [common
-questions](#common-questions)), or in one of the many references it points to.
+### Using AI as a coding assistant
 
-If you've done all you can with the documentation and are still feeling stuck,
-join the [Zulip development community](https://zulip.com/development-community/)
-to ask for help! Before you post, be sure to review [community
-norms](https://zulip.com/development-community/#community-norms) and [where to
-post](https://zulip.com/development-community/#where-do-i-send-my-message) your
-question. The Zulip community is governed by a [code of
-conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html).
+1. Don't skip **becoming familiar with the part of the codebase**
+   you're working on. This will let you write better prompts and
+   validate their output if you use an LLM. Code assistants can be a
+   useful search engine/discovery tool in this process, but don't
+   trust claims they make about how Zulip works. LLMs are often wrong,
+   even about details that are clearly answered in the Zulip
+   documentation.
+1. Split up your changes into **[coherent
+   commits](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html)**,
+   even if an LLM generates them all in one go.
+1. Don't simply ask an LLM to add **code comments**, as it will likely
+   produce a bunch of text that unnecessarily explains what's already
+   clear from the code. If using an LLM to generate comments, be
+   really specific in your request, demand succinctness, and carefully
+   edit the result.
+
+### Using AI for communication
+
+As noted above, Zulip's contributors are expected to communicate with
+intention, to avoid wasting maintainer time with long, sloppy
+writing. We strongly prefer clear and concise communication about
+points that actually require discussion over long AI-generated
+comments.
+
+When you use an LLM to write a message for you, it remains **your
+responsibility** to read through the whole thing and make sure that it
+makes sense to you and represents your ideas concisely. A good rule
+of thumb is that if you can't make yourself carefully read some LLM
+output that you generated, nobody else wants to read it either.
+
+Here are some concrete guidelines for using LLMs as part of your communication
+workflows.
+
+1. When writing a pull request description, **do not include anything that's
+   obvious** from looking at your changes directly (e.g., files changed, functions
+   updated, etc.). Instead, focus on the _why_ behind your changes. Don't ask an
+   LLM to generate a PR description on your behalf based on your code changes,
+   as it will simply regurgitate the information that's already there.
+1. Similarly, when responding to a pull request comment, **explain _your_
+   reasoning**. Don't prompt an LLM to re-describe what can already be seen from
+   the code.
+1. Verify that **everything you write is accurate**, whether or not an LLM
+   generated any part of it. Zulip's maintainers will be unable to review your
+   contributions if you misrepresent your work (e.g., misdescribing your code
+   changes, their effect, or your testing process).
+1. Complete all parts of the **PR description template**, including screenshots
+   and the self-review checklist. Don't simply overwrite the template with LLM
+   output.
+1. **Clarity and succinctness** are much more important than perfect grammar, so
+   you shouldn't feel obliged to pass your writing through an LLM. If you do ask
+   an LLM to clean up your writing style, be sure it does _not_ make it longer
+   in the process. Demand succinctness in your prompt.
+1. Quoting an LLM answer is usually less helpful than linking to
+   **relevant primary sources**, like source code, reference
+   documentation, or web standards. If you do need to quote an LLM
+   answer in a Zulip conversation, put the answer in a [Zulip quote
+   block](https://zulip.com/help/format-a-quote), to distinguish LLM
+   output from your own thoughts.
 
 ## Getting started
 
@@ -145,6 +252,14 @@ to set up the Zulip Terminal development environment.
 
 ## Finding an issue to work on
 
+::: note
+
+**Note**: Project maintainers are not able to individually recommend issues to new
+contributors. Learning how to find an issue you can tackle is one of the skills
+new contributors need to learn.
+
+:::
+
 ### Where to look for an issue
 
 Now you're ready to pick your first issue! Zulip has several repositories you
@@ -164,10 +279,7 @@ especially approachable for new contributors.
 Here are some handy links for issues to look through:
 
 - [Server and web app](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-- Mobile apps: no "help wanted" label, but see the
-  [project board](https://github.com/orgs/zulip/projects/5/views/4)
-  for the upcoming Flutter-based app. Look for issues up through the
-  "Launch" milestone, and that aren't already assigned.
+- [Mobile app](https://github.com/zulip/zulip-flutter/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - [Desktop app](https://github.com/zulip/zulip-desktop/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 - [Terminal app](https://github.com/zulip/zulip-terminal/issues?q=is%3Aopen+is%3Aissue+label%3A"help+wanted")
 - [Python API bindings and bots](https://github.com/zulip/python-zulip-api/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
@@ -250,13 +362,22 @@ issue you're interested in.
 
 #### In other Zulip repositories
 
-There is no bot for other Zulip repositories
-([`zulip/zulip-flutter`](https://github.com/zulip/zulip-flutter/), etc.). If
-you are interested in claiming an issue in one of these repositories, simply
-post a comment on the issue thread saying that you've started work on the
-issue and would like to claim it. In your comment, describe what part of the
-code you're modifying and how you plan to approach the problem, based on
-what you learned in steps 1–4 [above](#picking-an-issue-to-work-on).
+In other Zulip repositories, including
+[`zulip/zulip-flutter`](https://github.com/zulip/zulip-flutter/),
+there is no bot. Instead:
+
+- Use the steps above to find an issue you'd like to work on
+  and to get started working on it.
+- Post a comment on the issue thread saying that you've started work
+  on the issue and would like to claim it.
+- In your comment, **describe what you learned in steps 1–4
+  [above](#picking-an-issue-to-work-on)**: what part of the code
+  you're modifying and how you plan to approach the problem.
+- Once you've followed these steps, you've successfully claimed the issue.
+  Go ahead and continue work on the issue, and send a PR when ready.
+  Someone might come along and assign the issue to you for better
+  tracking, but there's no need to wait for that or for any other
+  form of permission.
 
 There is no need to @-mention the issue creator in your comment. There is
 also no need to post the same information in multiple places, for example in
@@ -338,82 +459,6 @@ to keep in mind.
 
 [great-questions]: https://zulip.readthedocs.io/en/latest/contributing/asking-great-questions.html
 
-## AI use policy and guidelines
-
-Our goal in the Zulip project is to develop an excellent software
-system. This requires careful attention to detail in every change we
-integrate. Maintainer time and attention is very limited, so it's
-important that changes you ask us to review represent
-your _best_ work.
-
-You are encouraged to use tools that help you write good
-code, including AI tools. However, as noted above, you always need to
-understand and explain the changes you're proposing to make, whether
-or not you used an LLM as part of your process to produce them. The
-answer to “Why did you make change X?” should never be “I'm not sure.
-The AI did it.”
-
-**Do not submit an AI-generated PR you haven't personally understood and
-tested**, as this wastes maintainers' time. PRs that appear to violate this
-guideline will be closed without review.
-
-### Using AI as a coding assistant
-
-1. Don't skip **becoming familiar with the part of the codebase**
-   you're working on. This will let you write better prompts and
-   validate their output if you use an LLM. Code assistants can be a
-   useful search engine/discovery tool in this process, but don't
-   trust claims they make about how Zulip works. LLMs are often wrong,
-   even about details that are clearly answered in the Zulip
-   documentation.
-1. Split up your changes into **[coherent
-   commits](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html)**,
-   even if an LLM generates them all in one go.
-1. Don't simply ask an LLM to add **code comments**, as it will likely
-   produce a bunch of text that unnecessarily explains what's already
-   clear from the code. If using an LLM to generate comments, be
-   really specific in your request, demand succinctness, and carefully
-   edit the result.
-
-### Using AI for communication
-
-As noted above, Zulip's contributors are expected to communicate with
-intention, to avoid wasting maintainer time with long, sloppy
-writing. We strongly prefer clear and concise communication about
-points that actually require discussion over long AI-generated
-comments.
-
-When you use an LLM to write a message for you, it remains **your
-responsibility** to read through the whole thing and make sure that it
-makes sense to you and represents your ideas concisely. A good rule
-of thumb is that if you can't make yourself carefully read some LLM
-output that you generated, nobody else wants to read it either.
-
-Here are some concrete guidelines for using LLMs as part of your communication
-workflows.
-
-1. When writing a pull request description, **do not include anything that's
-   obvious** from looking at your changes directly (e.g., files changed, functions
-   updated, etc.). Instead, focus on the _why_ behind your changes. Don't ask an
-   LLM to generate a PR description on your behalf based on your code changes,
-   as it will simply regurgitate the information that's already there.
-1. Similarly, when responding to a pull request comment, **explain _your_
-   reasoning**. Don't prompt an LLM to re-describe what can already be seen from
-   the code.
-1. Complete all parts of the **PR description template**, including screenshots
-   and the self-review checklist. Don't simply overwrite the template with LLM
-   output.
-1. **Clarity and succinctness** are much more important than perfect grammar, so
-   you shouldn't feel obliged to pass your writing through an LLM. If you do ask
-   an LLM to clean up your writing style, be sure it does _not_ make it longer
-   in the process. Demand succinctness in your prompt.
-1. Quoting an LLM answer is usually less helpful than linking to
-   **relevant primary sources**, like source code, reference
-   documentation, or web standards. If you do need to quote an LLM
-   answer in a Zulip conversation, put the answer in a [Zulip quote
-   block](https://zulip.com/help/format-a-quote), to distinguish LLM
-   output from your own thoughts.
-
 ## Submitting a pull request
 
 See the [guide on submitting a pull
@@ -437,6 +482,16 @@ becoming a core developer often involves taking ownership of one of these area
 labels.
 
 ## Common questions
+
+### Picking up issues
+
+- **Can I work on an issue that's not marked as "help wanted"?** The entire
+  purpose of the "help wanted" label is to indicate which issues are open for
+  contribution, so the answer is generally "no". Please feel free to ask if you
+  have a _merged PR_ in a closely related part of the codebase, _and_ the issue
+  has a clear product spec, and no obvious blockers. Otherwise, asking to claim
+  an issue without a "help wanted" label clutters up comment threads, and wastes
+  maintainer time.
 
 - **What if somebody is already working on the issue I want to claim?** There
   are lots of issues to work on (likely
@@ -483,10 +538,12 @@ labels.
   changed.
 
 - **Can I come up with my own feature idea and work on it?** We welcome
-  suggestions of features or other improvements that you feel would be valuable. If you
-  have a new feature you'd like to add, you can start a conversation [in our
-  development community](https://zulip.com/development-community/#where-do-i-send-my-message)
-  explaining the feature idea and the problem that you're hoping to solve.
+  suggestions for ways to make Zulip better based on your experience using the
+  product. Please follow the guides on how to [report bugs][reporting-bugs] or
+  [suggest features][suggesting-features]. However, please _do not_ suggest
+  features just because you're looking for something to work on. It wastes
+  maintainer time, and distracts the community from work that will truly help
+  Zulip's users.
 - **I'm waiting for the next round of review on my PR. Can I pick up
   another issue in the meantime?** Someone's first Zulip PR often
   requires quite a bit of iteration, so please [make sure your pull
@@ -499,6 +556,9 @@ labels.
   PRs), and asking for the issue to be assigned to you. Note that addressing
   feedback on in-progress PRs should always take priority over starting a new
   PR.
+
+### Review process
+
 - **I think my PR is done, but it hasn't been merged yet. What's going on?**
   1. **Double-check that you have addressed all the feedback**, including any comments
      on [Git commit
@@ -522,16 +582,18 @@ labels.
      process to be merged.
 
 [reviewable-pull-requests]: https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html
+[suggesting-features]: https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html
+[reporting-bugs]: https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html
 
 ## Outreach programs
 
 Zulip regularly participates in [Google Summer of Code
-(GSoC)](https://developers.google.com/open-source/gsoc/) and
-[Outreachy](https://www.outreachy.org/). We have been a GSoC mentoring
-organization since 2016, and we accept 15-20 GSoC participants each summer. In
-the past, we’ve also participated in [Google
-Code-In](https://developers.google.com/open-source/gci/), and hosted summer
-interns from Harvard, MIT, and Stanford.
+(GSoC)](https://developers.google.com/open-source/gsoc/). We have been a GSoC
+mentoring organization since 2016, and we accept 10-20 GSoC participants each
+summer. In the past, we’ve also participated in [Google
+Code-In](https://developers.google.com/open-source/gci/) and
+[Outreachy](https://www.outreachy.org/), and hosted summer interns from Harvard,
+MIT, and Stanford.
 
 Check out our [outreach programs
 overview](https://zulip.readthedocs.io/en/latest/outreach/overview.html) to learn

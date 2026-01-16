@@ -6,10 +6,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class TrelloHookTests(WebhookTestCase):
-    CHANNEL_NAME = "trello"
-    URL_TEMPLATE = "/api/v1/external/trello?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "trello"
-
     def test_trello_confirmation_request(self) -> None:
         response = self.client_head(self.build_webhook_url())
         self.assertEqual(response.status_code, 200, response)
@@ -43,11 +39,11 @@ class TrelloHookTests(WebhookTestCase):
         self.check_webhook("removing_member_from_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_due_date_was_set(self) -> None:
-        expected_message = "TomaszKolek set due date for [Card name](https://trello.com/c/9BduUcVQ) to 2016-05-11 10:00:00 UTC."
+        expected_message = "TomaszKolek set due date for [Card name](https://trello.com/c/9BduUcVQ) to <time:2016-05-11T10:00:00+00:00>."
         self.check_webhook("setting_due_date_to_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_due_date_was_changed(self) -> None:
-        expected_message = "TomaszKolek changed due date for [Card name](https://trello.com/c/9BduUcVQ) from 2016-05-11 10:00:00 UTC to 2016-05-24 10:00:00 UTC."
+        expected_message = "TomaszKolek changed due date for [Card name](https://trello.com/c/9BduUcVQ) from <time:2016-05-11T10:00:00+00:00> to <time:2016-05-24T10:00:00+00:00>."
         self.check_webhook("changing_due_date_on_card", "Welcome Board", expected_message)
 
     def test_trello_webhook_when_due_date_was_removed(self) -> None:

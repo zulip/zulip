@@ -1,5 +1,4 @@
-{% extends "zerver/portico.html" %}
-{% set entrypoint = "landing-page-with-pricing" %}
+{% extends "zerver/marketing_page.html" %}
 
 {% set PAGE_TITLE = "Self-host Zulip" %}
 
@@ -7,13 +6,8 @@
   reliability and security. Take charge of your mission-critical communication
   platform." %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
 
-{% block portico_content %}
-
-{% include 'zerver/landing_nav.html' %}
+{% block marketing_content %}
 
 <div class="portico-landing why-page solutions-page self-hosting-page">
     <div class="hero bg-pycon security">
@@ -246,8 +240,8 @@
                         Yours to customize.
                     </h1>
                     <p>
-                        <a href="/api/incoming-webhooks-overview">Creating custom integrations</a> is a breeze with
-                        our well-documented <a href="/api/">REST API</a>.
+                        <a href="https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html">Creating custom integrations</a>
+                        is a breeze with our well-documented <a href="/api/">REST API</a>.
                     </p>
                     <p>
                         Zulip makes it easy to

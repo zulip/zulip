@@ -10,7 +10,7 @@ as possible. That’s why we love Zulip,” says [Erik
 Dittert](https://gutcontact.de/unternehmen/team/erik-dittert/), who’s been
 leading GUT contact’s IT team for the past 20 years.
 
-> “The software must be as simple as possible. That’s why we love Zulip.”
+> The software must be as simple as possible. That’s why we love Zulip.
 >
 > — Erik Dittert, [Head of
 > IT](https://gutcontact.de/unternehmen/team/erik-dittert/) at [GUT
@@ -36,7 +36,7 @@ Zulip’s topic-based threading model was transformative. With other chat apps,
 about something else. You answer the first person, and the second person is
 confused,” Erik explains. This doesn’t happen with Zulip’s topics.
 
-> “Topic-based communication is a big big big feature we love in Zulip.”
+> Topic-based communication is a big big big feature we love in Zulip.
 >
 > — Erik Dittert, [Head of
 > IT](https://gutcontact.de/unternehmen/team/erik-dittert/) at [GUT
@@ -60,8 +60,8 @@ to play around with Zulip, create channels, and chat with each other. After a
 month of running Zulip in parallel with Rocket.Chat, the old system was turned
 off.
 
-> “Zulip was quite easy to set up, and worked instantly. 1000 people — no
-> problem.”
+> Zulip was quite easy to set up, and worked instantly. 1000 people — no
+> problem.
 >
 > — Erik Dittert, [Head of
 > IT](https://gutcontact.de/unternehmen/team/erik-dittert/) at [GUT
@@ -100,7 +100,7 @@ Erik meets up regularly with other technologists to “have a beer and talk abou
 cool software.” In this 50-person group, “Zulip is quite a big theme right now,”
 Erik says.
 
->  “I love Zulip. I use it every day, every night.”
+> I love Zulip. I use it every day, every night.
 >
 > — Erik Dittert, [Head of
 > IT](https://gutcontact.de/unternehmen/team/erik-dittert/) at [GUT

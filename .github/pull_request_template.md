@@ -22,6 +22,7 @@ If any of these steps are not relevant or you have not completed, leave them unc
 
 - [ ] [Self-reviewed](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code) the changes for clarity and maintainability
       (variable names, code reuse, readability, etc.).
+- [ ] Followed the [AI use policy](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#ai-use-policy-and-guidelines).
 
 Communicate decisions, questions, and potential concerns.
 

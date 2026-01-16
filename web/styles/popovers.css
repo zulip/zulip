@@ -203,7 +203,8 @@
     }
 }
 
-.custom-user-url-field {
+.custom-user-url-field,
+.external-account-text-field {
     display: flex;
     align-items: center;
     /* Maintain space between URL and copy icon. */
@@ -216,7 +217,8 @@
         text-overflow: ellipsis;
     }
 
-    .copy-custom-field-url {
+    .copy-custom-field-url,
+    .copy-external-account-field {
         height: 1em;
     }
 }
@@ -275,6 +277,7 @@
         line-height: 1.1;
         margin-top: 4px;
         white-space: pre-wrap;
+        min-width: 12.5em; /* 200px at 16px/1em */
     }
 }
 
@@ -283,6 +286,7 @@
     color: var(--color-text-popover-menu);
     line-height: 1.1;
     margin-top: 4px;
+    width: max-content;
 }
 
 .popover-group-menu-info {
@@ -542,9 +546,9 @@ ul.popover-group-menu-member-list {
     .stream-tab-element-header {
         margin: 0;
         display: inline-block;
-        font-weight: inherit;
-        /* 21px at 14px/1em */
-        font-size: 1.5em;
+        font-weight: 600;
+        /* 18px at 16px/1em */
+        font-size: 1.125em;
     }
 
     #user-profile-groups-tab,
@@ -560,24 +564,29 @@ ul.popover-group-menu-member-list {
             "bottom" auto
             / minmax(0, 1fr);
 
-        .stream_list_info,
-        .user-profile-group-list-alert {
+        .stream_list_info:has(.banner),
+        .user-profile-group-list-alert:has(.banner) {
             grid-area: alert;
             margin-bottom: 8px;
+        }
+
+        .stream-list-loader:not(:empty) {
+            margin: auto; /* center the spinner */
+
+            .loading_indicator_spinner {
+                margin-top: 10px;
+            }
+        }
+
+        .error-message:not(:empty) {
+            color: var(--color-alert-error-red);
+            text-align: center;
+            margin-top: 20px;
         }
 
         .stream-list-bottom-section,
         .group-list-bottom-section {
             grid-area: bottom;
-        }
-
-        .stream-privacy {
-            display: flex;
-            align-items: center;
-        }
-
-        .filter-icon i {
-            padding-right: 3px;
         }
 
         .user_profile_subscribe_widget {
@@ -600,70 +609,6 @@ ul.popover-group-menu-member-list {
         grid-area: top;
         margin-top: 0.3125em;
         margin-bottom: 0.75em;
-
-        .group-search:placeholder-shown + #clear_groups_search,
-        .stream-search:placeholder-shown + #clear_stream_search {
-            visibility: hidden;
-        }
-    }
-
-    .group-list-container,
-    .stream-list-container {
-        height: calc(100% - var(--header-line-height));
-        border-radius: 4px;
-        background-color: var(--background-color-user-profile-list-container);
-        border: 1px solid var(--color-border-user-profile-list-container);
-        padding: 0.25em 0.25em 0;
-        margin-bottom: 5px;
-        -webkit-overflow-scrolling: touch;
-
-        .user-profile-group-row,
-        .user-profile-channel-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.3125em 0.625em;
-            align-items: center;
-            text-decoration: none;
-            border-radius: 4px;
-            color: var(--color-dropdown-item);
-            cursor: pointer;
-
-            .user-group-list-item,
-            .user-stream-list-item {
-                display: flex;
-                overflow: hidden;
-            }
-
-            &:hover {
-                background-color: var(--color-user-profile-list-item-hover);
-            }
-
-            &:focus-visible {
-                outline: 1px solid var(--color-outline-user-profile-list-item);
-                outline-offset: -2px;
-            }
-
-            .user-group-name,
-            .user-stream-name {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                padding-right: 2px;
-            }
-        }
-
-        .subscription-group-list,
-        .subscription-stream-list {
-            /* We set max-height to remaining height of stream-list-container
-               so that we don't clip it. Search field height takes up 2em of total. */
-            height: calc(100% - 2em);
-
-            .user-group-list,
-            .user-stream-list {
-                list-style: none;
-                margin: 0;
-            }
-        }
     }
 
     .manage-profile-tab-footer {
@@ -740,10 +685,11 @@ ul.popover-group-menu-member-list {
 }
 
 .giphy-popover,
+.tenor-popover,
 .emoji-popover-root {
     .tippy-content {
         /* We remove the default padding from this container
-           as it is not necessary for the Giphy popover. */
+           as it is not necessary for the Giphy and Tenor popovers. */
         padding: 0;
 
         /* By resetting to the default color from the `body`,
@@ -768,28 +714,66 @@ ul.popover-group-menu-member-list {
     }
 }
 
-#giphy_grid_in_popover {
-    /* 300px of GIPHY grid + 5px is the extra gutter space
-     * + 1px for outline.
+.modal__overlay #set-user-status-modal + .emoji-popover-root {
+    /* Micromodal prevents pointer events to elements outside the content.
+       We need to re-enable pointer events for the emoji popover to work. */
+    pointer-events: auto;
+}
+
+.gif-grid-in-popover {
+    /* 300px of GIF grid + 5px is the extra gutter space
+     * + 1px for outline + 4px padding.
      * between gif columns. */
-    width: 306px;
+    width: 310px;
     border: 0;
     padding: 0;
 
-    .giphy-gif {
+    .gif-search-container {
+        margin: 4px 4px 2px;
+    }
+
+    .tenor-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        grid-auto-rows: auto;
+        gap: 6px;
+    }
+
+    /* Meant to prevent outline overflow when the GIF
+       is focused. */
+    .tenor-content,
+    .giphy-content {
+        padding: 0 2px;
+    }
+
+    .giphy-gif,
+    .gif-picker-gif {
         cursor: pointer;
     }
 
-    .giphy-gif:focus {
-        /* Red outline for clear visibility
-         * of which image is in focus.
-         */
-        outline: 1px solid hsl(0deg 100% 50%);
+    .gif-picker-gif {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        object-fit: cover;
     }
 
-    .giphy-scrolling-container {
+    .giphy-gif:focus,
+    .gif-picker-gif:focus {
+        /* Blue outline for clear visibility
+         * of which image is in focus.
+         */
+        outline: 2px solid var(--color-selected-gif-in-grid-picker);
+    }
+
+    .giphy-gif:hover,
+    .gif-picker-gif:hover {
+        outline: 2px solid var(--color-hovered-gif-in-grid-picker);
+    }
+
+    .gif-scrolling-container {
         overflow: hidden auto;
-        height: 200px;
+        height: 300px;
         margin: 2px 3px;
         padding: 5px 0;
     }
@@ -897,6 +881,11 @@ ul.popover-group-menu-member-list {
             &.empty-topic-only {
                 cursor: default;
             }
+
+            &.invalid-topic-input {
+                border-color: var(--color-invalid-input-border);
+                box-shadow: var(--invalid-input-box-shadow);
+            }
         }
     }
 
@@ -919,11 +908,6 @@ ul.popover-group-menu-member-list {
 
     #message_move_select_options {
         width: 100%;
-    }
-
-    #message-report-description {
-        width: 100%;
-        box-sizing: border-box;
     }
 
     #move_messages_count {
@@ -970,6 +954,10 @@ ul.popover-group-menu-member-list {
             display: inline-block;
             margin-right: 10px;
         }
+    }
+
+    .new-topic-name-error {
+        color: hsl(0deg 100% 50%);
     }
 }
 

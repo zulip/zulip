@@ -12,6 +12,8 @@ export function postprocess_content(html: string): string {
     const template = inertDocument.createElement("template");
     template.innerHTML = html;
 
+    process_emoji_only_message(template.content);
+
     for (const ol of template.content.querySelectorAll("ol")) {
         const list_start = Number(ol.getAttribute("start") ?? 1);
         // We don't count the first item in the list, as it
@@ -111,8 +113,51 @@ export function postprocess_content(html: string): string {
         }
     }
 
+    // We need to quickly wrap inline images so we can pass them onto the
+    // image-processing loop below.
+    for (const inline_img_elt of template.content.querySelectorAll(".inline-image")) {
+        const original_src = inline_img_elt.getAttribute("data-original-src");
+        assert(typeof original_src === "string");
+        const alt = inline_img_elt.getAttribute("alt");
+
+        const media_wrapper = inertDocument.createElement("span");
+        media_wrapper.classList.add("message-media-inline-image");
+
+        // If one or more inline images sit in a paragraph containing no
+        // other text content, we will include it in a gallery via the
+        // logic further down in this file.
+        const inline_img_parent_elt = inline_img_elt.parentElement;
+        // We want to determine the length after trimming out the spaces
+        // from line breaks; this value will be precisely zero if the
+        // containing paragraph has no text content, including things
+        // that might be tucked in a link or a bold tag, etc.
+        const inline_img_parent_elt_text_length = inline_img_parent_elt?.textContent?.trim().length;
+        const inline_img_parent_elt_name = inline_img_parent_elt?.tagName.toLowerCase();
+
+        if (inline_img_parent_elt_name === "p" && inline_img_parent_elt_text_length === 0) {
+            media_wrapper.classList.add("message-media-gallery-image");
+            // Multiple images will be separated by break tags, which will
+            // be unnecessary (and make trouble for correctly placing
+            // adjacent images into a single gallery, when we process them.
+            inline_img_parent_elt?.querySelector("br")?.remove();
+        }
+
+        const media_link = inertDocument.createElement("a");
+        media_link.setAttribute("href", original_src);
+        media_link.setAttribute("target", "_blank");
+        media_link.setAttribute("rel", "noopener noreferrer");
+
+        if (alt) {
+            media_link.setAttribute("title", alt);
+        }
+
+        media_link.append(inline_img_elt.cloneNode(true));
+        media_wrapper.append(media_link);
+        inline_img_elt.parentNode?.replaceChild(media_wrapper, inline_img_elt);
+    }
+
     for (const message_media_wrapper of template.content.querySelectorAll(
-        ".message_inline_image",
+        ".message_inline_image, .message-media-inline-image",
     )) {
         const message_media_link = message_media_wrapper.querySelector("a");
         const message_media_image = message_media_wrapper.querySelector("img");
@@ -169,7 +214,9 @@ export function postprocess_content(html: string): string {
                 // If the image source URL can't be parsed, likely due to
                 // some historical bug in the Markdown processor, just
                 // drop the invalid image element.
-                message_media_image.closest(".message-media-preview-image")!.remove();
+                message_media_image
+                    .closest(".message-media-preview-image, .message-media-inline-image")!
+                    .remove();
                 continue;
             }
 
@@ -178,7 +225,6 @@ export function postprocess_content(html: string): string {
                 image_url.pathname.startsWith("/user_uploads/thumbnail/")
             ) {
                 let thumbnail_name = thumbnail.preferred_format.name;
-                // eslint-disable-next-line unicorn/prefer-dom-node-dataset
                 if (message_media_image.getAttribute("data-animated") === "true") {
                     if (
                         user_settings.web_animate_image_previews === "always" ||
@@ -193,7 +239,7 @@ export function postprocess_content(html: string): string {
                         // If we're showing a still thumbnail, show a play
                         // button so that users that it can be played.
                         message_media_image
-                            .closest(".message-media-preview-image")!
+                            .closest(".message-media-preview-image, .message-media-inline-image")!
                             .classList.add("message_inline_animated_image_still");
                     }
                 }
@@ -209,7 +255,6 @@ export function postprocess_content(html: string): string {
         // set those values as `height` and `width` attributes on the
         // image source.
         if (message_media_image?.hasAttribute("data-original-dimensions")) {
-            // eslint-disable-next-line unicorn/prefer-dom-node-dataset
             const original_dimensions_attribute = message_media_image.getAttribute(
                 "data-original-dimensions",
             );
@@ -275,7 +320,7 @@ export function postprocess_content(html: string): string {
     // After all other processing on images has been done, we look for
     // adjacent images and videos, and tuck them structurally into galleries.
     for (const elt of template.content.querySelectorAll(
-        ".message-media-preview-image, .message-media-preview-video",
+        ".message-media-gallery-image, .message-media-preview-image, .message-media-preview-video",
     )) {
         let gallery_element;
 
@@ -303,4 +348,45 @@ export function postprocess_content(html: string): string {
     }
 
     return template.innerHTML;
+}
+
+// Process single-paragraph messages that contain only emoji.
+function process_emoji_only_message(content: DocumentFragment): void {
+    // Exit as quickly as possible when more than one child element
+    // exists or the first child element is not a paragraph.
+    if (content.childElementCount !== 1 || content.firstElementChild?.tagName !== "P") {
+        return;
+    }
+
+    // Now we look at the collection of child nodes on the single
+    // paragraph to make sure there is no text in the paragraph's
+    // text nodes.
+    const paragraph_child_nodes = content.firstElementChild?.childNodes;
+    assert(paragraph_child_nodes !== undefined);
+    for (const node of paragraph_child_nodes) {
+        if (node.nodeName === "#text" && node.textContent?.trim() !== "") {
+            // If we find a #text node that doesn't trim down
+            // to the empty string, then the message has text
+            // content, so we should exit swiftly.
+            return;
+        }
+    }
+
+    // Having gotten this far, we check the child elements to make
+    // sure there are none other than spans for system emoji or
+    // img tags for realm emoji--both of which take the .emoji class.
+    const paragraph_child_elements = content.firstElementChild?.children;
+    assert(paragraph_child_elements !== undefined);
+    for (const element of paragraph_child_elements) {
+        if (!element.classList.contains("emoji")) {
+            // Any element without the .emoji class is obviously not
+            // emoji, so we again exit swiftly.
+            return;
+        }
+    }
+
+    // If we haven't returned by now, this is an emoji-only message,
+    // so we add .emoji-only to the paragraph element for styling
+    // the emoji in CSS.
+    content.firstElementChild?.classList.add("emoji-only");
 }

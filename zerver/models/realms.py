@@ -1,7 +1,7 @@
 from email.headerregistry import Address
 from enum import Enum, IntEnum
 from types import UnionType
-from typing import TYPE_CHECKING, Optional, TypedDict
+from typing import TYPE_CHECKING, Literal, Optional, TypedDict
 from uuid import uuid4
 
 import django.contrib.auth
@@ -30,6 +30,8 @@ if TYPE_CHECKING:
 
 
 SECONDS_PER_DAY = 86400
+RealmExportSlug = Literal["public", "full_with_consent", "full_without_consent"]
+DEFAULT_REALM_EXPORT_TYPE_SLUG: RealmExportSlug = "public"
 
 
 # This simple call-once caching saves ~500us in auth_enabled_helper,
@@ -227,8 +229,16 @@ class Realm(models.Model):
     # Day of the week on which the digest is sent (default: Tuesday).
     digest_weekday = models.SmallIntegerField(default=1)
 
+    # Whether channel event messages are enabled in the organizaton.
+    send_channel_events_messages = models.BooleanField(default=False)
+
     send_welcome_emails = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications = models.BooleanField(default=True)
+
+    # Whether the organization's security policy allows owners to take
+    # actions like full data exports that grant access to all private
+    # content in this organization.
+    owner_full_content_access = models.BooleanField(default=False, db_default=False)
 
     topics_policy = models.PositiveSmallIntegerField(
         default=RealmTopicsPolicyEnum.allow_empty_topic.value
@@ -441,8 +451,6 @@ class Realm(models.Model):
     ZULIP_SANDBOX_CHANNEL_NAME = gettext_lazy("sandbox")
     DEFAULT_NOTIFICATION_STREAM_NAME = gettext_lazy("general")
     STREAM_EVENTS_NOTIFICATION_TOPIC_NAME = gettext_lazy("channel events")
-    # Keep this in sync with the dropdown options in the message report
-    # modal (web/src/message_report.ts)
     REPORT_MESSAGE_REASONS = {
         "spam": gettext_lazy("Spam"),
         "harassment": gettext_lazy("Harassment"),
@@ -657,37 +665,36 @@ class Realm(models.Model):
     JITSI_SERVER_SPECIAL_VALUES_MAP = {"default": None}
     jitsi_server_url = models.URLField(null=True, default=None)
 
-    # Please access this via get_giphy_rating_options.
-    GIPHY_RATING_OPTIONS = {
+    # Please access this via get_gif_rating_options.
+    GIF_RATING_OPTIONS = {
         "disabled": {
-            "name": gettext_lazy("GIPHY integration disabled"),
+            "name": gettext_lazy("GIF integration disabled"),
             "id": 0,
         },
-        # Source: https://github.com/Giphy/giphy-js/blob/master/packages/fetch-api/README.md#shared-options
-        "y": {
-            "name": gettext_lazy("Allow GIFs rated Y (Very young audience)"),
-            "id": 1,
-        },
+        # Source:
+        # 1. https://developers.giphy.com/docs/optional-settings/#rating
+        # 2. https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
         "g": {
             "name": gettext_lazy("Allow GIFs rated G (General audience)"),
-            "id": 2,
+            "id": 1,
         },
         "pg": {
             "name": gettext_lazy("Allow GIFs rated PG (Parental guidance)"),
-            "id": 3,
+            "id": 2,
         },
         "pg-13": {
             "name": gettext_lazy("Allow GIFs rated PG-13 (Parental guidance - under 13)"),
-            "id": 4,
+            "id": 3,
         },
         "r": {
             "name": gettext_lazy("Allow GIFs rated R (Restricted)"),
-            "id": 5,
+            "id": 4,
         },
     }
 
-    # maximum rating of the GIFs that will be retrieved from GIPHY
-    giphy_rating = models.PositiveSmallIntegerField(default=GIPHY_RATING_OPTIONS["g"]["id"])
+    # maximum rating of the GIFs that will be retrieved.
+    # This is now used as a common rating for both Tenor and GIPHY.
+    giphy_rating = models.PositiveSmallIntegerField(default=GIF_RATING_OPTIONS["g"]["id"])
 
     default_code_block_language = models.TextField(default="")
 
@@ -734,6 +741,7 @@ class Realm(models.Model):
         push_notifications_enabled=bool,
         require_e2ee_push_notifications=bool,
         require_unique_names=bool,
+        send_channel_events_messages=bool,
         send_welcome_emails=bool,
         topics_policy=RealmTopicsPolicyEnum,
         video_chat_provider=int,
@@ -917,12 +925,12 @@ class Realm(models.Model):
     def __str__(self) -> str:
         return f"{self.string_id} {self.id}"
 
-    def get_giphy_rating_options(self) -> dict[str, dict[str, object]]:
-        """Wrapper function for GIPHY_RATING_OPTIONS that ensures evaluation
+    def get_gif_rating_options(self) -> dict[str, dict[str, object]]:
+        """Wrapper function for GIF_RATING_OPTIONS that ensures evaluation
         of the lazily evaluated `name` field without modifying the original."""
         return {
             rating_type: {"name": str(rating["name"]), "id": rating["id"]}
-            for rating_type, rating in self.GIPHY_RATING_OPTIONS.items()
+            for rating_type, rating in self.GIF_RATING_OPTIONS.items()
         }
 
     def authentication_methods_dict(self) -> dict[str, bool]:
@@ -1084,12 +1092,20 @@ class Realm(models.Model):
             return Realm.UPLOAD_QUOTA_LIMITED
         elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
             return Realm.UPLOAD_QUOTA_STANDARD_FREE
-        elif plan_type in [Realm.PLAN_TYPE_STANDARD, Realm.PLAN_TYPE_PLUS]:
+        elif plan_type == Realm.PLAN_TYPE_STANDARD:
             from corporate.lib.stripe import get_cached_seat_count
 
             # Paying customers with few users should get a reasonable minimum quota.
             return max(
-                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB,
+                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB_FOR_STANDARD,
+                Realm.UPLOAD_QUOTA_STANDARD_FREE,
+            )
+        elif plan_type == Realm.PLAN_TYPE_PLUS:
+            from corporate.lib.stripe import get_cached_seat_count
+
+            # Paying customers with few users should get a reasonable minimum quota.
+            return max(
+                get_cached_seat_count(self) * settings.UPLOAD_QUOTA_PER_USER_GB_FOR_PLUS,
                 Realm.UPLOAD_QUOTA_STANDARD_FREE,
             )
         else:
@@ -1393,11 +1409,11 @@ class RealmExport(models.Model):
     EXPORT_PUBLIC = 1
     EXPORT_FULL_WITH_CONSENT = 2
     EXPORT_FULL_WITHOUT_CONSENT = 3
-    EXPORT_TYPES = [
-        EXPORT_PUBLIC,
-        EXPORT_FULL_WITH_CONSENT,
-        EXPORT_FULL_WITHOUT_CONSENT,
-    ]
+    EXPORT_TYPES: dict[RealmExportSlug, int] = {
+        "public": EXPORT_PUBLIC,
+        "full_with_consent": EXPORT_FULL_WITH_CONSENT,
+        "full_without_consent": EXPORT_FULL_WITHOUT_CONSENT,
+    }
     type = models.PositiveSmallIntegerField(default=EXPORT_PUBLIC)
 
     REQUESTED = 1

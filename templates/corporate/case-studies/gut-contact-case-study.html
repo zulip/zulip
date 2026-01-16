@@ -1,18 +1,12 @@
-{% extends "zerver/portico.html" %}
-{% set entrypoint = "landing-page" %}
+{% extends "zerver/marketing_page.html" %}
 
 {% set PAGE_TITLE = "Case study: GUT contact | Zulip" %}
 
 {% set PAGE_DESCRIPTION = "Learn how Zulip makes communication easy for 1000
   agents at GUT contact, a support agency." %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
 
-{% block portico_content %}
-
-{% include 'zerver/landing_nav.html' %}
+{% block marketing_content %}
 
 <div class="portico-landing why-page solutions-page case-study-page">
     <div class="hero bg-education">

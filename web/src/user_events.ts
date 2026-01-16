@@ -9,6 +9,7 @@ import * as z from "zod/mini";
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -17,6 +18,7 @@ import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
+import * as settings_bots from "./settings_bots.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_exports from "./settings_exports.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
@@ -106,6 +108,7 @@ export const update_person = function update(event: UserUpdate): void {
     }
 
     if ("role" in event) {
+        const was_owner = user.is_owner;
         user.role = event.role;
         user.is_owner = event.role === settings_config.user_role_values.owner.code;
         user.is_admin = event.role === settings_config.user_role_values.admin.code || user.is_owner;
@@ -114,6 +117,7 @@ export const update_person = function update(event: UserUpdate): void {
             user.is_admin || event.role === settings_config.user_role_values.moderator.code;
         settings_users.update_user_data(event.user_id, event);
         user_profile.update_profile_modal_ui(user, event);
+        settings_account.set_user_own_role_dropdown_value();
 
         if (people.is_my_user_id(event.user_id)) {
             settings_account.update_role_text();
@@ -124,6 +128,8 @@ export const update_person = function update(event: UserUpdate): void {
             settings_org.maybe_disable_widgets();
             settings_org.enable_or_disable_group_permission_settings();
             settings.update_lock_icon_in_sidebar();
+            settings_account.add_or_remove_owner_from_role_dropdown();
+            settings_account.update_user_own_role_dropdown_state();
         }
 
         if (people.is_my_user_id(event.user_id) && current_user.is_admin !== user.is_admin) {
@@ -136,6 +142,15 @@ export const update_person = function update(event: UserUpdate): void {
             settings_realm_user_settings_defaults.maybe_disable_widgets();
             settings_account.update_account_settings_display();
             settings.update_lock_icon_in_sidebar();
+            settings_account.update_user_own_role_dropdown_state();
+        }
+
+        if (
+            !people.is_my_user_id(event.user_id) &&
+            was_owner !== user.is_owner &&
+            current_user.is_owner
+        ) {
+            settings_account.update_user_own_role_dropdown_state();
         }
 
         if (
@@ -224,9 +239,12 @@ export const update_person = function update(event: UserUpdate): void {
             settings_users.update_view_on_deactivate(event.user_id, is_bot_user);
         }
         buddy_list.insert_or_move([event.user_id]);
+        // Update UI elements to reflect the user's deactivated/reactivated status
+        pm_list.update_private_messages();
+        compose_pm_pill.update_user_pill_active_status(user, event.is_active);
         settings_account.maybe_update_deactivate_account_button();
         if (is_bot_user) {
-            settings_users.update_bot_data(event.user_id);
+            settings_bots.update_bot_data(event.user_id);
         } else if (!event.is_active) {
             // A human user deactivated, update 'Export permissions' table.
             settings_exports.remove_export_consent_data_and_redraw(event.user_id);

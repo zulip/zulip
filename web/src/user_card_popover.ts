@@ -25,6 +25,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import {user_can_send_direct_message} from "./message_util.ts";
 import * as message_view from "./message_view.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as muted_users from "./muted_users.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
@@ -529,7 +530,7 @@ function load_medium_avatar(user: User, $elt: JQuery): void {
 // user is the user whose profile to show.
 // sender_id is the user id of the sender for the message we are
 // showing the popover from.
-function toggle_user_card_popover_for_message(
+export function toggle_user_card_popover_for_message(
     element: HTMLElement,
     user: User,
     sender_id: number,
@@ -556,11 +557,14 @@ export function unsaved_message_user_mention_event_handler(
     this: HTMLElement,
     e: JQuery.ClickEvent,
 ): void {
-    if (document.getSelection()?.type === "Range") {
+    // We stop propagation because, if this event was fired from drafts,
+    // it would otherwise trigger this handler twice: once from the
+    // `.user-mention` listener for drafts and again from the
+    // `.messagebox .user-mention` listener.
+    e.stopPropagation();
+    if (mouse_drag.is_drag(e)) {
         return;
     }
-
-    e.stopPropagation();
 
     const id_string = $(this).attr("data-user-id")!;
     // Do not open popover for @all mention
@@ -676,8 +680,11 @@ function register_click_handlers(): void {
         "click",
         ".sender_name, .inline-profile-picture-wrapper",
         function (this: HTMLElement, e) {
-            const $row = $(this).closest(".message_row");
             e.stopPropagation();
+            if (mouse_drag.is_drag(e)) {
+                return;
+            }
+            const $row = $(this).closest(".message_row");
             assert(message_lists.current !== undefined);
             const message = message_lists.current.get(rows.id($row));
             assert(message !== undefined);
@@ -687,6 +694,10 @@ function register_click_handlers(): void {
     );
 
     $("#main_div").on("click", ".user-mention", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        if (mouse_drag.is_drag(e)) {
+            return;
+        }
         const id_string = $(this).attr("data-user-id");
         // We fallback to email to handle legacy Markdown that was rendered
         // before we cut over to using data-user-id
@@ -695,7 +706,6 @@ function register_click_handlers(): void {
             return;
         }
         const $row = $(this).closest(".message_row");
-        e.stopPropagation();
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         assert(message !== undefined);

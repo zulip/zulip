@@ -2,9 +2,10 @@
 title: Link to a message or conversation
 ---
 
-import {TabItem, Tabs} from "@astrojs/starlight/components";
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import ChannelActions from "../include/_ChannelActions.mdx";
 import ChannelLongPressMenu from "../include/_ChannelLongPressMenu.mdx";
@@ -13,6 +14,8 @@ import MessageLongPressMenu from "../include/_MessageLongPressMenu.mdx";
 import StartComposing from "../include/_StartComposing.mdx";
 import TopicActions from "../include/_TopicActions.mdx";
 import TopicLongPressMenu from "../include/_TopicLongPressMenu.mdx";
+
+import LinkIcon from "~icons/zulip-icon/link"
 
 Zulip makes it easy to share links to messages, topics, and channels. You can
 link from one Zulip [conversation](/help/reading-conversations) to another, or
@@ -114,6 +117,12 @@ formatted as it would be in Zulip (e.g., [#channel > topic](#link-to-a-topic-wit
 To paste the plain URL, you can paste without formatting (likely <kbd>Ctrl</kbd> +
 <kbd>Shift</kbd> + <kbd>V</kbd> in your browser).
 
+<ZulipNote>
+  Due to a Safari quirk, pasting Zulip links from Safari into GitHub
+  and some other apps may result in incorrect formatting. You can
+  paste without formatting, or use a different browser.
+</ZulipNote>
+
 ### Get a link to a specific message
 
 This copies to your clipboard a permanent link to the message, displayed in the
@@ -161,7 +170,19 @@ it is automatically formatted for you. You can use
 ### Get a link to a specific topic
 
 <Tabs>
-  <TabItem label="Desktop/Web">
+  <TabItem label="Via message recipient bar">
+    <Steps>
+      1. Click the **copy link to topic** (<LinkIcon />) icon in the message
+         recipient bar.
+    </Steps>
+
+    <ZulipTip>
+      If using Zulip in a browser, you can also click on a topic name,
+      and copy the URL from your browser's address bar.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Via left sidebar">
     <FlattenedSteps>
       <TopicActions />
 

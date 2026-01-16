@@ -1,17 +1,3 @@
-## Integrations
-
-* [Overview](/api/integrations-overview)
-* [Incoming webhook integrations](/api/incoming-webhooks-overview)
-* [Hello world walkthrough](/api/incoming-webhooks-walkthrough)
-* [Non-webhook integrations](/api/non-webhook-integrations)
-
-## Interactive bots (beta)
-
-* [Running bots](/api/running-bots)
-* [Deploying bots](/api/deploying-bots)
-* [Writing bots](/api/writing-bots)
-* [Outgoing webhooks](/api/outgoing-webhooks)
-
 ## REST API
 
 * [Overview](/api/rest)
@@ -23,6 +9,7 @@
 * [Roles and permissions](/api/roles-and-permissions)
 * [Group-setting values](/api/group-setting-values)
 * [Message formatting](/api/message-formatting)
+* [Zulip URLs](/api/zulip-urls)
 * [Client libraries](/api/client-libraries)
 * [API changelog](/api/changelog)
 

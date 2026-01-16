@@ -132,6 +132,24 @@ def get_user_group_by_id_in_realm(
         raise JsonableError(_("Invalid user group"))
 
 
+def user_group_ids_to_user_groups(
+    user_group_ids: list[int], realm: Realm, *, allow_deactivated: bool = False
+) -> list[NamedUserGroup]:
+    user_groups = NamedUserGroup.objects.filter(id__in=user_group_ids, realm_for_sharding=realm)
+    if not allow_deactivated:
+        user_groups = user_groups.exclude(deactivated=True)
+
+    found_group_ids = {user_group.id for user_group in user_groups}
+
+    for user_group_id in user_group_ids:
+        if user_group_id not in found_group_ids:
+            raise JsonableError(
+                _("Invalid user group ID: {user_group_id}").format(user_group_id=user_group_id)
+            )
+
+    return list(user_groups)
+
+
 def get_system_user_group_by_name(group_name: str, realm_id: int) -> NamedUserGroup:
     if group_name not in SystemGroups.GROUP_DISPLAY_NAME_MAP:
         raise JsonableError(_("Invalid system group name."))
@@ -437,7 +455,9 @@ def update_or_create_user_group_for_setting(
 
     from zerver.lib.users import user_ids_to_users
 
-    member_users = user_ids_to_users(direct_members, realm, allow_deactivated=False)
+    member_users = user_ids_to_users(
+        direct_members, realm, allow_deactivated=False, allow_bots=True
+    )
     user_group.direct_members.set(member_users)
 
     potential_subgroups = NamedUserGroup.objects.select_for_update().filter(

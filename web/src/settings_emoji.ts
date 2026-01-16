@@ -125,6 +125,7 @@ export function populate_emoji(): void {
                     source_url: item.source_url,
                     author,
                     can_delete_emoji: can_delete_emoji(item),
+                    is_overriding_default: is_default_emoji(item.name),
                 },
             });
         },
@@ -213,9 +214,9 @@ function show_modal(): void {
         const emoji: Record<string, string> = {};
 
         function submit_custom_emoji_request(formData: FormData): void {
-            assert(emoji.name !== undefined);
+            assert(emoji["name"] !== undefined);
             void channel.post({
-                url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
+                url: "/json/realm/emoji/" + encodeURIComponent(emoji["name"]),
                 data: formData,
                 cache: false,
                 processData: false,
@@ -234,9 +235,9 @@ function show_modal(): void {
         for (const obj of $("#add-custom-emoji-form").serializeArray()) {
             emoji[obj.name] = obj.value;
         }
-        assert(emoji.name !== undefined);
+        assert(emoji["name"] !== undefined);
 
-        if (emoji.name.trim() === "") {
+        if (emoji["name"].trim() === "") {
             ui_report.client_error(
                 $t_html({defaultMessage: "Failed: Emoji name is required."}),
                 $emoji_status,
@@ -245,7 +246,7 @@ function show_modal(): void {
             return;
         }
 
-        if (is_custom_emoji(emoji.name)) {
+        if (is_custom_emoji(emoji["name"])) {
             ui_report.client_error(
                 $t_html({
                     defaultMessage: "Failed: A custom emoji with this name already exists.",
@@ -263,7 +264,7 @@ function show_modal(): void {
             formData.append("file-" + i, file);
         }
 
-        if (is_default_emoji(emoji.name)) {
+        if (is_default_emoji(emoji["name"])) {
             if (!current_user.is_admin) {
                 ui_report.client_error(
                     $t_html({
@@ -278,7 +279,7 @@ function show_modal(): void {
 
             dialog_widget.close(() => {
                 const html_body = emoji_settings_warning_modal({
-                    emoji_name: emoji.name,
+                    emoji_name: emoji["name"],
                 });
                 confirm_dialog.launch({
                     html_heading: $t_html({defaultMessage: "Override default emoji?"}),
