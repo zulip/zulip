@@ -4,7 +4,7 @@ from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.lib.exceptions import ChannelExistsError
 from zerver.lib.streams import check_stream_name_available
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_groups import UserGroupMembersData
+from zerver.lib.types import UserGroupMembersData
 
 
 class CheckStreamNameAvailableTests(ZulipTestCase):
