@@ -265,7 +265,6 @@ def render_block(block: WildValue) -> str:
     # https://api.slack.com/reference/block-kit/blocks
     supported_types = {
         "context",
-        "condition",
         "divider",
         "header",
         "image",
@@ -279,6 +278,7 @@ def render_block(block: WildValue) -> str:
         # probably it would be worth replacing with a string indicating a Slack
         # call occurred.
         "call",
+        "condition",
         "contact_card",
         "file",
         "table",
