@@ -4,9 +4,34 @@ import * as all_messages_data from "./all_messages_data.ts";
 import * as emoji_frequency_data from "./emoji_frequency_data.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as message_store from "./message_store.ts";
+import * as muted_users from "./muted_users.ts";
 import * as reactions from "./reactions.ts";
 import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as typeahead from "./typeahead.ts";
+import * as user_topics from "./user_topics.ts";
+
+// Returns true if the reaction is from:
+// - A muted sender.
+// - A muted channel.
+// - A muted topic.
+function should_ignore_reaction(
+    message: message_store.Message,
+    reaction_sender_id?: number,
+): boolean {
+    if (message.type === "stream") {
+        if (user_topics.is_topic_muted(message.stream_id, message.topic)) {
+            return true;
+        }
+        if (stream_data.is_muted(message.stream_id)) {
+            return true;
+        }
+    }
+    if (reaction_sender_id && muted_users.is_user_muted(reaction_sender_id)) {
+        return true;
+    }
+    return false;
+}
 
 export function update_frequently_used_emojis_list(): void {
     const emojis = emoji_frequency_data.preferred_emoji_list();
@@ -24,6 +49,9 @@ export function update_emoji_frequency_on_add_reaction_event(event: reactions.Re
     const message_id = event.message_id;
     const message = message_store.get(message_id);
     if (message === undefined) {
+        return;
+    }
+    if (should_ignore_reaction(message, event.user_id)) {
         return;
     }
     const emoji_id = reactions.get_local_reaction_id(event);
@@ -53,6 +81,9 @@ export function update_emoji_frequency_on_remove_reaction_event(
     if (message === undefined) {
         return;
     }
+    if (should_ignore_reaction(message, event.user_id)) {
+        return;
+    }
 
     const emoji_id = reactions.get_local_reaction_id(event);
     const is_me = event.user_id === current_user.user_id;
@@ -74,6 +105,9 @@ export function update_emoji_frequency_on_messages_deletion(message_ids: number[
         // action is required, since only messages that are locally
         // cached are represented in our emoji frequency data.
         if (message === undefined) {
+            continue;
+        }
+        if (should_ignore_reaction(message)) {
             continue;
         }
         assert(message !== undefined);
