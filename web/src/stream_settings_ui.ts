@@ -1187,7 +1187,7 @@ function show_right_section(): void {
 export function change_state(
     section: string,
     left_side_tab: string | undefined,
-    right_side_tab: string,
+    right_side_tab: string | undefined,
     folder_id?: number,
 ): void {
     assert(toggler !== undefined);
@@ -1199,6 +1199,9 @@ export function change_state(
     }
 
     if (section === "all") {
+        if (folder_id !== undefined) {
+            stream_settings_components.set_folder_filter_dropdown_value(folder_id);
+        }
         toggler.goto("all-streams");
         stream_edit.empty_right_panel();
         return;
@@ -1214,6 +1217,7 @@ export function change_state(
     if (/\d+/.test(section)) {
         const stream_id = Number.parseInt(section, 10);
         show_right_section();
+        assert(right_side_tab !== undefined);
         stream_edit_toggler.set_select_tab(right_side_tab);
 
         if (left_side_tab === undefined) {
@@ -1262,7 +1266,7 @@ export function change_state(
 export function launch(
     section: string,
     left_side_tab: string | undefined,
-    right_side_tab: string,
+    right_side_tab: string | undefined,
     folder_id?: number,
 ): void {
     setup_page(() => {
