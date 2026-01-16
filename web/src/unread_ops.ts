@@ -866,6 +866,11 @@ export function notify_server_messages_read(
         return;
     }
 
+    const message_ids_set = new Set(messages.map((m) => m.id));
+    pending_unread_updates = pending_unread_updates
+        .map((ids) => ids.filter((id) => !message_ids_set.has(id)))
+        .filter((ids) => ids.length > 0);
+
     message_flags.send_read(messages);
 
     for (const message of messages) {
