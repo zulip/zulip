@@ -286,6 +286,7 @@ def render_block(block: WildValue) -> str:
         # buttons and similar elements, which Zulip currently doesn't support.
         # https://docs.slack.dev/reference/block-kit/blocks/actions-block
         "actions",
+        "input",
     }
     known_types = {
         *supported_types,
@@ -326,9 +327,6 @@ def render_block(block: WildValue) -> str:
         if "title" in block:
             alt_text = block["title"].tame(check_text_block(plain_text_only=True))["text"]
         return f"[{alt_text}]({image_url})"
-    elif block_type == "input":
-        # Unhandled
-        pass
     elif block_type == "section":
         pieces = []
         if "text" in block:
