@@ -2,6 +2,7 @@ import re
 from collections.abc import Callable
 from datetime import datetime
 
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from pydantic import Json
 from typing_extensions import override
@@ -18,6 +19,7 @@ from zerver.lib.webhooks.common import (
     default_fixture_to_headers,
     get_event_header,
     get_setup_webhook_message,
+    maybe_auto_resolve_topic,
 )
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
@@ -1136,7 +1138,21 @@ def api_github_webhook(
     )
     body = body_function(helper)
 
-    check_send_webhook_message(request, user_profile, topic_name, body, event)
+    sent_message_id = check_send_webhook_message(request, user_profile, topic_name, body, event)
+
+    if (
+        event == "closed_pull_request"
+        and user_specified_topic is None
+        and sent_message_id is not None
+    ):
+        transaction.on_commit(
+            lambda: maybe_auto_resolve_topic(
+                user_profile=user_profile,
+                message_id=sent_message_id,
+                topic_name=topic_name,
+            )
+        )
+
     return json_success(request)
 
 
