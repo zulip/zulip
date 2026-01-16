@@ -22,8 +22,6 @@ class kandra::app_frontend_tmpfs {
   file { '/tmp/slack-conversions':
     ensure => 'directory',
     mode   => '0755',
-    owner  => 'root',
-    group  => 'root',
   }
   mount { '/tmp/slack-conversions':
     ensure  => 'mounted',
@@ -32,5 +30,14 @@ class kandra::app_frontend_tmpfs {
     atboot  => true,
     options => 'defaults,noatime,discard,commit=60,errors=remount-ro',
     require => Exec['format partition'],
+  }
+
+  # We want ownership to be enforced after the mount, so the File
+  # directive above doesn't have user/group, and we manage it
+  # explicitly via chown.
+  exec { 'chown-slack-conversions':
+    command => '/bin/chown zulip:zulip /tmp/slack-conversions',
+    unless  => '/usr/bin/test "$(stat -c %U:%G /tmp/slack-conversions)" = "zulip:zulip"',
+    require => Mount['/tmp/slack-conversions'],
   }
 }
