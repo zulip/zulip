@@ -121,6 +121,7 @@ type StreamListSortResult = {
 export function sort_groups(
     all_subscribed_stream_ids: number[],
     search_term: string,
+    topics_state = "",
 ): StreamListSortResult {
     const pinned_section: StreamListSection = {
         id: "pinned-streams",
@@ -179,6 +180,7 @@ export function sort_groups(
                 current_channel_id,
                 topic_names,
                 search_term,
+                topics_state,
             ),
         );
         if (
