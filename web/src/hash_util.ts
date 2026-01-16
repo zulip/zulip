@@ -71,6 +71,9 @@ export function decode_operand(
     if (operator === "dm-including" || operator === "dm" || operator === "sender") {
         const emails = people.slug_to_emails(operand);
         if (emails) {
+            if (operator === "sender") {
+                assert(!emails.includes(","), "Sender operand should not be a group");
+            }
             return emails;
         }
     }
