@@ -125,6 +125,9 @@ VIDEO_ZOOM_OAUTH_URL: str = "https://zoom.us"
 VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = get_secret("video_zoom_account_id", development_only=True)
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
+VIDEO_WEBEX_API_URL: str = "https://webexapis.com"
+VIDEO_WEBEX_CLIENT_ID = get_secret("video_webex_client_id")
+VIDEO_WEBEX_CLIENT_SECRET = get_secret("video_webex_client_secret")
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ""
