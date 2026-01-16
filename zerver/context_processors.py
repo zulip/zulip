@@ -22,7 +22,7 @@ from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
-from zerver.models import PreregistrationRealm, Realm, UserProfile
+from zerver.models import PreregistrationRealm, Realm, RealmUserDefault, UserProfile
 from zerver.models.realms import get_realm
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
@@ -250,6 +250,16 @@ def login_context(request: HttpRequest) -> dict[str, Any]:
         # public streams configured, in addition to having it enabled.
         realm_web_public_access_enabled = realm.allow_web_public_streams_access()
 
+    # Get realm default emojiset for rendering emojis in organization description
+    if realm is not None:
+        try:
+            realm_user_default = RealmUserDefault.objects.get(realm=realm)
+            realm_default_emojiset = realm_user_default.emojiset
+        except RealmUserDefault.DoesNotExist:  # nocoverage
+            realm_default_emojiset = UserProfile.GOOGLE_EMOJISET
+    else:
+        realm_default_emojiset = UserProfile.GOOGLE_EMOJISET
+
     context: dict[str, Any] = {
         "realm_invite_required": realm_invite_required,
         "realm_description": realm_description,
@@ -275,6 +285,13 @@ def login_context(request: HttpRequest) -> dict[str, Any]:
 
     context["external_authentication_methods"] = get_external_method_dicts(realm)
     context["no_auth_enabled"] = no_auth_enabled
+
+    # Sync this with login_page_params_schema in base_page_params.ts.
+    context["page_params"] = {
+        **DEFAULT_PAGE_PARAMS,
+        "page_type": "login",
+        "realm_default_emojiset": realm_default_emojiset,
+    }
 
     return context
 

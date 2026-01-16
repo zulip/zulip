@@ -11,6 +11,12 @@ const default_params_schema = z.object({
     google_analytics_id: z.optional(z.string()),
     request_language: z.string(),
 });
+// Sync this with zerver.context_processors.login_context.
+const login_page_params_schema = z.object({
+    ...default_params_schema.shape,
+    page_type: z.literal("login"),
+    realm_default_emojiset: z.string(),
+});
 
 // These parameters are sent in #page-params for both users and spectators.
 //
@@ -103,6 +109,7 @@ const upgrade_params_schema = z.object({
 
 const page_params_schema = z.discriminatedUnion("page_type", [
     default_params_schema,
+    login_page_params_schema,
     home_params_schema,
     stats_params_schema,
     team_params_schema,
