@@ -39,6 +39,7 @@ a.help_link_widget {
     &:hover {
         color: inherit;
         opacity: 1;
+        text-decoration: none;
     }
 }
 
