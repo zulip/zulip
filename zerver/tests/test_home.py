@@ -92,6 +92,7 @@ class HomeTest(ZulipTestCase):
         "tenor_api_key",
         "gif_rating_options",
         "has_zoom_token",
+        "has_webex_token",
         "is_admin",
         "is_guest",
         "is_moderator",

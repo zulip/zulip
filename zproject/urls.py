@@ -267,11 +267,13 @@ from zerver.views.users import (
     update_user_by_id_api,
 )
 from zerver.views.video_calls import (
+    complete_webex_user,
     complete_zoom_user,
     deauthorize_zoom_user,
     get_bigbluebutton_url,
     join_bigbluebutton,
     make_zoom_video_call,
+    register_webex_user,
     register_zoom_user,
 )
 from zerver.views.welcome_bot_custom_message import send_test_welcome_bot_custom_message
@@ -726,6 +728,9 @@ i18n_urls = [
     path("calls/zoom/register", register_zoom_user),
     path("calls/zoom/complete", complete_zoom_user),
     path("calls/zoom/deauthorize", deauthorize_zoom_user),
+    # Used to generate a Webex video call URL
+    path("calls/webex/register", register_webex_user),
+    path("calls/webex/complete", complete_webex_user),
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
     # Integrations documentation
