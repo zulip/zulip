@@ -37,6 +37,7 @@ import * as watchdog from "./watchdog.ts";
 
 let loading_indicator_displayed = false;
 let unsubscribed_ignored_channels: number[] = [];
+let pending_unread_updates: number[][] = [];
 
 // We might want to use a slightly smaller batch for the first
 // request, because empirically, the first request can be
@@ -598,6 +599,44 @@ function do_mark_unread_by_narrow(
     });
 }
 
+function retry_pending_unread_updates(): void {
+    const updates = pending_unread_updates;
+    pending_unread_updates = [];
+    for (const message_ids of updates) {
+        send_mark_unread_request(message_ids);
+    }
+}
+
+function send_mark_unread_request(message_ids_to_update: number[]): void {
+    void channel.post({
+        url: "/json/messages/flags",
+        data: {messages: JSON.stringify(message_ids_to_update), op: "remove", flag: "read"},
+        success(raw_data) {
+            if (loading_indicator_displayed) {
+                finish_loading(message_ids_to_update.length);
+            }
+            const data = update_flags_for_response_schema.parse(raw_data);
+            const ignored_because_not_subscribed_channels =
+                data.ignored_because_not_subscribed_channels;
+            if (ignored_because_not_subscribed_channels.length > 0) {
+                handle_skipped_unsubscribed_streams(ignored_because_not_subscribed_channels);
+            }
+        },
+        error(xhr) {
+            if (xhr.readyState === 0) {
+                // Client is offline - queue for retry
+                pending_unread_updates.push(message_ids_to_update);
+            } else {
+                handle_mark_unread_from_here_error(xhr, {
+                    retry() {
+                        send_mark_unread_request(message_ids_to_update);
+                    },
+                });
+            }
+        },
+    });
+}
+
 function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
     const messages_to_update: Message[] = [];
     for (const message_id of message_ids_to_update) {
@@ -646,28 +685,7 @@ function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
         unread_ui.notify_messages_remain_unread();
     }
 
-    void channel.post({
-        url: "/json/messages/flags",
-        data: {messages: JSON.stringify(message_ids_to_update), op: "remove", flag: "read"},
-        success(raw_data) {
-            if (loading_indicator_displayed) {
-                finish_loading(message_ids_to_update.length);
-            }
-            const data = update_flags_for_response_schema.parse(raw_data);
-            const ignored_because_not_subscribed_channels =
-                data.ignored_because_not_subscribed_channels;
-            if (ignored_because_not_subscribed_channels.length > 0) {
-                handle_skipped_unsubscribed_streams(ignored_because_not_subscribed_channels);
-            }
-        },
-        error(xhr) {
-            handle_mark_unread_from_here_error(xhr, {
-                retry() {
-                    do_mark_unread_by_ids(message_ids_to_update);
-                },
-            });
-        },
-    });
+    send_mark_unread_request(message_ids_to_update);
 }
 
 function finish_loading(messages_marked_unread_till_now: number): void {
@@ -1000,6 +1018,7 @@ export function initialize(): void {
             // counts.
             process_visible();
         })
+        .on("online", retry_pending_unread_updates)
         .on("blur", () => {
             window_focused = false;
         });
