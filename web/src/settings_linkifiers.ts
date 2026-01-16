@@ -203,6 +203,8 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
                 linkifier: {
                     pattern: linkifier.pattern,
                     url_template: linkifier.url_template,
+                    example_input: linkifier.example_input ?? "",
+                    reverse_template: linkifier.reverse_template ?? "",
                     id: linkifier.id,
                 },
                 can_modify: current_user.is_admin,
