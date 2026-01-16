@@ -4971,6 +4971,15 @@ paths:
                                             to be of type integer and did not accept anonymous user groups.
 
                                             New in Zulip 8.0 (feature level 209).
+                                    default_avatar_source:
+                                      type: string
+                                      description: |
+                                        The avatar data source type for new users.
+
+                                        - "G" = Hosted by Gravatar
+                                        - "J" = Generated using Jdenticon
+
+                                        **Changes**: New in Zulip 12.0 (feature level 456).
                                     default_code_block_language:
                                       type: string
                                       description: |
@@ -19705,6 +19714,17 @@ paths:
                               description: |
                                 The regex pattern of the URL of a profile page
                                 on the external site.
+                      realm_default_avatar_source:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The avatar data source type for new users.
+
+                          - "G" = Hosted by Gravatar
+                          - "J" = Generated using Jdenticon
+
+                          **Changes**: New in Zulip 12.0 (feature level 456).
                       jitsi_server_url:
                         type: string
                         deprecated: true
