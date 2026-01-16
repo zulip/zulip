@@ -77,6 +77,38 @@
                 {{> settings_save_discard_widget section_name="onboarding" }}
             </div>
             <div class="organization-settings-parent">
+                {{#if development}}
+                <div class="input-group">
+                    <label class="settings-field-label">
+                        {{admin_settings_label.realm_default_avatar_source}}
+                        {{> ../help_link_widget link="/help/configure-default-new-user-settings" }}
+                    </label>
+                    <div class="default_avatar_source_values settings-highlight-box prop-element" id="id_realm_default_avatar_source" data-setting-widget-type="radio-group" data-setting-choice-type="string">
+                        {{#each (object_values default_avatar_source_values)}}
+                            <label class="preferences-radio-choice-label">
+                                <span class="radio-choice-controls">
+                                    <input type="radio" name="default_avatar_source" value="{{this.code}}"/>
+                                    <span class="preferences-radio-choice-text">{{this.description}}</span>
+                                </span>
+                                <span class="right">
+                                    {{#if (eq this.code "J") }}
+                                    <img class="avatar" src="/static/images/jdenticon-1.png" />
+                                    <img class="avatar" src="/static/images/jdenticon-2.png" />
+                                    <img class="avatar" src="/static/images/jdenticon-3.png" />
+                                    <img class="avatar" src="/static/images/jdenticon-4.png" />
+                                    {{else}}
+                                    <img class="avatar" src="/static/images/gravatar-1.png" />
+                                    <img class="avatar" src="/static/images/gravatar-2.png" />
+                                    <img class="avatar" src="/static/images/gravatar-3.png" />
+                                    <img class="avatar" src="/static/images/gravatar-4.png" />
+                                    {{/if}}
+                                </span>
+                            </label>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/if}}
+
                 {{> settings_checkbox
                   setting_name="realm_enable_welcome_message_custom_text"
                   prefix="id_"

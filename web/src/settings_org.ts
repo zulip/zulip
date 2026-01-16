@@ -245,6 +245,14 @@ function set_gif_rating_policy_dropdown(): void {
     $("#id_realm_gif_rating_policy").val(rating_id);
 }
 
+function set_default_avatar_source_setting(): void {
+    const setting_value = realm.realm_default_avatar_source;
+    $(`#id_realm_default_avatar_source input[value='${CSS.escape(setting_value)}']`).prop(
+        "checked",
+        true,
+    );
+}
+
 function update_message_edit_sub_settings(is_checked: boolean): void {
     settings_ui.disable_sub_setting_onchange(
         is_checked,
@@ -668,6 +676,9 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             break;
         case "realm_waiting_period_threshold":
             set_realm_waiting_period_setting();
+            break;
+        case "realm_default_avatar_source":
+            set_default_avatar_source_setting();
             break;
         case "realm_welcome_message_custom_text":
             unsaved_welcome_message_custom_text = "";
@@ -1547,6 +1558,7 @@ export function build_page(): void {
     set_create_web_public_stream_dropdown_visibility();
     disable_create_user_groups_if_on_limited_plan();
     set_welcome_message_custom_text_visibility();
+    set_default_avatar_source_setting();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
     maybe_restore_unsaved_welcome_message_custom_text();

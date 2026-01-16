@@ -912,6 +912,9 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_jitsi_server_url_setting_value($(elem), false);
             break;
+        case "realm_default_avatar_source":
+            proposed_val = get_input_element_value(elem, "radio-group");
+            break;
         default:
             if (current_val !== undefined) {
                 proposed_val = get_input_element_value(elem, typeof current_val);
