@@ -97,6 +97,7 @@ class HomeTest(ZulipTestCase):
         "gif_rating_policy_options",
         "has_zoom_token",
         "idle_queue_timeout_secs",
+        "has_webex_token",
         "is_admin",
         "is_guest",
         "is_moderator",

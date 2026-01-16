@@ -224,6 +224,154 @@ class ZoomVideoCallTestUserAuth(ZulipTestCase):
         self.assert_json_success(response)
 
 
+class WebexVideoCallTestOAuth(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+
+    def test_register_webex_request_no_settings(self) -> None:
+        with self.settings(VIDEO_WEBEX_CLIENT_ID=None):
+            response = self.client_get("/calls/webex/register")
+            self.assert_json_error(
+                response,
+                "Webex credentials have not been configured",
+            )
+
+    def test_register_webex_request(self) -> None:
+        response = self.client_get("/calls/webex/register")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].startswith("https://webexapis.com/v1/authorize"))
+
+    @responses.activate
+    def test_create_webex_access_token(self) -> None:
+        responses.add(
+            responses.POST,
+            "https://webexapis.com/v1/access_token",
+            json={"access_token": "oldtoken", "expires_in": -60},
+        )
+
+        response = self.client_get(
+            "/calls/webex/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+        self.assertEqual(response.status_code, 200)
+
+    @responses.activate
+    def test_create_webex_adhoc_meeting(self) -> None:
+        responses.add(
+            responses.POST,
+            "https://webexapis.com/v1/access_token",
+            json={"access_token": "token", "expires_in": 3600},
+        )
+
+        response = self.client_get(
+            "/calls/webex/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+        self.assertEqual(response.status_code, 200)
+
+        responses.add(
+            responses.POST,
+            "https://webexapis.com/v1/rooms",
+            json={"id": "room_id_123"},
+            status=200,
+        )
+
+        responses.add(
+            responses.POST,
+            "https://webexapis.com/v1/meetings",
+            json={
+                "id": "meeting_id_456",
+                "webLink": "https://webex.com/test",
+            },
+            status=200,
+        )
+
+        response = self.client_post("/json/calls/webex/create")
+
+        result = self.assert_json_success(response)
+        self.assertEqual(result["url"], "https://webex.com/test")
+
+        # Test for token removal on logout.
+        self.logout()
+        self.login_user(self.user)
+
+        response = self.client_post("/json/calls/webex/create")
+        self.assert_json_error(response, "Invalid Webex access token")
+
+    @responses.activate
+    def test_create_webex_personal_room_meeting(self) -> None:
+        responses.add(
+            responses.POST,
+            "https://webexapis.com/v1/access_token",
+            json={"access_token": "token", "expires_in": 3600},
+        )
+
+        self.client_get(
+            "/calls/webex/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+
+        responses.add(
+            responses.POST,
+            "https://webexapis.com/v1/rooms",
+            status=403,
+        )
+
+        responses.add(
+            responses.POST,
+            "https://webexapis.com/v1/meetings",
+            json={
+                "id": "meeting_id_456",
+                "webLink": "https://webex.com/test",
+            },
+            status=200,
+        )
+
+        result = self.client_post("/json/calls/webex/create")
+
+        assert responses.calls[-1].request.body is not None
+        payload = orjson.loads(responses.calls[-1].request.body)
+        self.assertEqual(payload["scheduledType"], "personalRoomMeeting")
+
+        json = self.assert_json_success(result)
+        self.assertEqual(json["url"], "https://webex.com/test")
+
+    def test_create_webex_realm_redirect(self) -> None:
+        response = self.client_get(
+            "/calls/webex/complete",
+            {"code": "code", "state": '{"realm":"lear","sid":"somesid"}'},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("http://lear.testserver/", response["Location"])
+        self.assertIn("somesid", response["Location"])
+
+    @responses.activate
+    def test_webex_public_room_creation_failure(self) -> None:
+        responses.add(
+            responses.POST,
+            "https://webexapis.com/v1/access_token",
+            json={"access_token": "token", "expires_in": 3600},
+        )
+
+        self.client_get(
+            "/calls/webex/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+
+        responses.add(
+            responses.POST,
+            "https://webexapis.com/v1/rooms",
+            status=500,
+        )
+
+        response = self.client_post("/json/calls/webex/create")
+
+        self.assert_json_error(response, "Failed to create Webex public room.")
+
+
 class ZoomVideoCallTestServerAuth(ZulipTestCase):
     @override
     def setUp(self) -> None:

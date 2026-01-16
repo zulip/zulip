@@ -262,13 +262,16 @@ from zerver.views.users import (
     update_user_by_id_api,
 )
 from zerver.views.video_calls import (
+    complete_webex_user,
     complete_zoom_user,
     create_nextcloud_talk_url,
     deauthorize_zoom_user,
     get_bigbluebutton_url,
     join_bigbluebutton,
     make_constructor_groups_video_call,
+    make_webex_video_call,
     make_zoom_video_call,
+    register_webex_user,
     register_zoom_user,
 )
 from zerver.views.welcome_bot_custom_message import send_test_welcome_bot_custom_message
@@ -592,6 +595,7 @@ v1_api_and_json_patterns = [
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
+    rest_path("calls/webex/create", POST=make_webex_video_call),
     # Used to generate a BigBlueButton video call URL
     rest_path("calls/bigbluebutton/create", GET=get_bigbluebutton_url),
     # Used to generate a Constructor Groups video call URL
@@ -728,6 +732,10 @@ i18n_urls = [
     path("calls/zoom/register", register_zoom_user),
     path("calls/zoom/complete", complete_zoom_user),
     path("calls/zoom/deauthorize", deauthorize_zoom_user),
+    # Used to complete Webex OAuth flow to get user's
+    # access token.
+    path("calls/webex/register", register_webex_user),
+    path("calls/webex/complete", complete_webex_user),
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
     # Integrations documentation
