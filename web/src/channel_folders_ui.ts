@@ -22,7 +22,8 @@ import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as modals from "./modals.ts";
 import * as people from "./people.ts";
-import {current_user, realm} from "./state_data.ts";
+import * as settings_data from "./settings_data.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
@@ -34,10 +35,6 @@ let add_channel_folder_widget: DropdownWidget | undefined;
 
 function compare_by_name(a: dropdown_widget.Option, b: dropdown_widget.Option): number {
     return util.strcmp(a.name, b.name);
-}
-
-function can_user_manage_folder(): boolean {
-    return current_user.is_admin;
 }
 
 export function add_channel_folder(): void {
@@ -203,7 +200,7 @@ function format_channel_item_html(stream: StreamSubscription): string {
         invite_only: stream.invite_only,
         is_web_public: stream.is_web_public,
         stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
-        can_manage_folder: can_user_manage_folder(),
+        can_manage_folder: settings_data.can_user_manage_folder(),
     });
 }
 
@@ -447,7 +444,7 @@ function update_channel_folder(folder_id: number): void {
 export function handle_editing_channel_folder(folder_id: number): void {
     const folder = channel_folders.get_channel_folder_by_id(folder_id);
     const subs = channel_folders.get_sorted_streams_in_folder(folder_id);
-    const can_manage_folder = can_user_manage_folder();
+    const can_manage_folder = settings_data.can_user_manage_folder();
 
     const html_body = render_edit_channel_folder_modal({
         name: folder.name,

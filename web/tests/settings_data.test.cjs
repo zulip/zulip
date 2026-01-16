@@ -694,3 +694,11 @@ run_test("should_mask_unread_count", ({override}) => {
     override(user_settings, "web_stream_unreads_count_display_policy", 1);
     assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), false);
 });
+
+run_test("can_user_manage_folder", ({override}) => {
+    override(current_user, "is_admin", false);
+    assert.equal(settings_data.can_user_manage_folder(), false);
+
+    override(current_user, "is_admin", true);
+    assert.equal(settings_data.can_user_manage_folder(), true);
+});
