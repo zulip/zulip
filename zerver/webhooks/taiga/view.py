@@ -7,7 +7,7 @@ value should always be in bold; otherwise the subject of US/task
 should be in bold.
 """
 
-from typing import TypeAlias
+from typing import TypedDict
 
 from django.http import HttpRequest, HttpResponse
 
@@ -18,7 +18,11 @@ from zerver.lib.validator import WildValue, check_bool, check_none_or, check_str
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-EventType: TypeAlias = dict[str, str | dict[str, str | bool | None]]
+
+class EventType(TypedDict):
+    type: str
+    event: str
+    values: dict[str, str | bool | None]
 
 
 @webhook_view("Taiga")
@@ -261,10 +265,7 @@ def parse_message(
 
 
 def generate_content(data: EventType) -> str:
-    assert isinstance(data["type"], str) and isinstance(data["event"], str)
     template = TEMPLATES[data["type"]][data["event"]]
-
-    assert isinstance(data["values"], dict)
     content = template.format(**data["values"])
     return content
 
