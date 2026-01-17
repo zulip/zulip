@@ -40,7 +40,7 @@ def api_taiga_webhook(
     return json_success(request)
 
 
-templates = {
+TEMPLATES = {
     "epic": {
         "create": "{user} created epic {subject}.",
         "set_assigned_to": "{user} assigned epic {subject} to {new}.",
@@ -138,7 +138,6 @@ templates = {
 
 
 def get_old_and_new_values(change_type: str, message: WildValue) -> ReturnType:
-    """Parses the payload and finds previous and current value of change_type."""
     old = message["change"]["diff"][change_type].get("from")
     new = message["change"]["diff"][change_type].get("to")
     return old, new
@@ -147,7 +146,6 @@ def get_old_and_new_values(change_type: str, message: WildValue) -> ReturnType:
 def parse_comment(
     message: WildValue,
 ) -> EventType:
-    """Parses the comment to issue, task or US."""
     return {
         "event": "commented",
         "type": message["type"].tame(check_string),
@@ -161,7 +159,6 @@ def parse_comment(
 def parse_create_or_delete(
     message: WildValue,
 ) -> EventType:
-    """Parses create or delete event."""
     if message["type"].tame(check_string) == "relateduserstory":
         return {
             "type": message["type"].tame(check_string),
@@ -184,7 +181,6 @@ def parse_create_or_delete(
 
 
 def parse_change_event(change_type: str, message: WildValue) -> EventType | None:
-    """Parses change event."""
     evt: EventType = {}
     values: dict[str, str | bool | None] = {
         "user": get_display_user(message),
@@ -279,7 +275,6 @@ def parse_webhook_test(
 def parse_message(
     message: WildValue,
 ) -> list[EventType]:
-    """Parses the payload by delegating to specialized functions."""
     events: list[EventType] = []
     if message["action"].tame(check_string) in ["create", "delete"]:
         events.append(parse_create_or_delete(message))
@@ -298,9 +293,8 @@ def parse_message(
 
 
 def generate_content(data: EventType) -> str:
-    """Gets the template string and formats it with parsed data."""
     assert isinstance(data["type"], str) and isinstance(data["event"], str)
-    template = templates[data["type"]][data["event"]]
+    template = TEMPLATES[data["type"]][data["event"]]
 
     assert isinstance(data["values"], dict)
     content = template.format(**data["values"])
@@ -319,33 +313,25 @@ def get_subject(message: WildValue) -> str:
     subject = data.get("subject").tame(check_none_or(check_string))
     subject_to_use = subject if subject else data["name"].tame(check_string)
 
-    if "permalink" in data:
-        return "[" + subject_to_use + "]" + "(" + data["permalink"].tame(check_string) + ")"
-    return "**" + subject_to_use + "**"
+    return (
+        f"[{subject_to_use}]({data['permalink'].tame(check_string)})"
+        if "permalink" in data
+        else f"**{subject_to_use}**"
+    )
 
 
 def get_epic_subject(message: WildValue) -> str:
-    if "permalink" in message["data"]["epic"]:
-        return (
-            "["
-            + message["data"]["epic"]["subject"].tame(check_string)
-            + "]"
-            + "("
-            + message["data"]["epic"]["permalink"].tame(check_string)
-            + ")"
-        )
-    return "**" + message["data"]["epic"]["subject"].tame(check_string) + "**"
+    return (
+        f"[{message['data']['epic']['subject'].tame(check_string)}]({message['data']['epic']['permalink'].tame(check_string)})"
+        if "permalink" in message["data"]["epic"]
+        else f"**{message['data']['epic']['subject'].tame(check_string)}**"
+    )
 
 
 def get_userstory_subject(message: WildValue) -> str:
-    if "permalink" in message["data"]["user_story"]:
-        us_data = message["data"]["user_story"]
-        return (
-            "["
-            + us_data["subject"].tame(check_string)
-            + "]"
-            + "("
-            + us_data["permalink"].tame(check_string)
-            + ")"
-        )
-    return "**" + message["data"]["user_story"]["subject"].tame(check_string) + "**"
+    us_data = message["data"]["user_story"]
+    return (
+        f"[{us_data['subject'].tame(check_string)}]({us_data['permalink'].tame(check_string)})"
+        if "permalink" in us_data
+        else f"**{us_data['subject'].tame(check_string)}**"
+    )
