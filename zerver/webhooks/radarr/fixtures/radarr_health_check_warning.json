@@ -1,7 +1,0 @@
-{
-    "level": "warning",
-    "message": "No download client is available",
-    "type": "DownloadClientCheck",
-    "wikiUrl": "https://wiki.servarr.com/Radarr_System#no_download_client_is_available",
-    "eventType": "Health"
-}

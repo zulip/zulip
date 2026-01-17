@@ -1,7 +1,0 @@
-{
-	"monitor_url": "server1.example.com",
-	"alert_type": "1",
-	"alert_type_friendly_name": "Down",
-	"alert_details": "Host Is Unreachable",
-	"alert_friendly_duration": "*alertFriendlyDuration*"
-  }

@@ -1,3 +1,18 @@
+## New Contributor Quick Start
+
+Welcome! 👋 If you’re new to this project, this section will help you get started quickly.
+
+### How to make your first contribution
+
+1. Start by reading the **README** to understand what the project does.
+2. Review the **CONTRIBUTING** guide for contribution rules and setup instructions.
+3. Look for issues labeled **`good first issue`**, **`help wanted`**, or **`documentation`**.
+4. Documentation-only pull requests (such as clarifying text or fixing typos) are welcome and encouraged.
+5. If you’re unsure where to begin, feel free to ask a question in the issue comments or community chat before starting.
+
+Small and incremental contributions are completely okay — thank you for helping improve the project! 🙌
+
+
 # Contributing guide
 
 Welcome! This is a step-by-step guide on how to get started contributing code to

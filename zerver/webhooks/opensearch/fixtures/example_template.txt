@@ -1,2 +1,0 @@
-topic: Resource Monitor
-Alert of severity **3** triggered by **Insufficient memory**.
