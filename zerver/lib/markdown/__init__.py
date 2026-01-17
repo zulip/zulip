@@ -97,7 +97,7 @@ html_safelisted_schemes = (
     "wtai",
     "xmpp",
 )
-allowed_schemes = ("http", "https", "ftp", "file", "mid", *html_safelisted_schemes)
+allowed_schemes = ("http", "https", "ftp", "mid", *html_safelisted_schemes)
 
 
 class LinkInfo(TypedDict):
@@ -250,7 +250,6 @@ def get_web_link_regex() -> Pattern[str]:
         nested_paren_chunk %= (paren_group,)
     nested_paren_chunk %= (inner_paren_contents,)
 
-    file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
     REGEX = rf"""
         (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
                              # (Double-negative lookbehind to allow start-of-string)
@@ -268,7 +267,6 @@ def get_web_link_regex() -> Pattern[str]:
                 (?: \? (?![)\"\s]|\Z) {nested_paren_chunk} ) # Query starting with ? (must not be trailing punctuation)
             )?)              # Path is optional
             | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
-            {file_links}               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
             | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{{25,34}})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
         )
         (?=                            # URL must be followed by (not included in group)

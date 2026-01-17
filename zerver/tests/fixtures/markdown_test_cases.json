@@ -49,6 +49,11 @@
       "expected_output": "<p>it's lunch time</p>"
     },
     {
+      "name": "file_links_ignored",
+      "input": "Check file:///etc/passwd out",
+      "expected_output": "<p>Check file:///etc/passwd out</p>"
+    },
+    {
       "name": "codeblock_trailing_whitespace",
       "input": "Hamlet once said\n~~~~\ndef func():\n    x = 1\n\n    y = 2\t\t\n\n    z = 3       \n~~~~\nAnd all was good.",
       "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre><span></span><code>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</code></pre></div>\n<p>And all was good.</p>",

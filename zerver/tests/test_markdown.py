@@ -38,7 +38,6 @@ from zerver.lib.markdown import (
     InlineInterestingLinkProcessor,
     MarkdownListPreprocessor,
     MessageRenderingResult,
-    clear_web_link_regex_for_testing,
     content_has_emoji_syntax,
     image_preview_enabled,
     markdown_convert,
@@ -734,25 +733,10 @@ class MarkdownLinkTest(ZulipTestCase):
 
     def test_inline_file(self) -> None:
         msg = "Check out this file file:///Volumes/myserver/Users/Shared/pi.py"
-
-        # Make separate realms because the markdown engines cache the
-        # linkifiers on them, including if ENABLE_FILE_LINKS was used
-        realm = do_create_realm(string_id="file_links_disabled", name="File links disabled")
         self.assertEqual(
-            markdown_convert(msg, message_realm=realm).rendered_content,
+            markdown_convert_wrapper(msg),
             "<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>",
         )
-        clear_web_link_regex_for_testing()
-
-        try:
-            with self.settings(ENABLE_FILE_LINKS=True):
-                realm = do_create_realm(string_id="file_links_enabled", name="File links enabled")
-                self.assertEqual(
-                    markdown_convert(msg, message_realm=realm).rendered_content,
-                    '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>',
-                )
-        finally:
-            clear_web_link_regex_for_testing()
 
     def test_inline_bitcoin(self) -> None:
         msg = "To bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or not to bitcoin"
