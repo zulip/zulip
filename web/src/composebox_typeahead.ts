@@ -1656,7 +1656,7 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
             },
             getCustomItemClassname(item) {
                 // Inject this class for non stream items in the typeahead menu to remove extra
-                // gap between the stream name, chevron and the the topic name.
+                // gap between the stream name, chevron and the topic name.
                 return item.type === "topic_list" && !item.is_channel_link
                     ? "topic-typeahead-link"
                     : "";

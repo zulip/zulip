@@ -341,7 +341,7 @@ export function paste_handler_converter(
     });
 
     /*
-        Below lies the the thought process behind the parsing for math blocks and inline math expressions.
+        Below lies the thought process behind the parsing for math blocks and inline math expressions.
 
         The general structure of the katex-displays i.e. math blocks is:
         <p>
