@@ -159,25 +159,16 @@ def parse_comment(
 def parse_create_or_delete(
     message: WildValue,
 ) -> EventType:
-    if message["type"].tame(check_string) == "relateduserstory":
-        return {
-            "type": message["type"].tame(check_string),
-            "event": message["action"].tame(check_string),
-            "values": {
-                "user": get_display_user(message),
-                "epic_subject": get_subject(message, "epic"),
-                "userstory_subject": get_subject(message, "user_story"),
-            },
-        }
+    event_type = message["type"].tame(check_string)
 
-    return {
-        "type": message["type"].tame(check_string),
-        "event": message["action"].tame(check_string),
-        "values": {
-            "user": get_display_user(message),
-            "subject": get_subject(message),
-        },
-    }
+    values: dict[str, str | bool | None] = {"user": get_display_user(message)}
+    if event_type == "relateduserstory":
+        values["epic_subject"] = get_subject(message, "epic")
+        values["userstory_subject"] = get_subject(message, "user_story")
+    else:
+        values["subject"] = get_subject(message)
+
+    return EventType(type=event_type, event=message["action"].tame(check_string), values=values)
 
 
 def parse_change_event(change_type: str, message: WildValue) -> EventType | None:
