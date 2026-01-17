@@ -165,8 +165,8 @@ def parse_create_or_delete(
             "event": message["action"].tame(check_string),
             "values": {
                 "user": get_display_user(message),
-                "epic_subject": get_epic_subject(message),
-                "userstory_subject": get_userstory_subject(message),
+                "epic_subject": get_subject(message, "epic"),
+                "userstory_subject": get_subject(message, "user_story"),
             },
         }
 
@@ -307,31 +307,12 @@ def get_display_user(message: WildValue) -> str:
     return f"[{owner_name}]({owner_link})"
 
 
-def get_subject(message: WildValue) -> str:
-    data = message["data"]
-
-    subject = data.get("subject").tame(check_none_or(check_string))
-    subject_to_use = subject if subject else data["name"].tame(check_string)
-
-    return (
-        f"[{subject_to_use}]({data['permalink'].tame(check_string)})"
-        if "permalink" in data
-        else f"**{subject_to_use}**"
-    )
+def format_subject(subject_text: str, permalink: str | None) -> str:
+    return f"[{subject_text}]({permalink})" if permalink else f"**{subject_text}**"
 
 
-def get_epic_subject(message: WildValue) -> str:
-    return (
-        f"[{message['data']['epic']['subject'].tame(check_string)}]({message['data']['epic']['permalink'].tame(check_string)})"
-        if "permalink" in message["data"]["epic"]
-        else f"**{message['data']['epic']['subject'].tame(check_string)}**"
-    )
-
-
-def get_userstory_subject(message: WildValue) -> str:
-    us_data = message["data"]["user_story"]
-    return (
-        f"[{us_data['subject'].tame(check_string)}]({us_data['permalink'].tame(check_string)})"
-        if "permalink" in us_data
-        else f"**{us_data['subject'].tame(check_string)}**"
-    )
+def get_subject(message: WildValue, data_field: str | None = None) -> str:
+    data = message["data"][data_field] if data_field is not None else message["data"]
+    text = data.get("subject").tame(check_none_or(check_string)) or data["name"].tame(check_string)
+    permalink = data.get("permalink").tame(check_none_or(check_string))
+    return format_subject(text, permalink)
