@@ -6,6 +6,7 @@ from zerver.lib.streams import check_stream_name_available
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.types import UserGroupMembersData
 
+
 class CheckStreamNameAvailableTests(ZulipTestCase):
     def test_check_stream_name_available_with_nonexistent_stream(self) -> None:
         """Test that check_stream_name_available passes for non-existent streams."""
