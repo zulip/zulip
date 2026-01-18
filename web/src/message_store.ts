@@ -485,3 +485,16 @@ export function maybe_update_raw_content(id: number, raw_content: string | undef
     }
     message.raw_content = raw_content;
 }
+
+export function has_messages_in_dm(user_ids_string: string): boolean {
+    // user_ids_string is a sorted, comma-joined ID string (same format as to_user_ids).
+    for (const message_data of stored_messages.values()) {
+        if (
+            message_data.message.type === "private" &&
+            message_data.message.to_user_ids === user_ids_string
+        ) {
+            return true;
+        }
+    }
+    return false;
+}
