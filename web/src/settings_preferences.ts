@@ -165,6 +165,9 @@ export function set_up(settings_panel: SettingsPanel): void {
     $container
         .find(".setting_web_stream_unreads_count_display_policy")
         .val(settings_object.web_stream_unreads_count_display_policy);
+    $container
+        .find(".setting_pin_dm_section")
+        .val(settings_object.web_left_sidebar_dm_collapse_policy);
 
     information_density.enable_or_disable_control_buttons($container);
 
