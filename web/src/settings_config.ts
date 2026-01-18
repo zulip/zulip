@@ -36,6 +36,21 @@ type SettingDescription<T> = {
     code: T;
     description: string;
 };
+
+export const direct_messages_section_values: Record<
+    "scroll_down" | "never",
+    SettingDescription<number>
+> = {
+    scroll_down: {
+        code: 1,
+        description: $t({defaultMessage: "When scrolling down (default)"}),
+    },
+    never: {
+        code: 2,
+        description: $t({defaultMessage: "Never"}),
+    },
+};
+
 export const demote_inactive_streams_values: Record<
     "automatic" | "always" | "never",
     SettingDescription<number>

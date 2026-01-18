@@ -278,6 +278,18 @@ export function listener_for_preferred_color_scheme_change(callback: () => void)
     }
 }
 
+// Keep the menu icon visible
+export function show_left_sidebar_dm_menu_icon(element: Element): void {
+    $(element)
+        .closest("#direct-messages-section-header")
+        .find(".dm-section-menu-icon")
+        .addClass("left_sidebar_menu_icon_visible");
+}
+
+export function hide_left_sidebar_dm_menu_icon(): void {
+    $(".dm-section-menu-icon").removeClass("left_sidebar_menu_icon_visible");
+}
+
 // Keep the menu icon over which the popover is based off visible.
 export function show_left_sidebar_menu_icon(element: Element): void {
     $(element).closest(".sidebar-menu-icon").addClass("left_sidebar_menu_icon_visible");

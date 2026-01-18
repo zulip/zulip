@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import type {Filter} from "./filter.ts";
@@ -13,8 +14,10 @@ import * as pm_list_dom from "./pm_list_dom.ts";
 import type {PMNode} from "./pm_list_dom.ts";
 import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
+import {direct_messages_section_values} from "./settings_config.ts";
 import * as ui_util from "./ui_util.ts";
 import type {FullUnreadCountsData} from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 import * as vdom from "./vdom.ts";
 
@@ -39,6 +42,8 @@ let zoomed = false;
 // Scroll position before user started searching.
 let pre_search_scroll_position = 0;
 let previous_search_term = "";
+
+let direct_messages_pinned = false;
 
 export function is_zoomed_in(): boolean {
     return zoomed;
@@ -104,6 +109,17 @@ function set_dom_to(new_dom: vdom.Tag<PMNode>, for_modal: boolean): void {
 
     vdom.update(replace_content, find, new_dom, prior_dom);
     prior_dom = new_dom;
+}
+
+function dm_section_height(dm_section: HTMLElement | undefined): void {
+    if (direct_messages_pinned && dm_section) {
+        const outer_height = $(dm_section).outerHeight(true);
+        assert(outer_height !== undefined);
+        const dm_container_height = outer_height + 27.43;
+        $(":root").css("--dm-section-height", `${dm_container_height}px`);
+    } else {
+        $(":root").css("--dm-section-height", "");
+    }
 }
 
 export function update_private_messages(): void {
@@ -176,6 +192,16 @@ export function update_private_messages(): void {
             search_term,
         });
         set_dom_to(new_dom, zoomed);
+    }
+
+    const dm_section = $("#left_sidebar_scroll_container #direct-messages-list-container")[0];
+
+    if (dm_section instanceof HTMLElement) {
+        const resize_observer = new ResizeObserver(() => {
+            dm_section_height(dm_section);
+        });
+
+        resize_observer.observe(dm_section);
     }
     // Make sure to update the left sidebar heights after updating
     // direct messages.
@@ -258,6 +284,25 @@ export function update_dom_with_unread_counts(
     }
 
     last_direct_message_count = new_direct_message_count;
+}
+
+export function set_direct_messages_pinned(pinned: boolean): void {
+    direct_messages_pinned = pinned;
+    $("#direct-messages-list-container").toggleClass("pinned", pinned);
+
+    const scroll_position = $(
+        "#left_sidebar_scroll_container .simplebar-content-wrapper",
+    ).scrollTop();
+    const pm_list_height = $("#direct-messages-list").height();
+    assert(scroll_position !== undefined);
+    assert(pm_list_height !== undefined);
+
+    if (pinned) {
+        expand();
+    } else if (scroll_position > pm_list_height) {
+        $("#toggle-direct-messages-section-icon").addClass("rotate-icon-right");
+        $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-down");
+    }
 }
 
 function highlight_all_private_messages_view(): void {
@@ -375,6 +420,10 @@ export function initialize(): void {
         close();
     } else {
         expand();
+    }
+    // Restore Pin status.
+    if (user_settings.pin_direct_messages === direct_messages_section_values.never.code) {
+        set_direct_messages_pinned(true);
     }
 
     $(".direct-messages-container").on("click", "#show-more-direct-messages", (e) => {
