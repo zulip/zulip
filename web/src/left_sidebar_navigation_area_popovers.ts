@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_all_messages_popover.hbs";
 import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar/left_sidebar_drafts_popover.hbs";
 import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar/left_sidebar_inbox_popover.hbs";
+import render_left_sidebar_pin_popover from "../templates/popovers/left_sidebar/left_sidebar_pin_popover.hbs";
 import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar/left_sidebar_recent_view_popover.hbs";
 import render_left_sidebar_starred_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_starred_messages_popover.hbs";
 import render_left_sidebar_views_popover from "../templates/popovers/left_sidebar/left_sidebar_views_popover.hbs";
@@ -12,6 +13,7 @@ import render_left_sidebar_views_popover from "../templates/popovers/left_sideba
 import * as channel from "./channel.ts";
 import * as drafts from "./drafts.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as settings_config from "./settings_config.ts";
@@ -67,6 +69,18 @@ function register_toggle_unread_message_count(
         url: "/json/settings",
         data,
     });
+    popover_menus.hide_current_popover_if_visible(instance);
+}
+
+function pin_dm(event: JQuery.ClickEvent<tippy.PopperElement, {instance: tippy.Instance}>): void {
+    const {instance} = event.data;
+    pm_list.pin_direct_messages();
+    popover_menus.hide_current_popover_if_visible(instance);
+}
+
+function unpin_dm(event: JQuery.ClickEvent<tippy.PopperElement, {instance: tippy.Instance}>): void {
+    const {instance} = event.data;
+    pm_list.unpin_direct_messages();
     popover_menus.hide_current_popover_if_visible(instance);
 }
 
@@ -325,6 +339,36 @@ export function initialize(): void {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.top_left_sidebar = null;
+        },
+    });
+
+    popover_menus.register_popover_menu(".dm-section-menu-icon", {
+        ...popover_menus.left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+
+            $popper.one("click", "#expand_dm_section", {instance}, pin_dm);
+            $popper.one("click", "#collapse_dm_section", {instance}, unpin_dm);
+        },
+        onShow(instance) {
+            popover_menus.popover_instances.show_dm_popover = instance;
+            assert(instance.reference instanceof HTMLElement);
+            ui_util.show_left_sidebar_dm_menu_icon(instance.reference);
+
+            popovers.hide_all();
+            instance.setContent(
+                ui_util.parse_html(
+                    render_left_sidebar_pin_popover({
+                        name: "DMs",
+                    }),
+                ),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.show_dm_popover = null;
+            $(instance.popper).off("click", ".toggle-pin-dm-section");
+            ui_util.hide_left_sidebar_dm_menu_icon();
         },
     });
 

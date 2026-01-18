@@ -42,6 +42,7 @@ export const realm_default_settings_schema = z.object({
     left_side_userlist: z.boolean(),
     message_content_in_email_notifications: z.boolean(),
     notification_sound: z.string(),
+    pin_direct_messages: z.number(),
     pm_content_in_desktop_notifications: z.boolean(),
     presence_enabled: z.boolean(),
     realm_name_in_email_notifications_policy: z.number(),

@@ -330,9 +330,37 @@
     &.zoom-in,
     &:hover {
         .compose-new-direct-message,
-        .show-all-direct-messages {
+        .show-all-direct-messages .dm-section-menu-icon {
             display: flex;
         }
+    }
+
+    .dm-section-menu-icon {
+        grid-area: ending-anchor-element;
+        justify-self: stretch;
+        font-size: 1.0625em;
+        height: 1.4118em;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        margin: 2px 2px 2px 1px;
+        padding-left: 1px;
+        border-radius: 3px;
+        color: var(--color-vdots-visible);
+
+        &:hover {
+            color: var(--color-vdots-hover);
+            background-color: var(--color-background-sidebar-action-hover);
+        }
+
+        &.left_sidebar_menu_icon_visible {
+            display: flex !important;
+        }
+    }
+
+    &:has(.left_sidebar_menu_icon_visible) {
+        background-color: var(--color-background-hover-narrow-filter);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
     }
 }
 
@@ -455,6 +483,13 @@
         opacity: var(--opacity-sidebar-heading-icon);
         justify-self: center;
     }
+}
+
+.direct-messages-container.pinned
+    ~ #streams_list
+    .stream-list-section-container
+    .stream-list-subsection-header {
+    top: var(--dm-section-height, 0);
 }
 
 .stream-list-toggle-inactive-or-muted-channels {
@@ -642,6 +677,13 @@
                 margin-top: 2px;
             }
         }
+    }
+
+    &.pinned {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background-color: var(--color-background);
     }
 }
 

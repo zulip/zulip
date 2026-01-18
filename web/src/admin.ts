@@ -300,6 +300,7 @@ export function build_page(): void {
             information_density.get_string_display_value_for_line_height(
                 realm_user_settings_defaults.web_line_height_percent,
             ),
+        pin_left_sidebar_section_values: settings_config.pin_left_sidebar_section_values,
     };
 
     const rendered_admin_tab = render_admin_tab(options);

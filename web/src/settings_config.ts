@@ -32,6 +32,17 @@ import * as util from "./util.ts";
     API documentation) without a ton of copying.
 */
 
+export const pin_left_sidebar_section_values = {
+    scroll_down: {
+        code: 1,
+        description: $t({defaultMessage: "When scrolling down (default)"}),
+    },
+    never: {
+        code: 2,
+        description: $t({defaultMessage: "Never"}),
+    },
+};
+
 export const demote_inactive_streams_values = {
     automatic: {
         code: 1,
