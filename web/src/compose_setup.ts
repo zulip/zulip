@@ -444,9 +444,6 @@ export function initialize(): void {
                 {
                     // place the time picker wherever there is space and center it horizontally
                     position: "auto center",
-                    // Since we want to handle close of flatpickr manually, we don't want
-                    // flatpickr to hide automatically on clicking its trigger element.
-                    ignoredFocusElements: [this],
                 },
             );
         } else {

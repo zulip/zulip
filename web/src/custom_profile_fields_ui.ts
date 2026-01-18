@@ -1,4 +1,3 @@
-import flatpickr from "flatpickr";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -255,93 +254,9 @@ export function initialize_custom_date_type_fields(
         return;
     }
 
-    function update_date(instance: flatpickr.Instance, date_str: string): void {
-        const $input_elem = $(instance.element);
-        const field_id = Number.parseInt($input_elem.attr("data-field-id")!, 10);
-
-        if (date_str === "Invalid Date") {
-            // Date parses empty string to an invalid value but in
-            // our case it is a valid value when user does not want
-            // to set any value for the custom profile field.
-            if ($input_elem.parent().find(".date-field-alt-input").val() === "") {
-                if (!for_profile_settings_panel) {
-                    // For "Manage user" modal, API request is made after
-                    // clicking on "Save changes" button.
-                    return;
-                }
-                update_user_custom_profile_fields([{id: field_id}], channel.del);
-                return;
-            }
-
-            // Show "Invalid date value" message briefly and set
-            // the input to original value.
-            const $spinner_element = $input_elem
-                .closest(".custom_user_field")
-                .find(".custom-field-status");
-            ui_report.error(
-                $t({defaultMessage: "Invalid date value"}),
-                undefined,
-                $spinner_element,
-                1200,
-            );
-            const original_value = people.get_custom_profile_data(user_id, field_id)?.value ?? "";
-            instance.setDate(original_value);
-            if (!for_profile_settings_panel) {
-                // Trigger "input" event so that save button state can
-                // be toggled in "Manage user" modal.
-                $input_elem
-                    .closest(".custom_user_field")
-                    .find(".date-field-alt-input")
-                    .trigger("input");
-            }
-            return;
-        }
-
-        if (!for_profile_settings_panel) {
-            // For "Manage user" modal, API request is made after
-            // clicking on "Save changes" button.
-            return;
-        }
-
-        const fields = [];
-        if (date_str) {
-            fields.push({id: field_id, value: date_str});
-            update_user_custom_profile_fields(fields, channel.patch);
-        } else {
-            fields.push({id: field_id});
-            update_user_custom_profile_fields(fields, channel.del);
-        }
-    }
-
-    let common_class_name = "modal_text_input";
-    if (for_profile_settings_panel) {
-        common_class_name = "settings_text_input";
-    }
-
-    flatpickr($date_picker_elements, {
-        altInput: true,
-        // We would need to handle the altInput separately
-        // than ".custom_user_field_value" elements to handle
-        // invalid values typed in the input.
-        altInputClass: "date-field-alt-input " + common_class_name,
-        altFormat: "F j, Y",
-        allowInput: true,
-        static: true,
-        // This helps us in accepting inputs in other formats
-        // like MM/DD/YYYY and basically any other format
-        // which is accepted by Date.
-        parseDate: (date_str) => new Date(date_str),
-        // We pass allowInvalidPreload as true because we handle
-        // invalid values typed in the input ourselves. Also,
-        // formatDate function is customized to handle "undefined"
-        // values, which are returned by parseDate for invalid
-        // values.
-        formatDate: format_date,
-        allowInvalidPreload: true,
-        onChange(_selected_dates, date_str, instance) {
-            update_date(instance, date_str);
-        },
-    });
+    // Native HTML5 date inputs work without any initialization.
+    // Ensure the inputs are set to type="date" for native picker
+    $date_picker_elements.attr("type", "date");
 
     // This "change" event handler is needed to make sure that
     // the date is successfully changed when typing a new value
@@ -359,13 +274,25 @@ export function initialize_custom_date_type_fields(
     // is focused, and also when blurring the input by clicking
     // outside while the calendar popover is closed.
     $(element_id)
-        .find<HTMLInputElement>("input.date-field-alt-input")
+        .find<HTMLInputElement>("input.datepicker")
         .on("change", function () {
-            const instance = the($(this).parent().find(".datepicker"))._flatpickr;
-            assert(instance !== undefined);
-            const date = new Date($(this).val()!);
-            const date_str = format_date(date, "Y-m-d");
-            update_date(instance, date_str);
+            const field_id = Number.parseInt($(this).attr("data-field-id")!, 10);
+            const date_str = $(this).val() as string;
+
+            if (!for_profile_settings_panel) {
+                // For "Manage user" modal, API request is made after
+                // clicking on "Save changes" button.
+                return;
+            }
+
+            const fields = [];
+            if (date_str) {
+                fields.push({id: field_id, value: date_str});
+                update_user_custom_profile_fields(fields, channel.patch);
+            } else {
+                fields.push({id: field_id});
+                update_user_custom_profile_fields(fields, channel.del);
+            }
         });
 
     // Enable the label associated to this field to open the datepicker when clicked.
@@ -388,11 +315,9 @@ export function initialize_custom_date_type_fields(
     $(element_id)
         .find(".custom_user_field .remove_date")
         .on("click", function () {
-            const $custom_user_field = $(this).parent().find(".custom_user_field_value");
-            const $displayed_input = $(this).parent().find(".date-field-alt-input");
-            $displayed_input.val("");
-            $custom_user_field.val("");
-            $custom_user_field.trigger("input");
+            const $date_input = $(this).parent().find(".datepicker");
+            $date_input.val("");
+            $date_input.trigger("input");
         });
 }
 

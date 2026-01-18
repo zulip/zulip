@@ -1492,42 +1492,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
     user-select: none;
 }
 
-.flatpickr-calendar {
-    /* Hide the up and down arrows in the Flatpickr datepicker year */
-    .flatpickr-months .numInputWrapper span {
-        display: none;
-    }
-
-    .flatpickr-time-separator {
-        position: relative;
-        left: 5px;
-    }
-
-    .flatpickr-time input {
-        margin: 0 5px;
-        min-height: 30px;
-    }
-
-    .flatpickr-confirm {
-        color: hsl(0deg 0% 100%);
-        background-color: hsl(213deg 90% 65%);
-        font-size: var(--flatpickr-confirm-button-font-size);
-        font-weight: 600;
-    }
-
-    @media (width < $md_min) {
-        /* Center align flatpickr on mobile
-         * devices so that it doesn't go out of
-         * the viewport. */
-        left: 0 !important;
-        right: 0 !important;
-        margin: auto;
-
-        &::after,
-        &::before {
-            border-top-width: 0 !important;
-        }
-    }
+/* Styles for native datetime-local and date inputs */
+input[type="datetime-local"],
+input[type="date"] {
+    /* Ensure native pickers have reasonable minimum size */
+    min-height: 30px;
+    padding: 5px;
 }
 
 #about-zulip {
