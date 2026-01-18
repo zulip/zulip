@@ -183,6 +183,7 @@ class HomeTest(ZulipTestCase):
         "realm_giphy_rating",
         "realm_icon_source",
         "realm_icon_url",
+        "realm_image_thumbnail_size",
         "realm_incoming_webhook_bots",
         "realm_inline_image_preview",
         "realm_inline_url_embed_preview",

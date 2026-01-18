@@ -38,6 +38,9 @@ const admin_settings_label = {
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
     realm_moderation_request_channel: $t({defaultMessage: "Moderation requests"}),
+    realm_image_thumbnail_size: $t({
+        defaultMessage: "Size of images and videos in messages",
+    }),
     realm_inline_image_preview: $t({
         defaultMessage: "Show previews of uploaded and linked images and videos",
     }),

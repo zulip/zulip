@@ -60,6 +60,7 @@ from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, User
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import (
     DigestWeekdayEnum,
+    ImageThumbnailSizeEnum,
     MessageEditHistoryVisibilityPolicyEnum,
     OrgTypeEnum,
     RealmTopicsPolicyEnum,
@@ -140,6 +141,7 @@ def update_realm(
     enable_read_receipts: Json[bool] | None = None,
     enable_spectator_access: Json[bool] | None = None,
     giphy_rating: Json[int] | None = None,
+    image_thumbnail_size: Json[int] | None = None,
     inline_image_preview: Json[bool] | None = None,
     inline_url_embed_preview: Json[bool] | None = None,
     invite_required: Json[bool] | None = None,
@@ -247,6 +249,16 @@ def update_realm(
     }:
         raise JsonableError(
             _("Invalid giphy_rating {giphy_rating}").format(giphy_rating=giphy_rating)
+        )
+    if image_thumbnail_size is not None and image_thumbnail_size not in {
+        ImageThumbnailSizeEnum.SMALL.value,
+        ImageThumbnailSizeEnum.MEDIUM.value,
+        ImageThumbnailSizeEnum.LARGE.value,
+    }:
+        raise JsonableError(
+            _("Invalid image_thumbnail_size {image_thumbnail_size}").format(
+                image_thumbnail_size=image_thumbnail_size
+            )
         )
 
     message_retention_days: int | None = None

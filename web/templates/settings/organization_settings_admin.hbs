@@ -208,6 +208,12 @@
                   label_parens_text=admin_settings_label.realm_enable_read_receipts_parens_text}}
 
                 {{#if server_inline_image_preview}}
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_image_thumbnail_size"
+                  label=admin_settings_label.realm_image_thumbnail_size
+                  value_type="number"
+                  help_link="/help/image-video-and-website-previews"}}
+
                 {{> settings_checkbox
                   setting_name="realm_inline_image_preview"
                   prefix="id_"

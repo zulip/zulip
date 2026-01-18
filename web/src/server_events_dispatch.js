@@ -335,6 +335,7 @@ export function dispatch_normal_event(event) {
                 video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
                 jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
                 giphy_rating: gif_state.update_gif_rating,
+                image_thumbnail_size: noop,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
                 welcome_message_custom_text: noop,
