@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_left_sidebar_all_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_all_messages_popover.hbs";
+import render_left_sidebar_direct_messages_popover from "../templates/popovers/left_sidebar/left_sidebar_direct_messages_popover.hbs";
 import render_left_sidebar_drafts_popover from "../templates/popovers/left_sidebar/left_sidebar_drafts_popover.hbs";
 import render_left_sidebar_inbox_popover from "../templates/popovers/left_sidebar/left_sidebar_inbox_popover.hbs";
 import render_left_sidebar_recent_view_popover from "../templates/popovers/left_sidebar/left_sidebar_recent_view_popover.hbs";
@@ -12,6 +13,7 @@ import render_left_sidebar_views_popover from "../templates/popovers/left_sideba
 import * as channel from "./channel.ts";
 import * as drafts from "./drafts.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
+import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as settings_config from "./settings_config.ts";
@@ -67,6 +69,22 @@ function register_toggle_unread_message_count(
         url: "/json/settings",
         data,
     });
+    popover_menus.hide_current_popover_if_visible(instance);
+}
+
+function expand_dm_section(
+    event: JQuery.ClickEvent<tippy.PopperElement, {instance: tippy.Instance}>,
+): void {
+    const {instance} = event.data;
+    pm_list.set_direct_messages_pinned(true);
+    popover_menus.hide_current_popover_if_visible(instance);
+}
+
+function collapse_dm_section(
+    event: JQuery.ClickEvent<tippy.PopperElement, {instance: tippy.Instance}>,
+): void {
+    const {instance} = event.data;
+    pm_list.set_direct_messages_pinned(false);
     popover_menus.hide_current_popover_if_visible(instance);
 }
 
@@ -325,6 +343,29 @@ export function initialize(): void {
         onHidden(instance) {
             instance.destroy();
             popover_menus.popover_instances.top_left_sidebar = null;
+        },
+    });
+
+    popover_menus.register_popover_menu(".dm-section-menu-icon", {
+        ...popover_menus.left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+
+            $popper.one("click", "#expand_dm_section", {instance}, expand_dm_section);
+            $popper.one("click", "#collapse_dm_section", {instance}, collapse_dm_section);
+        },
+        onShow(instance) {
+            popover_menus.popover_instances.show_dm_popover = instance;
+            assert(instance.reference instanceof HTMLElement);
+
+            popovers.hide_all();
+            instance.setContent(
+                ui_util.parse_html(render_left_sidebar_direct_messages_popover({})),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.show_dm_popover = null;
         },
     });
 

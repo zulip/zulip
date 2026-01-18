@@ -1151,6 +1151,13 @@ exports.fixtures = {
         value: "ding",
     },
 
+    user_settings__pin_direct_messages: {
+        type: "user_settings",
+        op: "update",
+        property: "pin_direct_messages",
+        value: 2,
+    },
+
     user_settings__presence_disabled: {
         type: "user_settings",
         op: "update",
@@ -1198,6 +1205,13 @@ exports.fixtures = {
         op: "update",
         property: "twenty_four_hour_time",
         value: true,
+    },
+
+    user_settings__unpin_direct_messages: {
+        type: "user_settings",
+        op: "update",
+        property: "pin_direct_messages",
+        value: 1,
     },
 
     user_settings__user_list_style: {

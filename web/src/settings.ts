@@ -163,6 +163,7 @@ export function build_page(): void {
         private_data_export_is_checked:
             user_settings.allow_private_data_export || is_export_without_consent_enabled,
         private_data_export_is_disabled: is_export_without_consent_enabled,
+        direct_messages_section_values: settings_config.direct_messages_section_values,
         private_data_export_tooltip_text,
     });
 
