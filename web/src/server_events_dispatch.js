@@ -953,6 +953,7 @@ export function dispatch_normal_event(event) {
                 "user_list_style",
                 "web_animate_image_previews",
                 "web_channel_default_view",
+                "web_dm_collapse_policy",
                 "web_escape_navigates_to_home_view",
                 "web_home_view",
                 "web_mark_read_on_scroll_policy",
@@ -1109,6 +1110,14 @@ export function dispatch_normal_event(event) {
                     msg_list.rerender();
                 }
             }
+            if (event.property === "web_dm_collapse_policy") {
+                if (event.value === settings_config.dm_section_collapse_policy_values.never.code) {
+                    pm_list.set_direct_messages_pinned(true);
+                } else {
+                    pm_list.set_direct_messages_pinned(false);
+                }
+            }
+
             settings_preferences.update_page(event.property);
             break;
         }
