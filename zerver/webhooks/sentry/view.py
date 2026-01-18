@@ -30,7 +30,7 @@ MESSAGE_EVENT_TEMPLATE = """
 """
 
 EXCEPTION_EVENT_TEMPLATE = """
-{severity_emoji} **New exception:** [{title}]({web_link})
+{severity_emoji} **New {event_type}:** [{title}]({web_link})
 ```quote
 **level:** {level}
 **timestamp:** {global_time}
@@ -116,7 +116,7 @@ def convert_lines_to_traceback_string(lines: list[str] | None) -> str:
     return traceback
 
 
-def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
+def handle_event_payload(event: dict[str, Any], is_error_event: bool = False) -> tuple[str, str]:
     """Handle either an exception type event or a message type event payload."""
 
     topic_name = event["title"]
@@ -139,6 +139,7 @@ def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
         "web_link": event["web_url"],
         "global_time": get_global_time(event["datetime"]),
     }
+    context["event_type"] = "error" if is_error_event else "exception"
 
     if "exception" in event:
         # The event was triggered by a sentry.capture_exception() call
@@ -304,6 +305,8 @@ def api_sentry_webhook(
     if data:
         if "event" in data:
             topic_name, body = handle_event_payload(data["event"])
+        elif "error" in data:
+            topic_name, body = handle_event_payload(data["error"], is_error_event=True)
         elif "issue" in data:
             topic_name, body = handle_issue_payload(
                 payload["action"], data["issue"], payload["actor"]
