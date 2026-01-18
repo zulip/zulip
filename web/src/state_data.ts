@@ -371,6 +371,7 @@ const current_user_schema = z.object({
     email: z.string(),
     full_name: z.string(),
     has_zoom_token: z.boolean(),
+    has_webex_token: z.boolean(),
     is_admin: z.boolean(),
     is_guest: z.boolean(),
     is_moderator: z.boolean(),

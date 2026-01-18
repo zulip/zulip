@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import json
 import logging
@@ -15,6 +16,7 @@ from django.http import HttpRequest, HttpResponse
 from django.middleware import csrf
 from django.shortcuts import redirect, render
 from django.utils.crypto import constant_time_compare, salted_hmac
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
@@ -202,7 +204,7 @@ class WebexOAuthProvider(OAuthVideoCallProvider):
 
     @override
     def get_meeting_details(self, request: HttpRequest, response: Response) -> HttpResponse:
-        return json_success(request, data={"url": "dummy_webex_url"})
+        return json_success(request, data={"url": response.json()["webLink"]})
 
 
 class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
@@ -375,6 +377,25 @@ def make_zoom_video_call(
     if settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID is not None:
         return make_server_authenticated_zoom_video_call(request, user, payload=payload)
     return ZoomGeneralOAuthProvider().make_video_call(request=request, user=user, payload=payload)
+
+
+def make_webex_video_call(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    start_time = timezone_now()
+    end_time = start_time + datetime.timedelta(minutes=40)
+    json = {
+        "title": _("Webex meeting"),
+        "password": "".join(
+            random.choices(
+                "abcdefghijklmnop",
+                k=5,
+            )
+        ),
+        "start": start_time.isoformat(timespec="seconds"),
+        "end": end_time.isoformat(timespec="seconds"),
+        "enabledAutoRecordMeeting": False,
+        "allowAnyUserToBeCoHost": False,
+    }
+    return WebexOAuthProvider().make_video_call(request, user, payload=json)
 
 
 @csrf_exempt

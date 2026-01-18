@@ -62,8 +62,9 @@ export function generate_and_insert_audio_or_video_call_link(
     const provider_is_zoom = realm.realm_video_chat_provider === available_providers.zoom?.id;
     const provider_is_zoom_server_to_server =
         realm.realm_video_chat_provider === available_providers.zoom_server_to_server?.id;
+    const provider_is_webex = realm.realm_video_chat_provider === available_providers.webex?.id;
 
-    if (provider_is_zoom || provider_is_zoom_server_to_server) {
+    if (provider_is_zoom || provider_is_zoom_server_to_server || provider_is_webex) {
         compose_call.abort_video_callbacks(edit_message_id);
         const key = edit_message_id ?? "";
 
@@ -71,9 +72,10 @@ export function generate_and_insert_audio_or_video_call_link(
             is_video_call: !is_audio_call,
         };
 
+        const provider = provider_is_webex ? "webex" : "zoom";
         const make_zoom_call = (): void => {
             const xhr = channel.post({
-                url: "/json/calls/zoom/create",
+                url: `/json/calls/${provider}/create`,
                 data: request,
                 success(res) {
                     const data = call_response_schema.parse(res);
@@ -90,14 +92,19 @@ export function generate_and_insert_audio_or_video_call_link(
                     if (
                         status === "error" &&
                         parsed.success &&
-                        parsed.data.code === "INVALID_ZOOM_TOKEN"
+                        parsed.data.code === "INVALID_VIDEO_CALL_PROVIDER_TOKEN"
                     ) {
-                        current_user.has_zoom_token = false;
+                        if (provider === "webex") {
+                            current_user.has_webex_token = false;
+                        } else {
+                            current_user.has_zoom_token = false;
+                        }
                     }
                     if (
                         status === "error" &&
                         parsed.success &&
-                        parsed.data.code === "UNKNOWN_ZOOM_USER"
+                        (parsed.data.code === "UNKNOWN_ZOOM_USER" ||
+                            parsed.data.code === "UNKNOWN_WEBEX_USER")
                     ) {
                         compose_banner.show_unknown_zoom_user_error(current_user.delivery_email);
                     } else if (status !== "abort") {
@@ -112,12 +119,19 @@ export function generate_and_insert_audio_or_video_call_link(
             }
         };
 
-        if (current_user.has_zoom_token || provider_is_zoom_server_to_server) {
+        if (
+            current_user.has_zoom_token ||
+            provider_is_zoom_server_to_server ||
+            current_user.has_webex_token
+        ) {
             make_zoom_call();
         } else {
             compose_call.zoom_token_callbacks.set(key, make_zoom_call);
             window.open(
-                window.location.protocol + "//" + window.location.host + "/calls/zoom/register",
+                window.location.protocol +
+                    "//" +
+                    window.location.host +
+                    `/calls/${provider}/register`,
                 "_blank",
                 "width=800,height=500,noopener,noreferrer",
             );

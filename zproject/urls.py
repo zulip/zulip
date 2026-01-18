@@ -272,6 +272,7 @@ from zerver.views.video_calls import (
     deauthorize_zoom_user,
     get_bigbluebutton_url,
     join_bigbluebutton,
+    make_webex_video_call,
     make_zoom_video_call,
     register_webex_user,
     register_zoom_user,
@@ -598,6 +599,7 @@ v1_api_and_json_patterns = [
     ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
+    rest_path("calls/webex/create", POST=make_webex_video_call),
     # Used to generate a BigBlueButton video call URL
     rest_path("calls/bigbluebutton/create", GET=get_bigbluebutton_url),
     # export/realm -> zerver.views.realm_export
