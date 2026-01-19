@@ -178,14 +178,6 @@ run_test("people_slugs", () => {
     assert.equal(hash, "#narrow/dm/42-Alice-Smith");
     narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [{operator: "dm", operand: "alice@example.com", negated: false}]);
-
-    // Even though we renamed "pm-with" to "dm", preexisting
-    // links/URLs with "pm-with" operator are handled correctly.
-    terms = [{operator: "pm-with", operand: "alice@example.com"}];
-    hash = hash_util.search_terms_to_hash(terms);
-    assert.equal(hash, "#narrow/pm-with/42-Alice-Smith");
-    narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [{operator: "dm", operand: "alice@example.com", negated: false}]);
 });
 
 function test_helper({override, override_rewire, change_tab}) {

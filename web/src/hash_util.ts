@@ -17,14 +17,13 @@ import {
     narrow_operator_schema,
     realm,
 } from "./state_data.ts";
-import type {NarrowCanonicalTerm} from "./state_data.ts";
+import type {NarrowCanonicalOperator, NarrowCanonicalTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
-import * as util from "./util.ts";
 
 export function get_reload_hash(): string {
     let hash = window.location.hash;
@@ -34,21 +33,15 @@ export function get_reload_hash(): string {
     return hash;
 }
 
-export function encode_operand(operator: string, operand: string): string {
-    if (
-        operator === "group-pm-with" ||
-        operator === "dm-including" ||
-        operator === "dm" ||
-        operator === "sender" ||
-        operator === "pm-with"
-    ) {
+export function encode_operand(operator: NarrowCanonicalOperator, operand: string): string {
+    if (operator === "dm-including" || operator === "dm" || operator === "sender") {
         const slug = people.emails_to_slug(operand);
         if (slug) {
             return slug;
         }
     }
 
-    if (util.canonicalize_channel_synonyms(operator) === "channel") {
+    if (operator === "channel") {
         const stream_id = Number.parseInt(operand, 10);
         return encode_stream_id(stream_id);
     }

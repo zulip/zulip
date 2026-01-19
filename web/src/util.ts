@@ -271,19 +271,6 @@ export function is_channels_synonym(text: string): boolean {
     return text === "streams";
 }
 
-export function canonicalize_channel_synonyms(text: string): string {
-    if (is_channel_synonym(text.toLowerCase())) {
-        // Function is removed in later commits.
-        /* istanbul ignore next */
-        return "channel";
-    }
-    if (is_channels_synonym(text.toLowerCase())) {
-        /* istanbul ignore next */
-        return "channels";
-    }
-    return text;
-}
-
 export function prefix_match({value, search_term}: {value: string; search_term: string}): boolean {
     return filter_by_word_prefix_match([value], search_term, (s) => s).length === 1;
 }
