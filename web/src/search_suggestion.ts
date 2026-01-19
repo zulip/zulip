@@ -350,13 +350,13 @@ function get_group_suggestions(
         persons = persons.slice(0, 15);
 
         return persons.map((person) => {
-            const term: NarrowTerm = {
+            const term: NarrowCanonicalTerm = {
                 operator: group_operator,
                 operand: all_but_last_part + "," + person.email,
                 negated,
             };
 
-            let terms: NarrowTerm[] = [term];
+            let terms: NarrowCanonicalTerm[] = [term];
             if (group_operator === "dm" && negated) {
                 terms = [{operator: "is", operand: "dm"}, term];
             }
