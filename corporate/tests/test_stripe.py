@@ -52,7 +52,6 @@ from corporate.lib.stripe import (
     customer_has_credit_card_as_default_payment_method,
     customer_has_last_n_invoices_open,
     do_deactivate_remote_server,
-    do_reactivate_remote_server,
     downgrade_small_realms_behind_on_payments_as_needed,
     get_latest_seat_count,
     get_plan_renewal_or_end_date,
@@ -5932,7 +5931,7 @@ class BillingHelpersTest(ZulipTestCase):
                 ],
             )
 
-        do_reactivate_remote_server(remote_server)
+        billing_session.do_reactivate_remote_server()
         remote_server.refresh_from_db()
         self.assertFalse(remote_server.deactivated)
         remote_realm_audit_log = RemoteZulipServerAuditLog.objects.latest("id")
@@ -5942,7 +5941,7 @@ class BillingHelpersTest(ZulipTestCase):
         self.assertEqual(remote_realm_audit_log.server, remote_server)
 
         with self.assertLogs("corporate.stripe", "WARN") as warning_log:
-            do_reactivate_remote_server(remote_server)
+            billing_session.do_reactivate_remote_server()
             self.assertEqual(
                 warning_log.output,
                 [
