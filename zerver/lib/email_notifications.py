@@ -402,7 +402,7 @@ def do_send_missedmessage_events_reply_in_zulip(
     user_profile: UserProfile, missed_messages: list[dict[str, Any]], message_count: int
 ) -> None:
     """
-    Send a reminder email to a user if she's missed some direct messages
+    Send a reminder email to a user if she's missed some messages
     by being offline.
 
     The email will have its reply to address set to a limited used email
@@ -416,10 +416,13 @@ def do_send_missedmessage_events_reply_in_zulip(
     """
     from zerver.context_processors import common_context
 
-    recipients = {
-        (msg["message"].recipient_id, msg["message"].topic_name().lower())
-        for msg in missed_messages
-    }
+    recipients = set()
+    for missed_message in missed_messages:
+        message = missed_message["message"]
+        if message.recipient.type == Recipient.PERSONAL:
+            recipients.add((message.recipient_id, message.sender_id))
+        else:
+            recipients.add((message.recipient_id, message.topic_name().lower()))
     assert len(recipients) == 1, f"Unexpectedly multiple recipients: {recipients!r}"
 
     # This link is no longer a part of the email, but keeping the code in case
