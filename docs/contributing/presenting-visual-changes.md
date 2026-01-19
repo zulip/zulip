@@ -107,9 +107,12 @@ pixel-precise dimensions between Before and After shots.
 
 ### Capturing and presenting short videos
 
-Still screenshots are almost always superior to videos. If you absolutely must show off
-a brief interaction on your PR, see whether your operating system will allow you to again
-set a fixed box for capturing video of a region of your screen.
+Still screenshots are almost always superior to videos. They are easier to compare, and
+enable reviewers to focus more precisely on the changes your PR introduces.
+
+If you absolutely must show off a brief interaction on your PR, see whether your operating
+system will allow you to again set a fixed box for capturing video of a region of your
+screen.
 
 Be sure to edit your video down to the shortest length possible. And rather
 than post the video—whose format may not be suitable for the web or accessible to all
@@ -123,6 +126,10 @@ that modified some interactions on the compose box:
 
 It's worth noting here that [the full PR](https://github.com/zulip/zulip/pull/35969)
 included plenty of static screenshots in addition to the GIFs showing off interactivity.
+
+Finally, make sure a person watching your video can see where on the screen you're
+tapping or clicking. Use the "show touches" or "include the mouse pointer" feature
+if your screen-recording software supports it.
 
 ## Why precise screenshots matter
 
