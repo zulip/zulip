@@ -193,47 +193,47 @@ As with the fixed-box screenshots above, having pixel-precise screenshots
 where the UI is in an identical state and there isn't a bunch of unintended movement
 or other noise, the browser captures above make catching the space shift much easier.
 
-# Screenshot and GIF software
+## Screenshot and GIF software
 
 The following list documents different free and open-source screenshot and GIF-making
 software. We encourage you to make use of these when making front-end pull requests,
 and to suggest tools that you use for inclusion here for the benefit of other contributors.
 
-## Screenshot tools by platform
+### Screenshot tools by platform
 
-### Browser
+#### Browser
 
 - [Firefox screenshots](https://support.mozilla.org/en-US/kb/take-screenshots-firefox) without any plugins
 - [Chrome screenshots](https://developer.chrome.com/docs/devtools/device-mode#screenshot) without any plugins
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html) (Chrome, Firefox, IE & Opera)
 - [Chrome Capture](https://chrome.google.com/webstore/detail/chrome-capture-screenshot/ggaabchcecdbomdcnbahdfddfikjmphe?hl=en)
 
-### macOS
+#### macOS
 
 - [Take a screenshot on Mac](https://support.apple.com/en-us/102646)
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html)
 - [Gyazo](https://gyazo.com/en)
 
-### Windows
+#### Windows
 
 - [Use Snipping Tool to capture screenshots](https://support.microsoft.com/en-us/windows/use-snipping-tool-to-capture-screenshots-00246869-1843-655f-f220-97299b865f6b)
 - [LightShot Screenshot](https://app.prntscr.com/en/index.html)
 - [Gyazo](https://gyazo.com/en)
 - [ScreenToGif](https://www.screentogif.com/)
 
-### Linux
+#### Linux
 
 - gnome-screenshot (inbuilt, you can use Ctrl-Shift-PrtScn as a shortcut for its “select an area to grab” feature)
 
-## GIF tools by platform
+### GIF tools by platform
 
-### Browser
+#### Browser
 
 - [GIPHY](https://giphy.com)
 - [Chrome Capture](https://chrome.google.com/webstore/detail/chrome-capture/ggaabchcecdbomdcnbahdfddfikjmphe?hl=en)
   (Tip: Use Alt+i to interact with the page while recording)
 
-### macOS
+#### macOS
 
 - [QuickTime](https://support.apple.com/en-in/HT201066)
 - [GIPHY](https://giphy.com/apps/giphycapture)
@@ -242,12 +242,12 @@ and to suggest tools that you use for inclusion here for the benefit of other co
 - [Gifski](https://sindresorhus.com/gifski)
 - [Gyazo GIF](https://gyazo.com/en)
 
-### Windows
+#### Windows
 
 - [ScreenToGif](https://www.screentogif.com)
 - [Gyazo GIF](https://gyazo.com/en)
 
-### Linux
+#### Linux
 
 - [Peek](https://github.com/phw/peek)
 - [SilentCast](https://github.com/colinkeenan/silentcast)
