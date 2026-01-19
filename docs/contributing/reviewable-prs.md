@@ -158,53 +158,57 @@ review:
 
 ## Presenting screenshots on your pull request
 
-- For [screenshots or screencasts][screenshots-gifs] of changes,
-  putting them in details/summary tags reduces visual clutter
-  and scroll length of pull request comments. This is especially
-  useful when you have several screenshots and/or screencasts to
-  include in your comment as you can put each image, or group of
-  images, in separate details/summary tags.
+Any PRs that impact Zulip's user interface must include precise sets
+of Before/After screenshots. Be sure to read through
+[our extensive screenshot documentation](../contributing/presenting-visual-changes.md)
+to capture appropriate screenshots. And note that with few exceptions,
+static screenshots are preferable to videos.
 
-  ```
-  <details>
-  <summary>Descriptive summary of image</summary>
+The following guidance will help you present your precise screenshots
+as part of your pull request:
 
-  ![uploaded-image](uploaded-file-information)
-  </details>
-  ```
-
-- Screenshots are much easier to review than screencast videos.
-  Wherever possible, use still screenshots instead of videos.
-  Use a video only when necessary to demonstrate an interaction,
-  and include screenshots too for any aspects of your changes
-  which can be seen on a still screenshot.
-
-  Keep any videos as short as possible, so that the reviewer can
-  quickly get to the relevant part.
-
-  In screencast videos, make sure a person watching your video
-  can see where on the screen you're touching or clicking.
-  Use the "show touches" or "include the mouse pointer" feature
-  of your screen-recording software.
-
-- For before and after images or videos of changes, using GithHub's table
-  syntax renders them side-by-side for quick and clear comparison.
-  While this works well for narrow or small images, it can be hard to
-  see details in large, full screen images and videos in this format.
-
-  Note that you can put the table syntax inside the details/summary
-  tags described above as well.
+- For presenting before and after screencaptures of changes, use
+  GithHub's table syntax to render them side-by-side. Reviewers can
+  open the full-size image from GitHub for quick and easy comparison:
 
   ```
   ### Descriptive header for images:
+
   | Before | After |
   | --- | --- |
   | ![image-before](uploaded-file-information) | ![image-after](uploaded-file-information)
   ```
 
+  To quickly insert before/after tables like that, consider
+  [creating a GitHub Saved Reply](https://docs.github.com/en/get-started/writing-on-github/working-with-saved-replies/creating-a-saved-reply).
+
+- When including numerous screenshots or screencasts, consider grouping them
+  in details/summary tags to reduce visual clutter and the scroll length of
+  pull-request descriptions and comments. This is especially useful when you
+  have several screenshots or screencasts to include in your PR description
+  or follow-up comments, as you can put groups of related images in separate
+  details/summary tags.
+
+  Do think about your reviewers' comfort when using more than one set of
+  details/summary tags, as it is generally much easier to scroll past a
+  bunch of screenshots than it is to open numerous collapsed details/summary
+  tags.
+
+  ```
+  <details>
+  <summary>Descriptive summary of image group</summary>
+
+  | Before | After |
+  | --- | --- |
+  | ![image-before](uploaded-file-information) | ![image-after](uploaded-file-information) |
+  | ![image-2-before](uploaded-file-information) | ![image-2-after](uploaded-file-information) |
+
+  </details>
+  ```
+
 - If you've updated existing documentation in your pull request,
   include a link to the current documentation above the screenshot
-  of the updates. That way a reviewer can quickly access the current
+  of the updates. That way a reviewer can quickly compare the current
   documentation while reviewing your changes.
 
   ```
@@ -214,8 +218,8 @@ review:
 
 - For updates or changes to CSS class rules, it's a good practice
   to include the results of a [git-grep][git-grep] search for
-  the class name(s) to confirm that you've tested all the impacted
-  areas of the UI and/or documentation.
+  the class name(s) to confirm that you've tested and captured screenshots
+  of all the impacted areas of the UI or Zulip documentation.
 
   ```console
   $ git grep '.example-class-name' web/templates/ templates/
