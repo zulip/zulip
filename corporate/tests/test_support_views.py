@@ -695,6 +695,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         ).last()
         assert audit_log is not None
         self.assertEqual(audit_log.server, remote_server_no_upgrade)
+        self.assertEqual(audit_log.acting_support_user, iago)
 
     def test_support_reactivate_remote_server(self) -> None:
         iago = self.example_user("iago")

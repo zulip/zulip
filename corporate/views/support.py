@@ -791,7 +791,6 @@ def remote_servers_support(
         SupportRequestError,
         SupportType,
         SupportViewRequest,
-        do_deactivate_remote_server,
     )
     from corporate.lib.support import RemoteSupportData, get_data_for_remote_support_view
 
@@ -886,7 +885,7 @@ def remote_servers_support(
             else:
                 assert remote_server_status == "deactivated"
                 try:
-                    do_deactivate_remote_server(remote_server, remote_server_status_billing_session)
+                    remote_server_status_billing_session.do_deactivate_remote_server()
                     context["success_message"] = (
                         f"Remote server ({remote_server.hostname}) deactivated."
                     )
