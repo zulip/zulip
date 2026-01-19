@@ -367,15 +367,19 @@ export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string)
         if (terms.length > 2) {
             return null;
         }
-        if (
-            terms[0].operator !== "dm" &&
-            terms[1]?.operator !== "with" &&
-            terms[1]?.operator !== "near"
-        ) {
+        // Help Typescript understand that first_term.operator can only be
+        // of `DM` type.
+        const first_term = terms[0];
+        if (first_term.operator !== "dm") {
             return null;
         }
-        if (people.is_valid_bulk_emails_for_compose(terms[0].operand.split(","))) {
-            const user_ids = people.emails_strings_to_user_ids_array(terms[0].operand);
+
+        if (terms[1]?.operator !== "with" && terms[1]?.operator !== "near") {
+            return null;
+        }
+
+        if (people.is_valid_bulk_emails_for_compose(first_term.operand.split(","))) {
+            const user_ids = people.emails_strings_to_user_ids_array(first_term.operand);
             if (!user_ids) {
                 return null;
             }
