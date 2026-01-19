@@ -33,6 +33,7 @@ from zilencer.models import (
     RemotePushDeviceToken,
     RemoteRealm,
     RemoteRealmCount,
+    RemoteServerBillingUser,
     RemoteZulipServer,
     RemoteZulipServerAuditLog,
     get_remote_realm_guest_and_non_guest_count,
@@ -110,6 +111,7 @@ class MobilePushData:
 class DeactivationData:
     event_time: datetime
     acting_user: UserProfile | None
+    billing_user: RemoteServerBillingUser | None
     reason: RealmDeactivationReasonType | None
 
 
@@ -121,6 +123,7 @@ class RemoteSupportData:
     sponsorship_data: SponsorshipData
     user_data: RemoteCustomerUserCount
     mobile_push_data: MobilePushData
+    deactivation_data: DeactivationData | None
 
 
 @dataclass
@@ -466,25 +469,34 @@ def get_mobile_push_data(remote_entity: RemoteZulipServer | RemoteRealm) -> Mobi
         )
 
 
-def get_deactivation_data(audit_log: RealmAuditLog) -> DeactivationData:
+def get_deactivation_data(audit_log: RealmAuditLog | RemoteZulipServerAuditLog) -> DeactivationData:
     event_time = audit_log.event_time
 
     acting_user = None
-    if audit_log.acting_user:
-        acting_user = audit_log.acting_user
-
+    billing_user = None
     reason = None
-    if audit_log.extra_data:
-        reason = audit_log.extra_data.get("deactivation_reason", None)
+    if isinstance(audit_log, RealmAuditLog):
+        if audit_log.acting_user:
+            acting_user = audit_log.acting_user
+        if audit_log.extra_data:
+            reason = audit_log.extra_data.get("deactivation_reason", None)
+    else:
+        assert isinstance(audit_log, RemoteZulipServerAuditLog)
+        if audit_log.acting_remote_user:
+            billing_user = audit_log.acting_remote_user
+        elif audit_log.acting_support_user:
+            acting_user = audit_log.acting_support_user
 
     return DeactivationData(
         event_time=event_time,
         acting_user=acting_user,
+        billing_user=billing_user,
         reason=reason,
     )
 
 
 def get_data_for_remote_support_view(billing_session: BillingSession) -> RemoteSupportData:
+    deactivation_data = None
     if isinstance(billing_session, RemoteServerBillingSession):
         user_data = get_remote_server_guest_and_non_guest_count(billing_session.remote_server.id)
         stale_audit_log_data = has_stale_audit_log(billing_session.remote_server)
@@ -493,6 +505,13 @@ def get_data_for_remote_support_view(billing_session: BillingSession) -> RemoteS
             server__id=billing_session.remote_server.id,
         ).event_time
         mobile_data = get_mobile_push_data(billing_session.remote_server)
+        if billing_session.remote_server.deactivated:
+            deactivation_audit_log = RemoteZulipServerAuditLog.objects.filter(
+                server=billing_session.remote_server,
+                event_type=AuditLogEventType.REMOTE_SERVER_DEACTIVATED,
+            ).last()
+            if deactivation_audit_log:
+                deactivation_data = get_deactivation_data(deactivation_audit_log)
     else:
         assert isinstance(billing_session, RemoteRealmBillingSession)
         user_data = get_remote_realm_guest_and_non_guest_count(billing_session.remote_realm)
@@ -513,6 +532,7 @@ def get_data_for_remote_support_view(billing_session: BillingSession) -> RemoteS
         sponsorship_data=sponsorship_data,
         user_data=user_data,
         mobile_push_data=mobile_data,
+        deactivation_data=deactivation_data,
     )
 
 
