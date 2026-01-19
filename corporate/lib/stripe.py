@@ -5350,6 +5350,29 @@ class RemoteServerBillingSession(BillingSession):
                 return
             current_plan = end_of_cycle_plan
 
+    @transaction.atomic(durable=True)
+    def do_reactivate_remote_server(self) -> None:
+        """
+        Utility function for reactivating deactivated remote server registrations.
+        """
+
+        if not self.remote_server.deactivated:
+            billing_logger.warning(
+                "Cannot reactivate remote server with ID %d, server is already active.",
+                self.remote_server.id,
+            )
+            return
+
+        self.remote_server.deactivated = False
+        self.remote_server.save(update_fields=["deactivated"])
+        RemoteZulipServerAuditLog.objects.create(
+            event_type=AuditLogEventType.REMOTE_SERVER_REACTIVATED,
+            server=self.remote_server,
+            event_time=timezone_now(),
+            acting_support_user=self.support_staff,
+            acting_remote_user=self.remote_billing_user,
+        )
+
 
 def stripe_customer_has_credit_card_as_default_payment_method(
     stripe_customer: stripe.Customer,
@@ -5477,28 +5500,6 @@ def ensure_customer_does_not_have_active_plan(customer: Customer) -> None:
             str(customer),
         )
         raise UpgradeWithExistingPlanError
-
-
-@transaction.atomic(durable=True)
-def do_reactivate_remote_server(remote_server: RemoteZulipServer) -> None:
-    """
-    Utility function for reactivating deactivated registrations.
-    """
-
-    if not remote_server.deactivated:
-        billing_logger.warning(
-            "Cannot reactivate remote server with ID %d, server is already active.",
-            remote_server.id,
-        )
-        return
-
-    remote_server.deactivated = False
-    remote_server.save(update_fields=["deactivated"])
-    RemoteZulipServerAuditLog.objects.create(
-        event_type=AuditLogEventType.REMOTE_SERVER_REACTIVATED,
-        server=remote_server,
-        event_time=timezone_now(),
-    )
 
 
 @transaction.atomic(durable=True)
