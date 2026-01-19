@@ -9,6 +9,7 @@ import {postprocess_content} from "./postprocess_content.ts";
 import {user_settings} from "./user_settings.ts";
 
 const orig_escape_expression = Handlebars.Utils.escapeExpression;
+const orig_is_empty = Handlebars.Utils.isEmpty;
 
 Handlebars.Utils.escapeExpression = (value: unknown): string => {
     /* istanbul ignore if */
@@ -23,6 +24,22 @@ Handlebars.Utils.escapeExpression = (value: unknown): string => {
     // Upstream type annotation incorrectly requires string
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return (orig_escape_expression as (value: unknown) => string)(value);
+};
+
+Handlebars.Utils.isEmpty = (value: unknown): boolean => {
+    /* istanbul ignore if */
+    if (
+        typeof value !== "string" &&
+        typeof value !== "number" &&
+        typeof value !== "boolean" &&
+        value !== undefined &&
+        (typeof value !== "object" || Array.isArray(value))
+    ) {
+        blueslip.error(
+            `Cannot test a value of type ${typeof value} in a Zulip Handlebars template`,
+        );
+    }
+    return orig_is_empty(value);
 };
 
 // Below, we register Zulip-specific extensions to the Handlebars API.

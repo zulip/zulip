@@ -7,7 +7,8 @@
                 {{> @partial-block .}}
             {{/if}}
         </span>
-        {{#if buttons}}
+        {{#unless (eq buttons undefined)}}
+            {{#if buttons.length}}
             <span class="banner-action-buttons">
                 {{!-- squash whitespace so :empty selector works when no buttons --}}
                 {{~!-- squash whitespace --~}}
@@ -20,7 +21,8 @@
                 {{/each}}
                 {{~!-- squash whitespace --~}}
             </span>
-        {{/if}}
+            {{/if}}
+        {{/unless}}
     </span>
     {{#if close_button}}
         {{> icon_button custom_classes="banner-close-action banner-close-button" icon="close" intent=intent}}
