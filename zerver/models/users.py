@@ -292,6 +292,15 @@ class UserBaseSettings(models.Model):
     send_read_receipts = models.BooleanField(default=True)
     allow_private_data_export = models.BooleanField(default=False)
 
+    # UI settings to control showing always expanded DMs section.
+    PIN_DIRECT_MESSAGES_DEFAULT = 1
+    PIN_DIRECT_MESSAGES_NEVER = 2
+    PIN_DIRECT_MESSAGES_CHOICES = [
+        PIN_DIRECT_MESSAGES_DEFAULT,
+        PIN_DIRECT_MESSAGES_NEVER,
+    ]
+    pin_direct_messages = models.PositiveSmallIntegerField(default=PIN_DIRECT_MESSAGES_DEFAULT)
+
     # Whether the user wants to see typing notifications.
     receives_typing_notifications = models.BooleanField(default=True)
 
@@ -370,6 +379,7 @@ class UserBaseSettings(models.Model):
         hide_ai_features=bool,
         high_contrast_mode=bool,
         left_side_userlist=bool,
+        pin_direct_messages=int,
         receives_typing_notifications=bool,
         resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
         send_private_typing_notifications=bool,

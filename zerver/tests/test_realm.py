@@ -2645,6 +2645,7 @@ class RealmAPITest(ZulipTestCase):
             automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_follow_topics_where_mentioned=[True, False],
             resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
+            pin_direct_messages=UserProfile.PIN_DIRECT_MESSAGES_CHOICES,
         )
 
         vals = test_values.get(name)
