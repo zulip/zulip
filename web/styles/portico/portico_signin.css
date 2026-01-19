@@ -23,6 +23,9 @@ html {
     position: relative;
     padding: 30px;
     min-width: 0;
+    /* Sensibly and correctly wrap email addresses
+       over multiple lines, when necessary. */
+    overflow-wrap: break-word;
 
     background-color: hsl(0deg 0% 100%);
     box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
@@ -1532,10 +1535,6 @@ button#register_auth_button_gitlab {
     #create-account {
         margin: -150px;
     }
-}
-
-.account-creation .white-box .user_email {
-    word-break: break-all;
 }
 
 @media (width >= 800px) {
