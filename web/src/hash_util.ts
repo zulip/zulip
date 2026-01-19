@@ -17,7 +17,7 @@ import {
     narrow_operator_schema,
     realm,
 } from "./state_data.ts";
-import type {NarrowCanonicalOperator, NarrowCanonicalTerm} from "./state_data.ts";
+import type {NarrowCanonicalTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -33,20 +33,21 @@ export function get_reload_hash(): string {
     return hash;
 }
 
-export function encode_operand(operator: NarrowCanonicalOperator, operand: string): string {
-    if (operator === "dm-including" || operator === "dm" || operator === "sender") {
-        const slug = people.emails_to_slug(operand);
-        if (slug) {
-            return slug;
+export function encode_operand(term: NarrowCanonicalTerm): string {
+    let slug: string | undefined;
+    switch (term.operator) {
+        case "dm-including":
+        case "dm":
+        case "sender":
+            slug = people.emails_to_slug(term.operand);
+            break;
+        case "channel": {
+            const stream_id = Number.parseInt(term.operand, 10);
+            slug = encode_stream_id(stream_id);
         }
     }
 
-    if (operator === "channel") {
-        const stream_id = Number.parseInt(operand, 10);
-        return encode_stream_id(stream_id);
-    }
-
-    return internal_url.encodeHashComponent(operand);
+    return slug ?? internal_url.encodeHashComponent(term.operand);
 }
 
 export function encode_stream_id(stream_id: number): string {
@@ -123,7 +124,7 @@ export function search_terms_to_hash(terms?: NarrowCanonicalTerm[]): string {
                 sign +
                 internal_url.encodeHashComponent(term.operator) +
                 "/" +
-                encode_operand(term.operator, term.operand);
+                encode_operand(term);
         }
     }
 
