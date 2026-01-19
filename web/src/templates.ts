@@ -2,10 +2,28 @@ import Handlebars from "handlebars/runtime.js";
 import assert from "minimalistic-assert";
 import {z} from "zod/mini";
 
+import * as blueslip from "./blueslip.ts";
 import * as common from "./common.ts";
 import {default_html_elements, intl} from "./i18n.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import {user_settings} from "./user_settings.ts";
+
+const orig_escape_expression = Handlebars.Utils.escapeExpression;
+
+Handlebars.Utils.escapeExpression = (value: unknown): string => {
+    /* istanbul ignore if */
+    if (
+        typeof value !== "string" &&
+        typeof value !== "number" &&
+        value !== undefined &&
+        !(typeof value === "object" && value !== null && "toHTML" in value)
+    ) {
+        blueslip.error(`Cannot use a value of type ${typeof value} in a Zulip Handlebars template`);
+    }
+    // Upstream type annotation incorrectly requires string
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return (orig_escape_expression as (value: unknown) => string)(value);
+};
 
 // Below, we register Zulip-specific extensions to the Handlebars API.
 //
