@@ -491,56 +491,6 @@ input#terminal:checked ~ #tab-terminal {
     text-align: center;
 }
 
-/* -- password reset container -- */
-.password-reset {
-    display: inline-block;
-    text-align: left;
-    width: 328px;
-
-    & form {
-        margin: 0;
-    }
-
-    #pw_strength {
-        width: 328px;
-        margin-top: 20px;
-    }
-
-    .pitch {
-        width: auto;
-    }
-
-    .input-group {
-        margin: 15px 0;
-
-        & input[type="text"],
-        input[type="password"] {
-            width: calc(100% - 14px);
-        }
-
-        #pw_strength {
-            width: 100%;
-        }
-
-        &.m-t-30 {
-            margin-top: 30px;
-        }
-    }
-
-    & p {
-        margin: 0;
-    }
-
-    .progress {
-        margin: 0;
-    }
-
-    #email-section .fakecontrol {
-        display: inline-block;
-        margin: 0;
-    }
-}
-
 .input-group {
     .progress {
         margin: 0;
@@ -824,12 +774,6 @@ input#terminal:checked ~ #tab-terminal {
     .contributors-list {
         width: 100%;
         margin-left: 0;
-    }
-}
-
-@media (height <= 600px) {
-    .password-container {
-        margin-top: 10px;
     }
 }
 
