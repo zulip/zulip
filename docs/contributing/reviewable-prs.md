@@ -230,7 +230,7 @@ as part of your pull request:
 
 [github-syntax]: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
 [git-grep]: https://git-scm.com/docs/git-grep
-[screenshots-gifs]: ../contributing/presenting-visual-changes.md
+[screenshots-gifs]: ../contributing/presenting-visual-changes.md#screenshot-and-gif-software
 [zulip-dev-community]: https://chat.zulip.org
 [link-to-message]: https://zulip.com/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message
 [dev-community-linkifiers]: https://zulip.com/development-community/#linking-to-github-issues-and-pull-requests
