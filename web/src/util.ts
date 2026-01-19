@@ -273,9 +273,12 @@ export function is_channels_synonym(text: string): boolean {
 
 export function canonicalize_channel_synonyms(text: string): string {
     if (is_channel_synonym(text.toLowerCase())) {
+        // Function is removed in later commits.
+        /* istanbul ignore next */
         return "channel";
     }
     if (is_channels_synonym(text.toLowerCase())) {
+        /* istanbul ignore next */
         return "channels";
     }
     return text;

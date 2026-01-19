@@ -60,7 +60,7 @@ run_test("terms_round_trip", () => {
     let narrow;
 
     terms = [
-        {operator: "stream", operand: devel_id.toString()},
+        {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: "algol"},
     ];
     hash = hash_util.search_terms_to_hash(terms);
@@ -73,7 +73,7 @@ run_test("terms_round_trip", () => {
     ]);
 
     terms = [
-        {operator: "stream", operand: devel_id.toString()},
+        {operator: "channel", operand: devel_id.toString()},
         {operator: "topic", operand: "visual c++", negated: true},
     ];
     hash = hash_util.search_terms_to_hash(terms);
@@ -92,7 +92,7 @@ run_test("terms_round_trip", () => {
         stream_id: florida_id,
     };
     stream_data.add_sub_for_tests(florida_stream);
-    terms = [{operator: "stream", operand: florida_id.toString()}];
+    terms = [{operator: "channel", operand: florida_id.toString()}];
     hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/channel/987-Florida.2C-USA");
     narrow = hash_util.parse_narrow(hash.split("/"));
@@ -109,7 +109,7 @@ run_test("stream_to_channel_rename", () => {
 
     // Confirm searches with "stream" and "streams" return URLs and
     // Filter objects with the new "channel" and "channels" operators.
-    terms = [{operator: "stream", operand: devel_id.toString()}];
+    terms = [{operator: "channel", operand: devel_id.toString()}];
     hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/channel/100-devel");
     narrow = hash_util.parse_narrow(hash.split("/"));
@@ -119,7 +119,7 @@ run_test("stream_to_channel_rename", () => {
         {operator: "channel", operand: devel_id.toString(), negated: false},
     ]);
 
-    terms = [{operator: "streams", operand: "public"}];
+    terms = [{operator: "channels", operand: "public"}];
     hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/channels/public");
     narrow = hash_util.parse_narrow(hash.split("/"));

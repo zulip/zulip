@@ -17,7 +17,7 @@ import {
     narrow_operator_schema,
     realm,
 } from "./state_data.ts";
-import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
+import type {NarrowCanonicalTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -115,7 +115,7 @@ export function by_stream_topic_url(stream_id: number, topic: string): string {
 // Encodes a term list into the
 // corresponding hash: the # component
 // of the narrow URL
-export function search_terms_to_hash(terms?: NarrowTerm[]): string {
+export function search_terms_to_hash(terms?: NarrowCanonicalTerm[]): string {
     // Note: This does not return the correct hash for combined feed, recent and inbox view.
     // These views can have multiple hashes that lead to them, so this function cannot support them.
     let hash = "#";
@@ -124,17 +124,13 @@ export function search_terms_to_hash(terms?: NarrowTerm[]): string {
         hash = "#narrow";
 
         for (const term of terms) {
-            // Support legacy tuples.
-            const operator = util.canonicalize_channel_synonyms(term.operator);
-            const operand = term.operand;
-
             const sign = term.negated ? "-" : "";
             hash +=
                 "/" +
                 sign +
-                internal_url.encodeHashComponent(operator) +
+                internal_url.encodeHashComponent(term.operator) +
                 "/" +
-                encode_operand(operator, operand);
+                encode_operand(term.operator, term.operand);
         }
     }
 
@@ -180,8 +176,8 @@ export function group_edit_url(group: UserGroup, right_side_tab: string): string
     return hash;
 }
 
-export function search_public_streams_notice_url(terms: NarrowTerm[]): string {
-    const public_operator: NarrowTerm = {operator: "channels", operand: "public"};
+export function search_public_streams_notice_url(terms: NarrowCanonicalTerm[]): string {
+    const public_operator: NarrowCanonicalTerm = {operator: "channels", operand: "public"};
     return search_terms_to_hash([public_operator, ...terms]);
 }
 
