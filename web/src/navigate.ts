@@ -1,13 +1,16 @@
+import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as message_lists from "./message_lists.ts";
 import * as message_view from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
+import * as scroll_util from "./scroll_util.ts";
 import * as unread_ops from "./unread_ops.ts";
+import { user_settings } from "./user_settings.ts";
 
 function go_to_row(msg_id: number): void {
     assert(message_lists.current !== undefined);
-    message_lists.current.select_id(msg_id, {then_scroll: true, from_scroll: true});
+    message_lists.current.select_id(msg_id, { then_scroll: true, from_scroll: true });
 }
 
 function is_long_message(message_height: number): boolean {
@@ -18,6 +21,14 @@ function is_long_message(message_height: number): boolean {
     // when pressing `up / down` on short messages to avoid
     // the selected message being barely visible.
     return message_height >= 0.5 * message_viewport.height();
+}
+
+function is_message_fully_visible($message: JQuery, viewport_info: message_viewport.MessageViewportInfo): boolean {
+    const message_props = $message.get_offset_to_window();
+    return (
+        message_props.top >= viewport_info.visible_top &&
+        message_props.bottom <= viewport_info.visible_bottom
+    );
 }
 
 export function up(): void {
@@ -53,6 +64,19 @@ export function up(): void {
     ) {
         page_up();
         return;
+    }
+
+    // Check if smooth scrolling is enabled
+    if (user_settings.enable_smooth_scroll_navigation) {
+        // If the previous message is not fully visible, scroll smoothly to bring it into view
+        if (!is_message_fully_visible($prev_message, viewport_info)) {
+            // Select the message first
+            message_lists.current.select_id(prev_msg_id, { then_scroll: false, from_scroll: true });
+            // Then scroll it into view smoothly
+            const $message_feed = $("#message_feed_container");
+            scroll_util.scroll_element_into_container($prev_message, $message_feed);
+            return;
+        }
     }
 
     go_to_row(prev_msg_id);
@@ -95,6 +119,22 @@ export function down(with_centering = false): void {
     if (msg_id === undefined) {
         return;
     }
+
+    // Check if smooth scrolling is enabled
+    if (user_settings.enable_smooth_scroll_navigation) {
+        const $next_message = message_lists.current.get_row(msg_id);
+        const viewport_info = message_viewport.message_viewport_info();
+        // If the next message is not fully visible, scroll smoothly to bring it into view
+        if (!is_message_fully_visible($next_message, viewport_info)) {
+            // Select the message first
+            message_lists.current.select_id(msg_id, { then_scroll: false, from_scroll: true });
+            // Then scroll it into view smoothly
+            const $message_feed = $("#message_feed_container");
+            scroll_util.scroll_element_into_container($next_message, $message_feed);
+            return;
+        }
+    }
+
     go_to_row(msg_id);
 }
 
@@ -158,7 +198,7 @@ export function page_up(): void {
         if (message_lists.current.view.is_fetched_start_rendered()) {
             const first_message = message_lists.current.first();
             assert(first_message !== undefined);
-            message_lists.current.select_id(first_message.id, {then_scroll: false});
+            message_lists.current.select_id(first_message.id, { then_scroll: false });
         } else {
             const first_rendered_message = message_lists.current.view.first_rendered_message();
             assert(first_rendered_message !== undefined);
@@ -177,7 +217,7 @@ export function page_down(): void {
         if (message_lists.current.view.is_fetched_end_rendered()) {
             const last_message = message_lists.current.last();
             assert(last_message !== undefined);
-            message_lists.current.select_id(last_message.id, {then_scroll: false});
+            message_lists.current.select_id(last_message.id, { then_scroll: false });
         } else {
             const last_rendered_message = message_lists.current.view.last_rendered_message();
             assert(last_rendered_message !== undefined);

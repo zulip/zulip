@@ -1,6 +1,6 @@
 import * as z from "zod/mini";
 
-import type {StateData} from "./state_data.ts";
+import type { StateData } from "./state_data.ts";
 
 export const stream_notification_settings_schema = z.object({
     enable_stream_audible_notifications: z.boolean(),
@@ -47,12 +47,13 @@ export const user_settings_schema = z.object({
     email_address_visibility: z.number(),
     email_notifications_batching_period_seconds: z.number(),
     emojiset: z.string(),
-    emojiset_choices: z.array(z.object({key: z.string(), text: z.string()})),
+    emojiset_choices: z.array(z.object({ key: z.string(), text: z.string() })),
     enable_digest_emails: z.boolean(),
     enable_drafts_synchronization: z.boolean(),
     enable_login_emails: z.boolean(),
     enable_marketing_emails: z.boolean(),
     enable_online_push_notifications: z.boolean(),
+    enable_smooth_scroll_navigation: z.boolean(),
     enter_sends: z.boolean(),
     fluid_layout_width: z.boolean(),
     hide_ai_features: z.boolean(),
