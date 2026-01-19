@@ -178,7 +178,11 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     $config_element = $(
                         render_generate_integration_url_config_checkbox_modal({key, label}),
                     );
-                    $config_element.find(`#integration-url-${key}-checkbox`).on("change", () => {
+                    const $input = $config_element.find(`#integration-url-${key}-checkbox`);
+                    if (key.endsWith("_true")) {
+                        $input.prop("checked", true);
+                    }
+                    $input.on("change", () => {
                         update_url();
                     });
                 } else if (validator === "check_string") {
@@ -192,6 +196,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     continue;
                 }
                 $config_container.append($config_element);
+                update_url();
             }
         }
 
@@ -331,8 +336,12 @@ export function show_generate_integration_url_modal(api_key: string): void {
                         }
                     } else if (validator === "check_bool") {
                         const is_checked = $(`#integration-url-${key}-checkbox`).is(":checked");
+                        const is_default_true = key.endsWith("_true");
+                        const param_name = is_default_true ? key.replace("_true", "") : key;
                         if (is_checked) {
-                            params.set(option.key, "true");
+                            params.set(param_name, "true");
+                        } else if (is_default_true) {
+                            params.set(param_name, "false");
                         }
                     } else if (validator === "check_string") {
                         const value = $(`#integration-url-${key}-text`).val()?.toString();
