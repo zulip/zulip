@@ -452,6 +452,14 @@ select.settings_select {
     }
 }
 
+#service_data .input-group:last-of-type {
+    /* Override .modal__content .input-group:last-of-type which
+       removes margin-bottom. This ensures proper spacing between
+       service data fields and the avatar section below when
+       switching bot types. */
+    margin-bottom: 1.25em;
+}
+
 #zuliprc-section {
     .modal-field-label {
         margin-bottom: 0;
