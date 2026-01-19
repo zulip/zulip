@@ -77,16 +77,17 @@ export function public_search_terms(
 
 // Collect terms which appear only once into a map,
 // and discard those which appear more than once.
-function collect_single(terms: NarrowTerm[]): Map<string, string> {
-    const seen = new Set<string>();
-    const result = new Map<string, string>();
+// Returns `NarrowTerm` so that type is preserved for further use.
+function collect_single(terms: NarrowTerm[]): Map<NarrowTerm["operator"], NarrowTerm> {
+    const seen = new Set<NarrowTerm["operator"]>();
+    const result = new Map<NarrowTerm["operator"], NarrowTerm>();
 
     for (const term of terms) {
         const key = term.operator;
         if (seen.has(key)) {
             result.delete(key);
         } else {
-            result.set(key, term.operand);
+            result.set(key, term);
             seen.add(key);
         }
     }
@@ -119,12 +120,14 @@ export function set_compose_defaults(): {
         }
     }
 
-    const topic = single.get("topic");
-    if (topic !== undefined) {
-        opts.topic = topic;
+    const topic_term = single.get("topic");
+    if (topic_term !== undefined) {
+        assert(topic_term.operator === "topic");
+        opts.topic = topic_term.operand;
     }
 
-    const private_message_recipient_emails = single.get("dm");
+    const dm_term = single.get("dm");
+    const private_message_recipient_emails = dm_term?.operand;
     if (
         private_message_recipient_emails !== undefined &&
         people.is_valid_bulk_emails_for_compose(private_message_recipient_emails.split(","))
