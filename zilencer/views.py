@@ -138,10 +138,10 @@ def deactivate_remote_server(
     request: HttpRequest,
     remote_server: RemoteZulipServer,
 ) -> HttpResponse:
-    from corporate.lib.stripe import RemoteServerBillingSession, do_deactivate_remote_server
+    from corporate.lib.stripe import RemoteServerBillingSession
 
     billing_session = RemoteServerBillingSession(remote_server)
-    do_deactivate_remote_server(remote_server, billing_session)
+    billing_session.do_deactivate_remote_server()
     return json_success(request)
 
 

@@ -5373,6 +5373,55 @@ class RemoteServerBillingSession(BillingSession):
             acting_remote_user=self.remote_billing_user,
         )
 
+    @transaction.atomic(durable=True)
+    def do_deactivate_remote_server(self) -> None:
+        if self.remote_server.deactivated:
+            billing_logger.warning(
+                "Cannot deactivate remote server with ID %d, server has already been deactivated.",
+                self.remote_server.id,
+            )
+            return
+
+        server_plans_to_consider = CustomerPlan.objects.filter(
+            customer__remote_server=self.remote_server
+        ).exclude(status=CustomerPlan.ENDED)
+        realm_plans_to_consider = CustomerPlan.objects.filter(
+            customer__remote_realm__server=self.remote_server
+        ).exclude(status=CustomerPlan.ENDED)
+
+        for possible_plan in list(server_plans_to_consider) + list(realm_plans_to_consider):
+            if possible_plan.tier in [
+                CustomerPlan.TIER_SELF_HOSTED_BASE,
+                CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+                CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
+            ]:  # nocoverage
+                # No action required for free plans.
+                continue
+
+            if possible_plan.status in [
+                CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+                CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+            ]:  # nocoverage
+                # No action required for plans scheduled to downgrade
+                # automatically.
+                continue
+
+            # This customer has some sort of paid plan; ask the customer
+            # to downgrade their paid plan so that they get the
+            # communication in that flow, and then they can come back and
+            # deactivate their server.
+            raise ServerDeactivateWithExistingPlanError  # nocoverage
+
+        self.remote_server.deactivated = True
+        self.remote_server.save(update_fields=["deactivated"])
+        RemoteZulipServerAuditLog.objects.create(
+            event_type=AuditLogEventType.REMOTE_SERVER_DEACTIVATED,
+            server=self.remote_server,
+            event_time=timezone_now(),
+            acting_support_user=self.support_staff,
+            acting_remote_user=self.remote_billing_user,
+        )
+
 
 def stripe_customer_has_credit_card_as_default_payment_method(
     stripe_customer: stripe.Customer,
@@ -5500,56 +5549,6 @@ def ensure_customer_does_not_have_active_plan(customer: Customer) -> None:
             str(customer),
         )
         raise UpgradeWithExistingPlanError
-
-
-@transaction.atomic(durable=True)
-def do_deactivate_remote_server(
-    remote_server: RemoteZulipServer, billing_session: RemoteServerBillingSession
-) -> None:
-    if remote_server.deactivated:
-        billing_logger.warning(
-            "Cannot deactivate remote server with ID %d, server has already been deactivated.",
-            remote_server.id,
-        )
-        return
-
-    server_plans_to_consider = CustomerPlan.objects.filter(
-        customer__remote_server=remote_server
-    ).exclude(status=CustomerPlan.ENDED)
-    realm_plans_to_consider = CustomerPlan.objects.filter(
-        customer__remote_realm__server=remote_server
-    ).exclude(status=CustomerPlan.ENDED)
-
-    for possible_plan in list(server_plans_to_consider) + list(realm_plans_to_consider):
-        if possible_plan.tier in [
-            CustomerPlan.TIER_SELF_HOSTED_BASE,
-            CustomerPlan.TIER_SELF_HOSTED_LEGACY,
-            CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
-        ]:  # nocoverage
-            # No action required for free plans.
-            continue
-
-        if possible_plan.status in [
-            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
-            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-        ]:  # nocoverage
-            # No action required for plans scheduled to downgrade
-            # automatically.
-            continue
-
-        # This customer has some sort of paid plan; ask the customer
-        # to downgrade their paid plan so that they get the
-        # communication in that flow, and then they can come back and
-        # deactivate their server.
-        raise ServerDeactivateWithExistingPlanError  # nocoverage
-
-    remote_server.deactivated = True
-    remote_server.save(update_fields=["deactivated"])
-    RemoteZulipServerAuditLog.objects.create(
-        event_type=AuditLogEventType.REMOTE_SERVER_DEACTIVATED,
-        server=remote_server,
-        event_time=timezone_now(),
-    )
 
 
 def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> datetime:
