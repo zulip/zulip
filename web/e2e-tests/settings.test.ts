@@ -49,7 +49,7 @@ async function close_settings_and_date_picker(page: Page): Promise<void> {
     // Native date pickers open automatically when focused
     // Just press Escape to close any native picker that might be open
     await page.keyboard.press("Escape");
-    
+
     await page.waitForSelector("#settings_overlay_container", {hidden: true});
 }
 
