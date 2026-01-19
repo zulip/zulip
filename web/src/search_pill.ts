@@ -218,7 +218,13 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
             const is_operator_suggestion =
                 search_terms[0]!.operator !== "" && !text_query.includes(":");
             description_html = Filter.search_description_as_html(
-                search_terms,
+                [
+                    {
+                        operator: render_data.operator,
+                        operand: render_data.operand,
+                        negated: render_data.negated,
+                    },
+                ],
                 is_operator_suggestion,
             );
             const capitalized_first_letter = description_html.charAt(0).toUpperCase();
