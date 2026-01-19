@@ -366,6 +366,30 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
         self.assert_json_success(result)
 
+    def test_emoji_upload_success_with_crop_resize(self) -> None:
+        self.login("iago")
+        with get_test_image_file("img.png") as fp:
+            result = self.client_post(
+                "/json/realm/emoji/my_emoji", {"file": fp, "resize_method": "crop"}
+            )
+        self.assert_json_success(result)
+
+    def test_emoji_upload_success_with_fit_resize(self) -> None:
+        self.login("iago")
+        with get_test_image_file("img.png") as fp:
+            result = self.client_post(
+                "/json/realm/emoji/my_emoji", {"file": fp, "resize_method": "fit"}
+            )
+        self.assert_json_success(result)
+
+    def test_gif_emoji_upload_success_with_fit_resize(self) -> None:
+        self.login("iago")
+        with get_test_image_file("img.gif") as fp:
+            result = self.client_post(
+                "/json/realm/emoji/my_emoji", {"file": fp, "resize_method": "fit"}
+            )
+        self.assert_json_success(result)
+
     def test_emoji_upload_file_size_error(self) -> None:
         self.login("iago")
         with get_test_image_file("img.png") as fp, self.settings(MAX_EMOJI_FILE_SIZE_MIB=0):
