@@ -972,6 +972,7 @@ button#register_auth_button_gitlab {
     }
 }
 
+#password-reset-confirm,
 #realm-import-post-process,
 #realm-creation-form-slack-import,
 #account-deactivated-success-page-details,
@@ -1220,18 +1221,39 @@ button#register_auth_button_gitlab {
     }
 }
 
-#password_reset .input-group {
-    & label {
-        font-size: 1rem;
+#password-reset-confirm {
+    .white-box {
+        display: inline-block;
+        text-align: left;
+        width: 328px;
+    }
 
-        &.inline-block {
-            margin-top: -1px;
-        }
+    #pw_strength {
+        width: 328px;
+    }
 
-        &.marketing_emails_checkbox {
-            text-indent: -24px;
-            margin-left: 24px;
+    .password-reset-button {
+        margin-top: 10px;
+        width: 328px;
+    }
+
+    #password_reset .input-group {
+        & label {
+            font-size: 1rem;
+
+            &.inline-block {
+                margin-top: -1px;
+            }
+
+            &.marketing_emails_checkbox {
+                text-indent: -24px;
+                margin-left: 24px;
+            }
         }
+    }
+
+    .password-reset-invalid {
+        margin: 0;
     }
 }
 
