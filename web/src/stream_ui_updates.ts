@@ -263,7 +263,7 @@ export function update_channel_email_section(sub: StreamSubscription): void {
     const $settings = $(
         `.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id.toString())}']`,
     );
-    if (stream_data.can_access_stream_email(sub)) {
+    if (stream_data.can_post_messages_in_stream(sub)) {
         $settings.find(".stream-email-box").show();
     } else {
         $settings.find(".stream-email-box").hide();
