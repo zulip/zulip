@@ -1517,60 +1517,6 @@ test("get_invite_stream_data", ({override}) => {
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 });
 
-test("can_post_messages_in_stream", ({override}) => {
-    const social = {
-        subscribed: true,
-        color: "red",
-        name: "social",
-        stream_id: 2,
-        is_muted: false,
-        invite_only: true,
-        history_public_to_subscribers: false,
-        can_send_message_group: admins_group.id,
-    };
-    override(current_user, "user_id", test_user.user_id);
-    assert.equal(stream_data.can_post_messages_in_stream(social), false);
-
-    override(current_user, "user_id", admin_user_id);
-    assert.equal(stream_data.can_post_messages_in_stream(social), true);
-
-    social.can_send_message_group = everyone_group.id;
-    assert.equal(stream_data.can_post_messages_in_stream(social), true);
-
-    override(current_user, "user_id", moderator_user_id);
-    assert.equal(stream_data.can_post_messages_in_stream(social), true);
-
-    override(current_user, "user_id", test_user.user_id);
-    assert.equal(stream_data.can_post_messages_in_stream(social), true);
-
-    override(current_user, "user_id", me.user_id);
-    assert.equal(stream_data.can_post_messages_in_stream(social), true);
-
-    const anonymous_setting_group = {
-        direct_members: [test_user.user_id],
-        direct_subgroups: [admins_group.id],
-    };
-    social.can_send_message_group = anonymous_setting_group;
-    override(current_user, "user_id", moderator_user_id);
-    assert.equal(stream_data.can_post_messages_in_stream(social), false);
-
-    override(current_user, "user_id", me.user_id);
-    assert.equal(stream_data.can_post_messages_in_stream(social), false);
-
-    override(current_user, "user_id", test_user.user_id);
-    assert.equal(stream_data.can_post_messages_in_stream(social), true);
-
-    override(current_user, "user_id", admin_user_id);
-    assert.equal(stream_data.can_post_messages_in_stream(social), true);
-
-    page_params.is_spectator = true;
-    assert.equal(stream_data.can_post_messages_in_stream(social), false);
-
-    page_params.is_spectator = false;
-    social.is_archived = true;
-    assert.equal(stream_data.can_post_messages_in_stream(social), false);
-});
-
 test("can_create_topics_in_stream", ({override}) => {
     const sub = {
         name: "Denmark",
@@ -2057,7 +2003,7 @@ test("get_current_user_and_their_bots_with_post_messages_permission", ({override
     );
 });
 
-test("can_access_stream_email", ({override}) => {
+test("can_post_messages_in_stream", ({override}) => {
     const social = {
         name: "social",
         stream_id: 2,
@@ -2088,30 +2034,30 @@ test("can_access_stream_email", ({override}) => {
 
     // No user can access email of archived streams.
     social.is_archived = true;
-    assert.equal(stream_data.can_access_stream_email(social), false);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
     social.is_archived = false;
 
     // Spectator cannot access email of any stream.
     page_params.is_spectator = true;
-    assert.equal(stream_data.can_access_stream_email(social), false);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
     page_params.is_spectator = false;
 
-    assert.equal(stream_data.can_access_stream_email(social), true);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     // User should be in can_send_message_group to access stream email.
     social.can_send_message_group.direct_members = [123];
-    assert.equal(stream_data.can_access_stream_email(social), false);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     // Even admins not in can_send_message_group cannot access email.
     override(current_user, "is_admin", true);
-    assert.equal(stream_data.can_access_stream_email(social), false);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
     override(current_user, "is_admin", false);
 
     social.can_send_message_group.direct_members = [bot.user_id];
-    assert.equal(stream_data.can_access_stream_email(social), false);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     social.can_send_message_group.direct_members = [me.user_id];
-    assert.equal(stream_data.can_access_stream_email(social), true);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     // Unsubscribe the user to test cases of unsubscribed users
     // having access to email of web-public and public streams.
@@ -2121,30 +2067,30 @@ test("can_access_stream_email", ({override}) => {
     // access email of web-public streams.
     override(current_user, "is_guest", true);
     social.is_web_public = true;
-    assert.equal(stream_data.can_access_stream_email(social), true);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     // Non-guests have access to stream email of all public streams.
     social.is_web_public = false;
-    assert.equal(stream_data.can_access_stream_email(social), false);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     override(current_user, "is_guest", false);
-    assert.equal(stream_data.can_access_stream_email(social), true);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     // Subscribed users have access to stream email for private
     // streams with both public and protected history.
     social.invite_only = true;
-    assert.equal(stream_data.can_access_stream_email(social), false);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     social.subscribed = true;
-    assert.equal(stream_data.can_access_stream_email(social), true);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.subscribed = false;
     social.history_public_to_subscribers = false;
 
-    assert.equal(stream_data.can_access_stream_email(social), false);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     social.subscribed = true;
-    assert.equal(stream_data.can_access_stream_email(social), true);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.subscribed = false;
     const anonymous_setting_group = {
@@ -2158,27 +2104,27 @@ test("can_access_stream_email", ({override}) => {
     // with protected history even if they have content access via
     // group permissions.
     assert.equal(social.history_public_to_subscribers, false);
-    assert.equal(stream_data.can_access_stream_email(social), false);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
 
     // Non subscribed non-guest users can access email for private streams
     // with public history  if they have content access to stream via
     // group permissions.
     social.history_public_to_subscribers = true;
     override(current_user, "is_guest", true);
-    assert.equal(stream_data.can_access_stream_email(social), false);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
     override(current_user, "is_guest", false);
 
-    assert.equal(stream_data.can_access_stream_email(social), true);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.can_subscribe_group = nobody_group.id;
-    assert.equal(stream_data.can_access_stream_email(social), true);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.can_add_subscribers_group = nobody_group.id;
     social.can_subscribe_group = anonymous_setting_group;
-    assert.equal(stream_data.can_access_stream_email(social), true);
+    assert.equal(stream_data.can_post_messages_in_stream(social), true);
 
     social.can_subscribe_group = nobody_group.id;
-    assert.equal(stream_data.can_access_stream_email(social), false);
+    assert.equal(stream_data.can_post_messages_in_stream(social), false);
 });
 
 const access_cases = [
