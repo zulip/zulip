@@ -4479,6 +4479,10 @@ class RealmPropertyActionTest(BaseAction):
                 check_realm_update_dict("events[0]", events[0])
             else:
                 check_realm_update("events[0]", events[0], name)
+                # Verify rendered_description is present when description changes
+                if name == "description":
+                    self.assertIn("rendered_description", events[0])
+                    self.assertIsInstance(events[0]["rendered_description"], str)
 
     def do_test_allow_system_group(self, setting_name: str) -> None:
         all_system_user_groups = NamedUserGroup.objects.filter(
