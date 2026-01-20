@@ -650,6 +650,7 @@ class EventRealmUpdate(BaseEvent):
     op: Literal["update"]
     property: str
     value: bool | int | str | None
+    rendered_description: str | None = None
 
 
 class RealmUser(BaseModel):

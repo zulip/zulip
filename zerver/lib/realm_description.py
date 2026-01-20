@@ -8,12 +8,29 @@ from zerver.lib.markdown import markdown_convert
 from zerver.models import Realm
 
 
+def render_realm_description(description: str, realm: Realm | None = None) -> str:
+    if not description:
+        return ""
+
+    rendered_description = markdown_convert(
+        description,
+        message_realm=realm,
+        no_previews=True,
+    ).rendered_content
+
+    return rendered_description
+
+
 @cache_with_key(realm_rendered_description_cache_key, timeout=3600 * 24 * 7)
 def get_realm_rendered_description(realm: Realm) -> str:
-    realm_description_raw = realm.description or "The coolest place in the universe."
-    return markdown_convert(
-        realm_description_raw, message_realm=realm, no_previews=True
-    ).rendered_content
+    if realm.rendered_description is None:
+        rendered_description = render_realm_description(realm.description, realm)
+        realm.rendered_description = rendered_description
+        realm.save(update_fields=["rendered_description"])
+
+    if realm.rendered_description == "":
+        return "<p>The coolest place in the universe.</p>"
+    return realm.rendered_description
 
 
 @cache_with_key(realm_text_description_cache_key, timeout=3600 * 24 * 7)

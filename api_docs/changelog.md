@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 462**
+
+* [`GET /events`](/api/get-events): Added `rendered_description` field to the
+  realm update event when the `description` property is changed.
+
 **Feature level 461**
 
 * [`GET /events`](/api/get-events): `realm_bot` update events are
