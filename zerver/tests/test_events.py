@@ -4479,7 +4479,8 @@ class RealmPropertyActionTest(BaseAction):
             ]:
                 check_realm_update_dict("events[0]", events[0])
             else:
-                check_realm_update("events[0]", events[0], name)
+                extra_keys = {"rendered_description"} if name == "description" else set()
+                check_realm_update("events[0]", events[0], name, extra_keys=extra_keys)
 
     def do_test_allow_system_group(self, setting_name: str) -> None:
         all_system_user_groups = NamedUserGroup.objects.filter(
