@@ -61,7 +61,8 @@
                     {% endif %}
                 </div>
 
-                {% if form.show_enable_marketing_emails %}
+                {% if corporate_enabled and form.user.realm.demo_organization_scheduled_deletion_date %}
+                {% if not form.user.enable_marketing_emails and (form.user.realm.get_first_human_user() == form.user) %}
                 <div class="input-group">
                     <label for="id_enable_marketing_emails_demo_creator" class="inline-block checkbox marketing_emails_checkbox">
                         <input id="id_enable_marketing_emails_demo_creator" type="checkbox" name="enable_marketing_emails"
@@ -70,6 +71,7 @@
                         {% trans %}Subscribe me to Zulip's low-traffic newsletter (a few emails a year).{% endtrans %}
                     </label>
                 </div>
+                {% endif %}
                 {% endif %}
 
                 <div class="input-box m-t-30">
