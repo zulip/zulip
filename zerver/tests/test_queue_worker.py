@@ -504,6 +504,17 @@ class WorkerTest(ZulipTestCase):
                 "message_ids": [1],
             }
 
+        def generate_register_push_device_to_bouncer() -> dict[str, Any]:
+            return {
+                "type": "register_push_device_to_bouncer",
+                "payload": {
+                    "user_profile_id": 2,
+                    "push_account_id": 3,
+                    "bouncer_public_key": "test-key",
+                    "encrypted_push_registration": "test-encrypted",
+                },
+            }
+
         with simulated_queue_client(fake_client):
             worker = PushNotificationsWorker()
             worker.setup()
@@ -515,19 +526,25 @@ class WorkerTest(ZulipTestCase):
                     "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification"
                 ) as mock_handle_remove,
                 patch(
+                    "zerver.worker.missedmessage_mobile_notifications.handle_register_push_device_to_bouncer"
+                ) as mock_handle_register,
+                patch(
                     "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
                 ),
             ):
                 event_new = generate_new_message_notification()
                 event_remove = generate_remove_notification()
+                event_register = generate_register_push_device_to_bouncer()
                 fake_client.enqueue("missedmessage_mobile_notifications", event_new)
                 fake_client.enqueue("missedmessage_mobile_notifications", event_remove)
+                fake_client.enqueue("missedmessage_mobile_notifications", event_register)
 
                 worker.start()
                 mock_handle_new.assert_called_once_with(event_new["user_profile_id"], event_new)
                 mock_handle_remove.assert_called_once_with(
                     event_remove["user_profile_id"], event_remove["message_ids"]
                 )
+                mock_handle_register.assert_called_once_with(event_register["payload"])
 
             with (
                 patch(
