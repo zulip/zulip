@@ -544,11 +544,16 @@ labels.
   features just because you're looking for something to work on. It wastes
   maintainer time, and distracts the community from work that will truly help
   Zulip's users.
+- **What should I do while waiting for the first round of feedback on my PR**?
+  Take this time to learn about Zulip's code base and practices, which will help
+  you become a more effective contributor. There are so many resources to read
+  and learn from: documentation on this site, merged pull requests, discussions
+  in the [development community](https://zulip.com/development-community/), etc.
 - **I'm waiting for the next round of review on my PR. Can I pick up
   another issue in the meantime?** Someone's first Zulip PR often
   requires quite a bit of iteration, so please [make sure your pull
-  request is reviewable][reviewable-pull-requests] and go through at
-  least one round of feedback from others before picking up a second
+  request is reviewable][reviewable-pull-requests] and **go through at
+  least one round of feedback** from maintainers before picking up a second
   issue. After that, sure! If
   [Zulipbot](https://github.com/zulip/zulipbot) does not allow you to
   claim an issue, you can post a comment describing the status of your
