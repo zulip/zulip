@@ -98,13 +98,13 @@
         {{#if (or is_me status_content_available)}}
             <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
         {{/if}}
+        {{#if show_last_active_status}}
+            <li role="none" class="popover-menu-list-item text-item hidden-for-spectators">
+                <i class="popover-menu-icon zulip-icon zulip-icon-past-time" aria-hidden="true"></i>
+                <span class="popover-menu-label user-last-seen-time">{{user_last_seen_time_status}}</span>
+            </li>
+        {{/if}}
         {{#if is_active}}
-            {{#unless is_bot}}
-                <li role="none" class="popover-menu-list-item text-item hidden-for-spectators">
-                    <i class="popover-menu-icon zulip-icon zulip-icon-past-time" aria-hidden="true"></i>
-                    <span class="popover-menu-label user-last-seen-time">{{user_last_seen_time_status}}</span>
-                </li>
-            {{/unless}}
             {{#if user_time}}
                 <li role="none" class="popover-menu-list-item text-item hidden-for-spectators">
                     <i class="popover-menu-icon zulip-icon zulip-icon-clock" aria-hidden="true"></i>
@@ -119,6 +119,13 @@
                     <span class="popover-menu-label">{{t "This user has been deactivated." }}</span>
                 {{/if}}
             </li>
+        {{/if}}
+        {{#if (and is_imported_stub is_active)}}
+            {{#unless is_bot}}
+            <li role="none" class="popover-menu-list-item text-item italic hidden-for-spectators">
+                <span class="popover-menu-label">{{t "This user has not activated their imported account." }}</span>
+            </li>
+            {{/unless}}
         {{/if}}
         {{#if spectator_view}}
             <li role="none" class="popover-menu-list-item text-item">
