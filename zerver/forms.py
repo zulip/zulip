@@ -483,16 +483,6 @@ class LoggingSetPasswordForm(SetPasswordForm[UserProfile]):
     )
     enable_marketing_emails = forms.BooleanField(required=False)
 
-    def __init__(self, user: UserProfile, *args: Any, **kwargs: Any) -> None:
-        super().__init__(user, *args, **kwargs)
-        self.show_enable_marketing_emails = False
-        if (
-            settings.CORPORATE_ENABLED
-            and user.realm.demo_organization_scheduled_deletion_date is not None
-            and not user.enable_marketing_emails
-        ):
-            self.show_enable_marketing_emails = user.realm.get_first_human_user() == user
-
     def clean_new_password1(self) -> str:
         new_password = self.cleaned_data["new_password1"]
         if not check_password_strength(new_password):
