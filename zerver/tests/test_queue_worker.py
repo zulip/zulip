@@ -556,13 +556,19 @@ class WorkerTest(ZulipTestCase):
                     side_effect=PushNotificationBouncerRetryLaterError("test"),
                 ) as mock_handle_remove,
                 patch(
+                    "zerver.worker.missedmessage_mobile_notifications.handle_register_push_device_to_bouncer",
+                    side_effect=PushNotificationBouncerRetryLaterError("test"),
+                ) as mock_handle_register,
+                patch(
                     "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
                 ),
             ):
                 event_new = generate_new_message_notification()
                 event_remove = generate_remove_notification()
+                event_register = generate_register_push_device_to_bouncer()
                 fake_client.enqueue("missedmessage_mobile_notifications", event_new)
                 fake_client.enqueue("missedmessage_mobile_notifications", event_remove)
+                fake_client.enqueue("missedmessage_mobile_notifications", event_register)
 
                 with (
                     mock_queue_publish(
@@ -576,12 +582,17 @@ class WorkerTest(ZulipTestCase):
                     worker.start()
                     self.assertEqual(mock_handle_new.call_count, 1 + MAX_REQUEST_RETRIES)
                     self.assertEqual(mock_handle_remove.call_count, 1 + MAX_REQUEST_RETRIES)
+                    self.assertEqual(mock_handle_register.call_count, 1 + MAX_REQUEST_RETRIES)
                 self.assertEqual(
-                    warn_logs.output,
+                    warn_logs.output[0:2],
                     [
                         "WARNING:zerver.worker.missedmessage_mobile_notifications:Maximum retries exceeded for trigger:1 event:push_notification",
                     ]
                     * 2,
+                )
+                self.assertEqual(
+                    warn_logs.output[2],
+                    "WARNING:zerver.worker.missedmessage_mobile_notifications:Maximum retries exceeded for trigger:(user_id=2, push_account_id=3) event:register_push_device_to_bouncer",
                 )
 
     @patch("zerver.worker.email_mirror.mirror_email")
