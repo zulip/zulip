@@ -89,6 +89,15 @@ Handlebars.registerHelper({
     },
 });
 
+Handlebars.registerHelper("map_entries", (m: unknown) => {
+    /* istanbul ignore if */
+    if (!(typeof m === "object" && m instanceof Map)) {
+        blueslip.error("map_entries requires a Map");
+        return m;
+    }
+    return [...m];
+});
+
 type Context = Record<string, unknown>;
 
 Handlebars.registerHelper("t", function (this: Context, message: string) {
