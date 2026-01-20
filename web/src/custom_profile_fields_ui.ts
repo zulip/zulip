@@ -277,7 +277,7 @@ export function initialize_custom_date_type_fields(
         .find<HTMLInputElement>("input.datepicker")
         .on("change", function () {
             const field_id = Number.parseInt($(this).attr("data-field-id")!, 10);
-            const date_str = $(this).val() as string;
+            const date_str = $(this).val()!;
 
             if (!for_profile_settings_panel) {
                 // For "Manage user" modal, API request is made after

@@ -1,11 +1,11 @@
 import $ from "jquery";
 
 // Interface to maintain compatibility with existing code
-export interface DatePickerInstance {
+export type DatePickerInstance = {
     isOpen: boolean;
-    close(): void;
-    destroy(): void;
-}
+    close: () => void;
+    destroy: () => void;
+};
 
 export let flatpickr_instance: DatePickerInstance | null = null;
 
