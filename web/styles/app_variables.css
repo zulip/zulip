@@ -164,6 +164,16 @@
 
     color-scheme: light;
 
+    /* Variable for setting the viewport to full height.
+       As of late 2025, we still support browsers (e.g.,
+       Chrome 105) that do not support dynamic viewport
+       units. 100% is the legacy full-height value. */
+    --full-height-dynamic-viewport: 100%;
+
+    @supports (height: 100dvh) {
+        --full-height-dynamic-viewport: 100dvh;
+    }
+
     /*
     This is the header, aka the navbar.
     */
