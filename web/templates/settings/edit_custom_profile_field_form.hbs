@@ -30,8 +30,8 @@
         <div class="input-group profile_field_external_accounts_edit" >
             <label for="external_acc_field_type" class="modal-field-label">{{t "External account type" }}</label>
             <select name="external_acc_field_type" class="modal_select" disabled>
-                {{#each ../realm_default_external_accounts}}
-                    <option value='{{@key}}'>{{this.text}}</option>
+                {{#each (object_entries ../realm_default_external_accounts) as |entry|}}
+                    <option value='{{entry.[0]}}'>{{entry.[1].text}}</option>
                 {{/each}}
                 <option value="custom">{{t 'Custom' }}</option>
             </select>
