@@ -1,11 +1,7 @@
 class zulip::nginx {
   include zulip::certbot
-  $web_packages = [
-    # Needed to run nginx with the modules we use
-    $zulip::common::nginx,
-    'ca-certificates',
-  ]
-  package { $web_packages: ensure => installed }
+  package { $zulip::common::nginx: ensure => installed }
+  package { 'ca-certificates': ensure => latest }
 
   if $facts['os']['family'] == 'RedHat' {
     file { '/etc/nginx/sites-available':
