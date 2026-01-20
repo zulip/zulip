@@ -1160,11 +1160,6 @@ h4.user_group_setting_subsection_title {
             }
         }
 
-        #open_group_info_modal {
-            display: flex;
-            align-items: center;
-        }
-
         .button-group {
             margin-left: auto;
 
