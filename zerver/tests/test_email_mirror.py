@@ -47,11 +47,13 @@ from zerver.lib.email_mirror_helpers import (
 )
 from zerver.lib.email_mirror_server import ZulipMessageHandler, send_to_postmaster
 from zerver.lib.markdown.from_html import convert_html_to_markdown
+from zerver.lib.message import truncate_topic
 from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
 from zerver.models import Attachment, Recipient, Stream, UserProfile
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.messages import Message
 from zerver.models.realms import get_realm
@@ -1825,6 +1827,59 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         for subject in subject_list:
             stripped = strip_from_subject(subject["original_subject"])
             self.assertEqual(stripped, subject["stripped_subject"])
+
+    def test_subject_added_for_every_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        stream = self.subscribe(hamlet, "Denmark")
+
+        long_subject = "S" * (MAX_TOPIC_NAME_LENGTH + 10)
+        email_body = "TestStreamEmailMessages body"
+        email_token = get_channel_email_token(stream, creator=hamlet, sender=hamlet)
+        stream_to_address = encode_email_address(stream.name, email_token)
+        stream_to_address_with_sender = encode_email_address(
+            stream.name, email_token, show_sender=True
+        )
+
+        def get_incoming_valid_message(to: str, subject: str = long_subject) -> EmailMessage:
+            message = EmailMessage()
+            message.set_content(email_body)
+            message["Subject"] = subject
+            message["From"] = self.example_email("hamlet")
+            message["To"] = to
+            message["Reply-to"] = self.example_email("othello")
+            return message
+
+        process_message(get_incoming_valid_message(stream_to_address))
+        message = most_recent_message(hamlet)
+        self.assertEqual(truncate_topic(long_subject), message.topic_name())
+        self.assertEqual(
+            f"**Subject:** {long_subject}\n\n{email_body}",
+            message.content,
+        )
+
+        process_message(get_incoming_valid_message(stream_to_address_with_sender))
+        message = most_recent_message(hamlet)
+        self.assertEqual(truncate_topic(long_subject), message.topic_name())
+        self.assertEqual(
+            f"**From:** {hamlet.delivery_email}\n**Subject:** {long_subject}\n\n{email_body}",
+            message.content,
+        )
+
+        # Two different long subjects that truncate to the same topic name
+        # should each still show their full subject in the body.
+        subject_a = "S" * MAX_TOPIC_NAME_LENGTH + "AAAA"
+        subject_b = "S" * MAX_TOPIC_NAME_LENGTH + "BBBB"
+        self.assertEqual(truncate_topic(subject_a), truncate_topic(subject_b))
+
+        for full_subject in (subject_a, subject_b):
+            process_message(get_incoming_valid_message(stream_to_address, subject=full_subject))
+            message = most_recent_message(hamlet)
+            self.assertEqual(truncate_topic(full_subject), message.topic_name())
+            self.assertEqual(
+                f"**Subject:** {full_subject}\n\n{email_body}",
+                message.content,
+            )
 
 
 # If the Content-Type header didn't specify a charset, the text content
