@@ -2573,6 +2573,7 @@ run_test("is_empty_topic_only_channel", ({override}) => {
     };
     override(realm, "realm_topics_policy", "allow_empty_topic");
     assert.equal(stream_data.is_empty_topic_only_channel(undefined), false);
+    assert.equal(stream_data.is_empty_topic_only_channel(99), false);
 
     stream_data.add_sub_for_tests(scotland);
     override(current_user, "user_id", me.user_id);
@@ -2580,4 +2581,33 @@ run_test("is_empty_topic_only_channel", ({override}) => {
     override(current_user, "is_admin", true);
     assert.equal(stream_data.is_empty_topic_only_channel(social.stream_id), true);
     assert.equal(stream_data.is_empty_topic_only_channel(scotland.stream_id), false);
+});
+
+run_test("can_use_empty_topic", ({override}) => {
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        topics_policy: "empty_topic_only",
+    };
+    stream_data.add_sub_for_tests(social);
+    const scotland = {
+        subscribed: true,
+        color: "red",
+        name: "scotland",
+        stream_id: 3,
+        topics_policy: "inherit",
+    };
+    override(realm, "realm_topics_policy", "allow_empty_topic");
+    assert.equal(stream_data.can_use_empty_topic(undefined), false);
+    assert.equal(stream_data.can_use_empty_topic(99), false);
+
+    assert.equal(stream_data.can_use_empty_topic(social.stream_id), true);
+
+    stream_data.add_sub_for_tests(scotland);
+
+    assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), true);
+    override(realm, "realm_topics_policy", "disable_empty_topic");
+    assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), false);
 });
