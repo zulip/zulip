@@ -552,13 +552,13 @@ function should_show_custom_query(query: string, items: string[]): boolean {
 
 export const dev_only_slash_commands = [
     {
-        text: $t({defaultMessage: "/dark"}),
+        text: "/dark",
         name: "dark",
         aliases: "night",
         info: $t({defaultMessage: "Switch to the dark theme"}),
     },
     {
-        text: $t({defaultMessage: "/light"}),
+        text: "/light",
         name: "light",
         aliases: "day",
         info: $t({defaultMessage: "Switch to light theme"}),
@@ -567,21 +567,21 @@ export const dev_only_slash_commands = [
 
 export const slash_commands = [
     {
-        text: $t({defaultMessage: "/me"}),
+        text: "/me",
         name: "me",
         aliases: "",
         placeholder: $t({defaultMessage: "is …"}),
         info: $t({defaultMessage: "Action message"}),
     },
     {
-        text: $t({defaultMessage: "/poll"}),
+        text: "/poll",
         name: "poll",
         aliases: "",
         placeholder: $t({defaultMessage: "Question"}),
         info: $t({defaultMessage: "Create a poll"}),
     },
     {
-        text: $t({defaultMessage: "/todo"}),
+        text: "/todo",
         name: "todo",
         aliases: "",
         placeholder: $t({defaultMessage: "Task list"}),
