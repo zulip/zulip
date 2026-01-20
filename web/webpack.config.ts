@@ -176,6 +176,7 @@ const config = (
                             "not",
                             "t",
                             "tr",
+                            "map_entries",
                             "rendered_markdown",
                             "numberFormat",
                             "tooltip_hotkey_hints",

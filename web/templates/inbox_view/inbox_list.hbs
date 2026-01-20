@@ -7,11 +7,11 @@
   unread_count=unread_dms_count
   }}
 <div id="inbox-direct-messages-container" class="inbox-folder-components">
-    {{#each dms_dict}}
+    {{#each (map_entries dms_dict)}}
         {{> inbox_row this.[1]}}
     {{/each}}
 </div>
-{{#each channel_folders_dict as |channel_folder_key_value_list _index|}}
+{{#each (map_entries channel_folders_dict) as |channel_folder_key_value_list|}}
     {{> inbox_folder_with_channels
       id=channel_folder_key_value_list.[1].id
       name=channel_folder_key_value_list.[1].name
