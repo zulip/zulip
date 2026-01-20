@@ -79,8 +79,18 @@ run_test("t_tag", ({mock_template}) => {
 
 run_test("{{#tr}} to tag for translation", ({mock_template}) => {
     const args = {
-        notification_settings: {},
-        settings_object: {},
+        general_settings: [],
+        notification_settings: {
+            desktop_notification_settings: [],
+            mobile_notification_settings: [],
+            email_message_notification_settings: [],
+            other_email_settings: [],
+        },
+        custom_stream_specific_notification_settings: [],
+        email_notifications_batching_period_values: [],
+        settings_object: {
+            available_notification_sounds: [],
+        },
         settings_label: {
             desktop_icon_count_display:
                 "Unread count badge (appears in desktop sidebar and browser tab)",
