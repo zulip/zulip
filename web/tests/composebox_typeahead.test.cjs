@@ -255,7 +255,7 @@ const emojis_by_name = new Map(
 const me_command = {
     name: "me",
     aliases: "",
-    text: "translated: /me",
+    text: "/me",
     placeholder: "translated: is …",
     info: "translated: Action message",
 };
@@ -264,13 +264,13 @@ const me_command_item = slash_item(me_command);
 const my_command_item = slash_item({
     name: "my",
     aliases: "",
-    text: "translated: /my (Test)",
+    text: "/my (Test)",
 });
 
 const dark_command = {
     name: "dark",
     aliases: "night",
-    text: "translated: /dark",
+    text: "/dark",
     info: "translated: Switch to the dark theme",
 };
 const dark_command_item = slash_item(dark_command);
@@ -278,7 +278,7 @@ const dark_command_item = slash_item(dark_command);
 const light_command = {
     name: "light",
     aliases: "day",
-    text: "translated: /light",
+    text: "/light",
     info: "translated: Switch to light theme",
 };
 const light_command_item = slash_item(light_command);
@@ -2158,7 +2158,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("test no#o", []);
 
     const poll_command = {
-        text: "translated: /poll",
+        text: "/poll",
         name: "poll",
         info: "translated: Create a poll",
         aliases: "",
@@ -2166,7 +2166,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
         type: "slash",
     };
     const todo_command = {
-        text: "translated: /todo",
+        text: "/todo",
         name: "todo",
         info: "translated: Create a collaborative to-do list",
         aliases: "",
