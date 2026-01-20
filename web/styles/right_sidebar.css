@@ -160,13 +160,20 @@
         }
     }
 
-    .user-circle {
-        grid-area: starting-anchor-element;
-        place-self: center center;
-        /* Tighten the line-height to match the icon's size... */
-        line-height: 1;
-        /* ...which is approximately 8px at 15px/1em in Vlad's design. */
-        font-size: 0.5333em;
+    .selectable_sidebar_block.user-circle {
+        &::before {
+            grid-area: starting-anchor-element;
+            place-self: center center;
+            position: static;
+            /* Override zulip-icon absolute positioning for grid layout */
+            top: auto;
+            left: auto;
+            transform: none;
+            /* Tighten the line-height to match the icon's size... */
+            line-height: 1;
+            /* ...which is approximately 8px at 15px/1em in Vlad's design. */
+            font-size: 0.5333em;
+        }
     }
 
     .user_sidebar_entry.with_avatar {
@@ -177,7 +184,7 @@
                .selectable_sidebar_block. */
             margin-right: var(--right-sidebar-avatar-right-margin);
 
-            &:not(:has(.user-circle-offline)) .user-profile-picture {
+            .user-profile-picture:not(.user-circle-offline) {
                 /* The over-avatar user circle width is 15.5px at 20px/1em;
                    we adjust the border radius here to avoid any pixels
                    from the avatar bleeding through. */
@@ -192,19 +199,27 @@
             margin-right: 0;
         }
 
-        .user-circle {
-            position: absolute;
-            /* 10px at 16px/1em */
-            font-size: 0.625em;
-            bottom: -0.5px;
-            right: -0.5px;
-            background-color: var(--color-background);
-            /* A 1.5px border provides better results than
-               a 1px border, especially at smaller font sizes. */
-            border: 1.5px solid var(--color-background);
-            border-radius: 50%;
+        .user-profile-picture.user-circle {
+            position: relative;
 
-            &.user-circle-offline {
+            &::before {
+                position: absolute;
+                /* 10px at 16px/1em */
+                font-size: 0.625em;
+                bottom: -0.5px;
+                right: -0.5px;
+                background-color: var(--color-background);
+                /* A 1.5px border provides better results than
+                   a 1px border, especially at smaller font sizes. */
+                border: 1.5px solid var(--color-background);
+                border-radius: 50%;
+                /* Override zulip-icon centering for absolute positioning */
+                top: auto;
+                left: auto;
+                transform: none;
+            }
+
+            &.user-circle-offline::before {
                 display: none;
             }
         }
