@@ -61,7 +61,7 @@
     <div class="input-group">
         <label for="{{prefix}}topics_policy" class="settings-field-label">{{> stream_topics_policy_label .}}</label>
         <select name="stream-topics-policy-setting" id="{{prefix}}topics_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
-            {{> ../settings/dropdown_options_widget option_values=stream_topics_policy_values}}
+            {{> ../settings/dropdown_options_widget option_values=(object_values stream_topics_policy_values)}}
         </select>
         {{> topics_already_exist_error .}}
     </div>

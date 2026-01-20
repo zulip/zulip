@@ -7,7 +7,7 @@
     <div class="input-group">
         <label class="settings-field-label">{{t "User list style" }}</label>
         <div class="user_list_style_values settings-highlight-box prop-element" id="{{prefix}}user_list_style" data-setting-widget-type="radio-group" data-setting-choice-type="number">
-            {{#each user_list_style_values}}
+            {{#each (object_values user_list_style_values)}}
                 <label class="preferences-radio-choice-label">
                     <span class="radio-choice-controls">
                         <input type="radio" class="setting_user_list_style_choice" name="user_list_style" value="{{this.code}}"/>
@@ -52,7 +52,7 @@
     <div class="input-group">
         <label for="{{prefix}}web_animate_image_previews" class="settings-field-label">{{t "Play animated images" }}</label>
         <select name="web_animate_image_previews" class="setting_web_animate_image_previews prop-element settings_select bootstrap-focus-style" id="{{prefix}}web_animate_image_previews" data-setting-widget-type="string">
-            {{> dropdown_options_widget option_values=web_animate_image_previews_values}}
+            {{> dropdown_options_widget option_values=(object_values web_animate_image_previews_values)}}
         </select>
     </div>
 

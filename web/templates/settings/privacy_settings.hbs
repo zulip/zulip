@@ -66,7 +66,7 @@
               data-setting-widget-type="number"
               id="{{prefix}}email_address_visibility"
               {{#unless user_has_email_set}}disabled="disabled"{{/unless}}>
-                {{> dropdown_options_widget option_values=email_address_visibility_values}}
+                {{> dropdown_options_widget option_values=(object_values email_address_visibility_values)}}
             </select>
         </div>
     </div>

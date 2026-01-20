@@ -7,7 +7,7 @@
     <div class="input-group">
         <label for="{{prefix}}web_stream_unreads_count_display_policy" class="settings-field-label">{{t "Show unread counts for" }}</label>
         <select name="web_stream_unreads_count_display_policy" class="setting_web_stream_unreads_count_display_policy prop-element bootstrap-focus-style settings_select" id="{{prefix}}web_stream_unreads_count_display_policy"  data-setting-widget-type="number">
-            {{> dropdown_options_widget option_values=web_stream_unreads_count_display_policy_values}}
+            {{> dropdown_options_widget option_values=(object_values web_stream_unreads_count_display_policy_values)}}
         </select>
     </div>
 
@@ -38,7 +38,7 @@
             {{> ../help_link_widget link="/help/manage-inactive-channels" }}
         </label>
         <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element settings_select bootstrap-focus-style" id="{{prefix}}demote_inactive_streams"  data-setting-widget-type="number">
-            {{> dropdown_options_widget option_values=demote_inactive_streams_values}}
+            {{> dropdown_options_widget option_values=(object_values demote_inactive_streams_values)}}
         </select>
     </div>
 </div>

@@ -90,6 +90,11 @@ run_test("{{#tr}} to tag for translation", ({mock_template}) => {
             automatically_unmute_topics_in_muted_streams_policy:
                 "Automatically unmute topics in muted channels",
         },
+        automatically_follow_topics_policy_values: {},
+        automatically_unmute_topics_in_muted_streams_policy_values: {},
+        resolved_topic_notice_auto_read_policy_values: {},
+        desktop_icon_count_display_values: {},
+        realm_name_in_email_notifications_policy_values: {},
     };
 
     // We're actually testing `notification_settings.hbs` here which
