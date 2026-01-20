@@ -85,7 +85,15 @@ def do_set_realm_property(
         return
 
     setattr(realm, name, value)
-    realm.save(update_fields=[name])
+    if name == "description":
+        from zerver.lib.realm_description import render_realm_description
+
+        rendered_description, version = render_realm_description(value, realm)
+        realm.rendered_description = rendered_description
+        realm.rendered_description_version = version
+        realm.save(update_fields=[name, "rendered_description", "rendered_description_version"])
+    else:
+        realm.save(update_fields=[name])
 
     event = dict(
         type="realm",
@@ -93,6 +101,9 @@ def do_set_realm_property(
         property=name,
         value=value,
     )
+
+    if name == "description":
+        event["rendered_description"] = realm.rendered_description
 
     # These settings have a different event format due to their history.
     message_edit_settings = [

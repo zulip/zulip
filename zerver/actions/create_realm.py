@@ -16,6 +16,7 @@ from zerver.actions.realm_settings import (
 )
 from zerver.lib.bulk_create import create_users
 from zerver.lib.push_notifications import sends_notifications_directly
+from zerver.lib.realm_description import render_realm_description
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.sessions import delete_realm_user_sessions
@@ -219,6 +220,9 @@ def do_create_realm(
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
     if description is not None:
         kwargs["description"] = description
+        rendered_description, version = render_realm_description(description, realm=None)
+        kwargs["rendered_description"] = rendered_description
+        kwargs["rendered_description_version"] = version
     if invite_required is not None:
         kwargs["invite_required"] = invite_required
     if plan_type is not None:

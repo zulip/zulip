@@ -455,11 +455,19 @@ def check_realm_update(
     the value people actually matches the type from
     Realm.property_types that we have configured
     for the property.
+
+    For certain properties, there are extra fields.
+    For example, when property is "description", there's also
+    "rendered_description".
     """
     _check_realm_update(var_name, event)
 
     assert prop == event["property"]
     value = event["value"]
+
+    if prop == "description":
+        assert "rendered_description" in event
+        assert isinstance(event["rendered_description"], str)
 
     if prop in [
         "moderation_request_channel_id",
