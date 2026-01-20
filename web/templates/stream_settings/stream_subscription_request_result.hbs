@@ -8,13 +8,13 @@
     {{else}}
         {{#if (not is_total_subscriber_more_than_five) }}
             {{#if subscribed_users}}
-                {{t "Subscribed:" }} {{> user_links subscribed_users}}.
+                {{t "Subscribed:" }} {{> user_links users=subscribed_users}}.
             {{/if}}
             {{#if already_subscribed_users}}
-                {{t "Already a subscriber:" }} {{> user_links already_subscribed_users}}.
+                {{t "Already a subscriber:" }} {{> user_links users=already_subscribed_users}}.
             {{/if}}
             {{#if ignored_deactivated_users}}
-                {{t "Ignored deactivated users:" }} {{> user_links ignored_deactivated_users}}.
+                {{t "Ignored deactivated users:" }} {{> user_links users=ignored_deactivated_users}}.
             {{/if}}
         {{else}}
             {{#if subscribed_users}}
