@@ -1206,7 +1206,9 @@ export function can_use_empty_topic(stream_id: number | undefined): boolean {
         return false;
     }
     const sub = sub_store.get(stream_id);
-    assert(sub !== undefined);
+    if (!sub) {
+        return false;
+    }
 
     let topics_policy = sub.topics_policy;
     if (sub.topics_policy === settings_config.get_stream_topics_policy_values().inherit.code) {
@@ -1224,7 +1226,9 @@ export function is_empty_topic_only_channel(stream_id: number | undefined): bool
         return false;
     }
     const sub = sub_store.get(stream_id);
-    assert(sub !== undefined);
+    if (!sub) {
+        return false;
+    }
 
     let topics_policy = sub.topics_policy;
     if (sub.topics_policy === settings_config.get_stream_topics_policy_values().inherit.code) {
