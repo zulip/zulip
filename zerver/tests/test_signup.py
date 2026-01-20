@@ -1212,8 +1212,7 @@ class LoginTest(ZulipTestCase):
     def test_zulip_default_context_does_not_load_inline_previews(self) -> None:
         realm = get_realm("zulip")
         description = "https://www.google.com/images/srpr/logo4w.png"
-        realm.description = description
-        realm.save(update_fields=["description"])
+        do_set_realm_property(realm, "description", description, acting_user=None)
         response: HttpResponseBase = self.client_get("/login/")
         expected_response = """<p><a href="https://www.google.com/images/srpr/logo4w.png">\
 https://www.google.com/images/srpr/logo4w.png</a></p>"""
