@@ -98,6 +98,21 @@ Handlebars.registerHelper("map_entries", (m: unknown) => {
     return [...m];
 });
 
+Handlebars.registerHelper("object_entries", (o: unknown) => {
+    /* istanbul ignore if */
+    if (typeof o !== "object" || o === null) {
+        blueslip.error("object_entries requires a plain object");
+        return [];
+    }
+    /* istanbul ignore if */
+    if (Symbol.iterator in o) {
+        blueslip.error("object_entries requires a plain object");
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        return [...[...(o as Iterable<unknown>)].entries()];
+    }
+    return Object.entries(o);
+});
+
 Handlebars.registerHelper("object_values", (o: unknown): unknown => {
     /* istanbul ignore if */
     if (typeof o !== "object" || o === null || Symbol.iterator in o) {
