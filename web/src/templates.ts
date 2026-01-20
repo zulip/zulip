@@ -10,6 +10,8 @@ import {user_settings} from "./user_settings.ts";
 
 const orig_escape_expression = Handlebars.Utils.escapeExpression;
 const orig_is_empty = Handlebars.Utils.isEmpty;
+const orig_each = Handlebars.helpers["each"];
+assert(orig_each !== undefined);
 
 Handlebars.Utils.escapeExpression = (value: unknown): string => {
     /* istanbul ignore if */
@@ -40,6 +42,16 @@ Handlebars.Utils.isEmpty = (value: unknown): boolean => {
         );
     }
     return orig_is_empty(value);
+};
+
+Handlebars.helpers["each"] = function (context, options): unknown {
+    /* istanbul ignore if */
+    if (!Array.isArray(context)) {
+        blueslip.error(
+            `Cannot loop over a value of type ${Object.prototype.toString.call(context)} in a Zulip Handlebars template`,
+        );
+    }
+    return orig_each.call(this, context, options);
 };
 
 // Below, we register Zulip-specific extensions to the Handlebars API.
