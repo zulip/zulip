@@ -502,9 +502,9 @@ class InviteUserTest(InviteUserBase):
 
         # Remove some more warning flags
         do_change_realm_subdomain(realm, "reasonable", acting_user=None)
-        realm.description = "A real place"
+        do_set_realm_property(realm, "description", "A real place", acting_user=None)
         realm.date_created = timezone_now() - timedelta(hours=2)
-        realm.save()
+        realm.save(update_fields=["date_created"])
 
         # This is now more allowable (5x current 2 users)
         with self.assertLogs(level="INFO") as m:

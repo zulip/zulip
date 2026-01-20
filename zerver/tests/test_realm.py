@@ -486,8 +486,9 @@ class RealmTest(ZulipTestCase):
         rendered_description = get_realm_rendered_description(realm)
         text_description = get_realm_text_description(realm)
 
-        realm.description = "New description"
-        realm.save(update_fields=["description"])
+        do_set_realm_property(
+            realm, "description", "New description", acting_user=self.example_user("iago")
+        )
 
         new_rendered_description = get_realm_rendered_description(realm)
         self.assertNotEqual(rendered_description, new_rendered_description)
