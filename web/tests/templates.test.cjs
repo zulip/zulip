@@ -134,7 +134,7 @@ run_test("list_each", ({override}) => {
 `,
     );
     assert.equal(
-        require("./templates/list_each.hbs")({stuff: {}}),
+        require("./templates/list_each.hbs")({stuff: []}),
         `\
 empty
 
