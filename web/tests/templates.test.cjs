@@ -46,6 +46,13 @@ run_test("map_entries", () => {
     assert.equal(html, "a:b\nc:d\n");
 });
 
+run_test("object_values", () => {
+    const html = require("./templates/object_values.hbs")({
+        o: {a: "b", c: "d"},
+    });
+    assert.equal(html, "b\nd\n");
+});
+
 run_test("rendered_markdown", () => {
     const html = require("./templates/rendered_markdown.hbs")();
     const expected_html =

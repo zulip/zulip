@@ -98,6 +98,15 @@ Handlebars.registerHelper("map_entries", (m: unknown) => {
     return [...m];
 });
 
+Handlebars.registerHelper("object_values", (o: unknown): unknown => {
+    /* istanbul ignore if */
+    if (typeof o !== "object" || o === null || Symbol.iterator in o) {
+        blueslip.error("object_values requires a plain object");
+        return o;
+    }
+    return Object.values(o);
+});
+
 type Context = Record<string, unknown>;
 
 Handlebars.registerHelper("t", function (this: Context, message: string) {
