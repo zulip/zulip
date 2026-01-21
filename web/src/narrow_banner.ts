@@ -3,6 +3,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as compose_validate from "./compose_validate.ts";
+import * as emoji from "./emoji.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -15,6 +16,7 @@ import * as people from "./people.ts";
 import * as spectators from "./spectators.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 const SPECTATOR_STREAM_NARROW_BANNER = {
@@ -597,7 +599,6 @@ export function pick_empty_narrow_banner(
                 ),
             };
         }
-
         case "mentions": {
             const mentioned_user = people.maybe_get_user_by_id(first_term.operand, true);
 
@@ -629,6 +630,21 @@ export function pick_empty_narrow_banner(
             return {
                 title_html: NO_SEARCH_RESULTS_TITLE_HTML,
                 show_action: show_search_shared_history,
+            };
+        }
+        case "reaction": {
+            const emoji_details = emoji.get_emoji_details_by_name(first_term.operand);
+            const emoji_alt_code = user_settings.emojiset === "text";
+            const is_realm_emoji =
+                emoji_details.reaction_type === "realm_emoji" ||
+                emoji_details.reaction_type === "zulip_extra_emoji";
+            return {
+                title: "",
+                reaction_emoji: {
+                    ...emoji_details,
+                    emoji_alt_code,
+                    is_realm_emoji,
+                },
             };
         }
     }

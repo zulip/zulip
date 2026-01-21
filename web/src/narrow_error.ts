@@ -1,5 +1,7 @@
 import render_empty_feed_notice from "../templates/empty_feed_notice.hbs";
 
+import type {EmojiRenderingDetails} from "./emoji.ts";
+
 type QueryWord = {
     query_word: string;
     is_stop_word: boolean;
@@ -14,6 +16,10 @@ export type NarrowBannerData = {
     html?: string;
     show_action?: boolean;
     search_data?: SearchData;
+    reaction_emoji?: EmojiRenderingDetails & {
+        emoji_alt_code: boolean;
+        is_realm_emoji: boolean;
+    };
 } & ({title: string} | {title_html: string});
 
 export function narrow_error(narrow_banner_data: NarrowBannerData): string {
