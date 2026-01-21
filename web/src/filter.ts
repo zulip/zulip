@@ -474,6 +474,18 @@ export class Filter {
         // NOTE: We will add more logic here once `NarrowTerm`
         // operand has different type based on operator.
         try {
+            switch (suggestion.operator) {
+                case "dm":
+                case "dm-including":
+                case "sender":
+                    // Empty operand is invalid for these operators.
+                    // Added here instead of `is_valid_canonical_term`
+                    // to create better diffs for future refactoring.
+                    if (suggestion.operand === "") {
+                        return undefined;
+                    }
+            }
+
             const potential_narrow_term: NarrowCanonicalTerm = Filter.canonicalize_term(suggestion);
 
             if (!Filter.is_valid_canonical_term(potential_narrow_term)) {
