@@ -185,46 +185,6 @@ function initialize_pm_pill(mock_template) {
     mock_banners();
 }
 
-test_ui("validate_stream_message_address_info", ({mock_template, override}) => {
-    // For this test we basically only use FakeComposeBox
-    // to set up the DOM environment. We don't assert about
-    // any side effects on the DOM, since the scope of this
-    // test is mostly to make sure the template gets rendered.
-    new FakeComposeBox();
-
-    override(realm, "realm_can_access_all_users_group", everyone.id);
-
-    const party_sub = {
-        stream_id: 101,
-        name: "party",
-        subscribed: true,
-        can_add_subscribers_group: nobody.id,
-        can_subscribe_group: nobody.id,
-    };
-    stream_data.add_sub_for_tests(party_sub);
-    assert.ok(compose_validate.validate_stream_message_address_info(party_sub));
-
-    party_sub.subscribed = false;
-    stream_data.add_sub_for_tests(party_sub);
-    let user_not_subscribed_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", true, (data, html) => {
-        assert.equal(data.classname, compose_banner.CLASSNAMES.user_not_subscribed);
-        user_not_subscribed_rendered = true;
-        return html;
-    });
-    assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
-    assert.ok(user_not_subscribed_rendered);
-
-    party_sub.name = "Frontend";
-    party_sub.stream_id = 102;
-    stream_data.add_sub_for_tests(party_sub);
-    user_not_subscribed_rendered = false;
-
-    assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
-
-    assert.ok(user_not_subscribed_rendered);
-});
-
 test_ui("validate", ({mock_template, override}) => {
     function add_content_to_compose_box() {
         $("textarea#compose-textarea").val("foobarfoobar");
@@ -446,11 +406,31 @@ test_ui("test_stream_posting_permission", ({mock_template, override}) => {
         subscribed: true,
         can_send_message_group: admin.id,
         can_create_topic_group: everyone.id,
+        can_add_subscribers_group: everyone.id,
     };
 
     stream_data.add_sub_for_tests(sub_stream_102);
     compose_state.topic("topic102");
     compose_state.set_stream_id(sub_stream_102.stream_id);
+
+    sub_stream_102.subscribed = false;
+    let user_not_subscribed_rendered = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.user_not_subscribed);
+        assert.equal(
+            data.banner_text,
+            $t({
+                defaultMessage:
+                    "You're not subscribed to this channel. You will not be notified if other users reply to your message.",
+            }),
+        );
+        user_not_subscribed_rendered = true;
+        return "<banner-stub>";
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(user_not_subscribed_rendered);
+
+    sub_stream_102.subscribed = true;
 
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
