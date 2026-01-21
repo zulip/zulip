@@ -15,6 +15,7 @@ import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNo
 import MovingToZulipIntro from "../include/_MovingToZulipIntro.mdx";
 import PrepareForTransition1 from "../include/_PrepareForTransition1.mdx"
 import PrepareForTransition2 from "../include/_PrepareForTransition2.mdx"
+import SetUpServerStep from "../include/_SetUpServerStep.mdx";
 import SignUpForAPlan from "../include/_SignUpForAPlan.mdx";
 import TopicsIntro from "../include/_TopicsIntro.mdx";
 
@@ -40,7 +41,20 @@ think through the transition process in your own context.
 
 ## Import or create your organization
 
-<CreateOrgNoImport />
+<Tabs>
+  <TabItem label="Import from Teams">
+    <FlattenedSteps>
+      <SetUpServerStep />
+
+      1. Follow the steps in the [Microsoft Teams import
+         guide](/help/import-from-microsoft-teams).
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Create a new organization">
+    <CreateOrgNoImport />
+  </TabItem>
+</Tabs>
 
 ## Sign up for a plan
 
@@ -110,8 +124,7 @@ team.
 
 ## Related articles
 
-* [Import from Slack](/help/import-from-slack)
-* [Slack-compatible incoming webhook](/integrations/doc/slack_incoming)
+* [Import from Microsoft Teams](/help/import-from-microsoft-teams)
 * [Trying out Zulip](/help/trying-out-zulip)
 * [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
 * [Moving to Zulip](/help/moving-to-zulip)
