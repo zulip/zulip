@@ -1110,6 +1110,8 @@ export class Filter {
     }
 
     single_term_type_returns_all_messages_of_conversation(): boolean {
+        // Important: Because of how this is used in is_common_narrow,
+        // every view here requires a custom title in get_title.
         const term_types = this.sorted_term_types();
 
         // "topic" alone cannot guarantee all messages of a conversation because
