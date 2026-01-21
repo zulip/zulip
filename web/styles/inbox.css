@@ -615,14 +615,11 @@
 .inbox-container #inbox-pane .inbox-folder .unread_count {
     transition: none;
     cursor: default;
+    display: none;
 
     &:hover {
         outline: 0;
     }
-}
-
-.inbox-container #inbox-pane .inbox-folder:not(#inbox-dm-header) .unread_count {
-    display: none;
 }
 
 #inbox-pane #inbox-list .collapsible-button {
@@ -660,10 +657,7 @@
     #inbox-pane
     .inbox-folder.inbox-collapsed-state
     .unread_mention_info,
-.inbox-container
-    #inbox-pane
-    .inbox-folder.inbox-collapsed-state:not(#inbox-dm-header)
-    .unread_count {
+.inbox-container #inbox-pane .inbox-folder.inbox-collapsed-state .unread_count {
     display: inline;
 }
 
