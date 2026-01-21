@@ -110,13 +110,19 @@ def process_user(
     short_name = user_dict["username"]
     date_joined = int(timezone_now().timestamp())
     timezone = "UTC"
-
     if is_team_admin(user_dict):
         role = UserProfile.ROLE_REALM_OWNER
     elif is_team_guest(user_dict):
         role = UserProfile.ROLE_GUEST
     else:
         role = UserProfile.ROLE_MEMBER
+
+    if user_dict.get("is_bot"):
+        is_bot = True
+        bot_type = UserProfile.DEFAULT_BOT
+    else:
+        is_bot = False
+        bot_type = None
 
     if user_dict["is_mirror_dummy"]:
         is_active = False
@@ -134,6 +140,8 @@ def process_user(
         id=id,
         is_active=is_active,
         role=role,
+        is_bot=is_bot,
+        bot_type=bot_type,
         is_mirror_dummy=is_mirror_dummy,
         realm_id=realm_id,
         short_name=short_name,
@@ -319,8 +327,18 @@ def convert_direct_message_group_data(
 ) -> list[ZerverFieldsT]:
     zerver_direct_message_group = []
     for direct_message_group in direct_message_group_data:
-        if len(direct_message_group["members"]) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
+        direct_message_group_members: frozenset[str]
+        if "members" in direct_message_group:
             direct_message_group_members = frozenset(direct_message_group["members"])
+        else:
+            direct_message_group_members = frozenset(
+                {
+                    participant_data["username"]
+                    for participant_data in direct_message_group["participants"]
+                }
+            )
+
+        if len(direct_message_group_members) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
             if direct_message_group_id_mapper.has(direct_message_group_members):
                 logging.info("Duplicate direct message group found in the export data. Skipping.")
                 continue
@@ -331,7 +349,7 @@ def convert_direct_message_group_data(
                 direct_message_group_id, len(direct_message_group_members)
             )
             direct_message_group_user_ids = {
-                user_id_mapper.get(username) for username in direct_message_group["members"]
+                user_id_mapper.get(username) for username in direct_message_group_members
             }
             subscriber_handler.set_info(
                 users=direct_message_group_user_ids,
@@ -531,7 +549,12 @@ def process_raw_message_batch(
         elif "pm_members" in raw_message:
             is_direct_message_type = True
             members = raw_message["pm_members"]
-            member_ids = {user_id_mapper.get(member) for member in members}
+            member_ids = {
+                user_id_mapper.get(member) for member in members if user_id_mapper.has(member)
+            }
+            if len(member_ids) < 2:
+                # TODO: Convert direct message from deleted user and bot user.
+                continue
             pm_members[message_id] = member_ids
             other_user_mattermost_id = (
                 members[1] if sender_user_id == user_id_mapper.get(members[0]) else members[0]
@@ -899,14 +922,21 @@ def label_mirror_dummy_users(
     for post in mattermost_data["post"]["channel_post"]:
         post_team = post["team"]
         if post_team == team_name:
-            user = username_to_user[post["user"]]
+            user = username_to_user.get(post["user"])
+            if user is None:
+                # TODO: This is either deleted user or bot user. We should create
+                # dummy user if it's deleted user and we can convert bot messages
+                # once we support converting bot users.
+                continue
             if not check_user_in_team(user, team_name):
                 user["is_mirror_dummy"] = True
 
     if num_teams == 1:
         for post in mattermost_data["post"]["direct_post"]:
             assert "team" not in post
-            user = username_to_user[post["user"]]
+            user = username_to_user.get(post["user"])
+            if user is None:
+                continue
             if not check_user_in_team(user, team_name):
                 user["is_mirror_dummy"] = True
 
@@ -925,6 +955,9 @@ def mattermost_data_file_to_dict(mattermost_data_file: str) -> dict[str, Any]:
     mattermost_data["post"] = {"channel_post": [], "direct_post": []}
     mattermost_data["emoji"] = []
     mattermost_data["direct_channel"] = []
+    # TODO: New data on recent mmctl versions:
+    mattermost_data["role"] = []
+    mattermost_data["bot"] = []
 
     with open(mattermost_data_file, "rb") as fp:
         for line in fp:
@@ -946,8 +979,17 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
     if os.listdir(output_dir):  # nocoverage
         raise Exception("Output directory should be empty!")
 
-    mattermost_data_file = os.path.join(mattermost_data_dir, "export.json")
-    mattermost_data = mattermost_data_file_to_dict(mattermost_data_file)
+    import_jsonl_file = os.path.join(mattermost_data_dir, "import.jsonl")
+    export_json_file = os.path.join(mattermost_data_dir, "export.json")
+
+    if os.path.exists(import_jsonl_file):
+        mattermost_data = mattermost_data_file_to_dict(import_jsonl_file)
+    elif os.path.exists(export_json_file):
+        mattermost_data = mattermost_data_file_to_dict(export_json_file)
+    else:
+        raise AssertionError(
+            f"Missing import.jsonl or export.json file in {mattermost_data_dir}. Files: {os.listdir(mattermost_data_dir)!s}",
+        )
 
     username_to_user = create_username_to_user_mapping(mattermost_data["user"])
 

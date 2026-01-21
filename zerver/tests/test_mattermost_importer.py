@@ -1,6 +1,8 @@
 import filecmp
 import os
+import shutil
 import sys
+import tempfile
 from typing import Any
 from unittest.mock import patch
 
@@ -35,13 +37,14 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
 from zerver.models.streams import Stream
 from zerver.models.users import get_user
+from zerver.tests.test_import_export import make_export_output_dir
 
 
 class MatterMostImporter(ZulipTestCase):
     def test_mattermost_data_file_to_dict(self) -> None:
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
-        self.assert_length(mattermost_data, 7)
+        self.assert_length(mattermost_data, 9)
 
         self.assertEqual(mattermost_data["version"], [1])
 
@@ -1245,3 +1248,67 @@ class MatterMostImporter(ZulipTestCase):
             self.assertIsNotNone(message.rendered_content)
 
         self.verify_emoji_code_foreign_keys()
+
+    def test_import_unknown_jsonl_file(self) -> None:
+        export_dir = tempfile.mkdtemp()
+        output_dir = self.make_import_output_dir("mattermost")
+        try:
+            with self.assertRaises(AssertionError) as e:
+                do_convert_data(
+                    mattermost_data_dir=export_dir,
+                    output_dir=output_dir,
+                    masking_content=True,
+                )
+            self.assertEqual(
+                f"Missing import.jsonl or export.json file in {export_dir}. Files: []",
+                str(e.exception),
+            )
+        finally:
+            shutil.rmtree(export_dir)
+
+    def test_e2e_export_data_v11_1_0(self) -> None:
+        fixture_file_name = self.fixture_file_name(
+            "import.jsonl", "mattermost_v11.1.0_fixtures/raw_mmctl_output"
+        )
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+        self.assert_length(mattermost_data, 9)
+        self.assert_length(mattermost_data["team"], 1)
+        self.assertEqual(mattermost_data["team"][0]["name"], "ad-1")
+        self.assert_length(mattermost_data["channel"], 4)
+        self.assert_length(mattermost_data["user"], 17)
+        self.assert_length(mattermost_data["emoji"], 0)
+        self.assert_length(mattermost_data["post"]["channel_post"], 104)
+        self.assert_length(mattermost_data["post"]["direct_post"], 202)
+        self.assert_length(mattermost_data["direct_channel"], 80)
+        self.assert_length(mattermost_data["role"], 23)
+
+        mattermost_data_dir = self.fixture_file_name(
+            "", "mattermost_v11.1.0_fixtures/raw_mmctl_output"
+        )
+        output_dir = make_export_output_dir()
+
+        with self.assertLogs(level="INFO"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=True,
+            )
+
+        imported_realm_subdomain = "test-mattermost_v11.1.0"
+        output_dir = self.team_output_dir(output_dir, "ad-1")
+
+        with self.assertLogs(level="INFO"):
+            do_import_realm(
+                import_dir=output_dir,
+                subdomain=imported_realm_subdomain,
+            )
+        imported_realm = get_realm(imported_realm_subdomain)
+
+        with self.subTest("test users"):
+            imported_user_profiles = UserProfile.objects.filter(realm=imported_realm)
+            self.assert_length(
+                imported_user_profiles,
+                len(mattermost_data["user"]),
+            )
+            imported_users = imported_user_profiles.filter(is_bot=False, is_mirror_dummy=False)
+            self.assert_length(imported_users, len(mattermost_data["user"]))
