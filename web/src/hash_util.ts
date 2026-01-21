@@ -62,6 +62,10 @@ export function decode_operand(
     operator: NarrowCanonicalTerm["operator"],
     operand: NarrowCanonicalTerm["operand"],
 ): string {
+    if (operand === "me" && (operator === "dm" || operator === "sender")) {
+        return people.my_current_email();
+    }
+
     if (operator === "dm-including" || operator === "dm" || operator === "sender") {
         const emails = people.slug_to_emails(operand);
         if (emails) {
