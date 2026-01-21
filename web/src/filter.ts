@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import render_search_description from "../templates/search_description.hbs";
 
+import * as emoji from "./emoji.ts";
 import * as filter_util from "./filter_util.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
@@ -19,6 +20,7 @@ import type {NarrowCanonicalTerm, NarrowTerm, NarrowTermSuggestion} from "./stat
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as sub_store from "./sub_store.ts";
+import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
@@ -65,6 +67,14 @@ type Part =
           prefix_for_operator: string;
           operand: string;
           is_empty_string_topic?: boolean;
+      }
+    | {
+          type: "reaction";
+          verb: string;
+          emoji_details: emoji.EmojiRenderingDetails & {
+              emoji_alt_code: boolean;
+              is_realm_emoji: boolean;
+          };
       };
 
 const channels_operands = new Set(["archived", "public", "web-public"]);
@@ -933,6 +943,23 @@ export class Filter {
             }
             const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
             if (prefix_for_operator !== "") {
+                if (term.operator === "reaction" && term.operand !== "") {
+                    const verb = term.negated ? "exclude " : "";
+                    const emoji_details = emoji.get_emoji_details_by_name(term.operand);
+                    const emoji_alt_code = user_settings.emojiset === "text";
+                    const is_realm_emoji =
+                        emoji_details.reaction_type === "realm_emoji" ||
+                        emoji_details.reaction_type === "zulip_extra_emoji";
+                    return {
+                        type: "reaction",
+                        verb,
+                        emoji_details: {
+                            ...emoji_details,
+                            emoji_alt_code,
+                            is_realm_emoji,
+                        },
+                    };
+                }
                 if (term.operator === "channel") {
                     const stream = stream_data.get_sub_by_id_string(term.operand);
                     const verb = term.negated ? "exclude " : "";
