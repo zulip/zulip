@@ -164,3 +164,9 @@
         );
     }
 }
+
+.update-read-flags-for-narrow-banner .banner-close-button {
+    /* Disable pointer events to prevent user interaction,
+       since this button is repurposed as a loading indicator. */
+    pointer-events: none;
+}
