@@ -44,7 +44,7 @@ export function preferred_emoji_list(): typeahead.EmojiItem[] {
     return top_frequently_used_emojis.slice(0, num_frequently_used_emojis);
 }
 
-export function update_data_for_new_emoji_reaction_on_message(info: {
+export function handle_reaction_addition_on_message(info: {
     message_id: number;
     emoji_id: string;
     emoji_code: string;
@@ -79,7 +79,7 @@ export function update_data_for_new_emoji_reaction_on_message(info: {
     }
 }
 
-export function update_data_for_reaction_removal_on_message(info: {
+export function handle_reaction_removal_on_message(info: {
     emoji_id: string;
     message_id: number;
     is_me: boolean;
