@@ -12,10 +12,13 @@ internet connection throughout the entire installation processes.** You can
 [configure a proxy][configure-proxy] if you need one.
 
 ## Recommended setup
-
+ 
 **For first-time contributors, we recommend using the
 [Vagrant development environment][install-vagrant]** on
 macOS and Linux based OS and [WSL 2 setup][install-via-wsl] on Windows.
+
+Windows users running Ubuntu inside WSL 2 can use the WSL 2 setup directly without Vagrant,
+following the Linux development environment instructions.
 
 ## Vagrant setup
 
