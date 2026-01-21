@@ -145,6 +145,7 @@
         margin: 4px 0;
         max-height: min(248px, 95vh);
         overflow-y: auto;
+        margin-bottom: 0;
     }
 
     .typeahead-footer {
@@ -174,6 +175,27 @@
             margin-right: 3px;
         }
     }
+}
+
+.typeahead-menu.fade-bottom {
+    position: relative;
+}
+
+.typeahead-menu.fade-bottom::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    pointer-events: none;
+    border-radius: 5px;
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        var(--color-dropdown-bottom-gradient)
+    );
+    z-index: 10;
 }
 
 .typeahead-option-label-container {
