@@ -99,6 +99,9 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
                     return false; // has:something_else returns false
             }
 
+        case "reaction":
+            return message_parser.message_has_specific_reaction_name(message, term.operand);
+
         case "is":
             switch (term.operand) {
                 case "dm":
@@ -520,6 +523,8 @@ export class Filter {
                 return term.operand
                     .split(",")
                     .every((email) => people.get_by_email(email) !== undefined);
+            case "reaction":
+                return emoji.emojis_by_name.has(term.operand);
             case "search":
             case "":
                 return true;
@@ -644,6 +649,8 @@ export class Filter {
                 return verb + "messages in a specific channel";
             case "channels":
                 return verb + "channel type";
+            case "reaction":
+                return verb + "messages with a specific reaction";
             case "near":
                 return verb + "messages around";
 
