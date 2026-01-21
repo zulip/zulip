@@ -85,8 +85,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     override(current_user, "user_id", anna.user_id);
     const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
     const conversation_key = typing_data.get_direct_message_conversation_key(group);
-    const group_emails = `${anna.email},${vronsky.email},${levin.email},${kitty.email}`;
-    message_lists.set_current(make_message_list([{operator: "dm", operand: group_emails}]));
+    message_lists.set_current(make_message_list([{operator: "dm", operand: group}]));
 
     // Based on typing_events.MAX_USERS_TO_DISPLAY_NAME (which is currently 3),
     // we display either the list of all users typing (if they do not exceed

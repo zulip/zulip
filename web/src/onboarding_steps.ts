@@ -84,7 +84,7 @@ function narrow_to_dm_with_welcome_bot_new_user(
             [
                 {
                     operator: "dm",
-                    operand: people.WELCOME_BOT.email,
+                    operand: [people.WELCOME_BOT.user_id],
                 },
             ],
             {trigger: "sidebar"},

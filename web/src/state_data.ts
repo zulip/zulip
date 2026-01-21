@@ -125,17 +125,17 @@ export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
     }),
     z.object({
         operator: z.literal("sender"),
-        operand: z.string(),
+        operand: z.number(),
         negated: z.optional(z.boolean()),
     }),
     z.object({
         operator: z.literal("dm-including"),
-        operand: z.string(),
+        operand: z.array(z.number()),
         negated: z.optional(z.boolean()),
     }),
     z.object({
         operator: z.literal("dm"),
-        operand: z.string(),
+        operand: z.array(z.number()),
         negated: z.optional(z.boolean()),
     }),
 ]);

@@ -94,7 +94,7 @@ export function get_direct_message_permission_hints(
     const dm_conversation =
         message_lists.current?.data?.filter.terms_with_operator("dm")[0]?.operand;
     if (dm_conversation) {
-        const current_user_ids_string = people.emails_strings_to_user_ids_string(dm_conversation);
+        const current_user_ids_string = dm_conversation.join(",");
         assert(current_user_ids_string !== undefined);
         // If it matches and the messages for the current filter are fetched,
         // then there are certainly no messages in the conversation.

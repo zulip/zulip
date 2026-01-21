@@ -199,9 +199,9 @@ run_test("empty_narrow_html", ({mock_template}) => {
 });
 
 run_test("urls", () => {
-    people.add_active_user(ray);
-    people.add_active_user(alice);
-    people.add_active_user(me);
+    people.add_active_user(ray, "server_events");
+    people.add_active_user(alice, "server_events");
+    people.add_active_user(me, "server_events");
     people.initialize_current_user(me.user_id);
 
     let url = hash_util.pm_with_url(ray.user_id.toString());
@@ -210,17 +210,17 @@ run_test("urls", () => {
     url = hash_util.direct_message_group_with_url("22,23");
     assert.equal(url, "#narrow/dm/22,23-group");
 
-    url = hash_util.by_sender_url(ray.email);
+    url = hash_util.by_sender_url(ray.user_id);
     assert.equal(url, "#narrow/sender/22-Raymond");
 
-    let emails = hash_util.decode_operand("dm", "22,23-group");
-    assert.equal(emails, "alice@example.com,ray@example.com");
+    let user_ids = hash_util.decode_operand("dm", "22,23-group");
+    assert.deepEqual(user_ids, [22, 23]);
 
-    emails = hash_util.decode_operand("dm", "5,22,23-group");
-    assert.equal(emails, "alice@example.com,ray@example.com");
+    user_ids = hash_util.decode_operand("dm", "5,22,23-group");
+    assert.deepEqual(user_ids, [22, 23]);
 
-    emails = hash_util.decode_operand("dm", "5-group");
-    assert.equal(emails, "me@example.com");
+    user_ids = hash_util.decode_operand("dm", "5-group");
+    assert.deepEqual(user_ids, [5]);
 });
 
 run_test("show_empty_narrow_message", ({mock_template, override}) => {
@@ -383,22 +383,21 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     override(realm, "realm_direct_message_permission_group", nobody.id);
 
     // prioritize information about invalid user(s) in narrow/search
-    current_filter = set_filter([["dm", "Yo"]]);
+    current_filter = set_filter([["dm", [-1]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: This user does not exist!"),
     );
 
-    people.add_active_user(alice);
-    current_filter = set_filter([["dm", "alice@example.com,Yo"]]);
+    current_filter = set_filter([["dm", [9999, alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: One or more of these users do not exist!"),
     );
 
-    current_filter = set_filter([["dm", "alice@example.com"]]);
+    current_filter = set_filter([["dm", [alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -410,8 +409,8 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // direct messages with a bot are possible even though
     // the organization has disabled sending direct messages
-    people.add_active_user(bot);
-    current_filter = set_filter([["dm", "bot@example.com"]]);
+    people.add_active_user(bot, "server_events");
+    current_filter = set_filter([["dm", [bot.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -423,7 +422,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // group direct messages with bots are not possible when
     // sending direct messages is disabled
-    current_filter = set_filter([["dm", bot.email + "," + alice.email]]);
+    current_filter = set_filter([["dm", [bot.user_id, alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -435,7 +434,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // sending direct messages enabled
     override(realm, "realm_direct_message_permission_group", everyone.id);
-    current_filter = set_filter([["dm", "alice@example.com"]]);
+    current_filter = set_filter([["dm", [alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -448,7 +447,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     // sending direct messages to deactivated user
     override(realm, "realm_direct_message_permission_group", everyone.id);
     people.deactivate(alice);
-    current_filter = set_filter([["dm", alice.email]]);
+    current_filter = set_filter([["dm", [alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -458,7 +457,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
-    current_filter = set_filter([["dm", me.email]]);
+    current_filter = set_filter([["dm", [me.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -468,7 +467,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         ),
     );
 
-    current_filter = set_filter([["dm", me.email + "," + alice.email]]);
+    current_filter = set_filter([["dm", [me.user_id, alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -480,7 +479,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // group dm with a deactivated user
     people.deactivate(alice);
-    current_filter = set_filter([["dm", ray.email + "," + alice.email]]);
+    current_filter = set_filter([["dm", [ray.user_id, alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -492,21 +491,21 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     override(realm, "realm_direct_message_permission_group", nobody.id);
 
     // prioritize information about invalid user in narrow/search
-    current_filter = set_filter([["dm-including", "Yo"]]);
+    current_filter = set_filter([["dm-including", [-1]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: This user does not exist!"),
     );
 
-    current_filter = set_filter([["dm-including", "false@blah.com,foo@fake.com"]]);
+    current_filter = set_filter([["dm-including", [9999, 88888]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: This user does not exist!"),
     );
 
-    current_filter = set_filter([["dm-including", "alice@example.com"]]);
+    current_filter = set_filter([["dm-including", [alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -518,7 +517,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     // direct messages with a bot are possible even though
     // the organization has disabled sending direct messages
-    current_filter = set_filter([["dm-including", "bot@example.com"]]);
+    current_filter = set_filter([["dm-including", [bot.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -528,28 +527,28 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     // sending direct messages enabled
     override(realm, "realm_direct_message_permission_group", everyone.id);
     override(realm, "realm_direct_message_permission_group", everyone.id);
-    current_filter = set_filter([["dm-including", "alice@example.com"]]);
+    current_filter = set_filter([["dm-including", [alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: You have no direct messages including Alice Smith yet."),
     );
 
-    current_filter = set_filter([["dm-including", me.email]]);
+    current_filter = set_filter([["dm-including", [me.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: You don't have any direct message conversations yet."),
     );
 
-    current_filter = set_filter([["sender", "ray@example.com"]]);
+    current_filter = set_filter([["sender", ray.user_id]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: You haven't received any messages sent by Raymond yet."),
     );
 
-    current_filter = set_filter([["sender", "sinwar@example.com"]]);
+    current_filter = set_filter([["sender", 9999]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -559,7 +558,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     );
 
     current_filter = set_filter([
-        ["sender", "alice@example.com"],
+        ["sender", alice.user_id],
         ["stream", rome_id.toString()],
     ]);
     narrow_banner.show_empty_narrow_message(current_filter);
@@ -627,7 +626,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     current_filter = set_filter([
         ["has", "reaction"],
-        ["sender", "me"],
+        ["sender", me.user_id],
     ]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
@@ -758,8 +757,8 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
     people.add_active_user(alice);
 
     current_filter = set_filter([
-        ["sender", "alice@example.com"],
-        ["sender", "ray@example.com"],
+        ["sender", alice.user_id],
+        ["sender", ray.user_id],
     ]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
@@ -865,8 +864,8 @@ run_test("narrow_to_compose_target direct messages", ({override, override_rewire
         args.called = true;
     });
 
-    let emails;
-    override(compose_pm_pill, "get_emails", () => emails);
+    let user_ids;
+    override(compose_pm_pill, "get_user_ids", () => user_ids);
 
     compose_state.set_message_type("private");
     people.add_active_user(ray);
@@ -874,35 +873,35 @@ run_test("narrow_to_compose_target direct messages", ({override, override_rewire
     people.add_active_user(me);
 
     // Test with valid person
-    emails = "alice@example.com";
+    user_ids = [alice.user_id];
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "dm", operand: "alice@example.com"}]);
+    assert.deepEqual(args.terms, [{operator: "dm", operand: [alice.user_id]}]);
 
     // Test with valid persons
-    emails = "alice@example.com,ray@example.com";
+    user_ids = [alice.user_id, ray.user_id];
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "dm", operand: "alice@example.com,ray@example.com"}]);
+    assert.deepEqual(args.terms, [{operator: "dm", operand: [alice.user_id, ray.user_id]}]);
 
     // Test with some invalid persons
-    emails = "alice@example.com,random,ray@example.com";
+    user_ids = [alice.user_id, 9999, 8888];
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
 
     // Test with all invalid persons
-    emails = "alice,random,ray";
+    user_ids = [9999, 8888];
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
 
     // Test with no persons
-    emails = "";
+    user_ids = [];
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
@@ -931,7 +930,7 @@ run_test("narrow_compute_title", () => {
     filter = new Filter([{operator: "search", operand: "potato"}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Search results");
 
-    filter = new Filter([{operator: "sender", operand: "me"}]);
+    filter = new Filter([{operator: "sender", operand: me.user_id}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Messages sent by you");
 
     // Stream narrows
@@ -960,14 +959,14 @@ run_test("narrow_compute_title", () => {
         user_id: 31,
         full_name: "joe",
     };
-    people.add_active_user(joe);
+    people.add_active_user(joe, "server_events");
 
-    filter = new Filter([{operator: "dm", operand: "joe@example.com"}]);
+    filter = new Filter([{operator: "dm", operand: [joe.user_id]}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "joe");
 
-    filter = new Filter([{operator: "dm", operand: "joe@example.com,sally@doesnotexist.com"}]);
+    filter = new Filter([{operator: "dm", operand: [9999, joe.user_id]}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid users");
 
-    filter = new Filter([{operator: "dm", operand: "sally@doesnotexist.com"}]);
+    filter = new Filter([{operator: "dm", operand: [9999]}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid user");
 });

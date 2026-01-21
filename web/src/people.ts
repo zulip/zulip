@@ -227,19 +227,6 @@ export function can_admin_user(user: User): boolean {
     );
 }
 
-export function id_matches_email_operand(user_id: number, email: string): boolean {
-    const person = get_by_email(email);
-
-    if (!person) {
-        // The user may type bad data into the search bar, so
-        // we don't complain too loud here.
-        blueslip.debug("User email operand unknown: " + email);
-        return false;
-    }
-
-    return person.user_id === user_id;
-}
-
 export function update_email(user_id: number, new_email: string): void {
     const person = get_by_user_id(user_id);
     person.email = new_email;
@@ -758,29 +745,6 @@ export function update_email_in_reply_to(
     return emails.join(",");
 }
 
-export function pm_with_operand_ids(operand: string): number[] | undefined {
-    let emails = operand.split(",");
-    emails = emails.map((email) => email.trim());
-    let persons = util.try_parse_as_truthy(emails.map((email) => people_dict.get(email)));
-
-    if (persons === undefined) {
-        return undefined;
-    }
-
-    // If your email is included in a group direct message with other people,
-    // then ignore it.
-    if (persons.length > 1) {
-        const my_user = people_by_user_id_dict.get(my_user_id);
-        persons = persons.filter((person) => person !== my_user);
-    }
-
-    let user_ids = persons.map((person) => person.user_id);
-
-    user_ids = util.sorted_ids(user_ids);
-
-    return user_ids;
-}
-
 export function filter_other_guest_ids(user_ids: number[]): number[] {
     return util.sorted_ids(
         user_ids.filter((id) => id !== current_user.user_id && get_by_user_id(id)?.is_guest),
@@ -793,30 +757,8 @@ export function user_ids_to_full_names_array(user_ids: number[]): string[] {
     return names;
 }
 
-export function emails_to_slug(emails_string: string): string | undefined {
-    let slug = reply_to_to_user_ids_string(emails_string);
-
-    if (!slug) {
-        return undefined;
-    }
-
-    slug += "-";
-
-    const emails = emails_string.split(",");
-
-    if (emails.length === 1 && emails[0] !== undefined) {
-        const person = get_by_email(emails[0]);
-        assert(person !== undefined, "Unknown person in emails_to_slug");
-        slug += get_slug_from_full_name(person.full_name);
-    } else {
-        slug += "group";
-    }
-
-    return slug;
-}
-
 export function user_ids_to_slug(user_ids: number[]): string | undefined {
-    if (user_ids.length === 0) {
+    if (user_ids.length === 0 || !is_valid_user_ids(user_ids)) {
         return undefined;
     }
 
@@ -837,7 +779,7 @@ export function user_ids_string_to_slug(user_ids_string: string): string | undef
     return user_ids_to_slug(user_ids);
 }
 
-export function slug_to_emails(slug: string): string | undefined {
+export function slug_to_user_ids(slug: string): number[] | undefined {
     /*
         It's not super important to be flexible about
         direct message related slugs, since you would
@@ -852,29 +794,27 @@ export function slug_to_emails(slug: string): string | undefined {
     */
     const m = /^([\d,]+)(-.*)?/.exec(slug);
     if (m) {
-        let user_ids_string = m[1]!;
-        user_ids_string = exclude_me_from_string(user_ids_string);
-        return user_ids_string_to_emails_string(user_ids_string);
+        const user_ids_string = m[1]!;
+        return exclude_me_from_user_ids(split_to_ints(user_ids_string));
     }
     /* istanbul ignore next */
     return undefined;
 }
 
-export function exclude_me_from_string(user_ids_string: string): string {
+export function exclude_me_from_user_ids(user_ids: number[]): number[] {
     // Exclude me from a user_ids_string UNLESS I'm the
     // only one in it.
-    let user_ids = split_to_ints(user_ids_string);
 
     if (user_ids.length <= 1) {
         // We either have a message to ourself, an empty
         // slug, or a message to somebody else where we weren't
         // part of the slug.
-        return user_ids.join(",");
+        return user_ids;
     }
 
     user_ids = user_ids.filter((user_id) => !is_my_user_id(user_id));
 
-    return user_ids.join(",");
+    return user_ids;
 }
 
 export function sender_is_bot(message: Message): boolean {
@@ -1063,12 +1003,12 @@ export function get_muted_user_avatar_url(): string {
     return "/static/images/muted-user/muted-sender.png";
 }
 
-export function is_valid_user_id_for_compose(user_id: number): boolean {
+export function is_valid_user_id_for_compose(user_id: number, ignore_missing = false): boolean {
     if (cross_realm_dict.has(user_id)) {
         return true;
     }
 
-    const person = maybe_get_user_by_id(user_id);
+    const person = maybe_get_user_by_id(user_id, ignore_missing);
     if (!person || person.is_inaccessible_user) {
         return false;
     }
@@ -1103,10 +1043,13 @@ export function is_valid_bulk_emails_for_compose(emails: string[]): boolean {
     });
 }
 
-export function is_valid_bulk_user_ids_for_compose(user_ids: number[]): boolean {
+export function is_valid_bulk_user_ids_for_compose(
+    user_ids: number[],
+    ignore_missing = true,
+): boolean {
     // Returns false if at least one of the user_ids is invalid.
     return user_ids.every((user_id) => {
-        if (!is_valid_user_id_for_compose(user_id)) {
+        if (!is_valid_user_id_for_compose(user_id, ignore_missing)) {
             return false;
         }
         return true;

@@ -108,7 +108,7 @@ test("narrowed", () => {
     assert.ok(narrow_state.narrowed_by_stream_reply());
     assert.ok(!narrow_state.is_search_view());
 
-    set_filter([["dm", "steve@zulip.com"]]);
+    set_filter([["dm", [1]]]);
     assert.ok(narrow_state.narrowed_to_pms());
     assert.ok(narrow_state.narrowed_by_reply());
     assert.ok(narrow_state.narrowed_by_pm_reply());
@@ -223,7 +223,7 @@ test("set_compose_defaults", () => {
     assert.equal(stream_and_topic.stream_id, foo_stream_id);
     assert.equal(stream_and_topic.topic, "Bar");
 
-    set_filter([["dm", "foo@bar.com"]]);
+    set_filter([["dm", [1]]]);
     let dm_test = narrow_state.set_compose_defaults();
     assert.equal(dm_test.private_message_recipient, undefined);
 
@@ -232,16 +232,15 @@ test("set_compose_defaults", () => {
         user_id: 57,
         full_name: "John Doe",
     };
-    people.add_active_user(john);
-    people.add_active_user(john);
+    people.add_active_user(john, "server_events");
 
-    set_filter([["dm", "john@doe.com"]]);
+    set_filter([["dm", [john.user_id]]]);
     dm_test = narrow_state.set_compose_defaults();
     assert.deepEqual(dm_test.private_message_recipient_ids, [john.user_id]);
 
     // Even though we renamed "pm-with" to "dm",
     // compose defaults are set correctly.
-    set_filter([["pm-with", "john@doe.com"]]);
+    set_filter([["pm-with", [john.user_id]]]);
     dm_test = narrow_state.set_compose_defaults();
     assert.deepEqual(dm_test.private_message_recipient_ids, [john.user_id]);
 
@@ -257,26 +256,6 @@ test("set_compose_defaults", () => {
 
     const stream_test = narrow_state.set_compose_defaults();
     assert.equal(stream_test.stream_id, rome_id);
-});
-
-test("update_email", () => {
-    const steve = {
-        email: "steve@foo.com",
-        user_id: 43,
-        full_name: "Steve",
-    };
-
-    people.add_active_user(steve);
-    set_filter([
-        ["dm", "steve@foo.com"],
-        ["sender", "steve@foo.com"],
-        ["stream", "steve@foo.com"], // try to be tricky
-    ]);
-    narrow_state.update_email(steve.user_id, "showell@foo.com");
-    const filter = narrow_state.filter();
-    assert.deepEqual(filter.terms_with_operator("dm")[0].operand, "showell@foo.com");
-    assert.deepEqual(filter.terms_with_operator("sender")[0].operand, "showell@foo.com");
-    assert.deepEqual(filter.terms_with_operator("channel")[0].operand, "steve@foo.com");
 });
 
 test("topic", () => {
@@ -296,8 +275,8 @@ test("topic", () => {
     assert.equal(narrow_state.topic(), undefined);
 
     set_filter([
-        ["sender", "test@foo.com"],
-        ["dm", "test@foo.com"],
+        ["sender", 1],
+        ["dm", [1]],
     ]);
     assert.equal(narrow_state.topic(), undefined);
 
@@ -323,7 +302,7 @@ test("stream_sub", () => {
     assert.deepEqual(narrow_state.stream_sub(), sub);
 
     set_filter([
-        ["sender", "someone"],
+        ["sender", 1],
         ["topic", "random"],
     ]);
     assert.equal(narrow_state.stream_name(), undefined);
@@ -344,11 +323,11 @@ test("pm_ids_string", () => {
     assert.equal(narrow_state.pm_ids_string(), undefined);
     assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
-    set_filter([["dm", ""]]);
+    set_filter([["dm", []]]);
     assert.equal(narrow_state.pm_ids_string(), undefined);
     assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
-    set_filter([["dm", "bogus@foo.com"]]);
+    set_filter([["dm", [9999]]]);
     assert.equal(narrow_state.pm_ids_string(), undefined);
     assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
@@ -364,10 +343,10 @@ test("pm_ids_string", () => {
         full_name: "Bob",
     };
 
-    people.add_active_user(alice);
-    people.add_active_user(bob);
+    people.add_active_user(alice, "server_events");
+    people.add_active_user(bob, "server_events");
 
-    set_filter([["dm", "bob@foo.com,alice@foo.com"]]);
+    set_filter([["dm", [alice.user_id, bob.user_id]]]);
     assert.equal(narrow_state.pm_ids_string(), "444,555");
     assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set([444, 555]));
 });

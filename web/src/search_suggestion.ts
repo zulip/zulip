@@ -185,19 +185,16 @@ function check_validity(
     return true;
 }
 
-function format_as_suggestion(terms: NarrowTerm[]): Suggestion {
+function format_as_suggestion(terms: NarrowTerm[], is_operator_suggestion = false): Suggestion {
     return {
-        search_string: Filter.unparse(terms),
+        search_string: Filter.unparse(terms, is_operator_suggestion),
     };
 }
 
 function compare_by_direct_message_group(
-    direct_message_group_emails: string[],
+    valid_user_ids: number[],
 ): (person1: User, person2: User) => number {
-    const user_ids = direct_message_group_emails.slice(0, -1).flatMap((person) => {
-        const user = people.get_by_email(person);
-        return user?.user_id ?? [];
-    });
+    assert(people.is_valid_user_ids(valid_user_ids));
     // Construct dict for all direct message groups, so we can
     // look up each's recency
     const direct_message_groups = direct_message_group_data.get_direct_message_groups();
@@ -207,8 +204,14 @@ function compare_by_direct_message_group(
     }
 
     return function (person1: User, person2: User): number {
-        const direct_message_group1 = people.concat_direct_message_group(user_ids, person1.user_id);
-        const direct_message_group2 = people.concat_direct_message_group(user_ids, person2.user_id);
+        const direct_message_group1 = people.concat_direct_message_group(
+            valid_user_ids,
+            person1.user_id,
+        );
+        const direct_message_group2 = people.concat_direct_message_group(
+            valid_user_ids,
+            person2.user_id,
+        );
         // If not in the dict, assign an arbitrarily high index
         const score1 =
             direct_message_group_dict.get(direct_message_group1) ??
@@ -279,75 +282,51 @@ function get_group_suggestions(
         }
         assert(last_complete_term.operator === group_operator);
 
+        let new_query: string;
+        let existing_user_ids: number[];
+
         // If they started typing since a user pill, we'll parse that as "search"
         // but they might actually want to parse that as a user instead to add to
         // the most recent pill. So we shuffle some things around to support that.
         if (last.operator === "search") {
-            const text_input = last.operand;
-            const operand = `${last_complete_term.operand},${text_input}`;
-            last = {
-                ...last_complete_term,
-                operand,
-            };
+            new_query = last.operand;
+            existing_user_ids = last_complete_term.operand;
             terms = terms.slice(-1);
         } else if (last.operator === "") {
             // User hasn't started typing the next term yet; use the
             // last complete term to generate suggestions.
             assert(last.operand === "");
-            last = last_complete_term;
+            new_query = "";
+            existing_user_ids = last_complete_term.operand;
         } else {
             // If they already started another term with an other operator, we're
             // no longer dealing with a group DM situation.
             return [];
         }
 
-        const operand = last.operand;
-        const negated = last.negated;
-
-        // The operand has the form "part1,part2,pa", where all but the last part
-        // are emails, and the last part is an arbitrary query.
-        //
-        // We only generate group suggestions when there's more than one part, and
-        // we only use the last part to generate suggestions.
-
-        const last_comma_index = operand.lastIndexOf(",");
-        let all_but_last_part;
-        let last_part;
-        if (last_comma_index === -1) {
-            all_but_last_part = operand;
-            last_part = "";
-        } else {
-            // Neither all_but_last_part nor last_part include the final comma.
-            all_but_last_part = operand.slice(0, last_comma_index);
-            last_part = operand.slice(last_comma_index + 1);
+        // Somehow an invalid user id is showing up earlier in the group.
+        // This can happen if e.g. the user manually enters multiple user ids.
+        // We won't have group suggestions built from an invalid user, so
+        // return an empty list.
+        if (!people.is_valid_user_ids(existing_user_ids)) {
+            return [];
         }
 
-        // We don't suggest a person if their email is already present in the
+        // We don't suggest a person if their user id is already present in the
         // operand (not including the last part).
-        const parts = [...all_but_last_part.split(","), people.my_current_email()];
-
-        const all_users_but_last_part = [];
-        for (const email of all_but_last_part.split(",")) {
-            const user = people.get_by_email(email);
-            // Somehow an invalid email is showing up earlier in the group.
-            // This can happen if e.g. the user manually enters multiple emails.
-            // We won't have group suggestions built from an invalid user, so
-            // return an empty list.
-            if (user === undefined) {
-                return [];
-            }
-            all_users_but_last_part.push(user);
-        }
-
-        const person_matcher = people.build_person_matcher(last_part);
+        const person_matcher = people.build_person_matcher(new_query);
         let persons = people.filter_all_persons((person) => {
-            if (parts.includes(person.email)) {
+            if (person.user_id === people.my_current_user_id()) {
                 return false;
             }
-            return last_part === "" || person_matcher(person);
+
+            if (existing_user_ids.includes(person.user_id)) {
+                return false;
+            }
+            return new_query === "" || person_matcher(person);
         });
 
-        persons.sort(compare_by_direct_message_group(parts));
+        persons.sort(compare_by_direct_message_group(existing_user_ids));
 
         // Take top 15 persons, since they're ordered by pm_recipient_count.
         persons = persons.slice(0, 15);
@@ -355,12 +334,12 @@ function get_group_suggestions(
         return persons.map((person) => {
             const term: NarrowCanonicalTerm = {
                 operator: group_operator,
-                operand: all_but_last_part + "," + person.email,
-                negated,
+                operand: [...existing_user_ids, person.user_id],
+                negated: last_complete_term.negated,
             };
 
             let terms: NarrowCanonicalTerm[] = [term];
-            if (group_operator === "dm" && negated) {
+            if (group_operator === "dm" && last_complete_term.negated) {
                 terms = [{operator: "is", operand: "dm"}, term];
             }
 
@@ -420,13 +399,25 @@ function get_person_suggestions(
     const persons = people_getter();
 
     return persons.map((person) => {
-        const terms: NarrowTerm[] = [
-            {
-                operator: autocomplete_operator,
-                operand: person.email,
-                negated: last.negated,
-            },
-        ];
+        const terms: NarrowCanonicalTerm[] = [];
+        switch (autocomplete_operator) {
+            case "dm":
+            case "dm-including":
+                terms.push({
+                    operator: autocomplete_operator,
+                    operand: [person.user_id],
+                    negated: last.negated,
+                });
+                break;
+            case "sender":
+                terms.push({
+                    operator: "sender",
+                    operand: person.user_id,
+                    negated: last.negated,
+                });
+                break;
+        }
+
         if (last.negated && autocomplete_operator === "dm") {
             // In the special case of "-dm" or "-pm-with", add "is:dm" before
             // it because we assume the user still wants to narrow to direct
@@ -860,7 +851,8 @@ function get_sent_by_me_suggestions(
         last.negated === true || (last.operator === "search" && last.operand.startsWith("-"));
     const negated_symbol = negated ? "-" : "";
 
-    const sender_query = negated_symbol + "sender:" + people.my_current_email();
+    const sender_query = negated_symbol + "sender:" + people.my_current_user_id();
+    const sender_email_string = negated_symbol + "sender:" + people.my_current_email();
     const sender_me_query = negated_symbol + "sender:me";
     const from_string = negated_symbol + "from";
     const sent_string = negated_symbol + "sent";
@@ -874,6 +866,7 @@ function get_sent_by_me_suggestions(
         sender_query.startsWith(last_string) ||
         sender_me_query.startsWith(last_string) ||
         from_string.startsWith(last_string) ||
+        sender_email_string.startsWith(last_string) ||
         last_string === sent_string
     ) {
         return [
@@ -945,8 +938,37 @@ function get_operator_suggestions(
         if (choice === "streams") {
             choice = "channels";
         }
-        const op = [{operator: choice, operand: "", negated}];
-        return format_as_suggestion(op);
+
+        // Set is_operator_suggestion to true, since we're only suggesting
+        // the operator and don't want any operand, but we can't put empty
+        // strings here for typescript reasons..
+        switch (choice) {
+            case "dm":
+            case "dm-including":
+                return format_as_suggestion(
+                    [
+                        {
+                            operator: choice,
+                            operand: [],
+                            negated,
+                        },
+                    ],
+                    true,
+                );
+            case "sender":
+                return format_as_suggestion(
+                    [
+                        {
+                            operator: choice,
+                            operand: -1,
+                            negated,
+                        },
+                    ],
+                    true,
+                );
+            default:
+                return format_as_suggestion([{operator: choice, operand: "", negated}], true);
+        }
     });
 }
 
@@ -1084,12 +1106,23 @@ export function get_search_result(
 ): Suggestion[] {
     let suggestion_line: SuggestionLine;
     const text_search_terms: NarrowCanonicalTermSuggestion[] = text_search_terms_non_canonical.map(
-        (term) =>
-            Filter.convert_suggestion_to_term(term) ?? {
+        (term) => {
+            // Try to parse term into canonical form first to
+            // perform any necessary conversions.
+            const canonical_term = Filter.convert_suggestion_to_term(term);
+            if (canonical_term) {
+                return {
+                    operator: canonical_term.operator,
+                    operand: String(canonical_term.operand),
+                    negated: canonical_term.negated,
+                };
+            }
+            return {
                 operator: filter_util.canonicalize_operator(term.operator),
                 operand: term.operand,
                 negated: term.negated,
-            },
+            };
+        },
     );
     // search_terms correspond to the terms for the query in the input.
     // This includes the entire query entered in the searchbox.
