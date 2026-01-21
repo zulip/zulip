@@ -291,6 +291,9 @@ function get_group_suggestions(
             };
             terms = terms.slice(-1);
         } else if (last.operator === "") {
+            // User hasn't started typing the next term yet; use the
+            // last complete term to generate suggestions.
+            assert(last.operand === "");
             last = last_complete_term;
         } else {
             // If they already started another term with an other operator, we're
