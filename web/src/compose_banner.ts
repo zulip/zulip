@@ -259,10 +259,9 @@ export function show_stream_not_subscribed_error(
     sub: StreamSubscription,
     banner_text: string,
 ): void {
-    const $banner_container = $("#compose_banners");
-    if ($(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).length > 0) {
-        return;
-    }
+    // Remove any existing banners with this warning.
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).remove();
+
     const new_row_html = render_compose_banner({
         banner_type: ERROR,
         banner_text,
@@ -274,7 +273,7 @@ export function show_stream_not_subscribed_error(
         // closing the banner would be more confusing than helpful.
         hide_close_button: true,
     });
-    append_compose_banner_to_banner_list($(new_row_html), $banner_container);
+    append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
 }
 
 export function show_unknown_zoom_user_error(email: string): void {
