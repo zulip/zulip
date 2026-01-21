@@ -154,7 +154,7 @@ const update_read_flags_for_narrow_banner = (
         intent: "info",
         label,
         buttons: [],
-        close_button: false,
+        close_button: true,
         custom_classes: "update-read-flags-for-narrow-banner popup-banner",
     };
 };
@@ -164,7 +164,7 @@ export function open_update_read_flags_for_narrow_banner(
     messages_updated: number,
     is_loaded = false,
 ): void {
-    const $banner = $("#popup_banners_wrapper").find(".update-read-flags-for-narrow-banner");
+    let $banner = $("#popup_banners_wrapper").find(".update-read-flags-for-narrow-banner");
     if ($banner.length > 0) {
         // If the banner is already open, update the label instead of duplicating the banner.
         const banner = update_read_flags_for_narrow_banner(operation, messages_updated, is_loaded);
@@ -175,6 +175,10 @@ export function open_update_read_flags_for_narrow_banner(
             // intent to success to match the success message and close it
             // after a short delay.
             $banner.removeClass("banner-info").addClass("banner-success");
+            const $banner_close_button = $banner.find(".banner-close-button");
+            buttons.modify_button_icon($banner_close_button, "check");
+            $banner_close_button.removeClass("icon-button-info").addClass("icon-button-success");
+
             setTimeout(() => {
                 fade_out_popup_banner($banner);
             }, 2500);
@@ -187,6 +191,11 @@ export function open_update_read_flags_for_narrow_banner(
         update_read_flags_for_narrow_banner(operation, messages_updated, is_loaded),
         $("#popup_banners_wrapper"),
     );
+    $banner = $("#popup_banners_wrapper").find(".update-read-flags-for-narrow-banner");
+    // We repurpose the banner close button to act as the loading
+    // indicator for this banner.
+    const $banner_close_button = $banner.find(".banner-close-button");
+    buttons.modify_button_icon($banner_close_button, "loader-circle");
 }
 
 export function close_update_read_flags_for_narrow_banner(): boolean {
