@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 13:48+0000\n"
-"PO-Revision-Date: 2025-09-08 22:26+0000\n"
+"PO-Revision-Date: 2025-10-23 17:02+0000\n"
 "Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/zulip/django/"
 "uk/>\n"
@@ -22,11 +22,12 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
-"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
-"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
-"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
-"X-Generator: Weblate 5.14-dev\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 "
+"? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && "
+"(n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && "
+"(n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 ))"
+" ? 2: 3);\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -1822,6 +1823,8 @@ msgid ""
 "been deactivated, please reach out to the organization's administrators "
 "directly."
 msgstr ""
+"Якщо ви є членом організації та хочете отримати інформацію про причини її "
+"деактивації, зверніться безпосередньо до адміністраторів організації."
 
 #: templates/zerver/deactivated.html:59
 #, python-format
@@ -4250,24 +4253,18 @@ msgstr ""
 "ще немає."
 
 #: templates/zerver/realm_redirect.html:52
-#, fuzzy
-#| msgid "Self-host Zulip"
 msgid "Self-hosting Zulip?"
-msgstr "Самостійне розміщення Zulip"
+msgstr "Самостійний хостинг Zulip?"
 
 #: templates/zerver/realm_redirect.html:53
-#, fuzzy, python-format
-#| msgid ""
-#| "<a target=\"_blank\" rel=\"noopener noreferrer\" "
-#| "href=\"%(org_creation_link)s\">Create a new organization</a> if you don't "
-#| "have one yet."
+#, python-format
 msgid ""
 "You can <a target=\"_blank\" rel=\"noopener noreferrer\" "
 "href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
 msgstr ""
-"<a target=\"_blank\" rel=\"noopener noreferrer\" "
-"href=\"%(org_creation_link)s\">Створіть нову організацію</a>, якщо у вас її "
-"ще немає."
+"Ви можете <a target=\"_blank\" rel=\"noopener noreferrer\" href="
+"\"%(self_hosted_login_help)s\">увійти, щоб керувати планами та виставленням "
+"рахунків.</a>"
 
 #: templates/zerver/register.html:5
 msgid "Registration"
@@ -4476,16 +4473,12 @@ msgid "Start import"
 msgstr "Розпочати імпорт"
 
 #: templates/zerver/slack_import.html:102
-#, fuzzy
-#| msgid ""
-#| "Or <a href=\"#\" id=\"cancel-slack-import\">create organization</a> "
-#| "without importing data."
 msgid ""
 "Or <span id=\"cancel-slack-import\" tabindex=\"0\">create organization</"
 "span> without importing data."
 msgstr ""
-"Або <a href=\"#\" id=\"cancel-slack-import\">створіть організацію</a> без "
-"імпорту даних."
+"Або <span id=\"cancel-slack-import\" tabindex=\"0\">створіть організацію</"
+"span> без імпорту даних."
 
 #: templates/zerver/social_auth_select_email.html:4
 msgid "Select account for authentication"
@@ -5786,10 +5779,8 @@ msgid "Integration frameworks"
 msgstr "Інтеграційні фреймворки"
 
 #: zerver/lib/integrations.py:49
-#, fuzzy
-#| msgid "Video call ended"
 msgid "Video calling"
-msgstr "Відеодзвінок завершено"
+msgstr "Відеодзвінки"
 
 #: zerver/lib/integrations.py:50
 msgid "Continuous integration"
@@ -6174,13 +6165,7 @@ msgstr ""
 "час тощо.\n"
 
 #: zerver/lib/onboarding.py:262
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "Here are a few messages I understand: {bot_commands}\n"
-#| "\n"
-#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-#| "or browse the [Help center](/help/) to learn more!\n"
+#, python-brace-format
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
@@ -6191,9 +6176,9 @@ msgstr ""
 "\n"
 "Ось кілька повідомлень, які я розумію: {bot_commands}\n"
 "\n"
-"Перегляньте наш [Посібник із початку роботи](/help/getting-started-with-"
-"zulip),\n"
-"або перегляньте [Центр допомоги](/help/), щоб дізнатися більше!\n"
+"Перегляньте наш [посібник із початку роботи]"
+"(/help/getting-started-with-zulip),\n"
+"або перегляньте [центр довідки](/help/), щоб дізнатися більше!\n"
 
 #: zerver/lib/onboarding.py:269
 #, python-brace-format
@@ -6870,10 +6855,8 @@ msgid "Name too long!"
 msgstr "Ім'я занадто довге!"
 
 #: zerver/lib/users.py:62
-#, fuzzy
-#| msgid "Message must not be empty"
 msgid "Name must not be empty!"
-msgstr "Повідомлення не може бути порожнім"
+msgstr "Ім'я не повинно бути порожнім!"
 
 #: zerver/lib/users.py:66
 msgid "Invalid characters in name!"
@@ -8316,10 +8299,11 @@ msgstr "{hostname} ще не зареєстровано"
 #, python-brace-format
 msgid "Invalid server administrator email address: {email_reason}"
 msgstr ""
+"Недійсна адреса електронної пошти адміністратора сервера: {email_reason}"
 
 #: zilencer/views.py:248
 msgid "example.com is not a valid email domain."
-msgstr ""
+msgstr "example.com не є дійсним доменом електронної пошти."
 
 #: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format
