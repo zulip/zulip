@@ -102,8 +102,9 @@ questions you are looking for feedback on. Some advice:
 - Post screenshots, and perhaps a short video if there is an interaction that
   screenshots fail to show.
 
-  - We maintain [an extensive guide to capturing screenshots](../contributing/presenting-visual-changes.md),
-    which you should take the time to read through.
+  - Use the [guide on presenting visual
+    changes](../contributing/presenting-visual-changes.md) for guidance on what to
+    show, and how to capture precise Before/After screenshots when appropriate.
 
   - You may want to post a few screenshots of different options you’re
     considering.
@@ -113,9 +114,6 @@ questions you are looking for feedback on. Some advice:
 
   - Screen captures should demonstrate the feature with a minimal amount of
     extraneous content.
-
-  - See [here](../contributing/presenting-visual-changes.md#screenshot-and-gif-software)
-    for some recommended tools.
 
 - Post a clear question or set of questions that you need help with. What
   specifically are you looking for feedback on?

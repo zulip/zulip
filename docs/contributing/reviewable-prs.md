@@ -14,8 +14,8 @@ step is described in detail below, with links to additional resources:
 1. [Organize your proposed changes](#organize-your-proposed-changes) into a
    series of commits that tell the story of how the codebase will change.
 1. [Explain your changes](#explain-your-changes) in the description for your
-   pull request, including [screenshots](#presenting-screenshots-on-your-pull-request)
-   for visual changes.
+   pull request, including
+   [screenshots](../contributing/presenting-visual-changes.md) for visual changes.
 1. Carefully [review your own work](#review-your-own-work).
 1. [Submit your pull request](#submit-your-pull-request-for-review) for review.
 
@@ -83,8 +83,7 @@ description for your pull request, you will:
   The review process will go a lot more smoothly if points of uncertainty are
   explicitly laid out.
 - Include screenshots for all visual changes, so that they can be reviewed
-  without running your code. See [below](#presenting-screenshots-on-your-pull-request)
-  for detailed instructions.
+  without running your code. Be sure to follow our [guide on presenting visual changes](../contributing/presenting-visual-changes).
 
 If you have a question about a specific part of your code that you expect to be
 resolved during the review process, put it in a PR comment attached to a
@@ -92,6 +91,8 @@ relevant part of the changes.
 
 Take advantage of [GitHub's formatting][github-syntax] to make your pull request
 description and comments easy to read.
+
+[github-syntax]: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
 
 ### Discussions in the development community
 
@@ -155,82 +156,3 @@ review:
    PR.
 
 [github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
-
-## Presenting screenshots on your pull request
-
-Any PRs that impact Zulip's user interface must include precise sets
-of Before/After screenshots. Be sure to read through
-[our extensive screenshot documentation](../contributing/presenting-visual-changes.md)
-to capture appropriate screenshots. And note that with few exceptions,
-static screenshots are preferable to videos.
-
-The following guidance will help you present your precise screenshots
-as part of your pull request:
-
-- For presenting before and after screencaptures of changes, use
-  GithHub's table syntax to render them side-by-side. Reviewers can
-  open the full-size image from GitHub for quick and easy comparison:
-
-  ```
-  ### Descriptive header for images:
-
-  | Before | After |
-  | --- | --- |
-  | ![image-before](uploaded-file-information) | ![image-after](uploaded-file-information)
-  ```
-
-  To quickly insert before/after tables like that, consider
-  [creating a GitHub Saved Reply](https://docs.github.com/en/get-started/writing-on-github/working-with-saved-replies/creating-a-saved-reply).
-
-- When including numerous screenshots or screencasts, consider grouping them
-  in details/summary tags to reduce visual clutter and the scroll length of
-  pull-request descriptions and comments. This is especially useful when you
-  have several screenshots or screencasts to include in your PR description
-  or follow-up comments, as you can put groups of related images in separate
-  details/summary tags.
-
-  Do think about your reviewers' comfort when using more than one set of
-  details/summary tags, as it is generally much easier to scroll past a
-  bunch of screenshots than it is to open numerous collapsed details/summary
-  tags.
-
-  ```
-  <details>
-  <summary>Descriptive summary of image group</summary>
-
-  | Before | After |
-  | --- | --- |
-  | ![image-before](uploaded-file-information) | ![image-after](uploaded-file-information) |
-  | ![image-2-before](uploaded-file-information) | ![image-2-after](uploaded-file-information) |
-
-  </details>
-  ```
-
-- If you've updated existing documentation in your pull request,
-  include a link to the current documentation above the screenshot
-  of the updates. That way a reviewer can quickly compare the current
-  documentation while reviewing your changes.
-
-  ```
-  [Current documentation](link-to-current-documentation-page)
-  ![image-after](uploaded-file-information)
-  ```
-
-- For updates or changes to CSS class rules, it's a good practice
-  to include the results of a [git-grep][git-grep] search for
-  the class name(s) to confirm that you've tested and captured screenshots
-  of all the impacted areas of the UI or Zulip documentation.
-
-  ```console
-  $ git grep '.example-class-name' web/templates/ templates/
-  templates/corporate/...
-  templates/zerver/...
-  web/templates/...
-  ```
-
-[github-syntax]: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
-[git-grep]: https://git-scm.com/docs/git-grep
-[screenshots-gifs]: ../contributing/presenting-visual-changes.md#screenshot-and-gif-software
-[zulip-dev-community]: https://chat.zulip.org
-[link-to-message]: https://zulip.com/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message
-[dev-community-linkifiers]: https://zulip.com/development-community/#linking-to-github-issues-and-pull-requests
