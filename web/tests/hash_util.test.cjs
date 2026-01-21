@@ -19,7 +19,7 @@ const hamlet = {
     full_name: "Hamlet",
 };
 
-people.add_active_user(hamlet);
+people.add_active_user(hamlet, "server_events");
 
 const frontend_id = 99;
 const frontend = {
@@ -40,7 +40,7 @@ run_test("hash_util", () => {
     }
 
     let operator = "sender";
-    let operand = hamlet.email;
+    let operand = hamlet.user_id;
 
     encode_decode_operand(operator, operand, "15-Hamlet");
 

@@ -17,13 +17,14 @@ import {
     narrow_operator_schema,
     realm,
 } from "./state_data.ts";
-import type {NarrowCanonicalTerm} from "./state_data.ts";
+import type {NarrowCanonicalOperator, NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 export function get_reload_hash(): string {
     let hash = window.location.hash;
@@ -38,16 +39,16 @@ export function encode_operand(term: NarrowCanonicalTerm): string {
     switch (term.operator) {
         case "dm-including":
         case "dm":
-        case "sender":
-            slug = people.emails_to_slug(term.operand);
+            slug = people.user_ids_to_slug(term.operand);
             break;
-        case "channel": {
-            const stream_id = Number.parseInt(term.operand, 10);
-            slug = encode_stream_id(stream_id);
-        }
+        case "sender":
+            slug = people.user_ids_to_slug([term.operand]);
+            break;
+        case "channel":
+            return encode_stream_id(Number.parseInt(term.operand, 10));
     }
 
-    return slug ?? internal_url.encodeHashComponent(term.operand);
+    return slug ?? internal_url.encodeHashComponent(String(term.operand));
 }
 
 export function encode_stream_id(stream_id: number): string {
@@ -59,21 +60,29 @@ export function encode_stream_id(stream_id: number): string {
 }
 
 export function decode_operand(
-    operator: NarrowCanonicalTerm["operator"],
-    operand: NarrowCanonicalTerm["operand"],
-): string {
-    if (operand === "me" && (operator === "dm" || operator === "sender")) {
-        return people.my_current_email();
+    operator: NarrowCanonicalOperator,
+    operand: string,
+): NarrowTerm["operand"] {
+    if (operand === "me") {
+        switch (operator) {
+            case "sender":
+                return people.my_current_user_id();
+            case "dm":
+                return [people.my_current_user_id()];
+        }
     }
 
-    if (operator === "dm-including" || operator === "dm" || operator === "sender") {
-        const emails = people.slug_to_emails(operand);
-        if (emails) {
-            if (operator === "sender") {
-                assert(!emails.includes(","), "Sender operand should not be a group");
-            }
-            return emails;
+    if (operator === "dm-including" || operator === "dm") {
+        const user_ids = people.slug_to_user_ids(operand);
+        if (user_ids) {
+            return user_ids;
         }
+    }
+
+    if (operator === "sender") {
+        const user_ids = people.slug_to_user_ids(operand);
+        assert(user_ids?.length === 1, "Sender operand should not be a group");
+        return util.the(user_ids);
     }
 
     operand = internal_url.decodeHashComponent(operand);
@@ -135,8 +144,8 @@ export function search_terms_to_hash(terms?: NarrowCanonicalTerm[]): string {
     return hash;
 }
 
-export function by_sender_url(reply_to: string): string {
-    return search_terms_to_hash([{operator: "sender", operand: reply_to}]);
+export function by_sender_url(user_id: number): string {
+    return search_terms_to_hash([{operator: "sender", operand: user_id}]);
 }
 
 export function pm_with_url(user_ids_string: string): string {
@@ -376,11 +385,8 @@ export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string)
             return null;
         }
 
-        if (people.is_valid_bulk_emails_for_compose(first_term.operand.split(","))) {
-            const user_ids = people.emails_strings_to_user_ids_array(first_term.operand);
-            if (!user_ids) {
-                return null;
-            }
+        const user_ids = first_term.operand;
+        if (people.is_valid_bulk_user_ids_for_compose(user_ids, true)) {
             return user_ids;
         }
         return null;

@@ -13,7 +13,6 @@ import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
 import type {NarrowCanonicalTerm, NarrowTermSuggestion} from "./state_data.ts";
-import * as state_data from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
@@ -56,8 +55,29 @@ export function create_item_from_search_string(search_string: string): SearchPil
 }
 
 export function get_search_string_from_item(item: SearchPill): string {
+    let operand: string;
+    switch (item.operator) {
+        case "dm":
+        case "dm-including":
+        case "sender":
+            assert(item.type === "search_user");
+            operand = item.users.map((user) => user.email).join(",");
+            break;
+        case "topic":
+            operand = util.get_final_topic_display_name(item.operand);
+            break;
+        case "channel":
+            if (item.operand === "") {
+                operand = "";
+            }
+            operand = stream_data.get_valid_sub_by_id_string(item.operand).name;
+            break;
+        default:
+            operand = item.operand;
+    }
+
     const sign = item.negated ? "-" : "";
-    return `${sign}${item.operator}: ${get_search_operand(item, true)}`;
+    return `${sign}${item.operator}: ${operand}`;
 }
 
 // This is called when the a pill is closed. We have custom logic here
@@ -257,20 +277,28 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         split_text_on_comma: false,
         convert_to_pill_on_enter: false,
         generate_pill_html(item) {
-            if (item.type === "search_user") {
-                return render_search_user_pill(item);
+            switch (item.operator) {
+                case "dm":
+                case "dm-including":
+                case "sender":
+                    assert(item.type === "search_user");
+                    return render_search_user_pill(item);
+                case "topic":
+                    if (item.operand === "") {
+                        return render_input_pill({
+                            is_empty_string_topic: true,
+                            sign: item.negated ? "-" : "",
+                            topic_display_name: util.get_final_topic_display_name(""),
+                        });
+                    }
+                    return render_input_pill({
+                        display_value: get_search_string_from_item(item),
+                    });
+                default:
+                    return render_input_pill({
+                        display_value: get_search_string_from_item(item),
+                    });
             }
-            if (item.operator === "topic" && item.operand === "") {
-                return render_input_pill({
-                    is_empty_string_topic: true,
-                    sign: item.negated ? "-" : "",
-                    topic_display_name: util.get_final_topic_display_name(""),
-                });
-            }
-            const display_value = get_search_string_from_item(item);
-            return render_input_pill({
-                display_value,
-            });
         },
         get_display_value_from_item: get_search_string_from_item,
         on_pill_exit,
@@ -281,16 +309,21 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
     return pills;
 }
 
+function get_user_ids_from_term_with_user_pill_operator(term: NarrowCanonicalTerm): number[] {
+    if (term.operator === "sender") {
+        return [term.operand];
+    }
+
+    assert(term.operator === "dm" || term.operator === "dm-including");
+    return term.operand;
+}
+
 function search_user_pill_data_from_term(term: NarrowCanonicalTerm): SearchUserPill {
     assert(
         term.operator === "dm" || term.operator === "dm-including" || term.operator === "sender",
     );
-    const emails = term.operand.split(",");
-    const users = emails.map((email) => {
-        const person = people.get_by_email(email);
-        assert(person !== undefined);
-        return person;
-    });
+    const user_ids = get_user_ids_from_term_with_user_pill_operator(term);
+    const users = user_ids.map((user_id) => people.get_by_user_id(user_id));
     return search_user_pill_data(users, term.operator, term.negated ?? false);
 }
 
@@ -298,7 +331,7 @@ function is_sent_by_me_pill(pill: SearchUserPill): boolean {
     return (
         pill.operator === "sender" &&
         pill.users.length === 1 &&
-        util.the(pill.users).email === state_data.current_user.email
+        util.the(pill.users).user_id === people.my_current_user_id()
     );
 }
 
@@ -372,7 +405,8 @@ export function set_search_bar_contents(
             continue;
         }
 
-        if (Filter.convert_suggestion_to_term(term) === undefined) {
+        const narrow_term = Filter.convert_suggestion_to_term(term);
+        if (narrow_term === undefined) {
             invalid_inputs.push(input);
             continue;
         }
@@ -381,12 +415,8 @@ export function set_search_bar_contents(
             case "dm":
             case "dm-including":
             case "sender": {
-                const users = term.operand.split(",").map((email) => {
-                    // This is definitely not undefined, because we just validated it
-                    // with `Filter.is_valid_search_term`.
-                    const user = people.get_by_email(email)!;
-                    return user;
-                });
+                const user_ids = get_user_ids_from_term_with_user_pill_operator(narrow_term);
+                const users = user_ids.map((user_id) => people.get_by_user_id(user_id));
                 append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
                 added_pills_as_input_strings.add(input);
                 break;
@@ -413,31 +443,32 @@ export function set_search_bar_contents(
     }
 }
 
-function get_search_operand(item: SearchPill, for_display: boolean): string {
-    if (item.type === "search_user") {
-        return item.users.map((user) => user.email).join(",");
-    }
-    // When we're displaying the operand in a pill, we sometimes want to make
-    // it more human readable. We do this for channel pills (with channels
-    // specified) and topic pills only.
-    if (for_display) {
-        if (item.operator === "channel" && item.operand !== "") {
-            return stream_data.get_valid_sub_by_id_string(item.operand).name;
-        }
-        if (item.operator === "topic") {
-            return util.get_final_topic_display_name(item.operand);
-        }
-        // For all other `for_display=true` cases, we just show the default operand.
-    }
-    return item.operand;
-}
-
 export function get_current_search_pill_terms(
     pill_widget: SearchPillWidget,
 ): NarrowCanonicalTerm[] {
-    return pill_widget.items().map((item) => ({
-        operator: item.operator,
-        operand: get_search_operand(item, false),
-        negated: item.negated,
-    }));
+    return pill_widget.items().map((item) => {
+        switch (item.operator) {
+            case "dm":
+            case "dm-including":
+                assert(item.type === "search_user");
+                return {
+                    operator: item.operator,
+                    operand: item.users.map((user) => user.user_id),
+                    negated: item.negated,
+                };
+            case "sender":
+                assert(item.type === "search_user");
+                return {
+                    operator: item.operator,
+                    operand: item.users[0]!.user_id,
+                    negated: item.negated,
+                };
+            default:
+                return {
+                    operator: item.operator,
+                    operand: item.operand,
+                    negated: item.negated,
+                };
+        }
+    });
 }

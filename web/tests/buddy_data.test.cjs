@@ -105,14 +105,15 @@ const bot_with_owner = {
 };
 
 function add_canned_users() {
-    people.add_active_user(alice);
-    people.add_active_user(bot);
-    people.add_active_user(bot_with_owner);
-    people.add_active_user(fred);
-    people.add_active_user(jill);
-    people.add_active_user(mark);
-    people.add_active_user(old_user);
-    people.add_active_user(selma);
+    people.add_active_user(alice, "server_events");
+    people.add_active_user(bot, "server_events");
+    people.add_active_user(bot_with_owner, "server_events");
+    people.add_active_user(fred, "server_events");
+    people.add_active_user(jill, "server_events");
+    people.add_active_user(mark, "server_events");
+    people.add_active_user(old_user, "server_events");
+    people.add_active_user(selma, "server_events");
+    people.add_active_user(me, "server_events");
 }
 
 function test(label, f) {
@@ -384,8 +385,8 @@ test("always show me", () => {
 });
 
 test("always show pm users", () => {
-    people.add_active_user(selma);
-    message_lists.set_current(make_message_list([{operator: "dm", operand: selma.email}]));
+    people.add_active_user(selma, "server_events");
+    message_lists.set_current(make_message_list([{operator: "dm", operand: [selma.user_id]}]));
 
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
 });
@@ -611,8 +612,7 @@ test("user_last_seen_time_status", ({override}) => {
 });
 
 test("get_items_for_users", ({override}) => {
-    people.add_active_user(alice);
-    people.add_active_user(fred);
+    add_canned_users();
     set_presence(alice.user_id, "offline");
     override(user_settings, "emojiset", "google");
     override(user_settings, "user_list_style", 2);

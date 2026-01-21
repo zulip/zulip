@@ -60,17 +60,17 @@ run_test("initialize", ({override, override_rewire}) => {
         assert.equal(delay, 42000);
     });
 
-    let my_email = "";
+    let my_user_id;
 
-    function narrow_by_email(email) {
-        my_email = email;
+    function narrow_by_user_id(user_id) {
+        my_user_id = user_id;
     }
 
-    activity_ui.initialize({narrow_by_email});
+    activity_ui.initialize({narrow_by_user_id});
 
-    assert.equal(my_email, "");
-    activity_ui.get_narrow_by_email_function_for_test_code()("alice@example.com");
-    assert.equal(my_email, "alice@example.com");
+    assert.equal(my_user_id, undefined);
+    activity_ui.get_narrow_by_user_id_function_for_test_code()(1);
+    assert.equal(my_user_id, 1);
 
     // Simulate the subsequent calls to
     // activity.send_presence_to_server.
