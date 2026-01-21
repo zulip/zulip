@@ -9,6 +9,8 @@ declare class Renderer {
     code: (code: string) => string;
     link: (href: string, title: string, text: string) => string;
     br: () => string;
+    paragraph: (text: string) => string;
+    text?: () => string;
 }
 
 declare namespace marked {
