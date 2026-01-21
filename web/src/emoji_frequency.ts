@@ -34,7 +34,7 @@ export function update_emoji_frequency_on_add_reaction_event(event: reactions.Re
     const emoji_type = clean_reaction_object.reaction_type;
     const is_me = event.user_id === current_user.user_id;
 
-    emoji_frequency_data.update_data_for_new_emoji_reaction_on_message({
+    emoji_frequency_data.handle_reaction_addition_on_message({
         message_id,
         emoji_id,
         emoji_code,
@@ -57,7 +57,7 @@ export function update_emoji_frequency_on_remove_reaction_event(
     const emoji_id = reactions.get_local_reaction_id(event);
     const is_me = event.user_id === current_user.user_id;
 
-    emoji_frequency_data.update_data_for_reaction_removal_on_message({
+    emoji_frequency_data.handle_reaction_removal_on_message({
         emoji_id,
         message_id,
         is_me,
