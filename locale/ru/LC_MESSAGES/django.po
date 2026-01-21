@@ -27,10 +27,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 13:48+0000\n"
-"PO-Revision-Date: 2025-10-21 15:27+0000\n"
-"Last-Translator: Вадим <idgart@yandex.ru>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django/ru/"
-">\n"
+"PO-Revision-Date: 2025-12-20 08:00+0000\n"
+"Last-Translator: Lev Shereshevsky <Lev.Shereshevsky@gmail.com>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django/ru/>"
+"\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -38,7 +38,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -92,9 +92,9 @@ msgid ""
 "users to join."
 msgstr ""
 "В вашей организации не осталось лицензий Zulip, и она больше не может "
-"подключать новых пользователей. Пожалуйста, [увеличьте количество лицензий]"
-"({billing_page_link}) или [отключите неактивных пользователей]"
-"({deactivate_user_help_page_link}), чтобы дать новым пользователям "
+"подключать новых пользователей. Пожалуйста, [увеличьте количество лицензий]("
+"{billing_page_link}) или [отключите неактивных пользователей]("
+"{deactivate_user_help_page_link}), чтобы дать новым пользователям "
 "возможность присоединиться."
 
 #: corporate/lib/registration.py:42
@@ -207,7 +207,7 @@ msgstr "Неизвестный способ оплаты. Пожалуйста, 
 #: corporate/lib/stripe.py:403
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr "Что-то пошло не так. Пожалуйста, обратитесь к {email}."
+msgstr "Что-то пошло не так. Пожалуйста, свяжитесь с {email}."
 
 #: corporate/lib/stripe.py:404
 msgid "Something went wrong. Please reload the page."
@@ -227,14 +227,13 @@ msgstr ""
 
 #: corporate/lib/stripe.py:1907
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
-"Пожалуйста, укажите данные платежной карты для планирования обновления."
+msgstr "Пожалуйста, укажите данные платежной карты для планирования обновления."
 
 #: corporate/lib/stripe.py:2988
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
-msgstr "Нет возможности обновить тариф. Тарифный план истёк и заменен новым."
+msgstr "Нет возможности обновить тариф. Тарифный план истёк и заменён новым."
 
 #: corporate/lib/stripe.py:2993
 msgid "Unable to update the plan. The plan has ended."
@@ -259,13 +258,11 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
-msgstr ""
-"Ваш тариф уже включает {licenses} лицензий в текущем расчётном периоде."
+msgstr "Ваш тариф уже включает {licenses} лицензий в текущем расчётном периоде."
 
 #: corporate/lib/stripe.py:3077
 msgid "You cannot decrease the licenses in the current billing period."
-msgstr ""
-"Вы не можете уменьшить количество лицензий в текущем расчётном периоде."
+msgstr "Вы не можете уменьшить количество лицензий в текущем расчётном периоде."
 
 #: corporate/lib/stripe.py:3103
 msgid ""
@@ -295,7 +292,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py:3155
 msgid "Nothing to change."
-msgstr "Ничего не изменилось."
+msgstr "Нечего менять."
 
 #: corporate/lib/stripe.py:3440
 msgid "No customer for this organization!"
@@ -1825,6 +1822,8 @@ msgid ""
 "been deactivated, please reach out to the organization's administrators "
 "directly."
 msgstr ""
+"Если вы являетесь членом организации и хотите выяснить причину ее "
+"отключения, обратитесь непосредственно к администраторам организации."
 
 #: templates/zerver/deactivated.html:59
 #, python-format
@@ -4249,24 +4248,17 @@ msgstr ""
 "еще нет."
 
 #: templates/zerver/realm_redirect.html:52
-#, fuzzy
-#| msgid "Self-host Zulip"
 msgid "Self-hosting Zulip?"
-msgstr "Самостоятельный хостинг Zulip"
+msgstr "Собственный хостинг Zulip?"
 
 #: templates/zerver/realm_redirect.html:53
-#, fuzzy, python-format
-#| msgid ""
-#| "<a target=\"_blank\" rel=\"noopener noreferrer\" "
-#| "href=\"%(org_creation_link)s\">Create a new organization</a> if you don't "
-#| "have one yet."
+#, python-format
 msgid ""
 "You can <a target=\"_blank\" rel=\"noopener noreferrer\" "
 "href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
 msgstr ""
-"<a target=\"_blank\" rel=\"noopener noreferrer\" "
-"href=\"%(org_creation_link)s\">Создайте новую организацию</a>, если у вас ее "
-"еще нет."
+"Вы можете <a target=\"_blank\" rel=\"noopener noreferrer\" href="
+"\"%(self_hosted_login_help)s\">войти для управления тарифом и оплатой.</a>"
 
 #: templates/zerver/register.html:5
 msgid "Registration"
@@ -4474,16 +4466,12 @@ msgid "Start import"
 msgstr "Начать импорт"
 
 #: templates/zerver/slack_import.html:102
-#, fuzzy
-#| msgid ""
-#| "Or <a href=\"#\" id=\"cancel-slack-import\">create organization</a> "
-#| "without importing data."
 msgid ""
 "Or <span id=\"cancel-slack-import\" tabindex=\"0\">create organization</"
 "span> without importing data."
 msgstr ""
-"Или <a href=\"#\" id=\"cancel-slack-import\">создайте организацию</a> без "
-"импорта данных."
+"Или <span id=\"cancel-slack-import\" tabindex=\"0\">создайте организацию</"
+"span> без импорта данных."
 
 #: templates/zerver/social_auth_select_email.html:4
 msgid "Select account for authentication"
@@ -5789,10 +5777,8 @@ msgid "Integration frameworks"
 msgstr "Фреймворки интерации"
 
 #: zerver/lib/integrations.py:49
-#, fuzzy
-#| msgid "Video call ended"
 msgid "Video calling"
-msgstr "Видеозвонок завершен"
+msgstr "Видеозвонки"
 
 #: zerver/lib/integrations.py:50
 msgid "Continuous integration"
@@ -6172,13 +6158,7 @@ msgstr ""
 "глобальном времени и других возможностях.\n"
 
 #: zerver/lib/onboarding.py:262
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "Here are a few messages I understand: {bot_commands}\n"
-#| "\n"
-#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-#| "or browse the [Help center](/help/) to learn more!\n"
+#, python-brace-format
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
@@ -6189,9 +6169,9 @@ msgstr ""
 "\n"
 "Вот некоторые сообщения, которые я понимаю: {bot_commands}\n"
 "\n"
-"Посмотрите наше [Руководство по началу работы](/help/getting-started-with-"
-"zulip),\n"
-"или перейдите в [Центр помощи](/help/), чтобы узнать больше!\n"
+"Посмотрите наше [Руководство по началу работы]"
+"(/help/getting-started-with-zulip),\n"
+"или перейдите в [центр помощи](/help/), чтобы узнать больше!\n"
 
 #: zerver/lib/onboarding.py:269
 #, python-brace-format
@@ -6862,10 +6842,8 @@ msgid "Name too long!"
 msgstr "Слишком длинное имя!"
 
 #: zerver/lib/users.py:62
-#, fuzzy
-#| msgid "Message must not be empty"
 msgid "Name must not be empty!"
-msgstr "Сообщение не должно быть пустым"
+msgstr "Имя не должно быть пустым!"
 
 #: zerver/lib/users.py:66
 msgid "Invalid characters in name!"
@@ -8308,11 +8286,11 @@ msgstr "{hostname} еще не зарегистрирован"
 #: zilencer/views.py:204
 #, python-brace-format
 msgid "Invalid server administrator email address: {email_reason}"
-msgstr ""
+msgstr "Неверный адрес электронной почты администратора сервера: {email_reason}"
 
 #: zilencer/views.py:248
 msgid "example.com is not a valid email domain."
-msgstr ""
+msgstr "example.com не является допустимым доменом электронной почты."
 
 #: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format

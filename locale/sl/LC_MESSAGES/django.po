@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 13:48+0000\n"
-"PO-Revision-Date: 2025-09-09 16:18+0000\n"
+"PO-Revision-Date: 2025-10-27 16:06+0000\n"
 "Last-Translator: BobTB <jf@kfm.si>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/zulip/django/"
 "sl/>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
 "n%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -1795,6 +1795,8 @@ msgid ""
 "been deactivated, please reach out to the organization's administrators "
 "directly."
 msgstr ""
+"Če si član organizacije in želiš izvedeti, zakaj je bila deaktivirana, se "
+"obrni neposredno na skrbnike organizacije."
 
 #: templates/zerver/deactivated.html:59
 #, python-format
@@ -4190,24 +4192,18 @@ msgstr ""
 "nimate."
 
 #: templates/zerver/realm_redirect.html:52
-#, fuzzy
-#| msgid "Self-host Zulip"
 msgid "Self-hosting Zulip?"
-msgstr "Gostite Zulip sami"
+msgstr "Gostite Zulip sami?"
 
 #: templates/zerver/realm_redirect.html:53
-#, fuzzy, python-format
-#| msgid ""
-#| "<a target=\"_blank\" rel=\"noopener noreferrer\" "
-#| "href=\"%(org_creation_link)s\">Create a new organization</a> if you don't "
-#| "have one yet."
+#, python-format
 msgid ""
 "You can <a target=\"_blank\" rel=\"noopener noreferrer\" "
 "href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
 msgstr ""
-"<a target=\"_blank\" rel=\"noopener noreferrer\" "
-"href=\"%(org_creation_link)s\">Ustvarite novo organizacijo</a>, če je še "
-"nimate."
+"Lahko se <a target=\"_blank\" rel=\"noopener noreferrer\" href="
+"\"%(self_hosted_login_help)s\">prijaviš za upravljanje paketov in "
+"obračunavanja.</a>"
 
 #: templates/zerver/register.html:5
 msgid "Registration"
@@ -4414,16 +4410,12 @@ msgid "Start import"
 msgstr "Začni uvoz"
 
 #: templates/zerver/slack_import.html:102
-#, fuzzy
-#| msgid ""
-#| "Or <a href=\"#\" id=\"cancel-slack-import\">create organization</a> "
-#| "without importing data."
 msgid ""
 "Or <span id=\"cancel-slack-import\" tabindex=\"0\">create organization</"
 "span> without importing data."
 msgstr ""
-"Ali pa <a href=\"#\" id=\"cancel-slack-import\">ustvarite organizacijo</a> "
-"brez uvoza podatkov."
+"Ali pa <span id=\"cancel-slack-import\" tabindex=\"0\">ustvari organizacijo</"
+"span> brez uvoza podatkov."
 
 #: templates/zerver/social_auth_select_email.html:4
 msgid "Select account for authentication"
@@ -5702,10 +5694,8 @@ msgid "Integration frameworks"
 msgstr "Okvirji integracije"
 
 #: zerver/lib/integrations.py:49
-#, fuzzy
-#| msgid "Video call ended"
 msgid "Video calling"
-msgstr "Videoklic končan"
+msgstr "Video klici"
 
 #: zerver/lib/integrations.py:50
 msgid "Continuous integration"
@@ -6089,13 +6079,7 @@ msgstr ""
 "časih in drugih možnostih..\n"
 
 #: zerver/lib/onboarding.py:262
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "Here are a few messages I understand: {bot_commands}\n"
-#| "\n"
-#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-#| "or browse the [Help center](/help/) to learn more!\n"
+#, python-brace-format
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
@@ -6107,7 +6091,7 @@ msgstr ""
 "Tukaj je nekaj sporočil, ki jih razumem: {bot_commands}\n"
 "\n"
 "Oglejte si naš [Uvodni vodnik](/help/getting-started-with-zulip),\n"
-"ali brskajte po [Centru za pomoč](/help/), da izveste več!\n"
+"ali brskajte po [centru za pomoč](/help/), da izveste več!\n"
 
 #: zerver/lib/onboarding.py:269
 #, python-brace-format
@@ -6785,10 +6769,8 @@ msgid "Name too long!"
 msgstr "Ime je predolgo!"
 
 #: zerver/lib/users.py:62
-#, fuzzy
-#| msgid "Message must not be empty"
 msgid "Name must not be empty!"
-msgstr "Sporočilo ne sme biti prazno"
+msgstr "Ime ne sme biti prazno!"
 
 #: zerver/lib/users.py:66
 msgid "Invalid characters in name!"
@@ -8220,11 +8202,11 @@ msgstr "{hostname} še ni registriran"
 #: zilencer/views.py:204
 #, python-brace-format
 msgid "Invalid server administrator email address: {email_reason}"
-msgstr ""
+msgstr "Napačen e-mail naslov administratorja serverja: {email_reason}"
 
 #: zilencer/views.py:248
 msgid "example.com is not a valid email domain."
-msgstr ""
+msgstr "example.com ni veljavna email domena."
 
 #: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format
