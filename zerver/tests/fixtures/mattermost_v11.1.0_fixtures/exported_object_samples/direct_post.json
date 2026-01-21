@@ -1,0 +1,23 @@
+{
+    "type": "direct_post",
+    "direct_post": {
+        "channel_members": [
+            "adam.torres",
+            "rebecca.diaz",
+            "eugene.montgomery"
+        ],
+        "user": "eugene.montgomery",
+        "type": "",
+        "message": "ea ab est deserunt ipsa sequi inventore occaecati.\nharum harum officia.",
+        "props": {},
+        "create_at": 1768951608481,
+        "edit_at": 0,
+        "flagged_by": [
+            "rebecca.diaz"
+        ],
+        "reactions": null,
+        "replies": null,
+        "attachments": null,
+        "is_pinned": false
+    }
+}

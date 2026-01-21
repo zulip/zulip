@@ -316,12 +316,16 @@ def convert_direct_message_group_data(
 ) -> list[ZerverFieldsT]:
     zerver_direct_message_group = []
     for direct_message_group in direct_message_group_data:
-        direct_message_group_members = frozenset(
-            {
-                username
-                for username in direct_message_group["members"]
-                if user_id_mapper.has(username)
+        group_member_usernames = (
+            direct_message_group["members"]
+            if "members" in direct_message_group
+            else {
+                participant_data["username"]
+                for participant_data in direct_message_group["participants"]
             }
+        )
+        direct_message_group_members = frozenset(
+            {username for username in group_member_usernames if user_id_mapper.has(username)}
         )
 
         if len(direct_message_group_members) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
@@ -554,7 +558,12 @@ def process_raw_message_batch(
         elif "pm_members" in raw_message:
             is_direct_message_type = True
             members = raw_message["pm_members"]
-            member_ids = {user_id_mapper.get(member) for member in members}
+            member_ids = {
+                user_id_mapper.get(member) for member in members if user_id_mapper.has(member)
+            }
+            if len(member_ids) < 2:  # nocoverage
+                # TODO: Convert direct message from deleted user and bot user.
+                continue
             pm_members[message_id] = member_ids
             other_user_mattermost_id = (
                 members[1] if sender_user_id == user_id_mapper.get(members[0]) else members[0]
@@ -710,6 +719,10 @@ def process_posts(
                 # For DM to one's self, the user's username appear twice in
                 # "channel_members".
                 message_dict["pm_members"] = channel_members
+            else:
+                # DM from unconverted users to themselves or 1-1 DM an unconverted user
+                # from a converted user.
+                return None
         else:
             raise AssertionError("Post without channel or channel_members key.")
 
@@ -721,7 +734,7 @@ def process_posts(
     raw_messages = []
     for post_dict in post_data_list:
         message_dict = message_to_dict(post_dict)
-        if message_dict is None:  # nocoverage
+        if message_dict is None:
             continue
         raw_messages.append(message_dict)
         message_replies = post_dict["replies"]
@@ -926,14 +939,20 @@ def label_mirror_dummy_users(
     for post in mattermost_data["post"]["channel_post"]:
         post_team = post["team"]
         if post_team == team_name:
-            user = username_to_user[post["user"]]
+            user = username_to_user.get(post["user"])
+            if user is None:
+                # This is probably deleted user or bot user, we currently don't
+                # convert those yet.
+                continue
             if not check_user_in_team(user, team_name):
                 user["is_mirror_dummy"] = True
 
     if num_teams == 1:
         for post in mattermost_data["post"]["direct_post"]:
             assert "team" not in post
-            user = username_to_user[post["user"]]
+            user = username_to_user.get(post["user"])
+            if user is None:
+                continue
             if not check_user_in_team(user, team_name):
                 user["is_mirror_dummy"] = True
 
@@ -952,6 +971,9 @@ def mattermost_data_file_to_dict(mattermost_data_file: str) -> dict[str, Any]:
     mattermost_data["post"] = {"channel_post": [], "direct_post": []}
     mattermost_data["emoji"] = []
     mattermost_data["direct_channel"] = []
+    # TODO: New data on recent mmctl versions:
+    mattermost_data["role"] = []
+    mattermost_data["bot"] = []
 
     with open(mattermost_data_file, "rb") as fp:
         for line in fp:
@@ -973,8 +995,17 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
     if os.listdir(output_dir):  # nocoverage
         raise Exception("Output directory should be empty!")
 
-    mattermost_data_file = os.path.join(mattermost_data_dir, "export.json")
-    mattermost_data = mattermost_data_file_to_dict(mattermost_data_file)
+    import_jsonl_file = os.path.join(mattermost_data_dir, "import.jsonl")
+    export_json_file = os.path.join(mattermost_data_dir, "export.json")
+
+    if os.path.exists(import_jsonl_file):
+        mattermost_data = mattermost_data_file_to_dict(import_jsonl_file)
+    elif os.path.exists(export_json_file):
+        mattermost_data = mattermost_data_file_to_dict(export_json_file)
+    else:
+        raise AssertionError(
+            f"Missing import.jsonl or export.json file in {mattermost_data_dir}. Files: {os.listdir(mattermost_data_dir)!s}",
+        )
 
     username_to_user = create_username_to_user_mapping(mattermost_data["user"])
 

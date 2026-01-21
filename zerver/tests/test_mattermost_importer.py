@@ -1,11 +1,16 @@
 import filecmp
 import os
+import shutil
 import sys
+import tempfile
+from collections import defaultdict
+from collections.abc import Sequence
 from typing import Any
 from unittest.mock import patch
 
 import orjson
 from django.test import override_settings
+from django_stubs_ext import QuerySetAny
 
 from zerver.data_import.import_util import SubscriberHandler, UploadRecordData, ZerverFieldsT
 from zerver.data_import.mattermost import (
@@ -30,18 +35,21 @@ from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, Reaction, Recipient, UserProfile
+from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES
+from zerver.models import Attachment, Message, Reaction, Recipient, UserProfile
 from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
-from zerver.models.streams import Stream
+from zerver.models.streams import Stream, get_stream
 from zerver.models.users import get_user
+from zerver.tests.test_import_export import make_export_output_dir
+from zerver.tests.test_microsoft_teams_importer import get_channel_subscriber_emails
 
 
 class MatterMostImporter(ZulipTestCase):
     def test_mattermost_data_file_to_dict(self) -> None:
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
-        self.assert_length(mattermost_data, 7)
+        self.assert_length(mattermost_data, 9)
 
         self.assertEqual(mattermost_data["version"], [1])
 
@@ -1264,3 +1272,244 @@ class MatterMostImporter(ZulipTestCase):
             self.assertIsNotNone(message.rendered_content)
 
         self.verify_emoji_code_foreign_keys()
+
+    def test_import_unknown_jsonl_file(self) -> None:
+        export_dir = tempfile.mkdtemp()
+        output_dir = self.make_import_output_dir("mattermost")
+        try:
+            with self.assertRaises(AssertionError) as e:
+                do_convert_data(
+                    mattermost_data_dir=export_dir,
+                    output_dir=output_dir,
+                    masking_content=True,
+                )
+            self.assertEqual(
+                f"Missing import.jsonl or export.json file in {export_dir}. Files: []",
+                str(e.exception),
+            )
+        finally:
+            shutil.rmtree(export_dir)
+
+    def assert_imported_messages_match_exported(
+        self,
+        importable_messages: Sequence[dict[str, Any]],
+        imported_messages: QuerySetAny[Message, Message],
+        username_to_email_map: dict[str, str],
+    ) -> None:
+        exported_message_datetimes: list[float] = []
+        exported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
+
+        for message in importable_messages:
+            message_datesent = float(int(message["create_at"] / 1000))
+            exported_message_datetimes.append(message_datesent)
+            exported_sender_messages_map[username_to_email_map[message["user"]]].append(
+                message_datesent
+            )
+
+        imported_message_datetimes: list[float] = []
+        imported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
+        last_date_sent: float = float("-inf")
+
+        for imported_message in imported_messages:
+            message_date_sent = imported_message.date_sent.timestamp()
+
+            # Imported messages are sorted chronologically.
+            self.assertLessEqual(last_date_sent, message_date_sent)
+            last_date_sent = message_date_sent
+
+            # We have some unit tests that check the message content is converted
+            # correctly.
+            self.assertIsNotNone(imported_message.content)
+            self.assertIsNotNone(imported_message.rendered_content)
+
+            imported_message_datetimes.append(message_date_sent)
+            imported_sender_messages_map[imported_message.sender.email].append(message_date_sent)
+
+        self.assertListEqual(
+            sorted(imported_message_datetimes),
+            sorted(exported_message_datetimes),
+        )
+
+        # Message sender is correct.
+        for sender_email, users_exported_message_datetimes in exported_sender_messages_map.items():
+            self.assertListEqual(
+                sorted(users_exported_message_datetimes),
+                sorted(imported_sender_messages_map[sender_email]),
+            )
+
+    def test_e2e_export_data_v11_1_0(self) -> None:
+        fixture_file_name = self.fixture_file_name(
+            "import.jsonl", "mattermost_v11.1.0_fixtures/raw_mmctl_output"
+        )
+        with self.subTest("test mattermost_data_file_to_dict"):
+            mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+            self.assert_length(mattermost_data, 9)
+            self.assert_length(mattermost_data["team"], 1)
+            self.assertEqual(mattermost_data["team"][0]["name"], "ad-1")
+            self.assert_length(mattermost_data["channel"], 4)
+            self.assert_length(mattermost_data["user"], 17)
+            self.assert_length(mattermost_data["emoji"], 0)
+            self.assert_length(mattermost_data["post"]["channel_post"], 50)
+            self.assert_length(mattermost_data["post"]["direct_post"], 50)
+            self.assert_length(mattermost_data["direct_channel"], 79)
+            self.assert_length(mattermost_data["role"], 23)
+            self.assert_length(mattermost_data["bot"], 3)
+
+        exported_bot_usernames = [user["username"] for user in mattermost_data["bot"]]
+        mattermost_data_dir = self.fixture_file_name(
+            "", "mattermost_v11.1.0_fixtures/raw_mmctl_output"
+        )
+        output_dir = make_export_output_dir()
+
+        with self.assertLogs(level="INFO"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=True,
+            )
+
+        imported_realm_subdomain = "test-mattermost_v11.1.0"
+        output_dir = self.team_output_dir(output_dir, "ad-1")
+
+        with self.assertLogs(level="INFO"):
+            do_import_realm(
+                import_dir=output_dir,
+                subdomain=imported_realm_subdomain,
+            )
+        imported_realm = get_realm(imported_realm_subdomain)
+
+        with self.subTest("test user conversion"):
+            imported_user_profiles = UserProfile.objects.filter(realm=imported_realm)
+            self.assert_length(
+                imported_user_profiles,
+                len(mattermost_data["user"]),
+            )
+            imported_users = imported_user_profiles.filter(is_bot=False, is_mirror_dummy=False)
+            self.assert_length(imported_users, len(mattermost_data["user"]))
+
+            imported_realm_owners = imported_user_profiles.filter(
+                is_bot=False, role=UserProfile.ROLE_REALM_OWNER, is_mirror_dummy=False
+            )
+            self.assert_length(imported_realm_owners, 1)
+            self.assertEqual(imported_realm_owners[0].email, "sysadmin@sample.mattermost.com")
+
+            imported_realm_guests = imported_user_profiles.filter(
+                is_bot=False, role=UserProfile.ROLE_GUEST, is_mirror_dummy=False
+            )
+            self.assert_length(imported_realm_guests, 1)
+            self.assertEqual(imported_realm_guests[0].email, "guest@sample.mattermost.com")
+
+        exported_channel_subscriber_dict: dict[str, set[str]] = defaultdict(set)
+        username_to_email_map: dict[str, str] = {}
+        for user in mattermost_data["user"]:
+            exported_user_channels = [channel["name"] for channel in user["teams"][0]["channels"]]
+            for mattermost_channel_id in exported_user_channels:
+                exported_channel_subscriber_dict[mattermost_channel_id].add(user["email"])
+            username_to_email_map[user["username"]] = user["email"]
+
+        with self.subTest("test channel conversion"):
+            for channel_data in mattermost_data["channel"]:
+                channel_name = channel_data["display_name"]
+                mattermost_channel_id = channel_data["name"]
+                imported_channel = Stream.objects.get(realm=imported_realm, name=channel_name)
+
+                self.assertEqual(imported_channel.description, channel_data["purpose"])
+                invite_only = channel_data["type"] == "P"
+                self.assertEqual(imported_channel.invite_only, invite_only)
+                # TODO: We convert guest users but don't properly subscribe them to the
+                # channels they follow.
+                guest_email = "guest@sample.mattermost.com"
+                exported_channel_subscriber_data = exported_channel_subscriber_dict[
+                    mattermost_channel_id
+                ]
+                if guest_email in exported_channel_subscriber_dict[mattermost_channel_id]:
+                    exported_channel_subscriber_data.remove(guest_email)
+                self.assertSetEqual(
+                    exported_channel_subscriber_data,
+                    get_channel_subscriber_emails(imported_realm, imported_channel),
+                )
+
+        with self.subTest("test channel message conversion"):
+            # This is the Mattermost channel ID for "nesciunt".
+            mattermost_public_channel_id = "sequi-7"
+            public_channel_name = "nesciunt"
+            imported_public_channel = get_stream(public_channel_name, imported_realm)
+
+            imported_public_channel_messages = Message.objects.filter(
+                recipient=imported_public_channel.recipient,
+                realm=imported_realm,
+                sender__is_bot=False,
+            ).order_by("id")
+
+            importable_channel_messages: list[dict[str, Any]] = []
+            for m in mattermost_data["post"]["channel_post"]:
+                if (
+                    m["channel"] != mattermost_public_channel_id
+                    or m["user"] in exported_bot_usernames
+                ):
+                    continue
+
+                importable_channel_messages.append(m)
+
+                if m["replies"] is None:
+                    continue
+
+                importable_channel_messages += [
+                    m for m in m["replies"] if m["user"] not in exported_bot_usernames
+                ]
+
+            self.assert_length(
+                imported_public_channel_messages,
+                len(importable_channel_messages),
+            )
+            self.assert_imported_messages_match_exported(
+                importable_channel_messages, imported_public_channel_messages, username_to_email_map
+            )
+
+        with self.subTest("test direct messages"):
+            imported_dms = Message.objects.filter(
+                recipient__type__in=[Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP],
+                realm=imported_realm,
+                sender__is_bot=False,
+            ).order_by("id")
+            importable_dms = []
+            for m in mattermost_data["post"]["direct_post"]:
+                if m["user"] in exported_bot_usernames:
+                    continue
+
+                # We don't convert deleted or bot users messages yet. So 1-1 direct
+                # messages sent from importable users to them also won't be converted.
+                if len(set(m["channel_members"]) - set(exported_bot_usernames)) < 2:
+                    continue
+
+                importable_dms.append(m)
+
+                if m["replies"] is None:
+                    continue
+
+                importable_dms += [
+                    m for m in m["replies"] if m["user"] not in exported_bot_usernames
+                ]
+            self.assert_length(imported_dms, len(importable_dms))
+            self.assert_imported_messages_match_exported(
+                importable_dms, imported_dms, username_to_email_map
+            )
+
+        with self.subTest("test attachments"):
+            imported_attachments = Attachment.objects.filter(realm=imported_realm)
+            self.assertTrue(imported_attachments.exists())
+            self.assert_length(imported_attachments, 3)
+
+            for attachment in imported_attachments:
+                for message_with_attachment in Message.objects.filter(
+                    realm=imported_realm, attachment=attachment
+                ):
+                    self.assertTrue(message_with_attachment.has_attachment)
+                    is_image = attachment.content_type in THUMBNAIL_ACCEPT_IMAGE_TYPES
+                    self.assertEqual(message_with_attachment.has_image, is_image)
+                    self.assertTrue(message_with_attachment.has_link)
+                    assert isinstance(message_with_attachment.rendered_content, str)
+                    self.assertIn(
+                        f"/user_uploads/{attachment.path_id}",
+                        message_with_attachment.rendered_content,
+                    )
