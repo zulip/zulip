@@ -25,6 +25,8 @@ def normalize_optional_text(value: str | None) -> str | None:
     return value or None
 
 
+# A function with the same name implements this on the JS side.
+# Please replicate any changes here to that function as well.
 def expand_reverse_template(
     reverse_template: str, match: "re2._Match[str]", group_set: set[str]
 ) -> str:
