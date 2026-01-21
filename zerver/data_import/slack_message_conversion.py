@@ -391,9 +391,13 @@ def render_block_element(element: WildValue) -> str:
     # Zulip doesn't support interactive elements, so we only render images here
     element_type = element["type"].tame(check_string)
     if element_type == "image":
-        image_url = element["image_url"].tame(check_url)
-        alt_text = element["alt_text"].tame(check_string)
-        return f"[{alt_text}]({image_url})"
+        try:
+            image_url = element["image_url"].tame(check_url)
+            alt_text = element["alt_text"].tame(check_string)
+            return f"[{alt_text}]({image_url})"
+        except ValidationError:
+            # Just drop invalid image URLs, rather than drop the whole message.
+            return ""
     else:
         # Unsupported
         return ""
