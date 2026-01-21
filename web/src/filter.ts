@@ -117,6 +117,9 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
                     return () => false;
             }
 
+        case "reaction":
+            return (message) => message_parser.message_has_specific_reaction(message, term.operand);
+
         case "is":
             switch (term.operand) {
                 case "dm":
@@ -676,6 +679,8 @@ export class Filter {
             case "dm":
             case "dm-including":
                 return people.is_valid_user_ids(term.operand);
+            case "reaction":
+                return emoji.emojis_by_name.has(term.operand);
             case "search":
             case "":
                 return true;
@@ -801,6 +806,8 @@ export class Filter {
                 return verb + "messages in a specific channel";
             case "channels":
                 return verb + "channel type";
+            case "reaction":
+                return verb + "messages with a specific reaction";
             case "near":
                 return verb + "messages around";
 
