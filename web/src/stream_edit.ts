@@ -26,6 +26,8 @@ import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as message_fetch from "./message_fetch.ts";
+import * as message_lists from "./message_lists.ts";
 import * as narrow_state from "./narrow_state.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
@@ -718,6 +720,41 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
 
 export function initialize(): void {
     $("#main_div").on("click", ".stream_sub_unsub_button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const sub = narrow_state.stream_sub();
+        if (sub === undefined) {
+            return;
+        }
+
+        stream_settings_components.sub_or_unsub(sub);
+    });
+
+    // Handle "Load updates" button in bookend banner
+    $("#main_div").on("click", "#bookend-load-updates-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (message_lists.current === undefined) {
+            return;
+        }
+
+        const msg_list = message_lists.current;
+
+        // Reload the current narrow to fetch the latest messages
+        const anchor = message_fetch.get_backfill_anchor(msg_list.data);
+        message_fetch.load_messages_for_narrow({
+            anchor,
+            msg_list,
+            cont() {
+                msg_list.update_trailing_bookend();
+            },
+        });
+    });
+
+    // Handle "Subscribe" button in bookend banner
+    $("#main_div").on("click", "#bookend-subscribe-button", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
