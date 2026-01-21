@@ -1415,9 +1415,8 @@ export function build_person_matcher(query: string): (user: User) => boolean {
     const termlet_matchers = termlets.map((termlet) => build_termlet_matcher(termlet));
 
     return function (user: User): boolean {
-        const email = user.email.toLowerCase();
-
-        if (email.startsWith(query)) {
+        const visible_email = get_visible_email(user).toLowerCase();
+        if (visible_email.startsWith(query)) {
             return true;
         }
 
