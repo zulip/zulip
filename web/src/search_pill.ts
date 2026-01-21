@@ -380,18 +380,17 @@ export function set_search_bar_contents(
         switch (term.operator) {
             case "dm":
             case "dm-including":
-            case "sender":
-                if (term.operand !== "") {
-                    const users = term.operand.split(",").map((email) => {
-                        // This is definitely not undefined, because we just validated it
-                        // with `Filter.is_valid_search_term`.
-                        const user = people.get_by_email(email)!;
-                        return user;
-                    });
-                    append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
-                    added_pills_as_input_strings.add(input);
-                }
+            case "sender": {
+                const users = term.operand.split(",").map((email) => {
+                    // This is definitely not undefined, because we just validated it
+                    // with `Filter.is_valid_search_term`.
+                    const user = people.get_by_email(email)!;
+                    return user;
+                });
+                append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
+                added_pills_as_input_strings.add(input);
                 break;
+            }
             case "search":
                 // This isn't a pill, so we don't add it to `added_pills_as_input_strings`
                 search_operator_strings.push(input);
