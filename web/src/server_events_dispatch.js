@@ -270,6 +270,11 @@ export function dispatch_normal_event(event) {
                 "has-reaction",
                 event.op === "add",
             );
+            message_events.update_views_filtered_on_message_property(
+                [event.message_id],
+                "reaction",
+                event.op === "add",
+            );
             break;
 
         case "realm": {
