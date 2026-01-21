@@ -841,7 +841,7 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
     return true;
 }
 
-export function validate_stream_message_address_info(sub: StreamSubscription): boolean {
+function validate_permission_to_post_messages_in_stream(sub: StreamSubscription): boolean {
     if (sub.is_archived) {
         compose_banner.show_stream_does_not_exist_error(sub.name);
         if (is_validating_compose_box) {
@@ -849,14 +849,30 @@ export function validate_stream_message_address_info(sub: StreamSubscription): b
         }
         return false;
     }
-    if (sub.subscribed) {
-        return true;
+
+    if (!sub.subscribed) {
+        compose_banner.show_stream_not_subscribed_error(sub, UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE);
+        if (is_validating_compose_box) {
+            disabled_send_tooltip_message_html = UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE;
+        }
+        return false;
     }
-    compose_banner.show_stream_not_subscribed_error(sub, UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE);
-    if (is_validating_compose_box) {
-        disabled_send_tooltip_message_html = UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE;
+
+    if (!stream_data.can_post_messages_in_stream(sub)) {
+        compose_banner.show_error_message(
+            NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE,
+            compose_banner.CLASSNAMES.no_post_permissions,
+            $("#compose_banners"),
+        );
+
+        if (is_validating_compose_box) {
+            disabled_send_tooltip_message_html = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
+            posting_policy_error_message = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
+        }
+        return false;
     }
-    return false;
+
+    return true;
 }
 
 function validate_stream_message(scheduling_message: boolean, show_banner = true): boolean {
@@ -902,17 +918,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
         return false;
     }
 
-    if (!stream_data.can_post_messages_in_stream(sub)) {
-        compose_banner.show_error_message(
-            NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE,
-            compose_banner.CLASSNAMES.no_post_permissions,
-            $banner_container,
-        );
-
-        if (is_validating_compose_box) {
-            disabled_send_tooltip_message_html = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
-            posting_policy_error_message = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
-        }
+    if (!validate_permission_to_post_messages_in_stream(sub)) {
         return false;
     }
 
@@ -937,7 +943,6 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
     );
 
     if (
-        !validate_stream_message_address_info(sub) ||
         !validate_stream_message_mentions({
             stream_id: sub.stream_id,
             $banner_container,
