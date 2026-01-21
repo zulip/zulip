@@ -5,6 +5,7 @@ import render_reminder_list from "../templates/reminder_list.hbs";
 import render_reminders_overlay from "../templates/reminders_overlay.hbs";
 
 import * as browser_history from "./browser_history.ts";
+import * as lightbox from "./lightbox.ts";
 import * as message_reminder from "./message_reminder.ts";
 import type {Reminder} from "./message_reminder.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
@@ -129,6 +130,30 @@ export function remove_reminder_id(reminder_id: number): void {
 }
 
 export function initialize(): void {
+    // Handle image clicks in reminder message content - using same selectors as lightbox.ts
+    $("body").on(
+        "click",
+        ".reminder-row .message-media-inline-image a, .reminder-row .message-media-preview-image:not(.message_inline_video) a, .reminder-row .message_inline_animated_image_still",
+        function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const $img = $(this).find<HTMLImageElement>("img");
+            if ($img.length > 0) {
+                overlays.close_overlay("reminders");
+                lightbox.handle_inline_media_element_click($img, true);
+            }
+        },
+    );
+
+    // Handle video clicks in reminder message content - using same selector as lightbox.ts
+    $("body").on("click", ".reminder-row .message_inline_video", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const $video = $(e.currentTarget).find<HTMLMediaElement>("video");
+        overlays.close_overlay("reminders");
+        lightbox.handle_inline_media_element_click($video, true);
+    });
+
     $("body").on("click", ".reminder-row .delete-overlay-message", (e) => {
         const scheduled_msg_id = $(e.currentTarget)
             .closest(".reminder-row")

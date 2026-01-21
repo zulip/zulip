@@ -410,22 +410,39 @@ export function initialize(): void {
         },
     );
 
-    $("body").on("click", "#message-history-overlay .message_edit_history_content", (e) => {
-        const $img = $(e.target).closest("img");
-        if ($img.length > 0) {
+    // Handle clicks on image links (anchor tags wrapping images) to prevent download
+    $("body").on(
+        "click",
+        "#message-history-overlay .message_edit_history_content a:has(img)",
+        (e) => {
             e.stopPropagation();
             e.preventDefault();
+            const $img = $(e.currentTarget).find<HTMLImageElement>("img");
+            if ($img.length > 0) {
+                overlays.close_overlay("message_edit_history");
+                lightbox.handle_inline_media_element_click($img, true);
+            }
+        },
+    );
+
+    // Handle clicks on images (for images not wrapped in anchor tags)
+    $("body").on("click", "#message-history-overlay .message_edit_history_content img", (e) => {
+        // Only handle if not already handled by the anchor handler
+        if ($(e.currentTarget).parent("a").length === 0) {
+            e.stopPropagation();
+            e.preventDefault();
+            const $img = $(e.currentTarget);
             overlays.close_overlay("message_edit_history");
             lightbox.handle_inline_media_element_click($img, true);
-            return;
         }
+    });
 
-        const $video = $(e.target).closest("video");
-        if ($video.length > 0) {
-            e.stopPropagation();
-            e.preventDefault();
-            overlays.close_overlay("message_edit_history");
-            lightbox.handle_inline_media_element_click($video, true);
-        }
+    // Handle video clicks
+    $("body").on("click", "#message-history-overlay .message_edit_history_content video", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const $video = $(e.currentTarget);
+        overlays.close_overlay("message_edit_history");
+        lightbox.handle_inline_media_element_click($video, true);
     });
 }
