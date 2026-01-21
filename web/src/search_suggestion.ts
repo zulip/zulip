@@ -69,6 +69,7 @@ const descriptions: Record<string, string> = {
     "has:image": "messages with images",
     "has:attachment": "messages with attachments",
     "has:reaction": "messages with reactions",
+    reaction: "messages with a specific reaction",
 };
 
 type SearchFilter =
@@ -88,7 +89,8 @@ type SearchFilter =
     | "has:link"
     | "has:image"
     | "has:attachment"
-    | "has:reaction";
+    | "has:reaction"
+    | "reaction";
 
 const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     channel: channel_incompatible_patterns,
@@ -153,7 +155,8 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     "has:link": [{operator: "has", operand: "link"}],
     "has:image": [{operator: "has", operand: "image"}],
     "has:attachment": [{operator: "has", operand: "attachment"}],
-    "has:reaction": [{operator: "has", operand: "reaction"}],
+    "has:reaction": [{operator: "has", operand: "reaction"}, {operator: "reaction"}],
+    reaction: [{operator: "has", operand: "reaction"}],
     near: [],
     // These below are not currently looked up.
     has: [],
