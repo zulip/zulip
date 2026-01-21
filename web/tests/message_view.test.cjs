@@ -661,6 +661,13 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
             "translated: You are not allowed to view messages in this private channel.",
         ),
     );
+
+    current_filter = set_filter([["reaction", "octopus"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: There are no messages with reaction octopus."),
+    );
 });
 
 run_test("show_empty_narrow_message_with_search", ({mock_template, override}) => {
