@@ -4,6 +4,8 @@ import assert from "minimalistic-assert";
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
 import * as common from "./common.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
+import * as emoji from "./emoji.ts";
+import * as emoji_frequency_data from "./emoji_frequency_data.ts";
 import {Filter} from "./filter.ts";
 import * as filter_util from "./filter_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -21,6 +23,7 @@ import type {
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as typeahead from "./typeahead.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as util from "./util.ts";
 
@@ -848,6 +851,62 @@ function get_sent_by_me_suggestions(
     return [];
 }
 
+type EmojiCandidate = {
+    name: string;
+    canonical_name: string;
+    emoji_id: string;
+};
+
+let emoji_candidates: EmojiCandidate[] | undefined;
+let emoji_candidates_source: typeof emoji.emojis_by_name | undefined;
+
+function get_reaction_suggestions(
+    last: NarrowCanonicalTermSuggestion,
+    _terms: NarrowCanonicalTerm[],
+): Suggestion[] {
+    if (last.operator !== "reaction") {
+        return [];
+    }
+
+    const query = last.operand;
+
+    // We cache the candidates to avoid rebuilding the list on every keystroke and also
+    // check the source to invalidate the cache if the underlying emoji data changes.
+    if (emoji_candidates === undefined || emoji_candidates_source !== emoji.emojis_by_name) {
+        emoji_candidates = [];
+        emoji_candidates_source = emoji.emojis_by_name;
+        for (const [name, emoji_dict] of emoji.emojis_by_name) {
+            const details = emoji.get_emoji_details_by_name(name);
+            const emoji_id = [details.reaction_type, details.emoji_code].join(",");
+            emoji_candidates.push({name, canonical_name: name, emoji_id});
+            for (const alias of emoji_dict.aliases) {
+                emoji_candidates.push({name: alias, canonical_name: name, emoji_id});
+            }
+        }
+    }
+
+    const {matches} = typeahead.triage(query, emoji_candidates, (x) => x.name);
+    const emoji_scores = emoji_frequency_data.get_emoji_scores();
+
+    const seen_canonicals = new Set<string>();
+    const scored_matches: {name: string; score: number}[] = [];
+    for (const {canonical_name, emoji_id} of matches) {
+        if (seen_canonicals.has(canonical_name)) {
+            continue;
+        }
+        seen_canonicals.add(canonical_name);
+        scored_matches.push({name: canonical_name, score: emoji_scores.get(emoji_id) ?? 0});
+    }
+
+    scored_matches.sort((a, b) => b.score - a.score);
+
+    return scored_matches
+        .slice(0, max_num_of_search_results)
+        .map(({name}) =>
+            format_as_suggestion([{operator: "reaction", operand: name, negated: last.negated}]),
+        );
+}
+
 function get_operator_suggestions(
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
@@ -881,6 +940,7 @@ function get_operator_suggestions(
             "sender",
             "near",
             "mentions",
+            "reaction",
         ];
         legacy_operator_choices = ["from", "pm-with", "streams", "stream"];
     }
@@ -1196,6 +1256,7 @@ export let get_suggestions = function (
         get_people("mentions"),
         get_topic_suggestions,
         get_has_filter_suggestions,
+        get_reaction_suggestions,
     ];
 
     if (page_params.is_spectator) {

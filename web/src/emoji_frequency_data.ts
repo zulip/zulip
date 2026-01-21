@@ -123,6 +123,15 @@ function get_scored_emoji_for_usage(
     };
 }
 
+export function get_emoji_scores(): Map<string, number> {
+    const others_count_for_all_emoji = get_other_users_total_emoji_usage();
+    const scores = new Map<string, number>();
+    for (const [emoji_id, usage] of reaction_data) {
+        scores.set(emoji_id, get_scored_emoji_for_usage(usage, others_count_for_all_emoji).score);
+    }
+    return scores;
+}
+
 export function preferred_emoji_list(): typeahead.EmojiItem[] {
     const others_count_for_all_emoji = get_other_users_total_emoji_usage();
     const scored_emojis: ScoredEmoji[] = [...reaction_data.values()].map((emoji_usage) =>
