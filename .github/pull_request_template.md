@@ -4,9 +4,8 @@ Fixes: <!-- Issue link, or clear description.-->
 
 **How changes were tested:**
 
-<!-- If the PR makes UI changes, always include one or more still screenshots to demonstrate your changes. If it seems helpful, add a screen capture of the new functionality as well.
-
-Tooling tips: https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html
+<!-- If the PR makes UI changes, you must include screenshots.
+Detailed guide: https://zulip.readthedocs.io/en/latest/contributing/presenting-visual-changes.html
 -->
 
 **Screenshots and screen captures:**
@@ -18,7 +17,7 @@ Tooling tips: https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gi
 https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code -->
 
 <!-- Once you create the PR, check off all the steps below that you have completed.
-If any of these steps are not relevant or you have not completed, leave them unchecked.-->
+If any of these steps are not relevant or not completed, leave them unchecked.-->
 
 - [ ] [Self-reviewed](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code) the changes for clarity and maintainability
       (variable names, code reuse, readability, etc.).
