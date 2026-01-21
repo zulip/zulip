@@ -2081,3 +2081,64 @@ textarea.new_message_textarea {
         overflow: hidden !important;
     }
 }
+
+/*
+ * This implementation uses a CSS Grid trick to allow the textarea to grow
+ * automatically with content, without requiring JavaScript layout calculations.
+ *
+ * The container is a grid with one cell. Both the textarea and a hidden ::after
+ * pseudo-element (which replicates the text) occupy this same cell.
+ * The ::after element grows with the text, pushing the container height open,
+ * and the textarea fills that space.
+ *
+ * Adapted from: https://css-tricks.com/the-cleanest-trick-for-autogrowing-textareas/
+ */
+
+/* Autosize Grid Setup */
+.autosize-container {
+    display: grid;
+    min-width: 0;
+    /* This ensures both the ghost and textarea share the exact same source */
+    font-family: "Source Sans 3 VF", sans-serif;
+    font-size: 1em; /* Base size */
+    line-height: var(--base-line-height-unitless, 1.2);
+}
+
+/* The Replica (Hidden) */
+.autosize-container::after {
+    content: attr(data-replicated-value) " ";
+    white-space: pre-wrap;
+    visibility: hidden;
+    overflow-wrap: anywhere;
+    box-sizing: border-box;
+    grid-area: 1 / 1 / 2 / 2;
+    font: inherit;
+    line-height: inherit;
+}
+
+.autosize-container:has(#compose-textarea)::after {
+    /* Specific Dimensions for the Main Compose Box */
+    margin-right: calc(var(--composebox-buttons-width) * -1);
+    padding: 5px var(--composebox-buttons-width) 0 5px;
+    max-height: var(--ghost-max-height, 22em);
+    overflow: hidden;
+}
+
+/* The Textarea (Visible) */
+.autosize-container > #compose-textarea {
+    resize: none;
+    overflow: hidden;
+    height: 100% !important;
+    max-height: 100%;
+    box-sizing: border-box;
+    grid-area: 1 / 1 / 2 / 2;
+    overflow-y: auto;
+
+    /* Now we can not edit textarea font styles dynamically, we can edit that of autosize-container so that those values propagates to both textarea and replica */
+    font-family: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+
+    /* Ensure padding matches the ghost exactly */
+    padding: 5px var(--composebox-buttons-width) 0 5px;
+}

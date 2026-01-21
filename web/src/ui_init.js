@@ -16,6 +16,7 @@ import * as add_stream_options_popover from "./add_stream_options_popover.ts";
 import * as alert_words from "./alert_words.ts";
 import {all_messages_data} from "./all_messages_data.ts";
 import * as audible_notifications from "./audible_notifications.ts";
+import * as autosize from "./autosize.ts";
 import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
@@ -230,6 +231,7 @@ function initialize_compose_box() {
             }),
         ),
     );
+    autosize.watch($("textarea#compose-textarea"));
     $(`.enter_sends_${user_settings.enter_sends}`).show();
     common.adjust_mac_kbd_tags(".open_enter_sends_dialog kbd");
 }

@@ -1,7 +1,5 @@
 /* Compose box module responsible for manipulating the compose box
    textarea correctly. */
-
-import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -13,6 +11,7 @@ import {
 } from "text-field-edit";
 import * as z from "zod/mini";
 
+import * as autosize from "./autosize.ts";
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as channel from "./channel.ts";
@@ -113,7 +112,7 @@ export let autosize_textarea = ($textarea: JQuery<HTMLTextAreaElement>): void =>
     // Since this supports both compose and file upload, one must pass
     // in the text area to autosize.
     if (!is_expanded()) {
-        autosize.update($textarea);
+        autosize.manual_resize($textarea);
     }
 };
 
@@ -505,10 +504,6 @@ export function rewire_set_compose_box_top(value: typeof set_compose_box_top): v
 export function make_compose_box_full_size(): void {
     set_expanded_status(true);
 
-    // The autosize should be destroyed for the full size compose
-    // box else it will interfere and shrink its size accordingly.
-    autosize.destroy($("textarea#compose-textarea"));
-
     $("#compose").removeClass("compose-intermediate");
     $("#compose").removeClass("automatically-expanded");
     $("#compose").addClass("compose-fullscreen");
@@ -522,10 +517,6 @@ export function make_compose_box_full_size(): void {
 
 export function make_compose_box_intermediate_size(): void {
     set_expanded_status(true, false);
-
-    // The autosize should be destroyed for the intermediate size compose
-    // box else it will interfere and shrink its size accordingly.
-    autosize.destroy($("textarea#compose-textarea"));
 
     $("#compose").removeClass("compose-fullscreen");
     $("#compose").removeClass("automatically-expanded");
@@ -549,7 +540,7 @@ export function make_compose_box_original_size(): void {
 
     // Again initialise the compose textarea as it was destroyed
     // when compose box was made full screen
-    autosize($("textarea#compose-textarea"));
+    autosize.manual_resize($("textarea#compose-textarea"));
 
     $("textarea#compose-textarea").trigger("focus");
 }

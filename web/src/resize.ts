@@ -1,7 +1,7 @@
-import autosize from "autosize";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import * as autosize from "./autosize.ts";
 import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
@@ -76,14 +76,15 @@ export function watch_manual_resize_for_element(
     box.addEventListener("mousedown", box_handler);
 
     // If the user resizes the textarea manually, we use the
-    // callback to stop autosize from adjusting the height.
-    // It will be re-enabled when this component is next opened.
+    // callback to handle the layout update.
     const body_handler = function (): void {
         if (mousedown) {
             mousedown = false;
             if (height !== box.clientHeight) {
                 height = box.clientHeight;
-                autosize.destroy($(box)).height(height + "px");
+
+                $(box).height(height + "px"); // Explicitly set the new height
+
                 if (resize_callback) {
                     resize_callback(height);
                 }
@@ -118,17 +119,16 @@ export function reset_compose_message_max_height(bottom_whitespace_height?: numb
     );
     const compose_non_textarea_height = compose_height - compose_textarea_height;
 
-    // We ensure that the last message is not overlapped by compose box.
-    $("textarea#compose-textarea").css(
-        "max-height",
-        bottom_whitespace_height - compose_non_textarea_height,
-    );
+    $("textarea#compose-textarea")
+        .parent()
+        .css("--ghost-max-height", `${bottom_whitespace_height - compose_non_textarea_height}px`);
+
     $("#preview_message_area").css(
         "max-height",
         bottom_whitespace_height - compose_non_textarea_height,
     );
     $("#scroll-to-bottom-button-container").css("bottom", compose_height);
-    compose_ui.autosize_textarea($("#compose-textarea"));
+    autosize.manual_resize($("textarea#compose-textarea"));
 }
 
 export function resize_bottom_whitespace(): void {
