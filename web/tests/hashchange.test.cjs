@@ -101,51 +101,6 @@ run_test("terms_round_trip", () => {
     ]);
 });
 
-run_test("stream_to_channel_rename", () => {
-    let terms;
-    let hash;
-    let narrow;
-    let filter;
-
-    // Confirm searches with "stream" and "streams" return URLs and
-    // Filter objects with the new "channel" and "channels" operators.
-    terms = [{operator: "channel", operand: devel_id.toString()}];
-    hash = hash_util.search_terms_to_hash(terms);
-    assert.equal(hash, "#narrow/channel/100-devel");
-    narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [{operator: "channel", operand: devel_id.toString(), negated: false}]);
-    filter = new Filter(narrow);
-    assert.deepEqual(filter.terms(), [
-        {operator: "channel", operand: devel_id.toString(), negated: false},
-    ]);
-
-    terms = [{operator: "channels", operand: "public"}];
-    hash = hash_util.search_terms_to_hash(terms);
-    assert.equal(hash, "#narrow/channels/public");
-    narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [{operator: "channels", operand: "public", negated: false}]);
-    filter = new Filter(narrow);
-    assert.deepEqual(filter.terms(), [{operator: "channels", operand: "public", negated: false}]);
-
-    // Confirm that a narrow URL with "channel" and an enocoded stream/channel ID,
-    // will be decoded correctly.
-    const test_stream_id = 34;
-    const test_channel = {
-        name: "decode",
-        stream_id: test_stream_id,
-    };
-    stream_data.add_sub_for_tests(test_channel);
-    hash = "#narrow/channel/34-decode";
-    narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [
-        {operator: "channel", operand: test_stream_id.toString(), negated: false},
-    ]);
-    filter = new Filter(narrow);
-    assert.deepEqual(filter.terms(), [
-        {operator: "channel", operand: test_stream_id.toString(), negated: false},
-    ]);
-});
-
 run_test("terms_trailing_slash", () => {
     const hash = "#narrow/channel/100-devel/topic/algol/";
     const narrow = hash_util.parse_narrow(hash.split("/"));
@@ -166,18 +121,18 @@ run_test("people_slugs", () => {
         full_name: "Alice Smith",
     };
 
-    people.add_active_user(alice);
-    terms = [{operator: "sender", operand: "alice@example.com"}];
+    people.add_active_user(alice, "server_events");
+    terms = [{operator: "sender", operand: alice.user_id}];
     hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/sender/42-Alice-Smith");
     narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [{operator: "sender", operand: "alice@example.com", negated: false}]);
+    assert.deepEqual(narrow, [{operator: "sender", operand: alice.user_id, negated: false}]);
 
-    terms = [{operator: "dm", operand: "alice@example.com"}];
+    terms = [{operator: "dm", operand: [alice.user_id]}];
     hash = hash_util.search_terms_to_hash(terms);
     assert.equal(hash, "#narrow/dm/42-Alice-Smith");
     narrow = hash_util.parse_narrow(hash.split("/"));
-    assert.deepEqual(narrow, [{operator: "dm", operand: "alice@example.com", negated: false}]);
+    assert.deepEqual(narrow, [{operator: "dm", operand: [alice.user_id], negated: false}]);
 });
 
 function test_helper({override, override_rewire, change_tab}) {

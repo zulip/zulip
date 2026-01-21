@@ -52,13 +52,13 @@ export function compute_narrow_title(filter?: Filter): string {
     }
 
     if (filter.has_operator("dm")) {
-        const emails = filter.terms_with_operator("dm")[0]!.operand;
-        const user_ids = people.reply_to_to_user_ids_string(emails);
+        const user_ids = filter.terms_with_operator("dm")[0]!.operand;
 
-        if (user_ids !== undefined) {
-            return people.format_recipients(user_ids, "long");
+        if (people.is_valid_user_ids(user_ids)) {
+            return people.format_recipients(String(user_ids), "long");
         }
-        if (emails.includes(",")) {
+
+        if (user_ids.length > 1) {
             return $t({defaultMessage: "Invalid users"});
         }
         return $t({defaultMessage: "Invalid user"});

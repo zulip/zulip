@@ -702,12 +702,12 @@ export async function initialize_everything(state_data) {
         }
     });
     activity_ui.initialize({
-        narrow_by_email(email) {
+        narrow_by_user_id(user_id) {
             message_view.show(
                 [
                     {
                         operator: "dm",
-                        operand: email,
+                        operand: [user_id],
                     },
                 ],
                 {trigger: "sidebar"},
