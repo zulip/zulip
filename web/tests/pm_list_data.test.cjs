@@ -193,6 +193,19 @@ test("get_conversations", ({override}) => {
         pm_data,
         expected_data.filter((item) => item.recipients === "Me Myself"),
     );
+
+    // Word-prefix matching works in any order for DMs
+    pm_data = pm_list_data.get_conversations("Al Bo");
+    assert.deepEqual(
+        pm_data,
+        expected_data.filter((item) => item.recipients === "Alice, Bob"),
+    );
+
+    pm_data = pm_list_data.get_conversations("Bo Al");
+    assert.deepEqual(
+        pm_data,
+        expected_data.filter((item) => item.recipients === "Alice, Bob"),
+    );
 });
 
 test("get_conversations bot", ({override}) => {

@@ -8,6 +8,7 @@ import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as topic_list_data from "./topic_list_data.ts";
+import * as typeahead from "./typeahead.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -148,16 +149,20 @@ export function sort_groups(
         util.prefix_match({value: NORMAL_SECTION_TITLE_WITH_OTHER_FOLDERS, search_term});
 
     const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
-    // Use -, _, : and / as word separators apart from the default space character
-    const word_separator_regex = /[\s/:_-]/;
-    let matching_stream_ids = show_all_channels
-        ? all_subscribed_stream_ids
-        : util.filter_by_word_prefix_match(
-              all_subscribed_stream_ids,
-              search_term,
-              stream_id_to_name,
-              word_separator_regex,
-          );
+
+    let matching_stream_ids: number[];
+    if (show_all_channels) {
+        matching_stream_ids = all_subscribed_stream_ids;
+    } else if (search_term === "") {
+        matching_stream_ids = all_subscribed_stream_ids;
+    } else {
+        matching_stream_ids = all_subscribed_stream_ids.filter((stream_id) => {
+            const stream_name = stream_id_to_name(stream_id);
+            // Normalize separators for word-boundary matching
+            const normalized_name = stream_name.replace(/[-_/:]/g, " ");
+            return typeahead.query_matches_string_in_any_order(search_term, normalized_name, " ");
+        });
+    }
 
     const current_channel_id = narrow_state.stream_id(narrow_state.filter(), true);
     const current_topic_name = narrow_state.topic()?.toLowerCase();

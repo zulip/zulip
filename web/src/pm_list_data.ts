@@ -2,6 +2,7 @@ import * as buddy_data from "./buddy_data.ts";
 import * as hash_util from "./hash_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
+import * as typeahead from "./typeahead.ts";
 import * as pm_conversations from "./pm_conversations.ts";
 import * as unread from "./unread.ts";
 import * as user_status from "./user_status.ts";
@@ -70,13 +71,15 @@ export function get_conversations(search_string = ""): DisplayObject[] {
 
         const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
         const users = people.get_users_from_ids(user_ids);
-        if (!people.dm_matches_search_string(users, search_string)) {
-            // Skip adding the conversation to the display_objects array if it does
-            // not match the search_term.
-            continue;
-        }
-
         const recipients_string = people.format_recipients(user_ids_string, "narrow");
+
+        if (search_string !== "") {
+            // Match against the full recipients string, allowing words in any order.
+            const normalized_recipients = recipients_string.replace(/[,]/g, " ");
+            if (!typeahead.query_matches_string_in_any_order(search_string, normalized_recipients, " ")) {
+                continue;
+            }
+        }
 
         const num_unread = unread.num_unread_for_user_ids_string(user_ids_string);
         const has_unread_mention =

@@ -1407,9 +1407,6 @@ export function build_termlet_matcher(termlet: string): (user: User) => boolean 
 export function build_person_matcher(query: string): (user: User) => boolean {
     query = query.trim();
 
-    const termlets = query.toLowerCase().split(/\s+/);
-    const termlet_matchers = termlets.map((termlet) => build_termlet_matcher(termlet));
-
     return function (user: User): boolean {
         const email = user.email.toLowerCase();
 
@@ -1417,7 +1414,8 @@ export function build_person_matcher(query: string): (user: User) => boolean {
             return true;
         }
 
-        return termlet_matchers.every((matcher) => matcher(user));
+        // Use any-order word-prefix matching for full names
+        return typeahead.query_matches_string_in_any_order(query, user.full_name, " ");
     };
 }
 

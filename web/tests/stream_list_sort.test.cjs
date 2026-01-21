@@ -285,6 +285,11 @@ test("basics", ({override}) => {
     assert.deepEqual(sorted_sections[1].inactive_streams, []);
     assert.deepEqual(sorted_sections[1].default_visible_streams, [fast_tortoise.stream_id]);
 
+    // Word-prefix matching works in any order for streams
+    sorted_sections = sort_groups("tortoise fast").sections;
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [fast_tortoise.stream_id]);
+
     // Test searching part of stream name with non space word separators
     sorted_sections = sort_groups("hyphen").sections;
     assert.deepEqual(sorted_sections.length, 2);

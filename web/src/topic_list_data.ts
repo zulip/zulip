@@ -4,6 +4,7 @@ import * as narrow_state from "./narrow_state.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
+import * as typeahead from "./typeahead.ts";
 import * as unread from "./unread.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -163,14 +164,20 @@ export function filter_topics_by_search_term(
         return topic_names;
     }
 
-    const word_separator_regex = /[\s/:_-]/; // Use -, _, :, / as word separators in addition to spaces.
     const empty_string_topic_display_name = util.get_final_topic_display_name("");
-    topic_names = util.filter_by_word_prefix_match(
-        topic_names,
-        search_term,
-        (topic) => (topic === "" ? empty_string_topic_display_name : topic),
-        word_separator_regex,
-    );
+
+    if (search_term !== "") {
+        topic_names = topic_names.filter((topic) => {
+            const display_name = topic === "" ? empty_string_topic_display_name : topic;
+            // Normalize separators: replace -, _, :, / with spaces for word boundary matching
+            const normalized_name = display_name.replace(/[-_/:]/g, " ");
+            return typeahead.query_matches_string_in_order(
+                search_term,
+                normalized_name,
+                " ",
+            );
+        });
+    }
 
     if (topics_state === "is:resolved") {
         topic_names = topic_names.filter((name) => resolved_topic.is_resolved(name));
