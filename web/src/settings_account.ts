@@ -130,6 +130,7 @@ function upload_avatar(file: File): void {
                 $("#user-avatar-source").show();
             }
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+            dialog_widget.hide_dialog_spinner();
         },
     });
 }
