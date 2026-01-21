@@ -2226,7 +2226,10 @@ def send_user_profile_update_notification(
     acting_user: UserProfile | None,
     changes: list[UserProfileChangeDict],
 ) -> None:
-    if not user_profile.is_active or user_profile.is_bot:
+    if not user_profile.is_active:
+        return
+
+    if user_profile.is_bot:
         return
 
     if acting_user is not None and acting_user.id == user_profile.id:
