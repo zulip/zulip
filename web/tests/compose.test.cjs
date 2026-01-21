@@ -41,7 +41,9 @@ const compose_fade = mock_esm("../src/compose_fade");
 const compose_notifications = mock_esm("../src/compose_notifications");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
-const markdown = mock_esm("../src/markdown");
+const markdown = mock_esm("../src/markdown", {
+    get_first_disallowed_group_mention: () => null,
+});
 const narrow_state = mock_esm("../src/narrow_state");
 const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
@@ -483,7 +485,7 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     compose.handle_enter_key_with_preview_open();
 });
 
-test_ui("finish", ({override, override_rewire}) => {
+test_ui("finish", ({override, override_rewire, mock_template}) => {
     mock_banners();
     disable_document_triggers(override);
 
@@ -523,7 +525,35 @@ test_ui("finish", ({override, override_rewire}) => {
         assert.ok(show_button_spinner_called);
     })();
 
+    (function test_disallowed_group_mention() {
+        override(current_user, "user_id", new_user.user_id);
+        compose_state.set_stream_id(social.stream_id);
+        fake_compose_box.set_topic_val("lunch");
+        fake_compose_box.set_textarea_val("@*admins*");
+        compose_state.set_message_type("stream");
+
+        override_rewire(compose_ui, "compose_spinner_visible", false);
+
+        let disallowed_group_banner_shown = false;
+        mock_template("compose_banner/user_group_mention_not_allowed_error.hbs", false, (data) => {
+            assert.equal(data.group_name, "admins");
+            disallowed_group_banner_shown = true;
+            return "<banner-stub>";
+        });
+
+        // Mock markdown to return a disallowed group
+        override(markdown, "get_first_disallowed_group_mention", () => "admins");
+
+        const res = compose.finish();
+        assert.equal(res, false);
+        assert.ok(disallowed_group_banner_shown);
+        assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
+    })();
+
     (function test_when_compose_validation_succeed() {
+        // Reset check to pass validation
+        override(markdown, "get_first_disallowed_group_mention", () => null);
+
         // Testing successfully sending of a message.
         fake_compose_box.show_message_preview();
         fake_compose_box.set_textarea_val("default message");

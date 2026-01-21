@@ -1,0 +1,8 @@
+{{#> compose_banner . }}
+    <p class="banner_message">
+        {{#tr}}
+        You do not have permission to mention <z-highlight>@{group_name}</z-highlight>.
+        {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+        {{/tr}}
+    </p>
+{{/compose_banner}}
