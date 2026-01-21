@@ -21,6 +21,9 @@ const people = zrequire("people");
 const search = zrequire("search_suggestion");
 const {set_current_user, set_realm} = zrequire("state_data");
 
+const emoji = zrequire("emoji");
+const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
+
 const current_user = {};
 set_current_user(current_user);
 const realm = make_realm();
@@ -818,6 +821,49 @@ test("topic_suggestions", ({override}) => {
         "channel:6 topic:tower",
     ];
     assert.deepEqual(suggestions, expected);
+});
+
+test("reaction_suggestions", () => {
+    const emoji_frequency_data = zrequire("emoji_frequency_data");
+    emoji.initialize({realm_emoji: {}, emoji_codes});
+
+    const octopus_code = emoji.get_emoji_details_by_name("octopus").emoji_code;
+    const zulip_code = emoji.get_emoji_details_by_name("zulip").emoji_code;
+
+    emoji_frequency_data.reaction_data.set(`unicode_emoji,${octopus_code}`, {
+        score: 10,
+        emoji_code: octopus_code,
+        emoji_type: "unicode_emoji",
+        message_ids: new Set(),
+        current_user_reacted_message_ids: new Set(),
+    });
+    emoji_frequency_data.reaction_data.set(`zulip_extra_emoji,${zulip_code}`, {
+        score: 5,
+        emoji_code: zulip_code,
+        emoji_type: "zulip_extra_emoji",
+        message_ids: new Set(),
+        current_user_reacted_message_ids: new Set(),
+    });
+
+    // Test sorting by score
+    let query = "reaction:";
+    let suggestions = get_suggestions(query);
+    // Verify octopus comes before zulip (higher score)
+    assert.ok(suggestions.indexOf("reaction:octopus") < suggestions.indexOf("reaction:zulip"));
+    // Verify zulip comes before tada (tada has default score 0)
+    assert.ok(suggestions.indexOf("reaction:zulip") < suggestions.indexOf("reaction:atm"));
+
+    query = "reaction:octo";
+    suggestions = get_suggestions(query);
+    let expected = ["reaction:octopus"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "reaction:tad";
+    suggestions = get_suggestions(query);
+    expected = ["reaction:tada"];
+    assert.deepEqual(suggestions, expected);
+
+    emoji_frequency_data.reaction_data.clear();
 });
 
 test("topic_suggestions (limits)", () => {
