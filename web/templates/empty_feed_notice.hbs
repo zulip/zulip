@@ -13,6 +13,21 @@
             {{/each}}
         </div>
         {{/if}}
+    {{else if reaction_emoji}}
+        <h4 class="empty-feed-notice-title">
+            {{#tr}}
+                There are no messages with <z-emoji></z-emoji> reaction.
+                {{#*inline "z-emoji"}}
+                    {{~#if reaction_emoji.emoji_alt_code~}}
+                        :{{reaction_emoji.emoji_name}}:
+                        {{~else if reaction_emoji.is_realm_emoji~}}
+                        <img src="{{reaction_emoji.url}}" class="emoji" alt="{{reaction_emoji.emoji_name}}" />
+                        {{~else~}}
+                        <span class="emoji emoji-{{reaction_emoji.emoji_code}}" role="img" aria-label="{{reaction_emoji.emoji_name}}">:{{reaction_emoji.emoji_name}}:</span>
+                    {{~/if~}}
+                {{/inline}}
+            {{/tr}}
+        </h4>
     {{else if notice_html}}
         <div class="empty-feed-notice-description">
             {{{ notice_html }}}
