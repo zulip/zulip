@@ -23,6 +23,9 @@ const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const muted_users = zrequire("muted_users");
 const state_data = zrequire("state_data");
+const emoji = zrequire("emoji");
+const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
+emoji.initialize({realm_emoji: {}, emoji_codes});
 
 const realm = make_realm();
 set_realm(realm);
@@ -1796,6 +1799,14 @@ test("describe", ({mock_template, override}) => {
 
     narrow = [{operator: "is", operand: "alerted"}];
     string = "alerted messages";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    const octopus_code = emoji.get_emoji_details_by_name("octopus").emoji_code;
+    narrow = [{operator: "reaction", operand: "octopus"}];
+    string =
+        "messages with" +
+        `&#32;<span class="emoji emoji-${octopus_code}" role="img" aria-label="octopus"></span>` +
+        "&#32;reaction";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "is", operand: "resolved"}];
