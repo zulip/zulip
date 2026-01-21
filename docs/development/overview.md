@@ -12,7 +12,7 @@ internet connection throughout the entire installation processes.** You can
 [configure a proxy][configure-proxy] if you need one.
 
 ## Recommended setup
- 
+
 **For first-time contributors, we recommend using the
 [Vagrant development environment][install-vagrant]** on
 macOS and Linux based OS and [WSL 2 setup][install-via-wsl] on Windows.
