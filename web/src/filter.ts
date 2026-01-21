@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import render_search_description from "../templates/search_description.hbs";
 
+import * as emoji from "./emoji.ts";
 import * as filter_util from "./filter_util.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
@@ -64,6 +65,11 @@ type Part =
           prefix_for_operator: string;
           operand: string;
           is_empty_string_topic?: boolean;
+      }
+    | {
+          type: "reaction";
+          verb: string;
+          emoji_details: emoji.EmojiRenderingDetails;
       };
 
 const channels_operands = new Set(["public", "web-public"]);
@@ -814,6 +820,15 @@ export class Filter {
             }
             const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
             if (prefix_for_operator !== "") {
+                if (term.operator === "reaction" && term.operand !== "") {
+                    const verb = term.negated ? "exclude " : "";
+                    const emoji_details = emoji.get_emoji_details_by_name(term.operand);
+                    return {
+                        type: "reaction",
+                        verb,
+                        emoji_details,
+                    };
+                }
                 if (term.operator === "channel") {
                     const stream = stream_data.get_sub_by_id_string(term.operand);
                     const verb = term.negated ? "exclude " : "";
