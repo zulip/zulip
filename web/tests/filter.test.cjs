@@ -609,6 +609,20 @@ test("basics", () => {
     assert.ok(!filter.is_channel_view());
     assert.ok(filter.has_exactly_channel_topic_operators());
 
+    terms = [{operator: "reaction", operand: "octopus"}];
+    filter = new Filter(terms);
+    assert.ok(!filter.is_keyword_search());
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.contains_no_partial_conversations());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.allow_use_first_unread_when_narrowing());
+    assert.ok(!filter.includes_full_stream_history());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.is_channel_view());
+    assert.ok(!filter.has_exactly_channel_topic_operators());
+
     terms = [
         {operator: "channel", operand: "channel_name"},
         {operator: "channels", operand: "public"},
@@ -1196,6 +1210,14 @@ test("predicate_basics", ({override}) => {
     predicate = get_predicate([["is", "mentioned"]]);
     assert.ok(predicate({mentioned: true}));
     assert.ok(!predicate({mentioned: false}));
+
+    predicate = get_predicate([["reaction", "octopus"]]);
+    assert.ok(
+        predicate({
+            clean_reactions: new Map([["octopus", {emoji_name: "octopus"}]]),
+        }),
+    );
+    assert.ok(!predicate({clean_reactions: new Map()}));
 
     predicate = get_predicate([["in", "all"]]);
     assert.ok(predicate({}));

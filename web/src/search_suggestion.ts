@@ -59,6 +59,7 @@ const descriptions: Record<string, string> = {
     "has:image": "messages with images",
     "has:attachment": "messages with attachments",
     "has:reaction": "messages with reactions",
+    reaction: "messages with a specific reaction",
 };
 
 const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[]>> &
@@ -75,7 +76,8 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
         | "has:link"
         | "has:image"
         | "has:attachment"
-        | "has:reaction",
+        | "has:reaction"
+        | "reaction",
         TermPattern[]
     > = {
     channel: channel_incompatible_patterns,
@@ -140,7 +142,8 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
     "has:link": [{operator: "has", operand: "link"}],
     "has:image": [{operator: "has", operand: "image"}],
     "has:attachment": [{operator: "has", operand: "attachment"}],
-    "has:reaction": [{operator: "has", operand: "reaction"}],
+    "has:reaction": [{operator: "has", operand: "reaction"}, {operator: "reaction"}],
+    reaction: [{operator: "has", operand: "reaction"}],
 };
 
 // TODO: We have stripped suggestion of all other attributes, we should now
