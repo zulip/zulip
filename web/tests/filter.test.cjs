@@ -2398,6 +2398,7 @@ test("navbar_helpers", ({override}) => {
     const in_all = [{operator: "in", operand: "all"}];
     const is_starred = [{operator: "is", operand: "starred"}];
     const is_dm = [{operator: "is", operand: "dm"}];
+    const not_is_dm = [{operator: "is", operand: "dm", negated: true}];
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
     const is_resolved = [{operator: "is", operand: "resolved"}];
     const is_followed = [{operator: "is", operand: "followed"}];
@@ -2527,6 +2528,13 @@ test("navbar_helpers", ({override}) => {
             zulip_icon: "user",
             title: "translated: Direct message feed",
             redirect_url_with_search: "/#narrow/is/dm",
+        },
+        {
+            terms: not_is_dm,
+            is_common_narrow: true,
+            icon: undefined,
+            title: "translated: Channel messages",
+            redirect_url_with_search: "/#narrow/-is/dm",
         },
         {
             terms: is_mentioned,

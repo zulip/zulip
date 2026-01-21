@@ -599,6 +599,7 @@ export class Filter {
             "is-alerted",
             "is-mentioned",
             "is-dm",
+            "not-is-dm",
             "is-starred",
             "is-unread",
             "is-resolved",
@@ -1260,6 +1261,8 @@ export class Filter {
                 }
                 case "is-dm":
                     return "/#narrow/is/dm";
+                case "not-is-dm":
+                    return "/#narrow/-is/dm";
                 case "is-starred":
                     return "/#narrow/is/starred";
                 case "is-mentioned":
@@ -1462,6 +1465,8 @@ export class Filter {
                     return $t({defaultMessage: "Mentions"});
                 case "is-dm":
                     return $t({defaultMessage: "Direct message feed"});
+                case "not-is-dm":
+                    return $t({defaultMessage: "Channel messages"});
                 case "is-resolved":
                     return $t({defaultMessage: "Resolved topics"});
                 case "is-followed":
