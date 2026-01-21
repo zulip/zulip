@@ -1094,8 +1094,7 @@ test("get_first_disallowed_group_mention", () => {
     };
     markdown.initialize(helpers);
 
-    console.log("Initializing user_groups");
-    // Mock user_groups data
+    // Set up mock user_groups data
     user_groups.init();
 
     const allowed_group = {
@@ -1128,42 +1127,37 @@ test("get_first_disallowed_group_mention", () => {
     };
     user_groups.add(admins_group);
 
-    // Override is_user_in_setting_group check? No, we can rely on real logic if we set it up right.
-    // user_groups.is_user_in_setting_group uses people.ts or user_groups.ts internal logic.
-    // Checking internal logic of is_user_in_setting_group.
-    // It checks if user_id is in the group 'group_id' (which is can_mention_group).
+    // User 10 is in 'allowed' group, but not in 'admins' (group 3).
+    // So mentioning 'allowed' should succeed, but 'disallowed' (requires admins) should fail.
 
-    // For 'allowed': can_mention_group is 1 (allowed). User 10 IS in 'allowed'. So it should be allowed.
-    // For 'disallowed': can_mention_group is 3 (admins). User 10 IS NOT in 'admins'. So it should be disallowed.
-
-    // Test Allowed Group
+    // Test: Allowed group returns null
     assert.equal(markdown.get_first_disallowed_group_mention("@*allowed*"), null);
 
-    // Test Disallowed Group
+    // Test: Disallowed group returns the group name
     assert.equal(markdown.get_first_disallowed_group_mention("@*disallowed*"), "disallowed");
 
-    // Test Mixed (should return first disallowed)
+    // Test: Mixed content returns first disallowed group
     assert.equal(
         markdown.get_first_disallowed_group_mention("@*allowed* @*disallowed*"),
         "disallowed",
     );
 
-    // Test None
+    // Test: No mentions returns null
     assert.equal(markdown.get_first_disallowed_group_mention("hello world"), null);
 
-    // Test Unknown Group to trigger line 1091 (return undefined)
+    // Test: Unknown groups are ignored
     assert.equal(markdown.get_first_disallowed_group_mention("@*unknown*"), null);
 
-    // Test Stream Mention to trigger line 191 (noop_undefined)
+    // Test: Stream mentions don't affect group mention detection
     assert.equal(markdown.get_first_disallowed_group_mention("#**stream**"), null);
 
-    // Test Short Circuit to trigger line 196 (found || silently)
+    // Test: Short-circuits after finding first disallowed mention
     assert.equal(
         markdown.get_first_disallowed_group_mention("@*disallowed* @*allowed*"),
         "disallowed",
     );
 
-    // Test uninitialized helpers to trigger line 185
+    // Test: Uninitialized helpers returns null
     markdown.initialize(undefined);
     assert.equal(markdown.get_first_disallowed_group_mention("@*disallowed*"), null);
     markdown.initialize(helpers);
