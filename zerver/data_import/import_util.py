@@ -9,9 +9,11 @@ from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from typing import Any, Protocol, TypeAlias, TypeVar
+from urllib.parse import SplitResult
 
 import orjson
 import requests
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.forms.models import model_to_dict
@@ -929,3 +931,9 @@ def get_attachment_path_and_content(
     markdown_link = get_markdown_link_for_url(link_name, attachment_url)
 
     return AttachmentLinkResult(path_id=path_id, markdown_link=markdown_link)
+
+
+def get_domain_name_for_import() -> str:
+    hostname = SplitResult("", settings.EXTERNAL_HOST, "", "", "").hostname
+    assert hostname is not None
+    return hostname
