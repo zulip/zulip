@@ -69,7 +69,10 @@ from zerver.forms import (
     RegistrationForm,
     check_subdomain_available,
 )
-from zerver.lib.demo_organizations import get_demo_organization_wordlists
+from zerver.lib.demo_organizations import (
+    get_demo_organization_wordlists,
+    schedule_demo_organization_deletion_reminder,
+)
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import (
@@ -1490,7 +1493,7 @@ def create_demo_helper(
         # placeholder text for the user's full name.
         default_user_name = _("Your name")
 
-    return do_create_user(
+    user_profile = do_create_user(
         acting_user=None,
         default_language=user_default_language,
         default_stream_groups=[],
@@ -1516,6 +1519,9 @@ def create_demo_helper(
         timezone=timezone,
         tos_version=settings.TERMS_OF_SERVICE_VERSION,
     )
+
+    schedule_demo_organization_deletion_reminder(user_profile)
+    return user_profile
 
 
 @add_google_analytics
