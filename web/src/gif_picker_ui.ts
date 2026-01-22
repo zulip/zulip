@@ -61,6 +61,7 @@ function focus_gif_at_index(index: number): void {
 }
 
 function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
+    e.stopPropagation();
     assert(e.currentTarget instanceof HTMLElement);
     const key = e.key;
     const is_alpha_numeric = /^[a-zA-Z0-9]$/i.test(key);
