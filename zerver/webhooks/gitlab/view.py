@@ -33,8 +33,10 @@ from zerver.lib.webhooks.git import (
 from zerver.models import UserProfile
 
 TOPIC_WITH_DESIGN_INFO_TEMPLATE = "{repo} / {type} {design_name}"
-DESIGN_COMMENT_MESSAGE_TEMPLATE = "{user_name} {action}{design_part}:\n{content_message}"
-DESIGN_PART_TEMPLATE = " on design [{design_name}]({design_url})"
+DESIGN_COMMENT_MESSAGE_TEMPLATE = (
+    "{user_name} {action} on design [{design_name}]({design_url}):\n{content_message}"
+)
+DESIGN_COMMENT_MESSAGE_TEMPLATE_WITHOUT_REFERENCE = "{user_name} {action}:\n{content_message}"
 
 FEATURE_FLAG_MESSAGE_TEMPLATE = "{user} {action} the feature flag [{name}]({url})."
 
@@ -292,18 +294,18 @@ def get_commented_design_event_body(payload: WildValue, include_title: bool) -> 
     comment_url, design_url, design_name = parse_design_comment(comment, repository_url)
     action = f"[commented]({comment_url})"
     content_message = CONTENT_MESSAGE_TEMPLATE.format(message=comment["note"].tame(check_string))
-
-    design_part = (
-        DESIGN_PART_TEMPLATE.format(design_name=design_name, design_url=design_url)
+    message_template = (
+        DESIGN_COMMENT_MESSAGE_TEMPLATE
         if include_title
-        else ""
+        else DESIGN_COMMENT_MESSAGE_TEMPLATE_WITHOUT_REFERENCE
     )
 
-    return DESIGN_COMMENT_MESSAGE_TEMPLATE.format(
+    return message_template.format(
         user_name=get_issue_user_name(payload),
         action=action,
+        design_name=design_name,
+        design_url=design_url,
         content_message=content_message,
-        design_part=design_part,
     )
 
 
