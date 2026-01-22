@@ -12,6 +12,8 @@ from zerver.lib.rate_limiter import (
     RateLimiterBackend,
     RedisRateLimiterBackend,
     TornadoInMemoryRateLimiterBackend,
+    readable_expiry_string_for_html,
+    readable_expiry_string_for_plaintext,
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import ratelimit_rule
@@ -339,6 +341,24 @@ class RateLimitedObjectsTest(ZulipTestCase):
                 "2001:0db8:13::8a2e:045f", domain=domain, ipv6_network_prefix=48
             ).key(),
         )
+
+
+class RateLimiterStringFormattingTest(ZulipTestCase):
+    def test_formatting_for_html(self) -> None:
+        self.assertEqual(readable_expiry_string_for_html(60), "60\xa0seconds")
+        self.assertEqual(readable_expiry_string_for_html(61), "1\xa0minute")
+        self.assertEqual(readable_expiry_string_for_html(90), "1\xa0minute")
+        self.assertEqual(readable_expiry_string_for_html(121), "2\xa0minutes")
+        self.assertEqual(readable_expiry_string_for_html(86400), "23\xa0hours, 59\xa0minutes")
+        self.assertEqual(readable_expiry_string_for_html(90000), "1\xa0day")
+
+    def test_formatting_for_plaintext(self) -> None:
+        self.assertEqual(readable_expiry_string_for_plaintext(60), "60 seconds")
+        self.assertEqual(readable_expiry_string_for_plaintext(61), "1 minute")
+        self.assertEqual(readable_expiry_string_for_plaintext(90), "1 minute")
+        self.assertEqual(readable_expiry_string_for_plaintext(121), "2 minutes")
+        self.assertEqual(readable_expiry_string_for_plaintext(86400), "23 hours, 59 minutes")
+        self.assertEqual(readable_expiry_string_for_plaintext(90000), "1 day")
 
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.

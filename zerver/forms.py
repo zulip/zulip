@@ -33,7 +33,12 @@ from zerver.lib.email_validation import (
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import get_language_list
 from zerver.lib.name_restrictions import is_reserved_subdomain
-from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip, should_rate_limit
+from zerver.lib.rate_limiter import (
+    RateLimitedObject,
+    rate_limit_request_by_ip,
+    readable_expiry_string_for_plaintext,
+    should_rate_limit,
+)
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import PreregistrationRealm, Realm, UserProfile
@@ -626,12 +631,13 @@ class OurAuthenticationForm(AuthenticationForm):
             except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
                 secs_to_freedom = int(e.secs_to_freedom)
+                retry_after_string = readable_expiry_string_for_plaintext(secs_to_freedom)
                 error_message = _(
                     "You're making too many attempts to sign in."
-                    " Try again in {seconds} seconds or contact your organization administrator"
+                    " Try again in {retry_after_string} or contact your organization administrator"
                     " for help."
                 )
-                raise ValidationError(error_message.format(seconds=secs_to_freedom))
+                raise ValidationError(error_message.format(retry_after_string=retry_after_string))
 
             if return_data.get("inactive_realm"):
                 raise AssertionError("Programming error: inactive realm in authentication form")

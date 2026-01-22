@@ -50,7 +50,11 @@ from zerver.lib.exceptions import (
     UserDeactivatedError,
 )
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.rate_limiter import RateLimitedUser, should_rate_limit
+from zerver.lib.rate_limiter import (
+    RateLimitedUser,
+    readable_expiry_string_for_plaintext,
+    should_rate_limit,
+)
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.sounds import get_available_notification_sounds
@@ -481,9 +485,10 @@ def json_change_settings(
         except RateLimitedError as e:
             assert e.secs_to_freedom is not None
             secs_to_freedom = int(e.secs_to_freedom)
+            retry_after_string = readable_expiry_string_for_plaintext(secs_to_freedom)
             raise JsonableError(
-                _("You're making too many attempts! Try again in {seconds} seconds.").format(
-                    seconds=secs_to_freedom
+                _("You're making too many attempts! Try again in {retry_after_string}.").format(
+                    retry_after_string=retry_after_string
                 ),
             )
 
