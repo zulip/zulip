@@ -780,38 +780,55 @@ class Command(ZulipBaseCommand):
 
             # Create custom profile field data
             phone_number = try_add_realm_custom_profile_field(
-                zulip_realm, "Phone number", CustomProfileField.SHORT_TEXT, hint=""
+                zulip_realm,
+                "Phone number",
+                CustomProfileField.SHORT_TEXT,
+                hint="",
+                acting_user=iago,
             )
             biography = try_add_realm_custom_profile_field(
                 zulip_realm,
                 "Biography",
                 CustomProfileField.LONG_TEXT,
                 hint="What are you known for?",
+                acting_user=iago,
             )
             favorite_food = try_add_realm_custom_profile_field(
                 zulip_realm,
                 "Favorite food",
                 CustomProfileField.SHORT_TEXT,
                 hint="Or drink, if you'd prefer",
+                acting_user=iago,
             )
             field_data: ProfileFieldData = {
                 "0": {"text": "Vim", "order": "1"},
                 "1": {"text": "Emacs", "order": "2"},
             }
             favorite_editor = try_add_realm_custom_profile_field(
-                zulip_realm, "Favorite editor", CustomProfileField.SELECT, field_data=field_data
+                zulip_realm,
+                "Favorite editor",
+                CustomProfileField.SELECT,
+                field_data=field_data,
+                acting_user=iago,
             )
             birthday = try_add_realm_custom_profile_field(
-                zulip_realm, "Birthday", CustomProfileField.DATE
+                zulip_realm,
+                "Birthday",
+                CustomProfileField.DATE,
+                acting_user=iago,
             )
             favorite_website = try_add_realm_custom_profile_field(
                 zulip_realm,
                 "Favorite website",
                 CustomProfileField.URL,
                 hint="Or your personal blog's URL",
+                acting_user=iago,
             )
             mentor = try_add_realm_custom_profile_field(
-                zulip_realm, "Mentor", CustomProfileField.USER
+                zulip_realm,
+                "Mentor",
+                CustomProfileField.USER,
+                acting_user=iago,
             )
             github_profile = try_add_realm_default_custom_profile_field(zulip_realm, "github")
             pronouns = try_add_realm_custom_profile_field(
@@ -819,6 +836,7 @@ class Command(ZulipBaseCommand):
                 "Pronouns",
                 CustomProfileField.PRONOUNS,
                 hint="What pronouns should people use to refer to you?",
+                acting_user=iago,
             )
 
             # Fill in values for Iago and Hamlet
