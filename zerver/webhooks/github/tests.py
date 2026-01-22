@@ -184,13 +184,13 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_issue_msg(self) -> None:
         expected_message = "baxterthehacker opened [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
-        self.check_webhook("issues", TOPIC_ISSUE, expected_message)
+        self.check_webhook("issues__opened", TOPIC_ISSUE, expected_message)
 
     def test_issue_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
         expected_message = "baxterthehacker opened [issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
-        self.check_webhook("issues", expected_topic_name, expected_message)
+        self.check_webhook("issues__opened", expected_topic_name, expected_message)
 
     def test_issue_assigned(self) -> None:
         expected_message = "sbansal1999 assigned sbansal1999 to [issue #7](https://github.com/sbansal1999/testing-gh/issues/7)."
@@ -447,11 +447,11 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = (
             "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         )
-        self.check_webhook("pull_request__edited", TOPIC_PR, expected_message)
+        self.check_webhook("pull_request__edited_title", TOPIC_PR, expected_message)
 
     def test_pull_request_edited_with_body_change(self) -> None:
         expected_message = "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1):\n\n~~~ quote\nPR EDITED\n~~~"
-        self.check_webhook("pull_request__edited_with_body_change", TOPIC_PR, expected_message)
+        self.check_webhook("pull_request__edited_body", TOPIC_PR, expected_message)
 
     def test_pull_request_synchronized_with_body(self) -> None:
         expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
