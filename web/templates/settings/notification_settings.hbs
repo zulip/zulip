@@ -5,7 +5,7 @@
             {{#if for_realm_settings}}
                 {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
             {{/if}}
-            {{> settings_save_discard_widget section_name="general-notify-settings" show_only_indicator=(not for_realm_settings) }}
+            {{> settings_save_discard_widget section_name="general-notify-settings" show_save_discard_buttons=for_realm_settings show_saving_indicator=(not for_realm_settings) }}
         </div>
         <p>{{t "Configure how Zulip notifies you about new messages. In muted channels, channel notification settings apply only to unmuted topics." }}</p>
         <table class="notification-table table table-bordered wrapped-table">
@@ -79,7 +79,7 @@
             <h3>{{t "Topic notifications" }}
                 {{> ../help_link_widget link="/help/topic-notifications" }}
             </h3>
-            {{> settings_save_discard_widget section_name="topic-notifications-settings" show_only_indicator=(not for_realm_settings) }}
+            {{> settings_save_discard_widget section_name="topic-notifications-settings" show_save_discard_buttons=for_realm_settings show_saving_indicator=(not for_realm_settings) }}
         </div>
         <p>
             {{#tr}}
@@ -143,7 +143,7 @@
             <h3>{{t "Desktop message notifications" }}
                 {{> ../help_link_widget link="/help/desktop-notifications" }}
             </h3>
-            {{> settings_save_discard_widget section_name="desktop-message-settings" show_only_indicator=(not for_realm_settings) }}
+            {{> settings_save_discard_widget section_name="desktop-message-settings" show_save_discard_buttons=for_realm_settings show_saving_indicator=(not for_realm_settings) }}
         </div>
 
         {{#if (eq prefix "user_")}}
@@ -210,7 +210,7 @@
             <h3>{{t "Mobile message notifications" }}
                 {{> ../help_link_widget link="/help/mobile-notifications" }}
             </h3>
-            {{> settings_save_discard_widget section_name="mobile-message-settings" show_only_indicator=(not for_realm_settings) }}
+            {{> settings_save_discard_widget section_name="mobile-message-settings" show_save_discard_buttons=for_realm_settings show_saving_indicator=(not for_realm_settings) }}
         </div>
         {{#unless realm_push_notifications_enabled}}
         <div class="mobile-push-notifications-banner-container banner-wrapper">
@@ -234,7 +234,7 @@
             <h3>{{t "Email message notifications" }}
                 {{> ../help_link_widget link="/help/email-notifications" }}
             </h3>
-            {{> settings_save_discard_widget section_name="email-message-settings" show_only_indicator=(not for_realm_settings) }}
+            {{> settings_save_discard_widget section_name="email-message-settings" show_save_discard_buttons=for_realm_settings show_saving_indicator=(not for_realm_settings) }}
         </div>
 
         <div class="input-group time-limit-setting">
@@ -290,7 +290,7 @@
 
         <div class="subsection-header">
             <h3>{{t "Other emails" }}</h3>
-            {{> settings_save_discard_widget section_name="other-emails-settings" show_only_indicator=(not for_realm_settings) }}
+            {{> settings_save_discard_widget section_name="other-emails-settings" show_save_discard_buttons=for_realm_settings show_saving_indicator=(not for_realm_settings) }}
         </div>
         {{#each notification_settings.other_email_settings}}
             {{> settings_checkbox
