@@ -6,7 +6,6 @@ const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -967,11 +966,8 @@ run_test("narrow_compute_title", () => {
     assert.equal(narrow_title.compute_narrow_title(filter), "joe");
 
     filter = new Filter([{operator: "dm", operand: "joe@example.com,sally@doesnotexist.com"}]);
-    blueslip.expect("warn", "Unknown emails");
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid users");
 
-    blueslip.reset();
     filter = new Filter([{operator: "dm", operand: "sally@doesnotexist.com"}]);
-    blueslip.expect("warn", "Unknown emails");
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid user");
 });
