@@ -277,7 +277,7 @@
     .recent_topic_actions {
         /* Add spacing between mention marker, unread count
             and mute icon */
-        margin-left: 5px;
+        margin-left: 0.3125em; /* 5px at 16px/1em */
         display: flex;
         flex-flow: row nowrap;
         /* Preserve space for the actions even on archived
