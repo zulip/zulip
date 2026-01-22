@@ -79,9 +79,6 @@ export let $current_focus_elem: JQuery | "table" = "table";
 // we store that topic here so that we can restore focus
 // to that topic when user revisits.
 let last_visited_topic: string | undefined;
-let row_focus = 0;
-// Start focus on the topic column, so Down+Enter works to visit a topic.
-let col_focus = 1;
 
 export const COLUMNS = {
     stream: 0,
@@ -89,6 +86,10 @@ export const COLUMNS = {
     read: 2,
     mute: 3,
 };
+
+let row_focus = 0;
+// Start focus on the topic column, so Down+Enter works to visit a topic.
+let col_focus = COLUMNS.topic;
 
 // The number of selectable actions in a Recent Conversations view.
 // Used to implement wraparound of elements with the right/left keys.
@@ -316,13 +317,13 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     }
 
     const unread = has_unread(row);
-    if (col === 2 && !unread) {
-        col = 1;
-        col_focus = 1;
+    if (col === COLUMNS.read && !unread) {
+        col = COLUMNS.topic;
+        col_focus = COLUMNS.topic;
     }
     const type = get_row_type(row);
-    if (col === 3 && type === "private") {
-        col = unread ? 2 : 1;
+    if (col === COLUMNS.mute && type === "private") {
+        col = unread ? COLUMNS.read : COLUMNS.topic;
         col_focus = col;
     }
 
@@ -1531,7 +1532,7 @@ function left_arrow_navigation(row: number, col: number): void {
 }
 
 function right_arrow_navigation(row: number, col: number): void {
-    if (col === 1 && !has_unread(row)) {
+    if (col === COLUMNS.topic && !has_unread(row)) {
         col_focus += 1;
     }
 
@@ -1548,8 +1549,8 @@ function up_arrow_navigation(row: number, col: number): void {
     }
     const type = get_row_type(row);
 
-    if (type === "stream" && col === 2 && row - 1 >= 0 && !has_unread(row - 1)) {
-        col_focus = 1;
+    if (type === "stream" && col === COLUMNS.read && row - 1 >= 0 && !has_unread(row - 1)) {
+        col_focus = COLUMNS.topic;
     }
 }
 
