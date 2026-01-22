@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from functools import lru_cache
 
 import orjson
@@ -7,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.timestamp import ceiling_to_day, datetime_to_global_time
 from zerver.models.realms import Realm
 
 
@@ -34,3 +36,11 @@ def get_demo_organization_deadline_days_remaining(realm: Realm) -> int:
     assert realm.demo_organization_scheduled_deletion_date is not None
     days_remaining = (realm.demo_organization_scheduled_deletion_date - timezone_now()).days
     return days_remaining
+
+
+def get_scheduled_deletion_global_time(realm: Realm) -> str:
+    assert realm.demo_organization_scheduled_deletion_date is not None
+    scheduled_deletion_cronjob_timestamp = ceiling_to_day(
+        realm.demo_organization_scheduled_deletion_date
+    ) + timedelta(hours=6)
+    return datetime_to_global_time(scheduled_deletion_cronjob_timestamp)
