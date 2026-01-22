@@ -207,9 +207,9 @@ export function update_recent_view(): void {
     const num_avatars_narrow_window = 2;
     const num_avatars_max = 4;
     if (recent_view_filters_width < media_breakpoints_num.md) {
-        $(":root").css("--recent-view-max-avatars", num_avatars_narrow_window);
+        $(":root").css("--recent-view-max-avatars", `${num_avatars_narrow_window}`);
     } else {
-        $(":root").css("--recent-view-max-avatars", num_avatars_max);
+        $(":root").css("--recent-view-max-avatars", `${num_avatars_max}`);
     }
 }
 
