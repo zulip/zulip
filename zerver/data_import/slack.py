@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from email.errors import HeaderDefect
 from email.headerregistry import Address
 from typing import Any, TypeAlias
-from urllib.parse import SplitResult, urlsplit
+from urllib.parse import urlsplit
 
 import orjson
 import requests
@@ -41,6 +41,7 @@ from zerver.data_import.import_util import (
     download_and_export_upload_file,
     get_attachment_path_and_content,
     get_data_file,
+    get_domain_name_for_import,
     long_term_idle_helper,
     make_subscriber_map,
     process_avatars,
@@ -1748,7 +1749,7 @@ def do_convert_directory(
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
     realm_id = 0
-    domain_name = SplitResult("", settings.EXTERNAL_HOST, "", "", "").hostname
+    domain_name = get_domain_name_for_import()
     assert isinstance(domain_name, str)
 
     (
