@@ -999,7 +999,7 @@ run_test("realm_user", ({override}) => {
     // manipulation
     assert.deepEqual(added_person, event.person);
 
-    assert.ok(people.is_active_user_for_popover(event.person.user_id));
+    assert.ok(people.is_active_user_or_system_bot(event.person.user_id));
 
     event = event_fixtures.realm_user__update;
     const stub = make_stub();

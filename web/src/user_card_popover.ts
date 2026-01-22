@@ -243,7 +243,7 @@ export let fetch_presence_for_popover = (user_id: number): void => {
         return;
     }
 
-    if (!people.is_active_user_for_popover(user_id) || people.get_by_user_id(user_id).is_bot) {
+    if (!people.is_active_user_or_system_bot(user_id) || people.get_by_user_id(user_id).is_bot) {
         return;
     }
 
@@ -311,7 +311,7 @@ function get_user_card_popover_data(
         invisible_mode = !user_settings.presence_enabled;
     }
 
-    const is_active = people.is_active_user_for_popover(user.user_id);
+    const is_active = people.is_active_user_or_system_bot(user.user_id);
     const is_system_bot = user.is_system_bot;
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
@@ -846,7 +846,7 @@ function register_click_handlers(): void {
         }
         const user_id = elem_to_user_id($(this).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
-        const is_active = people.is_active_user_for_popover(user_id);
+        const is_active = people.is_active_user_or_system_bot(user_id);
         const mention = people.get_mention_syntax(name, user_id, !is_active);
         compose_ui.insert_syntax_and_focus(mention);
         message_user_card.hide();

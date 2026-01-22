@@ -84,7 +84,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
         const is_group = user_ids_string.includes(",");
         const is_active = user_ids_string === active_user_ids_string;
         const includes_deactivated_user = user_ids.some(
-            (id) => !people.is_active_user_for_popover(id),
+            (id) => !people.is_active_user_or_system_bot(id),
         );
 
         let user_circle_class: string | undefined;
