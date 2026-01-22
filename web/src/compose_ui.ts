@@ -839,6 +839,13 @@ export let format_text = (
     };
 
     const format = (syntax_start: string, syntax_end = syntax_start): boolean => {
+        const is_inline_syntax =
+            syntax_start === syntax_end &&
+            (syntax_start === "*" ||
+                syntax_start === "**" ||
+                syntax_start === "***" ||
+                syntax_start === "~~");
+
         let linebreak_start = "";
         let linebreak_end = "";
         if (syntax_start.startsWith("\n")) {
@@ -847,6 +854,32 @@ export let format_text = (
         if (syntax_end.endsWith("\n")) {
             linebreak_end = "\n";
         }
+
+        // Separate handling for multi-line selections
+        if (selected_text.includes("\n") && is_inline_syntax) {
+            const lines = selected_text.split("\n");
+
+            const formatted = lines.map((line) => {
+                // Skipping Empty Lines
+                if (line.trim() === "") {
+                    return line;
+                }
+
+                if (line.startsWith(syntax_start) && line.endsWith(syntax_end)) {
+                    return line.slice(syntax_start.length, line.length - syntax_end.length);
+                }
+                return `${syntax_start}${line}${syntax_end}`;
+            });
+
+            text = text.slice(0, range.start) + formatted.join("\n") + text.slice(range.end);
+
+            insert_and_scroll_into_view(text, $textarea, true);
+
+            field.setSelectionRange(range.start, range.start + formatted.join("\n").length);
+
+            return true;
+        }
+
         if (is_selection_formatted(syntax_start, syntax_end)) {
             text =
                 text.slice(0, range.start - syntax_start.length) +
@@ -1159,6 +1192,12 @@ export let format_text = (
             // **foo**, toggling italics should add italics, since in
             // fact it's just bold syntax, even though with *foo* and
             // ***foo*** should remove italics.
+
+            // For multiline selections, we can directly use the format function.
+            if (selected_text.includes("\n")) {
+                format(italic_syntax);
+                break;
+            }
 
             // If the text is already italic, we remove the italic_syntax from text.
             if (range.start >= 1 && text.length - range.end >= italic_syntax.length) {

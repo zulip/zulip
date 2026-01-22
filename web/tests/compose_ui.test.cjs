@@ -618,6 +618,16 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
     compose_ui.format_text($textarea, "bold");
     assert.equal(get_textarea_state(), "before <abc> after");
 
+    // Bold multiline selected text
+    init_textarea_state("before <abc\ndef\nghi> after");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "before <**abc**\n**def**\n**ghi**> after");
+
+    // Undo bold multiline selected text
+    init_textarea_state("before <**abc**\n**def**\n**ghi**> after");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "before <abc\ndef\nghi> after");
+
     // Italic selected text
     init_textarea_state("before <abc> after");
     compose_ui.format_text($textarea, "italic");
@@ -636,6 +646,16 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
     init_textarea_state("before <*abc*> after");
     compose_ui.format_text($textarea, "italic");
     assert.equal(get_textarea_state(), "before <abc> after");
+
+    // Italic multiline selected text
+    init_textarea_state("before <abc\ndef\nghi> after");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "before <*abc*\n*def*\n*ghi*> after");
+
+    // Undo italic multiline selected text
+    init_textarea_state("before <*abc*\n*def*\n*ghi*> after");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "before <abc\ndef\nghi> after");
 
     // Undo bold selected text, text is both italic and bold, syntax not selected.
     init_textarea_state("before ***<abc>*** after");
@@ -769,6 +789,16 @@ run_test("format_text - strikethrough", ({override, override_rewire}) => {
     init_textarea_state("before <~~abc~~> after");
     compose_ui.format_text($textarea, "strikethrough");
     assert.equal(get_textarea_state(), "before <abc> after");
+
+    // Strikethrough multiline selected text
+    init_textarea_state("before <abc\ndef\nghi> after");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "before <~~abc~~\n~~def~~\n~~ghi~~> after");
+
+    // Undo strikethrough multiline selected text
+    init_textarea_state("before <~~abc~~\n~~def~~\n~~ghi~~> after");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "before <abc\ndef\nghi> after");
 });
 
 run_test("format_text - latex", ({override, override_rewire}) => {
