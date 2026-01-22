@@ -21,6 +21,7 @@ import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_org from "./settings_org.ts";
 import * as settings_preferences from "./settings_preferences.ts";
 import type {SettingsPanel} from "./settings_preferences.ts";
+import * as settings_ui from "./settings_ui.ts";
 import {current_user} from "./state_data.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
@@ -85,7 +86,10 @@ function get_realm_default_setting_value_for_reset(property: string): number | s
     ];
 }
 
-function confirm_resetting_user_setting_to_default(property_list: string[]): void {
+function confirm_resetting_user_setting_to_default(
+    property_list: string[],
+    $status_element: JQuery,
+): void {
     const html_body = render_confirm_reset_user_configuration();
 
     function reset_user_configuration(): void {
@@ -106,6 +110,8 @@ function confirm_resetting_user_setting_to_default(property_list: string[]): voi
             data,
             success() {
                 dialog_widget.close();
+                ui_report.success($t_html({defaultMessage: "Saved"}), $status_element, 1500);
+                settings_ui.display_checkmark($status_element);
             },
             error(xhr) {
                 ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
@@ -204,7 +210,10 @@ export function set_up(): void {
             const $elem = $(this).closest(".input-group").find(".prop-element");
             property_list = [settings_components.extract_property_name($elem, true)];
         }
-        confirm_resetting_user_setting_to_default(property_list);
+        const $status_element = $(this)
+            .closest(".settings-subsection-parent")
+            .find(".alert-notification");
+        confirm_resetting_user_setting_to_default(property_list, $status_element);
     });
 
     maybe_disable_widgets();
