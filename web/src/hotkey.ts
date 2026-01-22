@@ -432,6 +432,12 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         return true;
     }
 
+    // Hide the GIF picker if it was open and focus the compose textarea.
+    if (!gif_picker_ui.is_popped_from_edit_message() && gif_picker_ui.hide_picker_popover()) {
+        $("textarea#compose-textarea").trigger("focus");
+        return true;
+    }
+
     if (popovers.any_active()) {
         popovers.hide_all();
         return true;
