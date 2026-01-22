@@ -549,7 +549,7 @@ input[type="checkbox"] {
 .notification-settings-form {
     .subsection-header h3 {
         display: inline-block;
-        margin: 10px 0 5px;
+        margin: 5px 0;
     }
 
     .tip {
