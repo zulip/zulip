@@ -892,7 +892,7 @@ export function sender_is_guest(message: Message): boolean {
 export function sender_is_deactivated(message: Message): boolean {
     const sender_id = message.sender_id;
     if (sender_id) {
-        return !is_active_user_for_popover(message.sender_id);
+        return !is_active_user_or_system_bot(message.sender_id);
     }
     return false;
 }
@@ -1109,7 +1109,7 @@ export function is_valid_bulk_user_ids_for_compose(user_ids: number[]): boolean 
     });
 }
 
-export function is_active_user_for_popover(user_id: number): boolean {
+export function is_active_user_or_system_bot(user_id: number): boolean {
     // For popover menus, we include cross-realm bots as active
     // users.
 
