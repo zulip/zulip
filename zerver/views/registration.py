@@ -350,7 +350,9 @@ def registration_helper(
                 return HttpResponseRedirect(
                     reverse("realm_import_post_process", kwargs={"confirmation_key": key})
                 )
-            if prereg_realm.data_import_metadata.get("is_import_work_queued"):
+            if prereg_realm.data_import_metadata.get(
+                "is_import_work_queued"
+            ) or prereg_realm.data_import_metadata.get("unexpected_import_failure"):
                 return TemplateResponse(
                     request,
                     "zerver/slack_import.html",
@@ -1123,7 +1125,20 @@ def realm_import_status(
                 ),
             }
             return json_success(request, result)
-        # TODO: If there is something we need to fix for the import, we should notify the user.
+        else:
+            # The import failed due to an unexpected reason. Ask user to email
+            # support with the import file so that we can do the import manually
+            # and investigate the failure.
+            # If there was an error during import, it would have already been logged by Sentry.
+            # We don't have access to the exception here.
+            preregistration_realm.data_import_metadata["unexpected_import_failure"] = True
+            preregistration_realm.save(update_fields=["data_import_metadata"])
+            return json_success(
+                request,
+                {
+                    "status": "unexpected_import_failure",
+                },
+            )
 
     if realm.deactivated:
         # These "if" cases are in the inverse order than they're done

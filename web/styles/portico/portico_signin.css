@@ -1769,3 +1769,7 @@ button#register_auth_button_gitlab {
         text-align: left;
     }
 }
+
+#slack-import-unexpected-failure .text-error {
+    font-size: 1em;
+}
