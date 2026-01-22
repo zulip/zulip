@@ -113,7 +113,7 @@ export function set_base_typography_css_variables(): void {
     const markdown_interelement_space_fraction = 0.3;
     const markdown_interelement_space_px = line_height_px * markdown_interelement_space_fraction;
 
-    $(":root").css("--base-line-height-unitless", line_height_unitless);
+    $(":root").css("--base-line-height-unitless", `${line_height_unitless}`);
     $(":root").css("--base-font-size-px", `${font_size_px}px`);
     $(":root").css("--markdown-interelement-space-px", `${markdown_interelement_space_px}px`);
     $(":root").css(
@@ -136,7 +136,7 @@ export function calculate_timestamp_widths(): void {
     // the correct em-size timestamps can be calculated along
     // with all the other information density values.
     $temp_time_div.css({
-        "font-size": base_font_size_px,
+        "font-size": `${base_font_size_px}px`,
         width: "max-content",
         visibility: "hidden",
         position: "absolute",
