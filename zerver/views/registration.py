@@ -340,6 +340,26 @@ def registration_helper(
                 reverse("get_prereg_key_and_redirect", kwargs={"confirmation_key": key})
             )
 
+        if prereg_realm.data_import_metadata.get("import_from") == "slack":
+            if prereg_realm.data_import_metadata.get("user_activation_url"):
+                assert prereg_realm.data_import_metadata["need_select_realm_owner"] is True
+                return HttpResponseRedirect(
+                    prereg_realm.data_import_metadata["user_activation_url"]
+                )
+            if prereg_realm.data_import_metadata.get("need_select_realm_owner"):
+                return HttpResponseRedirect(
+                    reverse("realm_import_post_process", kwargs={"confirmation_key": key})
+                )
+            if prereg_realm.data_import_metadata.get("is_import_work_queued"):
+                return TemplateResponse(
+                    request,
+                    "zerver/slack_import.html",
+                    {
+                        "poll_for_import_completion": True,
+                        "key": key,
+                    },
+                )
+
         if start_slack_import:
             assert is_realm_import_enabled()
             assert prereg_realm.data_import_metadata.get("slack_access_token") is not None
@@ -374,25 +394,6 @@ def registration_helper(
             )
 
         elif prereg_realm.data_import_metadata.get("import_from") == "slack":
-            if prereg_realm.data_import_metadata.get("user_activation_url"):
-                assert prereg_realm.data_import_metadata["need_select_realm_owner"] is True
-                return HttpResponseRedirect(
-                    prereg_realm.data_import_metadata["user_activation_url"]
-                )
-            if prereg_realm.data_import_metadata.get("need_select_realm_owner"):
-                return HttpResponseRedirect(
-                    reverse("realm_import_post_process", kwargs={"confirmation_key": key})
-                )
-            if prereg_realm.data_import_metadata.get("is_import_work_queued"):
-                return TemplateResponse(
-                    request,
-                    "zerver/slack_import.html",
-                    {
-                        "poll_for_import_completion": True,
-                        "key": key,
-                    },
-                )
-
             # Set text of `EMAIL_ADDRESS_VISIBILITY_EVERYONE` to "Everyone" so that it doesn't overflow the
             # select box in the slack import page.
             email_address_visibility_options = []
