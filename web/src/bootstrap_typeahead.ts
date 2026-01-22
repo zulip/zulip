@@ -440,11 +440,10 @@ export class Typeahead<ItemType extends string | object> {
                         if (placement === "top-start") {
                             let y_offset = -caret.top + scrollTop + gap;
                             const caret_bottom = caret.top + caret.height;
-                            if(caret_bottom > 0){
-                               y_offset += caret.height + gap;
+                            if (caret_bottom > 0) {
+                                y_offset += caret.height + gap;
                             }
                             return [caret.left, y_offset];
-
                         }
 
                         // In bottom-start, the offset is calculated from bottom of the popper reference.
