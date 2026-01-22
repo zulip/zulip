@@ -1350,6 +1350,9 @@ export class Filter {
             case "is-dm":
                 zulip_icon = "user";
                 break;
+            case "not-is-dm":
+                zulip_icon = "hashtag";
+                break;
             case "is-starred":
                 zulip_icon = "star";
                 break;
