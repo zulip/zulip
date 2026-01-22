@@ -1,7 +1,7 @@
 <div class="information-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
     <div class="subsection-header">
         <h3 class="light">{{t "Information" }}</h3>
-        {{> settings_save_discard_widget section_name="information-settings" show_only_indicator=(not for_realm_settings) }}
+        {{> settings_save_discard_widget section_name="information-settings" show_save_discard_buttons=for_realm_settings show_saving_indicator=(not for_realm_settings) }}
     </div>
 
     <div class="input-group">

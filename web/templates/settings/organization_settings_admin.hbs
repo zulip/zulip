@@ -4,7 +4,7 @@
         <div id="org-notifications" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Automated messages and emails" }}</h3>
-                {{> settings_save_discard_widget section_name="notifications" }}
+                {{> settings_save_discard_widget section_name="notifications" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 {{> ../dropdown_widget_with_label
@@ -74,7 +74,7 @@
         <div id="org-onboarding" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Onboarding" }}</h3>
-                {{> settings_save_discard_widget section_name="onboarding" }}
+                {{> settings_save_discard_widget section_name="onboarding" show_save_discard_buttons=true }}
             </div>
             <div class="organization-settings-parent">
                 {{#if development}}
@@ -138,7 +138,7 @@
         <div class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Notifications security" }}</h3>
-                {{> settings_save_discard_widget section_name="notifications-security" }}
+                {{> settings_save_discard_widget section_name="notifications-security" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 {{> settings_checkbox
@@ -159,7 +159,7 @@
         <div id="org-compose-settings" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Compose settings"}}</h3>
-                {{> settings_save_discard_widget section_name="compose-settings"}}
+                {{> settings_save_discard_widget section_name="compose-settings" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
@@ -224,7 +224,7 @@
         <div id="org-msg-feed-settings" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message feed settings"}}</h3>
-                {{> settings_save_discard_widget section_name="msg-feed-settings"}}
+                {{> settings_save_discard_widget section_name="msg-feed-settings" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 {{> ../dropdown_widget_with_label
@@ -264,7 +264,7 @@
                 <h3>{{t "Message retention period" }}
                     {{> ../help_link_widget link="/help/message-retention-policy" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="message-retention" }}
+                {{> settings_save_discard_widget section_name="message-retention" show_save_discard_buttons=true }}
             </div>
 
             {{> upgrade_tip_widget . }}

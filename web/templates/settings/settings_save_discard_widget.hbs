@@ -1,4 +1,4 @@
-{{#unless show_only_indicator}}
+{{#if show_save_discard_buttons}}
 <div class="save-button-controls hide">
     <div class="inline-block subsection-changes-save">
         {{> ../components/action_button custom_classes="save-button" variant="solid" intent="brand" label=(t "Save changes") }}
@@ -8,6 +8,7 @@
     </div>
     <div class="inline-block subsection-failed-status"><p class="hide"></p></div>
 </div>
-{{else}}
+{{/if}}
+{{#if show_saving_indicator}}
 <div class="alert-notification {{section_name}}-status"></div>
-{{/unless}}
+{{/if}}
