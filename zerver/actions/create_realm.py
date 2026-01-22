@@ -37,6 +37,8 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.scheduled_jobs import ScheduledMessage
+from zerver.models.users import get_system_bot
 from zproject.backends import all_default_backend_names
 
 DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
@@ -85,6 +87,20 @@ def do_change_realm_subdomain(
         placeholder_realms = Realm.objects.filter(deactivated_redirect=old_url, deactivated=True)
         for placeholder_realm in placeholder_realms:
             do_add_deactivated_redirect(placeholder_realm, realm.url)
+
+        # If a realm was a demo organization delete any scheduled messages about the
+        # automatic deletion of the demo organization.
+        if was_demo_organization:
+            sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+            scheduled_notification_bot_messages = ScheduledMessage.objects.filter(
+                sender=sender,
+                delivery_type=ScheduledMessage.SEND_LATER,
+                realm=realm,
+                delivered=False,
+                failed=False,
+            )
+            for scheduled_message in scheduled_notification_bot_messages:
+                scheduled_message.delete()
 
     # The below block isn't executed in a transaction with the earlier code due to
     # the functions called below being complex and potentially sending events,
