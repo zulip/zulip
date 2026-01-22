@@ -274,9 +274,7 @@ to keep in mind.
 - Submitting carefully tested code. See our [detailed guide on how to review
   code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code)
   (yours or someone else's).
-- Posting
-  [screenshots or GIFs](https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
-  for frontend changes.
+- Following our guide for clearly [presenting visual changes][presenting-visual-changes].
 - Working to [make your pull requests easy to
   review](https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html).
 - Clearly describing what you have implemented and why. For example, if your
@@ -289,6 +287,7 @@ to keep in mind.
 - Being helpful and friendly on the [Zulip community
   server](https://zulip.com/development-community/).
 
+[presenting-visual-changes]: https://zulip.readthedocs.io/en/latest/contributing/presenting-visual-changes.md
 [great-questions]: https://zulip.readthedocs.io/en/latest/contributing/asking-great-questions.html
 
 ## Submitting a pull request
