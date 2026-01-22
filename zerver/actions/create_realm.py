@@ -94,19 +94,11 @@ def do_change_realm_subdomain(
     # it's deactivated redirect to new_subdomain so that we can tell the users that
     # the realm has been moved to a new subdomain.
     if add_deactivated_redirect:
-        scheduled_deletion_days = None
-        if was_demo_organization:
-            # For converted demo organizations, we schedule the placeholder realm to be
-            # deleted/scrubbed after a set number of days, so that our finite possible
-            # options for demo organization subdomains don't get used up over time.
-            scheduled_deletion_days = settings.DEMO_ORG_DEADLINE_DAYS
-
         placeholder_realm = do_create_realm(old_subdomain, realm.name)
         do_deactivate_realm(
             placeholder_realm,
             acting_user=None,
             deactivation_reason="subdomain_change",
-            deletion_delay_days=scheduled_deletion_days,
             email_owners=False,
         )
         do_add_deactivated_redirect(placeholder_realm, realm.url)
