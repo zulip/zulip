@@ -53,7 +53,7 @@ export function compute_narrow_title(filter?: Filter): string {
 
     if (filter.has_operator("dm")) {
         const emails = filter.terms_with_operator("dm")[0]!.operand;
-        const user_ids = people.emails_strings_to_user_ids_string(emails);
+        const user_ids = people.reply_to_to_user_ids_string(emails);
 
         if (user_ids !== undefined) {
             return people.format_recipients(user_ids, "long");
