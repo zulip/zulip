@@ -389,7 +389,7 @@ function language_select_callback(
     const data = {default_language: current_value};
     change_display_setting(
         data,
-        $("#settings_content").find(".general-settings-status"),
+        $("#user-preferences").find(".general-settings-status"),
         undefined,
         undefined,
         $t_html(
