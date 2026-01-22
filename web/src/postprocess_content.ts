@@ -1,6 +1,7 @@
 import assert from "minimalistic-assert";
 
 import {$t} from "./i18n.ts";
+import {realm} from "./state_data.ts";
 import * as thumbnail from "./thumbnail.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -276,8 +277,12 @@ export function postprocess_content(html: string): string {
             // use a subtler background color than on other images
             const image_min_aspect_ratio = 0.4;
             // "Dinky" images are those that are shorter than the
-            // 10em height reserved for thumbnails
-            const image_box_em = 10;
+            // height reserved for thumbnails based on organization setting
+            // Small (0): 10em, Medium (1): 15em, Large (2): 20em
+            const thumbnail_size_multipliers = [1, 1.5, 2];
+            const base_image_box_em = 10;
+            const thumbnail_size = realm.realm_image_thumbnail_size ?? 0;
+            const image_box_em = base_image_box_em * thumbnail_size_multipliers[thumbnail_size];
             const is_dinky_image = original_height / font_size_in_use <= image_box_em;
             const has_extreme_aspect_ratio =
                 original_width / original_height <= image_min_aspect_ratio ||

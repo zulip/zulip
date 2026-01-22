@@ -162,6 +162,12 @@ class RealmTopicsPolicyEnum(Enum):
     disable_empty_topic = 3
 
 
+class ImageThumbnailSizeEnum(IntEnum):
+    SMALL = 0
+    MEDIUM = 1
+    LARGE = 2
+
+
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -223,6 +229,11 @@ class Realm(models.Model):
     # Whether the organization has enabled inline image and URL previews.
     inline_image_preview = models.BooleanField(default=True)
     inline_url_embed_preview = models.BooleanField(default=False)
+
+    # Size of images and videos in messages (Small=0, Medium=1, Large=2).
+    image_thumbnail_size = models.PositiveSmallIntegerField(
+        default=ImageThumbnailSizeEnum.SMALL.value
+    )
 
     # Whether digest emails are enabled for the organization.
     digest_emails_enabled = models.BooleanField(default=False)
@@ -725,6 +736,7 @@ class Realm(models.Model):
         enable_read_receipts=bool,
         enable_spectator_access=bool,
         giphy_rating=int,
+        image_thumbnail_size=int,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,

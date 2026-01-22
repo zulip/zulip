@@ -514,6 +514,7 @@ const dropdown_widget_map = new Map<string, DropdownWidget | null>([
     ["realm_zulip_update_announcements_stream_id", null],
     ["realm_default_code_block_language", null],
     ["realm_default_language", null],
+    ["realm_image_thumbnail_size", null],
     ["realm_can_access_all_users_group", null],
     ["realm_can_create_web_public_channel_group", null],
     ["folder_id", null],
@@ -862,6 +863,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
         case "realm_default_language":
+        case "realm_image_thumbnail_size":
         case "realm_can_access_all_users_group":
         case "realm_can_create_web_public_channel_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);

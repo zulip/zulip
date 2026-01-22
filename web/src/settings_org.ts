@@ -601,6 +601,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_zulip_update_announcements_stream_id":
         case "realm_default_code_block_language":
         case "realm_default_language":
+        case "realm_image_thumbnail_size":
         case "realm_can_access_all_users_group":
         case "realm_can_create_web_public_channel_group":
             assert(typeof property_value === "string" || typeof property_value === "number");
@@ -1342,6 +1343,23 @@ export let init_dropdown_widgets = (): void => {
         settings_components.language_options,
         "language",
     );
+
+    const image_thumbnail_size_options = (): dropdown_widget.Option[] => [
+        {
+            name: $t({defaultMessage: "Small"}),
+            unique_id: 0,
+        },
+        {
+            name: $t({defaultMessage: "Medium"}),
+            unique_id: 1,
+        },
+        {
+            name: $t({defaultMessage: "Large"}),
+            unique_id: 2,
+        },
+    ];
+
+    set_up_dropdown_widget("realm_image_thumbnail_size", image_thumbnail_size_options, "number");
 
     set_up_dropdown_widget_for_realm_group_settings();
 };

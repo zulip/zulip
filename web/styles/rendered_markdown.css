@@ -579,10 +579,10 @@
             min-width: 4em;
             min-height: 4em;
 
-            /* Constrain height to 10em, but otherwise keep
-               the width to the size of the gallery, and
-               therefore the message area. */
-            max-height: 10em;
+            /* Constrain height based on organization setting.
+               Small: 10em, Medium: 15em, Large: 20em.
+               Set to 20em to accommodate the largest size. */
+            max-height: 20em;
             max-width: 100%;
 
             /* Allow height and width to grow as needed, though
