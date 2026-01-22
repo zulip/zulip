@@ -10,7 +10,6 @@ from collections import defaultdict
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from email.errors import HeaderDefect
 from email.headerregistry import Address
 from typing import Any, TypeAlias
 from urllib.parse import urlsplit
@@ -22,6 +21,7 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    ImportedBotEmail,
     UploadFileRequest,
     UploadRecordData,
     ZerverFieldsT,
@@ -114,50 +114,20 @@ for emoji_dict in emoji_data:
 
 
 class SlackBotEmail:
-    duplicate_email_count: dict[str, int] = {}
-    # Mapping of `bot_id` to final email assigned to the bot.
-    assigned_email: dict[str, str] = {}
-
     @classmethod
     def get_email(cls, user_profile: ZerverFieldsT, domain_name: str) -> str:
         slack_bot_id = user_profile["bot_id"]
-        if slack_bot_id in cls.assigned_email:
-            return cls.assigned_email[slack_bot_id]
 
-        if "real_name_normalized" in user_profile:
-            slack_bot_name = user_profile["real_name_normalized"]
-        elif "first_name" in user_profile:
-            slack_bot_name = user_profile["first_name"]
-        else:
-            raise AssertionError("Could not identify bot type")
+        def bot_name_getter(_user_profile: ZerverFieldsT) -> str:
+            if "real_name_normalized" in _user_profile:
+                slack_bot_name = _user_profile["real_name_normalized"]
+            elif "first_name" in _user_profile:
+                slack_bot_name = _user_profile["first_name"]
+            else:
+                raise AssertionError("Could not identify bot type")
+            return slack_bot_name
 
-        email = Address(
-            username=slack_bot_name.replace("Bot", "").replace(" ", "").lower() + "-bot",
-            domain=domain_name,
-        ).addr_spec
-        # The address formed above may not be a valid email format - e.g. containing
-        # non-ASCII characters in the local part, if the slack_bot_name contains them.
-        # Only Address(addr_spec=...) triggers the necessary validation.
-        # Thus we call it here, and if issues are detected, we fall back to forming the
-        # email address in a safer way - using the bot id string.
-        try:
-            Address(addr_spec=email)
-        except HeaderDefect:
-            email = Address(
-                username=slack_bot_id + "-bot",
-                domain=domain_name,
-            ).addr_spec
-
-        if email in cls.duplicate_email_count:
-            cls.duplicate_email_count[email] += 1
-            address = Address(addr_spec=email)
-            email_username = address.username + "-" + str(cls.duplicate_email_count[email])
-            email = Address(username=email_username, domain=address.domain).addr_spec
-        else:
-            cls.duplicate_email_count[email] = 1
-
-        cls.assigned_email[slack_bot_id] = email
-        return email
+        return ImportedBotEmail.get_email(user_profile, domain_name, slack_bot_id, bot_name_getter)
 
 
 def rm_tree(path: str) -> None:
