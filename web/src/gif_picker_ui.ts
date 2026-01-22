@@ -148,6 +148,11 @@ function render_featured_gifs(next_page: boolean): void {
 }
 
 function update_grid_with_search_term(search_term: string, next_page = false): void {
+    // The debounced version may call this after the picker is closed
+    // and the cleanup is done, so we add this guard.
+    if (popover_instance === undefined) {
+        return;
+    }
     if (
         network.is_loading_more_gifs() ||
         (search_term.trim() === current_search_term && !next_page)
