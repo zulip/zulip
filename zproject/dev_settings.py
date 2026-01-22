@@ -241,9 +241,9 @@ RATE_LIMITING_RULES = {
     "sends_email_by_ip": [
         # This rule puts a limit on actions such as new organization creation,
         # which we sometimes need to test repeatedly in development.
-        (86400, 20),
+        (86400, 1000),
     ],
     "demo_realm_creation_by_ip": [
-        (86400, 20),
+        (86400, 1000),
     ],
 }
