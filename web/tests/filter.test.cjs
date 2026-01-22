@@ -2532,7 +2532,7 @@ test("navbar_helpers", ({override}) => {
         {
             terms: not_is_dm,
             is_common_narrow: true,
-            icon: undefined,
+            zulip_icon: "hashtag",
             title: "translated: Channel messages",
             redirect_url_with_search: "/#narrow/-is/dm",
         },
