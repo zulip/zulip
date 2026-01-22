@@ -7,6 +7,17 @@
       is_archived=sub.is_archived }}
     <span class="stream-name-title">{{sub.name}}</span>
     </a>
+    <template id="view-stream-tooltip-template">
+        <span class="view-channel-tooltip">
+            <span class="view-channel-text">
+                {{#tr}}
+                    View <z-channel-name></z-channel-name>
+                    {{#*inline "z-channel-name"}}{{> ../inline_decorated_channel_name stream=sub}}{{/inline}}
+                {{/tr}}
+            </span>
+            {{tooltip_hotkey_hints "Shift" "V"}}
+        </span>
+    </template>
     {{#with sub}}
     <div class="button-group stream-title-buttons" data-stream-id="{{stream_id}}">
         <div class="sub_unsub_button_wrapper inline-block {{#unless should_display_subscription_button }}cannot-subscribe-tooltip{{/unless}}" data-tooltip-template-id="cannot-subscribe-tooltip-template">
