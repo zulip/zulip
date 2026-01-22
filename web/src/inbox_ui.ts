@@ -482,7 +482,7 @@ function format_dm(
     let is_bot = false;
     if (recipient_ids.length === 1 && recipient_ids[0] !== undefined) {
         const user_id = recipient_ids[0];
-        const is_deactivated = !people.is_active_user_for_popover(user_id);
+        const is_deactivated = !people.is_active_user_or_system_bot(user_id);
         is_bot = people.get_by_user_id(user_id).is_bot;
         user_circle_class = is_bot
             ? false
