@@ -193,6 +193,10 @@ class UserBaseSettings(models.Model):
     # conversation where message was sent.
     web_navigate_to_sent_message = models.BooleanField(default=True)
 
+    # Setting to enable smooth scrolling when navigating messages with keyboard.
+    enable_smooth_scroll_navigation = models.BooleanField(default=False)
+
+
     ### Notifications settings. ###
 
     email_notifications_batching_period_seconds = models.IntegerField(default=120)
@@ -365,6 +369,7 @@ class UserBaseSettings(models.Model):
         email_address_visibility=int,
         emojiset=str,
         enable_drafts_synchronization=bool,
+        enable_smooth_scroll_navigation=bool,
         enter_sends=bool,
         fluid_layout_width=bool,
         hide_ai_features=bool,
