@@ -587,7 +587,6 @@ def do_register_remote_push_device(
 ) -> int:
     assert (realm is None) ^ (remote_realm is None)
 
-    assert settings.PUSH_REGISTRATION_ENCRYPTION_KEYS
     if bouncer_public_key not in settings.PUSH_REGISTRATION_ENCRYPTION_KEYS:
         raise InvalidBouncerPublicKeyError
 
