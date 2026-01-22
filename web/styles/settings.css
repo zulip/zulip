@@ -537,7 +537,7 @@ input[type="checkbox"] {
 
 .admin-realm-form {
     & h3 {
-        margin: 10px 0 5px;
+        margin: 5px 0;
     }
 
     .subsection-header h3 {
