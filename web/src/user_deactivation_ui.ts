@@ -26,7 +26,7 @@ export function confirm_deactivation(
     if (user_id === current_user.user_id) {
         const modal_content_html = render_confirm_deactivate_own_user();
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Deactivate your account"}),
+            modal_title_html: $t_html({defaultMessage: "Deactivate your account"}),
             modal_content_html,
             on_click: handle_confirm,
             help_link: "/help/deactivate-your-account",
@@ -92,7 +92,7 @@ export function confirm_deactivation(
             }
 
             dialog_widget.launch({
-                html_heading: $t_html(
+                modal_title_html: $t_html(
                     {defaultMessage: "Deactivate {name}?"},
                     {name: user.full_name},
                 ),
@@ -118,7 +118,7 @@ export function confirm_bot_deactivation(
     const modal_content_html = render_settings_deactivation_bot_modal();
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
+        modal_title_html: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
         help_link: "/help/deactivate-or-reactivate-a-bot",
         modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Deactivate"}),
@@ -156,7 +156,7 @@ export function confirm_reactivation(
     }
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
+        modal_title_html: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
         help_link: "/help/deactivate-or-reactivate-a-user#reactivating-a-user",
         modal_content_html,
         on_click: handle_confirm,

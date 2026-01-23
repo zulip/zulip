@@ -4,10 +4,10 @@
             <header class="modal__header">
                 <div class="modal__header-content">
                     <h1 class="modal__title dialog_heading">
-                        {{#if heading_html}}
-                            {{{ heading_html }}}
+                        {{#if modal_title_html}}
+                            {{{ modal_title_html }}}
                         {{else}}
-                            {{ text_heading }}
+                            {{ modal_title_text }}
                         {{/if}}
                         {{#if link}}
                         {{> help_link_widget . }}

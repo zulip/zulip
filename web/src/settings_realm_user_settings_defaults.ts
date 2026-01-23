@@ -120,7 +120,7 @@ function confirm_resetting_user_setting_to_default(
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Reset user configurations?"}),
+        modal_title_html: $t_html({defaultMessage: "Reset user configurations?"}),
         modal_content_html,
         id: "confirm-reset-user-configuration",
         on_click: reset_user_configuration,

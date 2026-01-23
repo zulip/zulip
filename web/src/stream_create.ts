@@ -624,7 +624,7 @@ export function set_up_handlers(): void {
             });
 
             confirm_dialog.launch({
-                html_heading: $t_html({defaultMessage: "Large number of subscribers"}),
+                modal_title_html: $t_html({defaultMessage: "Large number of subscribers"}),
                 modal_content_html,
                 on_click() {
                     create_stream();

@@ -321,7 +321,7 @@ function reset_stream_notifications(elem: HTMLElement): void {
     const modal_content_html = render_confirm_reset_stream_notifications({sub});
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Reset to default notifications?"}),
+        modal_title_html: $t_html({defaultMessage: "Reset to default notifications?"}),
         modal_content_html,
         id: "confirm_reset_stream_notifications_modal",
         on_click() {
@@ -507,7 +507,7 @@ export function set_up(settings_panel: SettingsPanel): void {
                 $input_elem.prop("checked", user_settings[setting_name]);
 
                 confirm_dialog.launch({
-                    html_heading: $t_html({defaultMessage: "Disable notifications?"}),
+                    modal_title_html: $t_html({defaultMessage: "Disable notifications?"}),
                     modal_content_html,
                     on_click() {
                         change_notification_setting(

@@ -263,7 +263,7 @@ export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
     }
 
     confirm_dialog.launch({
-        html_heading: $t_html(
+        modal_title_html: $t_html(
             {defaultMessage: "Unsubscribe from <z-link></z-link>?"},
             {"z-link": () => stream_name_with_privacy_symbol_html},
         ),

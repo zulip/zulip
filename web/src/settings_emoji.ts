@@ -282,7 +282,7 @@ function show_modal(): void {
                     emoji_name: emoji["name"],
                 });
                 confirm_dialog.launch({
-                    html_heading: $t_html({defaultMessage: "Override default emoji?"}),
+                    modal_title_html: $t_html({defaultMessage: "Override default emoji?"}),
                     modal_content_html,
                     on_click() {
                         submit_custom_emoji_request(formData);
@@ -294,7 +294,7 @@ function show_modal(): void {
         }
     }
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Add a new emoji"}),
+        modal_title_html: $t_html({defaultMessage: "Add a new emoji"}),
         modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
         id: "add-custom-emoji-modal",
@@ -335,7 +335,7 @@ export function set_up(): void {
         };
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Deactivate custom emoji?"}),
+            modal_title_html: $t_html({defaultMessage: "Deactivate custom emoji?"}),
             modal_content_html,
             id: "confirm_deactivate_custom_emoji_modal",
             on_click() {

@@ -111,7 +111,7 @@ export function launch_default_language_setting_modal_for_spectator(): void {
     });
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Select language"}),
+        modal_title_html: $t_html({defaultMessage: "Select language"}),
         modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Close"}),
         id: "language_selection_modal",

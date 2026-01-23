@@ -119,7 +119,7 @@ function delete_attachments(attachment: string, file_name: string): void {
     const modal_content_html = render_confirm_delete_attachment({file_name});
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Delete file?"}),
+        modal_title_html: $t_html({defaultMessage: "Delete file?"}),
         modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Delete"}),
         focus_submit_on_open: true,
@@ -295,7 +295,7 @@ export function suggest_delete_detached_attachments(attachments_list: ServerAtta
 
     dialog_widget.launch({
         id: "confirm_delete_attachments_modal",
-        html_heading: $t_html({defaultMessage: "Delete uploaded files?"}),
+        modal_title_html: $t_html({defaultMessage: "Delete uploaded files?"}),
         modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Delete"}),
         html_exit_button: $t_html({defaultMessage: "Don't delete"}),

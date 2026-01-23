@@ -271,7 +271,7 @@ export function show_message_report_modal(message: Message): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({
+        modal_title_html: $t_html({
             defaultMessage: "Report a message",
         }),
         modal_content_html,

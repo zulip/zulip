@@ -283,7 +283,7 @@ export function on_load_success(
         const modal_content_html = render_settings_revoke_invite_modal(ctx);
 
         confirm_dialog.launch({
-            html_heading: ctx.is_multiuse
+            modal_title_html: ctx.is_multiuse
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
             modal_content_html,
@@ -311,7 +311,7 @@ export function on_load_success(
         const modal_content_html = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Resend invitation?"}),
+            modal_title_html: $t_html({defaultMessage: "Resend invitation?"}),
             modal_content_html,
             id: "resend_invite_modal",
             close_on_submit: false,

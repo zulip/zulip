@@ -214,7 +214,7 @@ function show_add_default_streams_modal(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Add default channels"}),
+        modal_title_html: $t_html({defaultMessage: "Add default channels"}),
         modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Add"}),
         help_link: "/help/set-default-channels-for-new-users",

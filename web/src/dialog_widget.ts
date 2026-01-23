@@ -61,8 +61,8 @@ function current_dialog_widget_selector(): string {
  */
 
 export type DialogWidgetConfig = {
-    html_heading?: string;
-    text_heading?: string;
+    modal_title_html?: string;
+    modal_title_text?: string;
     modal_content_html: string;
     on_click?: (e: JQuery.ClickEvent) => void;
     hide_footer?: boolean;
@@ -162,9 +162,9 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
 
 export function launch(conf: DialogWidgetConfig): string {
     // Mandatory fields:
-    // * html_heading | text_heading
+    // * modal_title_html | modal_title_text
     // * modal_content_html
-    // The html_ fields should be safe HTML. If callers
+    // The _html fields should be safe HTML. If callers
     // interpolate user data into strings, they should use
     // templates.
 
@@ -200,8 +200,8 @@ export function launch(conf: DialogWidgetConfig): string {
     const exit_button_html = conf.html_exit_button ?? $t_html({defaultMessage: "Cancel"});
     const html = render_dialog_widget({
         modal_unique_id,
-        heading_html: conf.html_heading,
-        text_heading: conf.text_heading,
+        modal_title_html: conf.modal_title_html,
+        modal_title_text: conf.modal_title_text,
         link: conf.help_link,
         submit_button_html,
         exit_button_html,

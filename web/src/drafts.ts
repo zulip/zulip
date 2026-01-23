@@ -282,7 +282,7 @@ export function confirm_delete_all_drafts(): void {
     const modal_content_html = render_confirm_delete_all_drafts();
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Delete all drafts"}),
+        modal_title_html: $t_html({defaultMessage: "Delete all drafts"}),
         modal_content_html,
         on_click: delete_all_drafts,
     });
