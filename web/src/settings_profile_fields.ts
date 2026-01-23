@@ -121,13 +121,6 @@ let order: number[] = [];
 export function field_type_id_to_string(type_id: number): string | undefined {
     for (const field_type of Object.values(realm.custom_profile_field_types)) {
         if (field_type.id === type_id) {
-            // Few necessary modifications in field-type-name for
-            // table-list view of custom fields UI in org settings
-            if (field_type.name === "Date picker") {
-                return "Date";
-            } else if (field_type.name === "Person picker") {
-                return "Person";
-            }
             return field_type.name;
         }
     }
