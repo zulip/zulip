@@ -576,16 +576,21 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(confirmation.realm, realm)
 
     def test_realm_deactivation_demo_organization_owner_email_not_configured(self) -> None:
-        demo_name = "demo deactivate no email"
-        result = self.submit_demo_creation_form(demo_name)
-        realm = Realm.objects.filter(name=demo_name).latest("date_created")
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].startswith(
                 f"http://{realm.string_id}.testserver/accounts/login/subdomain"
             )
         )
-        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
 
         result = self.client_get(result["Location"], subdomain=realm.string_id)
         self.assertEqual(result.status_code, 302)
@@ -617,16 +622,21 @@ class RealmTest(ZulipTestCase):
         self.assert_logged_in_user_id(None)
 
     def test_realm_deactivation_demo_organization_owner_email_configured(self) -> None:
-        demo_name = "demo deactivate with email"
-        result = self.submit_demo_creation_form(demo_name)
-        realm = Realm.objects.filter(name=demo_name).latest("date_created")
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].startswith(
                 f"http://{realm.string_id}.testserver/accounts/login/subdomain"
             )
         )
-        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
 
         result = self.client_get(result["Location"], subdomain=realm.string_id)
         self.assertEqual(result.status_code, 302)
@@ -659,10 +669,10 @@ class RealmTest(ZulipTestCase):
         self.assert_length(mail.outbox, 1)
         self.assert_length(mail.outbox, 1)
         self.assertIn(
-            f"Your Zulip organization {demo_name} has been deactivated", mail.outbox[0].subject
+            f"Your Zulip organization {realm.name} has been deactivated", mail.outbox[0].subject
         )
         self.assertIn(
-            f"You have deactivated your Zulip demo organization, {demo_name},", mail.outbox[0].body
+            f"You have deactivated your Zulip demo organization, {realm.name},", mail.outbox[0].body
         )
         self.assert_logged_in_user_id(None)
 
