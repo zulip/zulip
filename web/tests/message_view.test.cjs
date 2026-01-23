@@ -15,6 +15,7 @@ const compose_state = zrequire("compose_state");
 const narrow_banner = zrequire("narrow_banner");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+const all_messages_data = zrequire("all_messages_data");
 const {Filter} = zrequire("../src/filter");
 const message_view = zrequire("message_view");
 const narrow_title = zrequire("narrow_title");
@@ -770,6 +771,49 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
             "translated HTML: <p>You are searching for messages that are sent by more than one person, which is not possible.</p>",
         ),
     );
+});
+
+run_test("fast_track_current_msg_list_to_anchor copies fetch status", ({override}) => {
+    all_messages_data.all_messages_data.clear();
+    const message = {
+        id: 10,
+        type: "stream",
+        stream_id: 1,
+        topic: "copy status",
+        sender_id: me.user_id,
+        sent_by_me: true,
+    };
+    all_messages_data.all_messages_data.add_messages([message], true);
+
+    override(all_messages_data.all_messages_data.fetch_status, "has_found_oldest", () => true);
+    override(all_messages_data.all_messages_data.fetch_status, "has_found_newest", () => true);
+
+    const current_data = new MessageListData({
+        excludes_muted_topics: false,
+        excludes_muted_users: false,
+        filter: new Filter([]),
+    });
+    message_lists.current = {
+        data: current_data,
+        visibly_empty: () => false,
+    };
+
+    let selected_id;
+    let updated_list;
+    override(message_lists, "update_current_message_list", (list) => {
+        list.select_id = (id) => {
+            selected_id = id;
+        };
+        message_lists.current = list;
+        updated_list = list;
+    });
+
+    message_view.fast_track_current_msg_list_to_anchor("oldest");
+
+    assert.ok(updated_list);
+    assert.equal(updated_list.data.fetch_status.has_found_oldest(), true);
+    assert.equal(updated_list.data.fetch_status.has_found_newest(), true);
+    assert.equal(selected_id, message.id);
 });
 
 run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {

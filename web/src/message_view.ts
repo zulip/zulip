@@ -997,6 +997,7 @@ function navigate_to_anchor_message(opts: {
             excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
             excludes_muted_users: message_lists.current.data.excludes_muted_users,
         });
+        msg_list_data.fetch_status.copy_status(all_messages_data.fetch_status);
         load_local_messages(msg_list_data, all_messages_data);
         // It is still possible that `all_messages_data` doesn't have any messages
         // for the current narrow, so we check for that.
