@@ -57,7 +57,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         name: $t_html({defaultMessage: "Matching Zulip channel"}),
         unique_id: -2,
     };
-    const html_body = render_generate_integration_url_modal({
+    const modal_content_html = render_generate_integration_url_modal({
         default_url_message,
         max_topic_length: realm.max_topic_length,
     });
@@ -566,7 +566,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Generate URL for an integration"}),
-        html_body,
+        modal_content_html,
         id: "generate-integration-url-modal",
         html_submit_button: $t_html({defaultMessage: "Copy URL"}),
         html_exit_button: $t_html({defaultMessage: "Close"}),

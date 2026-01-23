@@ -378,7 +378,7 @@ function maybe_show_notes_about_unusable_users_if_exported(
 }
 
 function show_start_export_modal(): void {
-    const html_body = render_start_export_modal({
+    const modal_content_html = render_start_export_modal({
         export_type_values: get_export_type_options_to_render(),
     });
 
@@ -444,7 +444,7 @@ function show_start_export_modal(): void {
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Start export?"}),
-        html_body,
+        modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Start export"}),
         id: "start-export-modal",
         loading_spinner: true,
@@ -529,11 +529,11 @@ export function set_up(): void {
         const url =
             "/json/export/realm/" +
             encodeURIComponent($button.closest("tr").attr("data-export-id")!);
-        const html_body = render_confirm_delete_data_export();
+        const modal_content_html = render_confirm_delete_data_export();
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete data export?"}),
-            html_body,
+            modal_content_html,
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});
             },
