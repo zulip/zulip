@@ -121,7 +121,7 @@ function delete_attachments(attachment: string, file_name: string): void {
     dialog_widget.launch({
         modal_title_html: $t_html({defaultMessage: "Delete file?"}),
         modal_content_html,
-        html_submit_button: $t_html({defaultMessage: "Delete"}),
+        modal_submit_button_text: $t({defaultMessage: "Delete"}),
         focus_submit_on_open: true,
         on_click() {
             dialog_widget.submit_api_request(channel.del, "/json/attachments/" + attachment, {});
@@ -297,8 +297,8 @@ export function suggest_delete_detached_attachments(attachments_list: ServerAtta
         id: "confirm_delete_attachments_modal",
         modal_title_html: $t_html({defaultMessage: "Delete uploaded files?"}),
         modal_content_html,
-        html_submit_button: $t_html({defaultMessage: "Delete"}),
-        html_exit_button: $t_html({defaultMessage: "Don't delete"}),
+        modal_submit_button_text: $t({defaultMessage: "Delete"}),
+        modal_exit_button_text: $t({defaultMessage: "Don't delete"}),
         loading_spinner: true,
         on_click: do_delete_attachments,
     });

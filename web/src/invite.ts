@@ -717,7 +717,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     dialog_widget.launch({
         modal_title_html: $t_html({defaultMessage: "Invite users to organization"}),
         modal_content_html,
-        html_submit_button: $t_html({defaultMessage: "Invite"}),
+        modal_submit_button_text: $t({defaultMessage: "Invite"}),
         id: "invite-user-modal",
         loading_spinner: true,
         on_click: invite_users,

@@ -554,7 +554,7 @@ export function set_up(): void {
                 password_max_length: realm.password_max_length,
                 password_min_guesses: realm.password_min_guesses,
             }),
-            html_submit_button: $t_html({defaultMessage: "Change"}),
+            modal_submit_button_text: $t({defaultMessage: "Change"}),
             loading_spinner: true,
             id: "change_password_modal",
             form_id: "change_password_container",
@@ -690,7 +690,7 @@ export function set_up(): void {
                 modal_content_html: render_change_email_modal({
                     delivery_email: current_user.delivery_email,
                 }),
-                html_submit_button: $t_html({defaultMessage: "Change"}),
+                modal_submit_button_text: $t({defaultMessage: "Change"}),
                 loading_spinner: true,
                 id: "change_email_modal",
                 form_id: "change_email_form",
@@ -785,7 +785,7 @@ export function set_up(): void {
                     email_address_visibility_values:
                         settings_config.email_address_visibility_values,
                 }),
-                html_submit_button: $t_html({defaultMessage: "Add"}),
+                modal_submit_button_text: $t({defaultMessage: "Add"}),
                 loading_spinner: true,
                 id: "demo_organization_add_email_modal",
                 form_id: "demo_organization_add_email_form",

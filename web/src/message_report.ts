@@ -275,7 +275,7 @@ export function show_message_report_modal(message: Message): void {
             defaultMessage: "Report a message",
         }),
         modal_content_html,
-        html_submit_button: $t_html({defaultMessage: "Submit"}),
+        modal_submit_button_text: $t({defaultMessage: "Submit"}),
         help_link: "/help/report-a-message",
         id: "message_report_modal",
         form_id: "message_report_form",

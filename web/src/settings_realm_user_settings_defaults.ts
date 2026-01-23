@@ -7,7 +7,7 @@ import render_confirm_reset_user_configuration from "../templates/settings/confi
 import * as audible_notifications from "./audible_notifications.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
@@ -126,7 +126,7 @@ function confirm_resetting_user_setting_to_default(
         on_click: reset_user_configuration,
         close_on_submit: false,
         loading_spinner: true,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        modal_submit_button_text: $t({defaultMessage: "Confirm"}),
         post_render() {
             $("#users_to_reset_configuration").val("everyone");
         },

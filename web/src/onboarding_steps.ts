@@ -107,8 +107,8 @@ function show_navigation_tour_video(navigation_tour_video_url: string | null): v
             on_click() {
                 // Do nothing
             },
-            html_submit_button: $t_html({defaultMessage: "Skip video — I'm familiar with Zulip"}),
-            html_exit_button: $t_html({defaultMessage: "Watch later"}),
+            modal_submit_button_text: $t({defaultMessage: "Skip video — I'm familiar with Zulip"}),
+            modal_exit_button_text: $t({defaultMessage: "Watch later"}),
             close_on_submit: true,
             id: "navigation-tour-video-modal",
             footer_minor_text: $t({defaultMessage: "Tip: You can watch this video without sound."}),
