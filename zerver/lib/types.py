@@ -158,6 +158,27 @@ class ReactionEvent(TypedDict):
     reaction_type: str
 
 
+class RealmUpdateEvent(TypedDict):
+    type: str
+    op: str
+    property: str
+    value: Any
+    extra_data: NotRequired[dict[str, Any]]
+
+
+class RealmUpdateDictEvent(TypedDict):
+    type: str
+    op: str
+    property: str
+    data: dict[str, Any]
+
+
+class RealmDeactivatedEvent(TypedDict):
+    type: str
+    op: str
+    realm_id: int
+
+
 class UserTopicDict(TypedDict, total=False):
     """Dictionary containing fields fetched from the UserTopic model that
     are needed to encode the UserTopic object for the API.
