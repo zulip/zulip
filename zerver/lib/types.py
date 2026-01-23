@@ -158,7 +158,6 @@ class ReactionEvent(TypedDict):
     reaction_type: str
 
 
-
 class UserTopicDict(TypedDict, total=False):
     """Dictionary containing fields fetched from the UserTopic model that
     are needed to encode the UserTopic object for the API.

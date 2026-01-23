@@ -1,5 +1,3 @@
-
-
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
 from zerver.lib.exceptions import ReactionExistsError
