@@ -504,8 +504,6 @@ class DocPageTest(ZulipTestCase):
         # when adding/deleting screenshots.
         # Use this set to temporarily add exclusions to this test.
         exception_images: set[str] = {
-            # Images used in docs of python-zulip-api integrations
-            "git/001.png",
             # Images used in docs of disabled integrations
             "logos/intercom.svg",
             "intercom/001.png",
