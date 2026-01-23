@@ -216,7 +216,7 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return True
+        return self.name != "intercom"
 
     def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
         paths_to_check = [
@@ -722,11 +722,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="Home Assistant",
     ),
     IncomingWebhookIntegration("ifttt", ["meta-integration"], display_name="IFTTT"),
-    IncomingWebhookIntegration(
-        "intercom",
-        ["customer-support"],
-        [WebhookScreenshotConfig("conversation_admin_replied.json")],
-    ),
+    IncomingWebhookIntegration("intercom", ["customer-support"]),
     IncomingWebhookIntegration(
         "jira",
         ["project-management"],
@@ -1114,6 +1110,8 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # The fixture's goal.losedate needs to be modified dynamically,
     # so the screenshot config is commented out.
     {"beeminder"}
+    # Disabled integrations that are in the process of being added or rewritten.
+    | {"intercom"}
     # Integrations that call external API endpoints.
     | {"slack"}
     # Integrations that require screenshots of message threads - support is yet to be added

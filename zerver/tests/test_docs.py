@@ -503,7 +503,13 @@ class DocPageTest(ZulipTestCase):
         # for the PythonAPIIntegrations, so we cannot avoid going out of sync
         # when adding/deleting screenshots.
         # Use this set to temporarily add exclusions to this test.
-        exception_images: set[str] = {"git/001.png"}
+        exception_images: set[str] = {
+            # Images used in docs of python-zulip-api integrations
+            "git/001.png",
+            # Images used in docs of disabled integrations
+            "logos/intercom.svg",
+            "intercom/001.png",
+        }
         images_in_dir.update(exception_images)
         images_in_docs.update(exception_images)
 
