@@ -143,7 +143,7 @@ export function show_convert_demo_organization_modal(): void {
         modal_content_html,
         on_click: submit_subdomain,
         post_render: demo_organization_conversion_post_render,
-        html_submit_button: $t({defaultMessage: "Convert"}),
+        modal_submit_button_text: $t({defaultMessage: "Convert"}),
         id: "demo-organization-conversion-modal",
         loading_spinner: true,
         help_link:

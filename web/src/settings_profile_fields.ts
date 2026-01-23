@@ -397,7 +397,7 @@ function open_custom_profile_field_creation_form_modal(): void {
         help_link: "/help/custom-profile-fields#add-a-custom-profile-field",
         modal_title_html: $t_html({defaultMessage: "Add a new custom profile field"}),
         modal_content_html,
-        html_submit_button: $t_html({defaultMessage: "Add"}),
+        modal_submit_button_text: $t({defaultMessage: "Add"}),
         on_click: create_profile_field,
         post_render: initialize_custom_profile_field_form,
         loading_spinner: true,

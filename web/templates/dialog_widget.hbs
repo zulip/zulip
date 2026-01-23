@@ -26,11 +26,11 @@
                 <div class="dialog-widget-footer-minor-text">{{footer_minor_text}}</div>
                 {{/if}}
                 {{#unless single_footer_button}}
-                <button class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{{ exit_button_html }}}</button>
+                <button class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{ modal_exit_button_text }}</button>
                 {{/unless}}
                 <div class="dialog_submit_button_container">
                     <button class="modal__button dialog_submit_button"{{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}}>
-                        <span class="submit-button-text">{{{ submit_button_html }}}</span>
+                        <span class="submit-button-text">{{ modal_submit_button_text }}</span>
                         <span class="modal__spinner"></span>
                     </button>
                 </div>

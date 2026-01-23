@@ -2,7 +2,7 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import {localstorage} from "./localstorage.ts";
 
 export function get_hotkey_deprecation_notice(
@@ -53,7 +53,7 @@ export function maybe_show_deprecation_notice(key: string): void {
         dialog_widget.launch({
             modal_title_html: $t_html({defaultMessage: "Deprecation notice"}),
             modal_content_html: message,
-            html_submit_button: $t_html({defaultMessage: "Got it"}),
+            modal_submit_button_text: $t({defaultMessage: "Got it"}),
             on_click() {
                 return;
             },

@@ -10,7 +10,7 @@ import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as emojisets from "./emojisets.ts";
-import {$t_html, get_language_list_columns} from "./i18n.ts";
+import {$t, $t_html, get_language_list_columns} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
@@ -113,7 +113,7 @@ export function launch_default_language_setting_modal_for_spectator(): void {
     dialog_widget.launch({
         modal_title_html: $t_html({defaultMessage: "Select language"}),
         modal_content_html,
-        html_submit_button: $t_html({defaultMessage: "Close"}),
+        modal_submit_button_text: $t({defaultMessage: "Close"}),
         id: "language_selection_modal",
         close_on_submit: true,
         focus_submit_on_open: true,

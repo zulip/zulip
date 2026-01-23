@@ -6,7 +6,7 @@ import render_dialog_widget from "../templates/dialog_widget.hbs";
 
 import type {AjaxRequestHandler} from "./channel.ts";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as modals from "./modals.ts";
 import * as ui_report from "./ui_report.ts";
@@ -66,8 +66,8 @@ export type DialogWidgetConfig = {
     modal_content_html: string;
     on_click?: (e: JQuery.ClickEvent) => void;
     hide_footer?: boolean;
-    html_submit_button?: string;
-    html_exit_button?: string;
+    modal_submit_button_text?: string;
+    modal_exit_button_text?: string;
     close_on_submit?: boolean;
     focus_submit_on_open?: boolean;
     help_link?: string;
@@ -171,8 +171,8 @@ export function launch(conf: DialogWidgetConfig): string {
     // Optional parameters:
     // * on_click: Callback to run when submit button is clicked and footer is enabled.
     // * hide_footer: Whether to disable footer and hide its associated buttons.
-    // * html_submit_button: Submit button text.
-    // * html_exit_button: Exit button text.
+    // * modal_submit_button_text: Submit button text.
+    // * modal_exit_button_text: Exit button text.
     // * close_on_submit: Whether to close modal on clicking submit.
     // * focus_submit_on_open: Whether to focus submit button on open.
     // * help_link: A help link in the heading area.
@@ -196,15 +196,16 @@ export function launch(conf: DialogWidgetConfig): string {
 
     widget_id_counter += 1;
     const modal_unique_id = current_dialog_widget_id();
-    const submit_button_html = conf.html_submit_button ?? $t_html({defaultMessage: "Save changes"});
-    const exit_button_html = conf.html_exit_button ?? $t_html({defaultMessage: "Cancel"});
+    const modal_submit_button_text =
+        conf.modal_submit_button_text ?? $t({defaultMessage: "Save changes"});
+    const modal_exit_button_text = conf.modal_exit_button_text ?? $t({defaultMessage: "Cancel"});
     const html = render_dialog_widget({
         modal_unique_id,
         modal_title_html: conf.modal_title_html,
         modal_title_text: conf.modal_title_text,
         link: conf.help_link,
-        submit_button_html,
-        exit_button_html,
+        modal_submit_button_text,
+        modal_exit_button_text,
         modal_content_html: conf.modal_content_html,
         id: conf.id,
         single_footer_button: conf.single_footer_button,

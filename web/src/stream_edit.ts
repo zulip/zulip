@@ -688,8 +688,8 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         modal_title_html: $t_html({defaultMessage: "Generate channel email address"}),
         modal_content_html: copy_email_address_modal_html,
         id: "copy_email_address_modal",
-        html_submit_button: $t_html({defaultMessage: "Generate email address"}),
-        html_exit_button: $t_html({defaultMessage: "Close"}),
+        modal_submit_button_text: $t({defaultMessage: "Generate email address"}),
+        modal_exit_button_text: $t({defaultMessage: "Close"}),
         help_link: "/help/message-a-channel-by-email#configuration-options",
         post_render: generate_email_modal_post_render,
         on_click: generate_email_address,
@@ -1047,7 +1047,7 @@ export function initialize(): void {
                 modal_title_html: $t_html({defaultMessage: "Confirm changing access permissions"}),
                 modal_content_html: render_confirm_stream_privacy_change_modal(),
                 id: "confirm_stream_privacy_change",
-                html_submit_button: $t_html({defaultMessage: "Confirm"}),
+                modal_submit_button_text: $t({defaultMessage: "Confirm"}),
                 on_click() {
                     settings_org.save_organization_settings(data, $save_button, url);
                 },

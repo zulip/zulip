@@ -385,7 +385,7 @@ export function show(filter?: Filter): void {
         dialog_widget.launch({
             modal_title_html: $t_html({defaultMessage: "Welcome to your inbox!"}),
             modal_content_html,
-            html_submit_button: $t_html({defaultMessage: "Got it"}),
+            modal_submit_button_text: $t({defaultMessage: "Got it"}),
             on_click() {
                 // Do nothing
             },

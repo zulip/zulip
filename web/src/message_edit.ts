@@ -932,7 +932,7 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved: boole
     dialog_widget.launch({
         modal_title_html: modal_heading,
         modal_content_html,
-        html_submit_button: $t_html({defaultMessage: "Close"}),
+        modal_submit_button_text: $t({defaultMessage: "Close"}),
         on_click() {
             /* Nothing extra needs to happen when the dialog is closed. */
         },
@@ -947,8 +947,8 @@ function show_intro_resolve_topic_modal(topic_name: string, cb: () => void): voi
         modal_content_html: render_intro_resolve_topic_modal({topic_name}),
         id: "intro_resolve_topic_modal",
         on_click: cb,
-        html_submit_button: $t({defaultMessage: "Got it — Confirm"}),
-        html_exit_button: $t({defaultMessage: "Got it — Cancel"}),
+        modal_submit_button_text: $t({defaultMessage: "Got it — Confirm"}),
+        modal_exit_button_text: $t({defaultMessage: "Got it — Cancel"}),
     });
 }
 

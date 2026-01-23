@@ -12,7 +12,7 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as emoji from "./emoji.ts";
 import type {ServerEmoji} from "./emoji.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as people from "./people.ts";
@@ -296,7 +296,7 @@ function show_modal(): void {
     dialog_widget.launch({
         modal_title_html: $t_html({defaultMessage: "Add a new emoji"}),
         modal_content_html,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        modal_submit_button_text: $t({defaultMessage: "Confirm"}),
         id: "add-custom-emoji-modal",
         form_id: "add-custom-emoji-form",
         loading_spinner: true,

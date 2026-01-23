@@ -779,7 +779,7 @@ function show_try_zulip_modal() {
     dialog_widget.launch({
         modal_title_text: i18n.$t({defaultMessage: "Welcome to the Zulip development community!"}),
         modal_content_html,
-        html_submit_button: i18n.$t({defaultMessage: "Let's go!"}),
+        modal_submit_button_text: i18n.$t({defaultMessage: "Let's go!"}),
         on_click() {
             // Do nothing
         },
