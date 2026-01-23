@@ -11,16 +11,16 @@
         {{/if}}
     {{else}}
         {{#if (not total_member_count_exceeds_five)}}
-            {{#if additions.newly_added_members}}
+            {{#if newly_added_member_count}}
                 {{t "Added:" }} {{> member_links members=additions.newly_added_members}}.&nbsp;
             {{/if}}
-            {{#if additions.already_added_members}}
+            {{#if already_added_member_count}}
                 {{t "Already a member:"}} {{> member_links members=additions.already_added_members}}.
             {{/if}}
-            {{#if additions.ignored_deactivated_users}}
+            {{#if ignored_deactivated_users_count}}
                 {{t "Ignored deactivated users:"}} {{> member_links members=additions.ignored_deactivated_users}}.
             {{/if}}
-            {{#if additions.ignored_deactivated_groups}}
+            {{#if ignored_deactivated_groups_count}}
                 {{t "Ignored deactivated groups:"}} {{> member_links members=additions.ignored_deactivated_groups}}.
             {{/if}}
         {{else}}
