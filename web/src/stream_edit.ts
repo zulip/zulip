@@ -124,7 +124,7 @@ export function open_stream_edit_modal(stream_id: number): void {
         : $t_html({defaultMessage: "Edit #{channel_name}"}, {channel_name: stream.name});
     dialog_widget.launch({
         html_heading: heading,
-        html_body: change_stream_info_modal,
+        modal_content_html: change_stream_info_modal,
         id: "change_stream_info_modal",
         loading_spinner: true,
         on_click: save_stream_info,
@@ -686,7 +686,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Generate channel email address"}),
-        html_body: copy_email_address_modal_html,
+        modal_content_html: copy_email_address_modal_html,
         id: "copy_email_address_modal",
         html_submit_button: $t_html({defaultMessage: "Generate email address"}),
         html_exit_button: $t_html({defaultMessage: "Close"}),
@@ -893,7 +893,7 @@ export function initialize(): void {
             is_zulip_update_announcements_stream ||
             is_moderation_request_channel;
 
-        const html_body = render_settings_deactivation_stream_modal({
+        const modal_content_html = render_settings_deactivation_stream_modal({
             stream_name_with_privacy_symbol_html,
             is_moderation_request_channel,
             is_new_stream_announcements_stream,
@@ -909,7 +909,7 @@ export function initialize(): void {
             ),
             id: "archive-stream-modal",
             help_link: "/help/archive-a-channel",
-            html_body,
+            modal_content_html,
             on_click: do_archive_stream,
         });
 
@@ -941,7 +941,7 @@ export function initialize(): void {
 
         const stream = sub_store.get(stream_id);
         const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
-        const html_body = render_settings_reactivation_stream_modal();
+        const modal_content_html = render_settings_reactivation_stream_modal();
 
         confirm_dialog.launch({
             html_heading: $t_html(
@@ -949,7 +949,7 @@ export function initialize(): void {
                 {"z-link": () => stream_name_with_privacy_symbol_html},
             ),
             id: "unarchive-stream-modal",
-            html_body,
+            modal_content_html,
             on_click: do_unarchive_stream,
         });
 
@@ -1045,7 +1045,7 @@ export function initialize(): void {
             }
             dialog_widget.launch({
                 html_heading: $t_html({defaultMessage: "Confirm changing access permissions"}),
-                html_body: render_confirm_stream_privacy_change_modal(),
+                modal_content_html: render_confirm_stream_privacy_change_modal(),
                 id: "confirm_stream_privacy_change",
                 html_submit_button: $t_html({defaultMessage: "Confirm"}),
                 on_click() {

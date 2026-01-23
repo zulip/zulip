@@ -2013,7 +2013,7 @@ export function initialize(): void {
                     {defaultMessage: "Edit {group_name}"},
                     {group_name: user_groups.get_display_group_name(user_group.name)},
                 ),
-                html_body: change_user_group_info_modal,
+                modal_content_html: change_user_group_info_modal,
                 id: "change_group_info_modal",
                 loading_spinner: true,
                 on_click: save_group_info,
@@ -2117,13 +2117,13 @@ export function initialize(): void {
             }
 
             const group_name = user_groups.get_display_group_name(user_group.name);
-            const html_body = render_confirm_deactivate_user_group({
+            const modal_content_html = render_confirm_deactivate_user_group({
                 group_name,
             });
 
             confirm_dialog.launch({
                 html_heading: $t_html({defaultMessage: "Deactivate {group_name}?"}, {group_name}),
-                html_body,
+                modal_content_html,
                 on_click: deactivate_user_group,
                 close_on_submit: false,
                 loading_spinner: true,
@@ -2245,7 +2245,7 @@ export function initialize(): void {
 
                 confirm_dialog.launch({
                     html_heading: $t_html({defaultMessage: "Join group?"}),
-                    html_body: render_confirm_join_group_direct_member({
+                    modal_content_html: render_confirm_join_group_direct_member({
                         associated_subgroup_names,
                     }),
                     id: "confirm_join_group_direct_member",

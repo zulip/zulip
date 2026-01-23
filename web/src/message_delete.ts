@@ -91,7 +91,7 @@ export function get_deletability(message: Message): boolean {
 }
 
 export function delete_message(msg_id: number): void {
-    const html_body = render_delete_message_modal();
+    const modal_content_html = render_delete_message_modal();
 
     function do_delete_message(): void {
         currently_deleting_messages.push(msg_id);
@@ -121,7 +121,7 @@ export function delete_message(msg_id: number): void {
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Delete message?"}),
-        html_body,
+        modal_content_html,
         help_link: "/help/delete-a-message#delete-a-message-completely",
         on_click: do_delete_message,
         loading_spinner: true,

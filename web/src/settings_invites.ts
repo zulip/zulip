@@ -280,13 +280,13 @@ export function on_load_success(
             email,
             referred_by,
         };
-        const html_body = render_settings_revoke_invite_modal(ctx);
+        const modal_content_html = render_settings_revoke_invite_modal(ctx);
 
         confirm_dialog.launch({
             html_heading: ctx.is_multiuse
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
-            html_body,
+            modal_content_html,
             id: "revoke_invite_modal",
             close_on_submit: false,
             loading_spinner: true,
@@ -308,11 +308,11 @@ export function on_load_success(
         const $row = $(this).closest(".invite_row");
         const email = $row.find(".email").text();
         const invite_id = $(this).closest("tr").attr("data-invite-id")!;
-        const html_body = render_settings_resend_invite_modal({email});
+        const modal_content_html = render_settings_resend_invite_modal({email});
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Resend invitation?"}),
-            html_body,
+            modal_content_html,
             id: "resend_invite_modal",
             close_on_submit: false,
             loading_spinner: true,

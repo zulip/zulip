@@ -63,7 +63,7 @@ function current_dialog_widget_selector(): string {
 export type DialogWidgetConfig = {
     html_heading?: string;
     text_heading?: string;
-    html_body: string;
+    modal_content_html: string;
     on_click?: (e: JQuery.ClickEvent) => void;
     hide_footer?: boolean;
     html_submit_button?: string;
@@ -163,7 +163,7 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
 export function launch(conf: DialogWidgetConfig): string {
     // Mandatory fields:
     // * html_heading | text_heading
-    // * html_body
+    // * modal_content_html
     // The html_ fields should be safe HTML. If callers
     // interpolate user data into strings, they should use
     // templates.
@@ -205,7 +205,7 @@ export function launch(conf: DialogWidgetConfig): string {
         link: conf.help_link,
         submit_button_html,
         exit_button_html,
-        body_html: conf.html_body,
+        modal_content_html: conf.modal_content_html,
         id: conf.id,
         single_footer_button: conf.single_footer_button,
         always_visible_scrollbar: conf.always_visible_scrollbar,

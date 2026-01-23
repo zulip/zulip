@@ -205,7 +205,7 @@ export function add_custom_emoji_post_render(): void {
 }
 
 function show_modal(): void {
-    const html_body = render_add_emoji({});
+    const modal_content_html = render_add_emoji({});
 
     function add_custom_emoji(): void {
         dialog_widget.show_dialog_spinner();
@@ -278,12 +278,12 @@ function show_modal(): void {
             }
 
             dialog_widget.close(() => {
-                const html_body = emoji_settings_warning_modal({
+                const modal_content_html = emoji_settings_warning_modal({
                     emoji_name: emoji["name"],
                 });
                 confirm_dialog.launch({
                     html_heading: $t_html({defaultMessage: "Override default emoji?"}),
-                    html_body,
+                    modal_content_html,
                     on_click() {
                         submit_custom_emoji_request(formData);
                     },
@@ -295,7 +295,7 @@ function show_modal(): void {
     }
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Add a new emoji"}),
-        html_body,
+        modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
         id: "add-custom-emoji-modal",
         form_id: "add-custom-emoji-form",
@@ -325,7 +325,7 @@ export function set_up(): void {
         const url =
             "/json/realm/emoji/" +
             encodeURIComponent($button.closest("tr").attr("data-emoji-name")!);
-        const html_body = render_confirm_deactivate_custom_emoji({});
+        const modal_content_html = render_confirm_deactivate_custom_emoji({});
 
         const opts = {
             success_continuation() {
@@ -336,7 +336,7 @@ export function set_up(): void {
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Deactivate custom emoji?"}),
-            html_body,
+            modal_content_html,
             id: "confirm_deactivate_custom_emoji_modal",
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {}, opts);

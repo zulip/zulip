@@ -1135,7 +1135,7 @@ export function deactivate_organization(e: JQuery.Event): void {
         time_unit_choices.pop();
     }
 
-    const html_body = render_settings_deactivate_realm_modal({
+    const modal_content_html = render_settings_deactivate_realm_modal({
         can_set_data_deletion,
         delete_in_options: valid_delete_options,
         custom_deletion_input_label: get_custom_deletion_input_text(),
@@ -1145,7 +1145,7 @@ export function deactivate_organization(e: JQuery.Event): void {
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Deactivate organization"}),
         help_link: "/help/deactivate-your-organization",
-        html_body,
+        modal_content_html,
         id: "deactivate-realm-user-modal",
         on_click: do_deactivate_realm,
         close_on_submit: false,

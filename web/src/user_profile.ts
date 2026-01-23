@@ -862,7 +862,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
     assert(bot.is_bot);
     // Extract short_name from email (format: {short_name}-bot@domain)
     const short_name = bot.email.split("@")[0]!.slice(0, -4);
-    const html_body = render_edit_bot_form({
+    const modal_content_html = render_edit_bot_form({
         user_id,
         is_active,
         is_bot_owner_current_user,
@@ -879,7 +879,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         realm_bot_domain: realm.realm_bot_domain,
         zuliprc: "zuliprc",
     });
-    $container.append($(html_body));
+    $container.append($(modal_content_html));
     let avatar_widget: UploadWidget;
 
     assert(bot.bot_type !== undefined && bot.bot_type !== null);
@@ -1244,7 +1244,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
     const hide_deactivate_button =
         current_user.is_admin && !current_user.is_owner && person.is_owner;
     const user_is_only_organization_owner = person.is_owner && people.is_current_user_only_owner();
-    const html_body = render_admin_human_form({
+    const modal_content_html = render_admin_human_form({
         user_id,
         email: person.delivery_email,
         full_name: person.full_name,
@@ -1255,7 +1255,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
     });
 
-    $container.append($(html_body));
+    $container.append($(modal_content_html));
     // Set role dropdown and fields user pills
     $("#user-role-select").val(person.role);
     if (!current_user.is_owner) {

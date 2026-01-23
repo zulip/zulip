@@ -104,7 +104,7 @@ function spectator_default_language_modal_post_render(): void {
 export function launch_default_language_setting_modal_for_spectator(): void {
     const selected_language = user_settings.default_language;
 
-    const html_body = render_dialog_default_language({
+    const modal_content_html = render_dialog_default_language({
         language_list: get_language_list_columns(selected_language).toSorted((a, b) =>
             util.strcmp(a.name_with_percent, b.name_with_percent),
         ),
@@ -112,7 +112,7 @@ export function launch_default_language_setting_modal_for_spectator(): void {
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Select language"}),
-        html_body,
+        modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Close"}),
         id: "language_selection_modal",
         close_on_submit: true,

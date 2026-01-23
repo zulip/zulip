@@ -493,7 +493,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     const show_group_pill_container =
         user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0;
 
-    const html_body = render_invite_user_modal({
+    const modal_content_html = render_invite_user_modal({
         is_admin: current_user.is_admin,
         is_owner: current_user.is_owner,
         show_group_pill_container,
@@ -716,7 +716,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Invite users to organization"}),
-        html_body,
+        modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Invite"}),
         id: "invite-user-modal",
         loading_spinner: true,

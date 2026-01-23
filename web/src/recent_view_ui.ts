@@ -1440,7 +1440,7 @@ export function show(): void {
     }
 
     if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_recent_view_modal")) {
-        const html_body = render_introduce_zulip_view_modal({
+        const modal_content_html = render_introduce_zulip_view_modal({
             zulip_view: "recent_conversations",
             current_home_view_and_escape_navigation_enabled:
                 user_settings.web_home_view === "recent" &&
@@ -1448,7 +1448,7 @@ export function show(): void {
         });
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Welcome to recent conversations!"}),
-            html_body,
+            modal_content_html,
             html_submit_button: $t_html({defaultMessage: "Got it"}),
             on_click() {
                 /* This widget is purely informational and clicking only closes it. */

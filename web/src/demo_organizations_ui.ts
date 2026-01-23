@@ -99,7 +99,7 @@ export function show_convert_demo_organization_modal(): void {
     const parts = new URL(realm.realm_url).hostname.split(".");
     parts.shift();
     const domain = parts.join(".");
-    const html_body = render_convert_demo_organization_form({
+    const modal_content_html = render_convert_demo_organization_form({
         realm_domain: domain,
         user_has_email_set: email_set,
     });
@@ -140,7 +140,7 @@ export function show_convert_demo_organization_modal(): void {
 
     dialog_widget.launch({
         html_heading: $t({defaultMessage: "Make organization permanent"}),
-        html_body,
+        modal_content_html,
         on_click: submit_subdomain,
         post_render: demo_organization_conversion_post_render,
         html_submit_button: $t({defaultMessage: "Convert"}),
