@@ -174,7 +174,7 @@ function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
         }
     }
     assert(profile_field !== undefined);
-    const html_body = render_confirm_delete_profile_field({
+    const modal_content_html = render_confirm_delete_profile_field({
         profile_field_name: profile_field.name,
         count: users_using_deleting_profile_field,
     });
@@ -190,7 +190,7 @@ function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
     }
 
     confirm_dialog.launch({
-        html_body,
+        modal_content_html,
         html_heading: $t_html({defaultMessage: "Delete custom profile field?"}),
         on_click: request_delete,
     });
@@ -330,7 +330,7 @@ function open_custom_profile_field_creation_form_modal(): void {
         realm.custom_profile_field_types,
     ).toSorted((a, b) => util.strcmp(a.name, b.name));
 
-    const html_body = render_add_new_custom_profile_field_form({
+    const modal_content_html = render_add_new_custom_profile_field_form({
         realm_default_external_accounts: realm.realm_default_external_accounts,
         custom_profile_field_types: sorted_custom_profile_field_types,
     });
@@ -396,7 +396,7 @@ function open_custom_profile_field_creation_form_modal(): void {
         form_id: "add-new-custom-profile-field-form",
         help_link: "/help/custom-profile-fields#add-a-custom-profile-field",
         html_heading: $t_html({defaultMessage: "Add a new custom profile field"}),
-        html_body,
+        modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Add"}),
         on_click: create_profile_field,
         post_render: initialize_custom_profile_field_form,
@@ -449,7 +449,7 @@ function show_modal_for_deleting_options(
         }
     }
     const deleted_options_count = Object.keys(deleted_values).length;
-    const html_body = render_confirm_delete_profile_field_option({
+    const modal_content_html = render_confirm_delete_profile_field_option({
         count: users_count_with_deleted_option_selected,
         field_name: field.name,
         deleted_options_count,
@@ -464,7 +464,7 @@ function show_modal_for_deleting_options(
             },
             {N: deleted_options_count},
         ),
-        html_body,
+        modal_content_html,
         on_click: update_profile_field,
     });
 }
@@ -604,7 +604,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
         choices = parse_field_choices_from_field_data(select_field_data);
     }
 
-    const html_body = render_edit_custom_profile_field_form({
+    const modal_content_html = render_edit_custom_profile_field_form({
         profile_field_info: {
             id: field.id,
             name: field.name,
@@ -737,7 +737,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
     dialog_widget.launch({
         form_id: edit_custom_profile_field_form_id,
         html_heading: $t_html({defaultMessage: "Edit custom profile field"}),
-        html_body,
+        modal_content_html,
         id: "edit-custom-profile-field-form-modal",
         on_click: submit_form,
         post_render: set_initial_values_of_profile_field,

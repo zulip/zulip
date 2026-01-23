@@ -95,11 +95,11 @@ function build_page(): void {
         const url =
             "/json/realm/playgrounds/" +
             encodeURIComponent($button.closest("tr").attr("data-playground-id")!);
-        const html_body = render_confirm_delete_playground();
+        const modal_content_html = render_confirm_delete_playground();
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete code playground?"}),
-            html_body,
+            modal_content_html,
             id: "confirm_delete_code_playgrounds_modal",
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});

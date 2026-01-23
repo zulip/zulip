@@ -52,7 +52,7 @@ export function maybe_show_deprecation_notice(key: string): void {
     if (!shown_deprecation_notices.includes(key)) {
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Deprecation notice"}),
-            html_body: message,
+            modal_content_html: message,
             html_submit_button: $t_html({defaultMessage: "Got it"}),
             on_click() {
                 return;

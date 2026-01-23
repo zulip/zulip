@@ -131,7 +131,7 @@ export function show_message_report_modal(message: Message): void {
         is_archived = stream_data.is_stream_archived_by_id(stream_id);
     }
     const message_preview_body_args = get_message_container_for_preview(message);
-    const html_body = render_report_message_modal({
+    const modal_content_html = render_report_message_modal({
         recipient_row_data: get_message_group_for_message_preview(message),
         message_container_data: {
             ...message_preview_body_args,
@@ -274,7 +274,7 @@ export function show_message_report_modal(message: Message): void {
         html_heading: $t_html({
             defaultMessage: "Report a message",
         }),
-        html_body,
+        modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Submit"}),
         help_link: "/help/report-a-message",
         id: "message_report_modal",

@@ -116,11 +116,11 @@ function set_upload_space_stats(): void {
 }
 
 function delete_attachments(attachment: string, file_name: string): void {
-    const html_body = render_confirm_delete_attachment({file_name});
+    const modal_content_html = render_confirm_delete_attachment({file_name});
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Delete file?"}),
-        html_body,
+        modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Delete"}),
         focus_submit_on_open: true,
         on_click() {
@@ -249,7 +249,7 @@ export function set_up_attachments(): void {
 }
 
 export function suggest_delete_detached_attachments(attachments_list: ServerAttachment[]): void {
-    const html_body = render_confirm_delete_detached_attachments_modal({
+    const modal_content_html = render_confirm_delete_detached_attachments_modal({
         attachments_list,
         realm_message_edit_history_is_visible:
             realm.realm_message_edit_history_visibility_policy !==
@@ -296,7 +296,7 @@ export function suggest_delete_detached_attachments(attachments_list: ServerAtta
     dialog_widget.launch({
         id: "confirm_delete_attachments_modal",
         html_heading: $t_html({defaultMessage: "Delete uploaded files?"}),
-        html_body,
+        modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Delete"}),
         html_exit_button: $t_html({defaultMessage: "Don't delete"}),
         loading_spinner: true,

@@ -167,7 +167,7 @@ function delete_choice_row(e: JQuery.ClickEvent): void {
 }
 
 function show_add_default_streams_modal(): void {
-    const html_body = render_add_default_streams();
+    const modal_content_html = render_add_default_streams();
 
     function add_default_streams(e: JQuery.ClickEvent): void {
         e.preventDefault();
@@ -215,7 +215,7 @@ function show_add_default_streams_modal(): void {
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Add default channels"}),
-        html_body,
+        modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Add"}),
         help_link: "/help/set-default-channels-for-new-users",
         id: "add-default-stream-modal",
