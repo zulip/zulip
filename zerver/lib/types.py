@@ -136,6 +136,11 @@ class FormattedEditHistoryEvent(TypedDict, total=False):
     content_html_diff: str
 
 
+class TopicMessageInfo(TypedDict, total=False):
+    topic: str
+    subject: str
+
+
 class UserTopicDict(TypedDict, total=False):
     """Dictionary containing fields fetched from the UserTopic model that
     are needed to encode the UserTopic object for the API.
