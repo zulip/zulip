@@ -490,9 +490,9 @@ function get_wildcard_string(mention: string): string {
         return $t({defaultMessage: "Notify recipients"});
     }
     if (mention === "topic") {
-        return $t({defaultMessage: "Notify topic"});
+        return $t({defaultMessage: "Notify participants in this conversation"});
     }
-    return $t({defaultMessage: "Notify channel"});
+    return $t({defaultMessage: "Notify all channel subscribers"});
 }
 
 export function broadcast_mentions(): PseudoMentionUser[] {
