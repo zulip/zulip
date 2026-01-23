@@ -90,12 +90,8 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
 
 @csrf_exempt
 def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
-    count = (
-        Realm.objects.filter(demo_organization_scheduled_deletion_date__isnull=False).count() + 1
-    )
     user_profile = create_demo_helper(
         request,
-        realm_name=f"Demo organization {count}",
         realm_type=Realm.ORG_TYPES["education"]["id"],
         realm_default_language="en",
         how_realm_creator_found_zulip="existing_user",

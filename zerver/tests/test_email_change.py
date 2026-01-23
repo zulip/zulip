@@ -405,16 +405,21 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(get_user_by_delivery_email(new_email, user_profile.realm), user_profile)
 
     def test_configure_demo_organization_owner_email(self) -> None:
-        demo_name = "demo owner email test"
-        result = self.submit_demo_creation_form(demo_name)
-        realm = Realm.objects.filter(name=demo_name).latest("date_created")
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].startswith(
                 f"http://{realm.string_id}.testserver/accounts/login/subdomain"
             )
         )
-        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
 
         result = self.client_get(result["Location"], subdomain=realm.string_id)
         self.assertEqual(result.status_code, 302)

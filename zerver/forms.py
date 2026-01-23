@@ -228,7 +228,6 @@ class RegistrationForm(HowFoundZulipFormMixin, RealmDetailsForm):
 
 class DemoRegistrationForm(HowFoundZulipFormMixin, forms.Form):
     terms = forms.BooleanField(required=False)
-    realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
     realm_type = forms.TypedChoiceField(
         coerce=int, choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()]
     )

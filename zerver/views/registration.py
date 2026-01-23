@@ -2,6 +2,7 @@ import logging
 import random
 from collections.abc import Iterable
 from contextlib import suppress
+from dataclasses import dataclass
 from typing import Annotated, Any, cast
 from urllib.parse import urlencode, urljoin
 
@@ -1431,7 +1432,13 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
     )
 
 
-def generate_demo_realm_subdomain() -> str:
+@dataclass
+class DemoNameSubdomain:
+    name: str
+    string_id: str
+
+
+def generate_demo_name_and_subdomain() -> DemoNameSubdomain:
     demo_organization_words = get_demo_organization_wordlists()
     demo_subdomain = ""
     while True:
@@ -1442,30 +1449,33 @@ def generate_demo_realm_subdomain() -> str:
         adjective = random.SystemRandom().choice(demo_organization_words["adjectives"])
         noun = random.SystemRandom().choice(demo_organization_words["nouns"])
         demo_subdomain = f"{adverb}-{adjective}-{noun}"
-        if len(demo_subdomain) > Realm.MAX_REALM_SUBDOMAIN_LENGTH:  # nocoverage
+        demo_name = f"{adjective.capitalize()} {noun.capitalize()}"
+        if (
+            len(demo_subdomain) > Realm.MAX_REALM_SUBDOMAIN_LENGTH
+            or len(demo_name) > Realm.MAX_REALM_NAME_LENGTH
+        ):  # nocoverage
             continue
         try:
             check_subdomain_available(demo_subdomain)
             break
         except ValidationError:  # nocoverage
             continue
-    return demo_subdomain
+    return DemoNameSubdomain(name=demo_name, string_id=demo_subdomain)
 
 
 def create_demo_helper(
     request: HttpRequest,
     *,
-    realm_name: str,
     realm_type: int,
     realm_default_language: str,
     how_realm_creator_found_zulip: str,
     how_realm_creator_found_zulip_extra_context: str,
     timezone: str,
 ) -> UserProfile:
-    string_id = generate_demo_realm_subdomain()
+    demo_organization_identifiers = generate_demo_name_and_subdomain()
     realm = do_create_realm(
-        string_id,
-        realm_name,
+        demo_organization_identifiers.string_id,
+        demo_organization_identifiers.name,
         org_type=realm_type,
         default_language=realm_default_language,
         is_demo_organization=True,
@@ -1538,7 +1548,6 @@ def create_demo_organization(
                     status=429,
                 )
 
-            realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
             realm_default_language = form.cleaned_data["realm_default_language"]
             how_found_zulip = form.cleaned_data["how_realm_creator_found_zulip"]
@@ -1549,7 +1558,6 @@ def create_demo_organization(
 
             user_profile = create_demo_helper(
                 request,
-                realm_name=realm_name,
                 realm_type=realm_type,
                 realm_default_language=realm_default_language,
                 how_realm_creator_found_zulip=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[

@@ -27,6 +27,7 @@
                   action="{{ current_url() }}" method="post">
                     {{ csrf_input }}
 
+                    {% include 'zerver/create_realm/realm_creation_name_form_field.html' %}
                     {% include 'zerver/create_realm/realm_creation_base_form_fields.html' %}
                     {% include 'zerver/create_realm/realm_creation_subdomain_form_field.html' %}
                     {% if is_realm_import_enabled %}
