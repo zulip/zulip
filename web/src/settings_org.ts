@@ -1150,7 +1150,7 @@ export function deactivate_organization(e: JQuery.Event): void {
         on_click: do_deactivate_realm,
         close_on_submit: false,
         focus_submit_on_open: true,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        modal_submit_button_text: $t({defaultMessage: "Confirm"}),
         post_render: deactivate_realm_modal_post_render,
     });
 }

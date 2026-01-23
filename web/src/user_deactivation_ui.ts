@@ -11,7 +11,7 @@ import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -98,7 +98,7 @@ export function confirm_deactivation(
                 ),
                 help_link: "/help/deactivate-or-reactivate-a-user#deactivating-a-user",
                 modal_content_html,
-                html_submit_button: $t_html({defaultMessage: "Deactivate"}),
+                modal_submit_button_text: $t({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
                 on_click: handle_confirm,
                 post_render: set_email_field_visibility,
@@ -121,7 +121,7 @@ export function confirm_bot_deactivation(
         modal_title_html: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
         help_link: "/help/deactivate-or-reactivate-a-bot",
         modal_content_html,
-        html_submit_button: $t_html({defaultMessage: "Deactivate"}),
+        modal_submit_button_text: $t({defaultMessage: "Deactivate"}),
         on_click: handle_confirm,
         loading_spinner,
     });

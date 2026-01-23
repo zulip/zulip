@@ -445,7 +445,7 @@ function show_start_export_modal(): void {
     dialog_widget.launch({
         modal_title_html: $t_html({defaultMessage: "Start export?"}),
         modal_content_html,
-        html_submit_button: $t_html({defaultMessage: "Start export"}),
+        modal_submit_button_text: $t({defaultMessage: "Start export"}),
         id: "start-export-modal",
         loading_spinner: true,
         on_click: start_export,

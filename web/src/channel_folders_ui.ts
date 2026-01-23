@@ -86,7 +86,7 @@ export function add_channel_folder(): void {
         modal_title_html: $t_html({defaultMessage: "Create channel folder"}),
         modal_content_html,
         id: "create_channel_folder",
-        html_submit_button: $t_html({defaultMessage: "Create"}),
+        modal_submit_button_text: $t({defaultMessage: "Create"}),
         on_click: create_channel_folder,
         loading_spinner: true,
         on_shown: () => $("#new_channel_folder_name").trigger("focus"),
