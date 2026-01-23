@@ -208,6 +208,22 @@ class MatterMostImporter(ZulipTestCase):
         convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
         self.assert_length(user_handler.get_all_users(), 3)
 
+        # Warn if the converted realm will have no realm owner.
+        team_name = "gryffindor"
+        user_map_with_no_realm_owner = {
+            k: v
+            for k, v in username_to_user.items()
+            if any("team_admin" not in team["roles"] for team in v["teams"])
+        }
+        with self.assertLogs(level="INFO") as info_log:
+            convert_user_data(
+                user_handler, user_id_mapper, user_map_with_no_realm_owner, realm_id, team_name
+            )
+        self.assertEqual(
+            info_log.output,
+            ["WARNING:root:Converted realm has no owners!"],
+        )
+
         # Importer should raise error when user emails are malformed
         team_name = "gryffindor"
         bad_email1 = username_to_user["harry"]["email"] = "harry.ceramicist@zuL1[p.c0m"

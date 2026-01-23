@@ -134,10 +134,15 @@ def convert_user_data(
     realm_id: int,
     team_name: str,
 ) -> None:
+    has_owner = False
     for user_data in user_data_map.values():
         if check_user_in_team(user_data, team_name) or user_data["is_mirror_dummy"]:
             user = process_user(user_data, realm_id, team_name, user_id_mapper)
             user_handler.add_user(user)
+            if user["role"] == UserProfile.ROLE_REALM_OWNER:
+                has_owner = True
+    if not has_owner:
+        logging.warning("Converted realm has no owners!")
     user_handler.validate_user_emails()
 
 
