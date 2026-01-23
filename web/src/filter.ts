@@ -171,6 +171,13 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
 
             return message.topic.toLowerCase() === term.operand.toLowerCase();
 
+        case "topic-contains":
+            if (message.type !== "stream") {
+                return false;
+            }
+
+            return message.topic.toLowerCase().includes(term.operand.toLowerCase());
+
         case "sender":
             return people.id_matches_email_operand(message.sender_id, term.operand);
 
@@ -265,6 +272,8 @@ export class Filter {
                 break;
             case "topic":
                 break;
+            case "topic-contains":
+                break;
             case "sender":
             case "dm":
                 narrow_term.operand = narrow_term.operand.toLowerCase();
@@ -296,7 +305,7 @@ export class Filter {
         message: Message,
     ): NarrowTerm[] | undefined {
         // In presence of `with` term without channel or topic terms in the narrow, the
-        // narrow is populated with the channel and toipic terms through this operation,
+        // narrow is populated with the channel and topic terms through this operation,
         // so that `with` can be used as a standalone operator to target conversation.
         const contains_with_operator = orig_terms.some((term) => term.operator === "with");
 
@@ -514,6 +523,8 @@ export class Filter {
                 return channels_operands.has(term.operand);
             case "topic":
                 return true;
+            case "topic-contains":
+                return true;
             case "sender":
             case "dm":
             case "dm-including":
@@ -656,6 +667,9 @@ export class Filter {
 
             case "topic":
                 return verb + "topic";
+
+            case "topic-contains":
+                return verb + "topic contains";
 
             case "sender":
                 return verb + "sent by";
