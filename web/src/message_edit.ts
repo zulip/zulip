@@ -930,7 +930,7 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved: boole
         modal_heading = $t_html({defaultMessage: "Could not resolve topic"});
     }
     dialog_widget.launch({
-        html_heading: modal_heading,
+        modal_title_html: modal_heading,
         modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Close"}),
         on_click() {
@@ -943,7 +943,7 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved: boole
 
 function show_intro_resolve_topic_modal(topic_name: string, cb: () => void): void {
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Mark topic as resolved"}),
+        modal_title_html: $t_html({defaultMessage: "Mark topic as resolved"}),
         modal_content_html: render_intro_resolve_topic_modal({topic_name}),
         id: "intro_resolve_topic_modal",
         on_click: cb,
@@ -1205,7 +1205,7 @@ export function try_save_inline_topic_edit($row: JQuery): void {
     const stream_topics = stream_topic_history.get_recent_topic_names(stream_id);
     if (stream_topics.includes(new_topic)) {
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Merge with another topic?"}),
+            modal_title_html: $t_html({defaultMessage: "Merge with another topic?"}),
             modal_content_html: render_confirm_merge_topics_with_rename({
                 topic_display_name: util.get_final_topic_display_name(new_topic),
                 is_empty_string_topic: new_topic === "",
@@ -1500,7 +1500,7 @@ export function maybe_show_edit($row: JQuery, id: number): void {
 
 function warn_user_about_unread_msgs(last_sent_msg_id: number, num_unread: number): void {
     confirm_dialog.launch({
-        html_heading: $t({defaultMessage: "Edit your last message?"}),
+        modal_title_html: $t({defaultMessage: "Edit your last message?"}),
         modal_content_html: render_confirm_edit_messages({
             num_unread,
         }),
@@ -1616,7 +1616,7 @@ function handle_message_move_failure_due_to_time_limit(
         messages_not_allowed_to_move_text,
     });
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Move some messages?"}),
+        modal_title_html: $t_html({defaultMessage: "Move some messages?"}),
         modal_content_html,
         on_click: handle_confirm,
         loading_spinner: true,

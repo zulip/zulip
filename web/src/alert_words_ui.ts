@@ -119,7 +119,7 @@ export function show_add_alert_word_modal(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Add a new alert word"}),
+        modal_title_html: $t_html({defaultMessage: "Add a new alert word"}),
         modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Add"}),
         help_link: "/help/dm-mention-alert-notifications#alert-words",

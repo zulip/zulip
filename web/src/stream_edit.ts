@@ -123,7 +123,7 @@ export function open_stream_edit_modal(stream_id: number): void {
           )
         : $t_html({defaultMessage: "Edit #{channel_name}"}, {channel_name: stream.name});
     dialog_widget.launch({
-        html_heading: heading,
+        modal_title_html: heading,
         modal_content_html: change_stream_info_modal,
         id: "change_stream_info_modal",
         loading_spinner: true,
@@ -685,7 +685,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Generate channel email address"}),
+        modal_title_html: $t_html({defaultMessage: "Generate channel email address"}),
         modal_content_html: copy_email_address_modal_html,
         id: "copy_email_address_modal",
         html_submit_button: $t_html({defaultMessage: "Generate email address"}),
@@ -903,7 +903,7 @@ export function initialize(): void {
         });
 
         confirm_dialog.launch({
-            html_heading: $t_html(
+            modal_title_html: $t_html(
                 {defaultMessage: "Archive <z-link></z-link>?"},
                 {"z-link": () => stream_name_with_privacy_symbol_html},
             ),
@@ -944,7 +944,7 @@ export function initialize(): void {
         const modal_content_html = render_settings_reactivation_stream_modal();
 
         confirm_dialog.launch({
-            html_heading: $t_html(
+            modal_title_html: $t_html(
                 {defaultMessage: "Unarchive <z-link></z-link>?"},
                 {"z-link": () => stream_name_with_privacy_symbol_html},
             ),
@@ -1044,7 +1044,7 @@ export function initialize(): void {
                 return;
             }
             dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Confirm changing access permissions"}),
+                modal_title_html: $t_html({defaultMessage: "Confirm changing access permissions"}),
                 modal_content_html: render_confirm_stream_privacy_change_modal(),
                 id: "confirm_stream_privacy_change",
                 html_submit_button: $t_html({defaultMessage: "Confirm"}),

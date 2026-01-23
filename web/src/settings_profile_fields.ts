@@ -191,7 +191,7 @@ function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
 
     confirm_dialog.launch({
         modal_content_html,
-        html_heading: $t_html({defaultMessage: "Delete custom profile field?"}),
+        modal_title_html: $t_html({defaultMessage: "Delete custom profile field?"}),
         on_click: request_delete,
     });
 }
@@ -395,7 +395,7 @@ function open_custom_profile_field_creation_form_modal(): void {
     dialog_widget.launch({
         form_id: "add-new-custom-profile-field-form",
         help_link: "/help/custom-profile-fields#add-a-custom-profile-field",
-        html_heading: $t_html({defaultMessage: "Add a new custom profile field"}),
+        modal_title_html: $t_html({defaultMessage: "Add a new custom profile field"}),
         modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Add"}),
         on_click: create_profile_field,
@@ -457,7 +457,7 @@ function show_modal_for_deleting_options(
     });
 
     confirm_dialog.launch({
-        html_heading: $t_html(
+        modal_title_html: $t_html(
             {
                 defaultMessage:
                     "{N, plural, one {Delete this option?} other {Delete these options?}}",
@@ -736,7 +736,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
     const edit_custom_profile_field_form_id = "edit-custom-profile-field-form-" + field_id;
     dialog_widget.launch({
         form_id: edit_custom_profile_field_form_id,
-        html_heading: $t_html({defaultMessage: "Edit custom profile field"}),
+        modal_title_html: $t_html({defaultMessage: "Edit custom profile field"}),
         modal_content_html,
         id: "edit-custom-profile-field-form-modal",
         on_click: submit_form,

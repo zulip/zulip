@@ -367,7 +367,7 @@ export function add_a_new_bot(): void {
         form_id: "create_bot_form",
         help_link: "/help/add-a-bot-or-integration",
         modal_content_html,
-        html_heading: $t_html({defaultMessage: "Add a new bot"}),
+        modal_title_html: $t_html({defaultMessage: "Add a new bot"}),
         html_submit_button: $t_html({defaultMessage: "Add"}),
         loading_spinner: true,
         on_click: create_a_new_bot,

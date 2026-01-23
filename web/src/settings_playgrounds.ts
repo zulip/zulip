@@ -98,7 +98,7 @@ function build_page(): void {
         const modal_content_html = render_confirm_delete_playground();
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete code playground?"}),
+            modal_title_html: $t_html({defaultMessage: "Delete code playground?"}),
             modal_content_html,
             id: "confirm_delete_code_playgrounds_modal",
             on_click() {

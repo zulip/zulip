@@ -75,7 +75,7 @@ export function confirm_unstar_all_messages(): void {
     const modal_content_html = render_confirm_unstar_all_messages();
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Unstar all messages"}),
+        modal_title_html: $t_html({defaultMessage: "Unstar all messages"}),
         modal_content_html,
         on_click: message_flags.unstar_all_messages,
     });
@@ -98,7 +98,7 @@ export function confirm_unstar_all_messages_in_topic(stream_id: number, topic: s
     });
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Unstar messages in topic"}),
+        modal_title_html: $t_html({defaultMessage: "Unstar messages in topic"}),
         modal_content_html,
         on_click,
     });

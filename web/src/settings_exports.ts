@@ -444,7 +444,7 @@ function show_start_export_modal(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Start export?"}),
+        modal_title_html: $t_html({defaultMessage: "Start export?"}),
         modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Start export"}),
         id: "start-export-modal",
@@ -533,7 +533,7 @@ export function set_up(): void {
         const modal_content_html = render_confirm_delete_data_export();
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete data export?"}),
+            modal_title_html: $t_html({defaultMessage: "Delete data export?"}),
             modal_content_html,
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});

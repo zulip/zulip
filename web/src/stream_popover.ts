@@ -1197,7 +1197,7 @@ export async function build_move_topic_to_stream_popover(
     }
 
     dialog_widget.launch({
-        html_heading: modal_heading,
+        modal_title_html: modal_heading,
         modal_content_html: render_move_topic_to_stream(args),
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
         id: "move_topic_modal",

@@ -37,7 +37,7 @@ export function open_user_status_modal(): void {
     });
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Set status"}),
+        modal_title_html: $t_html({defaultMessage: "Set status"}),
         modal_content_html: rendered_set_status_overlay,
         html_submit_button: $t_html({defaultMessage: "Save"}),
         id: "set-user-status-modal",

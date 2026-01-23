@@ -139,7 +139,7 @@ export function show_convert_demo_organization_modal(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t({defaultMessage: "Make organization permanent"}),
+        modal_title_html: $t({defaultMessage: "Make organization permanent"}),
         modal_content_html,
         on_click: submit_subdomain,
         post_render: demo_organization_conversion_post_render,
