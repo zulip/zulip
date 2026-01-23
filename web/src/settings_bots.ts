@@ -368,7 +368,7 @@ export function add_a_new_bot(): void {
         help_link: "/help/add-a-bot-or-integration",
         modal_content_html,
         modal_title_html: $t_html({defaultMessage: "Add a new bot"}),
-        html_submit_button: $t_html({defaultMessage: "Add"}),
+        modal_submit_button_text: $t({defaultMessage: "Add"}),
         loading_spinner: true,
         on_click: create_a_new_bot,
         on_shown: () => $("#create_bot_type").trigger("focus"),

@@ -21,8 +21,8 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
     const data = {narrow: message_fetch.get_narrow_for_message_fetch(filter)};
     const display_topic_name = util.get_final_topic_display_name(topic_name);
     const unread_topic_params = {
-        html_submit_button: $t({defaultMessage: "Mark topic as read"}),
-        html_exit_button: $t({defaultMessage: "Close"}),
+        modal_submit_button_text: $t({defaultMessage: "Mark topic as read"}),
+        modal_exit_button_text: $t({defaultMessage: "Close"}),
         on_click() {
             unread_ops.mark_topic_as_read(channel_id, topic_name);
         },
@@ -30,7 +30,7 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
     };
 
     let params = {
-        html_submit_button: $t({defaultMessage: "Close"}),
+        modal_submit_button_text: $t({defaultMessage: "Close"}),
         on_click() {
             // Just close the modal, there is nothing else to do.
         },

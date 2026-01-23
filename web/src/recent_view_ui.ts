@@ -1449,7 +1449,7 @@ export function show(): void {
         dialog_widget.launch({
             modal_title_html: $t_html({defaultMessage: "Welcome to recent conversations!"}),
             modal_content_html,
-            html_submit_button: $t_html({defaultMessage: "Got it"}),
+            modal_submit_button_text: $t({defaultMessage: "Got it"}),
             on_click() {
                 /* This widget is purely informational and clicking only closes it. */
             },

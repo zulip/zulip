@@ -137,7 +137,7 @@ function item_button_click_callback(event: JQuery.ClickEvent): void {
                 title: saved_snippet.title,
                 content: saved_snippet.content,
             }),
-            html_submit_button: $t_html({defaultMessage: "Save"}),
+            modal_submit_button_text: $t({defaultMessage: "Save"}),
             id: "edit-saved-snippet-modal",
             form_id: "edit-saved-snippet-form",
             update_submit_disabled_state_on_change: true,
@@ -179,7 +179,7 @@ function item_click_callback(
             modal_content_html: render_add_saved_snippet_modal({
                 prepopulated_content: $target_textarea.val(),
             }),
-            html_submit_button: $t_html({defaultMessage: "Save"}),
+            modal_submit_button_text: $t({defaultMessage: "Save"}),
             id: "add-new-saved-snippet-modal",
             form_id: "add-new-saved-snippet-form",
             update_submit_disabled_state_on_change: true,

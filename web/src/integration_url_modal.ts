@@ -568,8 +568,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
         modal_title_html: $t_html({defaultMessage: "Generate URL for an integration"}),
         modal_content_html,
         id: "generate-integration-url-modal",
-        html_submit_button: $t_html({defaultMessage: "Copy URL"}),
-        html_exit_button: $t_html({defaultMessage: "Close"}),
+        modal_submit_button_text: $t({defaultMessage: "Copy URL"}),
+        modal_exit_button_text: $t({defaultMessage: "Close"}),
         on_click() {
             return;
         },

@@ -9,7 +9,7 @@ import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as hash_parser from "./hash_parser.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -216,7 +216,7 @@ function show_add_default_streams_modal(): void {
     dialog_widget.launch({
         modal_title_html: $t_html({defaultMessage: "Add default channels"}),
         modal_content_html,
-        html_submit_button: $t_html({defaultMessage: "Add"}),
+        modal_submit_button_text: $t({defaultMessage: "Add"}),
         help_link: "/help/set-default-channels-for-new-users",
         id: "add-default-stream-modal",
         loading_spinner: true,
