@@ -158,6 +158,28 @@ class ReactionEvent(TypedDict):
     reaction_type: str
 
 
+class StreamUpdateEventBase(TypedDict):
+    type: str
+    op: str
+    stream_id: int
+    name: str
+    property: str
+    value: Any
+
+
+class StreamUpdateEvent(StreamUpdateEventBase, total=False):
+    rendered_description: str
+    history_public_to_subscribers: bool
+    is_web_public: bool
+
+
+class StreamCreateEvent(TypedDict):
+    type: str
+    op: str
+    streams: list["APIStreamDict"]
+    for_unarchiving: bool
+
+
 class UserTopicDict(TypedDict, total=False):
     """Dictionary containing fields fetched from the UserTopic model that
     are needed to encode the UserTopic object for the API.

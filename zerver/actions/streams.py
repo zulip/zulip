@@ -51,7 +51,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info, get_subscribers_query
 from zerver.lib.topic import get_topic_display_name
-from zerver.lib.types import APISubscriptionDict, UserGroupMembersData
+from zerver.lib.types import APISubscriptionDict, StreamUpdateEvent, UserGroupMembersData
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
@@ -164,14 +164,14 @@ def do_deactivate_stream(stream: Stream, *, acting_user: UserProfile | None) -> 
     for group in default_stream_groups_for_stream:
         do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
 
-    event = dict(
-        type="stream",
-        op="update",
-        stream_id=stream.id,
-        name=stream.name,
-        property="is_archived",
-        value=True,
-    )
+    event: StreamUpdateEvent = {
+        "type": "stream",
+        "op": "update",
+        "stream_id": stream.id,
+        "name": stream.name,
+        "property": "is_archived",
+        "value": True,
+    }
     send_event_on_commit(stream.realm, event, affected_user_ids)
 
     send_stream_deletion_event(stream.realm, affected_user_ids, [stream], for_archiving=True)
@@ -288,14 +288,14 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
 
     notify_user_ids = list(can_access_stream_metadata_user_ids(stream))
 
-    event = dict(
-        type="stream",
-        op="update",
-        stream_id=stream.id,
-        name=stream.name,
-        property="is_archived",
-        value=False,
-    )
+    event: StreamUpdateEvent = {
+        "type": "stream",
+        "op": "update",
+        "stream_id": stream.id,
+        "name": stream.name,
+        "property": "is_archived",
+        "value": False,
+    }
     send_event_on_commit(stream.realm, event, notify_user_ids)
 
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
@@ -1402,16 +1402,16 @@ def do_change_stream_permission(
         )
         send_event_on_commit(stream.realm, peer_add_event, peer_notify_user_ids)
 
-    event = dict(
-        op="update",
-        type="stream",
-        property="invite_only",
-        value=stream.invite_only,
-        history_public_to_subscribers=stream.history_public_to_subscribers,
-        is_web_public=stream.is_web_public,
-        stream_id=stream.id,
-        name=stream.name,
-    )
+    event: StreamUpdateEvent = {
+        "op": "update",
+        "type": "stream",
+        "property": "invite_only",
+        "value": stream.invite_only,
+        "history_public_to_subscribers": stream.history_public_to_subscribers,
+        "is_web_public": stream.is_web_public,
+        "stream_id": stream.id,
+        "name": stream.name,
+    }
     # we do not need to send update events to the users who received creation event
     # since they already have the updated stream info.
     notify_stream_update_ids = (
@@ -1610,15 +1610,15 @@ def do_change_stream_description(
         },
     )
 
-    event = dict(
-        type="stream",
-        op="update",
-        property="description",
-        name=stream.name,
-        stream_id=stream.id,
-        value=new_description,
-        rendered_description=stream.rendered_description,
-    )
+    event: StreamUpdateEvent = {
+        "type": "stream",
+        "op": "update",
+        "property": "description",
+        "name": stream.name,
+        "stream_id": stream.id,
+        "value": new_description,
+        "rendered_description": stream.rendered_description,
+    }
     send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
 
     send_change_stream_description_notification(
@@ -1699,14 +1699,14 @@ def do_change_stream_message_retention_days(
         },
     )
 
-    event = dict(
-        op="update",
-        type="stream",
-        property="message_retention_days",
-        value=message_retention_days,
-        stream_id=stream.id,
-        name=stream.name,
-    )
+    event: StreamUpdateEvent = {
+        "op": "update",
+        "type": "stream",
+        "property": "message_retention_days",
+        "value": message_retention_days,
+        "stream_id": stream.id,
+        "name": stream.name,
+    }
     send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
     send_change_stream_message_retention_days_notification(
         user_profile=acting_user,
@@ -1737,14 +1737,14 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
         },
     )
 
-    event = dict(
-        op="update",
-        type="stream",
-        property=name,
-        value=value,
-        stream_id=stream.id,
-        name=stream.name,
-    )
+    event: StreamUpdateEvent = {
+        "op": "update",
+        "type": "stream",
+        "property": name,
+        "value": value,
+        "stream_id": stream.id,
+        "name": stream.name,
+    }
 
     if name == "topics_policy":
         event["value"] = StreamTopicsPolicyEnum(value).name
@@ -1837,14 +1837,14 @@ def do_change_stream_group_based_setting(
             "property": setting_name,
         },
     )
-    update_event = dict(
-        op="update",
-        type="stream",
-        property=setting_name,
-        value=convert_to_user_group_members_dict(new_setting_api_value),
-        stream_id=stream.id,
-        name=stream.name,
-    )
+    update_event: StreamUpdateEvent = {
+        "op": "update",
+        "type": "stream",
+        "property": setting_name,
+        "value": convert_to_user_group_members_dict(new_setting_api_value),
+        "stream_id": stream.id,
+        "name": stream.name,
+    }
     current_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
 
     if setting_name in Stream.stream_permission_group_settings_granting_metadata_access:
@@ -1894,29 +1894,29 @@ def do_change_stream_group_based_setting(
         stream_post_policy = get_stream_post_policy_value_based_on_group_setting(user_group)
 
         if old_stream_post_policy != stream_post_policy:
-            event = dict(
-                op="update",
-                type="stream",
-                property="stream_post_policy",
-                value=stream_post_policy,
-                stream_id=stream.id,
-                name=stream.name,
-            )
+            event: StreamUpdateEvent = {
+                "op": "update",
+                "type": "stream",
+                "property": "stream_post_policy",
+                "value": stream_post_policy,
+                "stream_id": stream.id,
+                "name": stream.name,
+            }
             send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
 
             # Backwards-compatibility code: We removed the
             # is_announcement_only property in early 2020, but we send a
             # duplicate event for legacy mobile clients that might want the
             # data.
-            event = dict(
-                op="update",
-                type="stream",
-                property="is_announcement_only",
-                value=stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
-                stream_id=stream.id,
-                name=stream.name,
-            )
-            send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
+            legacy_event: StreamUpdateEvent = {
+                "op": "update",
+                "type": "stream",
+                "property": "is_announcement_only",
+                "value": stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
+                "stream_id": stream.id,
+                "name": stream.name,
+            }
+            send_event_on_commit(stream.realm, legacy_event, current_user_ids_with_metadata_access)
 
         assert acting_user is not None
         send_stream_posting_permission_update_notification(
@@ -1954,12 +1954,12 @@ def do_change_stream_folder(
         },
     )
 
-    event = dict(
-        op="update",
-        type="stream",
-        property="folder_id",
-        value=stream.folder_id,
-        stream_id=stream.id,
-        name=stream.name,
-    )
+    event: StreamUpdateEvent = {
+        "op": "update",
+        "type": "stream",
+        "property": "folder_id",
+        "value": stream.folder_id,
+        "stream_id": stream.id,
+        "name": stream.name,
+    }
     send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
