@@ -548,7 +548,7 @@ export function set_up(): void {
         }
 
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Change password"}),
+            modal_title_html: $t_html({defaultMessage: "Change password"}),
             modal_content_html: render_dialog_change_password({
                 password_min_length: realm.password_min_length,
                 password_max_length: realm.password_max_length,
@@ -686,7 +686,7 @@ export function set_up(): void {
         e.stopPropagation();
         if (settings_data.user_can_change_email()) {
             dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Change email"}),
+                modal_title_html: $t_html({defaultMessage: "Change email"}),
                 modal_content_html: render_change_email_modal({
                     delivery_email: current_user.delivery_email,
                 }),
@@ -778,7 +778,7 @@ export function set_up(): void {
             current_user.delivery_email === ""
         ) {
             dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Add email"}),
+                modal_title_html: $t_html({defaultMessage: "Add email"}),
                 modal_content_html: render_demo_organization_add_email_modal({
                     delivery_email: current_user.delivery_email,
                     full_name: current_user.full_name,

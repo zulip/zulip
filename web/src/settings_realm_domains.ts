@@ -148,7 +148,7 @@ export function show_realm_domains_modal(): void {
     const realm_domains_table_body = render_realm_domains_modal();
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Allowed domains"}),
+        modal_title_html: $t_html({defaultMessage: "Allowed domains"}),
         modal_content_html: realm_domains_table_body,
         html_submit_button: $t_html({defaultMessage: "Close"}),
         id: "realm_domains_modal",

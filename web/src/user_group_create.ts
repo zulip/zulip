@@ -331,7 +331,7 @@ export function set_up_handlers(): void {
         };
         const change_user_group_info_modal = render_change_user_group_info_modal(template_data);
         dialog_widget.launch({
-            html_heading: $t_html(
+            modal_title_html: $t_html(
                 {defaultMessage: "Rename {group_name} (<i>deactivated</i>)"},
                 {group_name: user_groups.get_display_group_name(group.name)},
             ),

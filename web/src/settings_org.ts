@@ -1143,7 +1143,7 @@ export function deactivate_organization(e: JQuery.Event): void {
     });
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Deactivate organization"}),
+        modal_title_html: $t_html({defaultMessage: "Deactivate organization"}),
         help_link: "/help/deactivate-your-organization",
         modal_content_html,
         id: "deactivate-realm-user-modal",

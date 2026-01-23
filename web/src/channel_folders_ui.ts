@@ -83,7 +83,7 @@ export function add_channel_folder(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Create channel folder"}),
+        modal_title_html: $t_html({defaultMessage: "Create channel folder"}),
         modal_content_html,
         id: "create_channel_folder",
         html_submit_button: $t_html({defaultMessage: "Create"}),
@@ -182,7 +182,7 @@ function archive_folder(folder_id: number): void {
 
 export function handle_archiving_channel_folder(folder_id: number): void {
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Delete channel folder?"}),
+        modal_title_html: $t_html({defaultMessage: "Delete channel folder?"}),
         modal_content_html: render_confirm_archive_channel_folder(),
         on_click() {
             archive_folder(folder_id);
@@ -455,7 +455,7 @@ export function handle_editing_channel_folder(folder_id: number): void {
         can_manage_folder,
     });
 
-    const html_heading = can_manage_folder
+    const modal_title_html = can_manage_folder
         ? $t_html({defaultMessage: "Manage channel folder"})
         : $t_html({defaultMessage: "Channel folder details"});
 
@@ -468,7 +468,7 @@ export function handle_editing_channel_folder(folder_id: number): void {
     }
 
     dialog_widget.launch({
-        html_heading,
+        modal_title_html,
         modal_content_html,
         id: "edit_channel_folder",
         on_click() {

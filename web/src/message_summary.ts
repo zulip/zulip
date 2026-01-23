@@ -43,7 +43,7 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
         };
     }
     dialog_widget.launch({
-        text_heading: display_topic_name,
+        modal_title_text: display_topic_name,
         modal_content_html: "",
         close_on_submit: true,
         id: "topic-summary-modal",
