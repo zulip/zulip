@@ -175,6 +175,59 @@ class UserGroupMembersDict(TypedDict):
     direct_subgroups: list[int]
 
 
+class UserGroupDict(TypedDict):
+    id: int
+    name: str
+    description: str
+    members: list[int]
+    direct_subgroup_ids: list[int]
+    is_system_group: bool
+    creator_id: int | None
+    date_created: int
+    deactivated: bool
+    can_add_members_group: int | UserGroupMembersDict
+    can_join_group: int | UserGroupMembersDict
+    can_leave_group: int | UserGroupMembersDict
+    can_manage_group: int | UserGroupMembersDict
+    can_mention_group: int | UserGroupMembersDict
+    can_remove_members_group: int | UserGroupMembersDict
+
+
+class UserGroupAddEvent(TypedDict):
+    type: str
+    op: str
+    group: UserGroupDict
+    for_reactivation: bool
+
+
+class UserGroupUpdateEvent(TypedDict):
+    type: str
+    op: str
+    group_id: int
+    data: dict[str, Any]
+    deactivated: NotRequired[bool]
+
+
+class UserGroupMembersEvent(TypedDict):
+    type: str
+    op: str
+    group_id: int
+    user_ids: list[int]
+
+
+class UserGroupSubgroupsEvent(TypedDict):
+    type: str
+    op: str
+    group_id: int
+    direct_subgroup_ids: list[int]
+
+
+class UserGroupRemoveEvent(TypedDict):
+    type: str
+    op: str
+    group_id: int
+
+
 @dataclass
 class UserGroupMembersData:
     direct_members: list[int]
