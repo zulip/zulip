@@ -1430,7 +1430,18 @@ export function show(): void {
         is_recent_view: true,
         is_visible: recent_view_util.is_visible,
         set_visible: recent_view_util.set_visible,
-        complete_rerender,
+        complete_rerender(coming_from_other_views = false) {
+            complete_rerender(coming_from_other_views);
+            // If the user was searching for something, we want to restore focus
+            // to the search box and select the text so they can easily type over it.
+            // We only do this if the user has typed something in the search box.
+            const search_val = $<HTMLInputElement>("#recent_view_search").val();
+            if (search_val) {
+                setTimeout(() => {
+                    $("#recent_view_search").trigger("focus").trigger("select");
+                }, 0);
+            }
+        },
     });
     last_scroll_offset = undefined;
 
