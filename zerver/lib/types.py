@@ -138,7 +138,25 @@ class FormattedEditHistoryEvent(TypedDict, total=False):
 
 class TopicMessageInfo(TypedDict, total=False):
     topic: str
-    subject: str
+    subject: str  # Legacy key, required for compatibility.
+
+
+class ReactionUserDict(TypedDict):
+    user_id: int
+    email: str
+    full_name: str
+
+
+class ReactionEvent(TypedDict):
+    type: str
+    op: str
+    user_id: int
+    user: ReactionUserDict
+    message_id: int
+    emoji_name: str
+    emoji_code: str
+    reaction_type: str
+
 
 
 class UserTopicDict(TypedDict, total=False):
