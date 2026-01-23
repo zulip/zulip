@@ -108,7 +108,7 @@ function item_button_click_callback(event: JQuery.ClickEvent): void {
     ) {
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete saved snippet?"}),
-            html_body: render_confirm_delete_saved_snippet(),
+            modal_content_html: render_confirm_delete_saved_snippet(),
             on_click() {
                 const saved_snippet_id = $(event.target)
                     .closest(".list-item")
@@ -133,7 +133,7 @@ function item_button_click_callback(event: JQuery.ClickEvent): void {
         assert(saved_snippet !== undefined);
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Edit saved snippet"}),
-            html_body: render_edit_saved_snippet_modal({
+            modal_content_html: render_edit_saved_snippet_modal({
                 title: saved_snippet.title,
                 content: saved_snippet.content,
             }),
@@ -176,7 +176,7 @@ function item_click_callback(
     if (is_sticky_bottom_option_clicked) {
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Create a new saved snippet"}),
-            html_body: render_add_saved_snippet_modal({
+            modal_content_html: render_add_saved_snippet_modal({
                 prepopulated_content: $target_textarea.val(),
             }),
             html_submit_button: $t_html({defaultMessage: "Save"}),

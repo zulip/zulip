@@ -40,7 +40,7 @@ function open_linkifier_edit_form(linkifier_id: number): void {
     const linkifiers_list = realm.realm_linkifiers;
     const linkifier = linkifiers_list.find((linkifier) => linkifier.id === linkifier_id);
     assert(linkifier !== undefined);
-    const html_body = render_admin_linkifier_edit_form({
+    const modal_content_html = render_admin_linkifier_edit_form({
         linkifier_id,
         pattern: linkifier.pattern,
         url_template: linkifier.url_template,
@@ -101,7 +101,7 @@ function open_linkifier_edit_form(linkifier_id: number): void {
 
     const dialog_widget_id = dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Edit linkfiers"}),
-        html_body,
+        modal_content_html,
         on_click() {
             submit_linkifier_form(dialog_widget_id);
         },
@@ -219,14 +219,14 @@ export function build_page(): void {
         e.preventDefault();
         e.stopPropagation();
         const $button = $(this);
-        const html_body = render_confirm_delete_linkifier();
+        const modal_content_html = render_confirm_delete_linkifier();
         const url =
             "/json/realm/filters/" +
             encodeURIComponent($button.closest("tr").attr("data-linkifier-id")!);
 
         confirm_dialog.launch({
             html_heading: $t_html({defaultMessage: "Delete linkifier?"}),
-            html_body,
+            modal_content_html,
             id: "confirm_delete_linkifiers_modal",
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});

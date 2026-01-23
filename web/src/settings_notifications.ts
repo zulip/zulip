@@ -318,11 +318,11 @@ function reset_stream_notifications(elem: HTMLElement): void {
     const sub = sub_store.get(stream_id);
     assert(sub !== undefined);
 
-    const html_body = render_confirm_reset_stream_notifications({sub});
+    const modal_content_html = render_confirm_reset_stream_notifications({sub});
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Reset to default notifications?"}),
-        html_body,
+        modal_content_html,
         id: "confirm_reset_stream_notifications_modal",
         on_click() {
             do_reset_stream_notifications(elem, sub);
@@ -503,12 +503,12 @@ export function set_up(settings_panel: SettingsPanel): void {
                 }
             }
             if (enabled_pm_mention_notifications_count === 1) {
-                const html_body = render_confirm_disable_all_notifications();
+                const modal_content_html = render_confirm_disable_all_notifications();
                 $input_elem.prop("checked", user_settings[setting_name]);
 
                 confirm_dialog.launch({
                     html_heading: $t_html({defaultMessage: "Disable notifications?"}),
-                    html_body,
+                    modal_content_html,
                     on_click() {
                         change_notification_setting(
                             setting_name,

@@ -44,7 +44,7 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
     }
     dialog_widget.launch({
         text_heading: display_topic_name,
-        html_body: "",
+        modal_content_html: "",
         close_on_submit: true,
         id: "topic-summary-modal",
         footer_minor_text: $t({defaultMessage: "AI summaries may have errors."}),

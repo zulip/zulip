@@ -103,7 +103,7 @@ function remove_alert_word(alert_word: string): void {
 }
 
 export function show_add_alert_word_modal(): void {
-    const html_body = render_add_alert_word();
+    const modal_content_html = render_add_alert_word();
 
     function add_alert_word_post_render(): void {
         const $add_user_group_input_element = $<HTMLInputElement>("input#add-alert-word-name");
@@ -120,7 +120,7 @@ export function show_add_alert_word_modal(): void {
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Add a new alert word"}),
-        html_body,
+        modal_content_html,
         html_submit_button: $t_html({defaultMessage: "Add"}),
         help_link: "/help/dm-mention-alert-notifications#alert-words",
         form_id: "add-alert-word-form",

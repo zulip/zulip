@@ -96,14 +96,14 @@ function narrow_to_dm_with_welcome_bot_new_user(
 function show_navigation_tour_video(navigation_tour_video_url: string | null): void {
     if (ONE_TIME_NOTICES_TO_DISPLAY.has("navigation_tour_video")) {
         assert(navigation_tour_video_url !== null);
-        const html_body = render_navigation_tour_video_modal({
+        const modal_content_html = render_navigation_tour_video_modal({
             video_src: navigation_tour_video_url,
             poster_src: "/static/images/navigation-tour-video-thumbnail.png",
         });
         let watch_later_clicked = false;
         dialog_widget.launch({
             html_heading: $t_html({defaultMessage: "Welcome to Zulip!"}),
-            html_body,
+            modal_content_html,
             on_click() {
                 // Do nothing
             },
