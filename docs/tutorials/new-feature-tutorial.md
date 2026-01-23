@@ -44,19 +44,18 @@ organization in Zulip). The following files are involved in the process:
 
 **Frontend**
 
-- `web/templates/settings/organization_permissions_admin.hbs`: defines
-  the structure of the admin permissions page (checkboxes for each organization
-  permission setting).
-- `web/src/settings_org.ts`: handles organization setting form submission.
-- `web/src/server_events_dispatch.js`: handles events coming from the server
-  (ex: pushing an organization change to other open browsers and updating
-  the application's state).
+- `web/templates/settings/organization_settings_admin.hbs`: defines the structure of the admin settings page.
+- `web/src/state_data.ts`: defines the **Zod schema** for the application state (e.g., `realm_schema`).
+- `web/src/settings_config.ts`: maps property names to their respective HTML element IDs.
+- `web/src/settings_components.ts`: contains the Zod schemas used to validate settings updates.
+- `web/src/settings_org.ts`: handles organization setting form submission and UI synchronization.
+- `web/src/server_events_dispatch.ts`: handles real-time events coming from the server.
 
 **Backend testing**
 
 - `zerver/tests/test_realm.py`: end-to-end API tests for updating realm settings.
 - `zerver/tests/test_events.py`: tests for possible race bugs in the
-  zerver/lib/events.py implementation.
+  `zerver/lib/events.py` implementation.
 
 **Frontend testing**
 
@@ -122,19 +121,25 @@ Realm setting, in `test_realm.py`).
 
 ### Frontend changes
 
+**State and Validation:** Zulip uses **Zod** to ensure that the data in the
+browser matches the expected types from the server. When adding a new property
+to a Realm, you must add it to the `realm_schema` in `web/src/state_data.ts`
+and the `realm_setting_property_schema` in `web/src/settings_components.ts`.
+
 **JavaScript/TypeScript:** Zulip's JavaScript and TypeScript sources are
 located in the directory `web/src/`. The exact files you may need to change
 depend on your feature. If you've added a new event that is sent to clients,
-be sure to add a handler for it in `web/src/server_events_dispatch.js`.
+be sure to add a handler for it in `web/src/server_events_dispatch.ts`. The
+mapping between the database field and the UI is defined in `web/src/settings_config.ts`.
+This allows Zulip's automated "Save/Discard" widget to track changes.
 
 **CSS:** The primary CSS file is `web/styles/zulip.css`. If your new
 feature requires UI changes, you may need to add additional CSS to this
 file.
 
-**Templates:** The initial page structure is rendered via Jinja2
-templates located in `templates/zerver/app`. For JavaScript, Zulip uses
-Handlebars templates located in `web/templates`. Templates are
-precompiled as part of the build/deploy process.
+**Templates:** For settings, you should use Zulip's standard Handlebars partials
+(like `{{> settings_checkbox ... }}`) located in `web/templates/settings/`.
+These partials automatically handle styling and the "Save" button logic.
 
 Zulip is fully internationalized, so when writing both HTML templates
 or JavaScript/TypeScript/Python code that generates user-facing strings, be sure to
@@ -525,85 +530,85 @@ validation errors](../documentation//api.md#debugging-schema-validation-errors).
 
 ### Update the frontend
 
-After completing the process of adding a new feature on the backend,
-you should make the required frontend changes: in this case, a checkbox needs
-to be added to the admin page (and its value added to the data sent back
-to server when a realm is updated) and the change event needs to be
-handled on the client.
+After completing the backend, you must wire the new setting into the TypeScript state system.
 
-To add the checkbox to the admin page, modify the relevant template in
-`web/templates/settings/`, which can be
-`organization_permissions_admin.hbs` or `organization_settings_admin.hbs`
-(omitted here since it is relatively straightforward).
+#### 1. Update the Schema
 
-If you're adding a non-checkbox field, you'll need to specify the type
-of the field via the `data-setting-widget-type` attribute in the HTML
-template.
+Add the new property to the `realm_schema` in `web/src/state_data.ts`.
+This tells the frontend to expect this field from the server.
 
-Then add the new form control in `web/src/admin.ts`.
-
-```diff
- // web/src/admin.ts
-
- export function build_page() {
-     const options = {
-         custom_profile_field_types: realm.custom_profile_field_types,
-         full_name: current_user.full_name,
-         realm_name: realm.realm_name,
-         // ...
-+        realm_mandatory_topics: realm.realm_mandatory_topics,
-         // ...
+```typescript
+// web/src/state_data.ts
+export const realm_schema = z.object({
+    // ...
+    realm_mandatory_topics: z.boolean(),
+    // ...
+});
 ```
 
-The JavaScript code for organization settings and permissions can be found in
-`web/src/settings_org.ts`.
+#### 2. Register the UI Mapping
 
-In frontend, we have split the `property_types` into three objects:
+In `web/src/settings_config.ts`, add the mapping between your property name
+and the HTML ID of the checkbox you will create.
 
-- `org_profile`: This contains properties for the "organization
-  profile" settings page.
+```typescript
+// web/src/settings_config.ts
+export const realm_all_settings = {
+    // ...
+    mandatory_topics: "id_realm_mandatory_topics",
+};
+```
 
-- `org_settings`: This contains properties for the "organization
-  settings" page. Settings belonging to this section generally
-  decide what features should be available to a user like deleting a
-  message, message edit history etc. Our `mandatory_topics` feature
-  belongs in this section.
+#### 3. Allow Property Updates
 
-- `org_permissions`: This contains properties for the "organization
-  permissions" section. These properties control security controls
-  like who can join the organization and whether normal users can
-  create channels or upload custom emoji.
+In `web/src/settings_components.ts`, add the property name to the `realm_setting_property_schema`.
+This allows the "Save" button to validate the property before sending it to the server.
 
-Once you've determined whether the new setting belongs, the next step
-is to find the right subsection of that page to put the setting
-in. For example in this case of `mandatory_topics` it will lie in
-"Compose settings" (`org-compose-settings`) subsection.
+```typescript
+// web/src/settings_components.ts
+export const realm_setting_property_schema = z.union([
+    z.keyof(realm_schema),
+    z.literal("realm_org_join_restrictions"),
+    z.literal("mandatory_topics"), // Add your setting here
+]);
+```
 
-_If you're not sure in which section your feature belongs, it's
-better to discuss it in
-[the Zulip development community](https://zulip.com/development-community/)
-before implementing it._
+#### 4. Add the Checkbox Template
 
-Note that some settings, like `realm_msg_edit_limit_setting`,
-require special treatment, because they don't match the common
-pattern. We can't extract the property name and compare the value of
-such input elements with those in `page_params`, so we have to
-manually handle such situations in a couple key functions:
+Modify `web/templates/settings/organization_settings_admin.hbs`.
+Use the `settings_checkbox partial` for a consistent look and feel.
 
-- `settings_org.get_property_value`: This processes the property name
-  when it doesn't match a corresponding key in `page_params`, and
-  returns the current value of that property, which we can use to
-  compare and set the values of corresponding DOM element.
+```handlebars
+{{> settings_checkbox
+  setting_name="realm_mandatory_topics"
+  prefix="id_"
+  is_checked=realm_mandatory_topics
+  label=(t 'Require topics for all messages')}}
+```
 
-- `settings_org.update_dependent_subsettings`: This handles settings
-  whose value and state depend on other elements. For example,
-  `realm_waiting_period_threshold_custom_input` is only shown for with
-  the right state of `realm_waiting_period_threshold`.
+#### 5. Handle Real-time Sync
 
-Finally, update `server_events_dispatch.js` to handle related events coming from
-the server. There is an object, `realm_settings`, in the function
-`dispatch_normal_event`. The keys in this object are setting names and the
-values are the UI updating functions to run when an event has occurred.
+Update `web/src/server_events_dispatch.ts` to handle the event when the setting is
+changed by another admin. Add your property to the `realm_settings` object within `dispatch_normal_event`.
+
+```typescript
+// web/src/server_events_dispatch.ts
+const realm_settings: Record<string, () => void> = {
+    // ...
+    mandatory_topics: noop,
+    // ...
+};
+
+// Update the local state
+if (event.property === "mandatory_topics") {
+    realm.realm_mandatory_topics = event.value;
+    settings_org.sync_realm_settings("mandatory_topics");
+}
+```
+
+While `realm_settings` handles triggering UI logic, the `if` block ensures
+the underlying `realm` object is updated with the new value so that the
+state remains consistent without a page refresh.
 
 If there is no relevant UI change to make other than in settings page
 itself, the value should be `noop` (this is the case for
@@ -612,31 +617,31 @@ backend, so no UI updates are required.).
 
 However, if you had written a function to update the UI after a given
 setting has changed, your function should be referenced in the
-`realm_settings` of `server_events_dispatch.js`. See for example
+`realm_settings` of `server_events_dispatch.ts`. See for example
 `settings_emoji.update_custom_emoji_ui`.
-
-```diff
- // web/src/server_events_dispatch.js
-
- function dispatch_normal_event(event) {
-     switch (event.type) {
-     // ...
-     case 'realm':
-         var realm_settings = {
-             add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,
-             allow_edit_history: noop,
-             // ...
-+            mandatory_topics: noop,
-             // ...
-         };
-```
-
-Checkboxes and other common input elements handle the UI updates
-automatically through the logic in `settings_org.sync_realm_settings`.
 
 The rest of the `dispatch_normal_events` function updates the state of the
 application if an update event has occurred on a realm property and runs
 the associated function to update the application's UI, if necessary.
+
+Then, update the logic in `web/src/settings_org.ts` to tell the UI how to sync
+that specific property. This ensures that if the setting changes while an admin
+has the page open, the checkbox toggles to the correct state.
+
+```typescript
+// web/src/settings_org.ts
+
+export function sync_realm_settings(property: string): void {
+    // ...
+    switch (property) {
+        // ...
+        case "mandatory_topics":
+            property = "mandatory_topics";
+            break;
+    }
+    // ...
+}
+```
 
 Here are few important cases you should consider when testing your changes:
 
