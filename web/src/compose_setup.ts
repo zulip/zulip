@@ -481,7 +481,7 @@ export function initialize(): void {
         }
 
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Create a poll"}),
+            modal_title_html: $t_html({defaultMessage: "Create a poll"}),
             modal_content_html: render_add_poll_modal(),
             html_submit_button: $t_html({defaultMessage: "Add poll"}),
             close_on_submit: true,
@@ -543,7 +543,7 @@ export function initialize(): void {
             }
 
             dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Create a collaborative to-do list"}),
+                modal_title_html: $t_html({defaultMessage: "Create a collaborative to-do list"}),
                 modal_content_html: render_add_todo_list_modal(),
                 html_submit_button: $t_html({defaultMessage: "Create to-do list"}),
                 close_on_submit: true,

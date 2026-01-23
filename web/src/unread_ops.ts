@@ -69,7 +69,7 @@ export function confirm_mark_messages_as_read(): void {
     const modal_content_html = render_confirm_mark_messages_as_read();
 
     const modal_id = confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Choose messages to mark as read"}),
+        modal_title_html: $t_html({defaultMessage: "Choose messages to mark as read"}),
         modal_content_html,
         on_click() {
             handle_mark_messages_as_read(modal_id);
@@ -468,7 +468,7 @@ export function mark_as_unread_from_here(message_id: number): void {
     };
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Mark messages as unread?"}),
+        modal_title_html: $t_html({defaultMessage: "Mark messages as unread?"}),
         modal_content_html: render_confirm_mark_as_unread_from_here(context),
         on_click() {
             if (prefer_local_ids) {

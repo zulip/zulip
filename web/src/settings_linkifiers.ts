@@ -100,7 +100,7 @@ function open_linkifier_edit_form(linkifier_id: number): void {
     }
 
     const dialog_widget_id = dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Edit linkfiers"}),
+        modal_title_html: $t_html({defaultMessage: "Edit linkfiers"}),
         modal_content_html,
         on_click() {
             submit_linkifier_form(dialog_widget_id);
@@ -225,7 +225,7 @@ export function build_page(): void {
             encodeURIComponent($button.closest("tr").attr("data-linkifier-id")!);
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete linkifier?"}),
+            modal_title_html: $t_html({defaultMessage: "Delete linkifier?"}),
             modal_content_html,
             id: "confirm_delete_linkifiers_modal",
             on_click() {

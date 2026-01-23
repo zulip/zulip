@@ -102,7 +102,7 @@ function show_navigation_tour_video(navigation_tour_video_url: string | null): v
         });
         let watch_later_clicked = false;
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Welcome to Zulip!"}),
+            modal_title_html: $t_html({defaultMessage: "Welcome to Zulip!"}),
             modal_content_html,
             on_click() {
                 // Do nothing

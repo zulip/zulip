@@ -187,7 +187,7 @@ function open_uppy_editor(
 ): void {
     const rendered_image_editor_modal = render_image_editor_modal();
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Editing {file_name}"}, {file_name: file.name}),
+        modal_title_html: $t_html({defaultMessage: "Editing {file_name}"}, {file_name: file.name}),
         modal_content_html: rendered_image_editor_modal,
         id: "uppy-editor",
         loading_spinner: true,
