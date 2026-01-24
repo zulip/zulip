@@ -14,12 +14,12 @@ import * as activity from "./activity.ts";
 import * as activity_ui from "./activity_ui.ts";
 import * as add_stream_options_popover from "./add_stream_options_popover.ts";
 import * as alert_words from "./alert_words.ts";
-import { all_messages_data } from "./all_messages_data.ts";
+import {all_messages_data} from "./all_messages_data.ts";
 import * as audible_notifications from "./audible_notifications.ts";
 import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
-import { is_browser_unsupported_old_version } from "./browser_support.ts";
+import {is_browser_unsupported_old_version} from "./browser_support.ts";
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_popover from "./channel_folders_popover.ts";
@@ -92,7 +92,7 @@ import * as navigate from "./navigate.ts";
 import * as navigation_views from "./navigation_views.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
-import { page_params } from "./page_params.ts";
+import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as personal_menu_popover from "./personal_menu_popover.ts";
 import * as playground_links_popover from "./playground_links_popover.ts";
@@ -170,7 +170,7 @@ import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import * as user_groups from "./user_groups.ts";
 import * as user_profile from "./user_profile.ts";
-import { initialize_user_settings, user_settings } from "./user_settings.ts";
+import {initialize_user_settings, user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topic_popover from "./user_topic_popover.ts";
@@ -421,7 +421,7 @@ function initialize_unread_ui() {
     );
     unread_ui.register_update_unread_counts_hook(inbox_ui.update);
 
-    unread_ui.initialize({ notify_server_messages_read: unread_ops.notify_server_messages_read });
+    unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
 }
 
 export async function initialize_everything(state_data) {
@@ -464,7 +464,7 @@ export async function initialize_everything(state_data) {
     initialize_user_settings(state_data.user_settings);
     mouse_drag.initialize();
     sidebar_ui.restore_sidebar_toggle_status();
-    i18n.initialize({ language_list: page_params.language_list });
+    i18n.initialize({language_list: page_params.language_list});
     timerender.initialize();
     information_density.initialize();
     if (page_params.is_spectator) {
@@ -489,7 +489,7 @@ export async function initialize_everything(state_data) {
     const message_reminder_click_handler = (remind_message_id, target) => {
         compose_send_menu_popover.open_schedule_message_menu(remind_message_id, target);
     };
-    message_actions_popover.initialize({ message_reminder_click_handler });
+    message_actions_popover.initialize({message_reminder_click_handler});
     compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
@@ -602,7 +602,7 @@ export async function initialize_everything(state_data) {
                         operand: sub.stream_id.toString(),
                     },
                 ],
-                { trigger },
+                {trigger},
             );
         },
         update_inbox_channel_view: inbox_ui.update_channel_view,
@@ -674,7 +674,7 @@ export async function initialize_everything(state_data) {
     compose_notifications.initialize({
         on_click_scroll_to_selected: message_viewport.scroll_to_selected,
         on_narrow_to_recipient(message_id) {
-            message_view.narrow_by_topic(message_id, { trigger: "compose_notification" });
+            message_view.narrow_by_topic(message_id, {trigger: "compose_notification"});
         },
     });
     unread_ops.initialize();
@@ -711,7 +711,7 @@ export async function initialize_everything(state_data) {
                         operand: email,
                     },
                 ],
-                { trigger: "sidebar" },
+                {trigger: "sidebar"},
             );
         },
     });
@@ -734,15 +734,15 @@ export async function initialize_everything(state_data) {
             );
 
             const narrow = [
-                { operator: "channel", operand: sub.stream_id.toString() },
-                { operator: "topic", operand: topic },
+                {operator: "channel", operand: sub.stream_id.toString()},
+                {operator: "topic", operand: topic},
             ];
 
             if (latest_msg_id !== undefined) {
-                narrow.push({ operator: "with", operand: String(latest_msg_id) });
+                narrow.push({operator: "with", operand: String(latest_msg_id)});
             }
 
-            message_view.show(narrow, { trigger: "sidebar" });
+            message_view.show(narrow, {trigger: "sidebar"});
 
             if (sidebar_ui.left_sidebar_expanded_as_overlay) {
                 // If the left sidebar is drawn over the center pane,
@@ -778,9 +778,9 @@ export async function initialize_everything(state_data) {
 function show_try_zulip_modal() {
     const html_body = render_try_zulip_modal();
     dialog_widget.launch({
-        text_heading: i18n.$t({ defaultMessage: "Welcome to the Zulip development community!" }),
+        text_heading: i18n.$t({defaultMessage: "Welcome to the Zulip development community!"}),
         html_body,
-        html_submit_button: i18n.$t({ defaultMessage: "Let's go!" }),
+        html_submit_button: i18n.$t({defaultMessage: "Let's go!"}),
         on_click() {
             // Do nothing
         },
@@ -802,7 +802,7 @@ $(() => {
 
     channel.set_rate_limit_handler((xhr) => {
         ui_report.generic_embed_error(
-            channel.xhr_error_message(i18n.$t({ defaultMessage: "Too many requests" }), xhr),
+            channel.xhr_error_message(i18n.$t({defaultMessage: "Too many requests"}), xhr),
         );
     });
 
@@ -834,7 +834,7 @@ $(() => {
                 $("#app-loading-middle-content").hide();
                 $("#app-loading-bottom-content").hide();
                 $(".app").hide();
-                $("#app-loading-error").css({ visibility: "visible" });
+                $("#app-loading-error").css({visibility: "visible"});
             },
         });
     } else {
