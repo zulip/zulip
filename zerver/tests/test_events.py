@@ -2279,7 +2279,9 @@ class NormalActionsTest(BaseAction):
         description = "Backend team to deal with backend code."
         with self.verify_action() as events:
             do_update_user_group_description(backend, description, acting_user=None)
-        check_user_group_update("events[0]", events[0], {"description"})
+        check_user_group_update(
+            "events[0]", events[0], {"description", "rendered_description_html"}
+        )
 
         # Test can_mention_group setting update
         with self.verify_action() as events:

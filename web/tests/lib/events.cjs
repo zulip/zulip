@@ -1000,6 +1000,7 @@ exports.fixtures = {
             creator_id: null,
             date_created: fake_now,
             description: "mobile folks",
+            rendered_description_html: "<p>mobile folks</p>",
             members: [1],
             is_system_group: false,
             direct_subgroup_ids: [2],
