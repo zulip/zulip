@@ -545,6 +545,44 @@ class RateLimitMiddleware(MiddlewareMixin):
         return response
 
 
+class SecurityHeadersMiddleware(MiddlewareMixin):
+    """
+    Middleware to add security headers to HTTP responses.
+
+    Currently implements CSP Report-Only mode for testing.
+    Issue: https://github.com/zulip/zulip/issues/11835
+    """
+
+    # TODO(#11835): CSP Report-Only; refine policy then enforce.
+    # TODO(#11835): Add configurability (dev vs prod, feature flags).
+    # TODO(#11835): HSTS at reverse proxy, not here.
+
+    def process_response(
+        self, request: HttpRequest, response: HttpResponseBase
+    ) -> HttpResponseBase:
+        # CSP Report-Only mode: Reports violations without blocking
+        # This allows us to discover what resources Zulip needs without breaking functionality
+        # TODO: Once we have complete CSP policy, switch to Content-Security-Policy (enforcing)
+        csp_report_only = "default-src 'none'; report-uri /csp-violations; report-to csp-endpoint"
+        response["Content-Security-Policy-Report-Only"] = csp_report_only
+
+        # Other security headers (non-CSP)
+        # X-Frame-Options: Prevent clickjacking
+        response["X-Frame-Options"] = "DENY"
+
+        # X-Content-Type-Options: Prevent MIME-type sniffing
+        response["X-Content-Type-Options"] = "nosniff"
+
+        # Referrer-Policy: Control referrer information
+        response["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
+        # Permissions-Policy: Control browser features
+        # Restrict access to camera, microphone, geolocation, etc.
+        response["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()"
+
+        return response
+
+
 class FlushDisplayRecipientCache(MiddlewareMixin):
     def process_response(
         self, request: HttpRequest, response: HttpResponseBase
