@@ -1003,6 +1003,11 @@ ul.modal-options-list {
     margin-bottom: 0;
 }
 
+.modal__content .modal-form {
+    /* Override default value for form in bootstrap.app.css */
+    margin-bottom: 0;
+}
+
 /* ==============================================================
  * END MODAL MARGIN OVERRIDES
  * ============================================================== */
