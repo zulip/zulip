@@ -38,6 +38,7 @@ import * as watchdog from "./watchdog.ts";
 let loading_indicator_displayed = false;
 let unsubscribed_ignored_channels: number[] = [];
 let pending_unread_updates: number[][] = [];
+let pending_read_updates: number[] = [];
 
 // We might want to use a slightly smaller batch for the first
 // request, because empirically, the first request can be
@@ -607,6 +608,27 @@ function retry_pending_unread_updates(): void {
     }
 }
 
+function retry_pending_read_updates(): void {
+    if (pending_read_updates.length === 0) {
+        return;
+    }
+    const message_ids = pending_read_updates;
+    pending_read_updates = [];
+
+    const messages: Message[] = [];
+    for (const id of message_ids) {
+        const message = message_store.get(id);
+        if (message) {
+            messages.push(message);
+        }
+    }
+
+    if (messages.length > 0) {
+        message_flags.send_read(messages);
+    }
+}
+
+
 function send_mark_unread_request(message_ids_to_update: number[]): void {
     void channel.post({
         url: "/json/messages/flags",
@@ -871,11 +893,15 @@ export function notify_server_messages_read(
         .map((ids) => ids.filter((id) => !message_ids_set.has(id)))
         .filter((ids) => ids.length > 0);
 
-    message_flags.send_read(messages);
-
     for (const message of messages) {
         unread.mark_as_read(message.id);
         process_newly_read_message(message, options);
+    }
+
+    if (watchdog.suspects_user_is_offline()) {
+        pending_read_updates.push(...messages.map((m) => m.id));
+    } else {
+        message_flags.send_read(messages);
     }
 
     unread_ui.update_unread_counts();
@@ -1023,7 +1049,10 @@ export function initialize(): void {
             // counts.
             process_visible();
         })
-        .on("online", retry_pending_unread_updates)
+        .on("online", () => {
+            retry_pending_unread_updates();
+            retry_pending_read_updates();
+        })
         .on("blur", () => {
             window_focused = false;
         });
