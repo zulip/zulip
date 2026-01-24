@@ -3533,6 +3533,23 @@ paths:
                                       description: |
                                         The new description of the group. Only present if the description
                                         changed.
+                                    rendered_description_html:
+                                      type: string
+                                      description: |
+                                        The description of the user group, rendered as HTML. One should use
+                                        the standard Zulip rendered_markdown CSS when displaying this content
+                                        so that emoji, LaTeX, and other syntax work correctly. Any client-side
+                                        security logic for user-generated message content should be applied when
+                                        displaying this HTML as though it were the body of a Zulip message.
+
+                                        **Changes**: New in Zulip 12.0 (feature level TBD).
+                                    rendered_description_version:
+                                      type: integer
+                                      description: |
+                                        The version of the markdown rendering engine used for
+                                        `rendered_description_html`. Only present if the description changed.
+
+                                        **Changes**: New in Zulip 12.0 (feature level TBD).
                                     can_add_members_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -24359,6 +24376,24 @@ paths:
                               type: string
                               description: |
                                 The human-readable description of the user group.
+                            rendered_description_version:
+                              type: integer
+                              nullable: true
+                              description: |
+                                The version of the markdown rendering engine used for
+                                `rendered_description_html`.
+
+                                **Changes**: New in Zulip 12.0 (feature level TBD).
+                            rendered_description_html:
+                              type: string
+                              description: |
+                                The description of the user group, rendered as HTML. One should use
+                                the standard Zulip rendered_markdown CSS when displaying this content
+                                so that emoji, LaTeX, and other syntax work correctly. Any client-side
+                                security logic for user-generated message content should be applied when
+                                displaying this HTML as though it were the body of a Zulip message.
+
+                                **Changes**: New in Zulip 12.0 (feature level TBD).
                             id:
                               type: integer
                               description: |
@@ -26277,6 +26312,14 @@ components:
 
             A `null` value means the user group has no recorded creator, which is often
             because the user group is very old, or because it was created via a data
+        rendered_description_version:
+          type: integer
+          nullable: true
+          description: |
+            The version of the markdown rendering engine used for
+            `rendered_description_html`.
+
+            **Changes**: New in Zulip 12.0 (feature level TBD).
             import tool or [management command][management-commands].
 
             **Changes**: New in Zulip 10.0 (feature level 292).
@@ -26285,6 +26328,16 @@ components:
           type: string
           description: |
             The description of the user group.
+        rendered_description_html:
+          type: string
+          description: |
+            The description of the user group, rendered as HTML. One should use
+            the standard Zulip rendered_markdown CSS when displaying this content
+            so that emoji, LaTeX, and other syntax work correctly. Any client-side
+            security logic for user-generated message content should be applied when
+            displaying this HTML as though it were the body of a Zulip message.
+
+            **Changes**: New in Zulip 12.0 (feature level TBD).
         members:
           type: array
           items:

@@ -858,6 +858,112 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "User group name cannot start with 'channel:'.")
         self.assert_length(NamedUserGroup.objects.filter(realm_for_sharding=hamlet.realm), 10)
 
+    def test_user_group_description_markdown_rendering(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        # Test creating a group with markdown description
+        markdown_description = "**Bold** text with [link](https://zulip.com) and :tada: emoji"
+        result = self.api_post(
+            hamlet,
+            "/api/v1/user_groups/create",
+            info={
+                "name": "marketing",
+                "description": markdown_description,
+                "members": orjson.dumps([hamlet.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        # Verify the group was created with rendered HTML
+        group = NamedUserGroup.objects.get(name="marketing", realm_for_sharding=realm)
+        self.assertEqual(group.description, markdown_description)
+        self.assertIn("<strong>Bold</strong>", group.rendered_description_html)
+        self.assertIn('<a href="https://zulip.com">link</a>', group.rendered_description_html)
+        self.assertIn("emoji emoji-1f389", group.rendered_description_html)  # tada emoji
+        self.assertIsNotNone(group.rendered_description_version)
+
+        # Verify rendered_description_html is included in API response
+        user_groups = user_groups_in_realm_serialized(
+            realm, include_deactivated_groups=False
+        ).api_groups
+        marketing_group = next(g for g in user_groups if g["name"] == "marketing")
+        self.assertEqual(marketing_group["description"], markdown_description)
+        self.assertEqual(
+            marketing_group["rendered_description_html"], group.rendered_description_html
+        )
+        self.assertIsNotNone(marketing_group["rendered_description_version"])
+
+        # Test updating description re-renders markdown
+        new_description = "*Italic* and `code`"
+        result = self.api_patch(
+            hamlet,
+            f"/api/v1/user_groups/{group.id}",
+            info={"description": new_description},
+        )
+        self.assert_json_success(result)
+
+        group.refresh_from_db()
+        self.assertEqual(group.description, new_description)
+        self.assertIn("<em>Italic</em>", group.rendered_description_html)
+        self.assertIn("<code>code</code>", group.rendered_description_html)
+        # Old content should be gone
+        self.assertNotIn("<strong>Bold</strong>", group.rendered_description_html)
+        self.assertIsNotNone(group.rendered_description_version)
+
+        # Test empty description
+        result = self.api_patch(
+            hamlet,
+            f"/api/v1/user_groups/{group.id}",
+            info={"description": ""},
+        )
+        self.assert_json_success(result)
+
+        group.refresh_from_db()
+        self.assertEqual(group.description, "")
+        self.assertIsNotNone(group.rendered_description_version)
+        self.assertEqual(group.rendered_description_html, "")
+
+    def test_user_group_description_lazy_rendering(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        result = self.api_post(
+            hamlet,
+            "/api/v1/user_groups/create",
+            info={
+                "name": "legacy_group",
+                "description": "**Legacy** group with *markdown*",
+                "members": orjson.dumps([hamlet.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        group = NamedUserGroup.objects.get(name="legacy_group", realm_for_sharding=realm)
+        original_rendered = group.rendered_description_html
+
+        self.assertIn("<strong>Legacy</strong>", original_rendered)
+        self.assertIsNotNone(group.rendered_description_version)
+
+        group.rendered_description_html = ""
+        group.rendered_description_version = None
+        group.save(update_fields=["rendered_description_html", "rendered_description_version"])
+
+        user_groups = user_groups_in_realm_serialized(
+            realm, include_deactivated_groups=False
+        ).api_groups
+        legacy_group = next(g for g in user_groups if g["name"] == "legacy_group")
+
+        self.assertEqual(legacy_group["description"], "**Legacy** group with *markdown*")
+
+        self.assertIn("<strong>Legacy</strong>", legacy_group["rendered_description_html"])
+        self.assertIn("<em>markdown</em>", legacy_group["rendered_description_html"])
+        self.assertIsNotNone(legacy_group["rendered_description_version"])
+
+        group.refresh_from_db()
+        self.assertEqual(group.rendered_description_html, legacy_group["rendered_description_html"])
+        self.assertIsNotNone(group.rendered_description_version)
+
     def test_creating_groups_with_subgroups(self) -> None:
         realm = get_realm("zulip")
         hamlet = self.example_user("hamlet")

@@ -19,6 +19,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
+from zerver.lib.user_group_description import render_user_group_description
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
@@ -59,10 +60,14 @@ def create_user_group_in_database(
     group_settings_map: Mapping[str, UserGroup] = {},
     is_system_group: bool = False,
 ) -> NamedUserGroup:
+    rendered_description_html, version = render_user_group_description(description, realm)
+
     user_group = NamedUserGroup(
         name=name,
         realm=realm,
         description=description,
+        rendered_description_html=rendered_description_html,
+        rendered_description_version=version,
         is_system_group=is_system_group,
         realm_for_sharding=realm,
         creator=acting_user,
@@ -204,6 +209,8 @@ def do_send_create_user_group_event(
             date_created=date_created,
             members=member_ids,
             description=user_group.description,
+            rendered_description_html=user_group.rendered_description_html,
+            rendered_description_version=user_group.rendered_description_version,
             id=user_group.id,
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=direct_subgroup_ids,
@@ -295,8 +302,15 @@ def do_update_user_group_description(
     user_group: NamedUserGroup, description: str, *, acting_user: UserProfile | None
 ) -> None:
     old_value = user_group.description
+    rendered_description_html, version = render_user_group_description(
+        description, user_group.realm
+    )
     user_group.description = description
-    user_group.save(update_fields=["description"])
+    user_group.rendered_description_html = rendered_description_html
+    user_group.rendered_description_version = version
+    user_group.save(
+        update_fields=["description", "rendered_description_html", "rendered_description_version"]
+    )
     RealmAuditLog.objects.create(
         realm=user_group.realm,
         modified_user_group=user_group,
@@ -308,7 +322,14 @@ def do_update_user_group_description(
             RealmAuditLog.NEW_VALUE: description,
         },
     )
-    do_send_user_group_update_event(user_group, dict(description=description))
+    do_send_user_group_update_event(
+        user_group,
+        dict(
+            description=description,
+            rendered_description_html=rendered_description_html,
+            rendered_description_version=version,
+        ),
+    )
 
 
 def do_send_user_group_members_update_event(

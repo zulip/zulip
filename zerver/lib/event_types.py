@@ -1139,6 +1139,8 @@ class Group(BaseModel):
     members: list[int]
     direct_subgroup_ids: list[int]
     description: str
+    rendered_description_html: str
+    rendered_description_version: int | None
     is_system_group: bool
     can_add_members_group: int | UserGroupMembersDict
     can_join_group: int | UserGroupMembersDict

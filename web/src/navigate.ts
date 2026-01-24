@@ -33,7 +33,11 @@ export function up(): void {
             is_long_message(message_props.height) &&
             message_props.top < viewport_info.visible_top
         ) {
-            page_up();
+            const max_scroll_distance = window.innerHeight * 0.8;
+            const current_scroll = message_viewport.scrollTop();
+            const needed_scroll = viewport_info.visible_top - message_props.top;
+            const scroll_amount = Math.min(needed_scroll, max_scroll_distance);
+            message_viewport.scrollTop(current_scroll - scroll_amount);
             return;
         }
     }
@@ -51,7 +55,11 @@ export function up(): void {
         is_long_message(prev_message_props.height) &&
         prev_message_props.top < viewport_info.visible_top
     ) {
-        page_up();
+        const max_scroll_distance = window.innerHeight * 0.8;
+        const current_scroll = message_viewport.scrollTop();
+        const needed_scroll = viewport_info.visible_top - prev_message_props.top;
+        const scroll_amount = Math.min(needed_scroll, max_scroll_distance);
+        message_viewport.scrollTop(current_scroll - scroll_amount);
         return;
     }
 
