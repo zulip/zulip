@@ -247,6 +247,7 @@ MIDDLEWARE = [
     "zerver.middleware.LogRequests",
     "zerver.middleware.JsonErrorHandler",
     "zerver.middleware.RateLimitMiddleware",
+    "zerver.middleware.SecurityHeadersMiddleware",
     "zerver.middleware.FlushDisplayRecipientCache",
     "django.middleware.common.CommonMiddleware",
     "zerver.middleware.LocaleMiddleware",
