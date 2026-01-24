@@ -96,12 +96,6 @@ h3,
     max-width: 90%;
 }
 
-#change_email_modal {
-    #change_email_form {
-        margin: 0;
-    }
-}
-
 .disabled_setting_tooltip {
     cursor: not-allowed;
 }
@@ -962,10 +956,6 @@ input[type="checkbox"] {
 }
 
 #add-custom-emoji-modal {
-    & form {
-        margin: 0;
-    }
-
     & input[type="text"] {
         padding: 6px;
     }
@@ -1075,7 +1065,6 @@ input[type="checkbox"] {
 
 .edit_bot_form {
     font-size: 100%;
-    margin: 0;
     padding: 0;
 
     .buttons {
@@ -1150,12 +1139,6 @@ input[type="checkbox"] {
         position: absolute;
         right: 20px;
         top: 0;
-    }
-}
-
-#change_password_modal {
-    #change_password_container {
-        margin: 0;
     }
 }
 
