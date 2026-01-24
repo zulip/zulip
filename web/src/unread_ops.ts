@@ -470,6 +470,7 @@ export function mark_as_unread_from_here(message_id: number): void {
     confirm_dialog.launch({
         modal_title_html: $t_html({defaultMessage: "Mark messages as unread?"}),
         modal_content_html: render_confirm_mark_as_unread_from_here(context),
+        is_compact: true,
         on_click() {
             if (prefer_local_ids) {
                 do_mark_unread(locally_available_matching_message_ids);
