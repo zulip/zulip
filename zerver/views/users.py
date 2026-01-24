@@ -121,6 +121,7 @@ RoleParamType: TypeAlias = Annotated[
 
 AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
 
+
 def check_last_owner(user_profile: UserProfile) -> bool:
     owners = set(user_profile.realm.get_human_owner_users())
     return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
@@ -582,9 +583,12 @@ def patch_bot_backend(
 
     return json_success(request, data=json_result)
 
+
 @require_member_or_admin
 @typed_endpoint
-def set_bot_avatar_backend(request: HttpRequest, user_profile: UserProfile, *, bot_id: PathOnly[int]) -> HttpResponse:
+def set_bot_avatar_backend(
+    request: HttpRequest, user_profile: UserProfile, *, bot_id: PathOnly[int]
+) -> HttpResponse:
     if len(request.FILES) != 1:
         raise JsonableError(_("You must upload exactly one avatar."))
 
@@ -611,25 +615,26 @@ def set_bot_avatar_backend(request: HttpRequest, user_profile: UserProfile, *, b
     )
     return json_success(request, data=json_result)
 
+
 @require_member_or_admin
 @typed_endpoint
-def delete_bot_avatar_backend(request: HttpRequest, user_profile: UserProfile, *, bot_id: PathOnly[int]) -> HttpResponse:
+def delete_bot_avatar_backend(
+    request: HttpRequest, user_profile: UserProfile, *, bot_id: PathOnly[int]
+) -> HttpResponse:
     if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
-    bot = access_bot_by_id(user_profile,bot_id)
+    bot = access_bot_by_id(user_profile, bot_id)
 
     if bot.avatar_source == UserProfile.AVATAR_FROM_USER:
-        do_change_avatar_fields(
-            bot, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile
-        )
-
+        do_change_avatar_fields(bot, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile)
 
     gravatar_url = avatar_url(bot)
     json_result = dict(
         avatar_url=gravatar_url,
     )
     return json_success(request, data=json_result)
+
 
 @require_member_or_admin
 @typed_endpoint_without_parameters
