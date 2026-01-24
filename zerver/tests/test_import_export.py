@@ -2616,11 +2616,20 @@ class RealmImportExportTest(ExportFile):
 
         # Test avatars
         user_profile = UserProfile.objects.get(full_name=user.full_name, realm=imported_realm)
-        avatar_path_id = user_avatar_path(user_profile) + ".original"
-        original_image_key = avatar_bucket.Object(avatar_path_id)
-        self.assertEqual(original_image_key.key, avatar_path_id)
-        image_data = avatar_bucket.Object(avatar_path_id).get()["Body"].read()
+        avatar_path_id_base = user_avatar_path(user_profile)
+        avatar_path_id_original = avatar_path_id_base + ".original"
+        original_image_key = avatar_bucket.Object(avatar_path_id_original)
+        self.assertEqual(original_image_key.key, avatar_path_id_original)
+        image_data = avatar_bucket.Object(avatar_path_id_original).get()["Body"].read()
         self.assertEqual(image_data, test_image_data)
+        # Ensure we've also generated the expected thumbnails.
+        avatar_path_id_thumbnail = avatar_path_id_base + "-medium.png"
+        avatar_path_id_medium_thumbnail = avatar_path_id_base + ".png"
+        for path_id in [avatar_path_id_thumbnail, avatar_path_id_medium_thumbnail]:
+            image_key = avatar_bucket.Object(path_id)
+            self.assertEqual(image_key.key, path_id)
+            image_get_response = avatar_bucket.Object(path_id).get()
+            self.assertEqual(image_get_response["ResponseMetadata"]["HTTPStatusCode"], 200)
 
         # Test realm icon and logo
         upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)

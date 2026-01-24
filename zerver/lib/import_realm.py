@@ -928,9 +928,8 @@ def process_avatars(record: dict[str, Any]) -> None:
             # same realm ID from a previous iteration).
             os.remove(medium_file_path)
     try:
+        ensure_avatar_image(user_profile=user_profile)
         ensure_avatar_image(user_profile=user_profile, medium=True)
-        if record.get("importer_should_thumbnail"):
-            ensure_avatar_image(user_profile=user_profile)
     except BadImageError:
         logging.warning(
             "Could not thumbnail avatar image for user %s; ignoring",
