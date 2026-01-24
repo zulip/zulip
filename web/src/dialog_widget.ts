@@ -64,6 +64,8 @@ export type DialogWidgetConfig = {
     modal_title_html?: string;
     modal_title_text?: string;
     modal_content_html: string;
+    modal_subtitle_html?: string;
+    is_compact?: boolean;
     on_click?: (e: JQuery.ClickEvent) => void;
     hide_footer?: boolean;
     modal_submit_button_text?: string;
@@ -169,6 +171,11 @@ export function launch(conf: DialogWidgetConfig): string {
     // templates.
 
     // Optional parameters:
+    // * modal_subtitle_html: Provides additional context
+    //   below the modal title.
+    // * is_compact: If true, enables the compact version where the modal
+    //   content area is not rendered, and the modal_content_html is
+    //   passed to the modal_subtitle_html to be displayed as the subtitle.
     // * on_click: Callback to run when submit button is clicked and footer is enabled.
     // * hide_footer: Whether to disable footer and hide its associated buttons.
     // * modal_submit_button_text: Submit button text.
@@ -199,10 +206,15 @@ export function launch(conf: DialogWidgetConfig): string {
     const modal_submit_button_text =
         conf.modal_submit_button_text ?? $t({defaultMessage: "Save changes"});
     const modal_exit_button_text = conf.modal_exit_button_text ?? $t({defaultMessage: "Cancel"});
+    if (conf.is_compact) {
+        conf.modal_subtitle_html = conf.modal_content_html;
+    }
     const html = render_dialog_widget({
         modal_unique_id,
         modal_title_html: conf.modal_title_html,
         modal_title_text: conf.modal_title_text,
+        modal_subtitle_html: conf.modal_subtitle_html,
+        is_compact: conf.is_compact,
         link: conf.help_link,
         modal_submit_button_text,
         modal_exit_button_text,
