@@ -1001,7 +1001,8 @@ ul.modal-options-list {
 }
 
 #confirm_delete_attachments_modal .detached-attachments-modal-list,
-.deleted-profile-field-options-list {
+.deleted-profile-field-options-list,
+#first_stream_created_modal .first-stream-created-instructions-list {
     /* Override default value for <ul> in bootstrap.app.css */
     margin-bottom: 0;
 }
