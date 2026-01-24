@@ -1000,6 +1000,11 @@ ul.modal-options-list {
     margin-bottom: 0;
 }
 
+#confirm_delete_attachments_modal .detached-attachments-modal-list {
+    /* Override default value for <ul> in bootstrap.app.css */
+    margin-bottom: 0;
+}
+
 /* ==============================================================
  * END MODAL MARGIN OVERRIDES
  * ============================================================== */
