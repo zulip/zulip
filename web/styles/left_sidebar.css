@@ -1747,8 +1747,7 @@ li.active-sub-filter {
            line-clamp effect work, we set the bottom space
            with margin. */
         padding-top: calc(var(--spacing-top-bottom-sidebar-topic-inner) + 2px);
-        margin: 0 0 calc(var(--spacing-top-bottom-sidebar-topic-inner) + 2px) 0;
-
+        margin: 0 0 calc(var(--spacing-top-bottom-sidebar-topic-inner) + 2px);
     }
 }
 
