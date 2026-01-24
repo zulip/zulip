@@ -13,13 +13,20 @@
                         {{> help_link_widget . }}
                         {{/if}}
                     </h1>
+                    {{#if modal_subtitle_html}}
+                    <div class="modal__subtitle">
+                        {{{ modal_subtitle_html }}}
+                    </div>
+                    {{/if}}
                 </div>
                 {{> components/icon_button icon="close" intent="neutral" custom_classes="modal__close" aria-label=(t 'Close modal') data-micromodal-close=true }}
             </header>
+            {{#unless is_compact}}
             <main class="modal__content {{#if hide_footer}} footer-hidden {{/if}}" data-simplebar data-simplebar-tab-index="-1" {{#if always_visible_scrollbar}}data-simplebar-auto-hide="false"{{/if}}>
                 <div class="alert" id="dialog_error"></div>
                 {{{ modal_content_html }}}
             </main>
+            {{/unless}}
             {{#unless hide_footer}}
             <footer class="modal__footer">
                 {{#if footer_minor_text }}
