@@ -628,6 +628,20 @@ function retry_pending_read_updates(): void {
     }
 }
 
+// Remove message IDs from both pending queues. This is called when
+// server events (like delete_message) arrive that affect messages
+// that may be in the pending queues.
+export function remove_from_pending_queues(message_ids: number[]): void {
+    const message_ids_set = new Set(message_ids);
+
+    // Remove from pending_read_updates
+    pending_read_updates = pending_read_updates.filter((id) => !message_ids_set.has(id));
+
+    // Remove from pending_unread_updates
+    pending_unread_updates = pending_unread_updates
+        .map((ids) => ids.filter((id) => !message_ids_set.has(id)))
+        .filter((ids) => ids.length > 0);
+}
 
 function send_mark_unread_request(message_ids_to_update: number[]): void {
     void channel.post({
@@ -766,6 +780,12 @@ export function process_read_messages_event(message_ids: number[]): void {
     */
     const options = {from: "server" as const};
 
+    // Remove message IDs from pending_read_updates queue to avoid
+    // sending duplicate read requests when server events arrive
+    // after user comes back online.
+    const message_ids_set = new Set(message_ids);
+    pending_read_updates = pending_read_updates.filter((id) => !message_ids_set.has(id));
+
     message_ids = unread.get_unread_message_ids(message_ids);
     if (message_ids.length === 0) {
         return;
@@ -799,6 +819,15 @@ export function process_unread_messages_event({
     message_details: MessageDetails;
 }): void {
     // This is the reverse of process_read_messages_event.
+
+    // Remove message IDs from pending_unread_updates queue to avoid
+    // sending duplicate unread requests when server events arrive
+    // after user comes back online.
+    const message_ids_set = new Set(message_ids);
+    pending_unread_updates = pending_unread_updates
+        .map((ids) => ids.filter((id) => !message_ids_set.has(id)))
+        .filter((ids) => ids.length > 0);
+
     message_ids = unread.get_read_message_ids(message_ids);
     if (message_ids.length === 0) {
         return;

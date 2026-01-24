@@ -170,6 +170,9 @@ export function dispatch_normal_event(event) {
 
         case "delete_message": {
             const msg_ids = event.message_ids;
+            // Remove deleted message IDs from pending queues to avoid
+            // sending requests for messages that no longer exist.
+            unread_ops.remove_from_pending_queues(msg_ids);
             // message is passed to unread.get_unread_messages,
             // which returns all the unread messages out of a given list.
             // So double marking something as read would not occur

@@ -1549,6 +1549,7 @@ run_test("delete_message", ({override}) => {
 
     const unread_ops_stub = make_stub();
     override(unread_ops, "process_read_messages_event", unread_ops_stub.f);
+    override(unread_ops, "remove_from_pending_queues", noop);
 
     const stream_topic_history_stub = make_stub();
     override(stream_topic_history, "remove_messages", stream_topic_history_stub.f);
