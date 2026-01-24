@@ -3,7 +3,7 @@ import json
 import logging
 from contextlib import suppress
 from time import perf_counter
-from typing import Any, AnyStr
+from typing import Any, AnyStr, cast
 
 import requests
 from django.conf import settings
@@ -18,6 +18,7 @@ from zerver.lib.message_cache import MessageDict
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import retry_event
 from zerver.lib.topic import get_topic_from_message_info
+from zerver.lib.types import TopicMessageInfo
 from zerver.lib.url_encoding import message_link_url
 from zerver.lib.users import check_can_access_user, check_user_can_access_all_users
 from zerver.models import Realm, Service, UserProfile
@@ -196,7 +197,7 @@ def send_response_message(
     recipient_type_name = message_info["type"]
     display_recipient = message_info["display_recipient"]
     try:
-        topic_name: str | None = get_topic_from_message_info(message_info)
+        topic_name: str | None = get_topic_from_message_info(cast(TopicMessageInfo, message_info))
     except KeyError:
         topic_name = None
 
