@@ -89,6 +89,7 @@ from corporate.views.user_activity import get_user_activity
 from corporate.views.webhook import stripe_webhook
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import LANDING_PAGE_REDIRECTS
+from zerver.views.csp_violations import csp_violations
 
 i18n_urlpatterns: Any = [
     path("jobs/", TemplateView.as_view(template_name="corporate/jobs.html")),
@@ -253,6 +254,7 @@ i18n_urlpatterns += landing_page_urls
 urlpatterns = list(i18n_urlpatterns)
 
 urlpatterns += [
+    path("csp-violations", csp_violations),
     path("remote-billing-login/<signed_billing_access_token>", remote_realm_billing_finalize_login),
     path(
         "remote-billing-login/<signed_billing_access_token>/confirm/",
