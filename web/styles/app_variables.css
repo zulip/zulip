@@ -862,6 +862,11 @@
         hsl(0deg 0% 15%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
+    --color-modal-subtitle-text: color-mix(
+        in oklch,
+        var(--color-modal-heading-text) 75%,
+        transparent
+    );
     --color-background-modal: light-dark(hsl(0deg 0% 93%), hsl(0deg 0% 14%));
     --color-background-modal-bar: light-dark(
         hsl(0deg 0% 96%),
