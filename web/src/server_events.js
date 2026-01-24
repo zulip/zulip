@@ -203,8 +203,21 @@ function get_events({dont_block = false} = {}) {
             }
             get_events_timeout = setTimeout(get_events, 0);
         },
+
         error(xhr, error_type) {
             const retry_delay_secs = util.get_retry_backoff_seconds(xhr, get_events_failures);
+            if (xhr.status === 429 && xhr.responseJSON?.code === "RATE_LIMIT_HIT") {
+                popup_banners.open_api_rate_limit_exceeded_banner({
+                    caller: "server_events",
+                    retry_delay_secs: xhr.responseJSON["retry-after"],
+                    on_retry_callback() {
+                        restart_get_events({dont_block: true});
+                    },
+                });
+                get_events_timeout = setTimeout(get_events, xhr.responseJSON["retry-after"] * 1000);
+                return;
+            }
+
             try {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been
