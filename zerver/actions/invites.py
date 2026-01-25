@@ -39,10 +39,12 @@ from zerver.models import (
     NamedUserGroup,
     PreregistrationUser,
     Realm,
+    RealmAuditLog,
     Stream,
     UserProfile,
 )
 from zerver.models.prereg_users import filter_to_valid_prereg_users
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 
 def estimate_recent_invites(realms: Collection[Realm] | QuerySet[Realm], *, days: int) -> int:
@@ -415,7 +417,9 @@ def do_create_multiuse_invite_link(
 
 
 @transaction.atomic(durable=True)
-def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
+def do_revoke_user_invite(
+    prereg_user: PreregistrationUser, *, acting_user: UserProfile | None = None
+) -> None:
     email = prereg_user.email
     realm = prereg_user.realm
     assert realm is not None
@@ -424,15 +428,58 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     prereg_user.save(update_fields=["status"])
     clear_scheduled_invitation_emails(email)
 
+    confirmation = Confirmation.objects.get(
+        type=Confirmation.INVITATION,
+        content_type=ContentType.objects.get_for_model(PreregistrationUser),
+        object_id=prereg_user.id,
+    )
+    # Defensive assert.
+    assert confirmation.content_object == prereg_user
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=AuditLogEventType.INVITATION_REVOKED,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data={
+            "confirmation_key": confirmation.confirmation_key,
+            "invitation_type": Confirmation.INVITATION,
+            "invitation_object_id": prereg_user.id,
+        },
+    )
+
     notify_invites_changed(realm, changed_invite_referrer=prereg_user.referred_by)
 
 
 @transaction.atomic(durable=True)
-def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
+def do_revoke_multi_use_invite(
+    multiuse_invite: MultiuseInvite, *, acting_user: UserProfile | None = None
+) -> None:
     realm = multiuse_invite.referred_by.realm
 
     multiuse_invite.status = confirmation_settings.STATUS_REVOKED
     multiuse_invite.save(update_fields=["status"])
+
+    confirmation = Confirmation.objects.get(
+        type=Confirmation.MULTIUSE_INVITE,
+        content_type=ContentType.objects.get_for_model(MultiuseInvite),
+        object_id=multiuse_invite.id,
+    )
+    # Defensive assert.
+    assert confirmation.content_object == multiuse_invite
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=AuditLogEventType.INVITATION_REVOKED,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data={
+            "confirmation_key": confirmation.confirmation_key,
+            "invitation_type": Confirmation.MULTIUSE_INVITE,
+            "invitation_object_id": multiuse_invite.id,
+        },
+    )
+
     notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
