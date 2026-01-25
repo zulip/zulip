@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
 import * as z from "zod/mini";
 
-import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm_delete_linkifier.hbs";
 import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
 import render_admin_linkifier_list from "../templates/settings/admin_linkifier_list.hbs";
 
@@ -219,14 +218,13 @@ export function build_page(): void {
         e.preventDefault();
         e.stopPropagation();
         const $button = $(this);
-        const modal_content_html = render_confirm_delete_linkifier();
         const url =
             "/json/realm/filters/" +
             encodeURIComponent($button.closest("tr").attr("data-linkifier-id")!);
 
         confirm_dialog.launch({
             modal_title_html: $t_html({defaultMessage: "Delete linkifier?"}),
-            modal_content_html,
+            modal_content_html: $t_html({defaultMessage: "This action cannot be undone."}),
             id: "confirm_delete_linkifiers_modal",
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});
