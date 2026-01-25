@@ -5,7 +5,6 @@ from email.utils import format_datetime as email_format_datetime
 from typing import Any
 
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.db.models import Q, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
@@ -348,12 +347,21 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
         )
 
     if user_profile.is_realm_admin:
+        multiuse_invite_ids = (
+            MultiuseInvite.objects.filter(realm=user_profile.realm)
+            .exclude(status=confirmation_settings.STATUS_REVOKED)
+            .values_list("id", flat=True)
+        )
         multiuse_confirmation_objs = Confirmation.objects.filter(
-            realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE
+            realm=user_profile.realm,
+            type=Confirmation.MULTIUSE_INVITE,
+            object_id__in=multiuse_invite_ids,
         ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
     else:
-        multiuse_invite_ids = MultiuseInvite.objects.filter(referred_by=user_profile).values_list(
-            "id", flat=True
+        multiuse_invite_ids = (
+            MultiuseInvite.objects.filter(referred_by=user_profile)
+            .exclude(status=confirmation_settings.STATUS_REVOKED)
+            .values_list("id", flat=True)
         )
         multiuse_confirmation_objs = Confirmation.objects.filter(
             type=Confirmation.MULTIUSE_INVITE,
@@ -364,8 +372,6 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
         invite = confirmation_obj.content_object
         assert invite is not None
 
-        # This should be impossible, because revoking a multiuse invite
-        # deletes the Confirmation object, so it couldn't have been fetched above.
         assert invite.status != confirmation_settings.STATUS_REVOKED
         invites.append(
             dict(
@@ -416,13 +422,8 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
     realm = prereg_user.realm
     assert realm is not None
 
-    # Delete both the confirmation objects and the prereg_user object.
-    # TODO: Probably we actually want to set the confirmation objects
-    # to a "revoked" status so that we can give the invited user a better
-    # error message.
-    content_type = ContentType.objects.get_for_model(PreregistrationUser)
-    Confirmation.objects.filter(content_type=content_type, object_id=prereg_user.id).delete()
-    prereg_user.delete()
+    prereg_user.status = confirmation_settings.STATUS_REVOKED
+    prereg_user.save(update_fields=["status"])
     clear_scheduled_invitation_emails(email)
     notify_invites_changed(realm, changed_invite_referrer=prereg_user.referred_by)
 
@@ -431,8 +432,6 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
 def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
     realm = multiuse_invite.referred_by.realm
 
-    content_type = ContentType.objects.get_for_model(MultiuseInvite)
-    Confirmation.objects.filter(content_type=content_type, object_id=multiuse_invite.id).delete()
     multiuse_invite.status = confirmation_settings.STATUS_REVOKED
     multiuse_invite.save(update_fields=["status"])
     notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
