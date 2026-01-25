@@ -101,6 +101,7 @@ export function confirm_unstar_all_messages_in_topic(stream_id: number, topic: s
     confirm_dialog.launch({
         modal_title_html: $t_html({defaultMessage: "Unstar messages in topic"}),
         modal_content_html,
+        is_compact: true,
         on_click,
     });
 }
