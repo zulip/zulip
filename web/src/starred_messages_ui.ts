@@ -77,6 +77,7 @@ export function confirm_unstar_all_messages(): void {
     confirm_dialog.launch({
         modal_title_html: $t_html({defaultMessage: "Unstar all messages"}),
         modal_content_html,
+        is_compact: true,
         on_click: message_flags.unstar_all_messages,
     });
 }
