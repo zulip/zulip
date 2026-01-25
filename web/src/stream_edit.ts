@@ -9,7 +9,6 @@ import render_settings_reactivation_stream_modal from "../templates/confirm_dial
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
-import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
@@ -1043,15 +1042,17 @@ export function initialize(): void {
                 settings_org.save_organization_settings(data, $save_button, url);
                 return;
             }
-            dialog_widget.launch({
+            confirm_dialog.launch({
                 modal_title_html: $t_html({defaultMessage: "Confirm changing access permissions"}),
-                modal_content_html: render_confirm_stream_privacy_change_modal(),
+                modal_content_html: $t_html({
+                    defaultMessage:
+                        "This change will make this channel's entire message history accessible according to the new configuration.",
+                }),
+                is_compact: true,
                 id: "confirm_stream_privacy_change",
-                modal_submit_button_text: $t({defaultMessage: "Confirm"}),
                 on_click() {
                     settings_org.save_organization_settings(data, $save_button, url);
                 },
-                close_on_submit: true,
             });
         },
     );
