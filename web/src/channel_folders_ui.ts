@@ -184,6 +184,7 @@ export function handle_archiving_channel_folder(folder_id: number): void {
     confirm_dialog.launch({
         modal_title_html: $t_html({defaultMessage: "Delete channel folder?"}),
         modal_content_html: render_confirm_archive_channel_folder(),
+        is_compact: true,
         on_click() {
             archive_folder(folder_id);
         },
