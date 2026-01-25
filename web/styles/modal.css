@@ -998,6 +998,11 @@ ul.modal-options-list {
     margin-bottom: 0;
 }
 
+.modal__content .input-group:last-of-type {
+    /* Override default value for input-group in settings.css. */
+    margin-bottom: 0;
+}
+
 /* ==============================================================
  * END MODAL MARGIN OVERRIDES
  * ============================================================== */
