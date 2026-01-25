@@ -228,7 +228,7 @@ def revoke_user_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
     prereg_user = access_invite_by_id(user_profile, invite_id)
-    do_revoke_user_invite(prereg_user)
+    do_revoke_user_invite(prereg_user, acting_user=user_profile)
     return json_success(request)
 
 
@@ -238,7 +238,7 @@ def revoke_multiuse_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
     invite = access_multiuse_invite_by_id(user_profile, invite_id)
-    do_revoke_multi_use_invite(invite)
+    do_revoke_multi_use_invite(invite, acting_user=user_profile)
     return json_success(request)
 
 
