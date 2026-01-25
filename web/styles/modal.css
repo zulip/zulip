@@ -981,3 +981,24 @@ ul.modal-options-list {
 #users_to_reset_configuration {
     width: 100%;
 }
+
+/* ==============================================================
+ *  MODAL MARGIN OVERRIDES
+ *  Some elements inside the modal content area have default
+ *  margins applied to them from other CSS files.
+ *  While these margins worked well in the previous modal design,
+ *  they create unwanted extra space between the modal content
+ *  and the modal footer in the redesigned modals.
+ *
+ *  TODO: Remove these overrides once we implement a standardized
+ *  flexbox/grid structure for the modal content.
+ *  ============================================================== */
+
+.modal__content p:last-of-type {
+    /* Override default value for <p> tags in bootstrap.app.css */
+    margin-bottom: 0;
+}
+
+/* ==============================================================
+ * END MODAL MARGIN OVERRIDES
+ * ============================================================== */
