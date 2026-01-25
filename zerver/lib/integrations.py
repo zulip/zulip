@@ -735,9 +735,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     ),
     IncomingWebhookIntegration("ifttt", ["meta-integration"], display_name="IFTTT"),
     IncomingWebhookIntegration(
-        "insping", ["monitoring"], [WebhookScreenshotConfig("website_state_available.json")]
-    ),
-    IncomingWebhookIntegration(
         "intercom",
         ["customer-support"],
         [WebhookScreenshotConfig("conversation_admin_replied.json")],
