@@ -63,6 +63,8 @@ const descriptions: Record<string, string> = {
 
 type SearchFilter =
     | NarrowCanonicalOperator
+    | "channels:public"
+    | "channels:web-public"
     | "is:resolved"
     | "-is:resolved"
     | "is:dm"
@@ -80,6 +82,8 @@ type SearchFilter =
 const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     channel: channel_incompatible_patterns,
     channels: channel_incompatible_patterns,
+    "channels:public": channel_incompatible_patterns,
+    "channels:web-public": channel_incompatible_patterns,
     topic: [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
@@ -730,14 +734,14 @@ function get_channels_filter_suggestions(
     if (!page_params.is_spectator) {
         suggestions.push({
             search_string: public_channels_search_string,
-            incompatible_patterns: incompatible_patterns.channels,
+            incompatible_patterns: incompatible_patterns["channels:public"],
         });
     }
 
     if (stream_data.realm_has_web_public_streams()) {
         suggestions.push({
             search_string: web_public_channels_search_string,
-            incompatible_patterns: incompatible_patterns.channels,
+            incompatible_patterns: incompatible_patterns["channels:web-public"],
         });
     }
 
