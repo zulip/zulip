@@ -356,6 +356,7 @@ class MessageDict:
             "sender_id",
             "sending_client__name",
             "sender__realm_id",
+            "type",
         ]
         # Uses index: zerver_message_pkey
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
@@ -392,6 +393,7 @@ class MessageDict:
             recipient_type_id=row["recipient__type_id"],
             reactions=row["reactions"],
             submessages=row["submessages"],
+            message_type=row["type"],
         )
 
     @staticmethod
@@ -413,6 +415,7 @@ class MessageDict:
         recipient_type_id: int,
         reactions: list[RawReactionRow],
         submessages: list[dict[str, Any]],
+        message_type: int,
     ) -> dict[str, Any]:
         obj = dict(
             id=message_id,
@@ -424,6 +427,8 @@ class MessageDict:
             timestamp=datetime_to_timestamp(date_sent),
             client=sending_client_name,
         )
+
+        obj["message_type"] = message_type
 
         obj[TOPIC_NAME] = topic_name
         obj["sender_realm_id"] = sender_realm_id
