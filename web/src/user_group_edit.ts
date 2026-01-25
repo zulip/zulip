@@ -4,7 +4,6 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_confirm_deactivate_user_group from "../templates/confirm_dialog/confirm_deactivate_user_group.hbs";
 import render_confirm_join_group_direct_member from "../templates/confirm_dialog/confirm_join_group_direct_member.hbs";
 import render_modal_banner from "../templates/modal_banner/modal_banner.hbs";
 import render_settings_checkbox from "../templates/settings/settings_checkbox.hbs";
@@ -2117,16 +2116,16 @@ export function initialize(): void {
             }
 
             const group_name = user_groups.get_display_group_name(user_group.name);
-            const modal_content_html = render_confirm_deactivate_user_group({
-                group_name,
-            });
 
             confirm_dialog.launch({
                 modal_title_html: $t_html(
                     {defaultMessage: "Deactivate {group_name}?"},
                     {group_name},
                 ),
-                modal_content_html,
+                modal_content_html: $t_html({
+                    defaultMessage: "You can always reactivate this group later.",
+                }),
+                is_compact: true,
                 on_click: deactivate_user_group,
                 close_on_submit: false,
                 loading_spinner: true,
