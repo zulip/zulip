@@ -130,9 +130,8 @@ class SecurityHeadersTest(ZulipTestCase):
             )
             self.assertEqual(response.status_code, 204)
             # Verify the log was captured
-            self.assertEqual(len(logs.records), 1)
+            self.assert_length(logs.records, 1)
             self.assertIn("CSP violation", logs.output[0])
-
 
     def test_csp_violations_endpoint_rejects_get(self) -> None:
         """
