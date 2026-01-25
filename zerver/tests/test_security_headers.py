@@ -139,3 +139,47 @@ class SecurityHeadersTest(ZulipTestCase):
         """
         response = self.client_get("/csp-violations")
         self.assertEqual(response.status_code, 405)
+
+    def test_csp_violations_endpoint_invalid_json(self) -> None:
+        """
+        Verify /csp-violations handles invalid JSON gracefully.
+        """
+        with self.assertLogs("zulip.csp_violations", level="WARNING") as logs:
+            response = self.client_post(
+                "/csp-violations",
+                "not valid json",
+                content_type="application/json",
+            )
+            self.assertEqual(response.status_code, 204)
+            self.assert_length(logs.records, 1)
+            self.assertIn("invalid JSON", logs.output[0])
+
+    def test_csp_violations_endpoint_missing_csp_report_key(self) -> None:
+        """
+        Verify /csp-violations handles missing 'csp-report' key gracefully.
+        """
+        payload = {"not-csp-report": {"some": "data"}}
+        with self.assertLogs("zulip.csp_violations", level="WARNING") as logs:
+            response = self.client_post(
+                "/csp-violations",
+                json.dumps(payload),
+                content_type="application/json",
+            )
+            self.assertEqual(response.status_code, 204)
+            self.assert_length(logs.records, 1)
+            self.assertIn("missing or invalid 'csp-report' key", logs.output[0])
+
+    def test_csp_violations_endpoint_invalid_csp_report_type(self) -> None:
+        """
+        Verify /csp-violations handles invalid 'csp-report' type (not dict) gracefully.
+        """
+        payload = {"csp-report": "not a dict"}
+        with self.assertLogs("zulip.csp_violations", level="WARNING") as logs:
+            response = self.client_post(
+                "/csp-violations",
+                json.dumps(payload),
+                content_type="application/json",
+            )
+            self.assertEqual(response.status_code, 204)
+            self.assert_length(logs.records, 1)
+            self.assertIn("missing or invalid 'csp-report' key", logs.output[0])
