@@ -63,12 +63,14 @@ from zerver.models import (
     NamedUserGroup,
     PreregistrationUser,
     Realm,
+    RealmAuditLog,
     ScheduledEmail,
     Stream,
     UserMessage,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
@@ -2533,17 +2535,36 @@ class InvitationsTestCase(InviteUserBase):
         A DELETE call to /json/invites/<ID> should delete the invite and
         any scheduled invitation reminder emails.
         """
+        iago = self.example_user("iago")
         self.login("iago")
 
         invitee = "DeleteMe@zulip.com"
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         prereg_user = PreregistrationUser.objects.get(email=invitee)
+        confirmation = Confirmation.objects.get(
+            type=Confirmation.INVITATION, object_id=prereg_user.id
+        )
+        self.assertEqual(confirmation.content_object, prereg_user)
 
         # Verify that the scheduled email exists.
         ScheduledEmail.objects.get(address__iexact=invitee, type=ScheduledEmail.INVITATION_REMINDER)
 
         result = self.client_delete("/json/invites/" + str(prereg_user.id))
         self.assertEqual(result.status_code, 200)
+
+        audit_log = RealmAuditLog.objects.latest("id")
+        self.assertEqual(audit_log.event_type, AuditLogEventType.INVITATION_REVOKED)
+        self.assertEqual(audit_log.acting_user, iago)
+        extra_data = audit_log.extra_data
+        self.assertDictEqual(
+            extra_data,
+            {
+                "confirmation_key": confirmation.confirmation_key,
+                "invitation_type": Confirmation.INVITATION,
+                "invitation_object_id": prereg_user.id,
+            },
+        )
+
         error_result = self.client_delete("/json/invites/" + str(prereg_user.id))
         self.assert_json_error(error_result, "Invitation already used or deactivated.")
 
@@ -2649,6 +2670,7 @@ class InvitationsTestCase(InviteUserBase):
         A DELETE call to /json/invites/multiuse<ID> should delete the
         multiuse_invite.
         """
+        iago = self.example_user("iago")
         self.login("iago")
 
         zulip_realm = get_realm("zulip")
@@ -2656,10 +2678,25 @@ class InvitationsTestCase(InviteUserBase):
             referred_by=self.example_user("hamlet"), realm=zulip_realm
         )
         validity_in_minutes = 2 * 24 * 60
-        create_confirmation_link(
+        confirmation_link = create_confirmation_link(
             multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
         )
+        confirmation_key = confirmation_link.split("/")[-2]
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
+
+        audit_log = RealmAuditLog.objects.latest("id")
+        self.assertEqual(audit_log.event_type, AuditLogEventType.INVITATION_REVOKED)
+        self.assertEqual(audit_log.acting_user, iago)
+        extra_data = audit_log.extra_data
+        self.assertDictEqual(
+            extra_data,
+            {
+                "confirmation_key": confirmation_key,
+                "invitation_type": Confirmation.MULTIUSE_INVITE,
+                "invitation_object_id": multiuse_invite.id,
+            },
+        )
+
         self.assertEqual(result.status_code, 200)
         self.assertEqual(
             MultiuseInvite.objects.get(id=multiuse_invite.id).status,
