@@ -826,12 +826,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "pingdom", ["monitoring"], [WebhookScreenshotConfig("http_up_to_down.json")]
     ),
     IncomingWebhookIntegration(
-        "pivotal",
-        ["project-management"],
-        [WebhookScreenshotConfig("v5_type_changed.json")],
-        display_name="Pivotal Tracker",
-    ),
-    IncomingWebhookIntegration(
         "radarr", ["entertainment"], [WebhookScreenshotConfig("radarr_movie_grabbed.json")]
     ),
     IncomingWebhookIntegration(
