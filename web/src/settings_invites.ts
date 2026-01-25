@@ -287,6 +287,7 @@ export function on_load_success(
                 ? $t_html({defaultMessage: "Revoke invitation link"})
                 : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
             modal_content_html,
+            is_compact: true,
             id: "revoke_invite_modal",
             close_on_submit: false,
             loading_spinner: true,
