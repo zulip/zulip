@@ -323,6 +323,7 @@ function reset_stream_notifications(elem: HTMLElement): void {
     confirm_dialog.launch({
         modal_title_html: $t_html({defaultMessage: "Reset to default notifications?"}),
         modal_content_html,
+        is_compact: true,
         id: "confirm_reset_stream_notifications_modal",
         on_click() {
             do_reset_stream_notifications(elem, sub);
