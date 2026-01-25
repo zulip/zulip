@@ -1,7 +1,6 @@
 import $ from "jquery";
 import * as z from "zod/mini";
 
-import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
 import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
@@ -115,12 +114,15 @@ export function confirm_bot_deactivation(
     loading_spinner: boolean,
 ): void {
     const bot = people.get_by_user_id(bot_id);
-    const modal_content_html = render_settings_deactivation_bot_modal();
 
     dialog_widget.launch({
         modal_title_html: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
         help_link: "/help/deactivate-or-reactivate-a-bot",
-        modal_content_html,
+        modal_content_html: $t_html({
+            defaultMessage:
+                "A deactivated bot cannot send messages, access data, or take any other action.",
+        }),
+        is_compact: true,
         modal_submit_button_text: $t({defaultMessage: "Deactivate"}),
         on_click: handle_confirm,
         loading_spinner,
