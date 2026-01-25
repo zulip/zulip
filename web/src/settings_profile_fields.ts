@@ -190,8 +190,9 @@ function delete_profile_field(this: HTMLElement, e: JQuery.ClickEvent): void {
     }
 
     confirm_dialog.launch({
-        modal_content_html,
         modal_title_html: $t_html({defaultMessage: "Delete custom profile field?"}),
+        modal_content_html,
+        is_compact: true,
         on_click: request_delete,
     });
 }
