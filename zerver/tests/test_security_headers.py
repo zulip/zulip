@@ -122,12 +122,17 @@ class SecurityHeadersTest(ZulipTestCase):
                 "blocked-uri": "http://example.com/script.js",
             }
         }
-        response = self.client_post(
-            "/csp-violations",
-            json.dumps(payload),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 204)
+        with self.assertLogs("zulip.csp_violations", level="INFO") as logs:
+            response = self.client_post(
+                "/csp-violations",
+                json.dumps(payload),
+                content_type="application/json",
+            )
+            self.assertEqual(response.status_code, 204)
+            # Verify the log was captured
+            self.assertEqual(len(logs.records), 1)
+            self.assertIn("CSP violation", logs.output[0])
+
 
     def test_csp_violations_endpoint_rejects_get(self) -> None:
         """
