@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_add_saved_snippet_modal from "../templates/add_saved_snippet_modal.hbs";
-import render_confirm_delete_saved_snippet from "../templates/confirm_dialog/confirm_delete_saved_snippet.hbs";
 import render_edit_saved_snippet_modal from "../templates/edit_saved_snippet_modal.hbs";
 
 import * as channel from "./channel.ts";
@@ -108,7 +107,8 @@ function item_button_click_callback(event: JQuery.ClickEvent): void {
     ) {
         confirm_dialog.launch({
             modal_title_html: $t_html({defaultMessage: "Delete saved snippet?"}),
-            modal_content_html: render_confirm_delete_saved_snippet(),
+            modal_content_html: $t({defaultMessage: "This action cannot be undone."}),
+            is_compact: true,
             on_click() {
                 const saved_snippet_id = $(event.target)
                     .closest(".list-item")
