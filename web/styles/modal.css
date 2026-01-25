@@ -72,6 +72,7 @@
     grid-template:
         ". modal-header-content modal-close-button modal-close-button" 2.75em /* 44px at 16px/1em */
         ". modal-header-content .                  ." minmax(0, auto)
+        ". modal-tab-switcher   modal-tab-switcher ." minmax(0, auto)
         / 1em minmax(0, 1fr) minmax(0, auto) 1em; /* 16px at 16px/1em */
     background-color: var(--color-background-modal-bar);
 
@@ -250,16 +251,17 @@
     color: hsl(0deg 0% 100%) !important;
 }
 
+.modal__tab-switcher-container {
+    grid-area: modal-tab-switcher;
+    font-weight: initial;
+    padding-bottom: 0.5em; /* 8px at 16px/1em */
+}
+
 /* Modal-specific CSS belongs below this point. */
 
 #user-profile-modal {
     .modal__container {
         height: var(--user-profile-modal-height);
-    }
-
-    #tab-toggle {
-        font-weight: initial;
-        padding: 0 16px 6px;
     }
 
     .name {

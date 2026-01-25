@@ -815,7 +815,8 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     toggler = components.toggle(opts);
     const $elem = toggler.get();
     $elem.addClass("large allow-overflow");
-    $("#tab-toggle").append($elem);
+    const $tab_switcher_container = $("#user-profile-modal .modal__tab-switcher-container");
+    $tab_switcher_container.append($elem);
     setTimeout(() => {
         $(".ind-tab.selected").trigger("focus");
     }, 0);
