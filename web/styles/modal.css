@@ -616,7 +616,6 @@
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
-    margin-bottom: 10px;
     /* Subtract (2 * horizontal padding) + (2 * border width) */
     width: calc(
         var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
