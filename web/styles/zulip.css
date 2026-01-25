@@ -1,8 +1,10 @@
 html {
-  overflow: hidden scroll;
-  overscroll-behavior-y: none;
-  scrollbar-gutter: stable both-edges; /* NEW LINE - Prevents layout shift when scrollbar hides */
-  width: calc(100% - var(--disabled-scrollbar-width)); /* Fallback for legacy browsers */
+    overflow: hidden scroll;
+    overscroll-behavior-y: none;
+    scrollbar-gutter: stable both-edges; /* NEW LINE - Prevents layout shift when scrollbar hides */
+    width: calc(
+        100% - var(--disabled-scrollbar-width)
+    ); /* Fallback for legacy browsers */
 }
 
 body,

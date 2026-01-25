@@ -1,17 +1,17 @@
 import $ from "jquery";
 
 export function disable_scrolling(): void {
-  // Why disable scrolling?
-  // Since fixed / absolute positioned elements don't capture the scroll event
-  // they overflow their defined container. Since fixed / absolute elements are
-  // part of the document flow, we cannot capture scroll events on them
-  // as event bubbling doesn't work naturally.
-  // CSS scrollbar-gutter now handles layout prevention automatically.
-  document.documentElement.style.overflowY = "hidden";
+    // Why disable scrolling?
+    // Since fixed / absolute positioned elements don't capture the scroll event
+    // they overflow their defined container. Since fixed / absolute elements are
+    // part of the document flow, we cannot capture scroll events on them
+    // as event bubbling doesn't work naturally.
+    // CSS scrollbar-gutter now handles layout prevention automatically.
+    document.documentElement.style.overflowY = "hidden";
 }
 
 export function enable_scrolling(): void {
-  document.documentElement.style.overflowY = "";
+    document.documentElement.style.overflowY = "";
 }
 
 export function get_visible_focusable_elements_in_overlay_container(
