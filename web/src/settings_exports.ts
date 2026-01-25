@@ -2,7 +2,6 @@ import $ from "jquery";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_confirm_delete_data_export from "../templates/confirm_dialog/confirm_delete_data_export.hbs";
 import render_export_modal_warning_notes from "../templates/export_modal_warning_notes.hbs";
 import render_allow_private_data_export_banner from "../templates/modal_banner/allow_private_data_export_banner.hbs";
 import render_admin_export_consent_list from "../templates/settings/admin_export_consent_list.hbs";
@@ -529,11 +528,11 @@ export function set_up(): void {
         const url =
             "/json/export/realm/" +
             encodeURIComponent($button.closest("tr").attr("data-export-id")!);
-        const modal_content_html = render_confirm_delete_data_export();
 
         confirm_dialog.launch({
             modal_title_html: $t_html({defaultMessage: "Delete data export?"}),
-            modal_content_html,
+            modal_content_html: $t({defaultMessage: "This action cannot be undone."}),
+            is_compact: true,
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});
             },
