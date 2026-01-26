@@ -262,7 +262,7 @@ class MatterMostImporter(ZulipTestCase):
             "zerver.data_import.mattermost.MATTERMOST_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME",
             "Gryffindor common room",
         ):
-            zerver_stream = convert_channel_data(
+            convert_channel_data(
                 realm=mock_realm_dict,
                 channel_data=mattermost_data["channel"],
                 user_data_map=username_to_user,
