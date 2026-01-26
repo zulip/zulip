@@ -14786,9 +14786,9 @@ paths:
                     - **1**: Short text
                     - **2**: Paragraph
                     - **3**: Dropdown
-                    - **4**: Date picker
+                    - **4**: Date
                     - **5**: Link
-                    - **6**: Person picker
+                    - **6**: Users
                     - **7**: External account
                     - **8**: Pronouns
 
@@ -14819,7 +14819,7 @@ paths:
                     At most 2 profile fields may have this property be true in a given
                     organization.
 
-                    The "Person picker" profile field is not supported, but that is likely to
+                    The "Users" profile field is not supported, but that is likely to
                     be temporary.
 
                     [profile-field-types]: /help/custom-profile-fields#profile-field-types
@@ -27166,9 +27166,9 @@ components:
             - **1**: Short text
             - **2**: Paragraph
             - **3**: Dropdown
-            - **4**: Date picker
+            - **4**: Date
             - **5**: Link
-            - **6**: Person picker
+            - **6**: Users
             - **7**: External account
             - **8**: Pronouns
 
@@ -27203,7 +27203,7 @@ components:
           description: |
             Whether the custom profile field, display or not on the user card.
 
-            Must be false for `Person picker`
+            Must be false for `Users`
             [profile field types](/help/custom-profile-fields#profile-field-types).
 
             This field is only included when its value is `true`.
