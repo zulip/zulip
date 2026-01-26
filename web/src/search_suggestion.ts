@@ -62,7 +62,7 @@ const descriptions: Record<string, string> = {
 };
 
 type SearchFilter =
-    | NarrowTerm["operator"]
+    | NarrowCanonicalOperator
     | "is:resolved"
     | "-is:resolved"
     | "is:dm"
@@ -79,8 +79,6 @@ type SearchFilter =
 
 const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     channel: channel_incompatible_patterns,
-    stream: channel_incompatible_patterns,
-    streams: channel_incompatible_patterns,
     channels: channel_incompatible_patterns,
     topic: [
         {operator: "dm"},
@@ -89,12 +87,6 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "topic"},
     ],
     dm: [
-        {operator: "dm"},
-        {operator: "pm-with"},
-        {operator: "channel"},
-        {operator: "is", operand: "resolved"},
-    ],
-    "pm-with": [
         {operator: "dm"},
         {operator: "pm-with"},
         {operator: "channel"},
@@ -122,7 +114,6 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "topic"},
     ],
     sender: [{operator: "sender"}, {operator: "from"}],
-    from: [{operator: "sender"}, {operator: "from"}],
     "is:starred": [{operator: "is", operand: "starred"}],
     "is:mentioned": [{operator: "is", operand: "mentioned"}],
     "is:followed": [
@@ -150,8 +141,6 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     is: [],
     search: [],
     with: [],
-    "group-pm-with": [],
-    subject: [],
 };
 
 // TODO: We have stripped suggestion of all other attributes, we should now

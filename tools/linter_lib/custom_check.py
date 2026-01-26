@@ -128,7 +128,6 @@ js_rules = RuleList(
                 "web/src/message_helper.ts",
                 "web/src/server_message.ts",
                 "web/src/state_data.ts",
-                "web/src/search_suggestion.ts",
                 "web/tests/",
             },
             "exclude_pattern": "emails",
