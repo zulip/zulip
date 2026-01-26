@@ -454,7 +454,7 @@ def process_raw_message_batch(
     subscriber_map: dict[int, set[int]],
     user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
-    get_recipient_id_from_mattermost_channel_id: Callable[[str], int],
+    added_channels: AddedChannelsT,
     get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
     get_recipient_id_from_username: Callable[[str], int],
     is_pm_data: bool,
@@ -504,7 +504,7 @@ def process_raw_message_batch(
         sender_user_id = raw_message["sender_id"]
         if "channel_name" in raw_message:
             is_direct_message_type = False
-            recipient_id = get_recipient_id_from_mattermost_channel_id(raw_message["channel_name"])
+            recipient_id = added_channels[raw_message["channel_name"]].zulip_recipient_id
         elif "direct_message_group_members" in raw_message:
             is_direct_message_type = True
             recipient_id = get_recipient_id_from_direct_message_group_members(
@@ -595,7 +595,7 @@ def process_posts(
     team_name: str,
     realm_id: int,
     post_data: list[dict[str, Any]],
-    get_recipient_id_from_mattermost_channel_id: Callable[[str], int],
+    added_channels: AddedChannelsT,
     get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
     get_recipient_id_from_username: Callable[[str], int],
     subscriber_map: dict[int, set[int]],
@@ -683,7 +683,7 @@ def process_posts(
             subscriber_map=subscriber_map,
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
-            get_recipient_id_from_mattermost_channel_id=get_recipient_id_from_mattermost_channel_id,
+            added_channels=added_channels,
             get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
             get_recipient_id_from_username=get_recipient_id_from_username,
             is_pm_data=is_pm_data,
@@ -713,7 +713,7 @@ def write_message_data(
     subscriber_map: dict[int, set[int]],
     output_dir: str,
     masking_content: bool,
-    stream_id_mapper: IdMapper[str],
+    added_channels: AddedChannelsT,
     direct_message_group_id_mapper: IdMapper[frozenset[str]],
     user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
@@ -723,21 +723,14 @@ def write_message_data(
     zerver_attachment: list[ZerverFieldsT],
     mattermost_data_dir: str,
 ) -> None:
-    stream_id_to_recipient_id = {}
     direct_message_group_id_to_recipient_id = {}
     user_id_to_recipient_id = {}
 
     for d in zerver_recipient:
-        if d["type"] == Recipient.STREAM:
-            stream_id_to_recipient_id[d["type_id"]] = d["id"]
-        elif d["type"] == Recipient.DIRECT_MESSAGE_GROUP:
+        if d["type"] == Recipient.DIRECT_MESSAGE_GROUP:
             direct_message_group_id_to_recipient_id[d["type_id"]] = d["id"]
         if d["type"] == Recipient.PERSONAL:
             user_id_to_recipient_id[d["type_id"]] = d["id"]
-
-    def get_recipient_id_from_mattermost_channel_id(mattermost_channel_id: str) -> int:
-        receiver_id = stream_id_mapper.get(mattermost_channel_id)
-        return stream_id_to_recipient_id[receiver_id]
 
     def get_recipient_id_from_direct_message_group_members(
         direct_message_group_members: frozenset[str],
@@ -763,7 +756,7 @@ def write_message_data(
             team_name=team_name,
             realm_id=realm_id,
             post_data=post_data[post_type],
-            get_recipient_id_from_mattermost_channel_id=get_recipient_id_from_mattermost_channel_id,
+            added_channels=added_channels,
             get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
             get_recipient_id_from_username=get_recipient_id_from_username,
             subscriber_map=subscriber_map,
@@ -971,7 +964,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             team_name=team_name,
         )
 
-        convert_channel_data(
+        added_channels = convert_channel_data(
             realm=realm,
             channel_data=mattermost_data["channel"],
             user_data_map=username_to_user,
@@ -999,7 +992,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
 
         zerver_recipient = build_recipients(
             zerver_userprofile=all_users,
-            # We build the recipient as we convert Mattermost channels.
+            # We build the channels' recipient as we convert channel data.
             zerver_stream=[],
             zerver_direct_message_group=zerver_direct_message_group,
         )
@@ -1053,7 +1046,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             subscriber_map=subscriber_map,
             output_dir=realm_output_dir,
             masking_content=masking_content,
-            stream_id_mapper=stream_id_mapper,
+            added_channels=added_channels,
             direct_message_group_id_mapper=direct_message_group_id_mapper,
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
