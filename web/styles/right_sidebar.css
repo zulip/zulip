@@ -160,15 +160,6 @@
         }
     }
 
-    .user-circle {
-        grid-area: starting-anchor-element;
-        place-self: center center;
-        /* Tighten the line-height to match the icon's size... */
-        line-height: 1;
-        /* ...which is approximately 8px at 15px/1em in Vlad's design. */
-        font-size: 0.5333em;
-    }
-
     .user_sidebar_entry.with_avatar {
         .user-profile-picture-container {
             /* Establish positioning context for user circle. */
@@ -190,24 +181,49 @@
                we put it on .user-profile-picture-container instead,
                so that user circles occupy the corner of the image. */
             margin-right: 0;
-        }
 
-        .user-circle {
-            position: absolute;
-            /* 10px at 16px/1em */
-            font-size: 0.625em;
-            bottom: -0.5px;
-            right: -0.5px;
-            background-color: var(--color-background);
-            /* A 1.5px border provides better results than
-               a 1px border, especially at smaller font sizes. */
-            border: 1.5px solid var(--color-background);
-            border-radius: 50%;
-
-            &.user-circle-offline {
+            &::after {
+                content: "";
+                position: absolute;
+                bottom: -0.5px;
+                right: -0.5px;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background-color: var(--color-background);
+                border: 1.5px solid var(--color-background);
                 display: none;
             }
         }
+    }
+
+    /* THE FIX: Standard Dot (Must be on .selectable_sidebar_block) */
+    .user_sidebar_entry .selectable_sidebar_block::before {
+        content: "";
+        grid-area: starting-anchor-element;
+        place-self: center center;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: none;
+    }
+
+    /* Global Logic for Colors and Visibility */
+    .user-circle-online .selectable_sidebar_block::before,
+    .user-circle-idle .selectable_sidebar_block::before,
+    .user-circle-online .user-profile-picture::after,
+    .user-circle-idle .user-profile-picture::after {
+        display: block;
+    }
+
+    .user-circle-online .selectable_sidebar_block::before,
+    .user-circle-online .user-profile-picture::after {
+        background-color: var(--color-presence-online);
+    }
+
+    .user-circle-idle .selectable_sidebar_block::before,
+    .user-circle-idle .user-profile-picture::after {
+        background-color: var(--color-presence-idle);
     }
 
     /* Overwrite some stray list rules (including one in left_sidebar.css) to turn color
@@ -340,6 +356,15 @@
         "row-content" auto / minmax(0, 1fr);
 
     .selectable_sidebar_block {
+        line-height: var(--line-height-sidebar-row-with-avatars);
+        display: grid;
+        grid-template:
+            "avatar row-content markers-and-controls" var(
+                --right-sidebar-avatar-width
+            )
+            / auto minmax(0, 1fr) minmax(0, auto);
+        justify-content: flex-start;
+        align-items: center;
         grid-template-rows: auto;
         padding: 4px;
         padding-left: calc(var(--right-sidebar-header-icon-toggle-width) / 2);
@@ -369,8 +394,7 @@
     }
 }
 
-.information-settings .profile-with-avatar,
-.user_sidebar_entry.with_avatar .selectable_sidebar_block {
+.information-settings .profile-with-avatar {
     line-height: var(--line-height-sidebar-row-with-avatars);
     display: grid;
     grid-template:
@@ -380,9 +404,6 @@
         / auto minmax(0, 1fr) minmax(0, auto);
     justify-content: flex-start;
     align-items: center;
-}
-
-.information-settings .profile-with-avatar {
     margin: 5px 0;
 }
 
