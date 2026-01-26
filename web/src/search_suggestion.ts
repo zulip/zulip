@@ -62,7 +62,7 @@ const descriptions: Record<string, string> = {
 };
 
 type SearchFilter =
-    | NarrowTerm["operator"]
+    | NarrowCanonicalOperator
     | "is:resolved"
     | "-is:resolved"
     | "is:dm"
@@ -79,8 +79,6 @@ type SearchFilter =
 
 const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     channel: channel_incompatible_patterns,
-    stream: channel_incompatible_patterns,
-    streams: channel_incompatible_patterns,
     channels: channel_incompatible_patterns,
     topic: [
         {operator: "dm"},
@@ -89,12 +87,6 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "topic"},
     ],
     dm: [
-        {operator: "dm"},
-        {operator: "pm-with"},
-        {operator: "channel"},
-        {operator: "is", operand: "resolved"},
-    ],
-    "pm-with": [
         {operator: "dm"},
         {operator: "pm-with"},
         {operator: "channel"},
@@ -122,7 +114,6 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "topic"},
     ],
     sender: [{operator: "sender"}, {operator: "from"}],
-    from: [{operator: "sender"}, {operator: "from"}],
     "is:starred": [{operator: "is", operand: "starred"}],
     "is:mentioned": [{operator: "is", operand: "mentioned"}],
     "is:followed": [
@@ -150,8 +141,6 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     is: [],
     search: [],
     with: [],
-    "group-pm-with": [],
-    subject: [],
 };
 
 // TODO: We have stripped suggestion of all other attributes, we should now
@@ -904,12 +893,16 @@ function get_operator_suggestions(
         last_operand = last_operand.slice(1);
     }
 
-    let choices: NarrowTerm["operator"][];
+    let canonicalized_operator_choices: NarrowCanonicalOperator[];
+    let legacy_operator_choices: NarrowTerm["operator"][];
+
+    const incompatible_operators = new Set<NarrowCanonicalOperator>();
 
     if (last.operator === "") {
-        choices = ["channels", "channel", "streams", "stream"];
+        canonicalized_operator_choices = ["channels", "channel"];
+        legacy_operator_choices = ["streams", "stream"];
     } else {
-        choices = [
+        canonicalized_operator_choices = [
             "channels",
             "channel",
             "topic",
@@ -917,19 +910,28 @@ function get_operator_suggestions(
             "dm-including",
             "sender",
             "near",
-            "from",
-            "pm-with",
-            "streams",
-            "stream",
         ];
+        legacy_operator_choices = ["from", "pm-with", "streams", "stream"];
     }
 
     // We remove suggestion choice if its incompatible_pattern matches
     // that of current search terms.
-    choices = choices.filter(
-        (choice) =>
-            common.phrase_match(last_operand, choice) &&
-            !match_criteria(terms, incompatible_patterns[choice]),
+    canonicalized_operator_choices = canonicalized_operator_choices.filter((choice) => {
+        if (match_criteria(terms, incompatible_patterns[choice])) {
+            incompatible_operators.add(choice);
+            return false;
+        }
+        return true;
+    });
+
+    // Add equivalent legacy operators for canonicalized operators
+    legacy_operator_choices = legacy_operator_choices.filter((choice) => {
+        const canonical = filter_util.canonicalize_operator(choice);
+        return !incompatible_operators.has(canonical);
+    });
+
+    const choices = [...canonicalized_operator_choices, ...legacy_operator_choices].filter(
+        (choice) => common.phrase_match(last_operand, choice),
     );
 
     return choices.map((choice) => {
