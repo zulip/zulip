@@ -438,6 +438,8 @@ h4.user_group_setting_subsection_title {
         font-weight: 600;
         padding: 10px;
         overflow: hidden;
+        position: relative;
+        width: 100%;
 
         & a {
             color: inherit;
@@ -488,6 +490,14 @@ h4.user_group_setting_subsection_title {
 
         .deactivated-user-group-icon-right {
             margin-right: 5px;
+        }
+
+        .right-section {
+            position: absolute;
+            font-size: 1.5em;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
         }
     }
 }
@@ -574,9 +584,12 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .left .no-streams-to-show,
-    .left .no-groups-to-show {
+    .left .no-streams-to-show {
         margin-top: calc(45vh - 75px);
+    }
+
+    .left .no-groups-to-show {
+        margin-top: 40px;
     }
 
     .right .nothing-selected {

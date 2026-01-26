@@ -18,7 +18,6 @@ import render_user_group_settings from "../templates/user_group_settings/user_gr
 import render_user_group_settings_empty_notice from "../templates/user_group_settings/user_group_settings_empty_notice.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
 
-import type {Banner} from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buttons from "./buttons.ts";
@@ -85,22 +84,6 @@ const initial_group_filter = FILTERS.ACTIVE_GROUPS;
 let group_list_widget: ListWidget.ListWidget<UserGroup, UserGroup>;
 let group_list_toggler: Toggle;
 
-const GROUP_INFO_BANNER: Banner = {
-    intent: "info",
-    label: $t({
-        defaultMessage:
-            "User groups offer a flexible way to manage permissions in your organization.",
-    }),
-    buttons: [
-        {
-            label: $t({defaultMessage: "Learn more"}),
-            custom_classes: "banner-external-link",
-            variant: "subtle",
-        },
-    ],
-    close_button: false,
-};
-
 function get_user_group_id(target: HTMLElement): number {
     const $row = $(target).closest(
         ".group-row, .user_group_settings_wrapper, .save-button, .group_settings_header",
@@ -132,6 +115,7 @@ export function get_edit_container(group_id: number): JQuery {
 export function update_group_creation_ui(): void {
     const $left_panel_icon_button = $("#add_new_user_group .create_user_group_button");
     const $right_panel_permission_text = $("#groups_overlay .right .creation-permission-text");
+    const $inline_create_buttons = $(".no-groups-to-show .create_user_group_button");
     if (settings_data.user_can_create_user_groups()) {
         $left_panel_icon_button.show();
         $right_panel_permission_text.hide();
@@ -140,11 +124,11 @@ export function update_group_creation_ui(): void {
         $right_panel_permission_text.show();
     }
 
+    const is_disabled =
+        !realm.zulip_plan_is_not_limited || !settings_data.user_can_create_user_groups();
     $left_panel_icon_button.prop("disabled", !realm.zulip_plan_is_not_limited);
-    $("#groups_overlay .right .create_user_group_button").prop(
-        "disabled",
-        !realm.zulip_plan_is_not_limited || !settings_data.user_can_create_user_groups(),
-    );
+    $("#groups_overlay .right .create_user_group_button").prop("disabled", is_disabled);
+    $inline_create_buttons.prop("disabled", is_disabled);
 }
 
 function update_add_members_elements(group: UserGroup): void {
@@ -447,6 +431,7 @@ function update_your_groups_list_if_needed(): void {
         // affect the memberships of groups that have the
         // updated group as their subgroup.
         redraw_user_group_list();
+        update_filter_widget_visibility();
     }
 }
 
@@ -1332,6 +1317,7 @@ export function handle_deleted_group(group_id: number): void {
         update_group_membership_button(user_group.id);
     }
     redraw_user_group_list();
+    update_filter_widget_visibility();
 }
 
 export function handle_reactivated_group(group_id: number): void {
@@ -1350,6 +1336,7 @@ export function handle_reactivated_group(group_id: number): void {
         update_group_membership_button(user_group.id);
     }
     redraw_user_group_list();
+    update_filter_widget_visibility();
 }
 
 export function show_group_settings(group: UserGroup): void {
@@ -1378,6 +1365,18 @@ export function set_up_click_handlers(): void {
 
         e.stopPropagation();
         e.preventDefault();
+    });
+
+    $("#groups_overlay").on("click", ".view-all-groups-button", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        group_list_toggler.goto("all-groups");
+    });
+
+    $("#groups_overlay").on("click", ".create-user-group-button", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        open_create_user_group();
     });
 }
 
@@ -1468,6 +1467,7 @@ export function add_group_to_table(group: UserGroup): void {
     }
 
     redraw_user_group_list();
+    update_filter_widget_visibility();
 
     if (user_group_create.get_name() === group.name) {
         // This `user_group_create.get_name()` check tells us whether the
@@ -1549,9 +1549,10 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
         update_group_details(group);
         if (event.data.name !== undefined) {
             // update settings title
-            $("#groups_overlay .user-group-info-title")
-                .text(user_groups.get_display_group_name(group.name))
-                .addClass("showing-info-title");
+            $("#groups_overlay .user-group-info-title .group-name-text").text(
+                user_groups.get_display_group_name(group.name),
+            );
+            $("#groups_overlay .user-group-info-title").addClass("showing-info-title");
         }
 
         if (changed_group_settings.length > 0) {
@@ -1650,7 +1651,25 @@ export function redraw_user_group_list(): void {
     redraw_left_panel(tab_name);
 }
 
+function reset_group_list_filters_on_tab_switch(): void {
+    // Clear search
+    const $search = $("#search_group_name");
+    if ($search.val() !== "") {
+        $search.val("");
+        $search.trigger("input");
+    }
+
+    // Reset visibility filters
+    update_displayed_groups(FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS);
+
+    // Reset dropdown widget
+    if (filters_dropdown_widget) {
+        filters_dropdown_widget.render(FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS);
+    }
+}
+
 export function switch_group_tab(tab_name: string): void {
+    reset_group_list_filters_on_tab_switch();
     /*
         This switches the groups list tab, but it doesn't update
         the group_list_toggler widget.  You may instead want to
@@ -1659,6 +1678,7 @@ export function switch_group_tab(tab_name: string): void {
 
     redraw_left_panel(tab_name);
     setup_group_list_tab_hash(tab_name);
+    update_filter_widget_visibility();
 }
 
 export function add_or_remove_from_group(group: UserGroup, $group_row: JQuery): void {
@@ -1736,11 +1756,17 @@ export function update_empty_left_panel_message(): void {
         is_your_groups_tab_active,
     );
 
+    let groups_count = 0;
+    if (is_your_groups_tab_active) {
+        groups_count = user_groups.get_realm_user_groups(true).length;
+    }
+
     const args = {
         empty_user_group_list_message,
         can_create_user_groups:
             settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited,
         all_groups_tab: !is_your_groups_tab_active,
+        groups_count,
     };
 
     $(".no-groups-to-show").html(render_user_group_settings_empty_notice(args)).show();
@@ -1751,8 +1777,16 @@ function get_empty_user_group_list_message(
     is_your_groups_tab_active: boolean,
 ): string {
     const is_searching = $("#search_group_name").val() !== "";
+    let groups_count = 0;
+    if (is_your_groups_tab_active) {
+        groups_count = user_groups.get_realm_user_groups(true).length;
+    }
     if (is_searching || current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS) {
         return $t({defaultMessage: "There are no groups matching your filters."});
+    }
+
+    if (groups_count === 0) {
+        return $t({defaultMessage: "There are no user groups you can view in this organization."});
     }
 
     if (is_your_groups_tab_active) {
@@ -1844,10 +1878,36 @@ function setup_dropdown_filters_widget(): void {
 }
 
 function update_filter_widget_visibility(): void {
+    const tab_key = get_active_data().$tabs.first().attr("data-tab-key");
+    let groups_list_data;
+    if (tab_key === "all-groups") {
+        groups_list_data = user_groups.get_realm_user_groups(true);
+    } else if (tab_key === "your-groups") {
+        groups_list_data = user_groups.get_user_groups_of_user(people.my_current_user_id(), true);
+    }
+
+    const $filterDropdown = $("#user-group-edit-filter-options");
+    const $searchBox = $("#group_filter");
+
+    // Hide both filter dropdown AND search box if there are no groups at all
+    if (!groups_list_data || groups_list_data.length === 0) {
+        $filterDropdown.hide();
+        $searchBox.hide();
+        update_displayed_groups(FILTERS.ACTIVE_GROUPS);
+        if (filters_dropdown_widget) {
+            filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
+        }
+        return;
+    }
+
+    // Show search box when there are groups
+    $searchBox.show();
+
+    // Show filter dropdown only if there are deactivated groups
     if (user_groups.realm_has_deactivated_user_groups()) {
-        $("#user-group-edit-filter-options").show();
+        $filterDropdown.show();
     } else {
-        $("#user-group-edit-filter-options").hide();
+        $filterDropdown.show();
         update_displayed_groups(FILTERS.ACTIVE_GROUPS);
         if (filters_dropdown_widget) {
             filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
@@ -1891,11 +1951,6 @@ export function setup_page(callback: () => void): void {
         );
         $groups_overlay_container.html(groups_overlay_html);
         update_displayed_groups(initial_group_filter);
-        settings_banner.set_up_banner(
-            $(".group-info-banner"),
-            GROUP_INFO_BANNER,
-            "/help/user-groups",
-        );
 
         settings_banner.set_up_upgrade_banners();
         // Initially as the overlay is build with empty right panel,
@@ -2026,6 +2081,11 @@ export function initialize(): void {
             });
         },
     );
+
+    $("#groups_overlay_container").on("click", ".view_all_groups_button", (e) => {
+        e.preventDefault();
+        group_list_toggler.goto("all-groups");
+    });
 
     $("#groups_overlay_container").on(
         "click",
