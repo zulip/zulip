@@ -26,6 +26,7 @@ from zerver.data_import.import_util import (
     build_personal_subscriptions,
     build_realm,
     build_realm_emoji,
+    build_recipient,
     build_recipients,
     build_stream,
     build_stream_subscriptions,
@@ -59,6 +60,7 @@ def make_realm(realm_id: int, team: dict[str, Any]) -> ZerverFieldsT:
 
     # We may override these later.
     realm["zerver_defaultstream"] = []
+    realm["zerver_recipient"] = []
 
     return realm
 
@@ -259,6 +261,10 @@ def convert_channel_data(
             users=channel_users,
             stream_id=stream_id,
         )
+
+        recipient_id = NEXT_ID("recipient")
+        recipient = build_recipient(stream_id, recipient_id, Recipient.STREAM)
+        realm["zerver_recipient"].append(recipient)
 
         if channel_dict["display_name"] == MATTERMOST_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME:
             zerver_realm[0]["new_stream_announcements_stream"] = stream["id"]
@@ -705,7 +711,6 @@ def write_message_data(
     stream_id_to_recipient_id = {}
     direct_message_group_id_to_recipient_id = {}
     user_id_to_recipient_id = {}
-
     for d in zerver_recipient:
         if d["type"] == Recipient.STREAM:
             stream_id_to_recipient_id[d["type_id"]] = d["id"]
@@ -979,25 +984,26 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
 
         zerver_recipient = build_recipients(
             zerver_userprofile=all_users,
-            zerver_stream=zerver_stream,
+            # We build the recipient as we convert Mattermost channels.
+            zerver_stream=[],
             zerver_direct_message_group=zerver_direct_message_group,
         )
-        realm["zerver_recipient"] = zerver_recipient
+        realm["zerver_recipient"] += zerver_recipient
 
         stream_subscriptions = build_stream_subscriptions(
             get_users=subscriber_handler.get_users,
-            zerver_recipient=zerver_recipient,
+            zerver_recipient=realm["zerver_recipient"],
             zerver_stream=zerver_stream,
         )
 
         direct_message_group_subscriptions = build_direct_message_group_subscriptions(
             get_users=subscriber_handler.get_users,
-            zerver_recipient=zerver_recipient,
+            zerver_recipient=realm["zerver_recipient"],
             zerver_direct_message_group=zerver_direct_message_group,
         )
 
         personal_subscriptions = build_personal_subscriptions(
-            zerver_recipient=zerver_recipient,
+            zerver_recipient=realm["zerver_recipient"],
         )
 
         # Mattermost currently supports only exporting messages from channels.
@@ -1028,7 +1034,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             team_name=team_name,
             realm_id=realm_id,
             post_data=mattermost_data["post"],
-            zerver_recipient=zerver_recipient,
+            zerver_recipient=realm["zerver_recipient"],
             subscriber_map=subscriber_map,
             output_dir=realm_output_dir,
             masking_content=masking_content,
