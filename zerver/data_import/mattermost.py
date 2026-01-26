@@ -8,7 +8,8 @@ import os
 import re
 import shutil
 from collections.abc import Callable
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, TypeAlias
 
 import orjson
 from django.conf import settings
@@ -49,6 +50,15 @@ from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 from zerver.models.streams import Stream
 
 
+@dataclass
+class ChannelMetadata:
+    zulip_channel_id: int
+    zulip_recipient_id: int
+
+
+AddedChannelsT: TypeAlias = dict[str, ChannelMetadata]
+
+
 def make_realm(realm_id: int, team: dict[str, Any]) -> ZerverFieldsT:
     # set correct realm details
     NOW = float(timezone_now().timestamp())
@@ -61,6 +71,7 @@ def make_realm(realm_id: int, team: dict[str, Any]) -> ZerverFieldsT:
     # We may override these later.
     realm["zerver_defaultstream"] = []
     realm["zerver_recipient"] = []
+    realm["zerver_stream"] = []
 
     return realm
 
@@ -160,13 +171,14 @@ def convert_channel_data(
     user_id_mapper: IdMapper[str],
     realm_id: int,
     team_name: str,
-) -> list[ZerverFieldsT]:
+) -> AddedChannelsT:
     zerver_realm = realm["zerver_realm"]
 
     channel_data_list = [d for d in channel_data if d["team"] == team_name]
 
     channel_members_map: dict[str, list[str]] = {}
     channel_admins_map: dict[str, list[str]] = {}
+    added_channels: AddedChannelsT = {}
 
     def initialize_stream_membership_dicts() -> None:
         for channel in channel_data:
@@ -201,7 +213,6 @@ def convert_channel_data(
         else:  # nocoverage
             raise Exception("unexpected value")
 
-    streams = []
     initialize_stream_membership_dicts()
     channel_name_count: dict[str, int] = {}
     for channel_dict in channel_data_list:
@@ -228,22 +239,24 @@ def convert_channel_data(
         else:
             channel_name_count[channel_display_name] = 1
 
-        stream = build_stream(
-            date_created=now,
-            realm_id=realm_id,
-            name=channel_display_name,
-            # Purpose describes how the channel should be used. It is similar to
-            # stream description and is shown in channel list to help others decide
-            # whether to join.
-            # Header text always appears right next to channel name in channel header.
-            # Can be used for advertising the purpose of stream, making announcements as
-            # well as including frequently used links. So probably not a bad idea to use
-            # this as description if the channel purpose is empty.
-            description=channel_dict["purpose"] or channel_dict["header"],
-            stream_id=stream_id,
-            # Mattermost export don't include data of archived(~ deactivated) channels.
-            deactivated=False,
-            invite_only=invite_only,
+        realm["zerver_stream"].append(
+            build_stream(
+                date_created=now,
+                realm_id=realm_id,
+                name=channel_display_name,
+                # Purpose describes how the channel should be used. It is similar to
+                # stream description and is shown in channel list to help others decide
+                # whether to join.
+                # Header text always appears right next to channel name in channel header.
+                # Can be used for advertising the purpose of stream, making announcements as
+                # well as including frequently used links. So probably not a bad idea to use
+                # this as description if the channel purpose is empty.
+                description=channel_dict["purpose"] or channel_dict["header"],
+                stream_id=stream_id,
+                # Mattermost export don't include data of archived(~ deactivated) channels.
+                deactivated=False,
+                invite_only=invite_only,
+            )
         )
 
         channel_users = {
@@ -267,11 +280,13 @@ def convert_channel_data(
         realm["zerver_recipient"].append(recipient)
 
         if channel_dict["display_name"] == MATTERMOST_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME:
-            zerver_realm[0]["new_stream_announcements_stream"] = stream["id"]
-            zerver_realm[0]["zulip_update_announcements_stream"] = stream["id"]
+            zerver_realm[0]["new_stream_announcements_stream"] = stream_id
+            zerver_realm[0]["zulip_update_announcements_stream"] = stream_id
 
-        streams.append(stream)
-    return streams
+        added_channels[mattermost_channel_id] = ChannelMetadata(
+            zulip_channel_id=stream_id, zulip_recipient_id=recipient_id
+        )
+    return added_channels
 
 
 def convert_direct_message_group_data(
@@ -439,7 +454,7 @@ def process_raw_message_batch(
     subscriber_map: dict[int, set[int]],
     user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
-    get_recipient_id_from_channel_name: Callable[[str], int],
+    added_channels: AddedChannelsT,
     get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
     get_recipient_id_from_username: Callable[[str], int],
     is_pm_data: bool,
@@ -489,7 +504,7 @@ def process_raw_message_batch(
         sender_user_id = raw_message["sender_id"]
         if "channel_name" in raw_message:
             is_direct_message_type = False
-            recipient_id = get_recipient_id_from_channel_name(raw_message["channel_name"])
+            recipient_id = added_channels[raw_message["channel_name"]].zulip_recipient_id
         elif "direct_message_group_members" in raw_message:
             is_direct_message_type = True
             recipient_id = get_recipient_id_from_direct_message_group_members(
@@ -580,7 +595,7 @@ def process_posts(
     team_name: str,
     realm_id: int,
     post_data: list[dict[str, Any]],
-    get_recipient_id_from_channel_name: Callable[[str], int],
+    added_channels: AddedChannelsT,
     get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
     get_recipient_id_from_username: Callable[[str], int],
     subscriber_map: dict[int, set[int]],
@@ -668,7 +683,7 @@ def process_posts(
             subscriber_map=subscriber_map,
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
-            get_recipient_id_from_channel_name=get_recipient_id_from_channel_name,
+            added_channels=added_channels,
             get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
             get_recipient_id_from_username=get_recipient_id_from_username,
             is_pm_data=is_pm_data,
@@ -698,7 +713,7 @@ def write_message_data(
     subscriber_map: dict[int, set[int]],
     output_dir: str,
     masking_content: bool,
-    stream_id_mapper: IdMapper[str],
+    added_channels: AddedChannelsT,
     direct_message_group_id_mapper: IdMapper[frozenset[str]],
     user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
@@ -708,20 +723,13 @@ def write_message_data(
     zerver_attachment: list[ZerverFieldsT],
     mattermost_data_dir: str,
 ) -> None:
-    stream_id_to_recipient_id = {}
     direct_message_group_id_to_recipient_id = {}
     user_id_to_recipient_id = {}
     for d in zerver_recipient:
-        if d["type"] == Recipient.STREAM:
-            stream_id_to_recipient_id[d["type_id"]] = d["id"]
-        elif d["type"] == Recipient.DIRECT_MESSAGE_GROUP:
+        if d["type"] == Recipient.DIRECT_MESSAGE_GROUP:
             direct_message_group_id_to_recipient_id[d["type_id"]] = d["id"]
         if d["type"] == Recipient.PERSONAL:
             user_id_to_recipient_id[d["type_id"]] = d["id"]
-
-    def get_recipient_id_from_channel_name(mattermost_channel_id: str) -> int:
-        receiver_id = stream_id_mapper.get(mattermost_channel_id)
-        return stream_id_to_recipient_id[receiver_id]
 
     def get_recipient_id_from_direct_message_group_members(
         direct_message_group_members: frozenset[str],
@@ -747,7 +755,7 @@ def write_message_data(
             team_name=team_name,
             realm_id=realm_id,
             post_data=post_data[post_type],
-            get_recipient_id_from_channel_name=get_recipient_id_from_channel_name,
+            added_channels=added_channels,
             get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
             get_recipient_id_from_username=get_recipient_id_from_username,
             subscriber_map=subscriber_map,
@@ -955,7 +963,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             team_name=team_name,
         )
 
-        zerver_stream = convert_channel_data(
+        added_channels = convert_channel_data(
             realm=realm,
             channel_data=mattermost_data["channel"],
             user_data_map=username_to_user,
@@ -965,7 +973,6 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             realm_id=realm_id,
             team_name=team_name,
         )
-        realm["zerver_stream"] = zerver_stream
 
         zerver_direct_message_group: list[ZerverFieldsT] = []
         if len(mattermost_data["team"]) == 1:
@@ -993,7 +1000,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         stream_subscriptions = build_stream_subscriptions(
             get_users=subscriber_handler.get_users,
             zerver_recipient=realm["zerver_recipient"],
-            zerver_stream=zerver_stream,
+            zerver_stream=realm["zerver_stream"],
         )
 
         direct_message_group_subscriptions = build_direct_message_group_subscriptions(
@@ -1038,7 +1045,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             subscriber_map=subscriber_map,
             output_dir=realm_output_dir,
             masking_content=masking_content,
-            stream_id_mapper=stream_id_mapper,
+            added_channels=added_channels,
             direct_message_group_id_mapper=direct_message_group_id_mapper,
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
