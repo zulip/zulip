@@ -362,13 +362,13 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
             manage_folder_icon_label,
         }));
 
-        const disabled_option = {
+        const none_option = {
             is_option_styled: true,
             unique_id: settings_config.no_folder_selected,
             name: $t({defaultMessage: "None"}),
         };
 
-        options.unshift(disabled_option);
+        options.unshift(none_option);
         return options;
     };
 

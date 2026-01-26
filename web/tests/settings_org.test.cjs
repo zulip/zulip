@@ -726,6 +726,7 @@ test("test combined_code_language_options", ({override}) => {
     const expected_options_without_realm_playgrounds = [
         {
             is_setting_disabled: true,
+            is_option_styled: true,
             unique_id: "",
             name: $t({defaultMessage: "No language set"}),
             show_disabled_option_name: false,
@@ -744,6 +745,7 @@ test("test combined_code_language_options", ({override}) => {
     const expected_options_with_realm_playgrounds = [
         {
             is_setting_disabled: true,
+            is_option_styled: true,
             unique_id: "",
             name: $t({defaultMessage: "No language set"}),
             show_disabled_option_name: false,
