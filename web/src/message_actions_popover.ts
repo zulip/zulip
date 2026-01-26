@@ -201,10 +201,10 @@ export function initialize({
 
             $popper.one("click", ".view_read_receipts", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
-                read_receipts.show_user_list(message_id);
+                popover_menus.hide_current_popover_if_visible(instance);
+                read_receipts.open_read_receipt_popover(message_id, instance.reference);
                 e.preventDefault();
                 e.stopPropagation();
-                popover_menus.hide_current_popover_if_visible(instance);
             });
 
             $popper.one("click", ".delete_message", (e) => {
