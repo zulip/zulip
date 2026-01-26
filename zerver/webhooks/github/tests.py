@@ -268,6 +268,13 @@ class GitHubWebhookTest(WebhookTestCase):
             expected_message,
         )
 
+    def test_issues_closed(self) -> None:
+        expected_topic_name = "test-repo / issue #8 Bug related to the bot"
+        expected_message = (
+            "Pritesh-30 closed [issue #8](https://github.com/Pritesh-30/test-repo/issues/8)."
+        )
+        self.check_webhook("issues__closed", expected_topic_name, expected_message)
+
     def test_membership_msg(self) -> None:
         expected_message = (
             "baxterthehacker added [kdaigle](https://github.com/kdaigle) to the Contractors team."
