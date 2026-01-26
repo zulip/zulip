@@ -11,15 +11,15 @@ const loading = mock_esm("../src/loading");
 
 const SHORT_TEXT_ID = 1;
 
-const SELECT_ID = 3;
+const DROPDOWN_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
-const LONG_TEXT_ID = 2;
+const PARAGRAPH_ID = 2;
 const USER_FIELD_ID = 6;
 
 const SHORT_TEXT_NAME = "Short text";
-const SELECT_NAME = "Dropdown";
+const DROPDOWN_NAME = "Dropdown";
 const EXTERNAL_ACCOUNT_NAME = "External account";
-const LONG_TEXT_NAME = "Paragraph";
+const PARAGRAPH_NAME = "Paragraph";
 const USER_FIELD_NAME = "Person";
 
 const custom_profile_field_types = {
@@ -27,17 +27,17 @@ const custom_profile_field_types = {
         id: SHORT_TEXT_ID,
         name: SHORT_TEXT_NAME,
     },
-    SELECT: {
-        id: SELECT_ID,
-        name: SELECT_NAME,
+    DROPDOWN: {
+        id: DROPDOWN_ID,
+        name: DROPDOWN_NAME,
     },
     EXTERNAL_ACCOUNT: {
         id: EXTERNAL_ACCOUNT_ID,
         name: EXTERNAL_ACCOUNT_NAME,
     },
-    LONG_TEXT: {
-        id: LONG_TEXT_ID,
-        name: LONG_TEXT_NAME,
+    PARAGRAPH: {
+        id: PARAGRAPH_ID,
+        name: PARAGRAPH_NAME,
     },
     USER: {
         id: USER_FIELD_ID,
@@ -111,7 +111,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             required: false,
         },
         {
-            type: SELECT_ID,
+            type: DROPDOWN_ID,
             id: 30,
             name: "meal",
             hint: "lunch",
@@ -177,7 +177,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 id: 30,
                 name: "meal",
                 hint: "lunch",
-                type: SELECT_NAME,
+                type: DROPDOWN_NAME,
                 choices: [
                     {order: "0", value: "0", text: "lunch"},
                     {order: "1", value: "1", text: "dinner"},

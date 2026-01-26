@@ -1239,7 +1239,7 @@ export function content_item_html(item: TypeaheadSuggestion): string | undefined
         case "user_group":
         case "user":
         case "broadcast":
-            return typeahead_helper.render_person_or_user_group(item);
+            return typeahead_helper.render_person_or_user_group(item, token);
         case "slash":
             return typeahead_helper.render_typeahead_item({
                 primary: item.text,
