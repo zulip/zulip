@@ -168,9 +168,9 @@ def convert_channel_data(
 
     def initialize_stream_membership_dicts() -> None:
         for channel in channel_data:
-            channel_name = channel["name"]
-            channel_members_map[channel_name] = []
-            channel_admins_map[channel_name] = []
+            mattermost_channel_id = channel["name"]
+            channel_members_map[mattermost_channel_id] = []
+            channel_admins_map[mattermost_channel_id] = []
 
         for username, user_dict in user_data_map.items():
             teams = user_dict["teams"]
@@ -182,11 +182,11 @@ def convert_channel_data(
                     continue
                 for channel in team["channels"]:
                     channel_roles = channel["roles"]
-                    channel_name = channel["name"]
+                    mattermost_channel_id = channel["name"]
                     if "channel_admin" in channel_roles:
-                        channel_admins_map[channel_name].append(username)
+                        channel_admins_map[mattermost_channel_id].append(username)
                     elif "channel_user" in channel_roles:
-                        channel_members_map[channel_name].append(username)
+                        channel_members_map[mattermost_channel_id].append(username)
 
     def get_invite_only_value_from_channel_type(channel_type: str) -> bool:
         # Channel can have two types in Mattermost
@@ -204,8 +204,9 @@ def convert_channel_data(
     channel_name_count: dict[str, int] = {}
     for channel_dict in channel_data_list:
         now = int(timezone_now().timestamp())
-        stream_id = stream_id_mapper.get(channel_dict["name"])
-        stream_name = channel_dict["name"]
+        # The "name" field is Mattermost channel's unique identifier.
+        mattermost_channel_id = channel_dict["name"]
+        stream_id = stream_id_mapper.get(mattermost_channel_id)
         invite_only = get_invite_only_value_from_channel_type(channel_dict["type"])
         channel_display_name = truncate_content(
             channel_dict["display_name"], Stream.MAX_NAME_LENGTH, "…"
@@ -244,8 +245,14 @@ def convert_channel_data(
         )
 
         channel_users = {
-            *(user_id_mapper.get(username) for username in channel_admins_map[stream_name]),
-            *(user_id_mapper.get(username) for username in channel_members_map[stream_name]),
+            *(
+                user_id_mapper.get(username)
+                for username in channel_admins_map[mattermost_channel_id]
+            ),
+            *(
+                user_id_mapper.get(username)
+                for username in channel_members_map[mattermost_channel_id]
+            ),
         }
 
         subscriber_handler.set_info(
@@ -707,8 +714,8 @@ def write_message_data(
         if d["type"] == Recipient.PERSONAL:
             user_id_to_recipient_id[d["type_id"]] = d["id"]
 
-    def get_recipient_id_from_channel_name(channel_name: str) -> int:
-        receiver_id = stream_id_mapper.get(channel_name)
+    def get_recipient_id_from_channel_name(mattermost_channel_id: str) -> int:
+        receiver_id = stream_id_mapper.get(mattermost_channel_id)
         return stream_id_to_recipient_id[receiver_id]
 
     def get_recipient_id_from_direct_message_group_members(
