@@ -82,6 +82,7 @@ export const raw_message_schema = z.intersection(
             display_recipient: display_recipient_schema,
             edit_history: z.optional(z.array(message_edit_history_entry_schema)),
             id: z.number(),
+            message_type: z.optional(z.number()),
             is_me_message: z.boolean(),
             last_edit_timestamp: z.optional(z.number()),
             last_moved_timestamp: z.optional(z.number()),
@@ -164,6 +165,7 @@ export type Message = (
     | Omit<RawMessageWithBooleans & {type: "stream"}, "reactions" | "subject">
 ) & {
     clean_reactions: Map<string, MessageCleanReaction>;
+        message_type?: number;
 
     // Local echo state cluster of fields.
     locally_echoed?: boolean;
