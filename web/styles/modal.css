@@ -960,3 +960,12 @@ ul.modal-options-list {
 #users_to_reset_configuration {
     width: 100%;
 }
+
+.read_receipts_user_avatar {
+    display: inline-block;
+    height: 1.25em; /* 20px at 16px font-size at 14px em */
+    width: 1.25em; /* 20px at 16px font-size at 14px em */
+    position: relative;
+    right: 8px;
+    border-radius: 4px;
+}
