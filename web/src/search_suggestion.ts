@@ -908,12 +908,16 @@ function get_operator_suggestions(
         last_operand = last_operand.slice(1);
     }
 
-    let choices: NarrowTerm["operator"][];
+    let canonicalized_operators: NarrowCanonicalOperator[];
+    let legacy_operators: NarrowTerm["operator"][];
+
+    const incompatible_operators = new Set<NarrowCanonicalOperator>();
 
     if (last.operator === "") {
-        choices = ["channels", "channel", "streams", "stream"];
+        canonicalized_operators = ["channels", "channel"];
+        legacy_operators = ["streams", "stream"];
     } else {
-        choices = [
+        canonicalized_operators = [
             "channels",
             "channel",
             "topic",
@@ -921,19 +925,28 @@ function get_operator_suggestions(
             "dm-including",
             "sender",
             "near",
-            "from",
-            "pm-with",
-            "streams",
-            "stream",
         ];
+        legacy_operators = ["from", "pm-with", "streams", "stream"];
     }
 
     // We remove suggestion choice if its incompatible_pattern matches
     // that of current search terms.
-    choices = choices.filter(
-        (choice) =>
-            common.phrase_match(last_operand, choice) &&
-            !match_criteria(terms, incompatible_patterns[choice]),
+    canonicalized_operators = canonicalized_operators.filter((operator) => {
+        if (match_criteria(terms, incompatible_patterns[operator])) {
+            incompatible_operators.add(operator);
+            return false;
+        }
+        return true;
+    });
+
+    // Add equivalent legacy operators for canonicalized operators
+    legacy_operators = legacy_operators.filter((op) => {
+        const canonical = filter_util.canonicalize_operator(op);
+        return !incompatible_operators.has(canonical);
+    });
+
+    const choices = [...canonicalized_operators, ...legacy_operators].filter((choice) =>
+        common.phrase_match(last_operand, choice),
     );
 
     return choices.map((choice) => {
