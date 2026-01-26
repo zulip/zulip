@@ -33,9 +33,7 @@
             {{else if is_direct_message}}
                 <i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i> <span class="decorated-dm-name">{{name}}</span>
             {{else if is_setting_disabled}}
-                {{#if show_disabled_icon}}
-                    <i class="setting-disabled-option-icon zulip-icon zulip-icon-deactivated-circle" aria-hidden="true"></i>
-                {{/if}}
+                <i class="setting-disabled-option-icon zulip-icon zulip-icon-deactivated-circle" aria-hidden="true"></i>
                 {{#if show_disabled_option_name}}
                     {{#if bold_current_selection}}
                         <span class="setting-disabled-option-text dropdown-list-text-selected">{{name}}</span>
