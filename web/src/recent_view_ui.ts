@@ -654,7 +654,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
     const full_last_msg_date_time = timerender.get_full_datetime_clarification(time);
     const conversation_key = recent_view_util.get_key_from_message(last_msg);
     const unread_count = message_to_conversation_unread_count(last_msg);
-    const last_msg_time = timerender.relative_time_string_from_date(time);
+    const last_msg_time = timerender.relative_time_string_from_date(time, true);
     const is_private = last_msg.type === "private";
     let all_senders;
 
@@ -1389,7 +1389,7 @@ export function update_recent_view_rendered_time(): void {
         const last_msg = message_store.get(conversation_data.last_msg_id);
         assert(last_msg !== undefined);
         const time = new Date(last_msg.timestamp * 1000);
-        const updated_time = timerender.relative_time_string_from_date(time);
+        const updated_time = timerender.relative_time_string_from_date(time, true);
         const $row = get_topic_row(conversation_data);
         const rendered_time = $row.find(".recent_topic_timestamp").text().trim();
         if (updated_time === rendered_time) {
