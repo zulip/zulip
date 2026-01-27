@@ -2,14 +2,22 @@
     <li>
         <label class="checkbox">
             <span class="todo-checkbox">
-                <input type="checkbox" class="task" data-key="{{ key }}" {{#if completed}}checked{{/if}}/>
+                <input type="checkbox" class="task" data-key="{{ key }}" {{#if completed}}checked{{/if}} />
                 <span class="custom-checkbox"></span>
             </span>
             <span class="todo-task">
                 {{#if completed}}
-                <s><strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}</s>
+                <s>
+                    <strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}
+                    <button type="button" class="todo-task-delete" data-key="{{ key }}" aria-label="{{t 'Delete task'}}">
+                        <i class="zulip-icon zulip-icon-trash"></i>
+                    </button>
+                </s>
                 {{else}}
                 <strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}
+                <button type="button" class="todo-task-delete" data-key="{{ key }}" aria-label="{{t 'Delete task'}}">
+                    <i class="zulip-icon zulip-icon-trash"></i>
+                </button>
                 {{/if}}
             </span>
         </label>
