@@ -13,9 +13,11 @@ from typing import Any, TypeAlias
 import orjson
 from django.conf import settings
 from django.forms.models import model_to_dict
+from django.utils.text import slugify
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    ImportedBotEmail,
     SubscriberHandler,
     UploadRecordData,
     ZerverFieldsT,
@@ -34,6 +36,7 @@ from zerver.data_import.import_util import (
     convert_html_to_text,
     create_converted_data_files,
     get_attachment_path_and_content,
+    get_domain_name_for_import,
     make_subscriber_map,
     make_user_messages,
 )
@@ -55,6 +58,7 @@ class ChannelMetadata:
 
 
 AddedChannelsT: TypeAlias = dict[str, ChannelMetadata]
+BotChannelMembership: TypeAlias = dict[str, dict[str, set[str]]]
 
 
 def make_realm(realm_id: int, team: dict[str, Any]) -> ZerverFieldsT:
@@ -115,6 +119,13 @@ def process_user(
     else:
         role = UserProfile.ROLE_MEMBER
 
+    if user_dict.get("is_bot"):
+        is_bot = True
+        bot_type = UserProfile.DEFAULT_BOT
+    else:
+        is_bot = False
+        bot_type = None
+
     if user_dict["is_mirror_dummy"]:
         is_active = False
         is_mirror_dummy = True
@@ -131,6 +142,8 @@ def process_user(
         id=id,
         is_active=is_active,
         role=role,
+        is_bot=is_bot,
+        bot_type=bot_type,
         is_mirror_dummy=is_mirror_dummy,
         realm_id=realm_id,
         short_name=short_name,
@@ -721,9 +734,9 @@ def process_posts(
                 # For DM to one's self, the user's username appear twice in
                 # "channel_members".
                 message_dict["pm_members"] = channel_members
-            else:
-                # DM from unconverted users to themselves or 1-1 DM an unconverted user
-                # from a converted user.
+            else:  # nocoverage
+                # DMs from unconverted users to themselves or 1-1 DM received by an
+                # unconverted user.
                 return None
         else:
             raise AssertionError("Post without channel or channel_members key.")
@@ -736,7 +749,7 @@ def process_posts(
     raw_messages = []
     for post_dict in post_data_list:
         message_dict = message_to_dict(post_dict)
-        if message_dict is None:
+        if message_dict is None:  # nocoverage
             continue
         raw_messages.append(message_dict)
         message_replies = post_dict["replies"]
@@ -929,7 +942,7 @@ def check_user_in_team(user: dict[str, Any], team_name: str) -> bool:
     return any(team["name"] == team_name for team in user["teams"])
 
 
-def label_mirror_dummy_users(
+def backfill_user_data_from_posts(
     num_teams: int,
     team_name: str,
     mattermost_data: dict[str, Any],
@@ -938,25 +951,57 @@ def label_mirror_dummy_users(
     # This function might looks like a great place to label admin users. But
     # that won't be fully correct since we are iterating only though posts and
     # it covers only users that have sent at least one message.
+
+    def backfill_user_data(post: dict[str, Any]) -> None:
+        user_data = username_to_user.get(post["user"])
+        if user_data is None:  # nocoverage
+            # This is probably deleted user, we currently don't support converting
+            # this type of user yet.
+            return
+        if user_data.get("is_bot"):
+            # The export data doesn't state which teams or channels a bot user
+            # is a member of. So, they'll only be assigned to channels and teams
+            # where their messages are found.
+            if "team" not in post:
+                return
+
+            if not (
+                bot_team_data := next(
+                    (team for team in user_data["teams"] if team["name"] == post["team"]), None
+                )
+            ):
+                user_data["teams"].append(
+                    {
+                        "name": post["team"],
+                        "roles": "team_user",
+                        "channels": [],
+                    }
+                )
+                bot_team_data = user_data["teams"][-1]
+
+            if "channel" in post and all(
+                channel["name"] != post["channel"] for channel in bot_team_data["channels"]
+            ):
+                bot_team_data["channels"].append(
+                    {
+                        "name": post["channel"],
+                        "roles": "channel_user",
+                    }
+                )
+            return
+
+        if not check_user_in_team(user_data, team_name):
+            user_data["is_mirror_dummy"] = True
+
     for post in mattermost_data["post"]["channel_post"]:
         post_team = post["team"]
         if post_team == team_name:
-            user = username_to_user.get(post["user"])
-            if user is None:
-                # This is probably deleted user or bot user, we currently don't
-                # convert those yet.
-                continue
-            if not check_user_in_team(user, team_name):
-                user["is_mirror_dummy"] = True
+            backfill_user_data(post)
 
     if num_teams == 1:
         for post in mattermost_data["post"]["direct_post"]:
             assert "team" not in post
-            user = username_to_user.get(post["user"])
-            if user is None:
-                continue
-            if not check_user_in_team(user, team_name):
-                user["is_mirror_dummy"] = True
+            backfill_user_data(post)
 
 
 def reset_mirror_dummy_users(username_to_user: dict[str, dict[str, Any]]) -> None:
@@ -975,7 +1020,6 @@ def mattermost_data_file_to_dict(mattermost_data_file: str) -> dict[str, Any]:
     mattermost_data["direct_channel"] = []
     # TODO: New data on recent mmctl versions:
     mattermost_data["role"] = []
-    mattermost_data["bot"] = []
 
     with open(mattermost_data_file, "rb") as fp:
         for line in fp:
@@ -985,6 +1029,26 @@ def mattermost_data_file_to_dict(mattermost_data_file: str) -> dict[str, Any]:
                 mattermost_data["post"]["channel_post"].append(row["post"])
             elif data_type == "direct_post":
                 mattermost_data["post"]["direct_post"].append(row["direct_post"])
+            elif data_type == "bot":
+                bot_data = row["bot"]
+                bot_data["is_bot"] = True
+                bot_data["first_name"] = ""
+                bot_data["last_name"] = ""
+                if "email" not in bot_data:
+                    bot_username = bot_data["username"]
+                    bot_data["email"] = ImportedBotEmail.get_email(
+                        bot_data,
+                        get_domain_name_for_import(),
+                        # Mattermost exports don't provide a nice ID, so we have to do
+                        # with the username field.
+                        bot_id=slugify(bot_username),
+                        bot_name_getter=lambda d: d["username"],
+                    )
+                # Exported bot data doesn't include which teams or channels they are a
+                # part of, we backfill this data by recording where their messages are
+                # found when we iterate over the exported posts.
+                bot_data["teams"] = []
+                mattermost_data["user"].append(bot_data)
             else:
                 mattermost_data[data_type].append(row[data_type])
     return mattermost_data
@@ -1026,7 +1090,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         realm_output_dir = os.path.join(output_dir, team_name)
 
         reset_mirror_dummy_users(username_to_user)
-        label_mirror_dummy_users(
+        backfill_user_data_from_posts(
             len(mattermost_data["team"]), team_name, mattermost_data, username_to_user
         )
 
