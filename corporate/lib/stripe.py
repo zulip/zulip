@@ -1898,7 +1898,6 @@ class BillingSession(ABC):
                             _("Please add a credit card before starting your free trial."),
                         )
 
-            event_time = billing_cycle_anchor
             if upgrade_when_complimentary_access_plan_ends:
                 # In this code path, the customer is currently on a
                 # complimentary access plan and is scheduling an
@@ -1928,7 +1927,6 @@ class BillingSession(ABC):
                 plan_params["invoicing_status"] = (
                     CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
                 )
-                event_time = standardize_datetime_for_stripe()
 
                 # Schedule switching to the new paid plan for the complimentary
                 # access plan's end date.
@@ -1968,7 +1966,7 @@ class BillingSession(ABC):
 
             self.write_to_audit_log(
                 event_type=BillingSessionEventType.CUSTOMER_PLAN_CREATED,
-                event_time=event_time,
+                event_time=standardize_datetime_for_stripe(),
                 extra_data=plan_params,
             )
 
@@ -1981,7 +1979,7 @@ class BillingSession(ABC):
                 ledger_entry = LicenseLedger.objects.create(
                     plan=plan,
                     is_renewal=True,
-                    event_time=event_time,
+                    event_time=billing_cycle_anchor,
                     licenses=licenses,
                     licenses_at_next_renewal=licenses,
                 )
@@ -2002,19 +2000,19 @@ class BillingSession(ABC):
                         LicenseLedger.objects.create(
                             plan=plan,
                             is_renewal=False,
-                            event_time=event_time,
+                            event_time=billing_cycle_anchor,
                             licenses=billable_licenses,
                             licenses_at_next_renewal=billable_licenses,
                         )
                         # Creates due today invoice for additional licenses.
-                        self.invoice_plan(plan, event_time)
+                        self.invoice_plan(plan, billing_cycle_anchor)
                     else:
                         # Customer paid for more licenses than they have in use.
                         # We need to create a new ledger entry to track the reduced renewal licenses.
                         LicenseLedger.objects.create(
                             plan=plan,
                             is_renewal=False,
-                            event_time=event_time,
+                            event_time=billing_cycle_anchor,
                             licenses=licenses,
                             licenses_at_next_renewal=billable_licenses,
                         )
@@ -2065,7 +2063,7 @@ class BillingSession(ABC):
                 billing_schedule=billing_schedule,
                 billing_modality="send_invoice",
                 on_free_trial=True,
-                days_until_due=(plan.next_invoice_date - event_time).days,
+                days_until_due=(plan.next_invoice_date - billing_cycle_anchor).days,
                 current_plan_id=plan.id,
             )
 
