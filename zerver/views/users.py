@@ -941,7 +941,7 @@ def get_subscription_backend(
     stream_id: PathOnly[Json[int]],
     user_id: PathOnly[Json[int]],
 ) -> HttpResponse:
-    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+    target_user = access_user_by_id(user_profile, user_id, allow_bots=True, for_admin=False)
     (_stream, _sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
@@ -956,7 +956,7 @@ def get_subscribed_channels_backend(
     *,
     user_id: PathOnly[Json[int]],
 ) -> HttpResponse:
-    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+    target_user = access_user_by_id(user_profile, user_id, allow_bots=True, for_admin=False)
     streams = get_metadata_access_streams(
         user_profile,
         list(get_user_subscribed_streams(target_user)),
