@@ -55,6 +55,7 @@ from corporate.lib.stripe import (
     get_latest_seat_count,
     get_plan_renewal_or_end_date,
     get_price_per_license,
+    initialize_fixed_price_plan,
     invoice_plans_as_needed,
     is_free_trial_offer_enabled,
     is_realm_on_free_trial,
@@ -5952,6 +5953,169 @@ class BillingHelpersTest(ZulipTestCase):
                     f"{remote_server.id}, server is already active."
                 ],
             )
+
+    def test_initialize_fixed_price_plan_realm(self) -> None:
+        billing_cycle_anchor = datetime(2012, 1, 1, 1, 1, 1, tzinfo=timezone.utc)
+        realm = get_realm("zulip")
+        with self.assertRaises(BillingError) as billing_context:
+            initialize_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+                realm=realm,
+                remote_realm=None,
+                remote_server=None,
+            )
+        self.assertEqual(
+            "no_customer",
+            billing_context.exception.error_description,
+        )
+        billing_session = RealmBillingSession(None, realm)
+        billing_session.update_or_create_customer()
+        with self.assertRaises(BillingError) as billing_context:
+            initialize_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+                realm=realm,
+                remote_realm=None,
+                remote_server=None,
+            )
+        self.assertEqual(
+            "no_plan_offer",
+            billing_context.exception.error_description,
+        )
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
+        billing_session.configure_fixed_price_plan(1000, None)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
+        initialize_fixed_price_plan(
+            plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            billing_cycle_anchor=billing_cycle_anchor,
+            realm=realm,
+            remote_realm=None,
+            remote_server=None,
+        )
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertEqual(plan.fixed_price, 100000)
+        self.assertEqual(plan.billing_cycle_anchor, billing_cycle_anchor)
+
+    def test_initialize_fixed_price_plan_remote_realm(self) -> None:
+        billing_cycle_anchor = datetime(2012, 1, 1, 1, 1, 1, tzinfo=timezone.utc)
+        server_uuid = str(uuid.uuid4())
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        realm_uuid = str(uuid.uuid4())
+        remote_realm = RemoteRealm.objects.create(
+            server=remote_server,
+            uuid=realm_uuid,
+            uuid_owner_secret="dummy-owner-secret",
+            host="dummy-hostname",
+            realm_date_created=timezone_now(),
+        )
+        with self.assertRaises(BillingError) as billing_context:
+            initialize_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                billing_cycle_anchor=billing_cycle_anchor,
+                realm=None,
+                remote_realm=remote_realm,
+                remote_server=None,
+            )
+        self.assertEqual(
+            "no_customer",
+            billing_context.exception.error_description,
+        )
+        billing_session = RemoteRealmBillingSession(remote_realm)
+        billing_session.update_or_create_customer()
+        with self.assertRaises(BillingError) as billing_context:
+            initialize_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                billing_cycle_anchor=billing_cycle_anchor,
+                realm=None,
+                remote_realm=remote_realm,
+                remote_server=None,
+            )
+        self.assertEqual(
+            "no_plan_offer",
+            billing_context.exception.error_description,
+        )
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_SELF_HOSTED_BASIC)
+        billing_session.configure_fixed_price_plan(1200, None)
+        self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
+        with mock.patch(
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+            return_value=60,
+        ):
+            initialize_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                billing_cycle_anchor=billing_cycle_anchor,
+                realm=None,
+                remote_realm=remote_realm,
+                remote_server=None,
+            )
+        self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_BASIC)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertEqual(plan.fixed_price, 120000)
+        self.assertEqual(plan.billing_cycle_anchor, billing_cycle_anchor)
+
+    def test_initialize_fixed_price_plan_remote_server(self) -> None:
+        billing_cycle_anchor = datetime(2012, 1, 1, 1, 1, 1, tzinfo=timezone.utc)
+        server_uuid = str(uuid.uuid4())
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        with self.assertRaises(BillingError) as billing_context:
+            initialize_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                billing_cycle_anchor=billing_cycle_anchor,
+                realm=None,
+                remote_realm=None,
+                remote_server=remote_server,
+            )
+        self.assertEqual(
+            "no_customer",
+            billing_context.exception.error_description,
+        )
+        billing_session = RemoteServerBillingSession(remote_server)
+        billing_session.update_or_create_customer()
+        with self.assertRaises(BillingError) as billing_context:
+            initialize_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                billing_cycle_anchor=billing_cycle_anchor,
+                realm=None,
+                remote_realm=None,
+                remote_server=remote_server,
+            )
+        self.assertEqual(
+            "no_plan_offer",
+            billing_context.exception.error_description,
+        )
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_SELF_HOSTED_BASIC)
+        billing_session.configure_fixed_price_plan(1200, None)
+        self.assertEqual(remote_server.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
+        with mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=60,
+        ):
+            initialize_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                billing_cycle_anchor=billing_cycle_anchor,
+                realm=None,
+                remote_realm=None,
+                remote_server=remote_server,
+            )
+        self.assertEqual(remote_server.plan_type, RemoteRealm.PLAN_TYPE_BASIC)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertEqual(plan.fixed_price, 120000)
+        self.assertEqual(plan.billing_cycle_anchor, billing_cycle_anchor)
 
 
 class LicenseLedgerTest(StripeTestCase):

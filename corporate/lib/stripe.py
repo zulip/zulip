@@ -1807,6 +1807,7 @@ class BillingSession(ABC):
         complimentary_access_plan: CustomerPlan | None = None,
         upgrade_when_complimentary_access_plan_ends: bool = False,
         stripe_invoice_paid: bool = False,
+        adjusted_billing_cycle_anchor: datetime | None = None,
     ) -> None:
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         if stripe_invoice_paid:
@@ -1814,12 +1815,24 @@ class BillingSession(ABC):
         else:
             customer = self.update_or_create_stripe_customer()
         self.ensure_current_plan_is_upgradable(customer, plan_tier)
-        billing_cycle_anchor = None
 
         if complimentary_access_plan is not None:
             # Customers on a complimentary access plan don't get
             # an additional free trial.
             free_trial = False
+
+        billing_cycle_anchor = None
+        # This parameter is to support situations where the plan
+        # was invoiced and paid manually through Stripe vs being
+        # processed through our billing system.
+        if adjusted_billing_cycle_anchor is not None:
+            assert stripe_invoice_paid
+            # The adjusted anchor datetime should be in the past.
+            assert adjusted_billing_cycle_anchor < timezone_now()
+            assert not free_trial
+            assert not upgrade_when_complimentary_access_plan_ends
+            billing_cycle_anchor = adjusted_billing_cycle_anchor.replace(microsecond=0)
+
         if upgrade_when_complimentary_access_plan_ends:
             assert complimentary_access_plan is not None
             assert complimentary_access_plan.end_date is not None
@@ -5768,6 +5781,45 @@ def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
                 )
             else:
                 billing_logger.exception(e, stack_info=True)  # nocoverage
+
+
+def initialize_fixed_price_plan(
+    plan_tier: int,
+    billing_cycle_anchor: datetime | None,
+    realm: Realm | None,
+    remote_realm: RemoteRealm | None,
+    remote_server: RemoteZulipServer | None,
+    acting_user: UserProfile | None = None,
+) -> None:
+    billing_session: BillingSession
+    if realm is not None:
+        billing_session = RealmBillingSession(user=acting_user, realm=realm)
+    elif remote_realm is not None:
+        billing_session = RemoteRealmBillingSession(remote_realm, support_staff=acting_user)
+    else:
+        assert remote_server is not None
+        billing_session = RemoteServerBillingSession(remote_server, support_staff=acting_user)
+
+    customer = billing_session.get_customer()
+    if customer is None:
+        raise BillingError("no_customer", "No Customer object for this billing entity.")
+
+    fixed_price_plan_offer = get_configured_fixed_price_plan_offer(customer, plan_tier)
+    if fixed_price_plan_offer is None:
+        raise BillingError("no_plan_offer", "No CustomerPlanOffer object for this plan tier.")
+
+    complimentary_access_plan = billing_session.get_complimentary_access_plan(customer)
+    billing_session.process_initial_upgrade(
+        plan_tier=plan_tier,
+        licenses=0,
+        automanage_licenses=True,
+        billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+        charge_automatically=False,
+        free_trial=False,
+        complimentary_access_plan=complimentary_access_plan,
+        stripe_invoice_paid=True,
+        adjusted_billing_cycle_anchor=billing_cycle_anchor,
+    )
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:
