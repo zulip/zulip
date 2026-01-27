@@ -82,7 +82,7 @@ Precise Before/After screenshots have two essential qualities:
    to make sure that there's a pixel-to-pixel correspondence of everything
    you've captured onscreen.
 
-## What bother with precise Before/After screenshots?
+## Why bother with precise Before/After screenshots?
 
 Capturing precise screenshots serves two primary purposes:
 
