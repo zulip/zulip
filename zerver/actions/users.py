@@ -27,12 +27,7 @@ from zerver.lib.create_user import create_user_profile
 from zerver.lib.event_types import BotServicesOutgoing
 from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
-from zerver.lib.send_email import (
-    FromAddress,
-    clear_scheduled_emails,
-    maybe_remove_from_suppression_list,
-    send_email,
-)
+from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.stream_subscription import (
@@ -957,7 +952,6 @@ def do_send_password_reset_email(
 
     if user_profile is not None:
         queue_soft_reactivation(user_profile.id)
-        maybe_remove_from_suppression_list(user_profile.delivery_email)
         context["active_account_in_realm"] = True
         context["reset_url"] = generate_password_reset_url(user_profile, token_generator)
         send_email(
@@ -968,6 +962,7 @@ def do_send_password_reset_email(
             context=context,
             realm=realm,
             request=request,
+            remove_suppressed_destination=True,
         )
     else:
         context["active_account_in_realm"] = False
