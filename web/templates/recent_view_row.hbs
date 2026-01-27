@@ -25,7 +25,7 @@
                     {{#if is_private}}
                     <a href="{{pm_url}}" class="recent-view-dm-name recent-view-table-link" tabindex="-1">{{t "DM" }}</a>
                     {{else}}
-                    <a href="{{topic_url}}" class="recent-view-channel-name recent-view-table-link" tabindex="-1">{{stream_name}}</a>
+                    <a href="{{topic_url}}" class="recent-view-channel-name recent-view-table-link" data-tippy-content="{{stream_name}}" tabindex="-1">{{stream_name}}</a>
                     {{/if}}
                     <i class="zulip-icon zulip-icon-chevron-right"></i>
                     {{#if is_private}}
