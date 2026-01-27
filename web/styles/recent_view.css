@@ -44,55 +44,61 @@
     & td {
         box-sizing: border-box;
         vertical-align: middle;
-        padding: 3px 8px;
+        padding: 0.1875em 0.5em; /* 3px 8px at 16px/1em */
+
+        @media (width < $md_min) {
+            padding: 0.375em 0.5em; /* 6px 8px at 16px/1em */
+        }
     }
 
     .recent_view_focusable {
-        /* Use flexbox to align icons vertically */
-        display: flex;
-        align-items: center;
-
-        .recent-view-table-link,
         & > .zulip-icon {
             outline: 0;
         }
 
-        &:focus-within {
-            /* Use the same color as the message feed pointer */
-            box-shadow: 0 3px 0 var(--color-outline-focus);
+        &:focus {
+            outline: 2px solid var(--color-outline-focus);
+
+            > .change_visibility_policy .recent-view-row-topic-menu {
+                opacity: 0.2;
+            }
         }
 
-        &.change_visibility_policy.topic-popover-visible {
+        > .change_visibility_policy.topic-popover-visible {
             .visibility-status-icon {
                 opacity: 0.4;
             }
         }
 
-        &.change_visibility_policy
-            .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
-            /* Show vertical ellipsis when user hovers over visibility indicator icon. */
-            background-image: url("../icons/more-vertical.svg");
-            background-repeat: no-repeat;
-            background-position: left bottom;
-            background-size: contain;
-            width: var(--base-font-size-px);
-            height: var(--base-font-size-px);
+        &.recent-view-topic-visibility {
+            border-radius: 0.3125em; /* 5px at 16px/1em */
+            outline-offset: 0.3125em; /* 5px at 16px/1em */
+        }
 
-            &::before {
-                content: "";
+        > .change_visibility_policy {
+            display: flex;
+
+            .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
+                /* Show vertical ellipsis when user hovers over visibility indicator icon. */
+                background-image: url("../icons/more-vertical.svg");
+                background-repeat: no-repeat;
+                background-position: left bottom;
+                background-size: contain;
+                width: var(--base-font-size-px);
+                height: var(--base-font-size-px);
+
+                &::before {
+                    content: "";
+                }
             }
         }
 
-        &.change_visibility_policy .recent-view-row-topic-menu {
+        > .change_visibility_policy .recent-view-row-topic-menu {
             opacity: 0;
             cursor: pointer;
 
             &:not(.visibility-status-icon) {
                 display: none;
-            }
-
-            &:focus {
-                opacity: 0.2;
             }
         }
     }
@@ -100,10 +106,6 @@
     & a {
         color: var(--color-recent-view-link);
         text-decoration: none;
-    }
-
-    .white-space-preserve-wrap {
-        overflow-wrap: anywhere;
     }
 
     .empty-table-message {
@@ -255,23 +257,12 @@
         visibility: hidden;
     }
 
-    .flex_container_pm {
-        /* Flex container to fit in user circle and group icon */
-        display: flex;
-        justify-content: space-between;
-
-        .tippy-content {
-            font-weight: 400;
-        }
-    }
-
     .flex_container {
         display: flex;
         align-items: center;
     }
 
-    .flex_container .right_part {
-        margin-left: auto;
+    .inline-flex-container {
         display: inline-flex;
         align-items: center;
     }
@@ -294,16 +285,6 @@
 
     .recent_topic_actions.dummy_action_button {
         visibility: hidden;
-    }
-
-    .recent_topic_actions .recent_view_focusable {
-        /* Keep a uniform distance from the focus-within
-            indicator at bottom. */
-        padding-bottom: 3px;
-        /* But push down with margin by the same amount,
-            so as to preserve vertical alignment introduced
-            by the parent flexbox. */
-        margin-top: 3px;
     }
 
     .recent_topic_actions .recipient_bar_icon {
@@ -333,6 +314,11 @@
             backwards, which super janky.
         */
         flex-direction: row-reverse;
+
+        &:first-child {
+            /* Remove padding of first child to align with header text. */
+            padding-left: 0;
+        }
     }
 
     .recent_view_participant_item {
@@ -457,21 +443,17 @@
             );
             transition: background-color 100ms ease-in-out;
         }
-    }
 
-    .recent_topic_stream,
-    .recent-view-stream-header {
-        width: 25%;
-    }
-
-    .recent-view-topic-header {
-        width: 33%;
+        .zulip-icon-chevron-right {
+            font-size: 1em; /* 15px at 15px/1em */
+            align-self: center;
+            color: hsl(0deg 0% 60%);
+            padding: 0 0.33em; /* 5px at 15px/1em */
+        }
     }
 
     .recent-view-unread-header {
         width: 7%;
-        /* 64px at 20px/1em */
-        min-width: 3.2em;
     }
 
     .recent_topic_users,
@@ -481,59 +463,58 @@
 
     .recent_topic_timestamp,
     .recent-view-last-msg-time-header {
-        width: 15%;
-    }
-
-    /* These fixed column widths prevent column widths from being adjusted
-        as new messages arrive from the server. */
-    .recent_topic_stream {
-        padding: 8px 0 8px 8px;
-
-        .recent_view_focusable {
-            display: grid;
-            grid-template-areas: "starting-anchor-element row-content";
-            /* 14px at 14px/1em */
-            grid-template-columns: 1em minmax(0, 1fr);
-            /* Visually match the 8px of padding to
-               the left of the filter icon. */
-            gap: 7px;
-            place-content: center center;
-            /* Visually match the 8px of padding around the
-               filter icon, and keep DM icons from colliding
-               with the "Direct messages" text. */
-            margin-right: 9px;
-        }
-
-        & a {
-            overflow-wrap: anywhere;
-            hyphens: auto;
-        }
+        width: 20%;
     }
 
     .recent_topic_name {
-        width: 40%;
+        padding-left: 0.625em; /* 10px at 16px/1em */
 
-        .line_clamp {
-            /* This -webkit-box display property is webkit-specific, but
-                it appears that line clamping works fine for this component
-                on Firefox anyway. */
-            /* stylelint-disable-next-line value-no-vendor-prefix */
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        .recent-view-conversation-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        /* We don't want to apply line clamping to 1:1 DMs,
-           as that causes an odd problem with Safari collapsing
-           the grid on .user-status-microlayout so that usernames
-           always have an ellipsis--no matter how short they are,
-           nor how much space is available in the Topic column.
+        .zulip-icon-chevron-right {
+            font-size: 0.9375em; /* 15px at 16px/1em */
+            vertical-align: middle;
+            color: hsl(0deg 0% 60%);
+            padding: 0 0.125em; /* 2px at 16px/1em */
+        }
 
-           `display: inherit` here will set the value to what is
-           already established on .recent_view_focusable. */
-        .line_clamp:has(.recent-view-dm) {
-            display: inherit;
+        .recent-view-channel-icon-wrapper {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.1875em; /* 3px at 16px/1em */
+            padding-right: 0.4375em;
+        }
+
+        .recent-view-dm-name,
+        .recent-view-channel-name {
+            display: inline-block;
+            max-width: 100%;
+            vertical-align: bottom;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .recent-view-topic-wrapper {
+            /* Start at 0 width and grow to take remaining space.
+               Without this, long topic names push unread count
+               below the participant avatars.
+               See: https://css-tricks.com/flex-grow-is-weird/
+            */
+            width: 0;
+            flex-grow: 1;
+        }
+
+        .recent-view-conversation-link {
+            display: inline;
         }
     }
 
@@ -562,15 +543,13 @@
             margin-right: 5px;
             font-size: 1.0714em; /* 15px at 14px / em */
         }
+
+        .recent-view-unread-header {
+            width: 15%;
+        }
     }
 
     .private_conversation_row {
-        .recent_topic_stream {
-            /* Reduce padding of stream section so that user status
-                icon can have more padding without impacting height of the row */
-            padding: 5px 0 5px 8px;
-        }
-
         .pm_status_icon {
             display: flex;
             justify-content: center;
@@ -585,9 +564,11 @@
                 min-width: var(
                     --length-user-status-circle-recent-conversations
                 );
-                font-size: 0.625em;
+                font-size: 0.625em; /* 10px at 16px/1em */
                 float: left;
                 position: unset;
+                /* Make the width 16px to match other icons. */
+                padding: 0 0.3em; /* 3px at 10/1em */
             }
         }
 
@@ -603,13 +584,6 @@
                 display: none;
             }
         }
-    }
-
-    .stream-privacy .zulip-icon {
-        /* Let flexbox handle vertical alignment by
-           pushing back against inline-block display. */
-        display: block;
-        text-align: center;
     }
 }
 
@@ -654,4 +628,34 @@
         outline-color: var(--color-outline-input-focus);
         box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
     }
+}
+
+#recent_view .recent_topic_timestamp .flex_container {
+    justify-content: space-between;
+
+    /* To avoid time text from wrapping, keep extra margin
+       as small as possible. */
+    .recent_topic_actions {
+        margin-right: 0.125em; /* 2px at 16px/1em */
+    }
+}
+
+.recent-view-unread-mention-and-count-wrapper {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    flex-direction: row;
+}
+
+.unread_sort .recent-view-header-wrapper {
+    justify-content: flex-end;
+}
+
+.recent-view-body-row {
+    outline-offset: -0.25em; /* -4px at 16px/1em */
+    border-radius: 0.625em; /* 10px at 16px/1em */
+}
+
+.recent-view-table-unread-count {
+    border-radius: 0.3125em; /* 5px at 16px/1em */
 }
