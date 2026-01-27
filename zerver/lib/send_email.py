@@ -313,9 +313,10 @@ def send_immediate_email(
     if request is not None:
         cause = f" (triggered from {request.META['REMOTE_ADDR']})"
 
-    logging_recipient: str | list[str] = mail.to
     if realm is not None:
         logging_recipient = f"{mail.to} in {realm.string_id}"
+    else:
+        logging_recipient = f"{mail.to}"
 
     if remove_suppressed_destination:
         maybe_remove_from_suppression_list(mail.to)
