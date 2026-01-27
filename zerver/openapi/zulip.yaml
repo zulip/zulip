@@ -13417,7 +13417,10 @@ paths:
       description: |
         Check whether a user is subscribed to a channel.
 
-        **Changes**: New in Zulip 3.0 (feature level 12).
+        **Changes**: Prior to Zulip 12.0 (feature level 458), this endpoint
+        did not support querying subscriptions of bot users.
+
+        New in Zulip 3.0 (feature level 12).
       parameters:
         - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/ChannelIdInPath"
@@ -13456,7 +13459,10 @@ paths:
         the target user is subscribed to, since organization administrators
         implicitly have metadata access to all channels.
 
-        **Changes**: New in Zulip 12.0 (feature level 440).
+        **Changes**: Prior to Zulip 12.0 (feature level 458), target users that
+        were bots resulted in a permissions error.
+
+        New in Zulip 12.0 (feature level 440).
       parameters:
         - $ref: "#/components/parameters/UserId"
       responses:
@@ -24618,7 +24624,10 @@ paths:
       description: |
         Check whether a user is member of user group.
 
-        **Changes**: Prior to Zulip 10.0 (feature level 303),
+        **Changes**: Prior to Zulip 12.0 (feature level 458), this endpoint
+        did not support querying group membership of bot users.
+
+        Prior to Zulip 10.0 (feature level 303),
         this would return true when passed a deactivated user
         who was a member of the user group before being deactivated.
 

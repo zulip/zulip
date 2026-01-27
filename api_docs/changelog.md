@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 458**
+
+* [`GET users/{user_id}/channels`](/api/get-user-channels): Fixed
+  missing support for querying subscriptions of bot users.
+* [`GET /users/{user_id}/subscriptions/{stream_id}`](/api/get-subscription-status):
+  Fixed missing support for querying subscriptions of bot users.
+* [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member):
+  Fixed missing support for querying group membership of bot users.
+
 **Feature level 457**
 
 [`GET /events`](/api/get-events): `delete_message` events are now
