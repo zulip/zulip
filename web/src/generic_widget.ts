@@ -1,7 +1,7 @@
 import * as blueslip from "./blueslip.ts";
 import type {Message} from "./message_store.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
-import type {TodoWidgetOutboundData} from "./todo_widget.ts";
+import type {TodoWidgetOutboundData} from "./todo_data.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData} from "./widget_schema.ts";
 
