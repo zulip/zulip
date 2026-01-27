@@ -4,6 +4,7 @@ import os
 import re
 import unicodedata
 from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from datetime import datetime
 from email.message import EmailMessage
 from typing import IO, Any
@@ -30,7 +31,16 @@ from zerver.lib.thumbnail import (
     resize_emoji,
 )
 from zerver.lib.upload.base import StreamingSourceWithSize, ZulipUploadBackend
-from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
+from zerver.models import (
+    ArchivedAttachment,
+    Attachment,
+    ImageAttachment,
+    Message,
+    Realm,
+    RealmEmoji,
+    ScheduledMessage,
+    UserProfile,
+)
 from zerver.models.users import is_cross_realm_bot_email
 
 
@@ -282,12 +292,29 @@ def save_attachment_contents(path_id: str, filehandle: IO[bytes]) -> None:
     upload_backend.save_attachment_contents(path_id, filehandle)
 
 
-def delete_message_attachment(path_id: str) -> None:
+def delete_message_attachment(path_id: str, *, raw_path: bool = False) -> None:
     upload_backend.delete_message_attachment(path_id)
 
 
-def delete_message_attachments(path_ids: list[str]) -> None:
-    upload_backend.delete_message_attachments(path_ids)
+@contextmanager
+def delete_message_attachments(
+    *,
+    raw_paths: bool = False,
+    delete_from: tuple[type[ImageAttachment | Attachment | ArchivedAttachment], ...] = (),
+) -> Iterator[Callable[[str], None]]:
+    if delete_from == ():
+        flush_path_ids: None | Callable[[list[str]], None] = None
+    else:
+
+        def delete_from_database(path_ids: list[str]) -> None:
+            for db_class in delete_from:
+                db_class._default_manager.filter(path_id__in=path_ids).delete()
+
+        flush_path_ids = delete_from_database
+    with upload_backend.delete_message_attachments(
+        raw_paths=raw_paths, flush=flush_path_ids
+    ) as delete_one:
+        yield delete_one
 
 
 def all_message_attachments(

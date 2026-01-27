@@ -58,11 +58,7 @@ from zerver.lib.test_helpers import (
     read_test_image_file,
 )
 from zerver.lib.thumbnail import ThumbnailFormat
-from zerver.lib.upload import (
-    delete_message_attachments,
-    upload_avatar_image,
-    upload_message_attachment,
-)
+from zerver.lib.upload import upload_avatar_image, upload_message_attachment
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -3068,7 +3064,6 @@ class ScrubRealmTest(ZulipTestCase):
 
         self.assertEqual([p for p in Path(settings.LOCAL_FILES_DIR).rglob("*") if p.is_file()], [])
 
-        path_ids = []
         small_thumb = ThumbnailFormat("webp", 50, 50, animated=False)
         big_thumb = ThumbnailFormat("webp", 100, 100, animated=False)
         with (
@@ -3076,27 +3071,12 @@ class ScrubRealmTest(ZulipTestCase):
             self.captureOnCommitCallbacks(execute=True),
         ):
             for n in range(1, 4):
-                url = upload_message_attachment(
+                upload_message_attachment(
                     f"img-{n}.png", "image/png", read_test_image_file("img.png"), hamlet
-                )[0]
-                path_id = re.sub(r"/user_uploads/", "", url)
-                self.assertTrue(os.path.isfile(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
-                path_ids.append(path_id)
+                )
 
         self.assert_length([p for p in Path(settings.LOCAL_FILES_DIR).rglob("*") if p.is_file()], 9)
-        with mock.patch(
-            "zerver.actions.realm_settings.delete_message_attachments",
-            side_effect=delete_message_attachments,
-        ) as p:
-            do_delete_all_realm_attachments(realm, batch_size=2)
-
-            self.assertEqual(p.call_count, 2)
-            p.assert_has_calls(
-                [
-                    mock.call([path_ids[0], path_ids[1]]),
-                    mock.call([path_ids[2]]),
-                ]
-            )
+        do_delete_all_realm_attachments(realm)
         self.assertEqual(Attachment.objects.filter(realm=realm).count(), 0)
         self.assertEqual(ImageAttachment.objects.all().count(), 0)
 

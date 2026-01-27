@@ -222,22 +222,36 @@ def get_old_unclaimed_attachments(
 
     # The Attachment vs ArchivedAttachment queries are asymmetric because only
     # Attachment has the scheduled_messages relation.
-    old_attachments = Attachment.objects.alias(
-        has_other_messages=Exists(
-            ArchivedAttachment.objects.filter(id=OuterRef("id")).exclude(messages=None)
-        )
-    ).filter(
-        messages=None,
-        scheduled_messages=None,
-        create_time__lt=delta_weeks_ago,
-        has_other_messages=False,
-    )
-    old_archived_attachments = ArchivedAttachment.objects.alias(
-        has_other_messages=Exists(
-            Attachment.objects.filter(id=OuterRef("id")).exclude(
-                messages=None, scheduled_messages=None
+    old_attachments = (
+        Attachment.objects.alias(
+            has_other_messages=Exists(
+                ArchivedAttachment.objects.filter(id=OuterRef("id")).exclude(messages=None)
             )
         )
-    ).filter(messages=None, create_time__lt=delta_weeks_ago, has_other_messages=False)
+        .filter(
+            messages=None,
+            scheduled_messages=None,
+            create_time__lt=delta_weeks_ago,
+            has_other_messages=False,
+        )
+        .order_by("id")
+        .select_for_update(of=("self",))
+    )
+    old_archived_attachments = (
+        ArchivedAttachment.objects.alias(
+            has_other_messages=Exists(
+                Attachment.objects.filter(id=OuterRef("id")).exclude(
+                    messages=None, scheduled_messages=None
+                )
+            )
+        )
+        .filter(
+            messages=None,
+            create_time__lt=delta_weeks_ago,
+            has_other_messages=False,
+        )
+        .order_by("id")
+        .select_for_update(of=("self",))
+    )
 
     return old_attachments, old_archived_attachments

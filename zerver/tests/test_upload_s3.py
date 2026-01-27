@@ -191,7 +191,9 @@ class S3Test(ZulipTestCase):
             path_ids.append(path_id)
 
         with patch.object(S3UploadBackend, "delete_message_attachment") as single_delete:
-            delete_message_attachments(path_ids)
+            with delete_message_attachments() as delete_one:
+                for path_id in path_ids:
+                    delete_one(path_id)
             single_delete.assert_not_called()
         for path_id in path_ids:
             with self.assertRaises(botocore.exceptions.ClientError):

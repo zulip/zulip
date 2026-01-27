@@ -1,6 +1,7 @@
 import os
 import secrets
 from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from datetime import datetime
 from typing import IO, TYPE_CHECKING, Any, Literal
 from urllib.parse import urljoin, urlsplit, urlunsplit
@@ -27,6 +28,9 @@ if TYPE_CHECKING:
 # accessing uploaded files are available for clients to fetch before
 # they expire.
 SIGNED_UPLOAD_URL_DURATION = 60
+
+
+DELETE_BATCH_SIZE = 1000
 
 # Performance note:
 #
@@ -289,23 +293,46 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_message_attachment(self, path_id: str) -> None:
-        self.delete_message_attachments([path_id])
+    def delete_message_attachment(self, path_id: str, *, raw_path: bool = False) -> None:
+        with self.delete_message_attachments(raw_paths=raw_path) as delete_one:
+            delete_one(path_id)
 
+    @contextmanager
     @override
-    def delete_message_attachments(self, path_ids: list[str]) -> None:
-        all_paths = path_ids.copy()
-        for path_id in path_ids:
-            all_paths.append(f"{path_id}.info")
-            all_paths += [
-                thumb_path
-                for thumb_path, _ in self.all_message_attachments(
-                    include_thumbnails=True, prefix=f"thumbnail/{path_id}/"
-                )
-            ]
-        self.uploads_bucket.delete_objects(
-            Delete={"Objects": [{"Key": path_id} for path_id in all_paths], "Quiet": True},
-        )
+    def delete_message_attachments(
+        self, *, raw_paths: bool = False, flush: None | Callable[[list[str]], None] = None
+    ) -> Iterator[Callable[[str], None]]:
+        paths: list[tuple[str, bool]] = []
+
+        def flush_queue() -> None:
+            nonlocal paths
+            self.uploads_bucket.delete_objects(
+                Delete={
+                    "Objects": [{"Key": path_id} for path_id, _ in paths[:DELETE_BATCH_SIZE]],
+                    "Quiet": True,
+                },
+            )
+            if flush:
+                flush([path for path, is_db_path_id in paths[:DELETE_BATCH_SIZE] if is_db_path_id])
+            paths = paths[DELETE_BATCH_SIZE:]
+
+        def queue_delete(path_id: str) -> None:
+            nonlocal paths
+            paths.append((path_id, True))
+            if not raw_paths:
+                paths.append((f"{path_id}.info", False))
+                paths += [
+                    (thumb_path, False)
+                    for thumb_path, _ in self.all_message_attachments(
+                        include_thumbnails=True, prefix=f"thumbnail/{path_id}/"
+                    )
+                ]
+            if len(paths) > DELETE_BATCH_SIZE:
+                flush_queue()
+
+        yield queue_delete
+        if paths:
+            flush_queue()
 
     @override
     def all_message_attachments(
