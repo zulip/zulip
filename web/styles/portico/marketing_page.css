@@ -1298,7 +1298,10 @@ button {
         color: var(--color-link);
         text-decoration: underline;
         text-decoration-color: var(--color-link-underline);
-        text-underline-offset: 4px;
+        /* 2px at 17px/1em draws the underline in a pleasing way
+           with descenders like `g`. This value translates well
+           for hero-area links, too. */
+        text-underline-offset: 0.1176em;
         /* TODO: Adjust this in the portico markdown.css file,
            and strike this line once all the marketing pages
            reflect updated brand colors. */
