@@ -21,6 +21,7 @@
 #recent-view-content-table {
     /* To keep border properties to the thead th. */
     border-collapse: separate;
+    table-layout: fixed;
 
     border-spacing: 0;
     width: 100%;
@@ -41,6 +42,7 @@
     padding-bottom: var(--max-unmaximized-compose-height);
 
     & td {
+        box-sizing: border-box;
         vertical-align: middle;
         padding: 3px 8px;
     }
@@ -405,6 +407,7 @@
     }
 
     & thead th {
+        box-sizing: border-box;
         text-align: left;
         padding: 0.25em 0 0.25em 0.5em; /* 4px at 16px/1em */
         background-color: var(--color-background-recent-view-table-thead-th);
