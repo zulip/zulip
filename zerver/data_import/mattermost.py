@@ -57,6 +57,7 @@ class ChannelMetadata:
 
 
 AddedChannelsT: TypeAlias = dict[str, ChannelMetadata]
+MattermostUserIdToZulipUserRecipientId: TypeAlias = dict[str, int]
 
 
 def make_realm(realm_id: int, team: dict[str, Any]) -> ZerverFieldsT:
@@ -144,6 +145,7 @@ def convert_user_data(
     user_handler: UserHandler,
     user_id_mapper: IdMapper[str],
     user_data_map: dict[str, dict[str, Any]],
+    realm: ZerverFieldsT,
     realm_id: int,
     team_name: str,
 ) -> None:
@@ -151,7 +153,24 @@ def convert_user_data(
     for user_data in user_data_map.values():
         if check_user_in_team(user_data, team_name) or user_data["is_mirror_dummy"]:
             user = process_user(user_data, realm_id, team_name, user_id_mapper)
+
+            type_id = user["id"]
+            type = Recipient.PERSONAL
+            recipient_id = NEXT_ID("recipient")
+            recipient = Recipient(
+                type_id=type_id,
+                id=recipient_id,
+                type=type,
+            )
+            recipient_dict = model_to_dict(recipient)
+            realm["zerver_recipient"].append(recipient_dict)
+            user_handler.add_mattermost_user_id_to_zulip_recipient_id(
+                mattermost_user_id=user_data["username"],
+                zulip_recipient_id=recipient_id,
+            )
+
             user_handler.add_user(user)
+
             if user["role"] == UserProfile.ROLE_REALM_OWNER:
                 has_owner = True
     if not has_owner:
@@ -456,7 +475,6 @@ def process_raw_message_batch(
     user_handler: UserHandler,
     added_channels: AddedChannelsT,
     get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
-    get_recipient_id_from_username: Callable[[str], int],
     is_pm_data: bool,
     output_dir: str,
     zerver_realmemoji: list[dict[str, Any]],
@@ -515,10 +533,17 @@ def process_raw_message_batch(
             members = raw_message["pm_members"]
             member_ids = {user_id_mapper.get(member) for member in members}
             pm_members[message_id] = member_ids
-            if sender_user_id == user_id_mapper.get(members[0]):
-                recipient_id = get_recipient_id_from_username(members[1])
+            other_user_mattermost_id = (
+                members[1] if sender_user_id == user_id_mapper.get(members[0]) else members[0]
+            )
+            if other_user_recipient_id := user_handler.get_zulip_recipient_id_for_mattermost_user(
+                other_user_mattermost_id
+            ):
+                recipient_id = other_user_recipient_id
             else:
-                recipient_id = get_recipient_id_from_username(members[0])
+                # This is likely a deleted user or bot user message. We can't convert them
+                # since we don't convert those types of user yet.
+                continue
         else:
             raise AssertionError(
                 "raw_message without channel_name, direct_message_group_members or pm_members key"
@@ -597,7 +622,6 @@ def process_posts(
     post_data: list[dict[str, Any]],
     added_channels: AddedChannelsT,
     get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
-    get_recipient_id_from_username: Callable[[str], int],
     subscriber_map: dict[int, set[int]],
     output_dir: str,
     is_pm_data: bool,
@@ -685,7 +709,6 @@ def process_posts(
             user_handler=user_handler,
             added_channels=added_channels,
             get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
-            get_recipient_id_from_username=get_recipient_id_from_username,
             is_pm_data=is_pm_data,
             output_dir=output_dir,
             zerver_realmemoji=zerver_realmemoji,
@@ -724,22 +747,15 @@ def write_message_data(
     mattermost_data_dir: str,
 ) -> None:
     direct_message_group_id_to_recipient_id = {}
-    user_id_to_recipient_id = {}
     for d in zerver_recipient:
         if d["type"] == Recipient.DIRECT_MESSAGE_GROUP:
             direct_message_group_id_to_recipient_id[d["type_id"]] = d["id"]
-        if d["type"] == Recipient.PERSONAL:
-            user_id_to_recipient_id[d["type_id"]] = d["id"]
 
     def get_recipient_id_from_direct_message_group_members(
         direct_message_group_members: frozenset[str],
     ) -> int:
         receiver_id = direct_message_group_id_mapper.get(direct_message_group_members)
         return direct_message_group_id_to_recipient_id[receiver_id]
-
-    def get_recipient_id_from_username(username: str) -> int:
-        receiver_id = user_id_mapper.get(username)
-        return user_id_to_recipient_id[receiver_id]
 
     if num_teams == 1:
         post_types = ["channel_post", "direct_post"]
@@ -757,7 +773,6 @@ def write_message_data(
             post_data=post_data[post_type],
             added_channels=added_channels,
             get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
-            get_recipient_id_from_username=get_recipient_id_from_username,
             subscriber_map=subscriber_map,
             output_dir=output_dir,
             is_pm_data=post_type == "direct_post",
@@ -959,6 +974,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
             user_data_map=username_to_user,
+            realm=realm,
             realm_id=realm_id,
             team_name=team_name,
         )
@@ -987,10 +1003,9 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             )
             realm["zerver_huddle"] = zerver_direct_message_group
 
-        all_users = user_handler.get_all_users()
-
         zerver_recipient = build_recipients(
-            zerver_userprofile=all_users,
+            # We build user recipients as we convert users.
+            zerver_userprofile=[],
             # We build the recipient as we convert Mattermost channels.
             zerver_stream=[],
             zerver_direct_message_group=zerver_direct_message_group,
