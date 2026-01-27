@@ -2037,7 +2037,27 @@ class BillingSession(ABC):
                         context=context,
                     )
 
-        if not stripe_invoice_paid and not free_trial:
+        if free_trial:
+            if not charge_automatically:
+                # Send an invoice to the customer which expires at the end of free trial.
+                # If the customer fails to pay the invoice before expiration, we downgrade
+                # the customer.
+                assert plan is not None
+                free_trial_days = get_free_trial_days(is_self_hosted_billing)
+                assert free_trial_days is not None
+                self.generate_stripe_invoice(
+                    plan_tier,
+                    licenses=billable_licenses,
+                    license_management="automatic" if automanage_licenses else "manual",
+                    billing_schedule=billing_schedule,
+                    billing_modality="send_invoice",
+                    on_free_trial=True,
+                    days_until_due=free_trial_days,
+                    current_plan_id=plan.id,
+                )
+            return
+
+        if not stripe_invoice_paid:
             # We don't actually expect to ever reach here but this is just a safety net
             # in case any future changes make this possible.
             assert plan is not None
@@ -2053,22 +2073,6 @@ class BillingSession(ABC):
                     "start": datetime_to_timestamp(billing_cycle_anchor),
                     "end": datetime_to_timestamp(period_end),
                 },
-            )
-        elif free_trial and not charge_automatically:
-            assert stripe_invoice_paid is False
-            assert plan is not None
-            assert plan.next_invoice_date is not None
-            # Send an invoice to the customer which expires at the end of free trial. If the customer
-            # fails to pay the invoice before expiration, we downgrade the customer.
-            self.generate_stripe_invoice(
-                plan_tier,
-                licenses=billable_licenses,
-                license_management="automatic" if automanage_licenses else "manual",
-                billing_schedule=billing_schedule,
-                billing_modality="send_invoice",
-                on_free_trial=True,
-                days_until_due=(plan.next_invoice_date - billing_cycle_anchor).days,
-                current_plan_id=plan.id,
             )
 
     def do_upgrade(self, upgrade_request: UpgradeRequest) -> dict[str, Any]:
