@@ -1,81 +1,52 @@
-<tr id="recent_conversation:{{conversation_key}}" class="{{#unless (eq unread_count 0)}}unread_topic{{/unless}} {{#if is_private}}private_conversation_row{{/if}}">
-    <td class="recent_topic_stream">
-        <div class="flex_container flex_container_pm">
-            <div class="left_part recent_view_focusable" data-col-index="{{ column_indexes.stream }}">
-                {{#if is_private}}
-                <span class="zulip-icon zulip-icon-user"></span>
-                <a href="{{pm_url}}" class="recent-view-table-link">{{t "Direct messages" }}</a>
-                {{else}}
-                <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
-                    {{> stream_privacy . }}
-                </span>
-                <a href="{{topic_url}}" class="recent-view-table-link">{{stream_name}}</a>
-                {{/if}}
-            </div>
-            {{!-- For presence/group indicator --}}
-            {{#if is_private}}
-            <div class="right_part">
-                <span class="pm_status_icon {{#unless is_group}}show-tooltip{{/unless}}" data-tippy-placement="top" data-user-ids-string="{{user_ids_string}}">
-                    {{#if is_group}}
-                    <span class="conversation-partners-icon zulip-icon zulip-icon-dm-groups-3"></span>
-                    {{else if is_bot}}
-                    <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
-                    {{else}}
-                    <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle" data-presence-indicator-user-id="{{user_ids_string}}"></span>
-                    {{/if}}
-                </span>
-            </div>
-            {{/if}}
-        </div>
-    </td>
-    <td class="recent_topic_name"{{#if (not is_spectator) }} colspan="2"{{/if}}>
+<tr id="recent_conversation:{{conversation_key}}" class="{{#unless (eq unread_count 0)}}unread_topic{{/unless}} {{#if is_private}}private_conversation_row{{/if}} recent-view-body-row recent_view_focusable"  data-col-index="{{ column_indexes.topic }}" tabindex="0">
+    {{!-- TODO: Rename recent_topic_name to recent-view-conversation-column--}}
+    <td class="recent_topic_name">
         <div class="flex_container">
-            <div class="left_part recent_view_focusable line_clamp" data-col-index="{{ column_indexes.topic }}">
-                {{#if is_private}}
-                <a href="{{pm_url}}" class="recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}">{{{rendered_pm_with_html}}}</a>
-                {{else}}
-                <a class="white-space-preserve-wrap recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" href="{{topic_url}}">{{topic_display_name}}</a>
-                {{/if}}
+            <div class="recent-view-conversation-wrapper">
+                <div class="recent-view-channel-icon-wrapper">
+                    {{#if is_private}}
+                    {{!-- For presence/group indicator --}}
+                    <span class="pm_status_icon {{#unless is_group}}show-tooltip{{/unless}}" data-tippy-placement="top" data-user-ids-string="{{user_ids_string}}">
+                        {{#if is_group}}
+                        <span class="conversation-partners-icon zulip-icon zulip-icon-dm-groups-3"></span>
+                        {{else if is_bot}}
+                        <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
+                        {{else}}
+                        <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle" data-presence-indicator-user-id="{{user_ids_string}}"></span>
+                        {{/if}}
+                    </span>
+                    {{else}}
+                    <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
+                        {{> stream_privacy . }}
+                    </span>
+                    {{/if}}
+                </div>
+                <div class="recent-view-topic-wrapper">
+                    {{#if is_private}}
+                    <a href="{{pm_url}}" class="recent-view-dm-name recent-view-table-link" tabindex="-1">{{t "DM" }}</a>
+                    {{else}}
+                    <a href="{{topic_url}}" class="recent-view-channel-name recent-view-table-link" tabindex="-1">{{stream_name}}</a>
+                    {{/if}}
+                    <i class="zulip-icon zulip-icon-chevron-right"></i>
+                    {{#if is_private}}
+                    <a href="{{pm_url}}" class="recent-view-conversation-link recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}" tabindex="-1">{{{rendered_pm_with_html}}}</a>
+                    {{else}}
+                    <a class="recent-view-conversation-link recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" href="{{topic_url}}" tabindex="-1">{{topic_display_name}}</a>
+                    {{/if}}
+                </div>
             </div>
-            <div class="right_part">
+            <div class="recent-view-unread-mention-and-count-wrapper">
                 {{#if is_private}}
                 <span class="unread_mention_info tippy-zulip-tooltip {{#unless has_unread_mention}}unread_hidden{{/unless}}"
                   data-tippy-content="{{t 'You have unread mentions' }}">@</span>
-                <div class="recent_topic_actions">
-                    <div class="recent_view_focusable" data-col-index="{{ column_indexes.read }}">
-                        <span class="unread_count unread_count_pm recent-view-table-unread-count {{#if (eq unread_count 0)}}unread_hidden{{/if}} tippy-zulip-tooltip on_hover_topic_read" data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
-                    </div>
-                </div>
-                <div class="recent_topic_actions dummy_action_button">
-                    <div class="recent_view_focusable" data-col-index="{{ column_indexes.read }}">
-                        {{!-- Invisible icon, used only for alignment of unread count. --}}
-                        <i class="zulip-icon zulip-icon-mute on_hover_topic_unmute recipient_bar_icon"></i>
-                    </div>
+                <div class="recent_topic_actions recent-view-unread-count-wrapper">
+                    <span class="unread_count unread_count_pm recent-view-table-unread-count recent_view_focusable {{#if (eq unread_count 0)}}unread_hidden{{/if}} tippy-zulip-tooltip on_hover_topic_read" data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}" role="button" aria-label="{{t 'Mark as read' }}" data-col-index="{{ column_indexes.read }}" tabindex="0">{{unread_count}}</span>
                 </div>
                 {{else}}
                 <span class="unread_mention_info tippy-zulip-tooltip {{#unless mention_in_unread}}unread_hidden{{/unless}}"
                   data-tippy-content="{{t 'You have unread mentions'}}">@</span>
-                <div class="recent_topic_actions">
-                    <div class="recent_view_focusable hidden-for-spectators" data-col-index="{{ column_indexes.read }}">
-                        <span class="unread_count recent-view-table-unread-count {{#if (eq unread_count 0)}}unread_hidden{{/if}} tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
-                    </div>
-                </div>
-                <div class="recent_topic_actions">
-                    <div class="hidden-for-spectators">
-                        {{#unless is_archived}}
-                        <span class="recent_view_focusable change_visibility_policy hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-col-index="{{ column_indexes.mute }}">
-                            {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
-                                <i class="zulip-icon zulip-icon-follow recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You follow this topic.'}}" role="button"></i>
-                            {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
-                                <i class="zulip-icon zulip-icon-unmute recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have unmuted this topic.'}}" role="button"></i>
-                            {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
-                                <i class="zulip-icon zulip-icon-mute recipient_bar_icon visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have muted this topic.'}}" role="button"></i>
-                            {{else}}
-                                <i class="zulip-icon zulip-icon-more-vertical recent-view-row-topic-menu visibility-status-icon" tabindex="0" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" role="button"></i>
-                            {{/if}}
-                        </span>
-                        {{/unless}}
-                    </div>
+                <div class="recent_topic_actions recent-view-unread-count-wrapper">
+                    <span class="unread_count recent-view-table-unread-count hidden-for-spectators recent_view_focusable {{#if (eq unread_count 0)}}unread_hidden{{/if}} tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" aria-label="{{t 'Mark as read' }}" data-col-index="{{ column_indexes.read }}" tabindex="0">{{unread_count}}</span>
                 </div>
                 {{/if}}
             </div>
@@ -103,8 +74,27 @@
         </ul>
     </td>
     <td class="recent_topic_timestamp">
-        <div class="last_msg_time tippy-zulip-tooltip" data-tippy-content="{{this.full_last_msg_date_time}}">
-            <a class="last-msg-link" href="{{last_msg_url}}" tabindex="-1">{{ last_msg_time }}</a>
+        <div class="flex_container">
+            <div class="last_msg_time tippy-zulip-tooltip" data-tippy-content="{{this.full_last_msg_date_time}}">
+                <a class="last-msg-link" href="{{last_msg_url}}" tabindex="-1">{{ last_msg_time }}</a>
+            </div>
+            {{#unless is_private}}
+                <div class="recent_topic_actions hidden-for-spectators recent_view_focusable recent-view-topic-visibility" data-col-index="{{ column_indexes.mute }}" tabindex="0">
+                    {{#unless is_archived}}
+                    <span class="change_visibility_policy" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
+                        {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
+                            <i class="zulip-icon zulip-icon-follow recipient_bar_icon visibility-status-icon" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You follow this topic.'}}" role="button"></i>
+                        {{else if (eq visibility_policy all_visibility_policies.UNMUTED)}}
+                            <i class="zulip-icon zulip-icon-unmute recipient_bar_icon visibility-status-icon" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have unmuted this topic.'}}" role="button"></i>
+                        {{else if (eq visibility_policy all_visibility_policies.MUTED)}}
+                            <i class="zulip-icon zulip-icon-mute recipient_bar_icon visibility-status-icon" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You have muted this topic.'}}" role="button"></i>
+                        {{else}}
+                            <i class="zulip-icon zulip-icon-more-vertical recent-view-row-topic-menu visibility-status-icon" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" role="button"></i>
+                        {{/if}}
+                    </span>
+                    {{/unless}}
+                </div>
+            {{/unless}}
         </div>
     </td>
 </tr>
