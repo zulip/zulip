@@ -546,7 +546,7 @@ def get_is_user_group_member(
     user_id: PathOnly[Json[int]],
 ) -> HttpResponse:
     user_group = access_user_group_to_read_membership(user_group_id, user_profile.realm)
-    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+    target_user = access_user_by_id(user_profile, user_id, allow_bots=True, for_admin=False)
 
     return json_success(
         request,
