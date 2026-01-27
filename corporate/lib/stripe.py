@@ -1959,80 +1959,85 @@ class BillingSession(ABC):
                 fixed_price_plan_offer.status = CustomerPlanOffer.PROCESSED
                 fixed_price_plan_offer.save(update_fields=["status"])
 
+            # Create plan and audit log entry.
             plan = CustomerPlan.objects.create(
                 customer=customer, next_invoice_date=next_invoice_date, **plan_params
             )
-
             self.write_to_audit_log(
                 event_type=BillingSessionEventType.CUSTOMER_PLAN_CREATED,
                 event_time=standardize_datetime_for_stripe(),
                 extra_data=plan_params,
             )
 
-            if plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD:
-                # Tier and usage limit change will happen when plan becomes live.
-                self.do_change_plan_type(tier=plan_tier)
+            if upgrade_when_complimentary_access_plan_ends:
+                # The complimentary access plan and new upgrade plan have
+                # been updated/created. The new plan won't become live
+                # until the complimentary access plan ends, so we can
+                # return early.
+                return
 
-                # LicenseLedger entries are way for us to charge customer and track their license usage.
-                # So, we should only create these entries for live plans.
-                ledger_entry = LicenseLedger.objects.create(
-                    plan=plan,
-                    is_renewal=True,
-                    event_time=billing_cycle_anchor,
-                    licenses=licenses,
-                    licenses_at_next_renewal=licenses,
-                )
-                plan.invoiced_through = ledger_entry
-                plan.save(update_fields=["invoiced_through"])
+            # Tier and usage limit change will happen when plan becomes live.
+            assert plan.status < CustomerPlan.LIVE_STATUS_THRESHOLD
+            self.do_change_plan_type(tier=plan_tier)
 
-                # TODO: Do a check for max licenses for fixed price plans here after we add that.
-                if (
-                    stripe_invoice_paid
-                    and billable_licenses != licenses
-                    and not customer.exempt_from_license_number_check
-                    and not fixed_price_plan_offer
-                ):
-                    # Billable licenses in use do not match what was paid/invoiced by customer.
-                    if billable_licenses > licenses:
-                        # Customer paid for less licenses than they have in use.
-                        # We need to create a new ledger entry to track the additional licenses.
-                        LicenseLedger.objects.create(
-                            plan=plan,
-                            is_renewal=False,
-                            event_time=billing_cycle_anchor,
-                            licenses=billable_licenses,
-                            licenses_at_next_renewal=billable_licenses,
-                        )
-                        # Creates due today invoice for additional licenses.
-                        self.invoice_plan(plan, billing_cycle_anchor)
-                    else:
-                        # Customer paid for more licenses than they have in use.
-                        # We need to create a new ledger entry to track the reduced renewal licenses.
-                        LicenseLedger.objects.create(
-                            plan=plan,
-                            is_renewal=False,
-                            event_time=billing_cycle_anchor,
-                            licenses=licenses,
-                            licenses_at_next_renewal=billable_licenses,
-                        )
-                        # Send internal billing notice about license discrepancy.
-                        context = {
-                            "billing_entity": self.billing_entity_display_name,
-                            "support_url": self.support_url(),
-                            "paid_licenses": licenses,
-                            "current_licenses": billable_licenses,
-                            "notice_reason": "license_discrepancy",
-                        }
-                        send_email(
-                            "zerver/emails/internal_billing_notice",
-                            to_emails=[BILLING_SUPPORT_EMAIL],
-                            from_address=FromAddress.tokenized_no_reply_address(),
-                            context=context,
-                        )
+            # LicenseLedger entries are way for us to charge customer and track their license usage.
+            # So, we should only create these entries for live plans.
+            ledger_entry = LicenseLedger.objects.create(
+                plan=plan,
+                is_renewal=True,
+                event_time=billing_cycle_anchor,
+                licenses=licenses,
+                licenses_at_next_renewal=licenses,
+            )
+            plan.invoiced_through = ledger_entry
+            plan.save(update_fields=["invoiced_through"])
 
-        if not stripe_invoice_paid and not (
-            free_trial or upgrade_when_complimentary_access_plan_ends
-        ):
+            # TODO: Do a check for max licenses for fixed price plans here after we add that.
+            if (
+                stripe_invoice_paid
+                and billable_licenses != licenses
+                and not customer.exempt_from_license_number_check
+                and not fixed_price_plan_offer
+            ):
+                # Billable licenses in use do not match what was paid/invoiced by customer.
+                if billable_licenses > licenses:
+                    # Customer paid for less licenses than they have in use.
+                    # We need to create a new ledger entry to track the additional licenses.
+                    LicenseLedger.objects.create(
+                        plan=plan,
+                        is_renewal=False,
+                        event_time=billing_cycle_anchor,
+                        licenses=billable_licenses,
+                        licenses_at_next_renewal=billable_licenses,
+                    )
+                    # Creates due today invoice for additional licenses.
+                    self.invoice_plan(plan, billing_cycle_anchor)
+                else:
+                    # Customer paid for more licenses than they have in use.
+                    # We need to create a new ledger entry to track the reduced renewal licenses.
+                    LicenseLedger.objects.create(
+                        plan=plan,
+                        is_renewal=False,
+                        event_time=billing_cycle_anchor,
+                        licenses=licenses,
+                        licenses_at_next_renewal=billable_licenses,
+                    )
+                    # Send internal billing notice about license discrepancy.
+                    context = {
+                        "billing_entity": self.billing_entity_display_name,
+                        "support_url": self.support_url(),
+                        "paid_licenses": licenses,
+                        "current_licenses": billable_licenses,
+                        "notice_reason": "license_discrepancy",
+                    }
+                    send_email(
+                        "zerver/emails/internal_billing_notice",
+                        to_emails=[BILLING_SUPPORT_EMAIL],
+                        from_address=FromAddress.tokenized_no_reply_address(),
+                        context=context,
+                    )
+
+        if not stripe_invoice_paid and not free_trial:
             # We don't actually expect to ever reach here but this is just a safety net
             # in case any future changes make this possible.
             assert plan is not None
