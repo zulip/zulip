@@ -1295,13 +1295,14 @@ class MatterMostImporter(ZulipTestCase):
         self.assert_length(mattermost_data["team"], 1)
         self.assertEqual(mattermost_data["team"][0]["name"], "ad-1")
         self.assert_length(mattermost_data["channel"], 4)
-        self.assert_length(mattermost_data["user"], 17)
+        self.assert_length(mattermost_data["user"], 20)
         self.assert_length(mattermost_data["emoji"], 0)
         self.assert_length(mattermost_data["post"]["channel_post"], 50)
         self.assert_length(mattermost_data["post"]["direct_post"], 50)
         self.assert_length(mattermost_data["direct_channel"], 50)
         self.assert_length(mattermost_data["role"], 23)
-        self.assert_length(mattermost_data["bot"], 3)
+        exported_bot_users = [user for user in mattermost_data["user"] if user.get("is_bot")]
+        self.assert_length(exported_bot_users, 3)
 
         mattermost_data_dir = self.fixture_file_name(
             "", "mattermost_v11.1.0_fixtures/raw_mmctl_output"
