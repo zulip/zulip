@@ -29,49 +29,56 @@ import {user_settings} from "./user_settings.ts";
 // set_up_toggler is called.
 export let toggler: Toggle | undefined;
 
-export function print_pane(paneId: string): void {
-    const $pane = $(`#${CSS.escape(paneId)} .overlay-scroll-container`);
-    if ($pane.length === 0) {
-        blueslip.warn("printPane: pane not found", {paneId});
-        return;
-    }
+const PRINT_CONTAINER_ID = "zulip-print-container";
 
-    const titleMap: Record<string, string> = {
-        "keyboard-shortcuts": $t({defaultMessage: "Keyboard shortcuts"}),
-        "message-formatting": $t({defaultMessage: "Message formatting"}),
-        "search-operators": $t({defaultMessage: "Search filters"}),
-    };
+const INFO_PANE_TITLES: Record<string, string> = {
+    "keyboard-shortcuts": $t({defaultMessage: "Keyboard shortcuts"}),
+    "message-formatting": $t({defaultMessage: "Message formatting"}),
+    "search-operators": $t({defaultMessage: "Search filters"}),
+};
 
-    const title = titleMap[paneId] ?? $t({defaultMessage: "Help"});
-
-    // Clone pane content
+function get_printable_overlay_html($pane: JQuery): string {
     const $clone = $pane.clone(true, true);
     $clone.find(".simplebar-track, .simplebar-scrollbar").remove();
 
-    const bodyHtml =
-        $clone.find(".simplebar-content").length > 0
-            ? $clone.find(".simplebar-content").html()
-            : $clone.html();
+    const $content = $clone.find(".simplebar-content");
+    return $content.length > 0 ? ($content.html() ?? "") : ($clone.html() ?? "");
+}
 
-    // Render template
-    const html = render_print_info_overlay({
-        title,
-        body_html: bodyHtml,
-    });
+function render_and_attach_print_container(title: string, body_html: string): JQuery {
+    const html = render_print_info_overlay({title, body_html});
+    const $container = $(html).hide();
+    $("body").append($container);
+    return $container;
+}
 
-    const $printContainer = $(html).hide();
-    $("body").append($printContainer);
-    $printContainer.show();
+function remove_print_container(): void {
+    $(`#${PRINT_CONTAINER_ID}`).remove();
+}
 
-    const cleanup = (): void => {
-        $("#zulip-print-container").remove();
-        window.removeEventListener("afterprint", cleanup);
+export function print_pane(pane_id: string): void {
+    const $pane = $(`#${CSS.escape(pane_id)} .overlay-scroll-container`);
+    if ($pane.length === 0) {
+        blueslip.warn("print_pane: pane not found", {pane_id});
+        return;
+    }
+
+    const title = INFO_PANE_TITLES[pane_id] ?? $t({defaultMessage: "Help"});
+    const body_html = get_printable_overlay_html($pane);
+    const $container = render_and_attach_print_container(title, body_html);
+
+    const after_print = (): void => {
+        remove_print_container();
+        window.removeEventListener("afterprint", after_print);
     };
-    window.addEventListener("afterprint", cleanup);
+
+    window.addEventListener("afterprint", after_print);
+    $container.show();
+
     try {
         window.print();
     } catch {
-        cleanup();
+        after_print();
         ui_report.error(
             $t({defaultMessage: "Unable to open print dialog."}),
             undefined,
@@ -357,12 +364,24 @@ export function set_up_toggler(): void {
     common.adjust_mac_kbd_tags("#markdown-instructions kbd");
 }
 
-function informationalOverlayPrintKeyHandler(e: JQuery.KeyDownEvent): void {
-    const isPrintKey = (e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "P");
-    if (!isPrintKey) {
+function get_visible_info_overlay_pane_id(): string {
+    const $overlay = $(".informational-overlays");
+
+    const $visibleModal = $overlay
+        .find(".overlay-modal")
+        .filter((_, elem) => elem.offsetParent !== null)
+        .first();
+
+    return $visibleModal.attr("id") ?? "keyboard-shortcuts";
+}
+
+function informational_overlay_print_key_handler(e: JQuery.KeyDownEvent): void {
+    const is_print_key = (e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "P");
+
+    if (!is_print_key) {
         return;
     }
-    // Only act when overlay is visible
+
     const $overlay = $(".informational-overlays");
     if (!$overlay.hasClass("show")) {
         return;
@@ -371,23 +390,7 @@ function informationalOverlayPrintKeyHandler(e: JQuery.KeyDownEvent): void {
     e.preventDefault();
     e.stopPropagation();
 
-    // Determine which overlay modal is visible; pick the first visible overlay-modal inside the overlay-body
-    const $visibleModal = $overlay
-        .find(".overlay-modal")
-        .filter(function () {
-            return this instanceof HTMLElement && this.offsetParent !== null;
-        })
-        .first();
-
-    let activePaneId = "keyboard-shortcuts"; // default
-    if ($visibleModal.length > 0) {
-        const attrId = $visibleModal.attr("id");
-        if (attrId) {
-            activePaneId = attrId;
-        }
-    }
-
-    print_pane(activePaneId);
+    print_pane(get_visible_info_overlay_pane_id());
 }
 
 export function show(target: string | undefined): void {
@@ -399,8 +402,7 @@ export function show(target: string | undefined): void {
             $overlay,
             on_close() {
                 browser_history.exit_overlay();
-                // remove our key handler to avoid leaks
-                $(document).off("keydown", informationalOverlayPrintKeyHandler);
+                $(document).off("keydown", informational_overlay_print_key_handler);
             },
         });
     }
@@ -409,9 +411,8 @@ export function show(target: string | undefined): void {
         set_up_toggler();
     }
 
-    // Attach handler (avoid duplicate attachments)
-    $(document).off("keydown", informationalOverlayPrintKeyHandler);
-    $(document).on("keydown", informationalOverlayPrintKeyHandler);
+    $(document).off("keydown", informational_overlay_print_key_handler);
+    $(document).on("keydown", informational_overlay_print_key_handler);
 
     if (target) {
         toggler!.goto(target);
