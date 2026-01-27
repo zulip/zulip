@@ -344,7 +344,11 @@ def generate_curl_example(
     ):
         properties = content["multipart/form-data"]["schema"]["properties"]
         for key, property in properties.items():
-            lines.append("    -F " + shlex.quote("{}=@{}".format(key, property["example"])))
+            if property.get("type") == "string" and property.get("format") == "binary":
+                lines.append("    -F " + shlex.quote("{}=@{}".format(key, property["example"])))
+            else:
+                # Plain text/non-binary multipart field is not prefixed with @
+                lines.append("    -F " + shlex.quote("{}={}".format(key, property["example"])))
 
     for i in range(1, len(lines) - 1):
         lines[i] += " \\"
