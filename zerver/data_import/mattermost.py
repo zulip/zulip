@@ -473,7 +473,6 @@ def process_raw_message_batch(
     user_handler: UserHandler,
     added_channels: AddedChannelsT,
     get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
-    get_recipient_id_from_username: Callable[[str], int],
     is_pm_data: bool,
     output_dir: str,
     zerver_realmemoji: list[dict[str, Any]],
@@ -532,10 +531,21 @@ def process_raw_message_batch(
             members = raw_message["pm_members"]
             member_ids = {user_id_mapper.get(member) for member in members}
             pm_members[message_id] = member_ids
-            if sender_user_id == user_id_mapper.get(members[0]):
-                recipient_id = get_recipient_id_from_username(members[1])
-            else:
-                recipient_id = get_recipient_id_from_username(members[0])
+            other_user_mattermost_id = (
+                members[1] if sender_user_id == user_id_mapper.get(members[0]) else members[0]
+            )
+            if other_user_recipient_id := user_handler.get_zulip_recipient_id(
+                other_user_mattermost_id
+            ):
+                recipient_id = other_user_recipient_id
+            else:  # nocoverage
+                # This is likely a deleted user or bot user message. We can't convert it
+                # since we don't convert those types of user yet.
+                logging.info(
+                    "Skipped a message from %s since this user is not converted.",
+                    other_user_mattermost_id,
+                )
+                continue
         else:
             raise AssertionError(
                 "raw_message without channel_name, direct_message_group_members or pm_members key"
@@ -614,7 +624,6 @@ def process_posts(
     post_data: list[dict[str, Any]],
     added_channels: AddedChannelsT,
     get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
-    get_recipient_id_from_username: Callable[[str], int],
     subscriber_map: dict[int, set[int]],
     output_dir: str,
     is_pm_data: bool,
@@ -702,7 +711,6 @@ def process_posts(
             user_handler=user_handler,
             added_channels=added_channels,
             get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
-            get_recipient_id_from_username=get_recipient_id_from_username,
             is_pm_data=is_pm_data,
             output_dir=output_dir,
             zerver_realmemoji=zerver_realmemoji,
@@ -741,23 +749,16 @@ def write_message_data(
     mattermost_data_dir: str,
 ) -> None:
     direct_message_group_id_to_recipient_id = {}
-    user_id_to_recipient_id = {}
 
     for d in zerver_recipient:
         if d["type"] == Recipient.DIRECT_MESSAGE_GROUP:
             direct_message_group_id_to_recipient_id[d["type_id"]] = d["id"]
-        if d["type"] == Recipient.PERSONAL:
-            user_id_to_recipient_id[d["type_id"]] = d["id"]
 
     def get_recipient_id_from_direct_message_group_members(
         direct_message_group_members: frozenset[str],
     ) -> int:
         receiver_id = direct_message_group_id_mapper.get(direct_message_group_members)
         return direct_message_group_id_to_recipient_id[receiver_id]
-
-    def get_recipient_id_from_username(username: str) -> int:
-        receiver_id = user_id_mapper.get(username)
-        return user_id_to_recipient_id[receiver_id]
 
     if num_teams == 1:
         post_types = ["channel_post", "direct_post"]
@@ -775,7 +776,6 @@ def write_message_data(
             post_data=post_data[post_type],
             added_channels=added_channels,
             get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
-            get_recipient_id_from_username=get_recipient_id_from_username,
             subscriber_map=subscriber_map,
             output_dir=output_dir,
             is_pm_data=post_type == "direct_post",
