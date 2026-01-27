@@ -1876,14 +1876,6 @@ class BillingSession(ABC):
                 "tier": plan_tier,
             }
 
-            if fixed_price_plan_offer is None:
-                plan_params["price_per_license"] = price_per_license
-                _price_per_license, percent_off = get_price_per_license_and_discount(
-                    plan_tier, billing_schedule, customer
-                )
-                plan_params["discount"] = percent_off
-                assert price_per_license == _price_per_license
-
             if free_trial:
                 plan_params["status"] = CustomerPlan.FREE_TRIAL
                 if charge_automatically:
@@ -1949,7 +1941,14 @@ class BillingSession(ABC):
                 complimentary_access_plan.status = CustomerPlan.ENDED
                 complimentary_access_plan.save(update_fields=["status"])
 
-            if fixed_price_plan_offer is not None:
+            if fixed_price_plan_offer is None:
+                plan_params["price_per_license"] = price_per_license
+                _price_per_license, percent_off = get_price_per_license_and_discount(
+                    plan_tier, billing_schedule, customer
+                )
+                plan_params["discount"] = percent_off
+                assert price_per_license == _price_per_license
+            else:
                 # Manual license management is not available for fixed price plan.
                 assert automanage_licenses is True
                 plan_params["fixed_price"] = fixed_price_plan_offer.fixed_price
