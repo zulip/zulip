@@ -12,7 +12,7 @@
             </div>
         {{else if this.is_external_account}}
             {{#if this.link}}
-                <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">
+                <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom-profile-fields-link external-account-link-field {{#if ../for_user_card_popover}}tippy-zulip-tooltip{{/if}}" data-tippy-content="{{this.name}}">
                     {{> default_external_account_icon subtype=this.subtype}}
                     {{this.value}}
                 </a>

@@ -223,6 +223,17 @@
     }
 }
 
+.external-account-link-field {
+    display: inline-flex;
+    align-items: center;
+    /* Maintain space between icon and text. */
+    gap: 3px;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .hidden-remove-button {
     opacity: 0;
     visibility: hidden;
