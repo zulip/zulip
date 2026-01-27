@@ -492,10 +492,11 @@ ul.popover-group-menu-member-list {
 }
 
 .gif-grid-in-popover {
-    /* 300px of GIF grid + 5px is the extra gutter space
-     * + 1px for outline + 4px padding.
-     * between gif columns. */
-    width: 310px;
+    width: 90vw;
+    /* 6px `.gif-scroll-container` horizontal margin + 6px is the extra gutter space
+       + 4px padding between gif columns. Our max-width is calculated based on this so the
+       max width of the GIFs becomes 250px */
+    max-width: 516px;
     border: 0;
     padding: 0;
 
@@ -505,7 +506,7 @@ ul.popover-group-menu-member-list {
 
     .gif-picker-content {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-auto-rows: auto;
         gap: 6px;
 
@@ -535,7 +536,8 @@ ul.popover-group-menu-member-list {
 
     .gif-scrolling-container {
         overflow: hidden auto;
-        height: 300px;
+        height: var(--gif-scroll-container-height);
+        max-height: 500px;
         margin: 2px 3px;
         padding: 5px 0;
     }
