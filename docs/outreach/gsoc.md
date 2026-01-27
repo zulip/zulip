@@ -31,7 +31,7 @@ amazed at what you can accomplish.
 
 ## Focus areas
 
-For 2025, we are particularly interested in GSoC contributors who have
+For 2026, we are particularly interested in GSoC contributors who have
 strong skills at full-stack feature development, Typescript, visual design,
 HTML/CSS, Flutter, or performance optimization. So if you're an applicant with
 those skills and are looking for an organization to join, we'd love to
@@ -105,36 +105,6 @@ Django, TypeScript/JavaScript, and CSS.
 
 [completion-candidate]: https://github.com/zulip/zulip/pulls?q=is%3Aopen+is%3Apr+label%3A%22completion+candidate%22
 [continuing-work]: ../contributing/continuing-unfinished-work.md
-
-- Migrate Zulip's **[direct message recipient data
-  structures](https://github.com/zulip/zulip/issues/25713)** to a new
-  model that enables personal settings associated with a direct
-  message conversation, and add several settings (see the linked
-  issues) enabled by that infrastructure work. 175 or 350
-  hours; fairly difficult. **Skills required**:
-  This project will be deep Python 3/PostgreSQL work. Concretely,
-  challenging parts of this project include thinking about races and
-  database transactions, writing database migrations intended to be
-  run live at scale, complex internal refactors, and carefully
-  verifying the indexes used by migrated database queries.
-
-  Experts: Tim Abbott, Mateusz Mandera, Prakhar Pratyush
-
-- **Implement [channel
-  groups](https://github.com/zulip/zulip/issues/31972)** that simplify
-  administration of collections of related channels in
-  Zulip. Contributors interested in working on this should start with
-  studying Zulip's existing channel and group-based permissions
-  system, both UX and implementation, and doing some starter issues in
-  the settings area. 175 or 350 hours; medium difficulty.
-  **Skills required**: Ability to read and
-  understand a lot of code, as well web frontend work in
-  TypeScript/HTML/CSS, with a bit of Python server programming. We'll
-  be particularly interested in the ability to explain and reason
-  about complex logic and follow the existing UI patterns for group
-  settings and channel settings.
-
-  Experts: Sahil Batra, Shubham Padia
 
 - Add the core infrastructure for **topic-based permissions and settings**
   like [pinned topics](https://github.com/zulip/zulip/issues/19483)
@@ -369,28 +339,23 @@ Expert: Anders Kaseorg
 
 ### Mobile app
 
-Code:
-[The next-generation Zulip mobile app,
-written with Flutter](https://github.com/zulip/zulip-flutter)
-(now in beta)
+Code: [Zulip's mobile app for Android and iOS, written in
+Flutter](https://github.com/zulip/zulip-flutter)
 
-Experts: Greg Price, Chris Bobbe, Zixuan James Li
+Experts: Greg Price, Chris Bobbe, Rajesh Malviya
 
-- Work on the **upcoming Flutter-based Zulip client**.
-  Zulip has a freshly-written [new mobile app built on
-  Flutter][flutter-beta-post], which we're nearing the point of
-  rolling out to replace the legacy React Native-based app.
-  We'll be using this foundation to build much-anticipated features
-  that the Zulip mobile apps have never had before, as well as some
-  that the legacy app had but were skipped for the initial rollout.
+- Work on the **Flutter-based Zulip client**.
+  Zulip's brand new Futter-based mobile app was [released last
+  summer][flutter-release-post].
 
-  This project will involve building features for the Flutter app,
+  This project will involve building features for the mobile app,
   including code for UI, data structures, and interacting with the
   Zulip server and the Android and/or iOS platforms.
   For a sense of the features we're working on, see our
-  [project board][flutter-board] for the new app;
+  [project board][flutter-board];
   the tasks we'll be working on during GSoC will come mostly from
-  the ["M6: Post-launch" milestone][flutter-milestone-post-launch].
+  the [M9: 2026 Q2][flutter-milestone-M9] and
+  [MXA: Later][flutter-milestone-MXA] milestones.
   For some features, we [may find][flutter-upstream-summary]
   ourselves [contributing changes][flutter-upstream-autocomplete]
   upstream to the Flutter project itself. 175 or 350 hours; difficult.
@@ -403,8 +368,9 @@ Experts: Greg Price, Chris Bobbe, Zixuan James Li
   experience with Android or iOS may also be helpful but is not
   necessary.
 
-[flutter-beta-post]: https://blog.zulip.com/2024/12/12/new-flutter-mobile-app-beta/
+[flutter-release-post]: https://blog.zulip.com/2025/06/17/flutter-mobile-app-launched/
 [flutter-board]: https://github.com/orgs/zulip/projects/5/views/4
-[flutter-milestone-launch]: https://github.com/zulip/zulip-flutter/milestone/4
+[flutter-milestone-M9]: https://github.com/zulip/zulip-flutter/milestone/14
+[flutter-milestone-MXA]: https://github.com/zulip/zulip-flutter/milestone/4
 [flutter-upstream-summary]: https://chat.zulip.org/#narrow/channel/2-general/topic/Flutter/near/1524757
 [flutter-upstream-autocomplete]: https://github.com/flutter/flutter/pull/129802
