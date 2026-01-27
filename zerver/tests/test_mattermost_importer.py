@@ -2,7 +2,7 @@ import filecmp
 import os
 import sys
 from typing import Any
-from unittest.mock import call, patch
+from unittest.mock import patch
 
 import orjson
 from django.test import override_settings
@@ -770,16 +770,12 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
+        with self.assertLogs(level="WARNING") as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=False,
             )
-        self.assertEqual(
-            mock_print.mock_calls,
-            [call("Generating data for", "gryffindor"), call("Generating data for", "slytherin")],
-        )
         self.assertEqual(
             warn_log.output,
             [
@@ -896,18 +892,12 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch("builtins.print") as mock_print, self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"):
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=False,
             )
-        self.assertEqual(
-            mock_print.mock_calls,
-            [
-                call("Generating data for", "gryffindor"),
-            ],
-        )
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, "avatars")), True)
@@ -1035,7 +1025,7 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch("builtins.print"), self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"):
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
@@ -1155,16 +1145,13 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
+        with self.assertLogs(level="WARNING") as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=True,
             )
-        self.assertEqual(
-            mock_print.mock_calls,
-            [call("Generating data for", "gryffindor"), call("Generating data for", "slytherin")],
-        )
+
         self.assertEqual(
             warn_log.output,
             [
@@ -1190,16 +1177,12 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
+        with self.assertLogs(level="WARNING") as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=True,
             )
-        self.assertEqual(
-            mock_print.mock_calls,
-            [call("Generating data for", "gryffindor"), call("Generating data for", "slytherin")],
-        )
         self.assertEqual(
             warn_log.output,
             [

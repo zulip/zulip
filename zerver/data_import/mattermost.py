@@ -921,7 +921,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         stream_id_mapper = IdMapper[str]()
         direct_message_group_id_mapper = IdMapper[frozenset[str]]()
 
-        print("Generating data for", team_name)
+        logging.info("Generating data for %s", team_name)
         realm = make_realm(realm_id, team)
         realm_output_dir = os.path.join(output_dir, team_name)
 
