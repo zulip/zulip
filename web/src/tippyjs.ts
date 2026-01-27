@@ -1014,6 +1014,23 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".recent-view-channel-name",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            // Show channel name tooltip only if it's truncated.
+            const channel_name = $(instance.reference).text().trim();
+            if (channel_name.endsWith("...")) {
+                return false;
+            }
+            return undefined;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: "#recipient_box_clear_topic_button",
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
