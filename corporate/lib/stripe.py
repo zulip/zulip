@@ -1816,6 +1816,7 @@ class BillingSession(ABC):
         complimentary_access_plan: CustomerPlan | None = None,
         upgrade_when_complimentary_access_plan_ends: bool = False,
         stripe_invoice_paid: bool = False,
+        adjusted_billing_cycle_anchor: datetime | None = None,
     ) -> None:
         is_self_hosted_billing = not isinstance(self, RealmBillingSession)
         if stripe_invoice_paid:
@@ -1823,12 +1824,24 @@ class BillingSession(ABC):
         else:
             customer = self.update_or_create_stripe_customer()
         self.ensure_current_plan_is_upgradable(customer, plan_tier)
-        billing_cycle_anchor = None
 
         if complimentary_access_plan is not None:
             # Customers on a complimentary access plan don't get
             # an additional free trial.
             free_trial = False
+
+        billing_cycle_anchor = None
+        # This parameter is to support situations where the plan
+        # was invoiced and paid manually through Stripe vs being
+        # processed through our billing system.
+        if adjusted_billing_cycle_anchor is not None:
+            assert stripe_invoice_paid
+            # The adjusted anchor datetime should be in the past.
+            assert adjusted_billing_cycle_anchor < timezone_now()
+            assert not free_trial
+            assert not upgrade_when_complimentary_access_plan_ends
+            billing_cycle_anchor = standardize_datetime_for_stripe(adjusted_billing_cycle_anchor)
+
         if upgrade_when_complimentary_access_plan_ends:
             assert complimentary_access_plan is not None
             assert complimentary_access_plan.end_date is not None
@@ -4103,6 +4116,50 @@ class BillingSession(ABC):
             )
             for user in admin_realm.get_human_admin_users():
                 internal_send_private_message(sender, user, direct_message)
+
+    def check_can_configure_prepaid_fixed_price_plan(
+        self,
+        plan_tier: int,
+    ) -> None:
+        customer = self.get_customer()
+        if customer is None:
+            raise BillingError("no_customer", "No Customer object for this billing entity.")
+
+        if customer.stripe_customer_id is None:
+            raise BillingError(
+                "no_stripe_id", "Customer object not linked to a Stripe customer ID."
+            )
+
+        plan = get_current_plan_by_customer(customer)
+        if plan is not None and plan.is_a_paid_plan():
+            raise BillingError("on_paid_plan", "Customer already has an active paid plan.")
+
+        fixed_price_plan_offer = get_configured_fixed_price_plan_offer(customer, plan_tier)
+        if fixed_price_plan_offer is None:
+            raise BillingError("no_plan_offer", "No CustomerPlanOffer object for this plan tier.")
+
+    # This function should be used when a customer's plan was invoiced
+    # and paid manually through Stripe by admin staff, instead of being
+    # paid and processed through the billing page by the customer.
+    def initialize_prepaid_fixed_price_plan(
+        self,
+        plan_tier: int,
+        billing_cycle_anchor: datetime | None,
+    ) -> None:
+        self.check_can_configure_prepaid_fixed_price_plan(plan_tier)
+        customer = self.get_customer()
+        complimentary_access_plan = self.get_complimentary_access_plan(customer)
+        self.process_initial_upgrade(
+            plan_tier=plan_tier,
+            licenses=0,
+            automanage_licenses=True,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            charge_automatically=False,
+            free_trial=False,
+            complimentary_access_plan=complimentary_access_plan,
+            stripe_invoice_paid=True,
+            adjusted_billing_cycle_anchor=billing_cycle_anchor,
+        )
 
 
 class RealmBillingSession(BillingSession):
