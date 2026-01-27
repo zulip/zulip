@@ -14,9 +14,11 @@ from typing import Any, TypeAlias
 import orjson
 from django.conf import settings
 from django.forms.models import model_to_dict
+from django.utils.text import slugify
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    ImportedBotEmail,
     SubscriberHandler,
     UploadRecordData,
     ZerverFieldsT,
@@ -36,6 +38,7 @@ from zerver.data_import.import_util import (
     convert_html_to_text,
     create_converted_data_files,
     get_attachment_path_and_content,
+    get_domain_name_for_import,
     make_subscriber_map,
     make_user_messages,
 )
@@ -967,6 +970,23 @@ def mattermost_data_file_to_dict(mattermost_data_file: str) -> dict[str, Any]:
                 mattermost_data["post"]["channel_post"].append(row["post"])
             elif data_type == "direct_post":
                 mattermost_data["post"]["direct_post"].append(row["direct_post"])
+            elif data_type == "bot":
+                bot_data = row["bot"]
+                bot_data["is_bot"] = True
+                bot_data["first_name"] = ""
+                bot_data["last_name"] = ""
+                if "email" not in bot_data:
+                    bot_username = bot_data["username"]
+                    bot_data["email"] = ImportedBotEmail.get_email(
+                        bot_data,
+                        get_domain_name_for_import(),
+                        # Mattermost exports don't provide a nice ID, so we have to do
+                        # with the username field.
+                        bot_id=slugify(bot_username),
+                        bot_name_getter=lambda d: d["username"],
+                    )
+
+                mattermost_data["user"].append(bot_data)
             else:
                 mattermost_data[data_type].append(row[data_type])
     return mattermost_data
