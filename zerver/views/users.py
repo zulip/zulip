@@ -132,7 +132,7 @@ def deactivate_user_backend(
     | None = None,
     user_id: PathOnly[int],
 ) -> HttpResponse:
-    target = access_user_by_id(user_profile, user_id, for_admin=True)
+    target = access_user_by_id(user_profile, user_id, allow_bots=False, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
     if check_last_owner(target):
