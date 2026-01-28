@@ -599,11 +599,30 @@ class MessageMoveTopicTest(ZulipTestCase):
         assert_is_topic_muted(cordelia, new_public_stream.id, "changed topic name", muted=True)
         assert_is_topic_muted(aaron, new_public_stream.id, "changed topic name", muted=False)
 
-        # Moving only half the messages doesn't move UserTopic records.
-        second_message_id = self.send_stream_message(
-            hamlet, stream_name, topic_name="changed topic name", content="Second message"
+        # Test move messages partially from a topic.
+        #
+        # We don't need to test each stream type variation (public, private,
+        # cross-stream, etc.) since those are already covered by the full
+        # topic move tests above. This single test verifies the two key
+        # behaviors unique to partial moves:
+        # 1. Policies on the original topic are NOT removed (remain unchanged).
+        # 2. Only message senders policies are updated on the target topic.
+        self.send_stream_message(
+            cordelia, stream_name, topic_name="partial move topic", content="First message"
         )
-        with self.assert_database_query_count(26):
+        second_message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="partial move topic", content="Second message"
+        )
+        set_topic_visibility_policy(
+            hamlet, [[stream_name, "partial move topic"]], UserTopic.VisibilityPolicy.MUTED
+        )
+        set_topic_visibility_policy(
+            desdemona, [[stream_name, "partial move topic"]], UserTopic.VisibilityPolicy.MUTED
+        )
+        set_topic_visibility_policy(
+            cordelia, [[stream_name, "partial move topic"]], UserTopic.VisibilityPolicy.MUTED
+        )
+        with self.assert_database_query_count(32):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -615,12 +634,17 @@ class MessageMoveTopicTest(ZulipTestCase):
                 content=None,
             )
 
-        assert_is_topic_muted(desdemona, new_public_stream.id, "changed topic name", muted=True)
-        assert_is_topic_muted(cordelia, new_public_stream.id, "changed topic name", muted=True)
-        assert_is_topic_muted(aaron, new_public_stream.id, "changed topic name", muted=False)
+        # Visibility policy for all users on the original topic should
+        # remain unchanged.
+        assert_is_topic_muted(desdemona, stream.id, "partial move topic", muted=True)
+        assert_is_topic_muted(cordelia, stream.id, "partial move topic", muted=True)
+        # hamlet's policy should have been updated on the target topic, and also
+        # remained on the original topic.
+        assert_is_topic_muted(hamlet, stream.id, "partial move topic", muted=True)
+        assert_is_topic_muted(hamlet, new_public_stream.id, "final topic name", muted=True)
+        # desdemona/cordelia should NOT have policies on the target topic
         assert_is_topic_muted(desdemona, new_public_stream.id, "final topic name", muted=False)
         assert_is_topic_muted(cordelia, new_public_stream.id, "final topic name", muted=False)
-        assert_is_topic_muted(aaron, new_public_stream.id, "final topic name", muted=False)
 
     @mock.patch("zerver.actions.user_topics.send_event_on_commit")
     def test_edit_unmuted_topic(self, mock_send_event_on_commit: mock.MagicMock) -> None:
@@ -755,6 +779,59 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_has_visibility_policy(
             aaron, change_all_topic_name, stream, UserTopic.VisibilityPolicy.MUTED, expected=False
+        )
+
+        # Test move messages partially from a topic.
+        self.send_stream_message(
+            cordelia, stream_name, topic_name="partial move topic", content="First message"
+        )
+        second_message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="partial move topic", content="Second message"
+        )
+        set_topic_visibility_policy(
+            hamlet, [[stream_name, "partial move topic"]], UserTopic.VisibilityPolicy.UNMUTED
+        )
+        set_topic_visibility_policy(
+            cordelia, [[stream_name, "partial move topic"]], UserTopic.VisibilityPolicy.MUTED
+        )
+        set_topic_visibility_policy(
+            othello, [[stream_name, "partial move topic"]], UserTopic.VisibilityPolicy.UNMUTED
+        )
+
+        with self.assert_database_query_count(26):
+            check_update_message(
+                user_profile=hamlet,
+                message_id=second_message_id,
+                stream_id=None,
+                topic_name="final topic name",
+                propagate_mode="change_later",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+
+        # Visibility policy for all users on the original topic should
+        # remain unchanged.
+        self.assert_has_visibility_policy(
+            cordelia, "partial move topic", stream, UserTopic.VisibilityPolicy.MUTED, expected=True
+        )
+        self.assert_has_visibility_policy(
+            othello, "partial move topic", stream, UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        )
+        # hamlet's policy should have been updated on the target topic, and also
+        # remained on the original topic.
+        self.assert_has_visibility_policy(
+            hamlet, "partial move topic", stream, UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        )
+        self.assert_has_visibility_policy(
+            hamlet, "final topic name", stream, UserTopic.VisibilityPolicy.UNMUTED, expected=True
+        )
+        # cordelia/othello should NOT have policies on the target topic
+        self.assert_has_visibility_policy(
+            cordelia, "final topic name", stream, UserTopic.VisibilityPolicy.MUTED, expected=False
+        )
+        self.assert_has_visibility_policy(
+            othello, "final topic name", stream, UserTopic.VisibilityPolicy.UNMUTED, expected=False
         )
 
     def test_merge_user_topic_states_on_move_messages(self) -> None:
