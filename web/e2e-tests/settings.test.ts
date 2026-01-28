@@ -43,13 +43,13 @@ async function open_settings(page: Page): Promise<void> {
 }
 
 async function close_settings_and_date_picker(page: Page): Promise<void> {
-    const date_picker_selector = ".date-field-alt-input";
+    // Now using native date picker - just click the date input to focus it
+    const date_picker_selector = ".datepicker[type='date']";
     await page.click(date_picker_selector);
 
-    await page.waitForSelector(".flatpickr-calendar", {visible: true});
-
+    // Native date picker doesn't have a visible calendar we can wait for,
+    // so we just press Escape to close any open picker and settings
     await page.keyboard.press("Escape");
-    await page.waitForSelector(".flatpickr-calendar", {hidden: true});
     await page.waitForSelector("#settings_overlay_container", {hidden: true});
 }
 

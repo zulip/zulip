@@ -20,7 +20,7 @@
             <div class="input" {{#if editable_by_user}}contenteditable="true"{{/if}}></div>
         </div>
         {{else if is_date_field }}
-        <input class="custom_user_field_value datepicker {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" data-field-id="{{ field.id }}" type="text"
+        <input class="custom_user_field_value datepicker {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" data-field-id="{{ field.id }}" type="date"
           value="{{ field_value.value }}" {{#unless editable_by_user}}disabled{{/unless}}/>
         {{#if editable_by_user}}<span class="remove_date"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></span>{{/if}}
         {{else if is_url_field }}

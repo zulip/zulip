@@ -1,4 +1,4 @@
-import flatpickr from "flatpickr";
+import {format, isValid} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -19,7 +19,6 @@ import * as typeahead_helper from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
 import type {UserPillWidget} from "./user_pill.ts";
 import * as user_pill from "./user_pill.ts";
-import {the} from "./util.ts";
 
 const user_value_schema = z.array(z.number());
 
@@ -237,12 +236,22 @@ export function initialize_profile_user_type_pills(user_id: number): void {
     }
 }
 
-export function format_date(date: Date | undefined, format: string): string {
-    if (date === undefined || date.toString() === "Invalid Date") {
+export function format_date(date: Date | undefined, format_string: string): string {
+    if (date === undefined || !isValid(date)) {
         return "Invalid Date";
     }
 
-    return flatpickr.formatDate(date, format);
+    // Convert flatpickr format to date-fns format
+    // flatpickr: Y-m-d -> date-fns: yyyy-MM-dd
+    // flatpickr: F j, Y -> date-fns: MMMM d, yyyy
+    let date_fns_format = format_string;
+    date_fns_format = date_fns_format.replaceAll("Y", "yyyy");
+    date_fns_format = date_fns_format.replaceAll("m", "MM");
+    date_fns_format = date_fns_format.replaceAll("d", "dd");
+    date_fns_format = date_fns_format.replaceAll("F", "MMMM");
+    date_fns_format = date_fns_format.replaceAll("j", "d");
+
+    return format(date, date_fns_format);
 }
 
 export function initialize_custom_date_type_fields(
@@ -255,15 +264,13 @@ export function initialize_custom_date_type_fields(
         return;
     }
 
-    function update_date(instance: flatpickr.Instance, date_str: string): void {
-        const $input_elem = $(instance.element);
+    function update_date($input_elem: JQuery<HTMLInputElement>, date_str: string): void {
         const field_id = Number.parseInt($input_elem.attr("data-field-id")!, 10);
 
-        if (date_str === "Invalid Date") {
-            // Date parses empty string to an invalid value but in
-            // our case it is a valid value when user does not want
+        if (date_str === "Invalid Date" || date_str === "") {
+            // Empty value is valid when user does not want
             // to set any value for the custom profile field.
-            if ($input_elem.parent().find(".date-field-alt-input").val() === "") {
+            if ($input_elem.val() === "") {
                 if (!for_profile_settings_panel) {
                     // For "Manage user" modal, API request is made after
                     // clicking on "Save changes" button.
@@ -285,14 +292,11 @@ export function initialize_custom_date_type_fields(
                 1200,
             );
             const original_value = people.get_custom_profile_data(user_id, field_id)?.value ?? "";
-            instance.setDate(original_value);
+            $input_elem.val(original_value);
             if (!for_profile_settings_panel) {
                 // Trigger "input" event so that save button state can
                 // be toggled in "Manage user" modal.
-                $input_elem
-                    .closest(".custom_user_field")
-                    .find(".date-field-alt-input")
-                    .trigger("input");
+                $input_elem.trigger("input");
             }
             return;
         }
@@ -313,66 +317,19 @@ export function initialize_custom_date_type_fields(
         }
     }
 
-    let common_class_name = "modal_text_input";
-    if (for_profile_settings_panel) {
-        common_class_name = "settings_text_input";
-    }
-
-    flatpickr($date_picker_elements, {
-        altInput: true,
-        // We would need to handle the altInput separately
-        // than ".custom_user_field_value" elements to handle
-        // invalid values typed in the input.
-        altInputClass: "date-field-alt-input " + common_class_name,
-        altFormat: "F j, Y",
-        allowInput: true,
-        static: true,
-        // This helps us in accepting inputs in other formats
-        // like MM/DD/YYYY and basically any other format
-        // which is accepted by Date.
-        parseDate: (date_str) => new Date(date_str),
-        // We pass allowInvalidPreload as true because we handle
-        // invalid values typed in the input ourselves. Also,
-        // formatDate function is customized to handle "undefined"
-        // values, which are returned by parseDate for invalid
-        // values.
-        formatDate: format_date,
-        allowInvalidPreload: true,
-        onChange(_selected_dates, date_str, instance) {
-            update_date(instance, date_str);
-        },
+    // Handle change event on native date input using event delegation
+    $(element_id).on("change", ".custom_user_field .datepicker", function (this: HTMLElement) {
+        assert(this instanceof HTMLInputElement);
+        const $input = $(this);
+        const value = $input.val()!;
+        update_date($input, value);
     });
-
-    // This "change" event handler is needed to make sure that
-    // the date is successfully changed when typing a new value
-    // in the input and blurring the input by clicking outside
-    // while the calendar popover is opened, because onChange
-    // callback is not executed in such a scenario.
-    //
-    // https://github.com/flatpickr/flatpickr/issues/1551#issuecomment-1601830680
-    // has explanation on why that happens.
-    //
-    // However, this leads to a problem in a couple of cases
-    // where both onChange callback and this "change" handlers
-    // are executed when changing the date by typing in the
-    // input. This occurs when pressing Enter while the input
-    // is focused, and also when blurring the input by clicking
-    // outside while the calendar popover is closed.
-    $(element_id)
-        .find<HTMLInputElement>("input.date-field-alt-input")
-        .on("change", function () {
-            const instance = the($(this).parent().find(".datepicker"))._flatpickr;
-            assert(instance !== undefined);
-            const date = new Date($(this).val()!);
-            const date_str = format_date(date, "Y-m-d");
-            update_date(instance, date_str);
-        });
 
     // Enable the label associated to this field to open the datepicker when clicked.
     $(element_id)
         .find(".custom_user_field label.settings-field-label")
         .on("click", function () {
-            $(this).closest(".custom_user_field").find("input.datepicker").trigger("click");
+            $(this).closest(".custom_user_field").find("input.datepicker").trigger("focus");
         });
 
     $(element_id)
@@ -388,11 +345,11 @@ export function initialize_custom_date_type_fields(
     $(element_id)
         .find(".custom_user_field .remove_date")
         .on("click", function () {
-            const $custom_user_field = $(this).parent().find(".custom_user_field_value");
-            const $displayed_input = $(this).parent().find(".date-field-alt-input");
-            $displayed_input.val("");
+            const $custom_user_field = $(this)
+                .parent()
+                .find<HTMLInputElement>(".custom_user_field_value");
             $custom_user_field.val("");
-            $custom_user_field.trigger("input");
+            $custom_user_field.trigger("change");
         });
 }
 
