@@ -43,13 +43,19 @@ export class GenericWidget {
     // TodoWidget, and ZformWidget, but for now we need this
     // wrapper class.
     inbound_events_handler: HandleInboundEventsFunction;
+    widget_type: string;
 
-    constructor(inbound_events_handler: HandleInboundEventsFunction) {
+    constructor(inbound_events_handler: HandleInboundEventsFunction, widget_type: string) {
         this.inbound_events_handler = inbound_events_handler;
+        this.widget_type = widget_type;
     }
 
     handle_inbound_events(events: Event[]): void {
         this.inbound_events_handler(events);
+    }
+
+    get_widget_type(): string {
+        return this.widget_type;
     }
 }
 
@@ -84,5 +90,5 @@ export function create_widget_instance(info: {
         any_data,
     });
 
-    return new GenericWidget(inbound_events_handler);
+    return new GenericWidget(inbound_events_handler, any_data.widget_type);
 }
