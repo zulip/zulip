@@ -415,6 +415,10 @@ export function hide(): void {
     });
 
     inbox_util.set_filter(undefined);
+    // Clear the inbox HTML as we rebuild it from scratch.
+    // Note that `requestAnimationFrame` waits for next paint to render,
+    // which can cause user scrolling if we don't clear the HTML here.
+    $("#inbox-pane").empty();
 }
 
 function get_topic_key(stream_id: number, topic: string): string {
