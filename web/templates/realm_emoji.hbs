@@ -1,0 +1,10 @@
+<span class="realm-emoji-wrapper"{{#if data-tippy-content}} data-tippy-content=":{{emoji_name}}:"{{/if}}>
+    {{#if (and (eq emoji_animation_setting "on_hover") still_url)}}
+    <img src="{{url}}" class="emoji animated-emoji{{#if custom_classes}} {{custom_classes}}{{/if}}" {{#if display_name}}alt="{{display_name}}"{{/if}} />
+    <img src="{{still_url}}" class="emoji still-emoji{{#if custom_classes}} {{custom_classes}}{{/if}}" {{#if display_name}}alt="{{display_name}}"{{/if}} />
+    {{else if (and (eq emoji_animation_setting "never") still_url)}}
+    <img src="{{still_url}}" class="emoji {{#if custom_classes}}{{custom_classes}}{{/if}}" {{#if display_name}}alt="{{display_name}}"{{/if}} />
+    {{else}}
+    <img src="{{url}}" class="emoji {{#if custom_classes}}{{custom_classes}}{{/if}}" {{#if display_name}}alt="{{display_name}}"{{/if}} />
+    {{/if}}
+</span>
