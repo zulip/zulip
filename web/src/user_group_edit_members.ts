@@ -66,35 +66,40 @@ export function update_member_list_widget(group: UserGroup): void {
     member_list_widget.replace_list_data(users);
 }
 
-function format_member_list_elem(person: User): string {
+function format_member_list_elem(person: User, is_parent_system_group: boolean): string {
     return render_user_group_member_list_entry({
         name: person.full_name,
         user_id: person.user_id,
         is_current_user: person.user_id === current_user.user_id,
         email: person.delivery_email,
-        can_remove_subscribers: settings_data.can_remove_members_from_user_group(current_group_id),
+        can_remove_subscribers:
+            settings_data.can_remove_members_from_user_group(current_group_id) &&
+            !is_parent_system_group,
         for_user_group_members: true,
         img_src: people.small_avatar_url_for_person(person),
     });
 }
 
-function format_subgroup_list_elem(group: UserGroup): string {
+function format_subgroup_list_elem(group: UserGroup, is_parent_system_group: boolean): string {
     return render_user_group_subgroup_entry({
         group_id: group.id,
         display_value: user_groups.get_display_group_name(group.name),
-        can_remove_members: settings_data.can_remove_members_from_user_group(current_group_id),
+        can_remove_members:
+            settings_data.can_remove_members_from_user_group(current_group_id) &&
+            !is_parent_system_group,
     });
 }
 
 function make_list_widget({
     $parent_container,
     name,
-    users,
+    group,
 }: {
     $parent_container: JQuery;
     name: string;
-    users: (User | UserGroup)[];
+    group: UserGroup;
 }): ListWidgetType<User | UserGroup, User | UserGroup> {
+    const users = get_user_group_members(group);
     const $list_container = $parent_container.find(".member_table");
     $list_container.empty();
 
@@ -110,9 +115,9 @@ function make_list_widget({
         },
         modifier_html(item) {
             if ("user_id" in item) {
-                return format_member_list_elem(item);
+                return format_member_list_elem(item, group.is_system_group);
             }
-            return format_subgroup_list_elem(item);
+            return format_subgroup_list_elem(item, group.is_system_group);
         },
         filter: {
             $element: $parent_container.find<HTMLInputElement>("input.search"),
@@ -155,7 +160,7 @@ export function enable_member_management({
     member_list_widget = make_list_widget({
         $parent_container,
         name: "user_group_members",
-        users: get_user_group_members(group),
+        group,
     });
 }
 
@@ -168,13 +173,15 @@ export function rerender_members_list({
 }): void {
     $parent_container.find(".member-list-box").html(
         render_user_group_members_table({
-            can_remove_members: settings_data.can_remove_members_from_user_group(group.id),
+            can_remove_members:
+                settings_data.can_remove_members_from_user_group(group.id) &&
+                !group.is_system_group,
         }),
     );
     member_list_widget = make_list_widget({
         $parent_container,
         name: "user_group_members",
-        users: get_user_group_members(group),
+        group,
     });
 }
 
