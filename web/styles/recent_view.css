@@ -159,7 +159,7 @@
            with the filters in the left and right sidebars.
            TODO: As part of the recents redesign, these filters
            should match the height of the sidebar filters. */
-        padding: 10px 10px 0;
+        padding: 10px 0 0;
         display: flex;
         gap: var(--recent-topics-filters-gap);
         /* Search box has no height without this in safari. */
