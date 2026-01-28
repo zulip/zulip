@@ -265,10 +265,26 @@ p.n-margin {
     }
 }
 
-.top-messages-logo {
-    /* Since padding under message header is not transparent
-       we need to position it below the padding. */
-    padding-top: var(--header-padding-bottom);
+.top-messages-logo-wrapper {
+    /* Add enough padding so that the spinner sits on top of
+       padding from navbar, this padding space and sticky message header
+       top margin. Navbar bottom padding and sticky message header top margin
+       both are set to --header-padding-bottom */
+    padding: calc(2.7143em / 2 - var(--header-padding-bottom)) 0;
+    top: 0;
+    position: relative;
+    z-index: 5; /* Needs to be higher than the z-index of sticky message_header. */
+
+    .top-messages-logo {
+        position: absolute;
+        left: 50%;
+
+        .messages-logo-svg {
+            position: relative;
+            top: -0.8594em;
+            left: -0.8594em;
+        }
+    }
 }
 
 /* See https://web.dev/animations-guide/#triggers before adding any funny animation properties here. */
@@ -1238,11 +1254,6 @@ nav {
     font-family: "Source Code Pro", monospace;
 }
 
-#loading_older_messages_indicator,
-#loading_more_indicator {
-    margin: 10px;
-}
-
 #loading_older_messages_indicator_box_container,
 #loading_more_indicator_box_container {
     position: absolute;
@@ -1260,13 +1271,10 @@ nav {
 #loading_more_indicator_box {
     position: relative;
     left: -1.3571em; /* 50% of 38px = 19px at 14px/em */
-    top: -3.0714em; /* -43px at 14px/em */
-    z-index: 1;
+    /* -43px at 14px/1em plus value of (sticky message header) downward shift */
+    top: calc(-2.7143em + var(--header-padding-bottom));
+    z-index: 5; /* Needs to be higher than the z-index of sticky message_header. */
     border-radius: 6px;
-}
-
-#page_loading_indicator {
-    margin: 10px auto;
 }
 
 #page_loading_indicator_box_container {
@@ -1278,9 +1286,10 @@ nav {
     position: relative;
     /* 50% of 38px = 19px at 14px/1em */
     left: -1.3571em;
-    /* -43px at 14px/1em */
-    top: -3.0714em;
-    z-index: 1;
+    /* -43px at 14px/1em plus value of (sticky message header top margin) downward shift */
+    top: calc(-2.7143em + var(--header-padding-bottom));
+    /* Needs to be higher than the z-index of sticky message_header. */
+    z-index: 5;
     border-radius: 6px;
 }
 
