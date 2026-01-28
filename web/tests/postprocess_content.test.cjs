@@ -17,23 +17,23 @@ run_test("emoji_only", () => {
     // Test emoji-only message
     assert.equal(
         postprocess_content(
-            '<p><span aria-label="wave" class="emoji emoji-1f44b" role="img" title="wave">:wave:</span></p>',
+            '<p><span aria-label="wave" class="emoji emoji-1f44b" role="img" data-emoji-name="wave">:wave:</span></p>',
         ),
-        '<p class="emoji-only"><span aria-label="wave" class="emoji emoji-1f44b" role="img" title="wave">:wave:</span></p>',
+        '<p class="emoji-only"><span aria-label="wave" class="emoji emoji-1f44b" role="img" data-emoji-name="wave">:wave:</span></p>',
     );
     // Test emoji with other text content
     assert.equal(
         postprocess_content(
-            '<p><span aria-label="wave" class="emoji emoji-1f44b" role="img" title="wave">:wave:</span> hi</p>',
+            '<p><span aria-label="wave" class="emoji emoji-1f44b" role="img" data-emoji-name="wave">:wave:</span> hi</p>',
         ),
-        '<p><span aria-label="wave" class="emoji emoji-1f44b" role="img" title="wave">:wave:</span> hi</p>',
+        '<p><span aria-label="wave" class="emoji emoji-1f44b" role="img" data-emoji-name="wave">:wave:</span> hi</p>',
     );
     // Test emoji with other node content
     assert.equal(
         postprocess_content(
-            '<p><span aria-label="wave" class="emoji emoji-1f44b" role="img" title="wave">:wave:</span> <strong>hi</strong></p>',
+            '<p><span aria-label="wave" class="emoji emoji-1f44b" role="img" data-emoji-name="wave">:wave:</span> <strong>hi</strong></p>',
         ),
-        '<p><span aria-label="wave" class="emoji emoji-1f44b" role="img" title="wave">:wave:</span> <strong>hi</strong></p>',
+        '<p><span aria-label="wave" class="emoji emoji-1f44b" role="img" data-emoji-name="wave">:wave:</span> <strong>hi</strong></p>',
     );
 });
 

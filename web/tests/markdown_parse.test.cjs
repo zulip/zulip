@@ -206,15 +206,15 @@ run_test("stream links", () => {
 run_test("emojis", () => {
     assert_parse(
         "yup :)",
-        '<p>yup <span aria-label="smile" class="emoji emoji-1f604" role="img" title="smile">:smile:</span></p>',
+        '<p>yup <span aria-label="smile" class="emoji emoji-1f604" role="img" data-emoji-name="smile">:smile:</span></p>',
     );
     assert_parse(
         "I <3 JavaScript",
-        '<p>I <img alt=":heart:" class="emoji" src="/images/emoji/heart.bmp" title="heart"> JavaScript</p>',
+        '<p>I <img alt=":heart:" class="emoji" src="/images/emoji/heart.bmp" data-emoji-name="heart"> JavaScript</p>',
     );
     assert_parse(
         "Mars Attacks! \uD83D\uDC7D",
-        '<p>Mars Attacks! <span aria-label="alien" class="emoji emoji-1f47d" role="img" title="alien">:alien:</span></p>',
+        '<p>Mars Attacks! <span aria-label="alien" class="emoji emoji-1f47d" role="img" data-emoji-name="alien">:alien:</span></p>',
     );
 });
 

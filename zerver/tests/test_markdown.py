@@ -1301,7 +1301,7 @@ class MarkdownEmojiTest(ZulipTestCase):
 
     def test_realm_emoji(self) -> None:
         def emoji_img(name: str, file_name: str, realm_id: int) -> str:
-            return '<img alt="{}" class="emoji" src="{}" title="{}">'.format(
+            return '<img alt="{}" class="emoji" src="{}" data-emoji-name="{}">'.format(
                 name, get_emoji_url(file_name, realm_id), name[1:-1].replace("_", " ")
             )
 
@@ -1338,14 +1338,14 @@ class MarkdownEmojiTest(ZulipTestCase):
         converted = markdown_convert_wrapper(msg)
         self.assertEqual(
             converted,
-            '<p><span aria-label="coffee" class="emoji emoji-2615" role="img" title="coffee">:coffee:</span></p>',
+            '<p><span aria-label="coffee" class="emoji emoji-2615" role="img" data-emoji-name="coffee">:coffee:</span></p>',
         )
 
         msg = "\u2615\u2615"  # ☕☕
         converted = markdown_convert_wrapper(msg)
         self.assertEqual(
             converted,
-            '<p><span aria-label="coffee" class="emoji emoji-2615" role="img" title="coffee">:coffee:</span><span aria-label="coffee" class="emoji emoji-2615" role="img" title="coffee">:coffee:</span></p>',
+            '<p><span aria-label="coffee" class="emoji emoji-2615" role="img" data-emoji-name="coffee">:coffee:</span><span aria-label="coffee" class="emoji emoji-2615" role="img" data-emoji-name="coffee">:coffee:</span></p>',
         )
 
     def test_no_translate_emoticons_if_off(self) -> None:

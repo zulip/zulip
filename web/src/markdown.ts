@@ -485,7 +485,7 @@ export function is_status_message(raw_content: string): boolean {
 function make_emoji_span(codepoint: string, title: string, alt_text: string): string {
     return `<span aria-label="${_.escape(title)}" class="emoji emoji-${_.escape(
         codepoint,
-    )}" role="img" title="${_.escape(title)}">${_.escape(alt_text)}</span>`;
+    )}" role="img" data-emoji-name="${_.escape(title)}">${_.escape(alt_text)}</span>`;
 }
 
 function handleUnicodeEmoji(
@@ -542,7 +542,7 @@ function handleEmoji({
     if (emoji_url) {
         return `<img alt="${_.escape(alt_text)}" class="emoji" src="${_.escape(
             emoji_url,
-        )}" title="${_.escape(title)}">`;
+        )}" data-emoji-name="${_.escape(title)}">`;
     }
 
     const codepoint = get_emoji_codepoint(emoji_name);
