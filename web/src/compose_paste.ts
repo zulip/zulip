@@ -590,13 +590,21 @@ export function paste_handler_converter(
         },
     });
 
+    turndownService.addRule("message-header paste output", {
+        filter: (node) =>
+            node.nodeName === "P" && node.getAttribute("data-message-header-paragraph") === "true",
+        replacement(content) {
+            return `\n\n${content}\n`;
+        },
+    });
+
     let markdown_text = turndownService.turndown(paste_html);
 
     // Checks for escaped ordered list syntax.
     markdown_text = markdown_text.replaceAll(/^(\W* {0,3})(\d+)\\\. /gm, "$1$2. ");
 
     // Removes newlines before the start of a list and between list elements.
-    markdown_text = markdown_text.replaceAll(/\n+([*+-])/g, "\n$1");
+    markdown_text = markdown_text.replaceAll(/\n+([*+-])\s+/g, "\n$1 ");
     return markdown_text;
 }
 
