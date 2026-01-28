@@ -14,13 +14,7 @@
         display: none;
     }
 
-    /* TODO: Remove the `.navbar_title` span from the `message_view_header.hbs`
-       template. That span predates the use of flexbox, and makes it so that
-       elements like the `.narrow_description` have different line-height and
-       sizing contexts depending on whether it's a view or a narrow being shown. */
-
-    .message-header-stream-settings-button,
-    .navbar_title {
+    .message-header-stream-settings-button {
         padding: 0 2px 0 6px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -46,7 +40,8 @@
         }
 
         @media (height < $short_navbar_cutoff_height) {
-            padding: 0 3.5px; /* based on having ~41.66% decrease */
+            padding: 0 3.5px;
+            /* based on having ~41.66% decrease */
         }
 
         .navbar-icon {
@@ -140,7 +135,7 @@
 }
 
 /* Media Queries */
-@media only screen and (width <= 620px) {
+@media only screen and (width <=620px) {
     .view-description-extended {
         padding-top: 0.5em !important;
     }
