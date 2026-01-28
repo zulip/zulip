@@ -37,6 +37,7 @@ from zerver.data_import.import_util import (
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack import (
+    MAIN_SLACK_IMPORT_TOPIC,
     SLACK_IMPORT_TOKEN_SCOPES,
     AddedChannelsT,
     AddedDMsT,
@@ -70,6 +71,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.topic import EXPORT_TOPIC_NAME
+from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.models import (
     Message,
     PreregistrationRealm,
@@ -1845,7 +1847,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assert_length(zerver_message, 3)
+        self.assert_length(zerver_message, 5)
 
         self.assert_length(uploads, 0)
         self.assert_length(attachment, 0)
@@ -1860,90 +1862,172 @@ class SlackImporter(ZulipTestCase):
 
         ### THREAD 1 CONVERSATION ###
         # Test thread topic name contains message snippet
-        expected_thread_1_message_1_content = "message body text"
         expected_thread_1_topic_name = "2015-06-12 message body text"
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_1_topic_name,
+        )
+        original_thread_1_message_1_content = "message body text"
+        expected_thread_1_message_1_content = f"""
+{original_thread_1_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
         self.assertEqual(zerver_message[1]["content"], expected_thread_1_message_1_content)
-        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
 
         # Thread reply is in the correct thread topic
-        self.assertEqual(zerver_message[2]["content"], "random")
+        expected_thread_1_message_2_content = "random"
+        self.assertEqual(zerver_message[2]["content"], expected_thread_1_message_2_content)
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
+        ### THREAD 2 CONVERSATION ###
+        # Test thread topic name contains message snippet
+        expected_thread_2_topic_name = "2015-06-12 message body text"
+        thread_2_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_2_topic_name,
+        )
+        original_thread_2_message_1_content = "message body text"
+        expected_thread_2_message_1_content = f"""
+{original_thread_2_message_1_content}
+
+*1 reply in {thread_2_topic_link_syntax}*
+""".strip()
+
+        self.assertEqual(zerver_message[1]["content"], expected_thread_2_message_1_content)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+
+        # Thread reply is in the correct thread topic
+        expected_thread_2_message_2_content = "random"
+        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_2_content)
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+
     def test_convert_thread_topic_name_cut_off(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
         conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
             ["thread_with_long_topic_name"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
         )
 
         zerver_message = conversion_result.zerver_message
 
         self.assert_length(zerver_message, 4)
         # Test thread topic name cut off.
-        expected_thread_1_message_1_content = (
-            "random message but it is too long for the thread topic name"
-        )
         expected_thread_1_topic_name = (
             "2015-08-18 random message but it is too long for the thread…"
         )
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_1_topic_name,
+        )
+        original_thread_1_message_1_content = (
+            "random message but it is too long for the thread topic name"
+        )
+        expected_thread_1_message_1_content = f"""
+{original_thread_1_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
+
         self.assertEqual(zerver_message[0]["content"], expected_thread_1_message_1_content)
-        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
         # Record that truncation should use the full maximum topic length.
-        self.assert_length(zerver_message[0][EXPORT_TOPIC_NAME], 60)
+        expected_thread_1_topic_name = (
+            "2015-08-18 random message but it is too long for the thread…"
+        )
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+        self.assert_length(zerver_message[1][EXPORT_TOPIC_NAME], 60)
 
         ### THREAD 2 CONVERSATION ###
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
         # Test that two different thread topics, despite having unique
         # original topic names, will collide if their truncated names
         # are identical.
-        expected_thread_2_message_1_content = (
-            "random message but it is too long for the thread two electric boogaloo"
-        )
         expected_thread_2_topic_name = (
             "2015-08-18 random message but it is too long for the th… (2)"
         )
-        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_1_content)
-        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
-        # Record that truncation should use the full maximum topic length.
-        self.assert_length(zerver_message[2][EXPORT_TOPIC_NAME], 60)
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+        self.assert_length(zerver_message[3][EXPORT_TOPIC_NAME], 60)
 
     def test_convert_colliding_thread_topic_names(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
         conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
             ["threads_with_colliding_topic_names"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
         )
 
         zerver_message = conversion_result.zerver_message
 
         self.assert_length(zerver_message, 6)
         ### THREAD 1 CONVERSATION ###
-        expected_thread_1_message_1_content = "message body text"
         expected_thread_1_topic_name = "2015-06-12 message body text"
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_1_topic_name,
+        )
+        original_thread_1_message_1_content = "message body text"
+        expected_thread_1_message_1_content = f"""
+{original_thread_1_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
         self.assertEqual(zerver_message[0]["content"], expected_thread_1_message_1_content)
-        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
         ### THREAD 2 CONVERSATION ###
         # Test thread topic name collision.
-        expected_thread_2_message_1_content = "message body text"
         expected_thread_2_topic_name = "2015-06-12 message body text (2)"
-        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_1_content)
-        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
         ### THREAD 3 CONVERSATION ###
         # Test two thread topic names with the same message
         # snippet don't collide if they're on different days.
         expected_thread_3_topic_name = "1974-07-27 message body text"
-        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
+        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[5][EXPORT_TOPIC_NAME], expected_thread_3_topic_name)
 
     def test_convert_thread_topic_name_with_mention_syntax(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
         conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
             ["thread_with_mention_syntax_in_topic_name"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
         )
 
         zerver_message = conversion_result.zerver_message
 
         self.assert_length(zerver_message, 2)
         # Test mention syntax in thread topic name.
-        expected_thread_message_1_content = "@**Jon** please reply to this message"
         expected_thread_topic_name = "2015-07-17 @**Jon** please reply to this message"
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_topic_name,
+        )
+        original_thread_message_1_content = "@**Jon** please reply to this message"
+        expected_thread_message_1_content = f"""
+{original_thread_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
         self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
-        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_topic_name)
 
     def test_convert_thread_topic_name_with_file_link_formatting(self) -> None:
         conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
@@ -1959,21 +2043,41 @@ class SlackImporter(ZulipTestCase):
         expected_thread_message_1_content = "Look!\n[Apple](/user_uploads/"
         expected_thread_topic_name = "2018-09-16 Look!\n[Apple](/user_uploads/"
         self.assertTrue(zerver_message[0]["content"].startswith(expected_thread_message_1_content))
-        self.assertTrue(zerver_message[0][EXPORT_TOPIC_NAME].startswith(expected_thread_topic_name))
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertTrue(zerver_message[1][EXPORT_TOPIC_NAME].startswith(expected_thread_topic_name))
 
     def test_convert_thread_topic_name_with_text_formattings(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
         conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
             ["thread_with_text_formattings_in_topic_name"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
         )
 
         zerver_message = conversion_result.zerver_message
 
         self.assert_length(zerver_message, 2)
-        # Test various formatting syntaxes in thread topic name.
-        expected_thread_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
-        expected_thread_topic_name = "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
+
+        expected_thread_1_topic_name = (
+            "2019-01-10 **foo** *bar* ~~baz~~ [qux](https://chat.zulip.o…"
+        )
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_1_topic_name,
+        )
+        original_thread_message_1_content = "**foo** *bar* ~~baz~~ [qux](https://chat.zulip.org)"
+        expected_thread_message_1_content = f"""
+{original_thread_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
+
         self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
-        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_integration_bots(
