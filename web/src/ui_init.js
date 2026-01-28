@@ -563,7 +563,7 @@ export async function initialize_everything(state_data) {
     });
     alert_words.initialize(state_data.alert_words);
     saved_snippets.initialize(state_data.saved_snippets);
-    emojisets.initialize();
+    emojisets.initialize(user_settings.emojiset);
     scroll_bar.initialize();
     message_viewport.initialize();
     banners.initialize();
