@@ -99,10 +99,10 @@ def upload_content_to_s3(
     key = bucket.Object(path)
     metadata: dict[str, str] = {}
     if user_profile:
-        metadata["user_profile_id"] = str(user_profile.id)
-        metadata["realm_id"] = str(user_profile.realm_id)
+        metadata["user-profile-id"] = str(user_profile.id)
+        metadata["realm-id"] = str(user_profile.realm_id)
     if target_realm:
-        metadata["realm_id"] = str(target_realm.id)
+        metadata["realm-id"] = str(target_realm.id)
     if extra_metadata is not None:
         metadata.update(extra_metadata)
 

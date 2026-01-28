@@ -661,7 +661,7 @@ class TusdPreFinishTest(ZulipTestCase):
         self.assertEqual(response["StorageClass"], "STANDARD_IA")
         self.assertEqual(
             response["Metadata"],
-            {"realm_id": str(hamlet.realm_id), "user_profile_id": str(hamlet.id)},
+            {"realm-id": str(hamlet.realm_id), "user-profile-id": str(hamlet.id)},
         )
 
         response = bucket.Object(f"{path_id}.info").get()
