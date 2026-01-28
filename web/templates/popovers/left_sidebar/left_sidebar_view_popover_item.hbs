@@ -4,7 +4,7 @@
         {{#if has_unread_count}}
         <span class="label-and-unread-wrapper">
             <span class="popover-menu-label">{{name}}</span>
-            <span class="unread_count {{unread_count_type}}">{{#if unread_count}}{{unread_count}}{{/if}}</span>
+            <span class="unread_count {{unread_count_type}}">{{#unless (eq unread_count 0)}}{{unread_count}}{{/unless}}</span>
             {{#if supports_masked_unread}}
             <span class="masked_unread_count">
                 <i class="zulip-icon zulip-icon-masked-unread"></i>

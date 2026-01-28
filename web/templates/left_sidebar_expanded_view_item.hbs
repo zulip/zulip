@@ -5,10 +5,10 @@
         </span>
         {{~!-- squash whitespace --~}}
         <span class="left-sidebar-navigation-label">{{name}}</span>
-        <span class="unread_count {{unread_count_type}}{{#unless unread_count}} hide{{/unless}}">
-            {{#if unread_count}}
+        <span class="unread_count {{unread_count_type}}{{#if (or (eq unread_count undefined) (eq unread_count 0))}} hide{{/if}}">
+            {{#unless (or (eq unread_count undefined) (eq unread_count 0))}}
                 {{unread_count}}
-            {{/if}}
+            {{/unless}}
         </span>
         {{#if supports_masked_unread}}
         <span class="masked_unread_count">
