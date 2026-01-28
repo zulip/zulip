@@ -15,8 +15,14 @@ const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
 const compose_recipient = mock_esm("../src/compose_recipient");
+mock_esm("../src/inbox_ui", {
+    complete_rerender: noop,
+});
 const message_events = mock_esm("../src/message_events");
 const overlays = mock_esm("../src/overlays");
+mock_esm("../src/recent_view_ui", {
+    complete_rerender: noop,
+});
 const settings_org = mock_esm("../src/settings_org");
 const settings_streams = mock_esm("../src/settings_streams");
 const stream_events = mock_esm("../src/stream_events");
@@ -185,6 +191,12 @@ test("stream update", ({override}) => {
     assert.equal(args.stream_id, event.stream_id);
     assert.equal(args.property, event.property);
     assert.equal(args.value, event.value);
+
+    // Dispatch a stream update with property "name" to exercise
+    // the complete_rerender calls for inbox and recent views.
+    const name_event = {...event, property: "name", value: "new_name"};
+    dispatch(name_event);
+    assert.equal(stub.num_calls, 2);
 });
 
 test("stream create", ({override}) => {

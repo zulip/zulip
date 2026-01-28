@@ -24,6 +24,7 @@ import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as gif_state from "./gif_state.ts";
 import * as inbox_ui from "./inbox_ui.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as linkifiers from "./linkifiers.ts";
@@ -49,6 +50,7 @@ import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recent_view_util from "./recent_view_util.ts";
 import * as reload from "./reload.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as saved_snippets from "./saved_snippets.ts";
@@ -723,6 +725,16 @@ export function dispatch_normal_event(event) {
                         history_public_to_subscribers: event.history_public_to_subscribers,
                         is_web_public: event.is_web_public,
                     });
+                    if (inbox_util.should_complete_rerender_for_channel_property(event.property)) {
+                        inbox_ui.complete_rerender();
+                    }
+                    if (
+                        recent_view_util.should_complete_rerender_for_channel_property(
+                            event.property,
+                        )
+                    ) {
+                        recent_view_ui.complete_rerender();
+                    }
                     settings_streams.update_default_streams_table();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
@@ -769,6 +781,8 @@ export function dispatch_normal_event(event) {
                             stream_id,
                         );
                     }
+                    inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:
