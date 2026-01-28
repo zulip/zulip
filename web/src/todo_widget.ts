@@ -114,6 +114,21 @@ export function activate({
         report_error_function: blueslip.warn,
     });
     widget_map.set(message.id, task_data);
+
+    return render({$elem, callback, message, task_data});
+}
+
+export function render({
+    $elem,
+    callback,
+    message,
+    task_data,
+}: {
+    $elem: JQuery;
+    callback: (data: TodoWidgetOutboundData) => void;
+    message: Message;
+    task_data: TaskData;
+}): (events: Event[]) => void {
     const message_container = message_lists.current?.view.message_containers.get(message.id);
 
     function start_editing(): void {
