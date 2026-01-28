@@ -653,6 +653,22 @@ class NormalActionsTest(BaseAction):
                     skip_capture_on_commit_callbacks=True,
                 )
 
+    def test_watched_phrases_send_message_events(self) -> None:
+        user = self.example_user("hamlet")
+
+        # Add watched phrase (alert word) for the user
+        do_add_alert_words(user, ["watched_phrase"])
+
+        for i in range(3):
+            content = "message containing watched_phrase " + str(i)
+            with self.verify_action():
+                self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    skip_capture_on_commit_callbacks=True,
+                )
+
     def test_pm_send_message_events(self) -> None:
         with self.verify_action() as events:
             self.send_personal_message(
@@ -668,6 +684,7 @@ class NormalActionsTest(BaseAction):
         content = "new content"
         rendering_result = render_message_markdown(pm, content)
         prior_mention_user_ids: set[int] = set()
+        prior_watched_phrase_user_ids: set[int] = set()
         mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
             mention_backend=mention_backend,
@@ -692,6 +709,7 @@ class NormalActionsTest(BaseAction):
                 False,
                 rendering_result,
                 prior_mention_user_ids,
+                prior_watched_phrase_user_ids,
                 mention_data,
             )
         check_update_message(
@@ -993,6 +1011,7 @@ class NormalActionsTest(BaseAction):
         content = "new content"
         rendering_result = render_message_markdown(message, content)
         prior_mention_user_ids: set[int] = set()
+        prior_watched_phrase_user_ids: set[int] = set()
         mention_backend = MentionBackend(self.user_profile.realm_id)
         mention_data = MentionData(
             mention_backend=mention_backend,
@@ -1017,6 +1036,7 @@ class NormalActionsTest(BaseAction):
                 False,
                 rendering_result,
                 prior_mention_user_ids,
+                prior_watched_phrase_user_ids,
                 mention_data,
             )
         check_update_message(
@@ -1051,6 +1071,7 @@ class NormalActionsTest(BaseAction):
                 False,
                 None,
                 prior_mention_user_ids,
+                prior_watched_phrase_user_ids,
                 mention_data,
             )
         check_update_message(
@@ -1098,6 +1119,7 @@ class NormalActionsTest(BaseAction):
         stream = get_stream("Denmark", self.user_profile.realm)
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
+        prior_watched_phrase_user_ids = set()
 
         message_edit_request = build_message_edit_request(
             message=message,
@@ -1122,6 +1144,7 @@ class NormalActionsTest(BaseAction):
                 True,
                 None,
                 set(),
+                set(),
                 None,
             )
         check_update_message(
@@ -1144,6 +1167,7 @@ class NormalActionsTest(BaseAction):
         stream = get_stream("Denmark", self.user_profile.realm)
         propagate_mode = "change_all"
         prior_mention_user_ids = set()
+        prior_watched_phrase_user_ids = set()
 
         message_edit_request = build_message_edit_request(
             message=message,
@@ -1170,6 +1194,7 @@ class NormalActionsTest(BaseAction):
                 True,
                 True,
                 None,
+                set(),
                 set(),
                 None,
             )
@@ -1226,7 +1251,10 @@ class NormalActionsTest(BaseAction):
         user_profile = self.example_user("hamlet")
         mention = "@**" + user_profile.full_name + "**"
 
-        for content in ["hello", mention]:
+        # Add watched phrase (alert word) for testing
+        do_add_alert_words(user_profile, ["watched_phrase"])
+
+        for content in ["hello", mention, "watched_phrase"]:
             message = self.send_stream_message(
                 self.example_user("cordelia"),
                 "Verona",
