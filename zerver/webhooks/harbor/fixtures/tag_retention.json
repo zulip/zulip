@@ -1,0 +1,23 @@
+{
+    "type": "TAG_RETENTION",
+    "occur_at": 1571334983,
+    "event_data": {
+        "resources": [
+            {
+                "digest": "sha256:d72f37f783ed6a8d58ac70b4db052707d1ec9d4ea010ef5ccd84652faf9ed844"
+            }
+        ],
+        "repository": {
+            "date_created": 1571334632,
+            "name": "backend",
+            "namespace": "myapp",
+            "repo_full_name": "myapp/backend",
+            "repo_type": "private"
+        },
+        "retention": {
+            "total": 15,
+            "retained": 5
+        }
+    },
+    "operator": "system"
+}
