@@ -90,3 +90,9 @@ class AzuredevopsHookTests(WebhookTestCase):
         expected_topic_name = "test-zulip / PR #2 Raised 2nd PR!"
         expected_message = "Yuro Itaki updated [PR #2 Raised 2nd PR!](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/2)\n\n~~~ quote\nYuro Itaki updated the source branch of [pull request 2](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/2) (Raised 2nd PR!) in [test-zulip](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/)\r\nRaised 2nd PR!\r\n\n~~~"
         self.check_webhook("code_pull_request__updated", expected_topic_name, expected_message)
+
+    def test_push_event_force_flag(self) -> None:
+        """Ensure a 'forced' refUpdate is shown as a force push."""
+        expected_topic_name = "test-zulip / main"
+        expected_message = "Yuro Itaki [force pushed](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/branchCompare?baseVersion=GC51515957669f93c543df09f8f3e7f47c3613c879&targetVersion=GCb0ce2f2009c3c87dbefadf61d7eb2c0697a6f369&_a=files) 1 commit to branch main.\n\n* Modify readme ([b0ce2f2009c](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/commit/b0ce2f2009c3c87dbefadf61d7eb2c0697a6f369))"
+        self.check_webhook("code_push__forced", expected_topic_name, expected_message)

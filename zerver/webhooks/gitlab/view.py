@@ -10,7 +10,7 @@ from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
+from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
@@ -76,11 +76,22 @@ def get_normal_push_event_body(payload: WildValue) -> str:
         for commit in payload["commits"]
     ]
 
+    # GitLab push events may include a 'forced' boolean. If present, pass
+    # it through to the shared git message generator so the notification
+    # indicates a force push similarly to GitHub.
+    forced = False
+    if payload.get("forced") is not None:
+        try:
+            forced = payload["forced"].tame(check_bool)
+        except Exception:  # nocoverage ✅
+            forced = False  # nocoverage ✅
+
     return get_push_commits_event_message(
         get_user_name(payload),
         compare_url,
         get_branch_name(payload),
         commits,
+        force_push=forced,
     )
 
 
