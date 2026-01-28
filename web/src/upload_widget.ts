@@ -41,6 +41,27 @@ function is_image_format(file: File): boolean {
     return supported_types.includes(type);
 }
 
+async function get_image_dimensions(file: File): Promise<{width: number; height: number} | null> {
+    return new Promise((resolve) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+
+        img.addEventListener("load", () => {
+            resolve({
+                width: img.naturalWidth,
+                height: img.naturalHeight,
+            });
+            URL.revokeObjectURL(url);
+        });
+
+        img.addEventListener("error", () => {
+            resolve(null);
+            URL.revokeObjectURL(url);
+        });
+        img.src = url;
+    });
+}
+
 export function build_widget(
     // function returns a jQuery file input object
     get_file_input: () => JQuery<HTMLInputElement>,
@@ -199,6 +220,14 @@ function open_uppy_editor(
             set_up_uppy_widget(property_name);
             assert(uppy_widget !== undefined);
 
+            let original_dimensions: {width: number; height: number} | null = null;
+            uppy_widget.on("file-added", (added_file) => {
+                void (async () => {
+                    assert(added_file.data instanceof File);
+                    original_dimensions = await get_image_dimensions(added_file.data);
+                })();
+            });
+
             const uppy_file_id = uppy_widget.addFile({
                 name: file.name,
                 type: "image/png",
@@ -209,16 +238,37 @@ function open_uppy_editor(
             const uppy_file = uppy_widget.getFile(uppy_file_id);
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.selectFile(uppy_file);
 
-            uppy_widget.once("file-editor:complete", (file) => {
-                assert(file.data instanceof File);
-                if (property_name === "realm_logo") {
-                    const $realm_logo_section = $upload_button.closest(".image_upload_widget");
-                    const is_night =
-                        $realm_logo_section.attr("id") === "realm-night-logo-upload-widget";
-                    upload_function(file.data, is_night, false);
-                } else {
-                    upload_function(file.data, null, true);
-                }
+            uppy_widget.on("file-editor:complete", (updated_file) => {
+                void (async () => {
+                    assert(updated_file.data instanceof File);
+                    const new_dimensions = await get_image_dimensions(updated_file.data);
+                    let file_to_upload;
+                    if (
+                        original_dimensions !== null &&
+                        new_dimensions !== null &&
+                        new_dimensions.width === original_dimensions.width &&
+                        new_dimensions.height === original_dimensions.height
+                    ) {
+                        // If user has not cropped the image, we just upload the original
+                        // file to avoid cases where file size exceeds the limit due to it
+                        // being encoded to a lossless format from a lossy format and might
+                        // confuse users as to why the file size exceeds the limit when the
+                        // original file was within the size limit and they have changed nothing.
+                        file_to_upload = file;
+                    } else {
+                        file_to_upload = updated_file.data;
+                    }
+
+                    assert(file_to_upload instanceof File);
+                    if (property_name === "realm_logo") {
+                        const $realm_logo_section = $upload_button.closest(".image_upload_widget");
+                        const is_night =
+                            $realm_logo_section.attr("id") === "realm-night-logo-upload-widget";
+                        upload_function(file_to_upload, is_night, false);
+                    } else {
+                        upload_function(file_to_upload, null, true);
+                    }
+                })();
             });
         },
         on_hidden() {
