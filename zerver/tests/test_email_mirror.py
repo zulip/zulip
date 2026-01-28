@@ -952,16 +952,25 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         process_message(incoming_valid_message)
 
         message = most_recent_message(user_profile)
-        attachment = Attachment.objects.last()
-        assert attachment is not None
-        self.assertEqual(list(attachment.messages.values_list("id", flat=True)), [message.id])
-        self.assertEqual(message.sender, user_profile)
-        self.assertEqual(attachment.realm, stream.realm)
-        self.assertEqual(attachment.is_realm_public, True)
 
-        assert message.content.endswith(
-            f"aaaaaa\n[message truncated]\n[image.png](/user_uploads/{attachment.path_id})"
+        image_attachment = Attachment.objects.filter(file_name="image.png").order_by("id").last()
+        text_attachment = (
+            Attachment.objects.filter(file_name="MessageText.txt").order_by("id").last()
         )
+
+        assert image_attachment is not None
+        assert text_attachment is not None
+
+        self.assertEqual(list(image_attachment.messages.values_list("id", flat=True)), [message.id])
+        self.assertEqual(message.sender, user_profile)
+        self.assertEqual(image_attachment.realm, stream.realm)
+        self.assertEqual(image_attachment.is_realm_public, True)
+
+        self.assertIn("Message content too long. See attached", message.content)
+        self.assertIn(
+            f"[MessageText.txt](/user_uploads/{text_attachment.path_id})", message.content
+        )
+        self.assertIn(f"[image.png](/user_uploads/{image_attachment.path_id})", message.content)
 
     def test_message_with_attachment_utf8_filename(self) -> None:
         user_profile = self.example_user("hamlet")
