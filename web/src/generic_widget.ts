@@ -21,14 +21,20 @@ type WidgetImplementation = {
         message: Message;
         any_data: AnyWidgetData;
     }) => HandleInboundEventsFunction;
-    rerender?: (
-        message_id: number,
-        $elem: JQuery,
-        callback: (data: TodoWidgetOutboundData) => void,
-    ) => void;
+};
+
+type TodoWidgetImplementation = {
+    activate: (data: {message: Message; any_data: AnyWidgetData}) => HandleInboundEventsFunction;
+    render: (data: {
+        $elem: JQuery;
+        callback: (data: TodoWidgetOutboundData) => void;
+        message: Message;
+        rerender: boolean;
+    }) => void;
 };
 
 export const widgets = new Map<string, WidgetImplementation>();
+export const todo_widget = new Map<string, TodoWidgetImplementation>();
 
 export function is_supported_widget_type(widget_type: string): boolean {
     if (widgets.has(widget_type)) {
@@ -98,23 +104,44 @@ export function create_widget_instance(info: {
     return new GenericWidget(inbound_events_handler, any_data.widget_type);
 }
 
-export function widget_rerender(info: {
+export function create_todo_widget_instance(info: {
+    message: Message;
+    any_data: AnyWidgetData;
+}): GenericWidget {
+    const {message, any_data} = info;
+
+    // For historical reasons, we don't directly import the
+    // modules that handle todo.
+    const widget_implementation = todo_widget.get("todo")!;
+
+    const inbound_events_handler = widget_implementation.activate({
+        message,
+        any_data,
+    });
+
+    return new GenericWidget(inbound_events_handler, any_data.widget_type);
+}
+
+export function widget_render(info: {
     post_to_server: PostToServerFunction;
     $widget_elem: JQuery;
     message: Message;
+    rerender: boolean;
 }): void {
     // We only rerender todo widget using this function.
     // Other widgets get rerendered while handling events.
-    const {post_to_server, $widget_elem, message} = info;
-    const widget_implementation = widgets.get("todo")!;
+    const {post_to_server, $widget_elem, message, rerender} = info;
+    const widget_implementation = todo_widget.get("todo")!;
     function post_to_server_callback(data: WidgetOutboundData): void {
         post_to_server({
             msg_type: "widget",
             data,
         });
     }
-
-    if (widget_implementation.rerender) {
-        widget_implementation.rerender(message.id, $widget_elem, post_to_server_callback);
-    }
+    widget_implementation.render({
+        $elem: $widget_elem,
+        callback: post_to_server_callback,
+        message,
+        rerender,
+    });
 }

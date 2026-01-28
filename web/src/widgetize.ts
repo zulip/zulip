@@ -2,9 +2,10 @@ import $ from "jquery";
 
 import type {GenericWidget, PostToServerFunction} from "./generic_widget.ts";
 import {
+    create_todo_widget_instance,
     create_widget_instance,
     is_supported_widget_type,
-    widget_rerender,
+    widget_render,
 } from "./generic_widget.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -94,14 +95,51 @@ export function activate(in_opts: ActivateArguments): void {
     // harmless, but there's still no point.
     if (events.length > 0) {
         generic_widget.handle_inbound_events(events);
-        if (any_data.widget_type === "todo") {
-            widget_rerender({
-                post_to_server,
-                $widget_elem: $row,
-                message,
-            });
-        }
     }
+}
+
+export function activate_todo(any_data: AnyWidgetData, message: Message, events: Event[]): void {
+    const generic_widget = create_todo_widget_instance({
+        message,
+        any_data,
+    });
+
+    generic_widget_map.set(message.id, generic_widget);
+
+    if (events.length > 0) {
+        generic_widget.handle_inbound_events(events);
+    }
+}
+
+export function render_todo_widget(in_opts: {
+    $row: JQuery;
+    message: Message;
+    post_to_server: PostToServerFunction;
+}): void {
+    const {$row, message, post_to_server} = in_opts;
+    const is_message_preview = $row.parent()?.attr("id") === "report-message-preview-container";
+
+    if (
+        !$row.attr("id")!.startsWith(`message-row-${message_lists.current?.id}-`) &&
+        !is_message_preview
+    ) {
+        // Don't activate widgets for messages that are not in the current view or
+        // in message report modal.
+        return;
+    }
+
+    // We depend on our widget implementations to build the
+    // DOM and event handlers that eventually go in this div.
+    const $widget_elem = $("<div>").addClass("widget-content");
+
+    set_widget_in_message($row, $widget_elem);
+
+    widget_render({
+        post_to_server,
+        $widget_elem,
+        message,
+        rerender: false,
+    });
 }
 
 export function handle_event(
@@ -130,10 +168,11 @@ export function handle_event(
         const $row = message_lists.current?.get_row(widget_event.message_id);
 
         if ($row && widget_event.message) {
-            widget_rerender({
+            widget_render({
                 post_to_server: widget_event.post_to_server,
                 $widget_elem: $row,
                 message: widget_event.message,
+                rerender: true,
             });
         }
     } else if (message_lists.current?.get_row(widget_event.message_id).length !== 0) {

@@ -96,11 +96,72 @@ export function do_process_submessages(in_opts: {$row: JQuery; message_id: numbe
 
     const any_data = widget_event.data;
 
+    if (any_data.widget_type === "todo") {
+        return;
+    }
+
     const post_to_server = make_server_callback(message_id);
 
     widgetize.activate({
         any_data,
         events: inbound_events,
+        $row,
+        message,
+        post_to_server,
+    });
+}
+
+export function process_todo_submessage(message_id: number): void {
+    // This happens in our rendering path, so we try to limit any
+    // damage that may be triggered by one rogue message.
+    try {
+        do_process_todo_submessages(message_id);
+        return;
+    } catch (error) {
+        blueslip.error("Failed to do_process_submessages", undefined, error);
+        return;
+    }
+}
+
+export function do_process_todo_submessages(message_id: number): void {
+    const message = message_store.get(message_id);
+
+    if (!message) {
+        return;
+    }
+
+    const events = get_message_events(message);
+
+    if (!events) {
+        return;
+    }
+    const [widget_event, ...inbound_events] = events;
+
+    if (widget_event.sender_id !== message.sender_id) {
+        blueslip.warn(`User ${widget_event.sender_id} tried to hijack message ${message.id}`);
+        return;
+    }
+
+    // Right now, our only use of submessages is widgets.
+
+    const any_data = widget_event.data;
+
+    if (any_data.widget_type !== "todo") {
+        return;
+    }
+
+    widgetize.activate_todo(any_data, message, inbound_events);
+}
+
+export function maybe_render_todo_submessage($row: JQuery, message_id: number): void {
+    const message = message_store.get(message_id);
+    if (!message || !message.has_widget_data) {
+        return;
+    }
+
+    const post_to_server = make_server_callback(message_id);
+
+    widgetize.render_todo_widget({
         $row,
         message,
         post_to_server,

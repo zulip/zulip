@@ -95,13 +95,9 @@ function render_results(
 }
 
 export function activate({
-    $elem,
-    callback,
     any_data,
     message,
 }: {
-    $elem: JQuery;
-    callback: (data: TodoWidgetOutboundData) => void;
     any_data: AnyWidgetData;
     message: Message;
 }): (events: Event[]) => void {
@@ -114,24 +110,36 @@ export function activate({
         report_error_function: blueslip.warn,
     });
     widget_map.set(message.id, task_data);
+    message.has_widget_data = true;
 
-    return render({$elem, callback, message, task_data});
+    const handle_events = function (events: Event[]): void {
+        for (const event of events) {
+            task_data.handle_event(event.sender_id, event.data);
+        }
+    };
+
+    return handle_events;
 }
 
 export function render({
     $elem,
     callback,
     message,
-    task_data,
+    rerender,
 }: {
     $elem: JQuery;
     callback: (data: TodoWidgetOutboundData) => void;
     message: Message;
-    task_data: TaskData;
-}): (events: Event[]) => void {
+    rerender?: boolean;
+}): void {
     const message_container = message_lists.current?.view.message_containers.get(message.id);
+    const task_data = widget_map.get(message.id);
 
-    function start_editing(): void {
+    if (!task_data) {
+        return;
+    }
+
+    function start_editing(task_data: TaskData): void {
         task_data.set_input_mode();
 
         const task_list_title = task_data.get_task_list_title();
@@ -140,12 +148,12 @@ export function render({
         $elem.find("input.todo-task-list-title").trigger("focus");
     }
 
-    function abort_edit(): void {
+    function abort_edit(task_data: TaskData): void {
         task_data.clear_input_mode();
         render_task_list_title(task_data, $elem);
     }
 
-    function submit_task_list_title(): void {
+    function submit_task_list_title(task_data: TaskData): void {
         const $task_list_title_input = $elem.find<HTMLInputElement>("input.todo-task-list-title");
         let new_task_list_title = $task_list_title_input.val()?.trim() ?? "";
         const old_task_list_title = task_data.get_task_list_title();
@@ -172,7 +180,7 @@ export function render({
         }
     }
 
-    function add_task(): void {
+    function add_task(task_data: TaskData): void {
         $elem.find(".widget-error").text("");
         const task =
             $elem.find<HTMLInputElement>(".add-task-bar input.add-task").val()?.trim() ?? "";
@@ -198,7 +206,7 @@ export function render({
         }
     }
 
-    function build_widget(): void {
+    function build_widget(task_data: TaskData): void {
         const html = render_widgets_todo_widget();
         $elem.html(html);
 
@@ -218,78 +226,54 @@ export function render({
             e.stopPropagation();
 
             if (e.key === "Enter") {
-                submit_task_list_title();
+                submit_task_list_title(task_data);
                 return;
             }
 
             if (e.key === "Escape") {
-                abort_edit();
+                abort_edit(task_data);
                 return;
             }
         });
 
         $elem.find(".todo-edit-task-list-title").on("click", (e) => {
             e.stopPropagation();
-            start_editing();
+            start_editing(task_data);
         });
 
         $elem.find("button.todo-task-list-title-check").on("click", (e) => {
             e.stopPropagation();
-            submit_task_list_title();
+            submit_task_list_title(task_data);
         });
 
         $elem.find("button.todo-task-list-title-remove").on("click", (e) => {
             e.stopPropagation();
-            abort_edit();
+            abort_edit(task_data);
         });
 
         $elem.find("button.add-task").on("click", (e) => {
             e.stopPropagation();
-            add_task();
+            add_task(task_data);
         });
 
         $elem.find("input.add-task, input.add-desc").on("keydown", (e) => {
             if (e.key === "Enter") {
                 e.stopPropagation();
                 e.preventDefault();
-                add_task();
+                add_task(task_data);
             }
         });
     }
 
-    const handle_events = function (events: Event[]): void {
-        // We don't have to handle events now since we go through
-        // handle_event loop again when we unmute the message.
-        if (message_container?.is_hidden) {
-            return;
-        }
-
-        for (const event of events) {
-            task_data.handle_event(event.sender_id, event.data);
-        }
-    };
-
     if (message_container?.is_hidden) {
         const html = render_message_hidden_dialog();
         $elem.html(html);
-    } else {
-        build_widget();
-        render_task_list_title(task_data, $elem);
-        render_results(task_data, $elem, callback);
+    } else if (!rerender) {
+        build_widget(task_data);
     }
 
-    return handle_events;
-}
-
-export function rerender(
-    message_id: number,
-    $elem: JQuery,
-    callback: (data: TodoWidgetOutboundData) => void,
-): void {
-    const task_data = widget_map.get(message_id);
-    if (!task_data) {
-        return;
-    }
     render_task_list_title(task_data, $elem);
     render_results(task_data, $elem, callback);
+
+    return;
 }
