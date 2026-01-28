@@ -1,5 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
+import random
+import sys
 from typing import Any
 
 from django.conf import settings
@@ -69,5 +71,17 @@ class PushNotificationsWorker(QueueProcessingWorker):
                         "Maximum retries exceeded for trigger:%s event:push_notification",
                         event["user_profile_id"],
                     )
+
+            if event_type == "register_push_device_to_bouncer":
+                attempt = event.get("failed_tries", 0) + 1
+                backoff_delay_seconds = min(2**attempt, 3600) * (1 + random.random()) / 2
+                retry_event(
+                    self.queue_name,
+                    event,
+                    failure_processor,
+                    backoff_delay_seconds,
+                    max_request_retries=sys.maxsize,
+                )
+                return
 
             retry_event(self.queue_name, event, failure_processor)
