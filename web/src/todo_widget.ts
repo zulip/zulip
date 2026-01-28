@@ -35,6 +35,21 @@ export function activate({
         tasks,
         report_error_function: blueslip.warn,
     });
+
+    return render({$elem, callback, message, task_data});
+}
+
+export function render({
+    $elem,
+    callback,
+    message,
+    task_data,
+}: {
+    $elem: JQuery;
+    callback: (data: TodoWidgetOutboundData) => void;
+    message: Message;
+    task_data: TaskData;
+}): (events: Event[]) => void {
     const is_my_task_list = task_data.is_my_task_list();
     const message_container = message_lists.current?.view.message_containers.get(message.id);
 
