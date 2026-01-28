@@ -148,7 +148,6 @@ prod = [
 
   # For OpenAPI schema validation.
   "openapi-core",
-  "werkzeug<3.1.2", # https://github.com/python-openapi/openapi-core/issues/938
 
   # For reporting errors to sentry.io
   "sentry-sdk",
@@ -200,7 +199,7 @@ prod = [
   "aiosmtpd>=1.4.6",
 
   # For using Missing sentinel
-  "pydantic-partials",
+  "pydantic-partials<3.0.0",  # https://github.com/joshorr/pydantic-partials/issues/42
 
   # For E2EE of push notifications
   "pynacl",
@@ -217,9 +216,21 @@ docs = [
   # Needed to build Markdown docs
   "myst-parser",
 ]
+
+# This group is for minimal CI / local release tooling; see tools/closed-by-commits
+release-tools = [
+   # Talks to GitHub
+   "PyGithub",
+   # And also to chat.zulip.org
+   "requests",
+   # For building a CLI
+   "typer",
+]
+
 dev = [
   { include-group = "prod" },
   { include-group = "docs" },
+  { include-group = "release-tools" },
 
   # moto s3 mock
   "moto[s3]",
@@ -314,6 +325,9 @@ dev = [
 
 [tool.uv]
 no-binary-package = ["lxml", "xmlsec"]
+override-dependencies = [
+  "grpcio", # https://github.com/BerriAI/litellm/pull/18473
+]
 
 [tool.uv.sources]
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
@@ -331,7 +345,7 @@ zulip = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.1.zip", s
 zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.1.zip", subdirectory = "zulip_bots" }
 
 # zulip's linting framework - zulint
-zulint = { url = "https://github.com/zulip/zulint/archive/448e36a1e50e79c82257ed3d65fcf5c8591cdb61.zip" }
+zulint = { url = "https://github.com/zulip/zulint/archive/41cea7c8f0e910b3b7790180fe5d207e5735276b.zip" }
 
 [tool.black]
 line-length = 100
@@ -411,7 +425,6 @@ module = [
     "pyuca.*",
     "pyvips.*",
     "scim2_filter_parser.attr_paths",
-    "social_django.*",
     "talon_core.*",
     "tlds.*",
     "two_factor.*",
