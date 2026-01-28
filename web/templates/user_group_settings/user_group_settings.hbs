@@ -27,18 +27,19 @@
                 {{> ../creator_details .
                   group_id=group.id }}
             </div>
+            {{#unless group.is_system_group}}
+                <div class="group-permissions settings-subsection-parent" id="group_permission_settings">
+                    <div class="subsection-header">
+                        <h3 class="user_group_setting_subsection_title">
+                            {{t "Group permissions" }}
+                            {{> ../help_link_widget link="/help/manage-user-groups#configure-group-permissions"}}
+                        </h3>
+                        {{> ../settings/settings_save_discard_widget section_name="group-permissions" show_save_discard_buttons=true }}
+                    </div>
 
-            <div class="group-permissions settings-subsection-parent" id="group_permission_settings">
-                <div class="subsection-header">
-                    <h3 class="user_group_setting_subsection_title">
-                        {{t "Group permissions" }}
-                        {{> ../help_link_widget link="/help/manage-user-groups#configure-group-permissions"}}
-                    </h3>
-                    {{> ../settings/settings_save_discard_widget section_name="group-permissions" show_save_discard_buttons=true }}
+                    {{> group_permissions prefix="id_" group_setting_labels=all_group_setting_labels.group}}
                 </div>
-
-                {{> group_permissions prefix="id_" group_setting_labels=all_group_setting_labels.group}}
-            </div>
+            {{/unless}}
         </div>
 
         <div class="group_member_settings group_setting_section" data-group-section="members">
