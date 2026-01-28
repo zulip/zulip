@@ -479,6 +479,7 @@ class BaseAction(ZulipTestCase):
             except AssertionError:  # nocoverage
                 raise AssertionError("Test is invalid--state actually does change here.")
 
+        self.user_profile.realm.refresh_from_db()
         normal_state = fetch_initial_state_data(
             self.user_profile,
             realm=self.user_profile.realm,
