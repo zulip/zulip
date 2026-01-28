@@ -1,10 +1,12 @@
 import {parseISO} from "date-fns";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import timezones from "../generated/timezones.json";
 import render_settings_overlay from "../templates/settings_overlay.hbs";
 import render_settings_tab from "../templates/settings_tab.hbs";
 
+import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";
 import * as flatpickr from "./flatpickr.ts";
@@ -52,7 +54,10 @@ export function update_lock_icon_in_sidebar(): void {
 
     $(".org-settings-list .locked").show();
 
-    if (settings_bots.can_create_incoming_webhooks()) {
+    if (
+        settings_bots.can_create_incoming_webhooks() ||
+        bot_data.get_all_bots_ids_for_current_user().length > 0
+    ) {
         $(".org-settings-list li[data-section='bots'] .locked").hide();
     }
 
@@ -164,10 +169,16 @@ export function build_page(): void {
             user_settings.allow_private_data_export || is_export_without_consent_enabled,
         private_data_export_is_disabled: is_export_without_consent_enabled,
         private_data_export_tooltip_text,
+        all_bots_list_dropdown_widget_name:
+            settings_bots.personal_all_bots_list_dropdown_widget_name,
+        your_bots_list_dropdown_widget_name:
+            settings_bots.personal_your_bots_list_dropdown_widget_name,
     });
 
     $(".settings-box").html(rendered_settings_tab);
     common.adjust_mac_kbd_tags("#user_enter_sends_label kbd");
+
+    settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"));
 }
 
 export function open_settings_overlay(): void {
@@ -183,12 +194,16 @@ export function open_settings_overlay(): void {
     });
 }
 
-export function launch(section: string): void {
+export function launch(section: string, settings_tab: string | undefined): void {
     settings_sections.reset_sections();
 
     open_settings_overlay();
     if (section !== "") {
         settings_panel_menu.normal_settings.set_current_tab(section);
+    }
+    if (section === "bots") {
+        assert(settings_tab !== undefined);
+        settings_panel_menu.normal_settings.set_bot_settings_tab(settings_tab, "personal");
     }
     settings_toggle.goto("settings");
 }
@@ -201,6 +216,8 @@ export function initialize(): void {
         show_uploaded_files_section: realm.max_file_upload_size_mib > 0,
         show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
+        can_manage_bot:
+            current_user.is_admin || bot_data.get_all_bots_ids_for_current_user().length > 0,
         can_edit_user_panel:
             current_user.is_admin ||
             settings_data.user_can_create_multiuse_invite() ||

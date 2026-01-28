@@ -29,8 +29,8 @@
                 <th class="actions">{{t "Actions" }}</th>
             </tr>
         </thead>
-        <tbody id="admin_{{section_name}}_table" class="admin_bot_table"
+        <tbody id="{{prefix}}_{{section_name}}_table" class="bot-table"
           data-empty="{{#if (eq section_name 'all_bots')}}{{t 'There are no active bots in this organization.' }}{{else}}{{t 'You have no active bots'}}{{/if}}" data-search-results-empty="{{#if (eq section_name 'all_bots')}}{{t 'No bots match your current filter.' }}{{else}}{{t 'None of your bots match your current filter.' }}{{/if}}"></tbody>
     </table>
 </div>
-<div id="admin_page_{{section_name}}_loading_indicator"></div>
+<div id="{{prefix}}_page_{{section_name}}_loading_indicator" class="loading-indicator"></div>
