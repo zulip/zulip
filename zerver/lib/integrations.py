@@ -963,6 +963,9 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
         "big-blue-button", ["video-calling", "communication"], display_name="BigBlueButton"
     ),
     Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
+    Integration(
+        "nextcloud-talk", ["video-calling", "communication"], display_name="Nextcloud Talk"
+    ),
     Integration("zoom", ["video-calling", "communication"]),
 ]
 
@@ -1136,7 +1139,7 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Outgoing integrations
     | {"email", "onyx"}
     # Video call integrations
-    | {"big-blue-button", "jitsi", "zoom"}
+    | {"big-blue-button", "jitsi", "nextcloud-talk", "zoom"}
     | {
         # these integrations do not send messages
         "giphy",

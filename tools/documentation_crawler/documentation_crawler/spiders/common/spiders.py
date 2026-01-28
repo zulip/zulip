@@ -39,6 +39,8 @@ EXCLUDED_URLS = [
     "https://giphy.com",
     "https://giphy.com/apps/giphycapture",
     "https://www.udemy.com/course/the-complete-react-native-and-redux-course/",
+    # TODO: remove this exclusion in the next commit
+    "https://zulip.com/integrations/nextcloud-talk",
 ]
 
 VNU_IGNORE = [

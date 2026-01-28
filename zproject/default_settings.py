@@ -195,6 +195,10 @@ TENOR_API_KEY = get_secret("tenor_api_key")
 # development; this is useful since there are no public BigBlueButton servers.
 BIG_BLUE_BUTTON_URL = get_secret("big_blue_button_url", development_only=True)
 
+# Nextcloud Talk integration settings.
+# URL to the Nextcloud server (e.g., https://cloud.example.com)
+NEXTCLOUD_SERVER = get_secret("nextcloud_server", development_only=True)
+
 # Max state storage per user
 # TODO: Add this to zproject/prod_settings_template.py once stateful bots are fully functional.
 USER_STATE_SIZE_LIMIT = 10000000
