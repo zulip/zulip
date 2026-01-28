@@ -1280,10 +1280,14 @@ def password_reset(request: HttpRequest) -> HttpResponse:
         return HttpResponseRedirect(redirect_url)
 
     try:
+        email = None
+        if request.user.is_authenticated:
+          email = request.user.email
         response = DjangoPasswordResetView.as_view(
             template_name="zerver/reset.html",
             form_class=ZulipPasswordResetForm,
             success_url="/accounts/password/reset/done/",
+            initial={"email": email},
         )(request)
     except RateLimitedError as e:
         assert e.secs_to_freedom is not None
@@ -1295,7 +1299,6 @@ def password_reset(request: HttpRequest) -> HttpResponse:
         )
     assert isinstance(response, HttpResponse)
     return response
-
 
 @csrf_exempt
 def saml_sp_metadata(request: HttpRequest) -> HttpResponse:  # nocoverage
