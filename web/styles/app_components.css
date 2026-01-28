@@ -1409,4 +1409,16 @@ input.invalid-input {
     width: 100%;
     align-self: flex-start;
     margin-top: -35px;
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.zulip-icon-loader-circle {
+    animation: spin 1s linear infinite;
 }

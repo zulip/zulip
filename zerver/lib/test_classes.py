@@ -979,14 +979,12 @@ Output:
 
     def submit_demo_creation_form(
         self,
-        demo_name: str,
         *,
         org_type: int = Realm.ORG_TYPES["business"]["id"],
         language: str = "en",
         captcha: str | None = None,
     ) -> "TestHttpResponse":
         payload = {
-            "realm_name": demo_name,
             "realm_type": org_type,
             "realm_default_language": language,
             "how_realm_creator_found_zulip": "ai_chatbot",

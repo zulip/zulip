@@ -40,17 +40,20 @@ class DemoCreationTest(ZulipTestCase):
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
         signups_channel, _ = create_stream_if_needed(notification_bot.realm, "signups")
 
-        result = self.submit_demo_creation_form("demo test")
-        realm = Realm.objects.latest("date_created")
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].startswith(
                 f"http://{realm.string_id}.testserver/accounts/login/subdomain"
             )
         )
-
-        self.assertIn("demo test", realm.name)
-        expected_deletion_date = realm.date_created + timedelta(days=30)
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
 
         result = self.client_get(result["Location"], subdomain=realm.string_id)
@@ -113,10 +116,10 @@ class DemoCreationTest(ZulipTestCase):
     def test_demo_creation_rate_limiter(self) -> None:
         start_time = time.time()
         with patch("time.time", return_value=start_time):
-            self.submit_demo_creation_form("demo 1")
-            self.submit_demo_creation_form("demo 2")
+            self.submit_demo_creation_form()
+            self.submit_demo_creation_form()
 
-            result = self.submit_demo_creation_form("demo 3")
+            result = self.submit_demo_creation_form()
             self.assertEqual(result.status_code, 429)
             self.assert_in_response("Rate limit exceeded.", result)
 
@@ -124,22 +127,20 @@ class DemoCreationTest(ZulipTestCase):
             self.assertEqual(result.status_code, 200)
 
         with patch("time.time", return_value=start_time + 11):
-            self.submit_demo_creation_form("demo 4")
+            self.submit_demo_creation_form()
 
     @override_settings(OPEN_REALM_CREATION=True, USING_CAPTCHA=True, ALTCHA_HMAC_KEY="secret")
     def test_create_demo_with_captcha(self) -> None:
-        realm_name = "demo test captcha"
-
         result = self.client_get("/new/demo/")
         self.assert_not_in_success_response(["Validation failed"], result)
 
         # Without the CAPTCHA value, we get an error
-        result = self.submit_demo_creation_form(realm_name)
+        result = self.submit_demo_creation_form()
         self.assert_in_success_response(["Validation failed, please try again."], result)
 
         # With an invalid value, we also get an error
         with self.assertLogs(level="WARNING") as logs:
-            result = self.submit_demo_creation_form(realm_name, captcha="moose")
+            result = self.submit_demo_creation_form(captcha="moose")
             self.assert_in_success_response(["Validation failed, please try again."], result)
             self.assert_length(logs.output, 1)
             self.assertIn("Invalid altcha solution: Invalid altcha payload", logs.output[0])
@@ -147,7 +148,6 @@ class DemoCreationTest(ZulipTestCase):
         # With something which raises an exception, we also get the same error
         with self.assertLogs(level="WARNING") as logs:
             result = self.submit_demo_creation_form(
-                realm_name,
                 captcha=base64.b64encode(
                     orjson.dumps(["algorithm", "challenge", "number", "salt", "signature"])
                 ).decode(),
@@ -164,7 +164,7 @@ class DemoCreationTest(ZulipTestCase):
             patch("zerver.forms.verify_solution", return_value=(True, None)) as verify,
             self.assertLogs(level="WARNING") as logs,
         ):
-            result = self.submit_demo_creation_form(realm_name, captcha=payload)
+            result = self.submit_demo_creation_form(captcha=payload)
             self.assert_in_success_response(["Validation failed, please try again."], result)
             verify.assert_called_once_with(payload, "secret", check_expires=True)
             self.assert_length(logs.output, 1)
@@ -186,7 +186,7 @@ class DemoCreationTest(ZulipTestCase):
         # session.  The real payload would have other keys.
         payload = base64.b64encode(orjson.dumps({"challenge": data["challenge"]})).decode()
         with patch("zerver.forms.verify_solution", return_value=(True, None)) as verify:
-            result = self.submit_demo_creation_form(realm_name, captcha=payload)
+            result = self.submit_demo_creation_form(captcha=payload)
             self.assertEqual(result.status_code, 302)
             verify.assert_called_once_with(payload, "secret", check_expires=True)
 
@@ -195,12 +195,12 @@ class DemoCreationTest(ZulipTestCase):
 
     def test_demo_organizations_disabled(self) -> None:
         with self.settings(OPEN_REALM_CREATION=False):
-            result = self.submit_demo_creation_form("demo test")
+            result = self.submit_demo_creation_form()
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("Demo organizations are not enabled on this server.", result)
 
         with self.settings(DEMO_ORG_DEADLINE_DAYS=None):
-            result = self.submit_demo_creation_form("demo test")
+            result = self.submit_demo_creation_form()
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("Demo organizations are not enabled on this server.", result)
 

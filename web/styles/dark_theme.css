@@ -155,10 +155,6 @@
         color: inherit;
     }
 
-    #request-progress-status-banner {
-        background-color: hsl(212deg 32% 14%);
-    }
-
     .alert.home-error-bar {
         color: hsl(236deg 33% 90%);
         background-color: hsl(35deg 84% 62% / 25%);
@@ -259,7 +255,6 @@
         color: hsl(200deg 79% 66%);
     }
 
-    #request-progress-status-banner .loading-indicator,
     #loading_older_messages_indicator,
     #recent_view_loading_messages_indicator {
         & path {

@@ -214,11 +214,8 @@
     & table {
         padding-right: 10px;
         margin: 0 5px var(--markdown-interelement-space-px);
-        width: 99%;
-        display: block;
         max-width: fit-content;
         overflow-x: auto;
-        white-space: nowrap;
         border-collapse: collapse;
     }
 
@@ -228,7 +225,7 @@
 
     & tr {
         display: table-row;
-        vertical-align: inherit;
+        vertical-align: top;
     }
 
     & tr th {

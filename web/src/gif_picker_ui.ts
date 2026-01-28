@@ -61,6 +61,7 @@ function focus_gif_at_index(index: number): void {
 }
 
 function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
+    e.stopPropagation();
     assert(e.currentTarget instanceof HTMLElement);
     const key = e.key;
     const is_alpha_numeric = /^[a-zA-Z0-9]$/i.test(key);
@@ -148,6 +149,11 @@ function render_featured_gifs(next_page: boolean): void {
 }
 
 function update_grid_with_search_term(search_term: string, next_page = false): void {
+    // The debounced version may call this after the picker is closed
+    // and the cleanup is done, so we add this guard.
+    if (popover_instance === undefined) {
+        return;
+    }
     if (
         network.is_loading_more_gifs() ||
         (search_term.trim() === current_search_term && !next_page)
