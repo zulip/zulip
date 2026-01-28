@@ -2459,6 +2459,20 @@ class ActivateTest(ZulipTestCase):
             ],
         )
 
+    def test_no_exception_for_profile_update_notification_to_deactivated_user(self) -> None:
+        hamlet = self.example_user("hamlet")
+        do_deactivate_user(hamlet, acting_user=None)
+        self.assertFalse(hamlet.is_active)
+
+        new_name = "spammer"
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        req = dict(full_name=new_name)
+        result = self.client_patch(f"/json/users/{hamlet.id}", req)
+        self.assert_json_success(result)
+        hamlet = self.example_user("hamlet")
+        self.assertEqual(hamlet.full_name, new_name)
+
 
 class RecipientInfoTest(ZulipTestCase):
     def test_stream_recipient_info(self) -> None:
