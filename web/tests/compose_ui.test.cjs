@@ -30,6 +30,7 @@ const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
+const compose_banner = zrequire("compose_banner");
 
 const realm = make_realm({realm_topics_policy: "allow_empty_topic"});
 set_realm(realm);
@@ -1261,6 +1262,20 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
 run_test("right-to-left", () => {
     const $textarea = $("textarea#compose-textarea");
 
+    const $stub = $.create("message_edit_form_stub");
+    $textarea.closest = (selector) => {
+        assert.equal(selector, ".message_edit_form");
+        $stub.length = 0;
+        return $stub;
+    };
+
+    const $banner_container = $.create("banner-container");
+    $stub.set_find_results(".edit_form_banners", $banner_container);
+    $banner_container.set_find_results(
+        `.${compose_banner.CLASSNAMES.recipient_not_subscribed}`,
+        [],
+    );
+
     const event = {
         key: "A",
     };
@@ -1268,7 +1283,7 @@ run_test("right-to-left", () => {
     assert.equal($textarea.hasClass("rtl"), false);
 
     $textarea.val("```quote\nمرحبا");
-    compose_ui.handle_keyup(event, $("textarea#compose-textarea"));
+    compose_ui.handle_keyup(event, $textarea);
 
     assert.equal($textarea.hasClass("rtl"), true);
 
@@ -1276,6 +1291,58 @@ run_test("right-to-left", () => {
     compose_ui.handle_keyup(event, $textarea);
 
     assert.equal($textarea.hasClass("rtl"), false);
+});
+
+run_test("remove-banners", () => {
+    const $banner_container = $.create("banner-container");
+
+    const $banner1 = $.create("banner1");
+    $banner1.attr("data-user-id", 1);
+    $banner1.attr("data-name", "Iago");
+    $banner1.remove = () => {
+        $banner1.attr("removed", true);
+    };
+    const $banner2 = $.create("banner2");
+    $banner2.attr("data-user-id", 2);
+    $banner2.attr("data-name", "Desdemona");
+    $banner2.remove = () => {
+        $banner2.attr("removed", true);
+    };
+
+    $banner_container.set_find_results(
+        `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
+        [$banner1, $banner2],
+    );
+
+    $banner_container.set_find_results(
+        `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}[data-user-id="1"]`,
+        $banner1,
+    );
+    $banner_container.set_find_results(
+        `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}[data-user-id="2"]`,
+        $banner2,
+    );
+
+    $banner_container.set_find_results(
+        `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}[data-name="Iago"]`,
+        $banner1,
+    );
+    $banner_container.set_find_results(
+        `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}[data-name="Desdemona"]`,
+        $banner2,
+    );
+
+    const message_text = "";
+
+    compose_banner.remove_banners_of_not_mentioned_users(message_text, $banner_container);
+
+    let $existing_banners = $banner_container.find(
+        `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
+    );
+
+    $existing_banners = $existing_banners.filter((banner) => !banner.attr("removed"));
+
+    assert.equal($existing_banners.length, 0);
 });
 
 const get_focus_area = compose_ui._get_focus_area;
