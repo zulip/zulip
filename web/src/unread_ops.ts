@@ -449,27 +449,27 @@ export function mark_as_unread_from_here(message_id: number): void {
         display_count = `${rounded_count}+`;
     }
 
-    const context = {
-        // If we don't know how many messages will be affected, but
-        // can't prove the number is more than 10, we avoid showing a
-        // count, since it just seems weird to say "3+ messages will
-        // be marked as read".
-        //
-        // It's not obvious this case is worth having special strings
-        // for, given how unlikely it is. A sample scenario is that
-        // we're be that we're near the fetched bottom of a /near/1
-        // search view where can_apply_locally is false, which will
-        // have triggered a request for the next batch of messages
-        // from the server, but that request has not returned. But it
-        // may happen more offline if the client is intermittantly
-        // offline.
-        show_message_count: locally_available_message_count >= MIN_MARK_AS_UNREAD_COUNT_LOWER_BOUND,
-        count: display_count,
-    };
+    // If we don't know how many messages will be affected, but
+    // can't prove the number is more than 10, we avoid showing a
+    // count, since it just seems weird to say "3+ messages will
+    // be marked as read".
+    //
+    // It's not obvious this case is worth having special strings
+    // for, given how unlikely it is. A sample scenario is that
+    // we're be that we're near the fetched bottom of a /near/1
+    // search view where can_apply_locally is false, which will
+    // have triggered a request for the next batch of messages
+    // from the server, but that request has not returned. But it
+    // may happen more offline if the client is intermittantly
+    // offline.
+    const show_message_count =
+        locally_available_message_count >= MIN_MARK_AS_UNREAD_COUNT_LOWER_BOUND;
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Mark messages as unread?"}),
-        html_body: render_confirm_mark_as_unread_from_here(context),
+        html_heading: show_message_count
+            ? $t_html({defaultMessage: "Mark {display_count} messages as unread?"}, {display_count})
+            : $t_html({defaultMessage: "Mark messages as unread?"}),
+        html_body: render_confirm_mark_as_unread_from_here(),
         on_click() {
             if (prefer_local_ids) {
                 do_mark_unread(locally_available_matching_message_ids);
