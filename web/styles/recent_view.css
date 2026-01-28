@@ -130,7 +130,6 @@
     .table_fix_head {
         padding: 0 !important;
         border: 1px solid var(--color-border-recent-view-table);
-        border-bottom: none;
         border-radius: 5px 5px 0 0;
         overflow: hidden;
     }
