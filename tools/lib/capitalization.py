@@ -183,6 +183,10 @@ IGNORED_PHRASES = [
     r"resolved",
     # Used in pills for unresolved topics.
     r"unresolved",
+    # Used in pills for followed topics.
+    r"followed",
+    # Used in pills for unfollowed topics.
+    r"unfollowed",
     # This is a reference to a setting/secret and should be lowercase.
     r"zulip_org_id",
     # These are custom time unit options for modal dropdowns
