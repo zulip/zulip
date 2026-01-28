@@ -21,10 +21,11 @@
         overflow-wrap: anywhere;
 
         & > a {
-            display: flex;
+            display: grid;
+            grid-template-columns: auto 1fr;
             align-items: center;
             padding: 0.2142em 0.7142em; /* 3px 10px at 14px em */
-            gap: 0.3571em; /* 5px at 14px em */
+            column-gap: 0.3571em; /* 5px at 14px em */
             font-weight: normal;
             /* We want to keep this `max-width` less than 320px. */
             max-width: 292px;
@@ -53,12 +54,13 @@
             }
 
             &.topic-typeahead-link {
-                gap: 5px;
+                column-gap: 5px;
             }
 
             &.topic-edit-typeahead {
-                display: flex;
-                flex-wrap: wrap;
+                display: grid;
+                grid-template-columns: 1fr;
+                grid-column: 1;
 
                 .typeahead-strong-section {
                     /* We want to wrap the topic but preserve
@@ -76,12 +78,12 @@
 
             .typeahead-text-container {
                 display: flex;
-                align-self: center;
+                align-items: center;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 gap: 3px;
-                align-items: baseline;
+                min-width: 0;
             }
 
             .compose-stream-name {
@@ -115,7 +117,6 @@
 
     .pronouns,
     .autocomplete_secondary {
-        align-self: baseline;
         opacity: 0.8;
         font-size: 85%;
         overflow: hidden;
@@ -130,7 +131,7 @@
     }
 
     .autocomplete_secondary {
-        flex: 1 1 0;
+        min-width: 0;
     }
 
     .active .pronouns,
@@ -164,10 +165,8 @@
         /* Can't use flex to display this item if
            we want `text-overflow: ellipsis` to work
            which only works on block elements. */
-        overflow: hidden;
         text-overflow: ellipsis;
         white-space: pre;
-        align-items: baseline;
         font-weight: 500;
 
         .channel-privacy-type-icon {
@@ -197,16 +196,16 @@
 
 /* For FontAwesome icons and zulip icons used in place of images for some users. */
 .typeahead-image {
-    flex: 0 0 auto;
     position: relative;
     height: 1.3125em; /* 21px at 16px/1em */
     width: 1.3125em; /* 21px at 16px/1em */
     border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     .typeahead-image-avatar {
         border-radius: 4px;
-        /* Override bootstrap img */
-        vertical-align: baseline;
     }
 
     .user-circle {
