@@ -11,7 +11,6 @@ import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
-import * as people from "./people.ts";
 import type {TodoWidgetOutboundData} from "./todo_data.ts";
 import {TaskData} from "./todo_data.ts";
 import type {Event} from "./widget_data.ts";
@@ -30,15 +29,13 @@ export function activate({
 }): (events: Event[]) => void {
     assert(any_data.widget_type === "todo");
     const {task_list_title = "", tasks = []} = any_data.extra_data ?? {};
-    const is_my_task_list = people.is_my_user_id(message.sender_id);
     const task_data = new TaskData({
         message_sender_id: message.sender_id,
-        current_user_id: people.my_current_user_id(),
-        is_my_task_list,
         task_list_title,
         tasks,
         report_error_function: blueslip.warn,
     });
+    const is_my_task_list = task_data.is_my_task_list();
     const message_container = message_lists.current?.view.message_containers.get(message.id);
 
     function update_edit_controls(): void {
