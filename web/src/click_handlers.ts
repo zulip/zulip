@@ -190,9 +190,14 @@ export function initialize(): void {
             return;
         }
 
+        if (document.getSelection()?.type === "Range") {
+            // Drags and double/triple clicks on the message
+            // (to copy message text) shouldn't trigger a reply.
+            return;
+        }
+
         if (mouse_drag.is_drag(e)) {
-            // Drags on the message (to copy message text) shouldn't trigger a reply.
-            // This also prevents triggering a reply when you click and drag through
+            // This prevents triggering a reply when you click and drag through
             // an area that doesn't contain text.
             return;
         }
@@ -296,6 +301,22 @@ export function initialize(): void {
             return;
         }
         window.location.href = this.href;
+    });
+
+    $("body").on("click", ".not-subscribed-banner .load-newer-messages-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const filter = narrow_state.filter();
+        if (filter === undefined) {
+            return;
+        }
+
+        message_view.show(filter.terms(), {
+            then_select_id: message_lists.current?.selected_id(),
+            then_select_offset: browser_history.current_scroll_offset(),
+            force_rerender: true,
+            trigger: "bookend load updates",
+        });
     });
 
     $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
@@ -445,7 +466,7 @@ export function initialize(): void {
     });
 
     // SIDEBARS
-    $("body").on("click", "#compose-new-direct-message", (e) => {
+    $("body").on("click", ".compose-new-direct-message", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -852,7 +873,7 @@ export function initialize(): void {
     );
 
     $("body").on("click", "#direct-messages-section-header.zoom-out", (e) => {
-        if ($(e.target).closest("#show-all-direct-messages").length === 1) {
+        if ($(e.target).closest(".show-all-direct-messages").length === 1) {
             // Let the browser handle the "direct message feed" widget.
             return;
         }
@@ -944,10 +965,13 @@ export function initialize(): void {
         if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
             const is_click_within_link = $(e.target).closest("a").length > 0;
             if (is_click_within_link || $(e.target).closest(".copy_codeblock").length > 0) {
-                const is_selecting_link_text = is_click_within_link && mouse_drag.is_drag(e);
+                const is_selecting_link_text =
+                    is_click_within_link &&
+                    (mouse_drag.is_drag(e) || document.getSelection()?.type === "Range");
                 if (is_selecting_link_text) {
                     // Avoid triggering the click handler for a link
-                    // when just dragging over it to select the text.
+                    // when just dragging over it to select the text or
+                    // double/triple clicking it to select link text.
                     e.preventDefault();
                     return;
                 }

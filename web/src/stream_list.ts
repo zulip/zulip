@@ -68,16 +68,14 @@ export function is_zoomed_in(): boolean {
 }
 
 function zoom_in(): void {
+    zoomed_in = true;
     const stream_id = topic_list.active_stream_id();
+    assert(stream_id !== undefined);
 
     popovers.hide_all();
     pm_list.close();
     topic_list.zoom_in();
-    zoom_in_topics({
-        stream_id,
-    });
-
-    zoomed_in = true;
+    zoom_in_topics(stream_id);
 }
 
 export function set_pending_stream_list_rerender(value: boolean): void {
@@ -85,6 +83,7 @@ export function set_pending_stream_list_rerender(value: boolean): void {
 }
 
 export function zoom_out(): void {
+    zoomed_in = false;
     if (pending_stream_list_rerender) {
         update_streams_sidebar(true);
     }
@@ -92,19 +91,16 @@ export function zoom_out(): void {
     topic_list.zoom_out();
     zoom_out_topics();
     scroll_stream_into_view();
-
-    zoomed_in = false;
 }
 
 export function clear_topics(): void {
     topic_list.close();
 
     if (zoomed_in) {
+        zoomed_in = false;
         zoom_out_topics();
         scroll_stream_into_view();
     }
-
-    zoomed_in = false;
 }
 
 export let update_count_in_dom = (
@@ -373,12 +369,12 @@ export function build_stream_list(force_rerender: boolean): void {
             $(stream_list_section_container_html(section, can_create_streams)),
         );
         const is_empty =
-            section.streams.length === 0 &&
+            section.default_visible_streams.length === 0 &&
             section.muted_streams.length === 0 &&
             section.inactive_streams.length === 0;
         $(`#stream-list-${section.id}-container`).toggleClass("no-display", is_empty);
 
-        for (const stream_id of section.streams) {
+        for (const stream_id of section.default_visible_streams) {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`));
         }
         const muted_and_inactive_streams = [...section.muted_streams, ...section.inactive_streams];
@@ -419,7 +415,7 @@ export function build_stream_list(force_rerender: boolean): void {
         // we collapse it, since there's nothing to easily see. But don't do this during
         // search, since sections can enter that state temporarily.
         if (!searching()) {
-            if (!is_empty && section.streams.length === 0) {
+            if (!is_empty && section.default_visible_streams.length === 0) {
                 collapsed_sections.add(section.id);
                 sections_with_only_inactive_or_muted.add(section.id);
             } else {
@@ -653,7 +649,7 @@ function stream_id_for_elt($elt: JQuery): number {
     return Number.parseInt(stream_id_string, 10);
 }
 
-export function zoom_in_topics(options: {stream_id: number | undefined}): void {
+export function zoom_in_topics(stream_id: number): void {
     // This only does stream-related tasks related to zooming
     // in to more topics, which is basically hiding all the
     // other streams.
@@ -662,7 +658,6 @@ export function zoom_in_topics(options: {stream_id: number | undefined}): void {
 
     $("#stream_filters li.narrow-filter").each(function () {
         const $elt = $(this);
-        const stream_id = options.stream_id;
 
         if (stream_id_for_elt($elt) === stream_id) {
             $elt.toggleClass("hide", false);
@@ -1607,7 +1602,11 @@ export function get_sorted_channel_ids_for_next_unread_navigation(): {
     // Get sorted section ids.
     const sections = stream_list_sort.get_current_sections().map((section) => ({
         id: section.id,
-        channels: [...section.streams, ...section.muted_streams, ...section.inactive_streams],
+        channels: [
+            ...section.default_visible_streams,
+            ...section.muted_streams,
+            ...section.inactive_streams,
+        ],
         is_collapsed: collapsed_sections.has(section.id),
     }));
 

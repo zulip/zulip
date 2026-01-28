@@ -562,6 +562,7 @@ html_rules: list["Rule"] = [
         "exclude": {
             "templates/zerver/email.html",
             "zerver/tests/fixtures/email",
+            "templates/corporate/jobs.html",
             "templates/corporate/zulip-cloud.html",
             "templates/corporate/for/business.html",
             "templates/corporate/support/support_request.html",
@@ -707,7 +708,7 @@ html_rules: list["Rule"] = [
     {
         "pattern": "style ?=",
         "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
-        "exclude_pattern": r""".*style ?=["'](display: ?none|background: {{|color: {{|background-color: {{).*""",
+        "exclude_pattern": r""".*style ?=["'](display: ?none|background: {{|color: {{|background-color: {{).*|style=["'](narrow|long|short)["']""",
         "exclude": {
             # 5xx page doesn't have external CSS
             "web/html/5xx.html",

@@ -150,12 +150,18 @@
                 {% endif %}
 
                 {% if remote_server.deactivated %}
-                <form method="POST" class="reactivate-remote-server-form">
-                    {{ csrf_input }}
-                    <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
-                    <input type="hidden" name="remote_server_status" value="active" />
-                    <button class="reactivate-remote-server-button"><b>Reactivate</b>: {{ remote_server.hostname }}</button>
-                </form>
+                <div class="deactivation-information-container">
+                    {% with %}
+                        {% set deactivation_data = remote_servers_support_data[remote_server.id].deactivation_data %}
+                        {% include 'corporate/support/deactivation_data.html' %}
+                    {% endwith %}
+                    <form method="POST" class="reactivate-remote-server-form">
+                        {{ csrf_input }}
+                        <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
+                        <input type="hidden" name="remote_server_status" value="active" />
+                        <button class="reactivate-remote-server-button"><b>Reactivate</b>: {{ remote_server.hostname }}</button>
+                    </form>
+                </div>
                 {% else %}
                 <form method="POST" class="deactivate-remote-server-form">
                     {{ csrf_input }}

@@ -93,7 +93,7 @@
             </label>
             <select name="automatically_follow_topics_policy" class="setting_automatically_follow_topics_policy prop-element settings_select bootstrap-focus-style"
               id="{{prefix}}automatically_follow_topics_policy" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=automatically_follow_topics_policy_values}}
+                {{> dropdown_options_widget option_values=(object_values automatically_follow_topics_policy_values)}}
             </select>
         </div>
 
@@ -110,14 +110,14 @@
             </label>
             <select name="automatically_unmute_topics_in_muted_streams_policy" class="setting_automatically_unmute_topics_in_muted_streams_policy prop-element settings_select bootstrap-focus-style"
               id="{{prefix}}automatically_unmute_topics_in_muted_streams_policy" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=automatically_unmute_topics_in_muted_streams_policy_values}}
+                {{> dropdown_options_widget option_values=(object_values automatically_unmute_topics_in_muted_streams_policy_values)}}
             </select>
         </div>
 
         <div class="input-group">
             <label for="{{prefix}}resolved_topic_notice_auto_read_policy" class="settings-field-label">{{t "Automatically mark resolved topic notices as read" }}</label>
             <select name="resolved_topic_notice_auto_read_policy" class="setting_resolved_topic_notice_auto_read_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}resolved_topic_notice_auto_read_policy" data-setting-widget-type="string">
-                {{> dropdown_options_widget option_values=resolved_topic_notice_auto_read_policy_values}}
+                {{> dropdown_options_widget option_values=(object_values resolved_topic_notice_auto_read_policy_values)}}
             </select>
         </div>
     </div>
@@ -138,7 +138,7 @@
         {{#unless for_realm_settings}}
         {{> ../components/action_button
           label=(t "Send a test notification")
-          attention="quiet"
+          variant="subtle"
           intent="neutral"
           custom_classes="send_test_notification"
           }}
@@ -174,7 +174,7 @@
         <div class="input-group">
             <label for="{{prefix}}desktop_icon_count_display" class="settings-field-label">{{ settings_label.desktop_icon_count_display }}</label>
             <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element settings_select bootstrap-focus-style" id="{{prefix}}desktop_icon_count_display" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
+                {{> dropdown_options_widget option_values=(object_values desktop_icon_count_display_values)}}
             </select>
         </div>
     </div>
@@ -237,7 +237,7 @@
         <div class="input-group">
             <label for="{{prefix}}realm_name_in_email_notifications_policy" class="settings-field-label">{{ settings_label.realm_name_in_email_notifications_policy }}</label>
             <select name="realm_name_in_email_notifications_policy" class="setting_realm_name_in_email_notifications_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}realm_name_in_email_notifications_policy" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=realm_name_in_email_notifications_policy_values}}
+                {{> dropdown_options_widget option_values=(object_values realm_name_in_email_notifications_policy_values)}}
             </select>
         </div>
 

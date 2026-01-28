@@ -30,41 +30,39 @@ export type WidgetData = {
     question: string;
 };
 
-export type InboundData = unknown;
-export type NewOptionOutboundData = {type: string; idx: number; option: string};
-export type QuestionOutboundData = {type: string; question: string};
-export type VoteOutboundData = {type: string; key: string; vote: number};
-export type PollHandle = {
-    new_option: {
-        outbound: (option: string) => NewOptionOutboundData;
-        inbound: (sender_id: number | string, data: InboundData) => void;
-    };
-    question: {
-        outbound: (question: string) => QuestionOutboundData | undefined;
-        inbound: (sender_id: number, data: InboundData) => void;
-    };
-    vote: {
-        outbound: (key: string) => VoteOutboundData;
-        inbound: (sender_id: number, data: InboundData) => void;
-    };
-};
+/*
+    EVENT TYPES FOLLOW.
 
-const inbound_option_schema = z.object({
+    The inbound types have exactly the same shape as the
+    outbound types. It's a peer-to-peer protocol.
+
+    Alice send the NewOption message (outbound).
+    Bob receives the NewOption message (inbound).
+
+    It's actually that simple.
+*/
+
+export const new_option_schema = z.object({
+    type: z.literal("new_option"),
     idx: z.number(),
     option: z.string(),
-    type: z.literal("new_option"),
 });
+type NewOption = {type: string; idx: number; option: string};
 
-const inbound_question_schema = z.object({
-    question: z.string(),
+export const question_schema = z.object({
     type: z.literal("question"),
+    question: z.string(),
 });
+type Question = {type: string; question: string};
 
-const inbound_vote_schema = z.object({
-    key: z.string(),
+export const vote_schema = z.object({
     type: z.literal("vote"),
+    key: z.string(),
     vote: z.number(),
 });
+type Vote = {type: string; key: string; vote: number};
+
+/* ---------------------- */
 
 export const poll_widget_extra_data_schema = z.object({
     question: z.optional(z.string()),
@@ -73,10 +71,7 @@ export const poll_widget_extra_data_schema = z.object({
 
 export type PollWidgetExtraData = z.infer<typeof poll_widget_extra_data_schema>;
 
-export type PollWidgetOutboundData =
-    | NewOptionOutboundData
-    | QuestionOutboundData
-    | VoteOutboundData;
+export type PollWidgetOutboundData = NewOption | Question | Vote;
 
 // Any single user should send add a finite number of options
 // to a poll. We arbitrarily pick this value.
@@ -97,7 +92,6 @@ export class PollData {
     input_mode: boolean;
     comma_separated_names: (user_ids: number[]) => string;
     report_error_function: (error_message: string) => void;
-    handle: PollHandle;
 
     constructor({
         message_sender_id,
@@ -120,138 +114,120 @@ export class PollData {
             this.set_question(question);
         }
 
-        this.handle = {
-            new_option: {
-                outbound: (option) => {
-                    const event = {
-                        type: "new_option",
-                        idx: this.my_idx,
-                        option,
-                    };
-
-                    this.my_idx += 1;
-
-                    return event;
-                },
-
-                inbound: (sender_id, data) => {
-                    const safe_data = inbound_option_schema.parse(data);
-
-                    // All message readers may add a new option to the poll.
-                    const idx = safe_data.idx;
-                    const option = safe_data.option;
-                    const options = this.get_widget_data().options;
-
-                    // While the UI doesn't allow adding duplicate options
-                    // to an existing poll, the /poll command syntax to create
-                    // them does not prevent duplicates, so we suppress them here.
-                    if (this.is_option_present(options, option)) {
-                        return;
-                    }
-
-                    if (idx < 0 || idx > MAX_IDX) {
-                        this.report_error_function("poll widget: idx out of bound");
-                        return;
-                    }
-
-                    const key = `${sender_id},${idx}`;
-                    const votes = new Map<number, number>();
-
-                    this.key_to_option.set(key, {
-                        option,
-                        user_id: sender_id,
-                        votes,
-                    });
-
-                    // I may have added a poll option from another device.
-                    if (sender_id === this.me && this.my_idx <= idx) {
-                        this.my_idx = idx + 1;
-                    }
-                },
-            },
-
-            question: {
-                outbound: (question) => {
-                    const event = {
-                        type: "question",
-                        question,
-                    };
-                    if (this.is_my_poll) {
-                        return event;
-                    }
-                    return undefined;
-                },
-
-                inbound: (sender_id, data) => {
-                    const safe_data = inbound_question_schema.parse(data);
-
-                    // Only the message author can edit questions.
-                    if (sender_id !== this.message_sender_id) {
-                        this.report_error_function(
-                            `user ${sender_id} is not allowed to edit the question`,
-                        );
-                        return;
-                    }
-
-                    this.set_question(safe_data.question);
-                },
-            },
-
-            vote: {
-                outbound: (key) => {
-                    let vote = 1;
-
-                    // toggle
-                    assert(this.key_to_option.has(key), `option key not found: ${key}`);
-                    if (this.key_to_option.get(key)!.votes.get(this.me)) {
-                        vote = -1;
-                    }
-
-                    const event = {
-                        type: "vote",
-                        key,
-                        vote,
-                    };
-
-                    return event;
-                },
-
-                inbound: (sender_id, data) => {
-                    const safe_data = inbound_vote_schema.parse(data);
-
-                    // All message readers may vote on poll options.
-                    const key = safe_data.key;
-                    const vote = safe_data.vote;
-
-                    if (!(vote === 1 || vote === -1)) {
-                        this.report_error_function("poll widget: bad value for inbound vote count");
-                        return;
-                    }
-
-                    const option = this.key_to_option.get(key);
-
-                    if (option === undefined) {
-                        this.report_error_function("unknown key for poll: " + key);
-                        return;
-                    }
-
-                    const votes = option.votes;
-
-                    if (vote === 1) {
-                        votes.set(sender_id, 1);
-                    } else {
-                        votes.delete(sender_id);
-                    }
-                },
-            },
-        };
-
         for (const [i, option] of options.entries()) {
-            this.handle.new_option.inbound("canned", {
+            this.handle_new_option_event("canned", {
                 idx: i,
                 option,
                 type: "new_option",
             });
+        }
+    }
+
+    new_option_event(option: string): NewOption {
+        const event = {
+            type: "new_option",
+            idx: this.my_idx,
+            option,
+        };
+
+        this.my_idx += 1;
+
+        return event;
+    }
+
+    handle_new_option_event(sender_id: string | number, data: NewOption): void {
+        // All message readers may add a new option to the poll.
+        const {idx, option} = data;
+        const options = this.get_widget_data().options;
+
+        // While the UI doesn't allow adding duplicate options
+        // to an existing poll, the /poll command syntax to create
+        // them does not prevent duplicates, so we suppress them here.
+        if (this.is_option_present(options, option)) {
+            return;
+        }
+
+        if (idx < 0 || idx > MAX_IDX) {
+            this.report_error_function("poll widget: idx out of bound");
+            return;
+        }
+
+        const key = `${sender_id},${idx}`;
+        const votes = new Map<number, number>();
+
+        this.key_to_option.set(key, {
+            option,
+            user_id: sender_id,
+            votes,
+        });
+
+        // I may have added a poll option from another device.
+        if (sender_id === this.me && this.my_idx <= idx) {
+            this.my_idx = idx + 1;
+        }
+    }
+
+    question_event(question: string): Question | undefined {
+        const event = {
+            type: "question",
+            question,
+        };
+        if (this.is_my_poll) {
+            return event;
+        }
+        return undefined;
+    }
+
+    handle_question_event(sender_id: number, data: Question): void {
+        // Only the message author can edit questions.
+        if (sender_id !== this.message_sender_id) {
+            this.report_error_function(`user ${sender_id} is not allowed to edit the question`);
+            return;
+        }
+
+        this.set_question(data.question);
+    }
+
+    vote_event(key: string): Vote {
+        let vote = 1;
+
+        // toggle
+        assert(this.key_to_option.has(key), `option key not found: ${key}`);
+        if (this.key_to_option.get(key)!.votes.get(this.me)) {
+            vote = -1;
+        }
+
+        const event = {
+            type: "vote",
+            key,
+            vote,
+        };
+
+        return event;
+    }
+
+    handle_vote_event(sender_id: number, data: Vote): void {
+        const {key, vote} = data;
+
+        // All message readers may vote on poll options.
+        if (!(vote === 1 || vote === -1)) {
+            this.report_error_function("poll widget: bad value for inbound vote count");
+            return;
+        }
+
+        const option = this.key_to_option.get(key);
+
+        if (option === undefined) {
+            this.report_error_function("unknown key for poll: " + key);
+            return;
+        }
+
+        const votes = option.votes;
+
+        if (vote === 1) {
+            votes.set(sender_id, 1);
+        } else {
+            votes.delete(sender_id);
         }
     }
 
@@ -298,21 +274,6 @@ export class PollData {
         };
 
         return widget_data;
-    }
-
-    handle_event(sender_id: number, data: InboundData): void {
-        assert(
-            typeof data === "object" &&
-                data !== null &&
-                "type" in data &&
-                typeof data.type === "string",
-        );
-        const type = data.type;
-        if (type === "new_option" || type === "question" || type === "vote") {
-            this.handle[type].inbound(sender_id, data);
-        } else {
-            this.report_error_function(`poll widget: unknown inbound type: ${type}`);
-        }
     }
 
     // function to check whether option already exists

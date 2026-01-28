@@ -163,7 +163,10 @@ h4.user_group_setting_subsection_title {
     display: flex;
     align-items: center;
     margin: auto;
-    margin-top: 100px;
+
+    &:not(:empty) {
+        margin-top: 100px;
+    }
 }
 
 #people_to_add_in_group,
@@ -1377,7 +1380,7 @@ h4.user_group_setting_subsection_title {
     gap: 10px;
     overflow: hidden;
 
-    &.action-button-quiet-neutral {
+    &.action-button-subtle-neutral {
         box-shadow: none;
     }
 }

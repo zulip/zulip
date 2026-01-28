@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import orjson
 
+from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 
@@ -148,6 +149,17 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_fork_msg(self) -> None:
         expected_message = "baxterandthehackers forked [public-repo](https://github.com/baxterandthehackers/public-repo)."
         self.check_webhook("fork", TOPIC_REPO, expected_message)
+
+    def test_issues_edited_body(self) -> None:
+        expected_topic_name = "test-repo / issue #6 New Issue edited"
+        expected_message = "Pritesh-30 edited [issue #6](https://github.com/Pritesh-30/test-repo/issues/6):\n\n~~~ quote\nThe body of the issue is edited.\n~~~"
+        self.check_webhook("issues__edited_body", expected_topic_name, expected_message)
+
+    def test_issues_edited_title(self) -> None:
+        long_title = "This is a very long issue title used to exceed Zulip's maximum topic length so that truncation logic is exercised when the issue title is edited via the GitHub webhook"
+        expected_topic_name = truncate_topic(f"test-repo / issue #6 {long_title}")
+        expected_message = "Pritesh-30 edited [issue #6](https://github.com/Pritesh-30/test-repo/issues/6):\n\n~~~ quote\nThe body of the issue is edited.\n~~~"
+        self.check_webhook("issues__edited_title", expected_topic_name, expected_message)
 
     def test_issue_comment_msg(self) -> None:
         expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"

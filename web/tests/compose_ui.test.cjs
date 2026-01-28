@@ -293,6 +293,15 @@ run_test("quote_message", ({override, override_rewire}) => {
         success_function = opts.success;
     });
 
+    function run_success_callback() {
+        success_function({
+            message: {
+                content: quote_text,
+                content_type: "text/x-markdown",
+            },
+        });
+    }
+
     // zjquery does not simulate caret handling, so we provide
     // our own versions of val() and caret()
     let textarea_val = "";
@@ -370,10 +379,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     override_with_quote_text(quote_text);
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
     compose_reply.quote_message({message_id: 100});
-
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 
     reset_test_state();
 
@@ -388,9 +394,7 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     quote_text = "Testing with caret initially positioned at 0.";
     override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 
     override_rewire(compose_reply, "respond_to_message", () => {
         // Reset compose state to replicate the re-opening of compose-box.
@@ -410,9 +414,7 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     quote_text = "Testing with compose-box closed initially.";
     override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 
     reset_test_state();
 
@@ -425,9 +427,7 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     quote_text = "Testing with compose-box containing whitespaces and newlines only.";
     override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 
     reset_test_state();
 
@@ -445,9 +445,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     assert.ok(new_message);
 
     override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 
     reset_test_state();
 
@@ -462,9 +460,7 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     quote_text = "Testing with caret on a new line between 2 lines of text.";
     override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 
     reset_test_state();
 
@@ -479,9 +475,7 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     quote_text = "Testing with caret on a new line between many empty newlines.";
     override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 });
 
 run_test("set_compose_box_top", () => {

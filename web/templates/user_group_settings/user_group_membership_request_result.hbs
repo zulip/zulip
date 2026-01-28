@@ -11,17 +11,17 @@
         {{/if}}
     {{else}}
         {{#if (not total_member_count_exceeds_five)}}
-            {{#if addition_success_messages.newly_added_members_message_html}}
-                {{t "Added:" }} {{{addition_success_messages.newly_added_members_message_html}}}.&nbsp;
+            {{#if newly_added_member_count}}
+                {{t "Added:" }} {{> member_links members=additions.newly_added_members}}.&nbsp;
             {{/if}}
-            {{#if addition_success_messages.already_added_members_message_html}}
-                {{t "Already a member:"}} {{{addition_success_messages.already_added_members_message_html}}}.
+            {{#if already_added_member_count}}
+                {{t "Already a member:"}} {{> member_links members=additions.already_added_members}}.
             {{/if}}
-            {{#if addition_success_messages.ignored_deactivated_users_message_html}}
-                {{t "Ignored deactivated users:"}} {{{addition_success_messages.ignored_deactivated_users_message_html}}}.
+            {{#if ignored_deactivated_users_count}}
+                {{t "Ignored deactivated users:"}} {{> member_links members=additions.ignored_deactivated_users}}.
             {{/if}}
-            {{#if addition_success_messages.ignored_deactivated_groups_message_html}}
-                {{t "Ignored deactivated groups:"}} {{{addition_success_messages.ignored_deactivated_groups_message_html}}}.
+            {{#if ignored_deactivated_groups_count}}
+                {{t "Ignored deactivated groups:"}} {{> member_links members=additions.ignored_deactivated_groups}}.
             {{/if}}
         {{else}}
             {{#if newly_added_member_count}}

@@ -240,9 +240,9 @@ function set_video_chat_provider_dropdown(): void {
     set_jitsi_server_url_dropdown();
 }
 
-function set_gif_rating_dropdown(): void {
-    const rating_id = realm.realm_giphy_rating;
-    $("#id_realm_giphy_rating").val(rating_id);
+function set_gif_rating_policy_dropdown(): void {
+    const rating_id = realm.realm_gif_rating_policy;
+    $("#id_realm_gif_rating_policy").val(rating_id);
 }
 
 function update_message_edit_sub_settings(is_checked: boolean): void {
@@ -412,7 +412,7 @@ function update_view_welcome_bot_custom_message_button_status(
 ): void {
     $("#view_welcome_bot_custom_message").remove();
     const args = {
-        attention: is_error ? "borderless" : "quiet",
+        variant: is_error ? "text" : "subtle",
         intent: is_error ? "danger" : "success",
         label: is_error
             ? $t({defaultMessage: "Error sending message"})
@@ -775,7 +775,7 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
         case "notification_sound":
             assert(typeof property_value === "string");
             audible_notifications.update_notification_sound_source(
-                $("audio#realm-default-notification-sound-audio"),
+                "realm-default-notification-sound-audio",
                 {
                     notification_sound: property_value,
                 },
@@ -929,6 +929,8 @@ export function deactivate_organization(e: JQuery.Event): void {
     }
 
     function delete_data_in_text(): string {
+        const $custom_deletion_time_input = $<HTMLInputElement>("input#custom-deletion-time-input");
+        $custom_deletion_time_input.removeClass("invalid-input");
         const $delete_in = $<HTMLSelectOneElement>("select:not([multiple])#delete-realm-data-in");
         const delete_data_value = $delete_in.val()!;
 
@@ -939,14 +941,16 @@ export function deactivate_organization(e: JQuery.Event): void {
         let time_in_minutes: number;
         if (delete_data_value === "custom") {
             if (!util.validate_custom_time_input(custom_deletion_time_input)) {
-                return $t({defaultMessage: "Invalid custom time"});
+                $custom_deletion_time_input.addClass("invalid-input");
+                return "";
             }
             time_in_minutes = util.get_custom_time_in_minutes(
                 custom_deletion_time_unit,
                 custom_deletion_time_input,
             );
             if (!is_valid_time_period(time_in_minutes)) {
-                return $t({defaultMessage: "Invalid custom time"});
+                $custom_deletion_time_input.addClass("invalid-input");
+                return "";
             }
         } else {
             // These options were already filtered for is_valid_time_period.
@@ -1531,7 +1535,7 @@ export function build_page(): void {
 
     set_realm_waiting_period_setting();
     set_video_chat_provider_dropdown();
-    set_gif_rating_dropdown();
+    set_gif_rating_policy_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_move_limit_setting("realm_move_messages_within_stream_limit_seconds");
     set_msg_move_limit_setting("realm_move_messages_between_streams_limit_seconds");

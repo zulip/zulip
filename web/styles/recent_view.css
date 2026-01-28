@@ -1,6 +1,5 @@
 .recent_view_container {
     padding: 0;
-    border-radius: 4px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -15,6 +14,7 @@
     display: flex;
     flex-direction: column;
     border: 0;
+    background-color: var(--color-background);
 }
 
 #recent_view_table .table,
@@ -24,6 +24,13 @@
 
     border-spacing: 0;
     width: 100%;
+}
+
+#recent-view-content-table {
+    border: 1px solid var(--color-border-recent-view-table);
+    border-top: none;
+    border-radius: 0 0 5px 5px;
+    overflow: hidden;
 }
 
 #recent_view {
@@ -36,7 +43,6 @@
     & td {
         vertical-align: middle;
         padding: 3px 8px;
-        border-top: 1px solid var(--color-border-recent-view-row);
     }
 
     .recent_view_focusable {
@@ -92,10 +98,6 @@
     & a {
         color: var(--color-recent-view-link);
         text-decoration: none;
-
-        &:hover {
-            color: var(--color-recent-view-link-hover);
-        }
     }
 
     .white-space-preserve-wrap {
@@ -123,6 +125,10 @@
 
     .table_fix_head {
         padding: 0 !important;
+        border: 1px solid var(--color-border-recent-view-table);
+        border-bottom: none;
+        border-radius: 5px 5px 0 0;
+        overflow: hidden;
     }
 
     .recent-view-load-more-container {
@@ -142,11 +148,6 @@
         path {
             fill: var(--color-recent-view-loading-spinner);
         }
-    }
-
-    .table_fix_head table th {
-        padding: 8px;
-        text-align: left;
     }
 
     #recent_view_filter_buttons {
@@ -395,22 +396,36 @@
     .last_msg_time {
         float: left;
         margin-right: 5px;
+
+        .last-msg-link {
+            color: var(--color-text-recent-view-last-msg-time);
+        }
     }
 
     & thead th {
+        text-align: left;
+        padding: 0.25em 0 0.25em 0.5em; /* 4px at 16px/1em */
         background-color: var(--color-background-recent-view-table-thead-th);
-        color: inherit;
-        border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
-        border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
+        overflow: hidden;
+        color: var(--color-text-recent-view-table-thead-th);
+        font-size: 0.9375em; /* 15px at 16px/1em */
+        text-transform: uppercase;
+        font-weight: 600;
+        line-height: 1.25em; /* 20px at 16px/1em */
         z-index: 1;
 
+        .recent-view-header-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
         .table-sortable-arrow {
-            /* Sub alignment works perfectly in this context,
-               where the table header is a text node. */
-            vertical-align: sub;
+            align-self: center;
+            font-size: 1.0667em; /* 16px at 15px/1em */
             transform: rotate(180deg);
             opacity: 0;
             transition: opacity 100ms ease-out;
+            color: var(--color-arrow-recent-view-table-thead-th);
         }
 
         &.descend .table-sortable-arrow {
@@ -418,7 +433,7 @@
         }
 
         &:not(.active)[data-sort]:hover .table-sortable-arrow {
-            opacity: 0.3;
+            opacity: 0.7;
         }
 
         &.active .table-sortable-arrow {
@@ -452,11 +467,6 @@
         width: 7%;
         /* 64px at 20px/1em */
         min-width: 3.2em;
-
-        .zulip-icon-unread {
-            position: relative;
-            top: 3px;
-        }
     }
 
     .recent_topic_users,

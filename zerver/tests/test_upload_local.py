@@ -1,6 +1,6 @@
 import os
 import re
-from io import BytesIO, StringIO
+from io import BytesIO
 from urllib.parse import urlsplit
 
 import pyvips
@@ -10,7 +10,12 @@ import zerver.lib.upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, read_test_image_file
-from zerver.lib.thumbnail import DEFAULT_EMOJI_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
+from zerver.lib.thumbnail import (
+    DEFAULT_EMOJI_SIZE,
+    MEDIUM_AVATAR_SIZE,
+    ThumbnailFormat,
+    resize_avatar,
+)
 from zerver.lib.upload import (
     all_message_attachments,
     attachment_source,
@@ -87,20 +92,36 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_delete_message_attachment(self) -> None:
         self.login("hamlet")
-        fp = StringIO("zulip!")
-        fp.name = "zulip.txt"
-        result = self.client_post("/json/user_uploads", {"file": fp})
 
-        response_dict = self.assert_json_success(result)
-        self.assertEqual(response_dict["uri"], response_dict["url"])
-        path_id = re.sub(r"/user_uploads/", "", response_dict["url"])
+        # Upload an image which will generate multiple thumbnails
+        webp_anim = ThumbnailFormat("webp", 100, 75, animated=True)
+        webp_still = ThumbnailFormat("webp", 100, 75, animated=False)
+        with (
+            self.thumbnail_formats(webp_anim, webp_still),
+            self.captureOnCommitCallbacks(execute=True),
+            get_test_image_file("animated_img.gif") as image_file,
+        ):
+            json_response = self.assert_json_success(
+                self.client_post("/json/user_uploads", {"file": image_file})
+            )
+            path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+            # Exit the block, triggering the thumbnailing worker
 
         assert settings.LOCAL_FILES_DIR is not None
         file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
+        thumbnail_base = os.path.join(settings.LOCAL_FILES_DIR, "thumbnail", path_id)
+        thumbnail_anim = os.path.join(thumbnail_base, str(webp_anim))
+        thumbnail_still = os.path.join(thumbnail_base, str(webp_still))
         self.assertTrue(os.path.isfile(file_path))
+        self.assertTrue(os.path.isdir(thumbnail_base))
+        self.assertTrue(os.path.isfile(thumbnail_anim))
+        self.assertTrue(os.path.isfile(thumbnail_still))
 
-        self.assertTrue(delete_message_attachment(path_id))
+        delete_message_attachment(path_id)
         self.assertFalse(os.path.isfile(file_path))
+        self.assertFalse(os.path.isdir(thumbnail_base))
+        self.assertFalse(os.path.isfile(thumbnail_anim))
+        self.assertFalse(os.path.isfile(thumbnail_still))
 
     def test_delete_message_attachments(self) -> None:
         assert settings.LOCAL_UPLOADS_DIR is not None
@@ -275,6 +296,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         url = upload_export_tarball(user_profile.realm, tarball_path)
         self.assertTrue(os.path.isfile(os.path.join(settings.LOCAL_AVATARS_DIR, tarball_path)))
 
+        parsed_url = urlsplit(url)
         result = re.search(re.compile(r"([A-Za-z0-9\-_]{24})"), url)
         if result is not None:
             random_name = result.group(1)
@@ -282,11 +304,18 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(expected_url, url)
 
         # Delete the tarball.
-        with self.assertLogs(level="WARNING") as warn_log:
-            self.assertIsNone(delete_export_tarball("/not_a_file"))
-        self.assertEqual(
-            warn_log.output,
-            ["WARNING:root:not_a_file does not exist. Its entry in the database will be removed."],
+        self.assertTrue(
+            os.path.isfile(
+                os.path.join(
+                    settings.LOCAL_AVATARS_DIR, parsed_url.path.removeprefix("/user_avatars/")
+                )
+            )
         )
-        path_id = urlsplit(url).path
-        self.assertEqual(delete_export_tarball(path_id), path_id)
+        delete_export_tarball(parsed_url.path)
+        self.assertFalse(
+            os.path.isfile(
+                os.path.join(
+                    settings.LOCAL_AVATARS_DIR, parsed_url.path.removeprefix("/user_avatars/")
+                )
+            )
+        )

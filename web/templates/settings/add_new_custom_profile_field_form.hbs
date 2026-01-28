@@ -29,7 +29,7 @@
               label=(t "Alphabetize choices")
               custom_classes="alphabetize-choices-button"
               intent="neutral"
-              attention="quiet"
+              variant="subtle"
               }}
         </div>
         <div class="input-group" id="custom_external_account_url_pattern">
@@ -55,6 +55,12 @@
           setting_name="editable_by_user"
           is_checked=true
           label=(t "Users can edit this field for their own account")
+          }}
+        {{> settings_checkbox
+          prefix="profile_field_"
+          setting_name="use_for_user_matching"
+          is_checked=false
+          label=(t "Use in @-mention suggestions")
           }}
     </div>
 </form>

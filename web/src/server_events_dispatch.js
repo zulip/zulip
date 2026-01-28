@@ -177,9 +177,9 @@ export function dispatch_normal_event(event) {
             // which returns all the unread messages out of a given list.
             // So double marking something as read would not occur
             unread_ops.process_read_messages_event(msg_ids);
+            emoji_frequency.update_emoji_frequency_on_messages_deletion(msg_ids);
             // This methods updates message_list too and since stream_topic_history relies on it
             // this method should be called first.
-            emoji_frequency.update_emoji_frequency_on_messages_deletion(msg_ids);
             message_events.remove_messages(msg_ids);
 
             if (event.message_type === "stream") {
@@ -337,7 +337,7 @@ export function dispatch_normal_event(event) {
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
                 jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
-                giphy_rating: gif_state.update_gif_rating,
+                gif_rating_policy: gif_state.update_gif_icon_visibility,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
                 welcome_message_custom_text: noop,
@@ -588,7 +588,7 @@ export function dispatch_normal_event(event) {
 
             if (event.property === "notification_sound") {
                 audible_notifications.update_notification_sound_source(
-                    $("audio#realm-default-notification-sound-audio"),
+                    "realm-default-notification-sound-audio",
                     realm_user_settings_defaults,
                 );
             }
@@ -890,7 +890,7 @@ export function dispatch_normal_event(event) {
                 if (notification_name === "notification_sound") {
                     // Change the sound source with the new page `notification_sound`.
                     audible_notifications.update_notification_sound_source(
-                        $("audio#user-notification-sound-audio"),
+                        "user-notification-sound-audio",
                         user_settings,
                     );
                 }
@@ -975,9 +975,7 @@ export function dispatch_normal_event(event) {
                 // under settings, so we set the hash to the previous
                 // value of the home view.
                 if (!browser_history.state.hash_before_overlay && overlays.settings_open()) {
-                    browser_history.state.hash_before_overlay =
-                        "#" +
-                        (original_home_view === "recent_topics" ? "recent" : original_home_view);
+                    browser_history.state.hash_before_overlay = "#" + original_home_view;
                 }
             }
             if (event.property === "twenty_four_hour_time") {

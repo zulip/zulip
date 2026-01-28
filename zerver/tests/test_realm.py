@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import random
@@ -43,12 +44,17 @@ from zerver.actions.realm_settings import (
 )
 from zerver.actions.streams import do_deactivate_stream, merge_streams
 from zerver.actions.user_groups import check_add_user_group
+from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import activate_push_notification_service
-from zerver.lib.upload import delete_message_attachments, upload_message_attachment
+from zerver.lib.test_helpers import activate_push_notification_service, get_test_image_file
+from zerver.lib.upload import (
+    delete_message_attachments,
+    upload_avatar_image,
+    upload_message_attachment,
+)
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -331,6 +337,11 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, desdemona)
 
+        placeholder_realm = get_realm("zulip")
+        self.assertTrue(placeholder_realm.deactivated)
+        self.assertEqual(placeholder_realm.deactivated_redirect, realm.url)
+        self.assertIsNotNone(placeholder_realm.scheduled_deletion_date)
+
     def test_realm_name_length(self) -> None:
         new_name = "A" * (Realm.MAX_REALM_NAME_LENGTH + 1)
         data = dict(name=new_name)
@@ -409,6 +420,7 @@ class RealmTest(ZulipTestCase):
         placeholder_realm = get_realm("zulip")
         self.assertTrue(placeholder_realm.deactivated)
         self.assertEqual(placeholder_realm.deactivated_redirect, user.realm.url)
+        self.assertIsNone(placeholder_realm.scheduled_deletion_date)
 
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED, acting_user=iago
@@ -564,16 +576,21 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(confirmation.realm, realm)
 
     def test_realm_deactivation_demo_organization_owner_email_not_configured(self) -> None:
-        demo_name = "demo deactivate no email"
-        result = self.submit_demo_creation_form(demo_name)
-        realm = Realm.objects.filter(name=demo_name).latest("date_created")
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].startswith(
                 f"http://{realm.string_id}.testserver/accounts/login/subdomain"
             )
         )
-        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
 
         result = self.client_get(result["Location"], subdomain=realm.string_id)
         self.assertEqual(result.status_code, 302)
@@ -605,16 +622,21 @@ class RealmTest(ZulipTestCase):
         self.assert_logged_in_user_id(None)
 
     def test_realm_deactivation_demo_organization_owner_email_configured(self) -> None:
-        demo_name = "demo deactivate with email"
-        result = self.submit_demo_creation_form(demo_name)
-        realm = Realm.objects.filter(name=demo_name).latest("date_created")
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].startswith(
                 f"http://{realm.string_id}.testserver/accounts/login/subdomain"
             )
         )
-        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
 
         result = self.client_get(result["Location"], subdomain=realm.string_id)
         self.assertEqual(result.status_code, 302)
@@ -647,10 +669,10 @@ class RealmTest(ZulipTestCase):
         self.assert_length(mail.outbox, 1)
         self.assert_length(mail.outbox, 1)
         self.assertIn(
-            f"Your Zulip organization {demo_name} has been deactivated", mail.outbox[0].subject
+            f"Your Zulip organization {realm.name} has been deactivated", mail.outbox[0].subject
         )
         self.assertIn(
-            f"You have deactivated your Zulip demo organization, {demo_name},", mail.outbox[0].body
+            f"You have deactivated your Zulip demo organization, {realm.name},", mail.outbox[0].body
         )
         self.assert_logged_in_user_id(None)
 
@@ -1130,7 +1152,7 @@ class RealmTest(ZulipTestCase):
         invalid_values = dict(
             message_retention_days=10,
             video_chat_provider=10,
-            giphy_rating=10,
+            gif_rating_policy=10,
             waiting_period_threshold=-10,
             digest_weekday=10,
             message_content_delete_limit_seconds=-10,
@@ -2197,9 +2219,9 @@ class RealmAPITest(ZulipTestCase):
                 Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
             ],
             jitsi_server_url=["https://example.jit.si"],
-            giphy_rating=[
-                Realm.GIF_RATING_OPTIONS["g"]["id"],
-                Realm.GIF_RATING_OPTIONS["r"]["id"],
+            gif_rating_policy=[
+                Realm.GIF_RATING_POLICY_OPTIONS["g"]["id"],
+                Realm.GIF_RATING_POLICY_OPTIONS["r"]["id"],
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             message_content_edit_limit_seconds=[1000, 1100, 1200],
@@ -2616,7 +2638,7 @@ class RealmAPITest(ZulipTestCase):
             web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_COMPACT],
             web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_COMPACT],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
-            web_home_view=["recent_topics", "inbox", "all_messages"],
+            web_home_view=["recent", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
@@ -2977,6 +2999,19 @@ class ScrubRealmTest(ZulipTestCase):
             self.assertTrue(os.path.isfile(file_path))
             file_paths.append(file_path)
 
+        for i in range(1, 5):
+            if i == 3:
+                do_change_avatar_fields(iago, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=iago)
+                continue
+            with get_test_image_file("img.png") as img_file:
+                upload_avatar_image(img_file, iago)
+                do_change_avatar_fields(iago, UserProfile.AVATAR_FROM_USER, acting_user=iago)
+        avatar_files = [
+            *glob.glob(f"{settings.LOCAL_AVATARS_DIR}/{zulip.id}/*.original"),
+            *glob.glob(f"{settings.LOCAL_AVATARS_DIR}/{zulip.id}/*.png"),
+        ]
+        self.assert_length(avatar_files, 3 * 3)  # i=(1,2,4) * (original, medium, large)
+
         CustomProfileField.objects.create(realm=lear)
 
         self.assertEqual(
@@ -3002,8 +3037,7 @@ class ScrubRealmTest(ZulipTestCase):
 
         self.assertNotEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
 
-        with self.assertLogs(level="WARNING"):
-            do_scrub_realm(zulip, acting_user=None)
+        do_scrub_realm(zulip, acting_user=None)
 
         self.assertEqual(
             Message.objects.filter(
@@ -3035,6 +3069,9 @@ class ScrubRealmTest(ZulipTestCase):
         self.assertFalse(os.path.isfile(file_paths[2]))
         self.assertTrue(os.path.isfile(file_paths[3]))
         self.assertTrue(os.path.isfile(file_paths[4]))
+
+        for avatar_file in avatar_files:
+            self.assertFalse(os.path.isfile(avatar_file))
 
         self.assertEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
         self.assertNotEqual(CustomProfileField.objects.filter(realm=lear).count(), 0)

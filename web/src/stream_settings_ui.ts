@@ -7,6 +7,7 @@ import render_stream_creation_confirmation_banner from "../templates/modal_banne
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
+import render_stream_sorter_toggle_label from "../templates/stream_settings/stream_sorter_toggle_label.hbs";
 
 import type {Banner} from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
@@ -64,7 +65,7 @@ const STREAM_INFO_BANNER: Banner = {
         {
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "banner-external-link",
-            attention: "quiet",
+            variant: "subtle",
         },
     ],
     close_button: false,
@@ -1010,21 +1011,24 @@ function setup_page(callback: () => void): void {
         const sort_toggler = components.toggle({
             values: [
                 {
-                    label_html: `<i class="fa fa-sort-alpha-asc" data-tippy-content="${$t({
-                        defaultMessage: "Sort by name",
-                    })}"></i>`,
+                    label_html: render_stream_sorter_toggle_label({
+                        icon_class: "fa fa-sort-alpha-asc",
+                        tooltip: $t({defaultMessage: "Sort by name"}),
+                    }),
                     key: "by-stream-name",
                 },
                 {
-                    label_html: `<i class="fa fa-user-o" data-tippy-content="${$t({
-                        defaultMessage: "Sort by number of subscribers",
-                    })}"></i>`,
+                    label_html: render_stream_sorter_toggle_label({
+                        icon_class: "fa fa-user-o",
+                        tooltip: $t({defaultMessage: "Sort by number of subscribers"}),
+                    }),
                     key: "by-subscriber-count",
                 },
                 {
-                    label_html: `<i class="fa fa-bar-chart" data-tippy-content="${$t({
-                        defaultMessage: "Sort by estimated weekly traffic",
-                    })}"></i>`,
+                    label_html: render_stream_sorter_toggle_label({
+                        icon_class: "fa fa-bar-chart",
+                        tooltip: $t({defaultMessage: "Sort by estimated weekly traffic"}),
+                    }),
                     key: "by-weekly-traffic",
                 },
             ],

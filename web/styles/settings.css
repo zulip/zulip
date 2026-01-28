@@ -1705,6 +1705,11 @@ label.preferences-radio-choice-label {
         }
     }
 
+    #edit-user-form-error:has(.banner),
+    #bot-edit-form-error:has(.banner) {
+        margin-bottom: 10px;
+    }
+
     & input,
     input[type="url"],
     .modal-textarea,
@@ -2323,6 +2328,7 @@ label.preferences-radio-choice-label {
         width: 50%;
     }
 
+    .topic-to-use-wrapper .dropdown_widget_value,
     .integration-url-name-wrapper .dropdown_widget_value,
     .integration-url-stream-wrapper .dropdown_widget_value {
         white-space: nowrap;
@@ -2330,6 +2336,7 @@ label.preferences-radio-choice-label {
         text-overflow: ellipsis;
     }
 
+    .topic-to-use-wrapper .dropdown-widget-button,
     .integration-url-stream-wrapper .dropdown-widget-button {
         width: 75%;
     }

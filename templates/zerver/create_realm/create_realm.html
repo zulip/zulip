@@ -12,14 +12,22 @@
     <div class="app-main register-page-container new-style flex full-page">
 
         <div class="register-form" id="new-realm-creation">
-            <div class="lead">
-                <h1 class="get-started">{{ _("Create a new Zulip organization") }}</h1>
+            <div class="registration-lead-section">
+                <h1 class="registration-lead-title">{{ _("Create a new Zulip organization") }}</h1>
+                {% if corporate_enabled %}
+                <p class="registration-lead-subtitle">
+                    {% trans %}
+                    Or <a class="registration-lead-subtitle-link" href="{{ root_domain_url }}/new/demo/">create a demo organization</a> — no email required!
+                    {% endtrans %}
+                </p>
+                {% endif %}
             </div>
             <div class="white-box">
                 <form class="form-inline" id="create_realm" name="email_form"
                   action="{{ current_url() }}" method="post">
                     {{ csrf_input }}
 
+                    {% include 'zerver/create_realm/realm_creation_name_form_field.html' %}
                     {% include 'zerver/create_realm/realm_creation_base_form_fields.html' %}
                     {% include 'zerver/create_realm/realm_creation_subdomain_form_field.html' %}
                     {% if is_realm_import_enabled %}

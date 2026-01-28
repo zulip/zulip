@@ -648,6 +648,9 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         with self.assertRaises(Message.DoesNotExist):
             move_messages_to_archive(message_ids=msg_ids, realm=self.sender.realm)
 
+    def test_archiving_noop(self) -> None:
+        move_messages_to_archive(message_ids=[], realm=get_realm("zulip"))
+
     def test_archiving_messages_with_attachment(self) -> None:
         self._create_attachments()
         realm = get_realm("zulip")
@@ -1124,7 +1127,7 @@ class TestDoDeleteMessages(ZulipTestCase):
         message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(24):
             do_delete_messages(realm, messages, acting_user=None)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
 

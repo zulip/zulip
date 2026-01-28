@@ -156,6 +156,7 @@ export default defineConfig({
             components: {
                 Footer: "./src/components/Footer.astro",
                 Head: "./src/components/Head.astro",
+                Sidebar: "./src/components/Sidebar.astro",
             },
             pagination: false,
             routeMiddleware: "./src/route_data.ts",
@@ -222,6 +223,8 @@ export default defineConfig({
                 {
                     label: "Getting started",
                     items: [
+                        "create-an-organization",
+                        "demo-organizations",
                         "join-a-zulip-organization",
                         "set-up-your-account",
                         "introduction-to-topics",
@@ -666,6 +669,13 @@ export default defineConfig({
                         },
                         "view-your-bots",
                         "view-all-bots-in-your-organization",
+                        "non-webhook-integrations",
+                        "writing-bots",
+                        "interactive-bots-api",
+                        "writing-tests-for-interactive-bots",
+                        "running-bots",
+                        "deploying-bots",
+                        "outgoing-webhooks",
                     ],
                 },
                 {

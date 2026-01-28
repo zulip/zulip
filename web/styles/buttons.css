@@ -10,8 +10,8 @@
     font-weight: 500;
     letter-spacing: 0.02ch;
     padding: 0.25em 0.625em;
-    color: var(--color-text-neutral-quiet-action-button);
-    background-color: var(--color-background-neutral-quiet-action-button);
+    color: var(--color-text-neutral-subtle-action-button);
+    background-color: var(--color-background-neutral-subtle-action-button);
     border-radius: 4px;
     white-space: nowrap;
     user-select: none;
@@ -24,7 +24,7 @@
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-neutral-quiet-action-button-hover
+            --color-background-neutral-subtle-action-button-hover
         );
         transition: 0.1s ease-out;
         transition-property: background-color, clip-path;
@@ -32,7 +32,7 @@
 
     &:active {
         background-color: var(
-            --color-background-neutral-quiet-action-button-active
+            --color-background-neutral-subtle-action-button-active
         );
         clip-path: inset(1px round 4px);
     }
@@ -81,337 +81,335 @@
 }
 
 /* Action buttons -- Neutral Intent */
-.action-button-primary-neutral {
-    color: var(--color-text-neutral-primary-action-button);
-    background-color: var(--color-background-neutral-primary-action-button);
+.action-button-solid-neutral {
+    color: var(--color-text-neutral-solid-action-button);
+    background-color: var(--color-background-neutral-solid-action-button);
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-neutral-primary-action-button-hover
+            --color-background-neutral-solid-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-neutral-primary-action-button-active
+            --color-background-neutral-solid-action-button-active
         );
     }
 }
 
-.action-button-quiet-neutral {
-    color: var(--color-text-neutral-quiet-action-button);
-    background-color: var(--color-background-neutral-quiet-action-button);
+.action-button-subtle-neutral {
+    color: var(--color-text-neutral-subtle-action-button);
+    background-color: var(--color-background-neutral-subtle-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-neutral-quiet-action-button-hover
+            --color-background-neutral-subtle-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-neutral-quiet-action-button-active
+            --color-background-neutral-subtle-action-button-active
         );
     }
 }
 
-.action-button-borderless-neutral {
-    color: var(--color-text-neutral-borderless-action-button);
+.action-button-text-neutral {
+    color: var(--color-text-neutral-text-action-button);
     background-color: transparent;
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-neutral-borderless-action-button-hover
+            --color-background-neutral-text-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-neutral-borderless-action-button-active
+            --color-background-neutral-text-action-button-active
         );
     }
 }
 
 /* Action buttons -- Brand Intent */
-.action-button-primary-brand {
-    color: var(--color-text-brand-primary-action-button);
-    background-color: var(--color-background-brand-primary-action-button);
+.action-button-solid-brand {
+    color: var(--color-text-brand-solid-action-button);
+    background-color: var(--color-background-brand-solid-action-button);
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-brand-primary-action-button-hover
+            --color-background-brand-solid-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-brand-primary-action-button-active
+            --color-background-brand-solid-action-button-active
         );
     }
 }
 
-.action-button-quiet-brand {
-    color: var(--color-text-brand-quiet-action-button);
-    background-color: var(--color-background-brand-quiet-action-button);
+.action-button-subtle-brand {
+    color: var(--color-text-brand-subtle-action-button);
+    background-color: var(--color-background-brand-subtle-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-brand-quiet-action-button-hover
+            --color-background-brand-subtle-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-brand-quiet-action-button-active
+            --color-background-brand-subtle-action-button-active
         );
     }
 }
 
-.action-button-borderless-brand {
-    color: var(--color-text-brand-borderless-action-button);
+.action-button-text-brand {
+    color: var(--color-text-brand-text-action-button);
     background-color: transparent;
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-brand-borderless-action-button-hover
+            --color-background-brand-text-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-brand-borderless-action-button-active
+            --color-background-brand-text-action-button-active
         );
     }
 }
 
 /* Action buttons -- Info Intent */
-.action-button-primary-info {
-    color: var(--color-text-info-primary-action-button);
-    background-color: var(--color-background-info-primary-action-button);
+.action-button-solid-info {
+    color: var(--color-text-info-solid-action-button);
+    background-color: var(--color-background-info-solid-action-button);
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-info-primary-action-button-hover
+            --color-background-info-solid-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-info-primary-action-button-active
+            --color-background-info-solid-action-button-active
         );
     }
 }
 
-.action-button-quiet-info {
-    color: var(--color-text-info-quiet-action-button);
-    background-color: var(--color-background-info-quiet-action-button);
+.action-button-subtle-info {
+    color: var(--color-text-info-subtle-action-button);
+    background-color: var(--color-background-info-subtle-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-info-quiet-action-button-hover
+            --color-background-info-subtle-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-info-quiet-action-button-active
+            --color-background-info-subtle-action-button-active
         );
     }
 }
 
-.action-button-borderless-info {
-    color: var(--color-text-info-borderless-action-button);
+.action-button-text-info {
+    color: var(--color-text-info-text-action-button);
     background-color: transparent;
 
     &:hover,
     &:focus-visible {
-        background-color: var(
-            --color-background-info-borderless-action-button-hover
-        );
+        background-color: var(--color-background-info-text-action-button-hover);
     }
 
     &:active {
         background-color: var(
-            --color-background-info-borderless-action-button-active
+            --color-background-info-text-action-button-active
         );
     }
 }
 
 /* Action buttons -- Success Intent */
-.action-button-primary-success {
-    color: var(--color-text-success-primary-action-button);
-    background-color: var(--color-background-success-primary-action-button);
+.action-button-solid-success {
+    color: var(--color-text-success-solid-action-button);
+    background-color: var(--color-background-success-solid-action-button);
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-success-primary-action-button-hover
+            --color-background-success-solid-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-success-primary-action-button-active
+            --color-background-success-solid-action-button-active
         );
     }
 }
 
-.action-button-quiet-success {
-    color: var(--color-text-success-quiet-action-button);
-    background-color: var(--color-background-success-quiet-action-button);
+.action-button-subtle-success {
+    color: var(--color-text-success-subtle-action-button);
+    background-color: var(--color-background-success-subtle-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-success-quiet-action-button-hover
+            --color-background-success-subtle-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-success-quiet-action-button-active
+            --color-background-success-subtle-action-button-active
         );
     }
 }
 
-.action-button-borderless-success {
-    color: var(--color-text-success-borderless-action-button);
+.action-button-text-success {
+    color: var(--color-text-success-text-action-button);
     background-color: transparent;
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-success-borderless-action-button-hover
+            --color-background-success-text-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-success-borderless-action-button-active
+            --color-background-success-text-action-button-active
         );
     }
 }
 
 /* Action buttons -- Warning Intent */
-.action-button-primary-warning {
-    color: var(--color-text-warning-primary-action-button);
-    background-color: var(--color-background-warning-primary-action-button);
+.action-button-solid-warning {
+    color: var(--color-text-warning-solid-action-button);
+    background-color: var(--color-background-warning-solid-action-button);
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-warning-primary-action-button-hover
+            --color-background-warning-solid-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-warning-primary-action-button-active
+            --color-background-warning-solid-action-button-active
         );
     }
 }
 
-.action-button-quiet-warning {
-    color: var(--color-text-warning-quiet-action-button);
-    background-color: var(--color-background-warning-quiet-action-button);
+.action-button-subtle-warning {
+    color: var(--color-text-warning-subtle-action-button);
+    background-color: var(--color-background-warning-subtle-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-warning-quiet-action-button-hover
+            --color-background-warning-subtle-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-warning-quiet-action-button-active
+            --color-background-warning-subtle-action-button-active
         );
     }
 }
 
-.action-button-borderless-warning {
-    color: var(--color-text-warning-borderless-action-button);
+.action-button-text-warning {
+    color: var(--color-text-warning-text-action-button);
     background-color: transparent;
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-warning-borderless-action-button-hover
+            --color-background-warning-text-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-warning-borderless-action-button-active
+            --color-background-warning-text-action-button-active
         );
     }
 }
 
 /* Action buttons -- Danger Intent */
-.action-button-primary-danger {
-    color: var(--color-text-danger-primary-action-button);
-    background-color: var(--color-background-danger-primary-action-button);
+.action-button-solid-danger {
+    color: var(--color-text-danger-solid-action-button);
+    background-color: var(--color-background-danger-solid-action-button);
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-danger-primary-action-button-hover
+            --color-background-danger-solid-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-danger-primary-action-button-active
+            --color-background-danger-solid-action-button-active
         );
     }
 }
 
-.action-button-quiet-danger {
-    color: var(--color-text-danger-quiet-action-button);
-    background-color: var(--color-background-danger-quiet-action-button);
+.action-button-subtle-danger {
+    color: var(--color-text-danger-subtle-action-button);
+    background-color: var(--color-background-danger-subtle-action-button);
     box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-danger-quiet-action-button-hover
+            --color-background-danger-subtle-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-danger-quiet-action-button-active
+            --color-background-danger-subtle-action-button-active
         );
     }
 }
 
-.action-button-borderless-danger {
-    color: var(--color-text-danger-borderless-action-button);
+.action-button-text-danger {
+    color: var(--color-text-danger-text-action-button);
     background-color: transparent;
 
     &:hover,
     &:focus-visible {
         background-color: var(
-            --color-background-danger-borderless-action-button-hover
+            --color-background-danger-text-action-button-hover
         );
     }
 
     &:active {
         background-color: var(
-            --color-background-danger-borderless-action-button-active
+            --color-background-danger-text-action-button-active
         );
     }
 }

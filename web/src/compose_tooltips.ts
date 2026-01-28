@@ -97,7 +97,7 @@ export function initialize_compose_tooltips(context: SingletonContext, selector:
 export function initialize(): void {
     tippy.delegate("body", {
         target: [
-            // Ideally this would be `#compose_buttons .button`, but the
+            // Ideally this would be `#legacy-closed-compose-box .button`, but the
             // reply button's actual area is its containing span.
             "#left_bar_compose_mobile_button_big",
             "#new_direct_message_button",
@@ -113,7 +113,7 @@ export function initialize(): void {
         },
     });
     tippy.delegate("body", {
-        target: "#compose_buttons .compose-reply-button-wrapper",
+        target: "#legacy-closed-compose-box .compose-reply-button-wrapper",
         delay: EXTRA_LONG_HOVER_DELAY,
         // Only show on mouseenter since for spectators, clicking on these
         // buttons opens login modal, and Micromodal returns focus to the
@@ -172,7 +172,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#compose_buttons .compose_new_conversation_button",
+        target: "#legacy-closed-compose-box .compose_new_conversation_button",
         delay: EXTRA_LONG_HOVER_DELAY,
         // Only show on mouseenter since for spectators, clicking on these
         // buttons opens login modal, and Micromodal returns focus to the

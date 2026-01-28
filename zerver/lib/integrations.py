@@ -167,6 +167,7 @@ class Integration:
         display_name: str | None = None,
         doc: str | None = None,
         legacy: bool = False,
+        legacy_names: list[str] | None = None,
         config_options: Sequence[WebhookConfigOption] = [],
         url_options: Sequence[WebhookUrlOption] = [],
     ) -> None:
@@ -337,6 +338,7 @@ class IncomingWebhookIntegration(Integration):
         display_name: str | None = None,
         doc: str | None = None,
         legacy: bool = False,
+        legacy_names: list[str] | None = None,
         config_options: Sequence[WebhookConfigOption] = [],
         url_options: Sequence[WebhookUrlOption] = [],
         dir_name: str | None = None,
@@ -368,6 +370,12 @@ class IncomingWebhookIntegration(Integration):
             url = self.DEFAULT_URL.format(name=name)
         self.url = url
 
+        self.legacy_names = legacy_names or []
+        self.urls = [url]
+        if legacy_names is not None:
+            for legacy_name in legacy_names:
+                self.urls.append(self.DEFAULT_URL.format(name=legacy_name))
+
         if doc is None:
             doc = self.DEFAULT_DOC_PATH.format(name=name)
         self.doc = doc
@@ -383,8 +391,8 @@ class IncomingWebhookIntegration(Integration):
         return function(request)
 
     @property
-    def url_object(self) -> URLPattern:
-        return path(self.url, self.view)
+    def url_objects(self) -> list[URLPattern]:
+        return [path(url, self.view) for url in self.urls]
 
 
 def split_fixture_path(path: str) -> tuple[str, str]:
@@ -546,7 +554,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         ["version-control"],
         [
             WebhookScreenshotConfig(
-                "issue_created.json",
+                "push.json",
                 "003.png",
                 "bitbucket",
                 bot_name="Bitbucket Bot",
@@ -604,6 +612,19 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     ),
     IncomingWebhookIntegration(
         "dropbox", ["productivity"], [WebhookScreenshotConfig("file_updated.json")]
+    ),
+    IncomingWebhookIntegration(
+        "dropboxsign",
+        ["productivity", "hr"],
+        [
+            WebhookScreenshotConfig(
+                "signatures_signed_by_one_signatory.json",
+                payload_as_query_param=True,
+                payload_param_name="json",
+            )
+        ],
+        display_name="Dropbox Sign",
+        legacy_names=["hellosign"],
     ),
     IncomingWebhookIntegration(
         "errbit", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]
@@ -701,18 +722,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "harbor",
         ["deployment"],
         [WebhookScreenshotConfig("scanning_completed.json")],
-    ),
-    IncomingWebhookIntegration(
-        "hellosign",
-        ["productivity", "hr"],
-        [
-            WebhookScreenshotConfig(
-                "signatures_signed_by_one_signatory.json",
-                payload_as_query_param=True,
-                payload_param_name="json",
-            )
-        ],
-        display_name="HelloSign",
     ),
     IncomingWebhookIntegration(
         "helloworld", ["misc"], [WebhookScreenshotConfig("hello.json")], display_name="Hello World"
@@ -1022,7 +1031,11 @@ OTHER_INTEGRATIONS = [
 ]
 
 PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
-    PythonAPIIntegration("codebase", ["version-control", "project-management"]),
+    PythonAPIIntegration(
+        "codebase",
+        ["version-control", "project-management"],
+        [FixturelessScreenshotConfigOptions(channel="commits")],
+    ),
     PythonAPIIntegration(
         "git", ["version-control"], [FixturelessScreenshotConfigOptions(channel="commits")]
     ),
@@ -1051,9 +1064,16 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
         [FixturelessScreenshotConfigOptions(channel="deployments")],
         display_name="OpenShift",
     ),
-    PythonAPIIntegration("perforce", ["version-control"]),
+    PythonAPIIntegration(
+        "perforce", ["version-control"], [FixturelessScreenshotConfigOptions(channel="commits")]
+    ),
     PythonAPIIntegration("rss", ["communication"], display_name="RSS"),
-    PythonAPIIntegration("svn", ["version-control"], display_name="Subversion"),
+    PythonAPIIntegration(
+        "svn",
+        ["version-control"],
+        [FixturelessScreenshotConfigOptions(channel="commits")],
+        display_name="Subversion",
+    ),
     PythonAPIIntegration("trac", ["project-management"]),
 ]
 

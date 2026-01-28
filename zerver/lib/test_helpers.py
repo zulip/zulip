@@ -41,6 +41,7 @@ from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
 from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.lib.upload.s3 import S3UploadBackend
+from zerver.lib.url_redirects import REDIRECTED_TO_HELP_DOCUMENTATION
 from zerver.models import Client, Message, RealmUserDefault, Subscription, UserMessage, UserProfile
 from zerver.models.clients import clear_client_cache, get_client
 from zerver.models.realms import get_realm
@@ -571,7 +572,13 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             # This endpoint only returns 500 and 404 codes, so it doesn't get picked up
             # by find_pattern above and therefore needs to be exempt.
             "self-hosted-billing/not-configured/",
-            *(webhook.url for webhook in INCOMING_WEBHOOK_INTEGRATIONS if not include_webhooks),
+            *(redirect.old_url.lstrip("/") for redirect in REDIRECTED_TO_HELP_DOCUMENTATION),
+            *(
+                url
+                for webhook in INCOMING_WEBHOOK_INTEGRATIONS
+                for url in webhook.urls
+                if not include_webhooks
+            ),
         }
 
         untested_patterns -= exempt_patterns

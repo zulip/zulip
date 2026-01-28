@@ -74,6 +74,7 @@ def get_custom_welcome_message_string(realm: Realm, welcome_message_custom_text:
 def send_initial_direct_messages_to_user(
     user: UserProfile,
     *,
+    realm_creation: bool = False,
     welcome_message_custom_text: str = "",
 ) -> InitialDirectMessageIDs:
     # We adjust the initial Welcome Bot direct message for education organizations.
@@ -109,14 +110,20 @@ We also have a guide for [moving your organization to Zulip]({organization_setup
 """).format(organization_setup_url="/help/moving-to-zulip")
 
         demo_organization_warning_string = ""
-        # Add extra content about automatic deletion for demo organization owners.
-        if user.is_realm_owner and user.realm.demo_organization_scheduled_deletion_date is not None:
+        # Add extra content about automatic deletion for demo organization creators.
+        if (
+            realm_creation
+            and user.is_realm_owner
+            and user.realm.demo_organization_scheduled_deletion_date is not None
+            and settings.DEMO_ORG_DEADLINE_DAYS is not None
+        ):
             demo_organization_warning_string = _("""
 This [demo organization]({demo_organization_help_url}) will be **automatically
-deleted** in 30 days, unless it's [converted into a permanent
-organization]({convert_demo_organization_help_url}).
+deleted** in {demo_conversion_deadline} days, unless it's [converted into
+a permanent organization]({convert_demo_organization_help_url}).
 """).format(
                 demo_organization_help_url="/help/demo-organizations",
+                demo_conversion_deadline=settings.DEMO_ORG_DEADLINE_DAYS,
                 convert_demo_organization_help_url="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization",
             )
 

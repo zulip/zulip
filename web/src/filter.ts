@@ -76,10 +76,7 @@ function message_in_home(message: Message): boolean {
         return true;
     }
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-    if (
-        page_params.narrow_stream !== undefined &&
-        stream_name.toLowerCase() === page_params.narrow_stream.toLowerCase()
-    ) {
+    if (stream_name.toLowerCase() === page_params.narrow_stream?.toLowerCase()) {
         return true;
     }
 
@@ -602,6 +599,7 @@ export class Filter {
             "is-alerted",
             "is-mentioned",
             "is-dm",
+            "not-is-dm",
             "is-starred",
             "is-unread",
             "is-resolved",
@@ -1112,6 +1110,8 @@ export class Filter {
     }
 
     single_term_type_returns_all_messages_of_conversation(): boolean {
+        // Important: Because of how this is used in is_common_narrow,
+        // every view here requires a custom title in get_title.
         const term_types = this.sorted_term_types();
 
         // "topic" alone cannot guarantee all messages of a conversation because
@@ -1263,6 +1263,8 @@ export class Filter {
                 }
                 case "is-dm":
                     return "/#narrow/is/dm";
+                case "not-is-dm":
+                    return "/#narrow/-is/dm";
                 case "is-starred":
                     return "/#narrow/is/starred";
                 case "is-mentioned":
@@ -1465,6 +1467,8 @@ export class Filter {
                     return $t({defaultMessage: "Mentions"});
                 case "is-dm":
                     return $t({defaultMessage: "Direct message feed"});
+                case "not-is-dm":
+                    return $t({defaultMessage: "Channel messages"});
                 case "is-resolved":
                     return $t({defaultMessage: "Resolved topics"});
                 case "is-followed":

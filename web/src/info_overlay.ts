@@ -3,6 +3,9 @@ import $ from "jquery";
 import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
 import render_search_operator from "../templates/search_operators.hbs";
+import render_status_message_example from "../templates/status_message_example.hbs";
+import render_poll_widget_example from "../templates/widgets/poll_widget_example.hbs";
+import render_todo_widget_example from "../templates/widgets/todo_widget_example.hbs";
 
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";
@@ -155,7 +158,7 @@ def f():
     {
         markdown: `/me ${$t({defaultMessage: "is busy working"})}`,
         // output_html required since /me rendering is not done in Markdown processor.
-        output_html: `<p><span class="sender_name">Iago</span> <span class="status-message">${$t({defaultMessage: "is busy working"})}</span></p>`,
+        output_html: render_status_message_example(),
     },
     {
         markdown: "<time:2023-05-28T13:30:00+05:30>",
@@ -166,32 +169,7 @@ ${$t({defaultMessage: "Milk"})}
 ${$t({defaultMessage: "Tea"})}
 ${$t({defaultMessage: "Coffee"})}`,
         // output_html required since poll rendering is done outside Markdown.
-        output_html: `\
-<div class="poll-widget">
-    <h4 class="poll-question-header">${$t({defaultMessage: "What did you drink this morning?"})}</h4>
-    <i class="fa fa-pencil poll-edit-question"></i>
-    <ul class="poll-widget">
-    <li>
-        <button class="poll-vote">
-            0
-        </button>
-        <span>${$t({defaultMessage: "Milk"})}</span>
-    </li>
-    <li>
-        <button class="poll-vote">
-            0
-        </button>
-        <span>${$t({defaultMessage: "Tea"})}</span>
-    </li>
-    <li>
-        <button class="poll-vote">
-            0
-        </button>
-        <span>${$t({defaultMessage: "Coffee"})}</span>
-    </li>
-    </ul>
-</div>
-`,
+        output_html: render_poll_widget_example(),
     },
     {
         markdown: `/todo ${$t({defaultMessage: "Today's tasks"})}
@@ -199,50 +177,7 @@ ${$t({defaultMessage: "Task 1"})}: ${$t({defaultMessage: "This is the first task
 ${$t({defaultMessage: "Task 2"})}: ${$t({defaultMessage: "This is the second task."})}
 ${$t({defaultMessage: "Last task"})}`,
         // output_html required since todo rendering is done outside Markdown.
-        output_html: `\
-<div class="message_content rendered_markdown">
-    <div class="widget-content">
-        <div class="todo-widget">
-            <h4>${$t({defaultMessage: "Today's tasks"})}</h4>
-            <ul class="todo-widget">
-                <li>
-                    <label class="checkbox">
-                        <div>
-                            <input type="checkbox" class="task" checked="checked">
-                            <span class="rendered-checkbox"></span>
-                        </div>
-                        <div>
-                            <s><strong>${$t({defaultMessage: "Task 1"})}:</strong> ${$t({defaultMessage: "This is the first task."})}</s>
-                        </div>
-                    </label>
-                </li>
-                <li>
-                    <label class="checkbox">
-                        <div>
-                            <input type="checkbox" class="task">
-                            <span class="rendered-checkbox"></span>
-                        </div>
-                        <div>
-                            <strong>${$t({defaultMessage: "Task 2"})}:</strong> ${$t({defaultMessage: "This is the second task."})}
-                        </div>
-                    </label>
-                </li>
-                <li>
-                    <label class="checkbox">
-                        <div>
-                            <input type="checkbox" class="task">
-                            <span class="rendered-checkbox"></span>
-                        </div>
-                        <div>
-                            <strong>${$t({defaultMessage: "Last task"})}</strong>
-                        </div>
-                    </label>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-`,
+        output_html: render_todo_widget_example(),
     },
     {
         markdown: "---",

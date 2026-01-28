@@ -7,18 +7,14 @@
 
 {% block portico_content %}
 
-<div class="password-container flex full-page new-style">
-
-    <!-- wrapper for flex content -->
-    <div>
-        <div class="get-started">
-            <h1>{{ _('Set a new password.') }}</h1>
+<div class="flex full-page new-style">
+    <div id="password-reset-confirm" >
+        <div class="registration-lead-section">
+            <h1 class="registration-lead-title">{{ _('Set a new password') }}</h1>
         </div>
-        <div class="password-reset white-box">
-            <!-- TODO: Ask about meta viewport 1:1 scaling -->
-
+        <div class="white-box">
             {% if validlink %}
-            <form method="post" id="password_reset" autocomplete="off">
+            <form class="form-inline" method="post" id="password_reset" autocomplete="off">
                 {{ csrf_input }}
                 <div class="input-box" id="email-section">
                     <label for="id_email">{{ _("Email") }}</label>
@@ -28,7 +24,7 @@
                 </div>
 
                 <div class="input-box password-div">
-                    <label for="id_new_password1" class="">{{ _('Password') }}</label>
+                    <label for="id_new_password1">{{ _('Password') }}</label>
                     <input id="id_new_password1" class="required" type="password" name="new_password1" autocomplete="new-password"
                       value="{% if form.new_password1.value() %}{{ form.new_password1.value() }}{% endif %}"
                       data-max-length="{{ password_max_length }}"
@@ -41,15 +37,12 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-                <div class="input-box">
-                    <div class="">
-                        <div class="progress" id="pw_strength">
-                            <div class="bar bar-danger" style="width: 10%;"></div>
-                        </div>
-                    </div>
+                <div class="progress" id="pw_strength">
+                    <div class="bar bar-danger" style="width: 10%;"></div>
                 </div>
+
                 <div class="input-box password-div">
-                    <label for="id_new_password2" class="">{{ _('Confirm password') }}</label>
+                    <label for="id_new_password2">{{ _('Confirm password') }}</label>
                     <input id="id_new_password2" class="required" type="password" name="new_password2" autocomplete="off"
                       value="{% if form.new_password2.value() %}{{ form.new_password2.value() }}{% endif %}"
                       maxlength="100" required />
@@ -61,7 +54,8 @@
                     {% endif %}
                 </div>
 
-                {% if form.show_enable_marketing_emails %}
+                {% if corporate_enabled and form.user.realm.demo_organization_scheduled_deletion_date %}
+                {% if not form.user.enable_marketing_emails and (form.user.realm.get_first_human_user() == form.user) %}
                 <div class="input-group">
                     <label for="id_enable_marketing_emails_demo_creator" class="inline-block checkbox marketing_emails_checkbox">
                         <input id="id_enable_marketing_emails_demo_creator" type="checkbox" name="enable_marketing_emails"
@@ -71,16 +65,15 @@
                     </label>
                 </div>
                 {% endif %}
+                {% endif %}
 
-                <div class="input-box m-t-30">
-                    <div class="centered-button">
-                        <button type="submit" class="" value="Submit">Submit</button>
-                    </div>
+                <div class="input-box">
+                    <button type="submit" class="password-reset-button" value="Submit">Submit</button>
                 </div>
             </form>
 
             {% else %}
-            <p>{{ _('Sorry, the link you provided is invalid or has already been used.') }}</p>
+            <p class="password-reset-invalid">{{ _('Sorry, the link you provided is invalid or has already been used.') }}</p>
             {% endif %}
         </div>
     </div>

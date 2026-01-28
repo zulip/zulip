@@ -329,7 +329,7 @@ export function postprocess_content(html: string): string {
         );
 
         if (is_part_of_open_gallery) {
-            // If the the current media element's previous sibling is a gallery,
+            // If the current media element's previous sibling is a gallery,
             // it should be kept with the other media in that gallery.
             gallery_element = elt.previousElementSibling;
         } else {

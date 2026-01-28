@@ -203,7 +203,8 @@
     }
 }
 
-.custom-user-url-field {
+.custom-user-url-field,
+.external-account-text-field {
     display: flex;
     align-items: center;
     /* Maintain space between URL and copy icon. */
@@ -216,7 +217,8 @@
         text-overflow: ellipsis;
     }
 
-    .copy-custom-field-url {
+    .copy-custom-field-url,
+    .copy-external-account-field {
         height: 1em;
     }
 }
@@ -284,6 +286,7 @@
     color: var(--color-text-popover-menu);
     line-height: 1.1;
     margin-top: 4px;
+    width: max-content;
 }
 
 .popover-group-menu-info {
@@ -561,8 +564,8 @@ ul.popover-group-menu-member-list {
             "bottom" auto
             / minmax(0, 1fr);
 
-        .stream_list_info,
-        .user-profile-group-list-alert {
+        .stream_list_info:has(.banner),
+        .user-profile-group-list-alert:has(.banner) {
             grid-area: alert;
             margin-bottom: 8px;
         }
@@ -681,8 +684,7 @@ ul.popover-group-menu-member-list {
     left: -1px;
 }
 
-.giphy-popover,
-.tenor-popover,
+.gif-picker-popover,
 .emoji-popover-root {
     .tippy-content {
         /* We remove the default padding from this container
@@ -725,67 +727,38 @@ ul.popover-group-menu-member-list {
     border: 0;
     padding: 0;
 
-    .popover-filter-input-wrapper {
-        position: relative;
+    .gif-search-container {
+        margin: 4px 4px 2px;
     }
 
-    .clear-search-button {
-        position: absolute;
-        /* The 60% instead of the usual 50% makes this
-        `x` button appear vertically centered inside the
-        input instead of the wrapper. */
-        top: 60%;
-        transform: translateY(-50%);
-        right: 0.5em;
-        font-size: 1em;
-        outline: none;
-        background: none;
-        border: none;
-        padding: 0;
-        opacity: 0.5;
-
-        &:hover {
-            opacity: 1;
-        }
-    }
-
-    .tenor-content {
+    .gif-picker-content {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
         grid-auto-rows: auto;
         gap: 6px;
-    }
 
-    /* Meant to prevent outline overflow when the GIF
+        /* Meant to prevent outline overflow when the GIF
        is focused. */
-    .tenor-content,
-    .giphy-content {
         padding: 0 2px;
     }
 
-    .giphy-gif,
     .gif-picker-gif {
         cursor: pointer;
-    }
-
-    .gif-picker-gif {
         width: 100%;
         height: 100%;
         border-radius: 10px;
         object-fit: cover;
-    }
 
-    .giphy-gif:focus,
-    .gif-picker-gif:focus {
-        /* Blue outline for clear visibility
-         * of which image is in focus.
-         */
-        outline: 2px solid var(--color-selected-gif-in-grid-picker);
-    }
+        &:focus {
+            /* Blue outline for clear visibility
+              * of which image is in focus.
+              */
+            outline: 2px solid var(--color-selected-gif-in-grid-picker);
+        }
 
-    .giphy-gif:hover,
-    .gif-picker-gif:hover {
-        outline: 2px solid var(--color-hovered-gif-in-grid-picker);
+        &:hover {
+            outline: 2px solid var(--color-hovered-gif-in-grid-picker);
+        }
     }
 
     .gif-scrolling-container {

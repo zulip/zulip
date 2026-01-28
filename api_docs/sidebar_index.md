@@ -1,19 +1,3 @@
-## Integrations
-
-* [Overview](/api/integrations-overview)
-* [Incoming webhook integrations](https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html)
-* [Hello world walkthrough](https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-walkthrough.html)
-* [Non-webhook integrations](/api/non-webhook-integrations)
-
-## Interactive bots
-
-* [Writing bots](/api/writing-bots)
-* [Interactive bots API](/api/interactive-bots-api)
-* [Writing tests for bots](/api/writing-tests-for-interactive-bots)
-* [Running bots](/api/running-bots)
-* [Deploying bots](/api/deploying-bots)
-* [Outgoing webhooks](/api/outgoing-webhooks)
-
 ## REST API
 
 * [Overview](/api/rest)

@@ -999,7 +999,7 @@ run_test("realm_user", ({override}) => {
     // manipulation
     assert.deepEqual(added_person, event.person);
 
-    assert.ok(people.is_active_user_for_popover(event.person.user_id));
+    assert.ok(people.is_active_user_or_system_bot(event.person.user_id));
 
     event = event_fixtures.realm_user__update;
     const stub = make_stub();
@@ -1312,12 +1312,12 @@ run_test("user_settings", ({override}) => {
         event = event_fixtures.user_settings__web_home_view_recent_topics;
         override(user_settings, "web_home_view", "all_messages");
         dispatch(event);
-        assert.equal(user_settings.web_home_view, "recent_topics");
+        assert.equal(user_settings.web_home_view, "recent");
     }
 
     {
         event = event_fixtures.user_settings__web_home_view_all_messages;
-        override(user_settings, "web_home_view", "recent_topics");
+        override(user_settings, "web_home_view", "recent");
         dispatch(event);
         assert.equal(user_settings.web_home_view, "all_messages");
     }

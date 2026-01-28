@@ -59,9 +59,6 @@ export function update_page(property: string): void {
 export function set_up(): void {
     assert(realm_default_settings_panel !== undefined);
     const $container = $(realm_default_settings_panel.container);
-    const $notification_sound_elem = $<HTMLAudioElement>(
-        "audio#realm-default-notification-sound-audio",
-    );
     const $notification_sound_dropdown = $container.find<HTMLSelectOneElement>(
         ".setting_notification_sound",
     );
@@ -69,15 +66,18 @@ export function set_up(): void {
     settings_preferences.set_up(realm_default_settings_panel);
 
     audible_notifications.update_notification_sound_source(
-        $notification_sound_elem,
+        "realm-default-notification-sound-audio",
         realm_default_settings_panel.settings_object,
     );
 
     $notification_sound_dropdown.on("change", () => {
         const sound = $notification_sound_dropdown.val()!.toLowerCase();
-        audible_notifications.update_notification_sound_source($notification_sound_elem, {
-            notification_sound: sound,
-        });
+        audible_notifications.update_notification_sound_source(
+            "realm-default-notification-sound-audio",
+            {
+                notification_sound: sound,
+            },
+        );
     });
 
     $container.find(".info-density-button").on("click", function (this: HTMLElement, e) {

@@ -35,15 +35,11 @@ export function compute_show_video_chat_button(): boolean {
 export function compute_show_audio_chat_button(): boolean {
     const available_providers = realm.realm_available_video_chat_providers;
     if (
-        (available_providers.jitsi_meet &&
-            get_jitsi_server_url() !== null &&
-            realm.realm_video_chat_provider === available_providers.jitsi_meet.id) ||
-        (available_providers.zoom &&
-            realm.realm_video_chat_provider === available_providers.zoom.id) ||
-        (available_providers.big_blue_button &&
-            realm.realm_video_chat_provider === available_providers.big_blue_button.id) ||
-        (available_providers.zoom_server_to_server &&
-            realm.realm_video_chat_provider === available_providers.zoom_server_to_server.id)
+        (realm.realm_video_chat_provider === available_providers.jitsi_meet?.id &&
+            get_jitsi_server_url() !== null) ||
+        realm.realm_video_chat_provider === available_providers.zoom?.id ||
+        realm.realm_video_chat_provider === available_providers.big_blue_button?.id ||
+        realm.realm_video_chat_provider === available_providers.zoom_server_to_server?.id
     ) {
         return true;
     }

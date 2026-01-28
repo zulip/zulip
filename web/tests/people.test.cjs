@@ -362,7 +362,7 @@ run_test("basics", ({override}) => {
 
     const active_user_ids = people.get_active_user_ids().toSorted();
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
-    assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(isaac.user_id), true);
     assert.ok(people.is_valid_email_for_compose(isaac.email));
     assert.ok(people.is_valid_user_id_for_compose(isaac.user_id));
 
@@ -374,12 +374,12 @@ run_test("basics", ({override}) => {
     assert.equal(people.get_non_active_human_ids().length, 1);
     assert.equal(people.get_non_active_user_ids_count([isaac.user_id]), 1);
     assert.equal(people.get_active_human_count(), 1);
-    assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
+    assert.equal(people.is_active_user_or_system_bot(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), true);
     assert.equal(people.is_valid_user_id_for_compose(isaac.user_id), true);
 
     people.add_active_user(bot_botson);
-    assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(bot_botson.user_id), true);
     bot_user_ids = people.get_bot_ids();
     assert.deepEqual(bot_user_ids, [bot_botson.user_id]);
 
@@ -427,10 +427,10 @@ run_test("basics", ({override}) => {
 
     // Invalid user ID returns true and warns.
     blueslip.expect("warn", "Unexpectedly invalid user_id in user popover query");
-    assert.equal(people.is_active_user_for_popover(123412), true);
+    assert.equal(people.is_active_user_or_system_bot(123412), true);
 
     unknown_user.is_inaccessible_user = true;
-    assert.equal(people.is_active_user_for_popover(unknown_user.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(unknown_user.user_id), true);
     unknown_user.is_inaccessible_user = false;
 
     // We can still get their info for non-realm needs.
@@ -1449,7 +1449,7 @@ run_test("initialize", () => {
 
     people.initialize(current_user.user_id, params, user_group_params);
 
-    assert.equal(people.is_active_user_for_popover(17), true);
+    assert.equal(people.is_active_user_or_system_bot(17), true);
     assert.ok(people.is_cross_realm_email("bot@example.com"));
     assert.ok(people.is_valid_email_for_compose("bot@example.com"));
     assert.ok(people.is_valid_user_id_for_compose(test_bot.user_id));
@@ -2089,4 +2089,33 @@ run_test("fetch inaccessible user", async ({override, override_rewire}) => {
     const [inaccessible_user] = await people.get_or_fetch_users_from_ids([1]);
     assert.equal(inaccessible_user.user_id, 1);
     assert.equal(inaccessible_user.is_inaccessible_user, true);
+});
+
+run_test("get_by_user_id", () => {
+    initialize();
+    people.add_active_user(maria);
+
+    const user = people.get_by_user_id(maria.user_id);
+    assert.equal(user.full_name, maria.full_name);
+    assert.throws(
+        () => {
+            people.get_by_user_id(9999);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 9999",
+        },
+    );
+
+    blueslip.expect("error", "User ID: 8888 is valid but not found in people_by_user_id_dict");
+    people.add_valid_user_id(8888);
+    assert.throws(
+        () => {
+            people.get_by_user_id(8888);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 8888",
+        },
+    );
 });

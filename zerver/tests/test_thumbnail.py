@@ -369,11 +369,11 @@ class TestStoreThumbnail(ZulipTestCase):
             self.assertEqual(thumbnailed_image.get_n_pages(), 2)
 
         with self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=True)):
-            self.assertEqual(ensure_thumbnails(image_attachment), 0)
+            self.assertEqual(ensure_thumbnails(image_attachment).generated_thumbnail_count, 0)
         self.assert_length(image_attachment.thumbnail_metadata, 1)
 
         with self.thumbnail_formats(ThumbnailFormat("webp", 150, 100, opts="Q=90", animated=False)):
-            self.assertEqual(ensure_thumbnails(image_attachment), 1)
+            self.assertEqual(ensure_thumbnails(image_attachment).generated_thumbnail_count, 1)
         self.assert_length(image_attachment.thumbnail_metadata, 2)
 
         bigger_thumbnail = StoredThumbnailFormat(**image_attachment.thumbnail_metadata[1])
@@ -601,7 +601,7 @@ class TestStoreThumbnail(ZulipTestCase):
             self.assert_length(missing_thumbnails(image_attachment), 1)
 
             with self.assertLogs("zerver.worker.thumbnail", level="ERROR") as error_log:
-                self.assertEqual(ensure_thumbnails(image_attachment), 0)
+                self.assertEqual(ensure_thumbnails(image_attachment).generated_thumbnail_count, 0)
 
         libvips_version = (pyvips.version(0), pyvips.version(1))
         # This error message changed

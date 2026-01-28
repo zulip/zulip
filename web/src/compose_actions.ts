@@ -91,12 +91,8 @@ function hide_box(): void {
     // This is the main hook for saving drafts when closing the compose box.
     drafts.update_draft();
     blur_compose_inputs();
-    $("#compose_recipient_box").hide();
-    $("#compose-direct-recipient").hide();
     $(".new_message_textarea").css("min-height", "");
     compose_fade.clear_compose();
-    $(".message_comp").hide();
-    $("#compose_controls").show();
     // Assume a muted recipient row for the next time
     // the compose box is reopened
     $("#compose-recipient").addClass("low-attention-recipient-row");
@@ -133,7 +129,7 @@ function show_compose_box(opts: ComposeActionsOpts): void {
         compose_ui.set_focus(opts_by_message_type);
     }
     // Transitions in the recipient row of the compose box are attached
-    // to this class we add a slight delay to avoid transitions firing
+    // to this class; we add a slight delay to avoid transitions firing
     // immediately.
     requestAnimationFrame(() => {
         $("#compose").addClass("compose-box-open");
@@ -203,8 +199,7 @@ export function rewire_autosize_message_content(value: typeof autosize_message_c
 
 export let expand_compose_box = (): void => {
     $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
-    $("#compose_controls").hide();
-    $(".message_comp").show();
+    $("#compose").addClass("compose-box-open");
 };
 
 export function rewire_expand_compose_box(value: typeof expand_compose_box): void {

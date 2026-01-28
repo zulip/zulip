@@ -14,8 +14,8 @@ step is described in detail below, with links to additional resources:
 1. [Organize your proposed changes](#organize-your-proposed-changes) into a
    series of commits that tell the story of how the codebase will change.
 1. [Explain your changes](#explain-your-changes) in the description for your
-   pull request, including [screenshots](#demonstrating-visual-changes) for
-   visual changes.
+   pull request, including
+   [screenshots](../contributing/presenting-visual-changes.md) for visual changes.
 1. Carefully [review your own work](#review-your-own-work).
 1. [Submit your pull request](#submit-your-pull-request-for-review) for review.
 
@@ -83,8 +83,7 @@ description for your pull request, you will:
   The review process will go a lot more smoothly if points of uncertainty are
   explicitly laid out.
 - Include screenshots for all visual changes, so that they can be reviewed
-  without running your code. See [below](#demonstrating-visual-changes) for
-  detailed instructions.
+  without running your code. Be sure to follow our [guide on presenting visual changes](../contributing/presenting-visual-changes).
 
 If you have a question about a specific part of your code that you expect to be
 resolved during the review process, put it in a PR comment attached to a
@@ -92,6 +91,8 @@ relevant part of the changes.
 
 Take advantage of [GitHub's formatting][github-syntax] to make your pull request
 description and comments easy to read.
+
+[github-syntax]: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
 
 ### Discussions in the development community
 
@@ -155,78 +156,3 @@ review:
    PR.
 
 [github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
-
-## Demonstrating visual changes
-
-- For [screenshots or screencasts][screenshots-gifs] of changes,
-  putting them in details/summary tags reduces visual clutter
-  and scroll length of pull request comments. This is especially
-  useful when you have several screenshots and/or screencasts to
-  include in your comment as you can put each image, or group of
-  images, in separate details/summary tags.
-
-  ```
-  <details>
-  <summary>Descriptive summary of image</summary>
-
-  ![uploaded-image](uploaded-file-information)
-  </details>
-  ```
-
-- Screenshots are much easier to review than screencast videos.
-  Wherever possible, use still screenshots instead of videos.
-  Use a video only when necessary to demonstrate an interaction,
-  and include screenshots too for any aspects of your changes
-  which can be seen on a still screenshot.
-
-  Keep any videos as short as possible, so that the reviewer can
-  quickly get to the relevant part.
-
-  In screencast videos, make sure a person watching your video
-  can see where on the screen you're touching or clicking.
-  Use the "show touches" or "include the mouse pointer" feature
-  of your screen-recording software.
-
-- For before and after images or videos of changes, using GithHub's table
-  syntax renders them side-by-side for quick and clear comparison.
-  While this works well for narrow or small images, it can be hard to
-  see details in large, full screen images and videos in this format.
-
-  Note that you can put the table syntax inside the details/summary
-  tags described above as well.
-
-  ```
-  ### Descriptive header for images:
-  | Before | After |
-  | --- | --- |
-  | ![image-before](uploaded-file-information) | ![image-after](uploaded-file-information)
-  ```
-
-- If you've updated existing documentation in your pull request,
-  include a link to the current documentation above the screenshot
-  of the updates. That way a reviewer can quickly access the current
-  documentation while reviewing your changes.
-
-  ```
-  [Current documentation](link-to-current-documentation-page)
-  ![image-after](uploaded-file-information)
-  ```
-
-- For updates or changes to CSS class rules, it's a good practice
-  to include the results of a [git-grep][git-grep] search for
-  the class name(s) to confirm that you've tested all the impacted
-  areas of the UI and/or documentation.
-
-  ```console
-  $ git grep '.example-class-name' web/templates/ templates/
-  templates/corporate/...
-  templates/zerver/...
-  web/templates/...
-  ```
-
-[github-syntax]: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
-[git-grep]: https://git-scm.com/docs/git-grep
-[screenshots-gifs]: ../tutorials/screenshot-and-gif-software.md
-[zulip-dev-community]: https://chat.zulip.org
-[link-to-message]: https://zulip.com/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message
-[dev-community-linkifiers]: https://zulip.com/development-community/#linking-to-github-issues-and-pull-requests

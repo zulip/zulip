@@ -2,7 +2,7 @@ import {getUnixTime, isValid} from "date-fns";
 import katex from "katex";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import type {Template} from "url-template";
+import type Template from "uri-template-lite";
 
 import render_channel_message_link from "../templates/channel_message_link.hbs";
 import render_topic_link from "../templates/topic_link.hbs";

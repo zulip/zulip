@@ -92,7 +92,7 @@ from zerver.models import (
 from zerver.models.messages import SubMessage
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import get_fake_email_domain, get_realm
+from zerver.models.realms import DEFAULT_REALM_EXPORT_TYPE_SLUG, get_fake_email_domain, get_realm
 from zerver.models.saved_snippets import SavedSnippet
 from zerver.models.users import ExternalAuthID, get_system_bot, is_cross_realm_bot_email
 
@@ -2432,12 +2432,9 @@ def export_emoji_from_local(
 
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             shutil.copy2(local_path, output_path)
-            # Realm emoji author is optional.
-            author = realm_emoji_object.author
-            author_id = author.id if author else None
             record = dict(
                 realm_id=realm.id,
-                author=author_id,
+                author=realm_emoji_object.author_id,
                 path=emoji_path,
                 s3_path=emoji_path,
                 file_name=realm_emoji_object.file_name,
@@ -3119,6 +3116,15 @@ def export_realm_wrapper(
         raise
 
 
+def get_export_type_slug(export_type: int) -> str:
+    result = DEFAULT_REALM_EXPORT_TYPE_SLUG
+    for export_type_slug, export_type_value in RealmExport.EXPORT_TYPES.items():
+        if export_type == export_type_value:
+            result = export_type_slug
+
+    return result
+
+
 def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
     # Exclude exports made via shell. 'acting_user=None', since they
     # aren't supported in the current API format.
@@ -3151,7 +3157,7 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
             deleted_timestamp=deleted_timestamp,
             failed_timestamp=failed_timestamp,
             pending=pending,
-            export_type=export.type,
+            export_type=get_export_type_slug(export.type),
         )
     return sorted(exports_dict.values(), key=lambda export_dict: export_dict["id"])
 

@@ -18,24 +18,29 @@ export type AlertBanner = Banner & {
     process: string;
 };
 
-export function open(
-    banner: Banner | AlertBanner,
-    $banner_container: JQuery,
-    remove_after?: number,
-): void {
+export function open(banner: Banner | AlertBanner, $banner_container: JQuery): JQuery {
     const banner_html = render_banner(banner);
-    $banner_container.html(banner_html);
+    const $banner = $(banner_html);
+    $banner_container.empty().append($banner);
 
-    if (remove_after !== undefined) {
-        setTimeout(() => {
-            close($banner_container.find(".banner"));
-        }, remove_after);
-    }
+    return $banner;
 }
 
 export function append(banner: Banner | AlertBanner, $banner_container: JQuery): void {
     const $banner_html = render_banner(banner);
     $banner_container.append($banner_html);
+}
+
+export function open_and_close(
+    banner: Banner | AlertBanner,
+    $banner_container: JQuery,
+    remove_after: number,
+): void {
+    const $banner = open(banner, $banner_container);
+
+    setTimeout(() => {
+        close($banner);
+    }, remove_after);
 }
 
 export function close($banner: JQuery): void {

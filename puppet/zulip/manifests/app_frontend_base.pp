@@ -206,6 +206,26 @@ class zulip::app_frontend_base {
   } else {
     $proxy = ''
   }
+  $custom_ca_path = zulipconf('application_server','custom_ca_path', '')
+  if $custom_ca_path != '' {
+    file { '/usr/local/share/ca-certificates/custom-zulip-ca.crt':
+      ensure => file,
+      source => $custom_ca_path,
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0644',
+      notify => Exec['update-ca-certificates'],
+    }
+    exec { 'update-ca-certificates':
+      command     => '/usr/sbin/update-ca-certificates',
+      require     => Package['ca-certificates'],
+      before      => File["${zulip::common::supervisor_conf_dir}/zulip.conf"],
+      refreshonly => true,
+    }
+    $ca_bundle=',REQUESTS_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"'
+  } else {
+    $ca_bundle=''
+  }
   file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,
     require => [Package[supervisor], Exec['stage_updated_sharding']],

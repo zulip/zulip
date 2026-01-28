@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any
+from typing import Any, Literal
 
 from django.conf import settings
 from django.db import connection
@@ -90,15 +90,66 @@ def get_realm_day_counts() -> dict[str, dict[str, Markup]]:
     return result
 
 
-def realm_summary_table(export: bool) -> str:
+InstalationActivityFilter = Literal["all", "demo", "sponsored", "free", "paid"]
+
+
+def get_where_clause_by_filter(filter: InstalationActivityFilter) -> SQL:
+    if filter == "demo":
+        return SQL(
+            """
+                WHERE
+                    _14day_active_humans IS NOT NULL
+                    AND realm.demo_organization_scheduled_deletion_date IS NOT NULL
+            """
+        )
+    elif filter == "sponsored":
+        return SQL(
+            """
+                WHERE
+                    _14day_active_humans IS NOT NULL
+                    AND realm.plan_type = 4
+            """
+        )
+    elif filter == "free":
+        return SQL(
+            """
+                WHERE
+                    _14day_active_humans IS NOT NULL
+                    AND realm.demo_organization_scheduled_deletion_date IS NULL
+                    AND realm.plan_type = 2
+            """
+        )
+    elif filter == "paid":
+        return SQL(
+            """
+                WHERE
+                    realm.plan_type IN (3, 10)
+            """
+        )
+    # Default to realms with a paid plan or with one active user in the last
+    # two weeks, i.e., "all" filter.
+    return SQL(
+        """
+            WHERE
+                _14day_active_humans IS NOT NULL
+                OR realm.plan_type IN (3, 10)
+        """
+    )
+
+
+def realm_summary_table(export: bool, filter: InstalationActivityFilter) -> str:
     from corporate.lib.stripe import cents_to_dollar_string
 
     now = timezone_now()
 
-    query = SQL(
-        """
+    where_clause = get_where_clause_by_filter(filter)
+
+    query = (
+        SQL(
+            """
         SELECT
             realm.string_id,
+            realm.demo_organization_scheduled_deletion_date,
             realm.date_created,
             realm.plan_type,
             realm.org_type,
@@ -184,13 +235,16 @@ def realm_summary_table(export: bool) -> str:
                     AND is_active=True
                     AND role IN %(admin_roles)s
             ) as realm_admin_user ON realm.id = realm_admin_user.realm_id
-        WHERE
-            _14day_active_humans IS NOT NULL
-            or realm.plan_type = 3
+    """
+        )
+        + where_clause
+        + SQL(
+            """
         ORDER BY
             dau_count DESC,
             string_id ASC
     """
+        )
     )
 
     cursor = connection.cursor()
@@ -233,11 +287,19 @@ def realm_summary_table(export: bool) -> str:
     total_bot_count = 0
     total_wau_count = 0
     if settings.BILLING_ENABLED:
-        estimated_arrs, plan_rates = get_estimated_arr_and_rate_by_realm()
-        total_arr = sum(estimated_arrs.values())
+        estimated_arrs: dict[str, int] = {}
+        plan_rates: dict[str, str] = {}
+        if filter in ["all", "paid"]:
+            estimated_arrs, plan_rates = get_estimated_arr_and_rate_by_realm()
+            total_arr = sum(estimated_arrs.values())
+        else:
+            total_arr = 0
 
     for row in rows:
         realm_string_id = row.pop("string_id")
+        demo_organization_scheduled_deletion_date = row.pop(
+            "demo_organization_scheduled_deletion_date"
+        )
 
         # Format fields and add links.
         row["date_created_day"] = format_datetime_as_date(row["date_created"])
@@ -269,7 +331,10 @@ def realm_summary_table(export: bool) -> str:
 
         # Estimate annual recurring revenue.
         if settings.BILLING_ENABLED:
-            row["plan_type_string"] = get_plan_type_string(row["plan_type"])
+            if demo_organization_scheduled_deletion_date is None:
+                row["plan_type_string"] = get_plan_type_string(row["plan_type"])
+            else:
+                row["plan_type_string"] = "Demo"
 
             if realm_string_id in estimated_arrs:
                 row["arr"] = f"${cents_to_dollar_string(estimated_arrs[realm_string_id])}"
@@ -331,6 +396,7 @@ def realm_summary_table(export: bool) -> str:
             utctime=now.isoformat(" ", "minutes"),
             billing_enabled=settings.BILLING_ENABLED,
             export=export,
+            current_filter=filter,
         ),
     )
     return content
@@ -338,8 +404,13 @@ def realm_summary_table(export: bool) -> str:
 
 @require_server_admin
 @typed_endpoint
-def get_installation_activity(request: HttpRequest, *, export: Json[bool] = False) -> HttpResponse:
-    content: str = realm_summary_table(export)
+def get_installation_activity(
+    request: HttpRequest,
+    *,
+    export: Json[bool] = False,
+    filter: InstalationActivityFilter = "all",
+) -> HttpResponse:
+    content: str = realm_summary_table(export, filter)
     title = "Installation activity"
 
     return render(

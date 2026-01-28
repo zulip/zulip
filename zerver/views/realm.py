@@ -139,7 +139,7 @@ def update_realm(
     enable_guest_user_indicator: Json[bool] | None = None,
     enable_read_receipts: Json[bool] | None = None,
     enable_spectator_access: Json[bool] | None = None,
-    giphy_rating: Json[int] | None = None,
+    gif_rating_policy: Json[int] | None = None,
     inline_image_preview: Json[bool] | None = None,
     inline_url_embed_preview: Json[bool] | None = None,
     invite_required: Json[bool] | None = None,
@@ -242,11 +242,13 @@ def update_realm(
                 video_chat_provider=video_chat_provider
             )
         )
-    if giphy_rating is not None and giphy_rating not in {
-        p["id"] for p in Realm.GIF_RATING_OPTIONS.values()
+    if gif_rating_policy is not None and gif_rating_policy not in {
+        p["id"] for p in Realm.GIF_RATING_POLICY_OPTIONS.values()
     }:
         raise JsonableError(
-            _("Invalid giphy_rating {giphy_rating}").format(giphy_rating=giphy_rating)
+            _("Invalid gif_rating_policy {gif_rating_policy}").format(
+                gif_rating_policy=gif_rating_policy
+            )
         )
 
     message_retention_days: int | None = None
@@ -761,7 +763,7 @@ def update_realm_user_settings_defaults(
     | None = None,
     web_escape_navigates_to_home_view: Json[bool] | None = None,
     web_font_size_px: Json[int] | None = None,
-    web_home_view: Literal["recent_topics", "inbox", "all_messages"] | None = None,
+    web_home_view: Literal["recent", "inbox", "all_messages"] | None = None,
     web_inbox_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_unreads_count_summary: Json[bool] | None = None,

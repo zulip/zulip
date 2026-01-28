@@ -60,7 +60,7 @@ function show_delete_banner(): void {
         ),
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 intent: "success",
                 label: $t({defaultMessage: "Undo"}),
                 custom_classes: "draft-delete-banner-undo-button",

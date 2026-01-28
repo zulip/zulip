@@ -20,6 +20,7 @@ extensions = [
     "myst_parser",
     "sphinx_rtd_theme",
     "sphinx_design",
+    "sphinx_copybutton",
 ]
 templates_path = ["_templates"]
 project = "Zulip"
@@ -57,6 +58,8 @@ html_theme_options = {
 }
 html_logo = "images/zulip-logo.svg"
 html_static_path = ["_static"]
+# When copying code blocks, ignore line numbers and prompts
+copybutton_exclude = ".linenos, .gp"
 
 
 def setup(app: Any) -> None:

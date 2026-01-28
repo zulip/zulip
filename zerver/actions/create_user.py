@@ -354,7 +354,9 @@ def process_new_human_user(
     if prereg_user is not None and prereg_user.welcome_message_custom_text is not None:
         welcome_message_custom_text = prereg_user.welcome_message_custom_text
     initial_direct_message_ids = send_initial_direct_messages_to_user(
-        user_profile, welcome_message_custom_text=welcome_message_custom_text
+        user_profile,
+        realm_creation=realm_creation,
+        welcome_message_custom_text=welcome_message_custom_text,
     )
     message_id_list = [initial_direct_message_ids.welcome_bot_intro_message_id]
     if initial_direct_message_ids.welcome_bot_custom_message_id is not None:

@@ -7,15 +7,17 @@ Adding user YOURUSERNAME to group docker
 Done.
 ```
 
-You will need to reboot for this change to take effect. If it worked,
-you will see `docker` in your list of groups:
+You will need to log out and log back in (or reboot) for this change to take effect.
+If it worked, you will see `docker` in your list of groups:
 
 ```console
 $ groups | grep docker
 YOURUSERNAME adm cdrom sudo dip plugdev lpadmin sambashare docker
 ```
 
-##### 3. Make sure the Docker daemon is running:
+##### 3. Make sure the Docker daemon is running
+
+Docker runs as a background service (daemon), which must be running for Docker commands to work.
 
 If you had previously installed and removed an older version of
 Docker, an [Ubuntu

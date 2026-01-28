@@ -13,7 +13,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.thumbnail import BadImageError
-from zerver.models import NamedUserGroup, Realm, RealmEmoji, UserProfile
+from zerver.models import NamedUserGroup, RealmEmoji, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 
@@ -32,10 +32,6 @@ class RealmEmojiTest(ZulipTestCase):
                 raise Exception("Error creating test emoji.")  # nocoverage
         return realm_emoji
 
-    def create_test_emoji_with_no_author(self, name: str, realm: Realm) -> RealmEmoji:
-        realm_emoji = RealmEmoji.objects.create(realm=realm, name=name, file_name=name)
-        return realm_emoji
-
     def test_list(self) -> None:
         emoji_author = self.example_user("iago")
         self.login_user(emoji_author)
@@ -45,20 +41,8 @@ class RealmEmojiTest(ZulipTestCase):
         response_dict = self.assert_json_success(result)
         self.assert_length(response_dict["emoji"], 2)
 
-    def test_list_no_author(self) -> None:
-        self.login("iago")
-        realm = get_realm("zulip")
-        realm_emoji = self.create_test_emoji_with_no_author("my_emoji", realm)
-
-        result = self.client_get("/json/realm/emoji")
-        content = self.assert_json_success(result)
-        self.assert_length(content["emoji"], 2)
-        test_emoji = content["emoji"][str(realm_emoji.id)]
-        self.assertIsNone(test_emoji["author_id"])
-
     def test_list_admins_only(self) -> None:
-        # Test that realm emoji list is public and realm emojis
-        # having no author are also there in the list.
+        # Test that realm emoji list is public
         self.login("othello")
         realm = get_realm("zulip")
         administrators_system_group = NamedUserGroup.objects.get(
@@ -70,13 +54,10 @@ class RealmEmojiTest(ZulipTestCase):
             administrators_system_group,
             acting_user=None,
         )
-        realm_emoji = self.create_test_emoji_with_no_author("my_emoji", realm)
 
         result = self.client_get("/json/realm/emoji")
         content = self.assert_json_success(result)
-        self.assert_length(content["emoji"], 2)
-        test_emoji = content["emoji"][str(realm_emoji.id)]
-        self.assertIsNone(test_emoji["author_id"])
+        self.assert_length(content["emoji"], 1)
 
     def test_upload(self) -> None:
         user = self.example_user("iago")
@@ -339,13 +320,6 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_length(emojis, 2)
         test_emoji = emojis[str(realm_emoji.id)]
         self.assertEqual(test_emoji["deactivated"], True)
-
-    def test_delete_no_author(self) -> None:
-        self.login("iago")
-        realm = get_realm("zulip")
-        self.create_test_emoji_with_no_author("my_emoji", realm)
-        result = self.client_delete("/json/realm/emoji/my_emoji")
-        self.assert_json_success(result)
 
     def test_delete_admin_or_author(self) -> None:
         # Admins can delete emoji added by others also.

@@ -154,6 +154,9 @@ export function get_users_from_ids(user_ids: number[]): User[] {
 // Use this function only when you are sure that user_id is valid.
 export function get_by_user_id(user_id: number): User {
     const person = people_by_user_id_dict.get(user_id);
+    if (person === undefined && is_valid_user_id(user_id)) {
+        blueslip.error(`User ID: ${user_id} is valid but not found in people_by_user_id_dict`);
+    }
     assert(person, `Unknown user_id in get_by_user_id: ${user_id}`);
     return person;
 }
@@ -889,7 +892,7 @@ export function sender_is_guest(message: Message): boolean {
 export function sender_is_deactivated(message: Message): boolean {
     const sender_id = message.sender_id;
     if (sender_id) {
-        return !is_active_user_for_popover(message.sender_id);
+        return !is_active_user_or_system_bot(message.sender_id);
     }
     return false;
 }
@@ -1106,7 +1109,7 @@ export function is_valid_bulk_user_ids_for_compose(user_ids: number[]): boolean 
     });
 }
 
-export function is_active_user_for_popover(user_id: number): boolean {
+export function is_active_user_or_system_bot(user_id: number): boolean {
     // For popover menus, we include cross-realm bots as active
     // users.
 
@@ -2006,7 +2009,10 @@ export function is_displayable_conversation_participant(user_id: number): boolea
     return !is_valid_bot_user(user_id) && is_person_active(user_id);
 }
 
-export function populate_valid_user_ids(params: StateData["user_groups"]): void {
+export function populate_valid_user_ids(
+    params: StateData["user_groups"],
+    cross_realm_bots: StateData["people"]["cross_realm_bots"],
+): void {
     // Every valid user ID is guaranteed to exist in at least one
     // system group, so we can us that to compute the set of valid
     // user IDs in the realm.
@@ -2014,6 +2020,10 @@ export function populate_valid_user_ids(params: StateData["user_groups"]): void 
         if (user_group.is_system_group) {
             valid_user_ids = valid_user_ids.union(new Set(user_group.members));
         }
+    }
+
+    for (const bot of cross_realm_bots) {
+        valid_user_ids.add(bot.user_id);
     }
 }
 
@@ -2287,7 +2297,7 @@ export async function initialize(
     user_group_params: StateData["user_groups"],
 ): Promise<void> {
     initialize_current_user(my_user_id);
-    populate_valid_user_ids(user_group_params);
+    populate_valid_user_ids(user_group_params, people_params.cross_realm_bots);
 
     // Compute the set of user IDs that we know are valid in the
     // organization, but do not have a copy of.

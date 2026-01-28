@@ -65,7 +65,7 @@ needs some small changes to work, we prefer to make those changes and
 contribute them upstream. When the upstream maintainer is slow to
 respond, we may use a fork of the dependency until the code is merged
 upstream; as a result, we usually have a few packages in
-`requirements.txt` that are installed from a GitHub URL.
+`pyproject.toml` that are installed from a GitHub URL.
 
 What we look for in choosing dependencies is whether the project is
 well-maintained. Usually one can tell fairly quickly from looking at

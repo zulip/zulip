@@ -203,7 +203,6 @@ function format_channel_item_html(stream: StreamSubscription): string {
         invite_only: stream.invite_only,
         is_web_public: stream.is_web_public,
         stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
-        show_remove_channel_from_folder: true,
         can_manage_folder: can_user_manage_folder(),
     });
 }
@@ -238,7 +237,7 @@ function render_channel_list(streams: StreamSubscription[], folder_id: number): 
         );
 
         function on_success(): void {
-            banners.open(
+            banners.open_and_close(
                 {
                     intent: "success",
                     label: $t_html({
@@ -259,7 +258,7 @@ function render_channel_list(streams: StreamSubscription[], folder_id: number): 
                 }),
                 xhr,
             );
-            banners.open(
+            banners.open_and_close(
                 {
                     intent: "danger",
                     label: error_message,
@@ -360,7 +359,7 @@ function render_add_channel_folder_widget(): void {
         assert(folder_id !== undefined);
         function on_success(): void {
             reset_add_channel_widget();
-            banners.open(
+            banners.open_and_close(
                 {
                     intent: "success",
                     label: $t_html({
@@ -381,7 +380,7 @@ function render_add_channel_folder_widget(): void {
                 }),
                 xhr,
             );
-            banners.open(
+            banners.open_and_close(
                 {
                     intent: "danger",
                     label: error_message,

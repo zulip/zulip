@@ -1,6 +1,6 @@
 # Outgoing webhook payloads
 
-Zulip supports [outgoing webhooks](/api/outgoing-webhooks) in a clean,
+Zulip supports [outgoing webhooks](/help/outgoing-webhooks) in a clean,
 native [Zulip format](#zulip-format), as well as in a [Slack-compatible
 format](#slack-compatible-format).
 

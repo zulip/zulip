@@ -417,7 +417,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
             filter_topics_appended = true;
         },
     });
-    stream_list.zoom_in_topics({stream_id: 42});
+    stream_list.zoom_in_topics(42);
 
     assert.ok(!$stream_li1.hasClass("hide"));
     assert.ok($stream_li2.hasClass("hide"));

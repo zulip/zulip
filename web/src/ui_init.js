@@ -19,6 +19,7 @@ import * as audible_notifications from "./audible_notifications.ts";
 import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
+import {is_browser_unsupported_old_version} from "./browser_support.ts";
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_popover from "./channel_folders_popover.ts";
@@ -51,8 +52,8 @@ import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
 import * as fenced_code from "./fenced_code.ts";
 import * as gear_menu from "./gear_menu.ts";
+import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as gif_state from "./gif_state.ts";
-import * as giphy from "./giphy.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
 import * as hotkey from "./hotkey.ts";
@@ -149,7 +150,6 @@ import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
-import * as tenor from "./tenor.ts";
 import * as theme from "./theme.ts";
 import * as thumbnail from "./thumbnail.ts";
 import * as timerender from "./timerender.ts";
@@ -177,6 +177,18 @@ import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
 import * as widgets from "./widgets.ts";
+
+function update_page_loading_indicator_notice() {
+    const $unsupported_desktop_app_notice = $("#app-loading-unsupported-desktop-app");
+    if ($unsupported_desktop_app_notice.length > 0 && page_params.insecure_desktop_app) {
+        $unsupported_desktop_app_notice.removeAttr("hidden");
+        return;
+    }
+    const $unsupported_browser_notice = $("#app-loading-unsupported-browser");
+    if ($unsupported_browser_notice.length > 0 && is_browser_unsupported_old_version()) {
+        $unsupported_browser_notice.removeAttr("hidden");
+    }
+}
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -667,8 +679,7 @@ export async function initialize_everything(state_data) {
     unread_ops.initialize();
     gear_menu.initialize();
     navbar_help_menu.initialize();
-    giphy.initialize();
-    tenor.initialize();
+    gif_picker_ui.initialize();
     presence.initialize(state_data.presence);
     settings_preferences.initialize();
     settings_notifications.initialize();
@@ -779,6 +790,8 @@ function show_try_zulip_modal() {
 }
 
 $(() => {
+    update_page_loading_indicator_notice();
+
     // Remove '?show_try_zulip_modal', if present.
     const url = new URL(window.location.href);
     if (url.searchParams.has("show_try_zulip_modal")) {

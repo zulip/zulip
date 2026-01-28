@@ -20,6 +20,65 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 455**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), [`POST
+  /realm/profile_fields`](/api/create-custom-profile-field), [`GET
+  /realm/profile_fields`](/api/get-custom-profile-fields) Added a new
+  parameter `use_for_user_matching` to custom profile field objects,
+  which indicates whether this custom profile field should be used to
+  match users in typeahead.
+
+**Feature level 454**
+
+- [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`PATCH /settings`](/api/update-settings): Changed the `web_home_view`
+  value for the recent view to "recent".
+
+**Feature level 453**
+
+* [`POST /register`](/api/register-queue): `gif_rating_options`
+  was renamed to `gif_rating_policy_options`.
+* [`POST /register`](/api/register-queue): `realm_giphy_rating` was
+  renamed to `realm_gif_rating_policy` to reflect that it's shared
+  between all GIF picker integrations.
+* [`GET /events`](/api/get-events), `PATCH /realm`: `giphy_rating`
+  was renamed to `gif_rating_policy` to reflect that it's shared
+  between all GIF picker integrations.
+
+**Feature level 452**
+
+* [`GET /events`](/api/get-events): Prior to Zulip 12.0 (feature level 452)
+  messages deleted via a message retention policy incorrectly failed to generate
+  `delete_message` events. This is now fixed, allowing clients to correctly update
+  their message state, by removing the affected messages from view.
+
+**Feature level 451**
+
+* [Message formatting](/api/message-formatting): Changed the
+rendering of invalid timestamps from a `<span class="timestamp-error">`
+element to plain escaped text.
+
+**Feature level 450**
+
+* [`GET /events`](/api/get-events): The `push_device` events now
+  encode `push_account_id` as an integer, not a string.
+
+**Feature level 449**
+
+* [`POST /export/realm`](/api/export-realm): The `export_type` parameter now
+  takes string values (`public`, `full_with_consent`, `full_without_consent`)
+  instead of integers. The new `full_without_consent` option requests a full
+  export that includes private data for all users and requires the organization
+  to have the `owner_full_content_access` flag set to True.
+* [`GET /export/realm`](/api/get-realm-exports), [`GET /events`](/api/get-events):
+  `export_type` fields now contain the new string values, matching the
+  `POST /export/realm` parameter format. These endpoints now report
+  `export_type=full_without_consent` for a full export that includes private data
+  for all users.
+
 **Feature level 448**
 
 * [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):

@@ -93,7 +93,10 @@ export function rewire_render_typeahead_item(value: typeof render_typeahead_item
     render_typeahead_item = value;
 }
 
-export let render_person = (person: UserPillData | UserOrMentionPillData): string => {
+export let render_person = (
+    person: UserPillData | UserOrMentionPillData,
+    query?: string,
+): string => {
     if (person.type === "broadcast") {
         return render_typeahead_item({
             primary: person.user.special_item_text,
@@ -112,6 +115,38 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
 
     const pronouns = pronouns_list?.[0]?.value;
 
+    // Show the email or a matched custom profile field in the secondary text.
+    // If both the email and a custom profile field match the query, show both.
+    let secondary_text = person.user.delivery_email;
+
+    if (query) {
+        const email_matches = typeahead.query_matches_string_in_order(
+            query,
+            secondary_text ?? "",
+            "",
+        );
+        let matched_custom_field;
+
+        for (const field of realm.custom_profile_fields) {
+            if (!field.use_for_user_matching) {
+                continue;
+            }
+
+            const value = people.get_custom_profile_data(person.user.user_id, field.id)?.value;
+
+            if (typeahead.query_matches_string_in_order(query, value ?? "", "")) {
+                matched_custom_field = value;
+                break;
+            }
+        }
+
+        // if both email and custom field matches, show both.
+        if (email_matches && matched_custom_field) {
+            secondary_text = `${secondary_text}, ${matched_custom_field}`;
+        } else if (matched_custom_field) {
+            secondary_text = matched_custom_field;
+        }
+    }
     const typeahead_arguments = {
         primary: person.user.full_name,
         img_src: avatar_url,
@@ -123,7 +158,7 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
             person.user.user_id,
         ),
         pronouns,
-        secondary: person.user.delivery_email,
+        secondary: secondary_text,
     };
 
     return render_typeahead_item(typeahead_arguments);
@@ -155,12 +190,13 @@ export function rewire_render_user_group(value: typeof render_user_group): void 
 
 export function render_person_or_user_group(
     item: UserGroupPillData | UserPillData | UserOrMentionPillData,
+    query?: string,
 ): string {
     if (item.type === "user_group") {
         return render_user_group(item);
     }
 
-    return render_person(item);
+    return render_person(item, query);
 }
 
 export let render_stream = (stream: StreamData): string =>
@@ -1059,6 +1095,7 @@ export function query_matches_person(
     person: UserPillData | UserOrMentionPillData,
     should_remove_diacritics?: boolean,
     match_prefix?: boolean,
+    allow_custom_profile_field_matching = false,
 ): boolean {
     if (
         person.type === "broadcast" &&
@@ -1070,6 +1107,19 @@ export function query_matches_person(
     if (person.type === "user") {
         if (query_matches_person_name(query, person, should_remove_diacritics, match_prefix)) {
             return true;
+        }
+
+        if (allow_custom_profile_field_matching) {
+            // Check custom profile fields that are enabled for use_for_user_matching
+            for (const field of realm.custom_profile_fields) {
+                if (field.use_for_user_matching) {
+                    const field_value =
+                        people.get_custom_profile_data(person.user.user_id, field.id)?.value ?? "";
+                    if (typeahead.query_matches_string_in_order(query, field_value, " ")) {
+                        return true;
+                    }
+                }
+            }
         }
 
         if (person.user.delivery_email) {

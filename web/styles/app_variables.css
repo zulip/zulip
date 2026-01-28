@@ -164,6 +164,16 @@
 
     color-scheme: light;
 
+    /* Variable for setting the viewport to full height.
+       As of late 2025, we still support browsers (e.g.,
+       Chrome 105) that do not support dynamic viewport
+       units. 100% is the legacy full-height value. */
+    --full-height-dynamic-viewport: 100%;
+
+    @supports (height: 100dvh) {
+        --full-height-dynamic-viewport: 100dvh;
+    }
+
     /*
     This is the header, aka the navbar.
     */
@@ -1115,32 +1125,28 @@
         hsl(0deg 0% 0% / 20%)
     );
     --color-border-recent-view-table: light-dark(
-        hsl(0deg 0% 0% / 60%),
-        hsl(0deg 0% 88%)
+        hsl(0deg 0% 0% / 10%),
+        hsl(0deg 0% 0% / 10%)
     );
     --color-background-recent-view-row: light-dark(
-        hsl(100deg 11% 96%),
-        hsl(0deg 0% 11%)
+        hsl(0deg 0% 96%),
+        hsl(0deg 0% 14%)
     );
     --color-background-recent-view-row-hover: light-dark(
-        hsl(210deg 100% 97%),
-        hsl(208deg 26% 11% / 60%)
+        hsl(222deg 70% 12% / 7%),
+        hsl(220deg 18% 95% / 7%)
     );
     --color-background-recent-view-unread-row: light-dark(
         hsl(0deg 0% 100%),
-        hsl(212deg 30% 22% / 40%)
+        color-mix(in srgb, hsl(0deg 0% 100%) 8%, hsl(0deg 0% 11%))
     );
     --color-background-recent-view-unread-row-hover: light-dark(
-        hsl(210deg 100% 97%),
-        hsl(212deg 30% 22% / 60%)
+        hsl(220deg 5% 12% / 3%),
+        color-mix(in srgb, hsl(0deg 0% 100%) 11%, hsl(0deg 0% 11%))
     );
     --color-recent-view-link: light-dark(
-        hsl(205deg 47% 42%),
-        hsl(206deg 89% 74%)
-    );
-    --color-recent-view-link-hover: light-dark(
-        hsl(214deg 40% 58%),
-        hsl(208deg 64% 52%)
+        hsl(0deg 0% 15%),
+        hsl(0deg 0% 100% / 75%)
     );
     --color-background-recent-filters-button-focus: light-dark(
         hsl(0deg 0% 80%),
@@ -1167,12 +1173,24 @@
         hsl(228deg 11% 17%)
     );
     --color-background-recent-view-table-thead-th: light-dark(
-        hsl(0deg 0% 100%),
-        hsl(228deg 11% 17%)
+        var(--grey-50),
+        hsl(0deg 0% 100% / 10%)
     );
     --color-background-recent-view-table-thead-sort-header: light-dark(
-        hsl(0deg 0% 95%),
-        hsl(211deg 29% 14%)
+        hsl(229deg 9% 36% / 7%),
+        hsl(230deg 9% 60% / 14%)
+    );
+    --color-text-recent-view-table-thead-th: light-dark(
+        var(--grey-600),
+        var(--grey-300)
+    );
+    --color-arrow-recent-view-table-thead-th: light-dark(
+        hsl(229deg 9% 36% / 50%),
+        hsl(229deg 10% 70% / 50%)
+    );
+    --color-text-recent-view-last-msg-time: light-dark(
+        hsl(0deg 0% 15% / 75%),
+        hsl(0deg 0% 100% / 50%)
     );
 
     /* Compose box colors */
@@ -2347,262 +2365,260 @@
         color-mix(in oklch, hsl(0deg 0% 100%) 21%, transparent)
     );
     /* Action buttons -- Neutral Variant */
-    --color-text-neutral-primary-action-button: light-dark(
+    --color-text-neutral-solid-action-button: light-dark(
         hsl(0deg 0% 100%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
-    --color-background-neutral-primary-action-button: light-dark(
+    --color-background-neutral-solid-action-button: light-dark(
         hsl(229deg 7% 50%),
         hsl(229deg 9% 36%)
     );
-    --color-background-neutral-primary-action-button-hover: light-dark(
+    --color-background-neutral-solid-action-button-hover: light-dark(
         hsl(229deg 7% 47%),
         hsl(229deg 8% 42%)
     );
-    --color-background-neutral-primary-action-button-active: light-dark(
+    --color-background-neutral-solid-action-button-active: light-dark(
         hsl(232deg 7% 44%),
         hsl(229deg 9% 36%)
     );
-    --color-text-neutral-quiet-action-button: light-dark(
+    --color-text-neutral-subtle-action-button: light-dark(
         hsl(229deg 12% 25%),
         hsl(231deg 11% 76%)
     );
-    --color-background-neutral-quiet-action-button: light-dark(
+    --color-background-neutral-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(230deg 7% 50%) 12%, transparent),
         color-mix(in oklch, hsl(231deg 11% 76%) 12%, transparent)
     );
-    --color-background-neutral-quiet-action-button-hover: light-dark(
+    --color-background-neutral-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(230deg 7% 50%) 17%, transparent),
         color-mix(in oklch, hsl(231deg 11% 76%) 17%, transparent)
     );
-    --color-background-neutral-quiet-action-button-active: light-dark(
+    --color-background-neutral-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(230deg 7% 50%) 22%, transparent),
         color-mix(in oklch, hsl(231deg 11% 76%) 12%, transparent)
     );
-    --color-text-neutral-borderless-action-button: light-dark(
+    --color-text-neutral-text-action-button: light-dark(
         hsl(229deg 9% 36%),
         hsl(229deg 10% 70%)
     );
-    --color-background-neutral-borderless-action-button-hover: light-dark(
+    --color-background-neutral-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(229deg 9% 36%) 7%, transparent),
         color-mix(in oklch, hsl(230deg 9% 60%) 14%, transparent)
     );
-    --color-background-neutral-borderless-action-button-active: light-dark(
+    --color-background-neutral-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(229deg 9% 36%) 11%, transparent),
         color-mix(in oklch, hsl(230deg 9% 60%) 18%, transparent)
     );
     /* Action buttons -- Brand Variant */
-    --color-text-brand-primary-action-button: light-dark(
+    --color-text-brand-solid-action-button: light-dark(
         hsl(0deg 0% 100%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
-    --color-background-brand-primary-action-button: light-dark(
+    --color-background-brand-solid-action-button: light-dark(
         hsl(254deg 99% 68%),
         hsl(261deg 79% 43%)
     );
-    --color-background-brand-primary-action-button-hover: light-dark(
+    --color-background-brand-solid-action-button-hover: light-dark(
         hsl(255deg 81% 61%),
         hsl(258deg 66% 51%)
     );
-    --color-background-brand-primary-action-button-active: light-dark(
+    --color-background-brand-solid-action-button-active: light-dark(
         hsl(258deg 66% 51%),
         hsl(261deg 79% 43%)
     );
-    --color-text-brand-quiet-action-button: light-dark(
+    --color-text-brand-subtle-action-button: light-dark(
         hsl(264deg 95% 34%),
         hsl(244deg 96% 82%)
     );
-    --color-background-brand-quiet-action-button: light-dark(
+    --color-background-brand-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(254deg 99% 68%) 12%, transparent),
         color-mix(in oklch, hsl(246deg 96% 79%) 12%, transparent)
     );
-    --color-background-brand-quiet-action-button-hover: light-dark(
+    --color-background-brand-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(254deg 99% 68%) 17%, transparent),
         color-mix(in oklch, hsl(246deg 96% 79%) 17%, transparent)
     );
-    --color-background-brand-quiet-action-button-active: light-dark(
+    --color-background-brand-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(254deg 99% 68%) 22%, transparent),
         color-mix(in oklch, hsl(246deg 96% 79%) 12%, transparent)
     );
-    --color-text-brand-borderless-action-button: light-dark(
+    --color-text-brand-text-action-button: light-dark(
         hsl(255deg 54% 50%),
         hsl(246deg 96% 79%)
     );
-    --color-background-brand-borderless-action-button-hover: light-dark(
+    --color-background-brand-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(264deg 100% 22%) 5%, transparent),
         color-mix(in oklch, hsl(251deg 100% 72%) 14%, transparent)
     );
-    --color-background-brand-borderless-action-button-active: light-dark(
+    --color-background-brand-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(264deg 100% 22%) 10%, transparent),
         color-mix(in oklch, hsl(251deg 100% 72%) 18%, transparent)
     );
     /* Action buttons -- Info Variant */
-    --color-text-info-primary-action-button: light-dark(
+    --color-text-info-solid-action-button: light-dark(
         hsl(0deg 0% 100%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
-    --color-background-info-primary-action-button: light-dark(
+    --color-background-info-solid-action-button: light-dark(
         hsl(226deg 100% 62%),
         hsl(228deg 75% 47%)
     );
-    --color-background-info-primary-action-button-hover: hsl(226deg 83% 55%);
-    --color-background-info-primary-action-button-active: hsl(228deg 75% 47%);
-    --color-text-info-quiet-action-button: light-dark(
+    --color-background-info-solid-action-button-hover: hsl(226deg 83% 55%);
+    --color-background-info-solid-action-button-active: hsl(228deg 75% 47%);
+    --color-text-info-subtle-action-button: light-dark(
         hsl(231deg 82% 36%),
         hsl(222deg 98% 79%)
     );
-    --color-background-info-quiet-action-button: light-dark(
+    --color-background-info-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(226deg 100% 62%) 12%, transparent),
         color-mix(in oklch, hsl(222deg 98% 79%) 12%, transparent)
     );
-    --color-background-info-quiet-action-button-hover: light-dark(
+    --color-background-info-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(226deg 100% 62%) 17%, transparent),
         color-mix(in oklch, hsl(222deg 98% 79%) 17%, transparent)
     );
-    --color-background-info-quiet-action-button-active: light-dark(
+    --color-background-info-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(226deg 100% 62%) 22%, transparent),
         color-mix(in oklch, hsl(222deg 98% 79%) 12%, transparent)
     );
-    --color-text-info-borderless-action-button: light-dark(
+    --color-text-info-text-action-button: light-dark(
         hsl(227deg 70% 46%),
         hsl(222deg 97% 75%)
     );
-    --color-background-info-borderless-action-button-hover: light-dark(
+    --color-background-info-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(241deg 95% 25%) 5%, transparent),
         color-mix(in oklch, hsl(224deg 98% 65%) 12%, transparent)
     );
-    --color-background-info-borderless-action-button-active: light-dark(
+    --color-background-info-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(241deg 95% 25%) 9%, transparent),
         color-mix(in oklch, hsl(224deg 98% 65%) 17%, transparent)
     );
     /* Action buttons -- Success Variant */
-    --color-text-success-primary-action-button: light-dark(
+    --color-text-success-solid-action-button: light-dark(
         hsl(0deg 0% 100%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
-    --color-background-success-primary-action-button: light-dark(
+    --color-background-success-solid-action-button: light-dark(
         hsl(146deg 90% 27%),
         hsl(144deg 84% 22%)
     );
-    --color-background-success-primary-action-button-hover: hsl(145deg 87% 25%);
-    --color-background-success-primary-action-button-active: hsl(
-        144deg 84% 22%
-    );
-    --color-text-success-quiet-action-button: light-dark(
+    --color-background-success-solid-action-button-hover: hsl(145deg 87% 25%);
+    --color-background-success-solid-action-button-active: hsl(144deg 84% 22%);
+    --color-text-success-subtle-action-button: light-dark(
         hsl(144deg 88% 16%),
         hsl(135deg 56% 63%)
     );
-    --color-background-success-quiet-action-button: light-dark(
+    --color-background-success-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(146deg 90% 27%) 13%, transparent),
         color-mix(in oklch, hsl(138deg 46% 47%) 12%, transparent)
     );
-    --color-background-success-quiet-action-button-hover: light-dark(
+    --color-background-success-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(146deg 90% 27%) 18%, transparent),
         color-mix(in oklch, hsl(138deg 46% 47%) 17%, transparent)
     );
-    --color-background-success-quiet-action-button-active: light-dark(
+    --color-background-success-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(146deg 90% 27%) 23%, transparent),
         color-mix(in oklch, hsl(138deg 46% 47%) 12%, transparent)
     );
-    --color-text-success-borderless-action-button: light-dark(
+    --color-text-success-text-action-button: light-dark(
         hsl(146deg 90% 27%),
         hsl(136deg 47% 55%)
     );
-    --color-background-success-borderless-action-button-hover: light-dark(
+    --color-background-success-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(144deg 84% 22%) 8%, transparent),
         color-mix(in oklch, hsl(139deg 54% 40%) 12%, transparent)
     );
-    --color-background-success-borderless-action-button-active: light-dark(
+    --color-background-success-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(144deg 84% 22%) 12%, transparent),
         color-mix(in oklch, hsl(139deg 54% 40%) 17%, transparent)
     );
     /* Action buttons -- Warning Variant */
-    --color-text-warning-primary-action-button: light-dark(
+    --color-text-warning-solid-action-button: light-dark(
         color-mix(in oklch, hsl(0deg 0% 0%) 88%, transparent),
         color-mix(in oklch, hsl(0deg 0% 0%) 90%, transparent)
     );
-    --color-background-warning-primary-action-button: light-dark(
+    --color-background-warning-solid-action-button: light-dark(
         hsl(40deg 99% 62%),
         hsl(39deg 89% 45%)
     );
-    --color-background-warning-primary-action-button-hover: light-dark(
+    --color-background-warning-solid-action-button-hover: light-dark(
         hsl(40deg 94% 56%),
         hsl(41deg 98% 46%)
     );
-    --color-background-warning-primary-action-button-active: light-dark(
+    --color-background-warning-solid-action-button-active: light-dark(
         hsl(41deg 98% 46%),
         hsl(39deg 89% 45%)
     );
-    --color-text-warning-quiet-action-button: light-dark(
+    --color-text-warning-subtle-action-button: light-dark(
         hsl(34deg 89% 25%),
         hsl(40deg 94% 56%)
     );
-    --color-background-warning-quiet-action-button: light-dark(
+    --color-background-warning-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(41deg 98% 46%) 18%, transparent),
         color-mix(in oklch, hsl(39deg 89% 45%) 12%, transparent)
     );
-    --color-background-warning-quiet-action-button-hover: light-dark(
+    --color-background-warning-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(41deg 98% 46%) 23%, transparent),
         color-mix(in oklch, hsl(39deg 89% 45%) 17%, transparent)
     );
-    --color-background-warning-quiet-action-button-active: light-dark(
+    --color-background-warning-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(41deg 98% 46%) 28%, transparent),
         color-mix(in oklch, hsl(39deg 89% 45%) 12%, transparent)
     );
-    --color-text-warning-borderless-action-button: light-dark(
+    --color-text-warning-text-action-button: light-dark(
         hsl(37deg 94% 34%),
         hsl(41deg 98% 46%)
     );
-    --color-background-warning-borderless-action-button-hover: light-dark(
+    --color-background-warning-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(37deg 94% 34%) 10%, transparent),
         color-mix(in oklch, hsl(39deg 88% 42%) 12%, transparent)
     );
-    --color-background-warning-borderless-action-button-active: light-dark(
+    --color-background-warning-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(37deg 94% 34%) 14%, transparent),
         color-mix(in oklch, hsl(39deg 88% 42%) 17%, transparent)
     );
     /* Action buttons -- Danger Variant */
-    --color-text-danger-primary-action-button: light-dark(
+    --color-text-danger-solid-action-button: light-dark(
         hsl(0deg 0% 100%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
-    --color-background-danger-primary-action-button: light-dark(
+    --color-background-danger-solid-action-button: light-dark(
         hsl(4deg 75% 53%),
         hsl(2deg 74% 47%)
     );
-    --color-background-danger-primary-action-button-hover: light-dark(
+    --color-background-danger-solid-action-button-hover: light-dark(
         hsl(2deg 74% 47%),
         hsl(4deg 75% 53%)
     );
-    --color-background-danger-primary-action-button-active: light-dark(
+    --color-background-danger-solid-action-button-active: light-dark(
         hsl(359deg 93% 39%),
         hsl(2deg 74% 47%)
     );
-    --color-text-danger-quiet-action-button: light-dark(
+    --color-text-danger-subtle-action-button: light-dark(
         hsl(359deg 94% 35%),
         hsl(7deg 100% 74%)
     );
-    --color-background-danger-quiet-action-button: light-dark(
+    --color-background-danger-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(4deg 75% 53%) 13%, transparent),
         color-mix(in oklch, hsl(5deg 98% 65%) 12%, transparent)
     );
-    --color-background-danger-quiet-action-button-hover: light-dark(
+    --color-background-danger-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(4deg 75% 53%) 18%, transparent),
         color-mix(in oklch, hsl(5deg 98% 65%) 17%, transparent)
     );
-    --color-background-danger-quiet-action-button-active: light-dark(
+    --color-background-danger-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(4deg 75% 53%) 23%, transparent),
         color-mix(in oklch, hsl(5deg 98% 65%) 12%, transparent)
     );
-    --color-text-danger-borderless-action-button: light-dark(
+    --color-text-danger-text-action-button: light-dark(
         hsl(359deg 93% 39%),
         hsl(7deg 100% 74%)
     );
-    --color-background-danger-borderless-action-button-hover: light-dark(
+    --color-background-danger-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(359deg 93% 39%) 9%, transparent),
         color-mix(in oklch, hsl(5deg 88% 60%) 12%, transparent)
     );
-    --color-background-danger-borderless-action-button-active: light-dark(
+    --color-background-danger-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(359deg 93% 39%) 13%, transparent),
         color-mix(in oklch, hsl(5deg 88% 60%) 17%, transparent)
     );
