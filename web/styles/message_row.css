@@ -1156,7 +1156,7 @@
 .message_feed_divider {
     display: grid;
     grid-area: message_feed_divider_content;
-    grid-template: auto / minmax(20px, 1fr) auto minmax(max-content, 1fr);
+    grid-template: auto / minmax(20px, 1fr) auto max-content;
     grid-template-areas: "left_divider_content middle_divider_content right_divider_content";
     align-items: center;
     padding: 8px 0;
@@ -1202,6 +1202,7 @@
         display: flex;
         align-items: center;
         justify-content: end;
+        white-space: nowrap;
         letter-spacing: 0.04em;
         /* Right padding matches time in message row and date in recipient row. */
         padding-right: 6px;
@@ -1227,6 +1228,10 @@
             height: 0;
             border-bottom: 1px solid
                 var(--color-border-message-group-spacer-line);
+        }
+
+        &.date_row_text {
+            cursor: pointer;
         }
     }
 
