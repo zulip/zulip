@@ -1,7 +1,7 @@
 <div
   class="main-view-banner {{banner_type}} {{classname}}"
-  {{#if user_id}}data-user-id="{{user_id}}"{{/if}}
-  {{#if stream_id}}data-stream-id="{{stream_id}}"{{/if}}
+  {{#unless (eq user_id undefined)}}data-user-id="{{user_id}}"{{/unless}}
+  {{#unless (eq stream_id undefined)}}data-stream-id="{{stream_id}}"{{/unless}}
   {{#if (or topic_name is_empty_string_topic)}}data-topic-name="{{topic_name}}"{{/if}}>
     <div class="main-view-banner-elements-wrapper">
         {{#if banner_text}}
