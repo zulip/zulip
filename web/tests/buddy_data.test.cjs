@@ -14,6 +14,9 @@ mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
 const timerender = mock_esm("../src/timerender");
+
+const unread = mock_esm("../src/unread");
+
 mock_esm("../src/buddy_list", {
     buddy_list: {
         rerender_participants: noop,
@@ -41,16 +44,6 @@ set_current_user(current_user);
 const user_settings = {};
 initialize_user_settings({user_settings});
 
-// The buddy_data module is mostly tested indirectly through
-// activity.test.cjs, but we should feel free to add direct tests
-// here.
-
-const selma = {
-    user_id: 1000,
-    full_name: "Human Selma",
-    email: "selma@example.com",
-};
-
 const me = {
     user_id: 1001,
     full_name: "Human Myself",
@@ -67,6 +60,12 @@ const fred = {
     email: "fred@zulip.com",
     user_id: 1003,
     full_name: "Fred Flintstone",
+};
+
+const selma = {
+    user_id: 1000,
+    full_name: "Human Selma",
+    email: "selma@example.com",
 };
 
 const jill = {
@@ -114,6 +113,38 @@ function add_canned_users() {
     people.add_active_user(old_user);
     people.add_active_user(selma);
 }
+
+run_test("compare_function", () => {
+    const first_user_shown_higher = -1;
+    const second_user_shown_higher = 1;
+
+    people.add_active_user(alice);
+    people.add_active_user(fred);
+
+    unread.num_unread_for_user_ids_string = (id_string) => {
+        if (id_string === alice.user_id.toString()) {
+            return 1;
+        }
+        return 0;
+    };
+
+    assert.equal(
+        buddy_data.compare_function(alice.user_id, fred.user_id, undefined, new Set(), new Set()),
+        first_user_shown_higher,
+    );
+
+    assert.equal(
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
+        second_user_shown_higher,
+    );
+
+    unread.num_unread_for_user_ids_string = () => 0;
+
+    assert.equal(
+        buddy_data.compare_function(alice.user_id, fred.user_id, undefined, new Set(), new Set()),
+        first_user_shown_higher,
+    );
+});
 
 function test(label, f) {
     run_test(label, (helpers) => {
@@ -504,6 +535,30 @@ test("compare_function", () => {
     people.add_active_user(alice);
     people.add_active_user(fred);
 
+    // --- ADD THIS: Unread message priority tests ---
+    // Alice has 1 unread message, Fred has 0.
+    unread.num_unread_for_user_ids_string = (id_string) => {
+        if (id_string === alice.user_id.toString()) {
+            return 1;
+        }
+        return 0;
+    };
+
+    // Alice should be higher (-1) because she has unreads.
+    assert.equal(
+        first_user_shown_higher,
+        buddy_data.compare_function(alice.user_id, fred.user_id, stream_id, new Set(), new Set()),
+    );
+    // Fred should be lower (1) than Alice.
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, stream_id, new Set(), new Set()),
+    );
+
+    // Reset unread mock for the rest of the existing tests.
+    unread.num_unread_for_user_ids_string = () => 0;
+    // -----------------------------------------------
+
     // Alice is higher because of alphabetical sorting.
     peer_data.set_subscribers(stream_id, []);
     assert.equal(
@@ -511,7 +566,6 @@ test("compare_function", () => {
         buddy_data.compare_function(fred.user_id, alice.user_id, stream_id, new Set(), new Set()),
     );
 
-    // Fred is higher because they're in the narrow and Alice isn't.
     peer_data.set_subscribers(stream_id, [fred.user_id]);
     assert.equal(
         first_user_shown_higher,
@@ -522,7 +576,6 @@ test("compare_function", () => {
         buddy_data.compare_function(alice.user_id, fred.user_id, stream_id, new Set(), new Set()),
     );
 
-    // Fred is higher because they're in the DM conversation and Alice isn't.
     assert.equal(
         first_user_shown_higher,
         buddy_data.compare_function(
@@ -534,7 +587,6 @@ test("compare_function", () => {
         ),
     );
 
-    // Fred is higher because they're in the conversation and Alice isn't.
     assert.equal(
         first_user_shown_higher,
         buddy_data.compare_function(
@@ -557,13 +609,11 @@ test("compare_function", () => {
         ),
     );
 
-    // Alice is higher because of alphabetical sorting.
     assert.equal(
         second_user_shown_higher,
         buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
     );
 
-    // The user is part of a DM conversation, though that's not explicitly in the DM list.
     assert.equal(
         first_user_shown_higher,
         buddy_data.compare_function(
@@ -575,7 +625,6 @@ test("compare_function", () => {
         ),
     );
 });
-
 test("user_last_seen_time_status", ({override}) => {
     page_params.presence_history_limit_days_for_web_app = 365;
     set_presence(selma.user_id, "active");
