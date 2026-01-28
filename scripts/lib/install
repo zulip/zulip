@@ -13,6 +13,7 @@ Options:
       The user-accessible domain name for this Zulip server, i.e.,
       what users will type in their web browser.  Required, unless
       --no-init-db or --puppet-classes is set, and --certbot is not.
+      Use Punycode for non-ASCII domains.
 
   --email=zulip-admin@example.com
       The email address of the person or team who should get support
