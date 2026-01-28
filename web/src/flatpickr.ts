@@ -1,148 +1,251 @@
 import {formatISO} from "date-fns";
-import flatpickr from "flatpickr";
-import confirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
-import assert from "minimalistic-assert";
 
 import {$t} from "./i18n.ts";
-import {user_settings} from "./user_settings.ts";
-import * as util from "./util.ts";
 
-export let flatpickr_instance: flatpickr.Instance | undefined;
+// Keep a reference to the current picker state
+let current_picker_state:
+    | {
+          container: JQuery;
+          input: JQuery<HTMLInputElement>;
+          callback: (time: string) => void;
+      }
+    | undefined;
+
+// For backwards compatibility
+export const flatpickr_instance = undefined;
 
 export function is_open(): boolean {
-    return Boolean(flatpickr_instance?.isOpen);
-}
-
-function is_numeric_key(key: string): boolean {
-    return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
+    return current_picker_state !== undefined;
 }
 
 export function show_flatpickr(
     element: HTMLElement,
     callback: (time: string) => void,
-    default_timestamp: flatpickr.Options.DateOption,
-    options: flatpickr.Options.Options = {},
-): flatpickr.Instance {
-    const $flatpickr_input = $<HTMLInputElement>("<input>").attr("id", "#timestamp_flatpickr");
+    default_timestamp: Date | string | number,
+    options?: {
+        minDate?: Date | string | number;
+        position?: string;
+        ignoredFocusElements?: unknown[];
+    },
+): {close: () => void; destroy: () => void} {
+    const opts = options ?? {};
 
-    flatpickr_instance = flatpickr(util.the($flatpickr_input), {
-        mode: "single",
-        enableTime: true,
-        clickOpens: false,
-        defaultDate: default_timestamp,
-        plugins: [
-            confirmDatePlugin({
-                showAlways: true,
-                confirmText: $t({defaultMessage: "Confirm"}),
-                confirmIcon: "",
-            }),
-        ],
-        positionElement: element,
-        dateFormat: "Z",
-        formatDate: (date) => formatISO(date),
-        disableMobile: true,
-        time_24hr: user_settings.twenty_four_hour_time,
-        minuteIncrement: 1,
-        onKeyDown(_selectedDates, _dateStr, instance, event: KeyboardEvent) {
-            // See also the keydown handler below.
-            //
-            // TODO: Add a clear explanation of exactly how key
-            // interactions are dispatched; it seems that keyboard
-            // logic from this function, the built-in flatpickr
-            // onKeyDown function, and the below keydown handler are
-            // used, but it's not at all clear in what order they are
-            // called, or what the overall control flow is.
-            if (event.key === "Tab") {
-                // Ensure that tab/shift_tab navigation work to
-                // navigate between the elements in flatpickr itself
-                // and the confirmation button at the bottom of the
-                // popover.
-                const elems = [
-                    instance.selectedDateElem,
-                    instance.hourElement,
-                    instance.minuteElement,
-                    ...(user_settings.twenty_four_hour_time ? [] : [instance.amPM]),
-                    $(".flatpickr-confirm")[0],
-                ];
-                assert(event.target instanceof HTMLElement);
-                const i = elems.indexOf(event.target);
-                const n = elems.length;
-                const remain = (i + (event.shiftKey ? -1 : 1)) % n;
-                const target = elems[Math.floor(remain >= 0 ? remain : remain + n)];
-                event.preventDefault();
-                event.stopPropagation();
-                assert(target !== undefined);
-                target.focus();
-            } else {
-                // Prevent keypresses from propagating to our general hotkey.ts
-                // logic. Without this, `Up` will navigate both in the
-                // flatpickr instance and in the message feed behind
-                // it.
-                event.stopPropagation();
-            }
-        },
-        ...options,
+    // Close any existing picker first
+    if (current_picker_state) {
+        close_picker();
+    }
+
+    const default_date = new Date(default_timestamp);
+    const min_date = opts.minDate ? new Date(opts.minDate) : undefined;
+
+    // Format date for datetime-local input (YYYY-MM-DDTHH:mm)
+    const format_datetime_local = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    // Create the native datetime-local picker
+    const $datetime_input = $<HTMLInputElement>("<input>")
+        .attr("type", "datetime-local")
+        .attr("id", "native-datetime-picker")
+        .val(format_datetime_local(default_date))
+        .css({
+            width: "100%",
+            padding: "10px",
+            "font-size": "14px",
+            border: "1px solid var(--color-border, hsl(0deg 0% 80%))",
+            "border-radius": "4px",
+            "box-sizing": "border-box",
+            "margin-bottom": "12px",
+        });
+
+    if (min_date) {
+        $datetime_input.attr("min", format_datetime_local(min_date));
+    }
+
+    // Create container
+    const $container = $("<div>").attr("id", "native-datetime-container").css({
+        position: "absolute",
+        "z-index": "1000",
+        background: "var(--color-background-modal, hsl(0deg 0% 100%))",
+        padding: "16px",
+        "border-radius": "6px",
+        "box-shadow": "0 4px 20px rgba(0, 0, 0, 0.15)",
+        border: "1px solid var(--color-border, hsl(0deg 0% 87%))",
+        "min-width": "300px",
     });
 
-    const $container = $(flatpickr_instance.calendarContainer);
+    // Create confirm button
+    const $confirm_button = $("<button>")
+        .attr("type", "button")
+        .text($t({defaultMessage: "Confirm"}))
+        .css({
+            padding: "10px 16px",
+            background: "hsl(213deg 100% 50%)",
+            color: "hsl(0deg 0% 100%)",
+            border: "none",
+            "border-radius": "4px",
+            cursor: "pointer",
+            width: "100%",
+            "font-weight": "600",
+            "font-size": "14px",
+        })
+        .on("mouseenter", function () {
+            $(this).css("background", "hsl(213deg 100% 45%)");
+        })
+        .on("mouseleave", function () {
+            $(this).css("background", "hsl(213deg 100% 50%)");
+        });
 
-    $container.on("keydown", (e) => {
-        // Main keyboard UI implementation.
+    $container.append($datetime_input).append($confirm_button);
+    $("body").append($container);
 
-        if (is_numeric_key(e.key)) {
-            // Let users type numeric values
-            return true;
+    // Position the container
+    const position_picker = (): void => {
+        const element_rect = element.getBoundingClientRect();
+        const container_height = $container.outerHeight() ?? 0;
+        const container_width = $container.outerWidth() ?? 0;
+
+        let top = element_rect.bottom + 5;
+        let left = element_rect.left;
+
+        // Center if element has no position
+        if (element_rect.top === 0 && element_rect.left === 0) {
+            top = (window.innerHeight - container_height) / 2;
+            left = (window.innerWidth - container_width) / 2;
+        } else {
+            // Position below element, adjust if off-screen
+            if (top + container_height > window.innerHeight) {
+                top = element_rect.top - container_height - 5;
+            }
+            if (left + container_width > window.innerWidth) {
+                left = window.innerWidth - container_width - 10;
+            }
+            if (left < 10) {
+                left = 10;
+            }
+            if (top < 10) {
+                top = 10;
+            }
         }
 
-        if (e.key === "Backspace" || e.key === "Delete") {
-            // Let backspace or delete be handled normally
-            return true;
+        $container.css({
+            top: `${top}px`,
+            left: `${left}px`,
+        });
+    };
+
+    setTimeout(() => {
+        position_picker();
+    }, 10);
+
+    // Open the native picker immediately
+    setTimeout(() => {
+        const input_element = $datetime_input[0];
+        if (input_element instanceof HTMLInputElement && input_element.showPicker) {
+            try {
+                input_element.showPicker();
+            } catch {
+                // showPicker() may fail in some contexts, just continue
+            }
+        }
+    }, 100);
+
+    // Handle confirm button click
+    $confirm_button.on("click", () => {
+        const datetime_value = $datetime_input.val();
+
+        // Reset any error styling
+        $datetime_input.css("border-color", "var(--color-border, hsl(0deg 0% 80%))");
+
+        if (typeof datetime_value !== "string" || !datetime_value) {
+            $datetime_input.css("border-color", "hsl(3deg 90% 63%)");
+            return;
         }
 
+        const selected_date = new Date(datetime_value);
+
+        // Validate date
+        if (Number.isNaN(selected_date.getTime())) {
+            $datetime_input.css("border-color", "hsl(3deg 90% 63%)");
+            return;
+        }
+
+        // Check minimum date
+        if (min_date && selected_date < min_date) {
+            $datetime_input.css("border-color", "hsl(3deg 90% 63%)");
+            return;
+        }
+
+        const iso_time = formatISO(selected_date);
+        callback(iso_time);
+        close_picker();
+    });
+
+    // Handle Enter key
+    $datetime_input.on("keydown", (e) => {
         if (e.key === "Enter") {
-            if (e.target.classList[0] === "flatpickr-day") {
-                // use flatpickr's built-in behavior to choose the selected day.
-                return true;
-            }
-            $container.find(".flatpickr-confirm").trigger("click");
+            e.preventDefault();
+            $confirm_button.trigger("click");
+        } else if (e.key === "Escape") {
+            e.preventDefault();
+            close_picker();
         }
+    });
 
+    // Handle Escape key globally
+    $(document).on("keydown.native-datetime", (e) => {
         if (e.key === "Escape") {
-            flatpickr_instance?.close();
-            flatpickr_instance?.destroy();
+            close_picker();
         }
-
-        if (e.key === "Tab") {
-            // Use flatpickr's built-in navigation between elements.
-            return true;
-        }
-
-        if (["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].includes(e.key)) {
-            // use flatpickr's built-in navigation of the date grid.
-            return true;
-        }
-
-        e.stopPropagation();
-        e.preventDefault();
-
-        return true;
     });
 
-    $container.on("click", ".flatpickr-confirm", () => {
-        const time = $flatpickr_input.val();
-        assert(typeof time === "string");
-        callback(time);
-        flatpickr_instance?.close();
-        flatpickr_instance?.destroy();
+    // Handle click outside to close
+    $(document).on("click.native-datetime", (e) => {
+        const target = e.target;
+        if (!(target instanceof Node)) {
+            return;
+        }
+        if (
+            $(target).closest("#native-datetime-container").length === 0 &&
+            !element.contains(target)
+        ) {
+            close_picker();
+        }
     });
-    flatpickr_instance.open();
-    assert(flatpickr_instance.selectedDateElem !== undefined);
-    flatpickr_instance.selectedDateElem.focus();
 
-    return flatpickr_instance;
+    // Store current state
+    current_picker_state = {
+        container: $container,
+        input: $datetime_input,
+        callback,
+    };
+
+    // Focus the input
+    setTimeout(() => {
+        $datetime_input.trigger("focus");
+    }, 0);
+
+    return {
+        close: close_picker,
+        destroy: close_picker,
+    };
+}
+
+function close_picker(): void {
+    if (current_picker_state) {
+        current_picker_state.container.remove();
+        $(document).off("keydown.native-datetime");
+        $(document).off("click.native-datetime");
+        current_picker_state = undefined;
+    }
 }
 
 export function close_all(): void {
-    $(".flatpickr-calendar").removeClass("open");
+    close_picker();
 }
