@@ -21,7 +21,7 @@ import * as compose_validate from "./compose_validate.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as drafts from "./drafts.ts";
-import * as flatpickr from "./flatpickr.ts";
+
 import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_view from "./message_view.ts";
@@ -38,7 +38,6 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as sub_store from "./sub_store.ts";
 import * as subscriber_api from "./subscriber_api.ts";
-import {get_timestamp_for_flatpickr} from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
 import * as user_topics from "./user_topics.ts";
@@ -69,13 +68,13 @@ export function initialize(): void {
         compose_call.compute_show_audio_chat_button(),
     );
 
-    $("textarea#compose-textarea").on("keydown", (event) => {
+    $("textarea#compose-textarea").on("keydown", (event: any) => {
         compose_ui.handle_keydown(
             event,
             $<HTMLTextAreaElement>("textarea#compose-textarea").expectOne(),
         );
     });
-    $("textarea#compose-textarea").on("keyup", (event) => {
+    $("textarea#compose-textarea").on("keyup", (event: any) => {
         compose_ui.handle_keyup(
             event,
             $<HTMLTextAreaElement>("textarea#compose-textarea").expectOne(),
@@ -112,7 +111,7 @@ export function initialize(): void {
         }
     });
 
-    $("#compose form").on("submit", (e) => {
+    $("#compose form").on("submit", (e: any) => {
         e.preventDefault();
         compose.finish();
     });
@@ -129,7 +128,7 @@ export function initialize(): void {
     });
     update_compose_max_height.observe(document.querySelector("#compose")!);
 
-    function get_input_info(event: JQuery.ClickEvent): {
+    function get_input_info(event: any): {
         is_edit_input: boolean;
         $banner_container: JQuery;
     } {
@@ -144,7 +143,7 @@ export function initialize(): void {
         `.${CSS.escape(
             compose_banner.CLASSNAMES.wildcard_warning,
         )} .main-view-banner-action-button`,
-        (event) => {
+        (event: any) => {
             event.preventDefault();
             const {$banner_container, is_edit_input} = get_input_info(event);
             assert(event.target instanceof HTMLElement);
@@ -175,7 +174,7 @@ export function initialize(): void {
     $("body").on(
         "click",
         `${user_not_subscribed_selector} .main-view-banner-action-button`,
-        (event) => {
+        (event: any) => {
             event.preventDefault();
 
             const stream_id = compose_state.stream_id();
@@ -192,7 +191,7 @@ export function initialize(): void {
     $("body").on(
         "click",
         `.${CSS.escape(compose_banner.CLASSNAMES.topic_resolved)} .main-view-banner-action-button`,
-        (event) => {
+        (event: any) => {
             event.preventDefault();
 
             const $target = $(event.target).parents(".main-view-banner");
@@ -240,7 +239,7 @@ export function initialize(): void {
         `.${CSS.escape(
             compose_banner.CLASSNAMES.unmute_topic_notification,
         )} .main-view-banner-action-button`,
-        (event) => {
+        (event: any) => {
             event.preventDefault();
 
             const $target = $(event.target).parents(".main-view-banner");
@@ -261,7 +260,7 @@ export function initialize(): void {
     $("body").on(
         "click",
         `${automatic_new_visibility_policy_banner_selector} .main-view-banner-action-button`,
-        (event) => {
+        (event: any) => {
             event.preventDefault();
             if ($(event.target).attr("data-action") === "mark-as-read") {
                 $(event.target).parents(automatic_new_visibility_policy_banner_selector).remove();
@@ -277,14 +276,14 @@ export function initialize(): void {
         `.${CSS.escape(
             compose_banner.CLASSNAMES.unscheduled_message,
         )} .main-view-banner-action-button`,
-        (event) => {
+        (event: any) => {
             event.preventDefault();
             const send_at_timestamp = scheduled_messages.get_selected_send_later_timestamp();
             // When clicking the button to reschedule, the send later timestamp from the
             // recently unscheduled message is saved in `selected_send_later_timestamp` and
             // won't be undefined.
             assert(send_at_timestamp !== undefined);
-            compose_send_menu_popover.do_schedule_message(send_at_timestamp);
+            compose_send_menu_popover.do_schedule_message(send_at_timestamp!);
         },
     );
 
@@ -293,7 +292,7 @@ export function initialize(): void {
         `.${CSS.escape(
             compose_banner.CLASSNAMES.recipient_not_subscribed,
         )} .main-view-banner-action-button`,
-        (event) => {
+        (event: any) => {
             event.preventDefault();
             const {$banner_container} = get_input_info(event);
             const $invite_row = $(event.target).parents(".main-view-banner");
@@ -305,7 +304,7 @@ export function initialize(): void {
                 $invite_row.remove();
             }
 
-            function xhr_failure(xhr: JQuery.jqXHR<unknown>): void {
+            function xhr_failure(xhr: any): void {
                 let error_message = "Failed to subscribe user!";
                 const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
                 if (parsed.success) {
@@ -331,7 +330,7 @@ export function initialize(): void {
     $("body").on(
         "click",
         `.${CSS.escape(compose_banner.CLASSNAMES.search_view)} .main-view-banner-action-button`,
-        (event) => {
+        (event: any) => {
             event.preventDefault();
             message_view.to_compose_target();
         },
@@ -341,7 +340,7 @@ export function initialize(): void {
     $("body").on(
         "click",
         `${jump_to_conversation_banner_selector} .main-view-banner-action-button`,
-        (event) => {
+        (event: any) => {
             event.preventDefault();
             $(event.target).parents(jump_to_conversation_banner_selector).remove();
             onboarding_steps.post_onboarding_step_as_read("jump_to_conversation_banner");
@@ -352,7 +351,7 @@ export function initialize(): void {
     $("body").on(
         "click",
         `${non_interleaved_view_messages_fading_banner_selector} .main-view-banner-action-button`,
-        (event) => {
+        (event: any) => {
             event.preventDefault();
             $(event.target).parents(non_interleaved_view_messages_fading_banner_selector).remove();
             onboarding_steps.post_onboarding_step_as_read("non_interleaved_view_messages_fading");
@@ -363,7 +362,7 @@ export function initialize(): void {
     $("body").on(
         "click",
         `${interleaved_view_messages_fading_banner_selector} .main-view-banner-action-button`,
-        (event) => {
+        (event: any) => {
             event.preventDefault();
             $(event.target).parents(interleaved_view_messages_fading_banner_selector).remove();
             onboarding_steps.post_onboarding_step_as_read("interleaved_view_messages_fading");
@@ -372,7 +371,7 @@ export function initialize(): void {
 
     for (const classname of Object.values(compose_banner.CLASSNAMES)) {
         const classname_selector = `.${CSS.escape(classname)}`;
-        $("body").on("click", `${classname_selector} .main-view-banner-close-button`, (event) => {
+        $("body").on("click", `${classname_selector} .main-view-banner-close-button`, (event: any) => {
             event.preventDefault();
             $(event.target).parents(classname_selector).remove();
         });
@@ -381,14 +380,14 @@ export function initialize(): void {
     // Click event binding for "Attach files" button
     // Triggers a click on a hidden file input field
 
-    $("#compose").on("click", ".compose_upload_file", (e) => {
+    $("#compose").on("click", ".compose_upload_file", (e: any) => {
         e.preventDefault();
         e.stopPropagation();
 
         $("#compose .file_input").trigger("click");
     });
 
-    $("body").on("click", ".video_link", function (this: HTMLElement, e): void {
+    $("body").on("click", ".video_link", function (this: HTMLElement, e: any): void {
         e.preventDefault();
         e.stopPropagation();
 
@@ -401,7 +400,7 @@ export function initialize(): void {
         compose_call_ui.generate_and_insert_audio_or_video_call_link($(this), false);
     });
 
-    $("body").on("click", ".audio_link", function (this: HTMLElement, e): void {
+    $("body").on("click", ".audio_link", function (this: HTMLElement, e: any): void {
         e.preventDefault();
         e.stopPropagation();
 
@@ -414,7 +413,7 @@ export function initialize(): void {
         compose_call_ui.generate_and_insert_audio_or_video_call_link($(this), true);
     });
 
-    $("body").on("click", ".time_pick", function (this: HTMLElement, e) {
+    $("body").on("click", ".time_pick", function (this: HTMLElement, e: any) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -431,30 +430,37 @@ export function initialize(): void {
                 .find<HTMLTextAreaElement>("textarea");
         }
 
-        if (!flatpickr.is_open()) {
+        if ("showPicker" in HTMLInputElement.prototype) {
+            // Create a temporary date input to show native picker
+            const $temp_date_input = $("<input type='datetime-local' style='display: none;' />");
+            $("body").append($temp_date_input);
+
             const on_timestamp_selection = (time: string): void => {
                 const timestr = `<time:${time}> `;
                 compose_ui.insert_syntax_and_focus(timestr, $target_textarea);
             };
 
-            flatpickr.show_flatpickr(
-                util.the($compose_click_target),
-                on_timestamp_selection,
-                get_timestamp_for_flatpickr(),
-                {
-                    // place the time picker wherever there is space and center it horizontally
-                    position: "auto center",
-                    // Since we want to handle close of flatpickr manually, we don't want
-                    // flatpickr to hide automatically on clicking its trigger element.
-                    ignoredFocusElements: [this],
-                },
-            );
+            $temp_date_input.on("change", function (this: HTMLInputElement) {
+                const selected_date = this.value;
+                if (selected_date) {
+                    on_timestamp_selection(selected_date);
+                }
+                $temp_date_input.remove();
+            });
+
+            $temp_date_input.on("cancel", function () {
+                $temp_date_input.remove();
+            });
+
+            // Show the native picker
+            $temp_date_input[0]!.showPicker();
         } else {
-            flatpickr.flatpickr_instance?.close();
+            // Fallback for browsers without showPicker
+            $target_textarea.trigger("focus");
         }
     });
 
-    $("body").on("click", ".compose_control_button_container:not(.disabled) .add-poll", (e) => {
+    $("body").on("click", ".compose_control_button_container:not(.disabled) .add-poll", (e: any) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -497,11 +503,11 @@ export function initialize(): void {
         });
     });
 
-    $("body").on("input", "#add-todo-modal .todo-input", (e) => {
+    $("body").on("input", "#add-todo-modal .todo-input", (e: any) => {
         e.preventDefault();
         e.stopPropagation();
 
-        $(".option-row").each(function () {
+        $(".option-row").each(function (this: HTMLElement) {
             const todo_name = $(this).find(".todo-input").val();
             const $todo_description = $(this).find(".todo-description-input");
             $todo_description.prop("disabled", !todo_name);
@@ -511,15 +517,15 @@ export function initialize(): void {
     $("body").on(
         "click",
         ".compose_control_button_container:not(.disabled) .add-todo-list",
-        (e) => {
+        (e: any) => {
             e.preventDefault();
             e.stopPropagation();
 
-            function validate_input(e: JQuery.ClickEvent): boolean {
+            function validate_input(e: any): boolean {
                 let is_valid = true;
                 e.preventDefault();
                 e.stopPropagation();
-                $(".option-row").each(function () {
+                $(".option-row").each(function (this: HTMLElement) {
                     const todo_name = $(this).find(".todo-input").val();
                     const todo_description = $(this).find(".todo-description-input").val();
                     if (!todo_name && todo_description) {
@@ -560,40 +566,40 @@ export function initialize(): void {
         },
     );
 
-    $("#compose").on("click", ".markdown_preview", (e) => {
+    $("#compose").on("click", ".markdown_preview", (e: any) => {
         e.preventDefault();
         e.stopPropagation();
 
         compose.show_preview_area();
     });
 
-    $("#compose").on("click", ".undo_markdown_preview", (e) => {
+    $("#compose").on("click", ".undo_markdown_preview", (e: any) => {
         e.preventDefault();
         e.stopPropagation();
 
         compose.clear_preview_area();
     });
 
-    $("#compose").on("click", ".expand-composebox-button", (e) => {
+    $("#compose").on("click", ".expand-composebox-button", (e: any) => {
         e.preventDefault();
         e.stopPropagation();
 
         compose_ui.make_compose_box_intermediate_size();
     });
 
-    $("#compose").on("click", ".maximize-composebox-button", (e) => {
+    $("#compose").on("click", ".maximize-composebox-button", (e: any) => {
         e.preventDefault();
         e.stopPropagation();
 
         compose_ui.make_compose_box_full_size();
     });
 
-    $("#compose").on("click", ".narrow_to_compose_recipients", (e) => {
+    $("#compose").on("click", ".narrow_to_compose_recipients", (e: any) => {
         e.preventDefault();
         message_view.to_compose_target();
     });
 
-    $("#compose").on("click", ".collapse-composebox-button", (e) => {
+    $("#compose").on("click", ".collapse-composebox-button", (e: any) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -621,7 +627,7 @@ export function initialize(): void {
 
     $(".compose-scrollable-buttons").on(
         "scroll",
-        _.throttle((e: JQuery.ScrollEvent) => {
+        _.throttle((e: any) => {
             compose_ui.handle_scrolling_formatting_buttons(e);
         }, 150),
     );
@@ -644,7 +650,7 @@ export function initialize(): void {
         }
     });
 
-    $("#compose-direct-recipient").on("click", "#compose-new-direct-recipient-button", (e) => {
+    $("#compose-direct-recipient").on("click", "#compose-new-direct-recipient-button", (e: any) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -724,7 +730,7 @@ export function initialize(): void {
         drafts.update_draft();
     });
 
-    $("body").on("click", ".formatting_button", function (e) {
+    $("body").on("click", ".formatting_button", function (this: HTMLElement, e: any) {
         const $compose_click_target = $(this);
         const $textarea = $compose_click_target.closest("form").find("textarea");
         const format_type = $(this).attr("data-format-type")!;

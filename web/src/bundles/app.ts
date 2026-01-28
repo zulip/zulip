@@ -18,8 +18,7 @@ import "tippy.js/dist/tippy.css";
 // https://atomiks.github.io/tippyjs/v6/themes/#arrow-border
 import "tippy.js/dist/border.css";
 import "katex/dist/katex.css";
-import "flatpickr/dist/flatpickr.css";
-import "flatpickr/dist/plugins/confirmDate/confirmDate.css";
+
 import "../../third/bootstrap/css/bootstrap.app.css";
 import "../../third/bootstrap/css/bootstrap-btn.css";
 import "../../styles/typeahead.css";
