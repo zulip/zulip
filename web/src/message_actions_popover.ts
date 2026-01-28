@@ -15,6 +15,7 @@ import * as message_lists from "./message_lists.ts";
 import * as message_report from "./message_report.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
+import {initiate_multiple_message_selection} from "./multiple_messages_delete.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as popovers from "./popovers.ts";
@@ -247,6 +248,15 @@ export function initialize({
                         the($(instance.reference).closest(".message_controls")),
                     );
                 })();
+            });
+
+            $popper.one("click", ".select-messages-delete", (e) => {
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
+                assert(message_lists.current !== undefined);
+                e.preventDefault();
+                e.stopPropagation();
+                initiate_multiple_message_selection(message_id);
+                popover_menus.hide_current_popover_if_visible(instance);
             });
         },
         onHidden(instance) {

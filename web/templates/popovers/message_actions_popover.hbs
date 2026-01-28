@@ -132,5 +132,13 @@
                 {{popover_hotkey_hints "L"}}
             </a>
         </li>
+        {{#if should_display_delete_option}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" data-message-id="{{message_id}}" class="select-messages-delete popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-link-alt" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Select multiple messages to delete" }}</span>
+            </a>
+        </li>
+        {{/if}}
     </ul>
 </div>
