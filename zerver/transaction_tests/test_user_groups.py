@@ -3,7 +3,7 @@ from typing import Any
 from unittest import mock
 
 import orjson
-from django.db import OperationalError, connections, transaction
+from django.db import OperationalError, connections
 from django.http import HttpRequest
 from typing_extensions import override
 
@@ -63,27 +63,8 @@ def dev_update_subgroups(
 
 
 class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
-    created_user_groups: list[NamedUserGroup] = []
     counter = 0
     CHAIN_LENGTH = 3
-
-    @override
-    def tearDown(self) -> None:
-        # Clean up the user groups created to minimize leakage
-        with transaction.atomic(durable=True):
-            for group in self.created_user_groups:
-                # can_manage_group can be deleted as long as it's the
-                # default group_creator. If we start using non-default
-                # can_manage_group in this test, deleting that group
-                # should be reconsidered.
-                can_manage_group = group.can_manage_group
-                can_add_members_group = group.can_add_members_group
-                group.delete()
-                can_manage_group.delete()
-                can_add_members_group.delete()
-            transaction.on_commit(self.created_user_groups.clear)
-
-        super().tearDown()
 
     def create_user_group_chain(self, realm: Realm) -> list[NamedUserGroup]:
         """Build a user groups forming a chain through group-group memberships
@@ -95,7 +76,6 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
             for i in range(self.CHAIN_LENGTH)
         ]
         self.counter += self.CHAIN_LENGTH
-        self.created_user_groups.extend(groups)
         prev_group = groups[0]
         for group in groups[1:]:
             add_subgroups_to_user_group(prev_group, [group], acting_user=iago)

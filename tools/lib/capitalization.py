@@ -26,6 +26,7 @@ IGNORED_PHRASES = [
     r"HTTP",
     r"ID",
     r"IDs",
+    r"Idempotency-Key",
     r"Inbox",
     r"IP",
     r"JSON",

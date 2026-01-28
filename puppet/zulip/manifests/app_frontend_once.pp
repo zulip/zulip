@@ -53,6 +53,11 @@ class zulip::app_frontend_once {
     hour   => '6',
     minute => '0',
   }
+  zulip::cron { 'delete-old-idempotency-rows':
+    hour   => '7',
+    minute => '0',
+    manage => 'delete_old_idempotency_rows',
+  }
   zulip::cron { 'send-digest-emails':
     hour   => '18',
     minute => '0',

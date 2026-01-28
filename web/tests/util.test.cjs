@@ -635,3 +635,31 @@ run_test("unique_array_insert", () => {
         {c: "beep", d: "boop"},
     ]);
 });
+
+run_test("generate_idempotency_key", async () => {
+    // window.isSecureContext is false during tests,
+    // as a result generate_idempotency_key generates
+    // our custom implementation of UUID V4, so we must validate it.
+
+    // Since each call returns a completely random value,
+    // we call it multiple times for better coverage and to make sure
+    // it produces a valid uuid across multiple invocations.
+    // Still, this is not a bullet-proof test, but it's just a
+    // limitation of testing non-deterministic code.
+    for (let i = 0; i < 200; i += 1) {
+        const custom_uuid = util.generate_idempotency_key();
+
+        // First we test invariants to be explicit and to give us
+        // diagnostic clarity of what caused the test to fail.
+        assert.equal(custom_uuid.length, 36);
+
+        // version 4
+        assert.equal(custom_uuid[14], "4");
+
+        // a spec of UUID V4
+        assert.ok(["8", "9", "a", "b"].includes(custom_uuid[19]));
+
+        // Second, catch all by matching against a regex.
+        assert.ok(util.is_valid_uuid.test(custom_uuid));
+    }
+});

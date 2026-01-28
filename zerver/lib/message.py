@@ -1,6 +1,6 @@
 import re
 from collections.abc import Callable, Collection, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, TypedDict
 
@@ -40,7 +40,7 @@ from zerver.lib.topic import (
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
 )
-from zerver.lib.types import FormattedEditHistoryEvent, UserDisplayRecipient
+from zerver.lib.types import FormattedEditHistoryEvent, SentMessageResult, UserDisplayRecipient
 from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
 from zerver.lib.users import get_inaccessible_user_ids
@@ -1810,3 +1810,17 @@ def is_message_to_self(message: Message) -> bool:
         return message.recipient == message.sender.recipient
 
     return False
+
+
+def message_response_serializer(sent_message_result: list["SentMessageResult"]) -> dict[str, Any]:
+    """
+    Serialize SentMessageResult to a cached_result dict.
+    """
+    return asdict(sent_message_result[0])
+
+
+def message_response_deserializer(cached_result: dict[str, Any]) -> list["SentMessageResult"]:
+    """
+    Deserialize cached_result dict back to SentMessageResult.
+    """
+    return [SentMessageResult(**cached_result)]

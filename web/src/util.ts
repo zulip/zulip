@@ -8,6 +8,11 @@ import type {UpdateMessageEvent} from "./server_event_types.ts";
 import {realm} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
 
+// https://melvingeorge.me/blog/check-if-string-valid-uuid-regex-javascript
+// Regex was modified by linter after copying from above link according to this rule:
+// https://github.com/sindresorhus/eslint-plugin-unicorn/blob/main/docs/rules/better-regex.md
+export const is_valid_uuid = /^[\da-f]{8}(?:\b-[\da-f]{4}){3}\b-[\da-f]{12}$/i;
+
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
 export function random_int(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -606,4 +611,23 @@ export function unique_array_insert<T>(array: T[], new_item: T): void {
         }
     }
     array.push(new_item);
+}
+
+export function generate_idempotency_key(): string {
+    // The Web Crypto API is only available in secure contexts (HTTPS or localhost).
+    if (!window.isSecureContext) {
+        // A custom lower-entropy UUID V4
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replaceAll(/[xy]/g, (c) => {
+            /* eslint-disable no-bitwise, unicorn/prefer-math-trunc */
+            const r = (Math.random() * 16) | 0;
+            // (r & 0x3 | 0x8) limits r to be one of (8, 9, 10, 11) only (UUID V4 spec)
+            // for the position y; 10 and 11 will be converted to a, b respectively
+            // by toString() below.
+            const decimal_character = c === "x" ? r : (r & 0x3) | 0x8;
+            // To Hexadecimal
+            return decimal_character.toString(16);
+        });
+    }
+    /* istanbul ignore next */
+    return crypto.randomUUID();
 }

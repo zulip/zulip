@@ -24,7 +24,7 @@ from django.core.signals import got_request_exception
 from django.db import connection, transaction
 from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
-from django.db.models import QuerySet
+from django.db.models import Model, QuerySet
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.http.response import ResponseHeaders
@@ -2397,16 +2397,15 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         do_change_full_name(user_profile, full_name, acting_user=None, notify=False)
 
 
-def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
+def get_row_pks_in_all_models() -> Iterator[tuple[type[Model], set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
     ignored_tables = {"django_session"}
 
     for model in all_models:
-        table_name = model._meta.db_table
-        if table_name in ignored_tables:
+        if model._meta.db_table in ignored_tables:
             continue
         pks = model._default_manager.all().values_list("pk", flat=True)
-        yield table_name, set(pks)
+        yield model, set(pks)
 
 
 class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
@@ -2434,19 +2433,32 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
     @override
     def setUp(self) -> None:
         super().setUp()
-        self.models_pks_set = dict(get_row_pks_in_all_tables())
+        self.models_pks_set = dict(get_row_pks_in_all_models())
 
     @override
     def tearDown(self) -> None:
-        """Verifies that the test did not adjust the set of rows in the test
-        database. This is a sanity check to help ensure that tests
+        """Clean up data created during the test, then verify the
+        cleaning logic by ensuring that the test did not adjust the
+        set of rows in the test database.
+        This is a sanity check to help ensure that tests
         using this class do not have unintended side effects on the
         test database.
         """
         super().tearDown()
-        for table_name, pks in get_row_pks_in_all_tables():
+
+        # Clean up test data.
+        with transaction.atomic(durable=True):
+            # Delete rows that didn't exist before the test.
+            for model_class, pks in get_row_pks_in_all_models():
+                new_ids = pks - self.models_pks_set[model_class]
+                if new_ids:
+                    model_class.objects.filter(id__in=new_ids).delete()  # type: ignore[attr-defined] # model_class is guaranteed to be a django model.
+
+        # Verify the cleaning logic above.
+        for model_class, pks in get_row_pks_in_all_models():
+            table_name = model_class._meta.db_table
             self.assertSetEqual(
-                self.models_pks_set[table_name],
+                self.models_pks_set[model_class],
                 pks,
                 f"{table_name} got a different set of primary key values after this test",
             )
