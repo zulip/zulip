@@ -113,6 +113,7 @@ from zerver.models import (
     UserProfile,
     UserStatus,
 )
+from zerver.models.bots import get_default_service_bot_triggers
 from zerver.models.clients import get_client
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.streams import StreamTopicsPolicyEnum, get_realm_stream, get_stream
@@ -728,6 +729,15 @@ Output:
     def create_test_bot(
         self, short_name: str, user_profile: UserProfile, full_name: str = "Foo Bot", **extras: Any
     ) -> UserProfile:
+        if (
+            "bot_type" in extras
+            and extras["bot_type"] in UserProfile.SERVICE_BOT_TYPES
+            and "service_triggers" not in extras
+        ):
+            extras.update(
+                service_triggers=orjson.dumps(get_default_service_bot_triggers()).decode()
+            )
+
         self.login_user(user_profile)
         bot_info = {
             "short_name": short_name,
