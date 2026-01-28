@@ -51,6 +51,7 @@ const pm_list = mock_esm("../src/pm_list");
 const reactions = mock_esm("../src/reactions", {
     generate_clean_reactions() {},
 });
+const reaction_notifications = mock_esm("../src/reaction_notifications");
 const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");
 const realm_playground = mock_esm("../src/realm_playground");
@@ -475,6 +476,14 @@ run_test("presence", ({override}) => {
 });
 
 run_test("reaction", ({override}) => {
+    override(reaction_notifications, "received_reaction", (opts) => {
+        assert.deepEqual(opts, event);
+    });
+
+    override(reaction_notifications, "close_notification", (arg) => {
+        assert.deepEqual(arg, event.message_id);
+    });
+
     let event = event_fixtures.reaction__add;
     {
         const stub = make_stub();
