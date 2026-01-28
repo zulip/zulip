@@ -148,6 +148,12 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
 
+    // Wait for API request to be complete by checking when the loading indicator
+    // is shown and hidden.
+    const download_zuliprc_loader_selector = ".download-bot-zuliprc .button-loading-indicator";
+    await page.waitForSelector(download_zuliprc_loader_selector, {visible: true});
+    await page.waitForSelector(download_zuliprc_loader_selector, {hidden: true});
+
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, zuliprc_url_selector);
     assert.match(
         zuliprc_decoded_url,
@@ -187,6 +193,13 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
 
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
+
+    // Wait for API request to be complete by checking when the loading indicator
+    // is shown and hidden.
+    const download_zuliprc_loader_selector = ".download-bot-zuliprc .button-loading-indicator";
+    await page.waitForSelector(download_zuliprc_loader_selector, {visible: true});
+    await page.waitForSelector(download_zuliprc_loader_selector, {hidden: true});
+
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, zuliprc_url_selector);
     assert.match(zuliprc_decoded_url, zuliprc_regex, "Incorrect zuliprc format for bot.");
     await page.click(".micromodal .modal__close");
