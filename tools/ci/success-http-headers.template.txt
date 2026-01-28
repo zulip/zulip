@@ -11,3 +11,6 @@ access-control-allow-origin: *
 access-control-allow-headers: Authorization
 access-control-allow-methods: GET, POST, DELETE, PUT, PATCH, HEAD
 
+referrer-policy: strict-origin-when-cross-origin
+permissions-policy: camera=(), microphone=(), geolocation=(), payment=()
+content-security-policy-report-only: default-src 'none'; report-uri /csp-violations
