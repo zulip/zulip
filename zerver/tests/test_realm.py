@@ -295,9 +295,10 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(result, "Must be a demo organization.")
 
     def test_realm_convert_demo_organization_success(self) -> None:
-        demo_name = "demo conversion test"
-        result = self.submit_demo_creation_form(demo_name)
-        realm = Realm.objects.filter(name=demo_name).latest("date_created")
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].startswith(
