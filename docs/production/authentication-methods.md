@@ -408,17 +408,6 @@ For Active Directory installations, the immutable Security Identifier
 [`objectSid`](https://ldapwiki.com/wiki/Wiki.jsp?page=Security%20Identifier)
 is recommended.
 
-:::{note}
-
-While most LDAP data is synced in `sync_ldap_user_data`, email address
-synchronization is only checked on login. The first time a user logs
-in with `unique_account_id` enabled, the unique ID will be linked with
-their Zulip account. After a change in their LDAP email address, Zulip
-will update the linked Zulip account's Zulip email address the next
-time the user logs in.
-
-:::
-
 #### Manually handling LDAP email changes
 
 If you don't have `unique_account_id` enabled, when a user's email
