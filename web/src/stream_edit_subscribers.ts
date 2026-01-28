@@ -397,6 +397,7 @@ function remove_subscriber({
     }
 
     function remove_user_from_private_stream(): void {
+        buttons.show_button_loading_indicator($remove_button);
         assert(sub !== undefined);
         subscriber_api.remove_user_id_from_stream(
             target_user_id,
@@ -465,6 +466,7 @@ function remove_subscriber({
         return;
     }
 
+    buttons.show_button_loading_indicator($remove_button);
     subscriber_api.remove_user_id_from_stream(
         target_user_id,
         sub,
@@ -562,7 +564,6 @@ export function initialize(): void {
             const target_user_id = Number.parseInt($list_entry.attr("data-subscriber-id")!, 10);
             const stream_id = current_stream_id;
             const $remove_button = $(this).closest(".remove-subscriber-button");
-            buttons.show_button_loading_indicator($remove_button);
             remove_subscriber({stream_id, target_user_id, $list_entry, $remove_button});
         },
     );
