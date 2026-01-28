@@ -1973,6 +1973,8 @@ export function initialize({
         "input",
         "#recent_view_search",
         _.debounce(() => {
+            // Reset focus to first row on new search.
+            row_focus = 0;
             update_filters_view();
             // Wait for user to go idle before initiating search.
         }, 300),
