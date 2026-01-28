@@ -607,7 +607,7 @@ function get_membership_status_context(group: UserGroup): {
 
 function update_membership_status_text(group: UserGroup): void {
     const args = get_membership_status_context(group);
-    const rendered_membership_status = render_user_group_membership_status(args);
+    const rendered_membership_status = render_user_group_membership_status({...args, group});
     const $edit_container = get_edit_container(group.id);
     $edit_container.find(".membership-status").html(rendered_membership_status);
 }
