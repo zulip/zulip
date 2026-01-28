@@ -136,21 +136,21 @@ export function enable_member_management({
 }): void {
     const group_id = group.id;
 
-    const $pill_container = $parent_container.find(".pill-container");
-
     // current_group_id and pill_widget are module-level variables
     current_group_id = group_id;
 
-    pill_widget = add_group_members_pill.create({
-        $pill_container,
-        get_potential_members,
-        get_potential_groups: get_potential_subgroups,
-        with_add_button: true,
-    });
-
-    $pill_container.find(".input").on("input", () => {
-        $parent_container.find(".user_group_subscription_request_result").empty();
-    });
+    if (!group.is_system_group) {
+        const $pill_container = $parent_container.find(".pill-container");
+        pill_widget = add_group_members_pill.create({
+            $pill_container,
+            get_potential_members,
+            get_potential_groups: get_potential_subgroups,
+            with_add_button: true,
+        });
+        $pill_container.find(".input").on("input", () => {
+            $parent_container.find(".user_group_subscription_request_result").empty();
+        });
+    }
 
     member_list_widget = make_list_widget({
         $parent_container,
