@@ -3108,6 +3108,22 @@ class RealmImportExportTest(ExportFile):
                 realm_export_data["zerver_submessage"][i + 1]["id"],
                 f"Submessage ID are not increasing at index {i}",
             )
+        output_dir = get_output_dir()
+        realm_export_file = os.path.join(output_dir, "realm.json")
+
+        # Sort the submessage IDs in descending order, which is incorrect. Import should
+        # make sure the submessage IDs are ascending.
+        realm_export_data["zerver_submessage"].sort(key=lambda r: r["id"], reverse=True)
+        with open(realm_export_file, "wb") as fp:
+            fp.write(orjson.dumps(realm_export_data, option=orjson.OPT_INDENT_2))
+
+        reversed_submessage_data = read_json("realm.json")["zerver_submessage"]
+        for i in range(len(reversed_submessage_data) - 1):
+            self.assertGreater(
+                reversed_submessage_data[i]["id"],
+                reversed_submessage_data[i + 1]["id"],
+                "Reverse the submessages so that we can assert import reorders submessages.",
+            )
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(get_output_dir(), "test-zulip")
