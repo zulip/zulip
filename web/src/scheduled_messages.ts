@@ -19,7 +19,13 @@ type SendOption = Partial<Record<TimeKey, {text: string; stamp: number}>>;
 
 export const MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS = 5 * 60;
 
-export const scheduled_messages_by_id = new Map<number, ScheduledMessage>();
+export let scheduled_messages_by_id = new Map<number, ScheduledMessage>();
+
+export function set_scheduled_messages_by_id_for_testing(
+    scheduled_messages: Map<number, ScheduledMessage>,
+): void {
+    scheduled_messages_by_id = scheduled_messages;
+}
 
 let selected_send_later_timestamp: number | undefined;
 
