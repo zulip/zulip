@@ -1235,12 +1235,22 @@ export function setup_group_list_tab_hash(tab_key_value: string): void {
         return;
     }
 
-    if (tab_key_value === "all-groups") {
-        browser_history.update("#groups/all");
-    } else if (tab_key_value === "your-groups") {
-        browser_history.update("#groups/your");
-    } else {
-        blueslip.debug(`Unknown tab_key_value: ${tab_key_value} for groups overlay.`);
+    switch (tab_key_value) {
+        case "all-groups": {
+            browser_history.update("#groups/all");
+            break;
+        }
+        case "your-groups": {
+            browser_history.update("#groups/your");
+            break;
+        }
+        case "roles": {
+            browser_history.update("#groups/roles");
+            break;
+        }
+        default: {
+            blueslip.debug(`Unknown tab_key_value: ${tab_key_value} for groups overlay.`);
+        }
     }
 }
 
@@ -1593,6 +1603,12 @@ export function change_state(
         return;
     }
 
+    if (section === "roles") {
+        group_list_toggler.goto("roles");
+        empty_right_panel();
+        return;
+    }
+
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         const group_id = Number.parseInt(section, 10);
@@ -1610,7 +1626,9 @@ export function change_state(
 
         if (left_side_tab === undefined) {
             left_side_tab = "all-groups";
-            if (user_groups.is_user_in_group(group_id, current_user.user_id)) {
+            if (group.is_system_group) {
+                left_side_tab = "roles";
+            } else if (user_groups.is_user_in_group(group_id, current_user.user_id)) {
                 left_side_tab = "your-groups";
             }
         }
@@ -1636,15 +1654,28 @@ function compare_by_name(a: UserGroup, b: UserGroup): number {
 
 function redraw_left_panel(tab_name: string): void {
     let groups_list_data;
-    if (tab_name === "all-groups") {
-        groups_list_data = user_groups.get_realm_user_groups(true);
-    } else if (tab_name === "your-groups") {
-        groups_list_data = user_groups.get_user_groups_of_user(people.my_current_user_id(), true);
+    switch (tab_name) {
+        case "all-groups": {
+            groups_list_data = user_groups.get_realm_user_groups(true);
+            groups_list_data.sort(compare_by_name);
+            break;
+        }
+        case "your-groups": {
+            groups_list_data = user_groups.get_user_groups_of_user(
+                people.my_current_user_id(),
+                true,
+            );
+            groups_list_data.sort(compare_by_name);
+            break;
+        }
+        case "roles": {
+            groups_list_data = user_groups.get_system_groups_list();
+            break;
+        }
     }
     if (groups_list_data === undefined) {
         return;
     }
-    groups_list_data.sort(compare_by_name);
     group_list_widget.replace_list_data(groups_list_data);
     update_empty_left_panel_message();
 }
@@ -1715,8 +1746,8 @@ export function add_or_remove_from_group(group: UserGroup, $group_row: JQuery): 
 export function update_empty_left_panel_message(): void {
     // Check if we have any groups in panel to decide whether to
     // display a notice.
-    const is_your_groups_tab_active =
-        get_active_data().$tabs.first().attr("data-tab-key") === "your-groups";
+    const active_tab_key = get_active_data().$tabs.first().attr("data-tab-key");
+    assert(active_tab_key !== undefined);
 
     let current_group_filter =
         z.optional(z.string()).parse(filters_dropdown_widget.value()) ??
@@ -1738,14 +1769,14 @@ export function update_empty_left_panel_message(): void {
 
     const empty_user_group_list_message = get_empty_user_group_list_message(
         current_group_filter,
-        is_your_groups_tab_active,
+        active_tab_key,
     );
 
     const args = {
         empty_user_group_list_message,
         can_create_user_groups:
             settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited,
-        all_groups_tab: !is_your_groups_tab_active,
+        all_groups_tab: active_tab_key === "all-groups",
     };
 
     $(".no-groups-to-show").html(render_user_group_settings_empty_notice(args)).show();
@@ -1753,15 +1784,21 @@ export function update_empty_left_panel_message(): void {
 
 function get_empty_user_group_list_message(
     current_group_filter: string,
-    is_your_groups_tab_active: boolean,
+    active_tab_key: string,
 ): string {
     const is_searching = $("#search_group_name").val() !== "";
     if (is_searching || current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS) {
+        if (active_tab_key === "roles") {
+            return $t({defaultMessage: "There are no roles matching your filters."});
+        }
         return $t({defaultMessage: "There are no groups matching your filters."});
     }
 
-    if (is_your_groups_tab_active) {
+    if (active_tab_key === "your-groups") {
         return $t({defaultMessage: "You are not a member of any user groups."});
+    }
+    if (active_tab_key === "roles") {
+        return $t({defaultMessage: "There are no roles you can view in this organization."});
     }
     return $t({
         defaultMessage: "There are no user groups you can view in this organization.",
@@ -1867,6 +1904,7 @@ export function setup_page(callback: () => void): void {
             values: [
                 {label: $t({defaultMessage: "Your groups"}), key: "your-groups"},
                 {label: $t({defaultMessage: "All groups"}), key: "all-groups"},
+                {label: $t({defaultMessage: "Roles"}), key: "roles"},
             ],
             callback(_label, key) {
                 switch_group_tab(key);
