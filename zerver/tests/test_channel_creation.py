@@ -1100,8 +1100,18 @@ class TestCreateStreams(ZulipTestCase):
                 channel_creator, new_channel, "channel events"
             )
 
-            self.assert_length(channel_events_messages, 1)
-            self.assertIn(policy_key_map[policy_key], channel_events_messages[0].content)
+            # Private streams have 2 messages because the channel creator is automatically
+            # subscribed, which triggers a subscription notification in addition to the
+            # channel creation message. Public streams still have just 1 message: channel
+            # creation.
+            if policy_dict["invite_only"]:
+                self.assert_length(channel_events_messages, 2)
+                channel_creation_message = channel_events_messages[1]
+            else:
+                self.assert_length(channel_events_messages, 1)
+                channel_creation_message = channel_events_messages[0]
+
+            self.assertIn(policy_key_map[policy_key], channel_creation_message.content)
 
     def test_adding_channels_to_folder_during_creation(self) -> None:
         realm = get_realm("zulip")
