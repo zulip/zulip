@@ -4,9 +4,8 @@
     float: left;
     height: var(--header-height);
     width: 100%;
-    line-height: var(--header-height);
     display: flex;
-    align-items: baseline;
+    align-items: center;
     white-space: nowrap;
     cursor: default;
 
@@ -14,13 +13,14 @@
         display: none;
     }
 
-    /* TODO: Remove the `.navbar_title` span from the `message_view_header.hbs`
-       template. That span predates the use of flexbox, and makes it so that
-       elements like the `.narrow_description` have different line-height and
-       sizing contexts depending on whether it's a view or a narrow being shown. */
+    .zulip-icon,
+    .navbar-icon,
+    .message-header-stream-settings-button .zulip-icon {
+        align-self: center !important;
+        line-height: 1;
+    }
 
-    .message-header-stream-settings-button,
-    .navbar_title {
+    .message-header-stream-settings-button {
         padding: 0 2px 0 6px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -34,14 +34,7 @@
            the same invisible line. */
         align-items: baseline;
 
-        .zulip-icon {
-            /* Pull the icon out of baseline alignment,
-               and center with stream name. */
-            align-self: center;
-        }
-
         .zulip-icon-inbox {
-            /* 16px at 16px em, inherited from .navbar_title */
             font-size: 1em;
         }
 
@@ -52,7 +45,6 @@
         .navbar-icon {
             margin: 0 6px 0 5px;
             /* Align all icons to center. */
-            align-self: center;
         }
     }
 
