@@ -956,3 +956,7 @@ ul.modal-options-list {
         background: var(--color-background-active-popover-menu);
     }
 }
+
+#users_to_reset_configuration {
+    width: 100%;
+}

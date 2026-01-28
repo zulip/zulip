@@ -7,7 +7,7 @@
                     {{t "Joining the organization" }}
                     <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change these settings.' }}"></i>
                 </h3>
-                {{> settings_save_discard_widget section_name="join-settings" }}
+                {{> settings_save_discard_widget section_name="join-settings" show_save_discard_buttons=true }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div id="realm_invite_required_container" {{#unless user_has_email_set}}class="disabled_setting_tooltip"{{/unless}}>
@@ -65,7 +65,7 @@
                 <h3>{{t "Channel permissions" }}
                     {{> ../help_link_widget link="/help/channel-permissions" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="stream-permissions" }}
+                {{> settings_save_discard_widget section_name="stream-permissions" show_save_discard_buttons=true }}
             </div>
             <div class="m-10 organization-permissions-parent">
                 {{> group_setting_value_pill_input
@@ -112,7 +112,7 @@
                 <h3>{{t "Group permissions" }}
                     {{> ../help_link_widget link="/help/manage-user-groups" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="group-permissions" }}
+                {{> settings_save_discard_widget section_name="group-permissions" show_save_discard_buttons=true }}
             </div>
             <div class="m-10 organization-permissions-parent">
                 {{> group_setting_value_pill_input
@@ -130,7 +130,7 @@
                 <h3>{{t "Direct message permissions" }}
                     {{> ../help_link_widget link="/help/restrict-direct-messages" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="direct-message-permissions" }}
+                {{> settings_save_discard_widget section_name="direct-message-permissions" show_save_discard_buttons=true }}
             </div>
 
             {{> group_setting_value_pill_input
@@ -147,7 +147,7 @@
                 <h3>{{t "Message editing" }}
                     {{> ../help_link_widget link="/help/restrict-message-editing-and-deletion" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="msg-editing" }}
+                {{> settings_save_discard_widget section_name="msg-editing" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 {{> settings_checkbox
@@ -195,7 +195,7 @@
                 <h3>{{t "Moving messages" }}
                     {{> ../help_link_widget link="/help/restrict-moving-messages" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="moving-msgs" }}
+                {{> settings_save_discard_widget section_name="moving-msgs" show_save_discard_buttons=true }}
             </div>
 
             {{> group_setting_value_pill_input
@@ -258,7 +258,7 @@
                 <h3>{{t "Message deletion" }}
                     {{> ../help_link_widget link="/help/delete-a-message" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="msg-deletion" }}
+                {{> settings_save_discard_widget section_name="msg-deletion" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 {{> group_setting_value_pill_input
@@ -302,7 +302,7 @@
                 <h3>{{t "User identity" }}
                     {{> ../help_link_widget link="/help/restrict-name-and-email-changes" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="user-identity" }}
+                {{> settings_save_discard_widget section_name="user-identity" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-permissions-parent">
                 {{> settings_checkbox
@@ -337,7 +337,7 @@
         <div id="org-guest-settings" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Guests" }}</h3>
-                {{> settings_save_discard_widget section_name="guest-settings" }}
+                {{> settings_save_discard_widget section_name="guest-settings" show_save_discard_buttons=true }}
             </div>
 
             <div class="inline-block organization-permissions-parent">
@@ -364,7 +364,7 @@
         <div id="org-other-permissions" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Other permissions" }}</h3>
-                {{> settings_save_discard_widget section_name="other-permissions" }}
+                {{> settings_save_discard_widget section_name="other-permissions" show_save_discard_buttons=true }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 {{#if is_plan_self_hosted}}
