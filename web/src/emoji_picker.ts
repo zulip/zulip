@@ -26,7 +26,6 @@ import * as scroll_util from "./scroll_util.ts";
 import * as spectators from "./spectators.ts";
 import * as typeahead from "./typeahead.ts";
 import * as ui_util from "./ui_util.ts";
-import {user_settings} from "./user_settings.ts";
 import * as user_status_ui from "./user_status_ui.ts";
 import * as util from "./util.ts";
 
