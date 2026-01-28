@@ -394,9 +394,10 @@ def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> QuerySet[User
     return users_to_catch_up
 
 
-def queue_soft_reactivation(user_profile_id: int) -> None:
+def queue_soft_reactivation(user_profile_id: int, realm_id: int) -> None:
     event = {
         "type": "soft_reactivate",
+        "realm_id": realm_id,
         "user_profile_id": user_profile_id,
     }
     queue_event_on_commit("deferred_work", event)
@@ -447,4 +448,4 @@ def soft_reactivate_if_personal_notification(
     ):
         return
 
-    queue_soft_reactivation(user_profile.id)
+    queue_soft_reactivation(user_profile.id, user_profile.realm_id)

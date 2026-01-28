@@ -338,6 +338,7 @@ def register_push_device(
         {
             "type": "register_push_device_to_bouncer",
             "payload": queue_item,
+            "realm_id": user_profile.realm_id,
         },
     )
 

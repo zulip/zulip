@@ -30,5 +30,9 @@ def do_update_user_activity_interval(user_profile: UserProfile, log_time: dateti
 
 
 def update_user_activity_interval(user_profile: UserProfile, log_time: datetime) -> None:
-    event = {"user_profile_id": user_profile.id, "time": datetime_to_timestamp(log_time)}
+    event = {
+        "user_profile_id": user_profile.id,
+        "time": datetime_to_timestamp(log_time),
+        "realm_id": user_profile.realm_id,
+    }
     queue_json_publish_rollback_unsafe("user_activity_interval", event)

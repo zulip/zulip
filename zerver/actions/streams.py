@@ -991,6 +991,7 @@ def send_subscription_remove_events(
             "stream_recipient_ids": [
                 stream.recipient_id for stream in streams_by_user[user_profile.id]
             ],
+            "realm_id": user_profile.realm_id,
         }
         queue_event_on_commit("deferred_work", event)
 
