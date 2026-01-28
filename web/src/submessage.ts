@@ -107,17 +107,7 @@ export function do_process_submessages(in_opts: {$row: JQuery; message_id: numbe
     });
 }
 
-export function update_message(submsg: Submessage): void {
-    const message = message_store.get(submsg.message_id);
-
-    if (message === undefined) {
-        // This is generally not a problem--the server
-        // can send us events without us having received
-        // the original message, since the server doesn't
-        // track that.
-        return;
-    }
-
+export function update_message(message: Message, submsg: Submessage): void {
     const existing = message.submessages.find((sm) => sm.id === submsg.id);
 
     if (existing !== undefined) {
@@ -132,7 +122,17 @@ export function handle_event(submsg: Submessage): void {
     // Update message.submessages in case we haven't actually
     // activated the widget yet, so that when the message does
     // come in view, the data will be complete.
-    update_message(submsg);
+    const message = message_store.get(submsg.message_id);
+
+    if (message === undefined) {
+        // This is generally not a problem--the server
+        // can send us events without us having received
+        // the original message, since the server doesn't
+        // track that.
+        return;
+    }
+
+    update_message(message, submsg);
 
     // Right now, our only use of submessages is widgets.
     const msg_type = submsg.msg_type;
