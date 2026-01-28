@@ -21,7 +21,7 @@ type ScheduledMessageComposeArgs =
       }
     | {
           message_type: "private";
-          private_message_recipient: string;
+          private_message_recipient_ids: number[];
           content: string;
           keep_composebox_empty: boolean;
       };
@@ -45,7 +45,8 @@ function narrow_via_edit_scheduled_message(compose_args: ScheduledMessageCompose
             {trigger: "edit scheduled message"},
         );
     } else {
-        message_view.show([{operator: "dm", operand: compose_args.private_message_recipient}], {
+        const user_ids = compose_args.private_message_recipient_ids;
+        message_view.show([{operator: "dm", operand: user_ids}], {
             trigger: "edit scheduled message",
         });
     }
@@ -56,7 +57,6 @@ export function open_scheduled_message_in_compose(
     should_narrow_to_recipient?: boolean,
 ): void {
     let compose_args;
-    let narrow_args;
 
     if (scheduled_message.type === "stream") {
         compose_args = {
@@ -65,13 +65,9 @@ export function open_scheduled_message_in_compose(
             topic: scheduled_message.topic,
             content: scheduled_message.content,
         };
-        narrow_args = compose_args;
     } else {
         const recipient_ids = scheduled_message.to.filter(
             (recipient_id) => !people.get_by_user_id(recipient_id).is_inaccessible_user,
-        );
-        const recipient_emails = recipient_ids.map(
-            (recipient_id) => people.get_by_user_id(recipient_id).email,
         );
         compose_args = {
             message_type: "private" as const,
@@ -79,18 +75,10 @@ export function open_scheduled_message_in_compose(
             content: scheduled_message.content,
             keep_composebox_empty: true,
         };
-        // Narrow filters still use emails for PMs, though we'll
-        // eventually want to migrate that as well.
-        narrow_args = {
-            message_type: "private" as const,
-            private_message_recipient: recipient_emails.join(","),
-            content: scheduled_message.content,
-            keep_composebox_empty: true,
-        };
     }
 
     if (should_narrow_to_recipient) {
-        narrow_via_edit_scheduled_message(narrow_args);
+        narrow_via_edit_scheduled_message(compose_args);
     }
 
     compose_actions.start(compose_args);

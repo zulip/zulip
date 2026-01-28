@@ -94,12 +94,11 @@ function get_users_typing_for_narrow(): number[] {
     const current_filter = narrow_state.filter()!;
     if (current_filter.has_operator("dm")) {
         // Get list of users typing in this conversation
-        const narrow_emails_string = current_filter.terms_with_operator("dm")[0]!.operand;
-        if (!people.is_valid_bulk_emails_for_compose(narrow_emails_string.split(","))) {
+        const narrow_user_ids = current_filter.terms_with_operator("dm")[0]!.operand;
+        if (!people.is_valid_bulk_user_ids_for_compose(narrow_user_ids, true)) {
             // Narrowed to an invalid direct message recipient.
             return [];
         }
-        const narrow_user_ids = people.emails_string_to_user_ids(narrow_emails_string);
         const group = [...narrow_user_ids, current_user.user_id];
         return typing_data.get_group_typists(group);
     }

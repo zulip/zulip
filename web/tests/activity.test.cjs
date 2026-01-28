@@ -93,13 +93,13 @@ const zoe = {
     full_name: "Zoe Yang",
 };
 
-people.add_active_user(alice);
-people.add_active_user(fred);
-people.add_active_user(jill);
-people.add_active_user(mark);
-people.add_active_user(norbert);
-people.add_active_user(zoe);
-people.add_active_user(me);
+people.add_active_user(alice, "server_events");
+people.add_active_user(fred, "server_events");
+people.add_active_user(jill, "server_events");
+people.add_active_user(mark, "server_events");
+people.add_active_user(norbert, "server_events");
+people.add_active_user(zoe, "server_events");
+people.add_active_user(me, "server_events");
 people.initialize_current_user(me.user_id);
 
 const $alice_stub = $.create("alice stub");
@@ -233,8 +233,8 @@ test("handlers", ({override, override_rewire}) => {
 
     let narrowed;
 
-    function narrow_by_email(email) {
-        assert.equal(email, "alice@zulip.com");
+    function narrow_by_user_id(user_id) {
+        assert.equal(user_id, alice.user_id);
         narrowed = true;
     }
 
@@ -245,7 +245,7 @@ test("handlers", ({override, override_rewire}) => {
         buddy_list.start_scroll_handler = noop;
         override_rewire(util, "call_function_periodically", noop);
         override_rewire(activity, "send_presence_to_server", noop);
-        activity_ui.initialize({narrow_by_email});
+        activity_ui.initialize({narrow_by_user_id});
 
         buddy_list.populate({
             all_user_ids: [me.user_id, alice.user_id, fred.user_id],

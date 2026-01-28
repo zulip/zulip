@@ -12,7 +12,6 @@ import {buddy_list} from "./buddy_list.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
 import * as message_live_update from "./message_live_update.ts";
-import * as narrow_state from "./narrow_state.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
@@ -73,7 +72,6 @@ export const update_person = function update(event: UserUpdate): void {
         const new_email = event.new_email;
 
         people.update_email(user_id, new_email);
-        narrow_state.update_email(user_id, new_email);
         compose_state.update_email(user_id, new_email);
 
         if (people.is_my_user_id(event.user_id)) {

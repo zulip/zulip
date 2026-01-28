@@ -129,7 +129,7 @@ run_test("basics", () => {
 });
 
 run_test("muting", () => {
-    const dm_filter = new Filter([{operator: "dm", operand: "alice@example.com"}]);
+    const dm_filter = new Filter([{operator: "dm", operand: [1]}]);
     let mld = new MessageListData({
         excludes_muted_topics: dm_filter.excludes_muted_topics(),
         excludes_muted_users: dm_filter.excludes_muted_users(),

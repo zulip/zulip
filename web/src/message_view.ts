@@ -1407,9 +1407,7 @@ export function narrow_to_next_pm_string(opts = {}): void {
         return;
     }
 
-    // Hopefully someday we can narrow by user_ids_string instead of
-    // mapping back to emails.
-    const direct_message = people.user_ids_string_to_emails_string(next_direct_message);
+    const direct_message = people.user_ids_string_to_ids_array(next_direct_message);
     assert(direct_message !== undefined);
 
     const filter_expr: NarrowTerm[] = [{operator: "dm", operand: direct_message}];
@@ -1467,8 +1465,6 @@ export function narrow_by_recipient(
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
     assert(message !== undefined);
-    const emails = message.reply_to.split(",");
-    const reply_to = people.sort_emails_by_username(emails);
 
     switch (message.type) {
         case "private":
@@ -1482,7 +1478,16 @@ export function narrow_by_recipient(
                 // in the new view.
                 unread_ops.notify_server_message_read(message);
             }
-            show([{operator: "dm", operand: reply_to.join(",")}], show_opts);
+
+            show(
+                [
+                    {
+                        operator: "dm",
+                        operand: people.user_ids_string_to_ids_array(message.to_user_ids),
+                    },
+                ],
+                show_opts,
+            );
             break;
 
         case "stream":
@@ -1537,16 +1542,14 @@ export function to_compose_target(): void {
     }
 
     if (compose_state.get_message_type() === "private") {
-        const recipient_string = compose_state.private_message_recipient_emails();
-        const emails = util.extract_pm_recipients(recipient_string);
-        const invalid = emails.filter((email) => !people.is_valid_email_for_compose(email));
+        const recipient_ids = compose_state.private_message_recipient_ids();
         // If there are no recipients or any recipient is
         // invalid, narrow to your direct message feed.
-        if (emails.length === 0 || invalid.length > 0) {
+        if (recipient_ids.length === 0 || !people.is_valid_user_ids(recipient_ids)) {
             show([{operator: "is", operand: "dm"}], opts);
             return;
         }
-        show([{operator: "dm", operand: util.normalize_recipients(recipient_string)}], opts);
+        show([{operator: "dm", operand: recipient_ids}], opts);
     }
 }
 
@@ -1606,7 +1609,10 @@ export function narrow_to_message_near(message: Message, trigger: string): void 
         case "private":
             show(
                 [
-                    {operator: "dm", operand: message.reply_to},
+                    {
+                        operator: "dm",
+                        operand: people.user_ids_string_to_ids_array(message.to_user_ids),
+                    },
                     {operator: "near", operand: String(message.id)},
                 ],
                 {trigger},

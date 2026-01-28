@@ -189,7 +189,7 @@ test_fixture("is private with no target", {
 });
 
 test_fixture("dm with target outside of range", {
-    filter_terms: [{operator: "dm", operand: "alice@example.com"}],
+    filter_terms: [{operator: "dm", operand: [1]}],
     target_id: 5,
     unread_info: {
         flavor: "not_found",

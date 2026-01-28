@@ -74,13 +74,15 @@ const bot_test = {
     is_admin: false,
     is_bot: true,
 };
-people.add_active_user(alice);
-people.add_active_user(bob);
-people.add_active_user(me);
-people.add_active_user(zoe);
-people.add_active_user(cardelio);
-people.add_active_user(iago);
-people.add_active_user(bot_test);
+// Add users to `valid_user_ids`.
+const source = "server_events";
+people.add_active_user(alice, source);
+people.add_active_user(bob, source);
+people.add_active_user(me, source);
+people.add_active_user(zoe, source);
+people.add_active_user(cardelio, source);
+people.add_active_user(iago, source);
+people.add_active_user(bot_test, source);
 people.initialize_current_user(me.user_id);
 
 function test(label, f) {
@@ -91,8 +93,8 @@ function test(label, f) {
     });
 }
 
-function set_pm_with_filter(emails) {
-    message_lists.set_current(make_message_list([{operator: "dm", operand: emails}]));
+function set_pm_with_filter(user_ids) {
+    message_lists.set_current(make_message_list([{operator: "dm", operand: user_ids}]));
 }
 
 function check_list_info(list, length, more_unread, recipients_array) {
@@ -177,7 +179,7 @@ test("get_conversations", ({override}) => {
         is_bot: false,
         has_unread_mention: false,
     });
-    set_pm_with_filter("iago@zulip.com");
+    set_pm_with_filter([iago.user_id]);
     pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
 
@@ -246,15 +248,15 @@ test("get_active_user_ids_string", () => {
     message_lists.set_current(make_message_list([{operator: "stream", operand: "test"}]));
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
-    set_pm_with_filter("bob@zulip.com,alice@zulip.com");
+    set_pm_with_filter([bob.user_id, alice.user_id]);
     assert.equal(pm_list_data.get_active_user_ids_string(), "101,102");
 
-    blueslip.expect("warn", "Unknown emails");
-    set_pm_with_filter("invalid@zulip.com");
+    blueslip.expect("warn", "Invalid user_ids");
+    set_pm_with_filter([-1]);
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
     blueslip.reset();
 
-    set_pm_with_filter("bob@zulip.com,alice@zulip.com,me@zulip.com");
+    set_pm_with_filter([alice.user_id, bob.user_id, me.user_id]);
     assert.equal(pm_list_data.get_active_user_ids_string(), "101,102");
 });
 
@@ -319,7 +321,7 @@ test("get_list_info_unread_messages", ({override}) => {
     // Narrowing to direct messages with Alice adds older
     // one-on-one conversation with her to the list and one
     // unread is removed from more_conversations_unread_count.
-    set_pm_with_filter("alice@zulip.com");
+    set_pm_with_filter([alice.user_id]);
     list_info = pm_list_data.get_list_info(false);
     check_list_info(list_info, 16, 1, [
         "Iago",
@@ -395,7 +397,7 @@ test("get_list_info_no_unread_messages", ({override}) => {
 
     // Narrowing to direct messages with Alice adds older
     // one-on-one conversation with her to the list.
-    set_pm_with_filter("alice@zulip.com");
+    set_pm_with_filter([alice.user_id]);
     list_info = pm_list_data.get_list_info(false);
     check_list_info(list_info, 9, 0, [
         "Bob, Cardelio",
