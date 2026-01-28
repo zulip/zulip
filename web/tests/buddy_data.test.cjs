@@ -88,6 +88,13 @@ const old_user = make_user({
     email: "old_user@example.com",
 });
 
+const imported_user = make_user({
+    user_id: 10000,
+    full_name: "Imported user",
+    email: "imported-user@example.com",
+    is_imported_stub: true,
+});
+
 const bot = make_bot({
     user_id: 55555,
     full_name: "Red Herring Bot",
@@ -577,6 +584,7 @@ test("compare_function", () => {
 
 test("user_last_seen_time_status", ({override}) => {
     page_params.presence_history_limit_days_for_web_app = 365;
+    people.add_active_user(old_user);
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
@@ -607,6 +615,12 @@ test("user_last_seen_time_status", ({override}) => {
         assert.equal(user_id, old_user.user_id);
     };
     assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id, missing_callback), "");
+
+    people.add_active_user(imported_user);
+    assert.equal(
+        buddy_data.user_last_seen_time_status(imported_user.user_id),
+        "translated: Imported account not activated",
+    );
 });
 
 test("get_items_for_users", ({override}) => {
