@@ -28,7 +28,8 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
             config_data=orjson.dumps({"foo": "bar"}).decode(),
         )
 
-    def test_pm_to_embedded_bot(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_pm_to_embedded_bot_using_personal_recipient(self) -> None:
         assert self.bot_profile is not None
         self.send_personal_message(self.user_profile, self.bot_profile, content="help")
         last_message = self.get_last_message()
@@ -39,7 +40,6 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.assert_length(display_recipient, 1)
         self.assertEqual(display_recipient[0]["email"], self.user_profile.email)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_pm_to_embedded_bot_using_direct_group_message(self) -> None:
         assert self.bot_profile is not None
 

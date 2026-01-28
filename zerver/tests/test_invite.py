@@ -1381,10 +1381,13 @@ earl-test@zulip.com""",
         self.assert_json_success(self.invite(invitee, ["Denmark"], False))
         self.assertTrue(find_key_by_email(invitee))
         self.submit_reg_form_for_user(invitee, "password")
+        notification_bot = self.notification_bot(realm)
+        hamlet_and_notification_bot_recipient = self.get_dm_group_recipient(
+            notification_bot, user_profile
+        )
 
-        assert user_profile.recipient_id is not None
         invite_acceptance_notification_message = Message.objects.filter(
-            recipient_id=user_profile.recipient_id, realm=realm
+            recipient=hamlet_and_notification_bot_recipient, realm=realm
         ).last()
 
         self.assertIsNone(
@@ -1400,7 +1403,7 @@ earl-test@zulip.com""",
 
         new_invitee_profile = self.nonreg_user("bob")
         new_invite_acceptance_notification_message = Message.objects.filter(
-            recipient_id=user_profile.recipient_id, realm=realm
+            recipient=hamlet_and_notification_bot_recipient, realm=realm
         ).last()
 
         assert new_invite_acceptance_notification_message is not None

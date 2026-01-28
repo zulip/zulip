@@ -3,6 +3,7 @@ from unittest import mock
 
 import orjson
 import time_machine
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
@@ -15,6 +16,7 @@ from zerver.lib.users import is_administrator_role
 from zerver.models import Realm, UserProfile, UserStatus
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
 
@@ -350,6 +352,42 @@ class TestMessageHelpers(ZulipTestCase):
 
 
 class TestQueryCounts(ZulipTestCase):
+    def test_capturing_queries_when_direct_message_group_does_not_exist(self) -> None:
+        # It's a common pitfall in Django to accidentally perform
+        # database queries in a loop, due to lazy evaluation of
+        # foreign keys. We use the assert_database_query_count
+        # context manager to ensure our query count is predictable.
+        #
+        # When a test containing one of these query count assertions
+        # fails, we'll want to understand the new queries and whether
+        # they're necessary. You can investiate whether the changes
+        # are expected/sensible by comparing print(queries) between
+        # your branch and main.
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        # The direct message group should also be created as part of the flow
+        with self.assert_database_query_count(24):
+            self.send_personal_message(
+                from_user=hamlet,
+                to_user=cordelia,
+                content="hello there!",
+            )
+
+    def test_capturing_queries_when_direct_message_group_exists(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        with self.assert_database_query_count(6):
+            get_or_create_direct_message_group(id_list=[hamlet.id, cordelia.id])
+
+        with self.assert_database_query_count(19):
+            self.send_personal_message(
+                from_user=hamlet,
+                to_user=cordelia,
+                content="hello there!",
+            )
+
     def test_capturing_queries(self) -> None:
         # It's a common pitfall in Django to accidentally perform
         # database queries in a loop, due to lazy evaluation of
@@ -361,6 +399,27 @@ class TestQueryCounts(ZulipTestCase):
         # they're necessary. You can investiate whether the changes
         # are expected/sensible by comparing print(queries) between
         # your branch and main.
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        # when direct message group doesn't exist and should be created as part of the flow
+        with self.assert_database_query_count(24):
+            self.send_personal_message(
+                from_user=hamlet,
+                to_user=cordelia,
+                content="hello there!",
+            )
+
+        # when direct message group exists
+        with self.assert_database_query_count(18):
+            self.send_personal_message(
+                from_user=hamlet,
+                to_user=cordelia,
+                content="hello there!",
+            )
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_capturing_queries_using_personal_recipient(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 

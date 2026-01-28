@@ -1342,9 +1342,14 @@ def generate_and_send_messages(
             message.sender = get_user_profile_by_id(sender_id)
             message.subject = Message.DM_TOPIC
         elif recipient_type == Recipient.PERSONAL:
-            message.recipient = Recipient.objects.get(
-                type=Recipient.PERSONAL, type_id=personals_pair[0]
-            )
+            if settings.PREFER_DIRECT_MESSAGE_GROUP:
+                direct_message_group = get_or_create_direct_message_group(personals_pair)
+                assert direct_message_group.recipient is not None
+                message.recipient = direct_message_group.recipient
+            else:
+                message.recipient = Recipient.objects.get(
+                    type=Recipient.PERSONAL, type_id=personals_pair[0]
+                )
             message.sender = get_user_profile_by_id(personals_pair[1])
             message.subject = Message.DM_TOPIC
             saved_data["personals_pair"] = personals_pair
