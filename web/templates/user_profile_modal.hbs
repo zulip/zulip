@@ -74,6 +74,8 @@
                                         <div class="name">
                                             {{#if is_bot}}
                                                 {{t "Created"}}
+                                            {{else if is_imported_stub}}
+                                                {{t "Account imported"}}
                                             {{else}}
                                                 {{t "Joined"}}
                                             {{/if}}
