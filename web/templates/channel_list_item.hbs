@@ -1,11 +1,12 @@
-<li class="stream-list-item" role="presentation" data-stream-id="{{stream_id}}">
-    <a class="stream-row hidden-remove-button-row" href="{{stream_edit_url}}">
-        <span class="stream-row-content">
+<li class="channel-list-item" role="presentation" data-stream-id="{{stream_id}}">
+    <div class="modal-channel-list-row hidden-remove-button-row">
+        <a class="modal-channel-list-row-content" href="{{channel_edit_url}}">
             <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
                 {{> stream_privacy . }}
             </span>
-            <span class="stream-name">{{name}}</span>
-        </span>
+            <span class="channel-name">{{name}}</span>
+        </a>
+        {{#if (or show_unsubscribe_button can_manage_folder)}}
         <div class="remove-button-wrapper">
             {{#if show_unsubscribe_button}}
                 {{#if show_private_stream_unsub_tooltip}}
@@ -20,5 +21,6 @@
                 {{> components/icon_button  icon="close" custom_classes="hidden-remove-button remove-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Remove channel") data-tippy-content=(t "Remove channel") }}
             {{/if}}
         </div>
-    </a>
+        {{/if}}
+    </div>
 </li>

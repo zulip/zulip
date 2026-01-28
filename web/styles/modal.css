@@ -243,22 +243,28 @@
     margin-bottom: 5px;
     -webkit-overflow-scrolling: touch;
 
-    .user-profile-group-row,
-    .stream-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.3125em 0.625em;
-        align-items: center;
-        text-decoration: none;
+    .modal-group-list-row,
+    .modal-channel-list-row {
+        display: grid;
+        grid-template: 2.375em / auto 1fr max-content;
+        grid-template-areas: "list-content gap remove-button";
         border-bottom: none;
         border-radius: 4px;
-        color: var(--color-dropdown-item);
-        cursor: pointer;
 
-        .user-group-list-item,
-        .stream-row-content {
+        .modal-group-list-row-content,
+        .modal-channel-list-row-content {
+            grid-area: list-content;
             display: flex;
             overflow: hidden;
+            padding: 0 0.625em;
+            height: 100%;
+            align-items: center;
+            text-decoration: none;
+            color: var(--color-dropdown-item);
+
+            &:focus-visible {
+                outline: none;
+            }
         }
 
         .stream-privacy {
@@ -274,17 +280,23 @@
             background-color: var(--color-user-profile-list-item-hover);
         }
 
-        &:focus-visible {
+        &:has(.modal-group-list-row-content:focus-visible),
+        &:has(.modal-channel-list-row-content:focus-visible) {
             outline: 1px solid var(--color-outline-user-profile-list-item);
-            outline-offset: -2px;
+            outline-offset: -1px;
         }
 
         .user-group-name,
-        .stream-name {
+        .channel-name {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             padding-right: 2px;
+        }
+
+        .remove-button-wrapper {
+            grid-area: remove-button;
+            margin: 0.3125em 0.625em;
         }
     }
 
