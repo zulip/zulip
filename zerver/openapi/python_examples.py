@@ -20,11 +20,12 @@ from email.headerregistry import Address
 from functools import wraps
 from typing import Any, TypeVar
 
+import requests
 from typing_extensions import ParamSpec
 from zulip import Client
 
 from zerver.models.realms import get_realm
-from zerver.models.users import get_user
+from zerver.models.users import UserProfile, get_user
 from zerver.openapi.openapi import validate_against_openapi_schema
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -75,6 +76,13 @@ def ensure_users(ids_list: list[int], user_names: list[str]) -> None:
 def assert_success_response(response: dict[str, Any]) -> None:
     assert "result" in response
     assert response["result"] == "success"
+
+
+def assert_success_avatar_endpoint_response(response: requests.Response, result: str) -> None:
+    assert response.status_code == 302
+    response_headers = response.headers
+    assert result.startswith("https://secure.gravatar.com/avatar/")
+    assert response_headers["Content-Type"] == "text/html; charset=utf-8"
 
 
 def assert_error_response(response: dict[str, Any], code: str = "BAD_REQUEST") -> None:
@@ -1938,6 +1946,84 @@ def add_channel(client: Client) -> None:
     validate_against_openapi_schema(result, "/channels/create", "post", "200")
 
 
+@openapi_test_function("/avatar/{user_id}:get")
+def get_user_avatar_by_id(client: Client) -> None:
+    user_id = 10
+    ensure_users([user_id], ["hamlet"])
+    # {code_example|start}
+    realm_settings = client.get_server_settings()
+    realm_url = realm_settings["realm_url"]
+
+    # Get a users avatar URL given a user id.
+    response = requests.get(f"{realm_url}/avatar/{user_id}", allow_redirects=False)
+    response_headers = response.headers
+    result = response_headers["Location"]
+    # {code_example|end}
+    assert_success_avatar_endpoint_response(response, result)
+
+
+@openapi_test_function("/avatar/{email}:get")
+def get_user_avatar_by_email(client: Client, user_profile: UserProfile) -> None:
+    user_email = user_profile.delivery_email
+    api_key = user_profile.api_key
+
+    # {code_example|start}
+    realm_settings = client.get_server_settings()
+    realm_url = realm_settings["realm_url"]
+    auth = (user_email, api_key)
+    target_user_email = "iago@zulip.com"
+
+    # Get a users avatar URL given a user email.
+    response = requests.get(
+        f"{realm_url}/avatar/{target_user_email}",
+        allow_redirects=False,
+        auth=auth,
+    )
+    response_headers = response.headers
+    result = response_headers["Location"]
+    # {code_example|end}
+    assert_success_avatar_endpoint_response(response, result)
+
+
+@openapi_test_function("/avatar/{user_id}/medium:get")
+def get_medium_user_avatar_by_id(client: Client) -> None:
+    user_id = 10
+    ensure_users([user_id], ["hamlet"])
+    # {code_example|start}
+    realm_settings = client.get_server_settings()
+    realm_url = realm_settings["realm_url"]
+
+    # Get a users medium avatar URL given a user id.
+    response = requests.get(f"{realm_url}/avatar/{user_id}/medium", allow_redirects=False)
+    response_headers = response.headers
+    result = response_headers["Location"]
+    # {code_example|end}
+    assert_success_avatar_endpoint_response(response, result)
+
+
+@openapi_test_function("/avatar/{email}/medium:get")
+def get_medium_user_avatar_by_email(client: Client, user_profile: UserProfile) -> None:
+    user_email = user_profile.delivery_email
+    api_key = user_profile.api_key
+
+    # {code_example|start}
+    realm_settings = client.get_server_settings()
+    realm_url = realm_settings["realm_url"]
+    auth = (user_email, api_key)
+    target_user_email = "iago@zulip.com"
+
+    # Get a users medium avatar URL given a user email.
+    response = requests.get(
+        f"{realm_url}/avatar/{target_user_email}/medium",
+        allow_redirects=False,
+        auth=auth,
+    )
+    response_headers = response.headers
+    result = response_headers["Location"]
+    # {code_example|end}
+    assert_success_avatar_endpoint_response(response, result)
+
+
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
     result = client_with_invalid_key.get_subscriptions()
     assert_error_response(result, code="UNAUTHORIZED")
@@ -2051,6 +2137,15 @@ def test_users(client: Client, owner_client: Client) -> None:
     add_fcm_token(client)
     remove_fcm_token(client)
     register_push_device(client)
+    user_id = 10
+    ensure_users([user_id], ["hamlet"])
+    # The Python examples for the avatar endpoints uses the
+    # user's API key.
+    hamlet = UserProfile.objects.get(id=user_id)
+    get_user_avatar_by_id(client)
+    get_user_avatar_by_email(client, hamlet)
+    get_medium_user_avatar_by_id(client)
+    get_medium_user_avatar_by_email(client, hamlet)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:

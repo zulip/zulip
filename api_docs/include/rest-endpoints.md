@@ -116,6 +116,10 @@
 * [Get all alert words](/api/get-alert-words)
 * [Add alert words](/api/add-alert-words)
 * [Remove alert words](/api/remove-alert-words)
+* [Get a user's avatar](/api/get-user-avatar)
+* [Get a user's medium avatar](/api/get-user-medium-avatar)
+* [Get a user's avatar by email](/api/get-user-avatar-by-email)
+* [Get a user's medium avatar by email](/api/get-user-medium-avatar-by-email)
 
 #### Invitations
 
