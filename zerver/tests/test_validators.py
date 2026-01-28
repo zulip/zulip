@@ -29,6 +29,7 @@ from zerver.lib.validator import (
     check_url,
     equals,
     to_wild_value,
+    validate_todo_data,
 )
 
 if settings.ZILENCER_ENABLED:
@@ -444,3 +445,34 @@ class ValidatorTestCase(ZulipTestCase):
         x = "2024-02-13T25:15:00Z"
         with self.assertRaisesRegex(ValidationError, r"is not an ISO 8601 datetime string"):
             check_iso_datetime("x", x)
+
+    def test_todo_delete_task_not_author(self) -> None:
+        todo_data = {
+            "type": "delete_task",
+            "key": "abc",
+        }
+
+        with self.assertRaisesRegex(
+            ValidationError,
+            r"You can't delete tasks unless you are the author",
+        ):
+            validate_todo_data(todo_data, is_widget_author=False)
+
+    def test_todo_unknown_type_validator(self) -> None:
+        todo_data = {
+            "type": "bogus",
+        }
+
+        with self.assertRaisesRegex(
+            ValidationError,
+            r"Unknown type for todo data: bogus",
+        ):
+            validate_todo_data(todo_data, is_widget_author=True)
+
+    def test_todo_delete_task_success(self) -> None:
+        todo_data = {
+            "type": "delete_task",
+            "key": "abc",
+        }
+
+        validate_todo_data(todo_data, is_widget_author=True)
