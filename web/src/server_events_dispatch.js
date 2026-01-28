@@ -102,6 +102,7 @@ import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import * as user_topics from "./user_topics.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
+import * as views_util from "./views_util.ts";
 
 export function dispatch_normal_event(event) {
     const noop = function () {
@@ -715,6 +716,11 @@ export function dispatch_normal_event(event) {
                         history_public_to_subscribers: event.history_public_to_subscribers,
                         is_web_public: event.is_web_public,
                     });
+                    views_util.handle_channel_update_event(
+                        event,
+                        inbox_ui.complete_rerender,
+                        recent_view_ui.complete_rerender,
+                    );
                     settings_streams.update_default_streams_table();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
@@ -765,6 +771,11 @@ export function dispatch_normal_event(event) {
                             stream_id,
                         );
                     }
+                    views_util.handle_channel_update_event(
+                        event,
+                        inbox_ui.complete_rerender,
+                        recent_view_ui.complete_rerender,
+                    );
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:

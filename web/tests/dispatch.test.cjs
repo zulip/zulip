@@ -84,6 +84,12 @@ const settings_realm_domains = mock_esm("../src/settings_realm_domains");
 const settings_streams = mock_esm("../src/settings_streams");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_data = mock_esm("../src/stream_data");
+const stream_events = mock_esm("../src/stream_events", {
+    update_property: noop,
+    mark_subscribed: noop,
+    process_subscriber_update: noop,
+    mark_unsubscribed: noop,
+});
 const stream_list = mock_esm("../src/stream_list", {
     update_collapsed_state_on_show_channel_folders_change: noop,
 });
@@ -108,6 +114,9 @@ const unread_ui = mock_esm("../src/unread_ui");
 const user_events = mock_esm("../src/user_events");
 const user_group_edit = mock_esm("../src/user_group_edit");
 const overlays = mock_esm("../src/overlays");
+const views_util = mock_esm("../src/views_util", {
+    handle_channel_update_event: noop,
+});
 const {Filter} = zrequire("filter");
 const {initialize: initialize_realm_user_settings_defaults} = zrequire(
     "realm_user_settings_defaults",
@@ -156,6 +165,7 @@ const presence = zrequire("presence");
 const user_status = zrequire("user_status");
 const onboarding_steps = zrequire("onboarding_steps");
 const user_groups = zrequire("user_groups");
+const sub_store = zrequire("sub_store");
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 
@@ -268,6 +278,67 @@ run_test("saved_snippets", ({override}) => {
         assert.equal(stub.num_calls, 1);
         assert_same(stub.get_args("event").event, update_event.saved_snippet);
     }
+});
+
+run_test("stream update triggers channel view handler", ({override}) => {
+    const handle_channel_update_event_stub = make_stub();
+    override(stream_events, "update_property", noop);
+    override(settings_streams, "update_default_streams_table", noop);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
+    override(views_util, "handle_channel_update_event", handle_channel_update_event_stub.f);
+
+    const event = {
+        type: "stream",
+        op: "update",
+        stream_id: 1,
+        property: "name",
+        value: "new-name",
+    };
+    dispatch(event);
+
+    assert.equal(handle_channel_update_event_stub.num_calls, 1);
+    const args = handle_channel_update_event_stub.get_args(
+        "event",
+        "inbox_rerender",
+        "recent_rerender",
+    );
+    assert.equal(args.event, event);
+    assert.equal(typeof args.inbox_rerender, "function");
+    assert.equal(typeof args.recent_rerender, "function");
+});
+
+run_test("stream delete triggers channel view handler", ({override}) => {
+    const handle_channel_update_event_stub = make_stub();
+    sub_store.clear();
+    sub_store.add_hydrated_sub(1, {subscribed: false});
+    override(stream_data, "delete_sub", noop);
+    override(stream_settings_ui, "remove_stream", noop);
+    override(settings_streams, "update_default_streams_table", noop);
+    override(stream_data, "remove_default_stream", noop);
+    override(unread_ops, "process_read_messages_event", noop);
+    override(message_events, "remove_messages", noop);
+    override(stream_topic_history, "remove_history_for_stream", noop);
+    override(user_group_edit, "update_group_permissions_panel_on_losing_stream_access", noop);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
+    override(views_util, "handle_channel_update_event", handle_channel_update_event_stub.f);
+
+    const event = {
+        type: "stream",
+        op: "delete",
+        stream_ids: [1],
+    };
+    dispatch(event);
+    sub_store.clear();
+
+    assert.equal(handle_channel_update_event_stub.num_calls, 1);
+    const args = handle_channel_update_event_stub.get_args(
+        "event",
+        "inbox_rerender",
+        "recent_rerender",
+    );
+    assert.equal(args.event, event);
+    assert.equal(typeof args.inbox_rerender, "function");
+    assert.equal(typeof args.recent_rerender, "function");
 });
 
 run_test("attachments", ({override}) => {
