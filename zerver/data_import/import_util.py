@@ -49,6 +49,7 @@ ZerverFieldsT: TypeAlias = dict[str, Any]
 class AttachmentLinkResult:
     path_id: str
     markdown_link: str
+    url: str
 
 
 @dataclass
@@ -82,7 +83,7 @@ class UploadRecordData:
 
 @dataclass
 class UploadFileRequest:
-    output_file_path: str
+    output_file_path_id: str
     request_url: str
     params: dict[str, Any] | None
     headers: dict[str, Any] | None
@@ -576,6 +577,22 @@ def build_message(
     return zulip_message_dict
 
 
+# Keep this in sync with the Attachment table.
+@dataclass
+class AttachmentRecordData:
+    content_type: str
+    create_time: float
+    file_name: str
+    id: int
+    is_realm_public: bool
+    messages: list[int]
+    owner: int
+    path_id: str
+    realm: int
+    scheduled_messages: list[int]
+    size: int
+
+
 def build_attachment(
     realm_id: int,
     message_ids: set[int],
@@ -709,7 +726,7 @@ def request_file_stream(
 def download_and_export_upload_file(
     output_dir: str, upload_file_request: UploadFileRequest
 ) -> None:
-    file_output_path = os.path.join(output_dir, "uploads", upload_file_request.output_file_path)
+    file_output_path = os.path.join(output_dir, "uploads", upload_file_request.output_file_path_id)
 
     response = request_file_stream(
         upload_file_request.request_url,
@@ -928,4 +945,4 @@ def get_attachment_path_and_content(
     attachment_url = f"/user_uploads/{path_id}"
     markdown_link = get_markdown_link_for_url(link_name, attachment_url)
 
-    return AttachmentLinkResult(path_id=path_id, markdown_link=markdown_link)
+    return AttachmentLinkResult(path_id=path_id, markdown_link=markdown_link, url=attachment_url)

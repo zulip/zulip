@@ -1345,7 +1345,7 @@ def process_message_files(
 
             do_download_and_export_upload_file(
                 UploadFileRequest(
-                    output_file_path=attachment_data.path_id,
+                    output_file_path_id=attachment_data.path_id,
                     request_url=fileinfo["url_private"],
                     params=None,
                     headers=None,
