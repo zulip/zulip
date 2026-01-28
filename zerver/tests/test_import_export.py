@@ -9,6 +9,7 @@ from typing import Any
 from unittest.mock import patch
 
 import orjson
+from attr import dataclass
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
@@ -3024,7 +3025,6 @@ class RealmImportExportTest(ExportFile):
             todo_widget_message,
             todo_message_topic,
         )
-        todo_submessage = SubMessage.objects.get(message_id=todo_message_id)
         todo_message = Message.objects.get(id=todo_message_id, realm=original_realm)
 
         poll_message_topic = "Poll message"
@@ -3039,10 +3039,85 @@ class RealmImportExportTest(ExportFile):
             poll_widget_message,
             poll_message_topic,
         )
-        poll_submessage = SubMessage.objects.get(message_id=poll_message_id)
         poll_message = Message.objects.get(id=poll_message_id, realm=original_realm)
 
+        @dataclass
+        class SubmessageFixture:
+            content: dict[str, object]
+            sender: UserProfile
+            message_id: int
+
+        additional_todo_submessages: list[SubmessageFixture] = [
+            SubmessageFixture(
+                content=dict(type="new_task", key=3, task="fourth task", desc="", completed=False),
+                sender=todo_message_sender,
+                message_id=todo_message_id,
+            ),
+            SubmessageFixture(
+                content=dict(type="new_task", key=4, task="fifth task", desc="", completed=False),
+                sender=todo_message_sender,
+                message_id=todo_message_id,
+            ),
+            SubmessageFixture(
+                content=dict(type="strike", key="4,9"),
+                sender=todo_message_sender,
+                message_id=todo_message_id,
+            ),
+            SubmessageFixture(
+                content=dict(type="strike", key="6,9"),
+                sender=todo_message_sender,
+                message_id=todo_message_id,
+            ),
+        ]
+
+        additional_poll_submessages: list[SubmessageFixture] = [
+            SubmessageFixture(
+                content=dict(type="vote", key="canned,0", vote=1),
+                sender=poll_message_sender,
+                message_id=poll_message_id,
+            ),
+            SubmessageFixture(
+                content=dict(type="vote", key="canned,1", vote=1),
+                sender=poll_message_sender,
+                message_id=poll_message_id,
+            ),
+            SubmessageFixture(
+                content=dict(type="new_option", idx=1, option="magenta"),
+                sender=poll_message_sender,
+                message_id=poll_message_id,
+            ),
+            SubmessageFixture(
+                content=dict(type="new_option", idx=2, option="black"),
+                sender=poll_message_sender,
+                message_id=poll_message_id,
+            ),
+        ]
+        for submessage_fixture in additional_todo_submessages + additional_poll_submessages:
+            result = self.api_post(
+                submessage_fixture.sender,
+                "/api/v1/submessage",
+                dict(
+                    message_id=submessage_fixture.message_id,
+                    msg_type="widget",
+                    content=orjson.dumps(submessage_fixture.content).decode(),
+                ),
+            )
+            self.assert_json_success(result)
+        todo_submessages = SubMessage.objects.filter(message_id=todo_message.id).order_by("id")
+        poll_submessages = SubMessage.objects.filter(message_id=poll_message.id).order_by("id")
+        self.assert_length(todo_submessages, 1 + len(additional_todo_submessages))
+        self.assert_length(poll_submessages, 1 + len(additional_poll_submessages))
+
         self.export_realm_and_create_auditlog(original_realm)
+
+        realm_export_data = read_json("realm.json")
+        for i in range(len(realm_export_data["zerver_submessage"]) - 1):
+            self.assertLess(
+                realm_export_data["zerver_submessage"][i]["id"],
+                realm_export_data["zerver_submessage"][i + 1]["id"],
+                f"Submessage ID are not increasing at index {i}",
+            )
+
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(get_output_dir(), "test-zulip")
         imported_realm = Realm.objects.get(string_id="test-zulip")
@@ -3074,15 +3149,23 @@ class RealmImportExportTest(ExportFile):
             SubMessage.objects.filter(
                 message_id__in=[imported_poll_message.id, imported_todo_message.id]
             ),
-            2,
+            2 + len(additional_poll_submessages + additional_todo_submessages),
         )
 
-        imported_todo_submessage = SubMessage.objects.get(message_id=imported_todo_message.id)
-        self.assertEqual(imported_todo_submessage.sender, todo_message_sender)
-        self.assertDictEqual(
-            orjson.loads(imported_todo_submessage.content),
-            orjson.loads(todo_submessage.content),
-        )
+        imported_todo_submessages = SubMessage.objects.filter(
+            message_id=imported_todo_message.id
+        ).order_by("id")
+
+        # There are no Zulip object IDs in submessage.content
+        for original_submessage, imported_submessage in zip(
+            todo_submessages, imported_todo_submessages, strict=True
+        ):
+            self.assertEqual(imported_submessage.sender, imported_todo_message_sender)
+            self.assertDictEqual(
+                orjson.loads(imported_submessage.content),
+                orjson.loads(original_submessage.content),
+            )
+
         assert imported_todo_message.rendered_content is not None
         assert todo_message.rendered_content is not None
         self.assertHTMLEqual(
@@ -3090,12 +3173,18 @@ class RealmImportExportTest(ExportFile):
             todo_message.rendered_content,
         )
 
-        imported_poll_submessage = SubMessage.objects.get(message_id=imported_poll_message.id)
-        self.assertEqual(imported_poll_submessage.sender, poll_message_sender)
-        self.assertDictEqual(
-            orjson.loads(imported_poll_submessage.content),
-            orjson.loads(poll_submessage.content),
-        )
+        imported_poll_submessages = SubMessage.objects.filter(
+            message_id=imported_poll_message.id
+        ).order_by("id")
+        for original_submessage, imported_submessage in zip(
+            poll_submessages, imported_poll_submessages, strict=True
+        ):
+            self.assertEqual(imported_submessage.sender, imported_poll_message_sender)
+            self.assertDictEqual(
+                orjson.loads(imported_submessage.content),
+                orjson.loads(original_submessage.content),
+            )
+
         assert imported_poll_message.rendered_content is not None
         assert poll_message.rendered_content is not None
         self.assertHTMLEqual(
