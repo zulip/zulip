@@ -2,6 +2,7 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
+import * as people from "./people.ts";
 
 // Any single user should send add a finite number of tasks
 // to a todo list. We arbitrarily pick this value.
@@ -66,7 +67,6 @@ export type TodoWidgetOutboundData =
 export class TaskData {
     message_sender_id: number;
     me: number;
-    is_my_task_list: boolean;
     input_mode: boolean;
     report_error_function: (msg: string, more_info?: Record<string, unknown>) => void;
     task_list_title: string;
@@ -80,7 +80,7 @@ export class TaskData {
                     type: "new_task_list_title" as const,
                     title,
                 };
-                if (this.is_my_task_list) {
+                if (this.is_my_task_list()) {
                     return event;
                 }
                 return undefined;
@@ -208,24 +208,19 @@ export class TaskData {
 
     constructor({
         message_sender_id,
-        current_user_id,
-        is_my_task_list,
         task_list_title,
         tasks,
         report_error_function,
     }: {
         message_sender_id: number;
-        current_user_id: number;
-        is_my_task_list: boolean;
         task_list_title: string;
         tasks: TodoTask[];
         report_error_function: (msg: string, more_info?: Record<string, unknown>) => void;
     }) {
         this.message_sender_id = message_sender_id;
-        this.me = current_user_id;
-        this.is_my_task_list = is_my_task_list;
+        this.me = people.my_current_user_id();
         // input_mode indicates if the task list title is being input currently
-        this.input_mode = is_my_task_list; // for now
+        this.input_mode = this.is_my_task_list(); // for now
         this.report_error_function = report_error_function;
         this.task_list_title = "";
         if (task_list_title) {
@@ -242,6 +237,10 @@ export class TaskData {
                 completed: false,
             });
         }
+    }
+
+    is_my_task_list(): boolean {
+        return people.is_my_user_id(this.message_sender_id);
     }
 
     set_task_list_title(new_title: string): void {
