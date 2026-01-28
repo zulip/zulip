@@ -7,34 +7,34 @@
         {{t "All users were already subscribed."}}
     {{else}}
         {{#if (not is_total_subscriber_more_than_five) }}
-            {{#if subscribed_users_count}}
+            {{#unless (eq subscribed_users_count 0)}}
                 {{t "Subscribed:" }} {{> user_links users=subscribed_users}}.
-            {{/if}}
-            {{#if already_subscribed_users_count}}
+            {{/unless}}
+            {{#unless (eq already_subscribed_users_count 0)}}
                 {{t "Already a subscriber:" }} {{> user_links users=already_subscribed_users}}.
-            {{/if}}
-            {{#if ignored_deactivated_users_count}}
+            {{/unless}}
+            {{#unless (eq ignored_deactivated_users_count 0)}}
                 {{t "Ignored deactivated users:" }} {{> user_links users=ignored_deactivated_users}}.
-            {{/if}}
+            {{/unless}}
         {{else}}
-            {{#if subscribed_users_count}}
+            {{#unless (eq subscribed_users_count 0)}}
                 {{t "{subscribed_users_count, plural,
                   one {Subscribed: {subscribed_users_count} user.}
                 other {Subscribed: {subscribed_users_count} users.}
             }"}}
-            {{/if}}
-            {{#if already_subscribed_users_count}}
+            {{/unless}}
+            {{#unless (eq already_subscribed_users_count 0)}}
                 {{t "{already_subscribed_users_count, plural,
                   one {Already subscribed: {already_subscribed_users_count} user.}
                     other {Already subscribed: {already_subscribed_users_count} users.}
                 }"}}
-            {{/if}}
-            {{#if ignored_deactivated_users_count}}
+            {{/unless}}
+            {{#unless (eq ignored_deactivated_users_count 0)}}
                 {{t "{ignored_deactivated_users_count, plural,
                   one {Ignored deactivated: {ignored_deactivated_users_count} user.}
                 other {Ignored deactivated: {ignored_deactivated_users_count} users.}
             }"}}
-            {{/if}}
+            {{/unless}}
         {{/if}}
     {{/if}}
 {{/if}}

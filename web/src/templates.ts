@@ -12,6 +12,10 @@ const orig_escape_expression = Handlebars.Utils.escapeExpression;
 const orig_is_empty = Handlebars.Utils.isEmpty;
 const orig_each = Handlebars.helpers["each"];
 assert(orig_each !== undefined);
+const orig_if = Handlebars.helpers["if"];
+assert(orig_if !== undefined);
+const orig_unless = Handlebars.helpers["unless"];
+assert(orig_unless !== undefined);
 
 Handlebars.Utils.escapeExpression = (value: unknown): string => {
     /* istanbul ignore if */
@@ -52,6 +56,26 @@ Handlebars.helpers["each"] = function (context, options): unknown {
         );
     }
     return orig_each.call(this, context, options);
+};
+
+Handlebars.helpers["if"] = function (conditional, options): unknown {
+    /* istanbul ignore if */
+    if (typeof conditional === "number") {
+        blueslip.error(
+            `Cannot test a value of type ${typeof conditional} in a Zulip Handlebars template`,
+        );
+    }
+    return orig_if.call(this, conditional, options);
+};
+
+Handlebars.helpers["unless"] = function (conditional, options): unknown {
+    /* istanbul ignore if */
+    if (typeof conditional === "number") {
+        blueslip.error(
+            `Cannot test a value of type ${typeof conditional} in a Zulip Handlebars template`,
+        );
+    }
+    return orig_unless.call(this, conditional, options);
 };
 
 // Below, we register Zulip-specific extensions to the Handlebars API.

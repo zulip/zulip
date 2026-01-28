@@ -1,4 +1,4 @@
-<tr id="recent_conversation:{{conversation_key}}" class="{{#if unread_count}}unread_topic{{/if}} {{#if is_private}}private_conversation_row{{/if}}">
+<tr id="recent_conversation:{{conversation_key}}" class="{{#unless (eq unread_count 0)}}unread_topic{{/unless}} {{#if is_private}}private_conversation_row{{/if}}">
     <td class="recent_topic_stream">
         <div class="flex_container flex_container_pm">
             <div class="left_part recent_view_focusable" data-col-index="{{ column_indexes.stream }}">
@@ -43,7 +43,7 @@
                   data-tippy-content="{{t 'You have unread mentions' }}">@</span>
                 <div class="recent_topic_actions">
                     <div class="recent_view_focusable" data-col-index="{{ column_indexes.read }}">
-                        <span class="unread_count unread_count_pm recent-view-table-unread-count {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
+                        <span class="unread_count unread_count_pm recent-view-table-unread-count {{#if (eq unread_count 0)}}unread_hidden{{/if}} tippy-zulip-tooltip on_hover_topic_read" data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
                     </div>
                 </div>
                 <div class="recent_topic_actions dummy_action_button">
@@ -57,7 +57,7 @@
                   data-tippy-content="{{t 'You have unread mentions'}}">@</span>
                 <div class="recent_topic_actions">
                     <div class="recent_view_focusable hidden-for-spectators" data-col-index="{{ column_indexes.read }}">
-                        <span class="unread_count recent-view-table-unread-count {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
+                        <span class="unread_count recent-view-table-unread-count {{#if (eq unread_count 0)}}unread_hidden{{/if}} tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
                     </div>
                 </div>
                 <div class="recent_topic_actions">
@@ -83,12 +83,12 @@
     </td>
     <td class='recent_topic_users'>
         <ul class="recent_view_participants">
-            {{#if other_senders_count}}
+            {{#unless (eq other_senders_count 0)}}
             <li class="recent_view_participant_item tippy-zulip-tooltip" data-tooltip-template-id="recent_view_participant_overflow_tooltip:{{conversation_key}}">
                 <span class="recent_view_participant_overflow">+{{other_senders_count}}</span>
             </li>
             <template id="recent_view_participant_overflow_tooltip:{{conversation_key}}">{{{other_sender_names_html}}}</template>
-            {{/if}}
+            {{/unless}}
             {{#each senders}}
                 {{#if this.is_muted}}
                 <li class="recent_view_participant_item participant_profile tippy-zulip-tooltip" data-tippy-content="{{t 'Muted user'}}" data-user-id="{{this.user_id}}">

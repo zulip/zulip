@@ -11,7 +11,7 @@
                 {{/if}}
             </div>
         </li>
-        {{#if (or displayed_members.length displayed_subgroups.length)}}
+        {{#unless (and (eq displayed_members.length 0) (eq displayed_subgroups.length 0))}}
             {{#if user_can_access_all_other_users}}
                 <li role="none" class="popover-menu-list-item text-item italic">
                     {{#tr}}
@@ -19,7 +19,7 @@
                     {{/tr}}
                 </li>
             {{/if}}
-        {{/if}}
+        {{/unless}}
         {{#if deactivated}}
             <li role="none" class="popover-menu-list-item text-item italic hidden-for-spectators">
                 <span class="popover-menu-label">{{t "This group has been deactivated." }}</span>
@@ -27,7 +27,7 @@
         {{/if}}
         <li role="separator" class="popover-menu-separator"></li>
         <li role="none" class="popover-menu-list-item">
-            {{#if (or displayed_members.length displayed_subgroups.length)}}
+            {{#unless (and (eq displayed_members.length 0) (eq displayed_subgroups.length 0))}}
                 <ul class="popover-menu-list popover-group-menu-member-list" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
                     {{#each displayed_subgroups}}
                         <li class="popover-group-menu-member">
@@ -71,7 +71,7 @@
                 </ul>
             {{else}}
                 <span class="popover-group-menu-placeholder"><i>{{t 'This group has no members.'}}</i></span>
-            {{/if}}
+            {{/unless}}
         </li>
         {{#unless (or is_guest is_system_group)}}
             <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>

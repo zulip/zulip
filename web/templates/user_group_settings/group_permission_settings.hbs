@@ -3,7 +3,7 @@
         <h3>{{t "Organization permissions"}}</h3>
 
         {{#each group_assigned_realm_permissions}}
-            <div class="settings-subsection-parent {{subsection_key}} {{#unless assigned_permissions.length}}hide{{/unless}}">
+            <div class="settings-subsection-parent {{subsection_key}} {{#if (eq assigned_permissions.length 0)}}hide{{/if}}">
                 <div class="subsection-header">
                     <h3>{{subsection_heading}}</h3>
                     {{> ../settings/settings_save_discard_widget show_save_discard_buttons=true }}
@@ -24,7 +24,7 @@
         {{/each}}
     </div>
 
-    <div class="channel-group-permissions group-permissions-section {{#unless group_assigned_stream_permissions.length}}hide{{/unless}}">
+    <div class="channel-group-permissions group-permissions-section {{#if (eq group_assigned_stream_permissions.length 0)}}hide{{/if}}">
         <h3>{{t "Channel permissions"}}</h3>
 
         {{#each group_assigned_stream_permissions}}
@@ -37,7 +37,7 @@
         {{/each}}
     </div>
 
-    <div class="user-group-permissions group-permissions-section {{#unless group_assigned_user_group_permissions.length}}hide{{/unless}}">
+    <div class="user-group-permissions group-permissions-section {{#if (eq group_assigned_user_group_permissions.length 0)}}hide{{/if}}">
         <h3>{{t "User group permissions"}}</h3>
 
         {{#each group_assigned_user_group_permissions}}

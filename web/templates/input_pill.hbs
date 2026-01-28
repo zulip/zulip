@@ -1,7 +1,7 @@
 <div class='pill {{#if deactivated}} deactivated-pill {{/if~}}'
-  {{~#if user_id}}data-user-id="{{user_id}}"{{/if~}}
-  {{~#if group_id}}data-user-group-id="{{group_id}}"{{/if~}}
-  {{~#if stream_id}}data-stream-id="{{stream_id}}"{{/if~}}
+  {{~#unless (eq user_id undefined)}}data-user-id="{{user_id}}"{{/unless~}}
+  {{~#unless (eq group_id undefined)}}data-user-group-id="{{group_id}}"{{/unless~}}
+  {{~#unless (eq stream_id undefined)}}data-stream-id="{{stream_id}}"{{/unless~}}
   {{~#if data_syntax}}data-syntax="{{data_syntax}}"{{/if}} tabindex=0>
     {{#if has_image}}
     <img class="pill-image" src="{{img_src}}" />
