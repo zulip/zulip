@@ -328,7 +328,8 @@ function zoom_in(): void {
     pre_search_scroll_position = 0;
     ui_util.disable_left_sidebar_search();
     update_private_messages();
-    $("#left-sidebar").removeClass("zoom-out").addClass("zoom-in");
+    $("#left-sidebar").addClass("zoom-in");
+    $("#left-sidebar-modal").addClass("zoom-in-conversations");
     $("#direct-messages-modal").toggleClass("no-display", false);
 
     const $filter = $(".direct-messages-list-filter").expectOne();
@@ -339,7 +340,8 @@ function zoom_out(): void {
     zoomed = false;
     ui_util.enable_left_sidebar_search();
     clear_search();
-    $("#left-sidebar").removeClass("zoom-in").addClass("zoom-out");
+    $("#left-sidebar").removeClass("zoom-in");
+    $("#left-sidebar-modal").removeClass("zoom-in-conversations");
     $("#direct-messages-modal").toggleClass("no-display", true);
 }
 
@@ -373,11 +375,7 @@ export function initialize(): void {
         }
     });
 
-    $("#left-sidebar").on("click", ".left-sidebar-modal-close-area", (e) => {
-        if ($("#direct-messages-modal.no-display").length > 0) {
-            // This can happen when zooming out of a topics modal
-            return;
-        }
+    $("#left-sidebar").on("click", ".zoom-in-conversations .left-sidebar-modal-close-area", (e) => {
         e.stopPropagation();
         e.preventDefault();
 

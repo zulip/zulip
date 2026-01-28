@@ -1498,6 +1498,35 @@ li.active-sub-filter {
     display: none;
 }
 
+#views-label-container.showing-condensed-navigation,
+.left-sidebar.zoom-in #views-label-container {
+    /* Use a next-sibling combinator (+) to use CSS to show and hide
+        filter rows as needed, based on the narrow. */
+    + #left-sidebar-navigation-list {
+        /* In the condensed state, we don't want to generate
+            auto rows, or there will be a footprint where the
+            expanded nav sits. */
+        grid-auto-rows: unset;
+        /* When the navigation area is condensed, hide all
+            the rows in the full navigation list... */
+        & .top_left_row {
+            display: none;
+        }
+        /* ...except when there is an active filter in place:
+            that row should still be shown. */
+        & .top_left_row.top-left-active-filter {
+            display: grid;
+            /* In the absence of auto rows in the condensed state,
+                we set an explicit height on the active filter. */
+            height: var(--line-height-sidebar-row);
+        }
+    }
+
+    .zulip-icon-heading-triangle-right {
+        rotate: 0deg;
+    }
+}
+
 #views-label-container {
     margin-right: var(--left-sidebar-right-margin);
     grid-template-columns:
@@ -1531,30 +1560,6 @@ li.active-sub-filter {
            area, if needed. */
         .left-sidebar-title {
             grid-column: row-content-start / markers-and-unreads-end;
-        }
-    }
-
-    /* Use a next-sibling combinator (+) to use CSS to show and hide
-       filter rows as needed, based on the narrow. */
-    &.showing-condensed-navigation {
-        + #left-sidebar-navigation-list {
-            /* In the condensed state, we don't want to generate
-               auto rows, or there will be a footprint where the
-               expanded nav sits. */
-            grid-auto-rows: unset;
-            /* When the navigation area is condensed, hide all
-               the rows in the full navigation list... */
-            & .top_left_row {
-                display: none;
-            }
-            /* ...except when there is an active filter in place:
-               that row should still be shown. */
-            & .top_left_row.top-left-active-filter {
-                display: grid;
-                /* In the absence of auto rows in the condensed state,
-                   we set an explicit height on the active filter. */
-                height: var(--line-height-sidebar-row);
-            }
         }
     }
 
@@ -2229,12 +2234,6 @@ li.topic-list-item {
     display: none;
 }
 
-#left-sidebar.zoom-out #left-sidebar-modal {
-    /* Hidden instead of display: none so that we scroll to the
-       correct height more easily as it becomes visible again */
-    visibility: hidden;
-}
-
 #left-sidebar.zoom-in {
     #left_sidebar_scroll_container {
         /* Hidden instead of display: none so that we scroll to the
@@ -2247,8 +2246,51 @@ li.topic-list-item {
     }
 }
 
-#left-sidebar.zoom-in #left-sidebar-modal {
+#left-sidebar-modal {
+    /* Hidden instead of display: none so that we scroll to the
+       correct height more easily as it becomes visible again */
+    visibility: hidden;
+}
+
+/* The two modals have different top paddings */
+#left-sidebar-modal.zoom-in-conversations {
+    .left-sidebar-modal-close-area {
+        padding-top: var(--left-sidebar-modal-close-area-padding-top);
+    }
+
+    #left-sidebar-modal-content {
+        height: calc(
+            100vh - var(--navbar-fixed-height) -
+                var(--left-sidebar-modal-close-area-padding-top) -
+                var(--left-sidebar-modal-close-area-height)
+        );
+    }
+}
+
+/* The topic menu leaves space to see the DM section by padding the sidebar
+   row height to the close section's upper padding. */
+#left-sidebar-modal.zoom-in-topics {
+    .left-sidebar-modal-close-area {
+        padding-top: calc(
+            var(--left-sidebar-modal-close-area-padding-top) +
+                var(--line-height-sidebar-row-prominent)
+        );
+    }
+
+    #left-sidebar-modal-content {
+        height: calc(
+            100vh - var(--navbar-fixed-height) -
+                var(--left-sidebar-modal-close-area-padding-top) -
+                var(--left-sidebar-modal-close-area-height) -
+                var(--line-height-sidebar-row-prominent)
+        );
+    }
+}
+
+#left-sidebar-modal.zoom-in-topics,
+#left-sidebar-modal.zoom-in-conversations {
     position: absolute;
+    visibility: visible;
     left: 0;
     top: var(--navbar-fixed-height);
     width: var(--left-sidebar-width);
@@ -2258,7 +2300,6 @@ li.topic-list-item {
         position: relative;
         z-index: 1;
         height: var(--left-sidebar-modal-close-area-height);
-        padding-top: var(--left-sidebar-modal-close-area-padding-top);
         display: flex;
         margin: 0 10px;
         justify-content: space-between;
@@ -2295,11 +2336,6 @@ li.topic-list-item {
         padding: 0 0 5px 5px;
         background: var(--color-background);
         border-radius: 6px 6px 0 0;
-        height: calc(
-            100vh - var(--navbar-fixed-height) -
-                var(--left-sidebar-modal-close-area-padding-top) -
-                var(--left-sidebar-modal-close-area-height)
-        );
         box-shadow:
             0 -3px 12px 0
                 light-dark(hsl(0deg 0% 0% / 20%), hsl(0deg 0% 0% / 80%)),

@@ -78,7 +78,8 @@ function zoom_in(): void {
     pm_list.close();
     zoom_in_topics(stream_id);
     topic_list.zoom_in(get_stream_li(stream_id)!);
-    $("#left-sidebar").removeClass("zoom-out").addClass("zoom-in");
+    $("#left-sidebar").addClass("zoom-in");
+    $("#left-sidebar-modal").addClass("zoom-in-topics");
 }
 
 export function set_pending_stream_list_rerender(value: boolean): void {
@@ -728,7 +729,8 @@ export function zoom_in_topics(stream_id: number): void {
 }
 
 export function zoom_out_topics(): void {
-    $("#left-sidebar").removeClass("zoom-in").addClass("zoom-out");
+    $("#left-sidebar").removeClass("zoom-in");
+    $("#left-sidebar-modal").removeClass("zoom-in-topics");
     $("#stream_filters li.narrow-filter").toggleClass("hide", false);
     $("#more-topics-modal").empty();
     zoomed_in_row = undefined;
@@ -1254,11 +1256,7 @@ export function initialize({
         e.stopPropagation();
     });
 
-    $("#left-sidebar").on("click", ".left-sidebar-modal-close-area", (e) => {
-        if (pm_list.is_zoomed_in()) {
-            return;
-        }
-
+    $("#left-sidebar").on("click", ".zoom-in-topics .left-sidebar-modal-close-area", (e) => {
         zoom_out();
         browser_history.update_current_history_state_data({show_more_topics: false});
 
