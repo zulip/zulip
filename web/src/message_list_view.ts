@@ -1706,8 +1706,13 @@ export class MessageListView {
         if (message_content_edited) {
             $rendered_msg.addClass("fade-in-message");
         }
-        this._post_process($rendered_msg);
+        if ($row.hasClass("preview_mode")) {
+            // We'll render the preview area after we've
+            // rendered the message edit content in this new row.
+            $rendered_msg.addClass("show_preview");
+        }
         $row.replaceWith($rendered_msg);
+        this._post_process($rendered_msg);
 
         // If this list not currently displayed, we don't need to select the message.
         if (was_selected && this.list === message_lists.current) {
@@ -1803,6 +1808,7 @@ export class MessageListView {
             this.update_sticky_recipient_headers();
             maybe_restore_focus_to_message_edit_form();
         }
+        autosize.update(this.$list.find(".message_edit_content"));
     }
 
     append(
