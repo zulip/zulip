@@ -55,7 +55,7 @@ from zerver.lib.export import (
     do_export_user,
     get_consented_user_ids,
 )
-from zerver.lib.import_realm import do_import_realm, get_incoming_message_ids
+from zerver.lib.import_realm import do_import_realm, get_db_table, get_incoming_message_ids
 from zerver.lib.migration_status import STALE_MIGRATIONS, AppMigrations, MigrationStatusJson
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
@@ -3012,6 +3012,54 @@ class RealmImportExportTest(ExportFile):
             imported_emoji_channel.rendered_description,
         )
 
+    def test_import_sorts_realm_data_by_id(self) -> None:
+        user = self.example_user("hamlet")
+        original_realm = user.realm
+        self.export_realm_and_create_auditlog(original_realm)
+        realm_data = read_json("realm.json")
+
+        models_to_test = [Stream, UserProfile]
+
+        # Now we change up the ordering with respect to id of objects in the
+        # exported data, in order to next verify that the import will correctly
+        # restore ordering by ids.
+        for model in models_to_test:
+            table = get_db_table(model)
+            realm_data[table].sort(key=lambda r: r["id"], reverse=True)
+            self.assertGreater(len(realm_data[table]), 0)
+            self.assertGreater(realm_data[table][0]["id"], realm_data[table][-1]["id"])
+
+        output_dir = get_output_dir()
+        realm_export_file = os.path.join(output_dir, "realm.json")
+
+        with open(realm_export_file, "wb") as fp:
+            fp.write(orjson.dumps(realm_data, option=orjson.OPT_INDENT_2))
+
+        for model in models_to_test:
+            table = get_db_table(model)
+            reversed_data = read_json("realm.json")[table]
+            for i in range(len(reversed_data) - 1):
+                self.assertGreater(
+                    reversed_data[i]["id"],
+                    reversed_data[i + 1]["id"],
+                )
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        def zip_original_and_imported_table(model: Any) -> Any:
+            original_table = model.objects.filter(realm=original_realm).order_by("id")
+            imported_table = model.objects.filter(realm=imported_realm).order_by("id")
+            return zip(original_table, imported_table, strict=True)
+
+        # No need to check every details here, check just enough to make sure the
+        # two objects are indeed the same object but in different realms.
+        for original_user, imported_user in zip_original_and_imported_table(UserProfile):
+            self.assertEqual(original_user.email, imported_user.email)
+        for original_stream, imported_stream in zip_original_and_imported_table(Stream):
+            self.assertEqual(original_stream.name, imported_stream.name)
+
     def test_submessage_table_migration(self) -> None:
         original_realm = get_realm("zulip")
 
@@ -3115,7 +3163,23 @@ class RealmImportExportTest(ExportFile):
             self.assertLess(
                 realm_export_data["zerver_submessage"][i]["id"],
                 realm_export_data["zerver_submessage"][i + 1]["id"],
-                f"Submessage ID are not increasing at index {i}",
+                f"Submessage ID is not increasing at index {i}",
+            )
+        output_dir = get_output_dir()
+        realm_export_file = os.path.join(output_dir, "realm.json")
+
+        # Sort the submessage IDs in descending order, which is incorrect. Import should
+        # make sure the submessage IDs are ascending.
+        realm_export_data["zerver_submessage"].sort(key=lambda r: r["id"], reverse=True)
+        with open(realm_export_file, "wb") as fp:
+            fp.write(orjson.dumps(realm_export_data, option=orjson.OPT_INDENT_2))
+
+        reversed_submessage_data = read_json("realm.json")["zerver_submessage"]
+        for i in range(len(reversed_submessage_data) - 1):
+            self.assertGreater(
+                reversed_submessage_data[i]["id"],
+                reversed_submessage_data[i + 1]["id"],
+                "Reverse the submessages so that we can assert import reorders submessages.",
             )
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):

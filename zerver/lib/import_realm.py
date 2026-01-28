@@ -791,6 +791,7 @@ def update_model_ids(model: Any, data: ImportedTableData, related_table: TableNa
     # memory errors. We don't even use ids from ID_MAP.
     assert table != "usermessage"
 
+    data[table].sort(key=lambda r: r["id"])
     old_id_list = current_table_ids(data, table)
     allocated_id_list = allocate_ids(model, len(data[table]))
     for item in range(len(data[table])):
