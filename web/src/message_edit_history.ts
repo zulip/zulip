@@ -65,6 +65,141 @@ const server_message_history_schema = z.object({
     ),
 });
 
+// Helper function to get file-type-specific placeholder text for deleted files.
+function get_deleted_file_placeholder_text(mime_type: string | undefined): string {
+    if (!mime_type) {
+        return $t({defaultMessage: "This file does not exist or has been deleted."});
+    }
+
+    if (mime_type.startsWith("image/")) {
+        return $t({defaultMessage: "This image does not exist or has been deleted."});
+    }
+
+    if (mime_type.startsWith("video/")) {
+        return $t({defaultMessage: "This video does not exist or has been deleted."});
+    }
+
+    if (mime_type.startsWith("audio/")) {
+        return $t({defaultMessage: "This audio does not exist or has been deleted."});
+    }
+
+    if (mime_type === "application/pdf") {
+        return $t({defaultMessage: "This pdf file does not exist or has been deleted."});
+    }
+
+    return $t({defaultMessage: "This file does not exist or has been deleted."});
+}
+
+// Helper function to get placeholder text based on URL extension (for links without MIME type).
+function get_deleted_file_placeholder_text_from_url(url: string | undefined): string {
+    if (!url) {
+        return $t({defaultMessage: "This file does not exist or has been deleted."});
+    }
+
+    const urlLower = url.toLowerCase();
+
+    // Video Detection
+    const videoExtensions = [".mp4", ".webm", ".mov", ".avi", ".mkv"];
+    if (videoExtensions.some((ext) => urlLower.endsWith(ext))) {
+        return $t({defaultMessage: "This video does not exist or has been deleted."});
+    }
+
+    // Image Detection
+    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff", ".svg"];
+    if (imageExtensions.some((ext) => urlLower.endsWith(ext))) {
+        return $t({defaultMessage: "This image does not exist or has been deleted."});
+    }
+
+    // Audio Detection
+    const audioExtensions = [".mp3", ".wav", ".ogg", ".m4a", ".flac", ".aac"];
+    if (audioExtensions.some((ext) => urlLower.endsWith(ext))) {
+        return $t({defaultMessage: "This audio does not exist or has been deleted."});
+    }
+
+    // PDF Detection
+    if (urlLower.endsWith(".pdf")) {
+        return $t({defaultMessage: "This pdf file does not exist or has been deleted."});
+    }
+
+    // Generic file for all other types
+    return $t({defaultMessage: "This file does not exist or has been deleted."});
+}
+
+// Helper function to get the appropriate placeholder image path for deleted files.
+// Returns the path to the placeholder image based on file type detection.
+function get_deleted_file_placeholder_image(
+    mime_type: string | undefined,
+    parentHref: string | undefined,
+): string {
+    // Check parentHref first (most reliable for thumbnails/previews)
+    // Video Detection: Check if parentHref ends with video extensions
+    const videoExtensions = [".mp4", ".webm", ".mov", ".avi", ".mkv"];
+    const isVideoByExtension = videoExtensions.some((ext) =>
+        parentHref?.toLowerCase().endsWith(ext),
+    );
+
+    if (isVideoByExtension) {
+        return "/static/images/errors/video-not-exist.png";
+    }
+
+    // Image Detection: Check if parentHref ends with image extensions
+    // This catches deleted images where we only have the URL (no mime type)
+    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff", ".svg"];
+    const isImageByExtension = imageExtensions.some((ext) =>
+        parentHref?.toLowerCase().endsWith(ext),
+    );
+
+    if (isImageByExtension) {
+        return "/static/images/errors/image-not-exist.png";
+    }
+
+    // Check for other file types by extension (PDF, audio, documents, archives, etc.)
+    // These should show file-not-exist.png even if the thumbnail has an image MIME type
+    const otherFileExtensions = [
+        ".pdf",
+        ".mp3",
+        ".wav",
+        ".ogg",
+        ".m4a",
+        ".flac",
+        ".aac",
+        ".zip",
+        ".rar",
+        ".7z",
+        ".tar",
+        ".gz",
+        ".doc",
+        ".docx",
+        ".xls",
+        ".xlsx",
+        ".ppt",
+        ".pptx",
+        ".txt",
+        ".rtf",
+    ];
+    const isOtherFileByExtension = otherFileExtensions.some((ext) =>
+        parentHref?.toLowerCase().endsWith(ext),
+    );
+
+    if (isOtherFileByExtension) {
+        return "/static/images/errors/file-not-exist.png";
+    }
+
+    // Fall back to MIME type detection
+    // Video Detection: Check if mime_type is video
+    if (mime_type?.startsWith("video/") === true) {
+        return "/static/images/errors/video-not-exist.png";
+    }
+
+    // Image Detection: If mime_type starts with "image/"
+    if (mime_type?.startsWith("image/") === true) {
+        return "/static/images/errors/image-not-exist.png";
+    }
+
+    // Generic File Detection: For all other cases (audio by MIME type, unknown types, etc.)
+    return "/static/images/errors/file-not-exist.png";
+}
+
 // This will be used to handle up and down keyws
 const keyboard_handling_context: messages_overlay_ui.Context = {
     items_container_selector: "message-edit-history-container",
@@ -313,6 +448,140 @@ export function fetch_and_render_message_history(message: Message): void {
                         $t({defaultMessage: "This file does not exist or has been deleted."}),
                     );
                     $img.removeClass("image-loading-placeholder");
+                });
+
+            // Handle all media that fail to load (404 errors) in the message edit history.
+            // This catches images that were previously valid but have since been deleted.
+            $("#message-history-overlay")
+                .find(".rendered_markdown img, .rendered_markdown video")
+                .on("error", function () {
+                    const $element = $(this);
+
+                    // Safety check: prevent infinite loops.
+                    const currentSrc = $element.attr("src");
+                    if (
+                        currentSrc?.includes("image-not-exist.png") ||
+                        currentSrc?.includes("video-not-exist.png") ||
+                        currentSrc?.includes("file-not-exist.png")
+                    ) {
+                        return;
+                    }
+
+                    // HANDLE VIDEO PLAYERS:
+                    // If the broken element is a <video> tag, we must replace the whole player
+                    // with the static "video-not-exist" image.
+                    if ($element.is("video")) {
+                        const placeholder_text = $t({
+                            defaultMessage: "This video does not exist or has been deleted.",
+                        });
+                        const $newImg = $("<img>")
+                            .attr("src", "/static/images/errors/video-not-exist.png")
+                            .attr("alt", placeholder_text)
+                            .attr("title", placeholder_text)
+                            .addClass("message_edit_history_content"); // Keep consistent styling
+
+                        $element.replaceWith($newImg);
+                        return;
+                    }
+
+                    // HANDLE IMAGES (Existing Logic):
+                    // Get the MIME type from the data attribute and parent link href for file type detection.
+                    const mime_type = $element.attr("data-original-content-type");
+                    const parentHref = $element.closest("a").attr("href");
+
+                    // Determine the appropriate placeholder image based on file type.
+                    const placeholder_image = get_deleted_file_placeholder_image(
+                        mime_type,
+                        parentHref,
+                    );
+
+                    // Get the appropriate placeholder text for accessibility.
+                    const placeholder_text = get_deleted_file_placeholder_text(mime_type);
+
+                    // Replace the broken image with the appropriate placeholder and set text.
+                    $element.attr("src", placeholder_image);
+                    $element.attr("alt", placeholder_text);
+                    $element.attr("title", placeholder_text);
+
+                    // Remove the loading placeholder class if it exists.
+                    $element.removeClass("image-loading-placeholder");
+                });
+
+            // HANDLE DELETED FILE LINKS (PDFs, documents, audio, etc.):
+            // These are rendered as text links (<a href="/user_uploads/...">filename.pdf</a>)
+            // and don't fire "error" events, so we must check them manually.
+            // We ignore links that already contain images/videos/placeholders to prevent double replacement.
+            $("#message-history-overlay")
+                .find(".rendered_markdown a[href^='/user_uploads/']")
+                .filter(function () {
+                    const $link = $(this);
+                    const url = $link.attr("href");
+
+                    if (!url) {
+                        return false;
+                    }
+
+                    // Exclude links that point to images or videos - these are handled by the error handler
+                    const urlLower = url.toLowerCase();
+                    const videoExtensions = [".mp4", ".webm", ".mov", ".avi", ".mkv"];
+                    const imageExtensions = [
+                        ".jpg",
+                        ".jpeg",
+                        ".png",
+                        ".gif",
+                        ".webp",
+                        ".bmp",
+                        ".tiff",
+                        ".svg",
+                    ];
+
+                    const isVideo = videoExtensions.some((ext) => urlLower.endsWith(ext));
+                    const isImage = imageExtensions.some((ext) => urlLower.endsWith(ext));
+
+                    // Only process links that:
+                    // 1. Don't point to images/videos (those are handled by error handler)
+                    // 2. Don't already contain media elements or placeholders
+                    return (
+                        !isVideo &&
+                        !isImage &&
+                        $link.find("img").length === 0 &&
+                        $link.find("video").length === 0 &&
+                        $link.find(".message_edit_history_content").length === 0
+                    );
+                })
+                .each(function () {
+                    const $link = $(this);
+                    const url = $link.attr("href");
+
+                    if (!url) {
+                        return;
+                    }
+
+                    // Check if the file exists using a lightweight HEAD request
+                    void (async () => {
+                        try {
+                            const response = await fetch(url, {method: "HEAD"});
+                            if (response.status === 404) {
+                                // The file is gone. Determine the appropriate placeholder based on file type.
+                                const placeholder_image = get_deleted_file_placeholder_image(
+                                    undefined,
+                                    url,
+                                );
+                                const placeholder_text =
+                                    get_deleted_file_placeholder_text_from_url(url);
+
+                                const $newImg = $("<img>")
+                                    .attr("src", placeholder_image)
+                                    .attr("alt", placeholder_text)
+                                    .attr("title", placeholder_text)
+                                    .addClass("message_edit_history_content"); // Keep consistent styling
+
+                                $link.replaceWith($newImg);
+                            }
+                        } catch {
+                            // If the check fails (e.g. network error), leave the link alone.
+                        }
+                    })();
                 });
 
             const first_element_id = content_edit_history[0]!.timestamp;
