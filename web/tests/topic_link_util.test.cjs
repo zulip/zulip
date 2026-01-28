@@ -166,8 +166,22 @@ run_test("get_topic_link_content_with_stream_name", () => {
             message_id: 123,
         }),
         {
-            text: "#Sweden > abc @ 💬",
+            label_text_markdown: "#Sweden > abc @ 💬",
+            label_text_plain: "#Sweden > abc @ 💬",
             url: "#narrow/channel/1-Sweden/topic/abc/near/123",
+        },
+    );
+
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_name({
+            stream_name: sweden_stream.name,
+            topic_name: "a![b](c)",
+            message_id: 123,
+        }),
+        {
+            label_text_markdown: "#Sweden > a!&#91;b&#93;(c) @ 💬",
+            label_text_plain: "#Sweden > a![b](c) @ 💬",
+            url: "#narrow/channel/1-Sweden/topic/a!.5Bb.5D.28c.29/near/123",
         },
     );
 });
@@ -180,8 +194,22 @@ run_test("get_topic_link_content_with_stream_id", () => {
             message_id: 123,
         }),
         {
-            text: "#Sweden > abc @ 💬",
+            label_text_markdown: "#Sweden > abc @ 💬",
+            label_text_plain: "#Sweden > abc @ 💬",
             url: "#narrow/channel/1-Sweden/topic/abc/near/123",
+        },
+    );
+
+    assert.deepEqual(
+        topic_link_util.get_topic_link_content_with_stream_id({
+            stream_id: sweden_stream.stream_id,
+            topic_name: "<abc>",
+            message_id: 123,
+        }),
+        {
+            label_text_markdown: "#Sweden > <abc&gt; @ 💬",
+            label_text_plain: "#Sweden > <abc> @ 💬",
+            url: "#narrow/channel/1-Sweden/topic/.3Cabc.3E/near/123",
         },
     );
 });
