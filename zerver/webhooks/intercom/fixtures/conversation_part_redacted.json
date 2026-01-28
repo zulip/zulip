@@ -7,8 +7,8 @@
             "type": "conversation",
             "id": "215472621202693",
             "created_at": 1768031789,
-            "updated_at": 1768032818,
-            "waiting_since": null,
+            "updated_at": 1768033204,
+            "waiting_since": 1768032894,
             "snoozed_until": null,
             "source": {
                 "type": "conversation",
@@ -45,7 +45,7 @@
             "team_assignee_id": null,
             "open": true,
             "state": "open",
-            "read": false,
+            "read": true,
             "tags": {
                 "type": "tag.list",
                 "tags": []
@@ -65,16 +65,16 @@
                 "first_close_at": "2026-01-10T08:13:35.000Z",
                 "last_assignment_at": "2026-01-10T08:00:00.000Z",
                 "last_assignment_admin_reply_at": "2026-01-10T08:00:00.000Z",
-                "last_contact_reply_at": "2026-01-10T08:13:08.000Z",
+                "last_contact_reply_at": "2026-01-10T08:14:54.000Z",
                 "last_admin_reply_at": "2026-01-10T08:13:32.000Z",
                 "last_close_at": "2026-01-10T08:13:35.000Z",
                 "last_closed_by_id": 9608799,
                 "count_reopens": 1,
                 "count_assignments": 1,
-                "count_conversation_parts": 16,
+                "count_conversation_parts": 19,
                 "assigned_team_first_response_time": [],
                 "assigned_team_first_response_time_in_office_hours": [],
-                "handling_time": 756
+                "handling_time": 865
             },
             "conversation_rating": null,
             "teammates": {
@@ -114,12 +114,12 @@
                 "conversation_parts": [
                     {
                         "type": "conversation_part",
-                        "id": "37358542539",
-                        "part_type": "open",
-                        "body": null,
-                        "created_at": 1768032818,
-                        "updated_at": 1768032818,
-                        "notified_at": 1768032818,
+                        "id": "37358539897",
+                        "part_type": "comment",
+                        "body": "<p><i>This message was deleted</i></p>",
+                        "created_at": 1768032812,
+                        "updated_at": 1768033204,
+                        "notified_at": 1768032812,
                         "assigned_to": null,
                         "author": {
                             "id": "9608799",
@@ -131,7 +131,7 @@
                         },
                         "attachments": [],
                         "external_id": null,
-                        "redacted": false,
+                        "redacted": true,
                         "metadata": {},
                         "email_message_metadata": null,
                         "state": "open",
@@ -145,12 +145,12 @@
         }
     },
     "links": {},
-    "id": "notif_13d516f4-fc98-46ef-9e99-260e6c8918d7",
-    "topic": "conversation.admin.opened",
+    "id": "notif_574e80f7-1e3a-425d-a485-2fe8ddf0b6d9",
+    "topic": "conversation_part.redacted",
     "delivery_status": "pending",
     "delivery_attempts": 1,
     "delivered_at": 0,
-    "first_sent_at": 1768032819,
-    "created_at": 1768032819,
+    "first_sent_at": 1768033205,
+    "created_at": 1768033204,
     "self": null
 }
