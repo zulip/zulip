@@ -338,6 +338,16 @@ class NarrowBuilderTest(ZulipTestCase):
             term, "WHERE NOT (upper(subject) = upper(%(param_1)s) AND is_channel_message)"
         )
 
+    def test_add_term_using_topic_contains_operator(self) -> None:
+        term = NarrowParameter(operator="topic-contains", operand="lunch")
+        self._do_add_term_test(term, "WHERE subject ILIKE %(subject_1)s AND is_channel_message")
+
+    def test_add_term_using_topic_contains_operator_negated(self) -> None:  # NEGATED
+        term = NarrowParameter(operator="topic-contains", operand="lunch", negated=True)
+        self._do_add_term_test(
+            term, "WHERE NOT (subject ILIKE %(subject_1)s AND is_channel_message)"
+        )
+
     def test_add_term_using_sender_operator(self) -> None:
         term = NarrowParameter(operator="sender", operand=self.othello_email)
         self._do_add_term_test(term, "WHERE sender_id = %(param_1)s")

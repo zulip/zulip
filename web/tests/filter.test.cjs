@@ -1160,6 +1160,14 @@ test("predicate_basics", ({override}) => {
     predicate = get_predicate([["topic", "Bar"]]);
     assert.ok(!predicate({type: direct_message}));
 
+    predicate = get_predicate([["topic-contains", "bug"]]);
+    assert.ok(predicate({type: stream_message, topic: "Bug fixes"}));
+    assert.ok(predicate({type: stream_message, topic: "debugging"}));
+    assert.ok(predicate({type: stream_message, topic: "BUG REPORT"}));
+    assert.ok(predicate({type: stream_message, topic: "a]bug[b"}));
+    assert.ok(!predicate({type: stream_message, topic: "feature request"}));
+    assert.ok(!predicate({type: direct_message}));
+
     predicate = get_predicate([["is", "dm"]]);
     assert.ok(predicate({type: direct_message}));
     assert.ok(!predicate({type: stream_message}));
@@ -1900,6 +1908,18 @@ test("describe", ({mock_template, override}) => {
     terms = [{operator: "dm-including", operand: ""}];
     string = "direct messages including";
     assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "topic-contains", operand: ""}];
+    string = "topic contains";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "topic-contains", operand: "bug"}];
+    string = "topic contains bug";
+    assert.equal(Filter.search_description_as_html(terms, false), string);
+
+    terms = [{operator: "topic-contains", operand: "bug", negated: true}];
+    string = "exclude topic contains bug";
+    assert.equal(Filter.search_description_as_html(terms, false), string);
 });
 
 test("can_bucket_by", () => {
@@ -2110,6 +2130,7 @@ test("convert_suggestion_to_term", () => {
         ["channels:public", true],
         ["channels:private", false],
         ["topic:GhostTown", true],
+        ["topic-contains:bug", true],
         ["dm-including:alice@example.com", true],
         ["sender:ghost@zulip.com", false],
         ["sender:me", true],

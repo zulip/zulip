@@ -48,6 +48,7 @@ export const narrow_canonical_operator_schema = z.enum([
     "search",
     "sender",
     "topic",
+    "topic-contains",
     "with",
 ]);
 export type NarrowCanonicalOperator = z.output<typeof narrow_canonical_operator_schema>;
@@ -115,6 +116,11 @@ export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
     }),
     z.object({
         operator: z.literal("topic"),
+        operand: z.string(),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("topic-contains"),
         operand: z.string(),
         negated: z.optional(z.boolean()),
     }),

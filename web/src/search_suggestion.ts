@@ -86,7 +86,14 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
         {operator: "dm"},
         {operator: "is", operand: "dm"},
         {operator: "dm-including"},
+        {operator: "topic-contains"},
         {operator: "topic"},
+    ],
+    "topic-contains": [
+        {operator: "dm"},
+        {operator: "is", operand: "dm"},
+        {operator: "dm-including"},
+        {operator: "topic-contains"},
     ],
     dm: [
         {operator: "dm"},
@@ -120,6 +127,7 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
         {operator: "dm"},
         {operator: "in"},
         {operator: "topic"},
+        {operator: "topic-contains"},
     ],
     sender: [{operator: "sender"}, {operator: "from"}],
     from: [{operator: "sender"}, {operator: "from"}],
@@ -513,7 +521,7 @@ function get_topic_suggestions(
         !check_validity(
             last.operator,
             terms,
-            ["channel", "topic", "search"],
+            ["channel", "topic", "topic-contains", "search"],
             incompatible_patterns.topic!,
         )
     ) {
@@ -521,7 +529,9 @@ function get_topic_suggestions(
     }
 
     const operand = last.operand;
-    const negated = last.operator === "topic" && last.negated;
+    const use_topic_contains = last.operator === "topic-contains";
+    const negated =
+        (last.operator === "topic" || last.operator === "topic-contains") && last.negated;
     let channel_id_str: string | undefined;
     let guess: string | undefined;
     const filter = new Filter(terms);
@@ -550,6 +560,7 @@ function get_topic_suggestions(
             channel_id_str = operand;
             break;
         case "topic":
+        case "topic-contains":
         case "search":
             guess = operand;
             if (filter.has_operator("channel")) {
@@ -657,7 +668,8 @@ function get_topic_suggestions(
         ...other_channel_topic_suggestion_entries,
     ];
     return topics.map((topic) => {
-        const topic_term: NarrowTerm = {operator: "topic", operand: topic.topic, negated};
+        const topic_operator = use_topic_contains ? "topic-contains" : "topic";
+        const topic_term: NarrowTerm = {operator: topic_operator, operand: topic.topic, negated};
         const terms: NarrowTerm[] = [{operator: "channel", operand: topic.channel_id}, topic_term];
         // We don't want to have two channel pills in the search suggestion.
         if (filter.has_operator("channel")) {
@@ -906,6 +918,7 @@ function get_operator_suggestions(
             "channels",
             "channel",
             "topic",
+            "topic-contains",
             "dm",
             "dm-including",
             "sender",

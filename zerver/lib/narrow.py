@@ -155,6 +155,7 @@ def is_spectator_compatible(narrow: Iterable[NarrowParameter]) -> bool:
         *channel_operators,
         *channels_operators,
         "topic",
+        "topic-contains",
         "sender",
         "has",
         "search",
@@ -295,6 +296,7 @@ class NarrowBuilder:
             # "streams" is a legacy alias for "channels"
             "streams": self.by_channels,
             "topic": self.by_topic,
+            "topic-contains": self.by_topic_contains,
             "sender": self.by_sender,
             "near": self.by_near,
             "id": self.by_id,
@@ -502,6 +504,18 @@ class NarrowBuilder:
         self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
         cond = topic_match_sa(operand)
+        return query.where(maybe_negate(cond))
+
+    def by_topic_contains(
+        self, query: Select, operand: str, maybe_negate: ConditionTransform
+    ) -> Select:
+        self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
+
+        pattern = "%" + connection.ops.prep_for_like_query(operand) + "%"
+        cond = and_(
+            topic_column_sa().ilike(pattern),
+            column("is_channel_message", Boolean),
+        )
         return query.where(maybe_negate(cond))
 
     def by_sender(
