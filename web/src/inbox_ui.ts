@@ -1914,6 +1914,10 @@ export function change_focused_element(input_key: string): boolean {
         }
     } else {
         switch (input_key) {
+            case "open_inbox":
+            case "list_of_channel_topics":
+                focus_inbox_search();
+                return true;
             case "vim_down":
             case "down_arrow":
                 row_focus += 1;
