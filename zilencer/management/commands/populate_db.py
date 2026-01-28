@@ -201,6 +201,7 @@ def create_alert_words(realm_id: int) -> None:
         realm_id=realm_id,
         is_bot=False,
         is_active=True,
+        is_imported_stub=False,
     ).values_list("id", flat=True)
 
     alert_words = [
@@ -550,7 +551,7 @@ class Command(ZulipBaseCommand):
                 u.timezone = new_time_zone
                 u.save(update_fields=["timezone"])
 
-            # Note: Hamlet keeps default time zone of "".
+            # Note: Hamlet and Imported User keep default time zone of "".
             assign_time_zone_by_delivery_email("AARON@zulip.com", "US/Pacific")
             assign_time_zone_by_delivery_email("othello@zulip.com", "US/Pacific")
             assign_time_zone_by_delivery_email("ZOE@zulip.com", "US/Eastern")
@@ -594,6 +595,16 @@ class Command(ZulipBaseCommand):
 
             polonius = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
             do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None, notify=False)
+
+            zulip_imported_users = [
+                ("Imported User", "imported-user@zulip.com"),
+            ]
+            create_users(
+                zulip_realm,
+                zulip_imported_users,
+                is_imported_stub=True,
+                tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
+            )
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
@@ -720,6 +731,7 @@ class Command(ZulipBaseCommand):
                         zulip_sandbox_channel_name,
                     ],
                     "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
+                    "imported-user@zulip.com": ["Denmark"],
                 }
 
                 for profile in profiles:
@@ -958,6 +970,8 @@ class Command(ZulipBaseCommand):
         if not options["test_suite"]:
             # Populate users with some bar data
             for user in user_profiles:
+                if user.is_imported_stub:
+                    continue
                 date = timezone_now()
                 UserPresence.objects.get_or_create(
                     user_profile=user,

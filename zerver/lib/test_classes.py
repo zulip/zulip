@@ -665,6 +665,7 @@ Output:
         webhook_bot="webhook-bot@zulip.com",
         outgoing_webhook_bot="outgoing-webhook@zulip.com",
         default_bot="default-bot@zulip.com",
+        imported_user="imported-user@zulip.com",
     )
 
     mit_user_map = dict(

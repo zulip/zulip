@@ -675,19 +675,25 @@ class TestSendCustomEmail(ZulipTestCase):
         owner_user.save()
 
         # Get the total number of marketing emails to be sent
-        users = UserProfile.objects.filter(
-            is_active=True,
-            is_bot=False,
-            is_mirror_dummy=False,
-            realm__deactivated=False,
-            enable_marketing_emails=True,
-        ).filter(
-            Q(long_term_idle=False)
-            | Q(
-                role__in=[
-                    UserProfile.ROLE_REALM_OWNER,
-                    UserProfile.ROLE_REALM_ADMINISTRATOR,
-                ]
+        users = (
+            UserProfile.objects.filter(
+                is_active=True,
+                is_bot=False,
+                is_mirror_dummy=False,
+                realm__deactivated=False,
+                enable_marketing_emails=True,
+            )
+            .filter(
+                Q(long_term_idle=False)
+                | Q(
+                    role__in=[
+                        UserProfile.ROLE_REALM_OWNER,
+                        UserProfile.ROLE_REALM_ADMINISTRATOR,
+                    ]
+                )
+            )
+            .exclude(
+                Q(tos_version=None) | Q(tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
             )
         )
 
