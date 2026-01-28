@@ -232,8 +232,6 @@ def do_invite_users(
     errors: list[tuple[str, str, bool]] = []
     validate_email_allowed_in_realm = get_realm_email_validator(realm)
     for email in invitee_emails:
-        if email == "":
-            continue
         email_error = validate_email_is_valid(
             email,
             validate_email_allowed_in_realm,
