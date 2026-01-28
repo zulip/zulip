@@ -741,6 +741,13 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "intercom",
         ["customer-support"],
         [WebhookScreenshotConfig("conversation_admin_replied.json")],
+        url_options=[
+            WebhookUrlOption(
+                name="separate_topics_for_each_entity",
+                label="Create separate topics for each entity",
+                validator=check_bool,
+            ),
+        ],
     ),
     IncomingWebhookIntegration(
         "jira",
