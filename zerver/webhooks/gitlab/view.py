@@ -589,8 +589,18 @@ def api_gitlab_webhook(
     branches: str | None = None,
     use_merge_request_title: Json[bool] = True,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
+    ignore_private_projects: Json[bool] = False,
 ) -> HttpResponse:
     event = get_event(request, payload, branches)
+
+    # Ignore events from private projects if the URL option is set
+    if (
+        "project" in payload
+        and payload["project"]["visibility_level"].tame(check_int) == 0
+        and ignore_private_projects
+    ):
+        return json_success(request)
+
     if event is not None:
         event_body_function = get_body_based_on_event(event)
         body = event_body_function(
