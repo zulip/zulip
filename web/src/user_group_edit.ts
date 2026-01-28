@@ -103,7 +103,7 @@ const GROUP_INFO_BANNER: Banner = {
 
 function get_user_group_id(target: HTMLElement): number {
     const $row = $(target).closest(
-        ".group-row, .user_group_settings_wrapper, .save-button, .group_settings_header",
+        ".group-row, .user_group_settings_wrapper, .save-button, .group_settings_header, .user-group-settings-header-actions",
     );
     return Number.parseInt($row.attr("data-group-id")!, 10);
 }
@@ -274,9 +274,11 @@ function update_general_panel_ui(group: UserGroup): void {
     const $edit_container = get_edit_container(group.id);
 
     if (settings_data.can_manage_user_group(group.id)) {
-        $edit_container.find(".group-header .button-group").show();
+        $edit_container.find(".group-description-field .button-group").show();
+        $("#groups_overlay .user-group-settings-header-actions").show();
     } else {
-        $edit_container.find(".group-header .button-group").hide();
+        $edit_container.find(".group-description-field .button-group").hide();
+        $("#groups_overlay .user-group-settings-header-actions").hide();
     }
     update_deactivate_and_reactivate_buttons(group);
     update_group_permission_settings_elements(group);
@@ -1324,6 +1326,7 @@ export function handle_deleted_group(group_id: number): void {
     if (is_editing_group(group_id)) {
         const user_group = user_groups.get_user_group_from_id(group_id);
         $("#groups_overlay .deactivated-user-group-icon-right").show();
+        $("#groups_overlay .user-group-settings-header-actions").show();
 
         update_group_deactivated_banner(user_group);
         update_deactivate_and_reactivate_buttons(user_group);
@@ -1342,6 +1345,7 @@ export function handle_reactivated_group(group_id: number): void {
     if (is_editing_group(group_id)) {
         const user_group = user_groups.get_user_group_from_id(group_id);
         $("#groups_overlay .deactivated-user-group-icon-right").hide();
+        $("#groups_overlay .user-group-settings-header-actions").show();
 
         update_group_deactivated_banner(user_group);
         update_deactivate_and_reactivate_buttons(user_group);
@@ -1552,11 +1556,14 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
             $("#groups_overlay .user-group-info-title")
                 .text(user_groups.get_display_group_name(group.name))
                 .addClass("showing-info-title");
+            $("#groups_overlay #open_group_info_modal").show();
         }
 
         if (changed_group_settings.length > 0) {
             update_group_right_panel(group, changed_group_settings);
         }
+    } else {
+        $("#groups_overlay #open_group_info_modal").hide();
     }
 
     for (const setting_name of changed_group_settings) {
@@ -1993,7 +2000,7 @@ export function initialize(): void {
         }
     });
 
-    $("#groups_overlay_container").on(
+    $("#groups_overlay_container, #groups_overlay.user-group-settings-header-actions").on(
         "click",
         "#open_group_info_modal",
         function (this: HTMLElement, e) {
