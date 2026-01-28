@@ -932,7 +932,7 @@ class SlackImporter(ZulipTestCase):
             zerver_userprofile[8]["id"], test_slack_user_id_to_zulip_user_id["U1ZYFEC91"]
         )
         self.assertEqual(zerver_userprofile[8]["is_active"], True)
-        self.assertEqual(zerver_userprofile[8]["avatar_source"], "G")
+        self.assertEqual(zerver_userprofile[8]["avatar_source"], "J")
 
         # Test converting Slack's integration bot
         self.assertEqual(
@@ -945,7 +945,7 @@ class SlackImporter(ZulipTestCase):
             zerver_userprofile[10]["id"], test_slack_user_id_to_zulip_user_id["U1RDFEC90"]
         )
         self.assertEqual(zerver_userprofile[10]["is_active"], True)
-        self.assertEqual(zerver_userprofile[10]["avatar_source"], "G")
+        self.assertEqual(zerver_userprofile[10]["avatar_source"], "J")
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1

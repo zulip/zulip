@@ -24,6 +24,7 @@ from zerver.actions.realm_settings import (
 )
 from zerver.actions.user_settings import (
     bulk_regenerate_api_keys,
+    do_change_avatar_fields,
     do_change_full_name,
     do_change_user_setting,
 )
@@ -360,6 +361,9 @@ class PermissionTest(ZulipTestCase):
         admin = self.example_user("iago")
         self.login_user(user)
 
+        do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
         # First, verify client_gravatar works normally
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         members = self.assert_json_success(result)["members"]
@@ -392,7 +396,8 @@ class PermissionTest(ZulipTestCase):
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
         self.assertEqual(
-            hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1, get_realm("zulip").id)
+            hamlet["avatar_url"],
+            get_gravatar_url(user.delivery_email, user.avatar_version, get_realm("zulip").id),
         )
 
         # client_gravatar is still turned off for admins.  In theory,
@@ -407,7 +412,8 @@ class PermissionTest(ZulipTestCase):
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
         self.assertEqual(
-            hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1, get_realm("zulip").id)
+            hamlet["avatar_url"],
+            get_gravatar_url(user.delivery_email, user.avatar_version, get_realm("zulip").id),
         )
         self.assertEqual(hamlet["delivery_email"], self.example_email("hamlet"))
 
@@ -2865,6 +2871,8 @@ class BulkUsersTest(ZulipTestCase):
         self.login("cordelia")
 
         hamlet = self.example_user("hamlet")
+        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         def get_hamlet_avatar(client_gravatar: bool) -> str | None:
             data = dict(client_gravatar=orjson.dumps(client_gravatar).decode())

@@ -481,6 +481,7 @@ export const realm_schema = z.object({
     realm_can_summarize_topics_group: group_setting_value_schema,
     realm_create_multiuse_invite_group: group_setting_value_schema,
     realm_date_created: z.number(),
+    realm_default_avatar_source: z.enum(["G", "J"]),
     realm_default_code_block_language: z.string(),
     realm_default_external_accounts: z.record(
         z.string(),

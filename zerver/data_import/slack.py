@@ -500,7 +500,7 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
 
 def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str | None]:
     avatar_url: str | None = None
-    avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+    avatar_source = UserProfile.AVATAR_FROM_JDENTICON
     if user["profile"].get("avatar_hash"):
         # Process avatar image for a typical Slack user.
         team_id = user["team_id"]
@@ -519,7 +519,7 @@ def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str 
                 "Unsupported avatar type (%s) for user -> %s\n", content_type, user.get("name")
             )
             avatar_url = None
-            avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+            avatar_source = UserProfile.AVATAR_FROM_JDENTICON
     else:
         logging.info("Failed to process avatar for user -> %s\n", user.get("name"))
     return avatar_source, avatar_url

@@ -16,7 +16,7 @@ from zerver.actions.custom_profile_fields import try_update_realm_custom_profile
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.streams import do_change_stream_folder
-from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.lib.event_schema import check_web_reload_client_event
 from zerver.lib.events import fetch_initial_state_data, post_process_state
 from zerver.lib.exceptions import AccessDeniedError
@@ -466,6 +466,9 @@ class GetEventsTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
 
+        do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
         def get_message(apply_markdown: bool, client_gravatar: bool) -> dict[str, Any]:
             result = self.tornado_call(
                 get_events,
@@ -736,6 +739,8 @@ class FetchInitialStateDataTest(ZulipTestCase):
             self.example_user("othello"),
         ]
 
+        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+
         for user in users:
             user.long_term_idle = True
             user.save()
@@ -778,8 +783,11 @@ class FetchInitialStateDataTest(ZulipTestCase):
         for user_dict in raw_users.values():
             if user_dict["user_id"] in gravatar_users_id:
                 self.assertIsNone(user_dict["avatar_url"])
-            else:
+            elif user_dict["user_id"] in long_term_idle_users_ids:
                 self.assertFalse("avatar_url" in user_dict)
+            else:
+                # avatar source is Jdenticon
+                self.assertIsNotNone(user_dict["avatar_url"])
 
     def test_realm_linkifiers_based_on_client_capabilities(self) -> None:
         user = self.example_user("iago")
