@@ -129,6 +129,13 @@ function hide_retry_spinner($row: JQuery): boolean {
 
 function show_message_failed(message_id: number, _failed_msg: string): void {
     // Failed to send message, so display inline retry/cancel
+
+    const message = message_store.get(message_id);
+    // if we dont have the message or still in sending state then don't send "failed" message.
+    if (!message || (message.locally_echoed && !message.failed_request)) {
+        return;
+    }
+
     message_live_update.update_message_in_all_views(message_id, ($row) => {
         $row.find(".slow-send-spinner").addClass("hidden");
         const $message_controls = $row.find(".message_controls");
