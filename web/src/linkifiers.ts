@@ -6,7 +6,11 @@ import type {realm_linkifier_schema} from "./state_data.ts";
 
 type LinkifierMap = Map<
     RegExp,
-    {url_template: Template; group_number_to_name: Record<number, string>}
+    {
+        url_template: Template;
+        group_number_to_name: Record<number, string>;
+        reverse_template: string | null;
+    }
 >;
 const linkifier_map: LinkifierMap = new Map();
 
@@ -101,6 +105,7 @@ export function update_linkifier_rules(linkifiers: Linkifier[]): void {
         linkifier_map.set(regex, {
             url_template,
             group_number_to_name,
+            reverse_template: linkifier.reverse_template ?? null,
         });
     }
 }

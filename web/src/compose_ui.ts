@@ -11,6 +11,7 @@ import {
     setFieldText,
     wrapFieldSelection,
 } from "text-field-edit";
+import type Template from "uri-template-lite";
 import * as z from "zod/mini";
 
 import type {Typeahead} from "./bootstrap_typeahead.ts";
@@ -20,6 +21,7 @@ import * as common from "./common.ts";
 import * as compose_state from "./compose_state.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as linkifiers from "./linkifiers.ts";
 import * as loading from "./loading.ts";
 import * as markdown from "./markdown.ts";
 import * as people from "./people.ts";
@@ -683,6 +685,114 @@ export function position_inside_code_block(content: string, position: number): b
     const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
     const code_blocks = rendered_html.querySelectorAll("pre > code");
     return [...code_blocks].some((code_block) => code_block?.textContent?.includes(unique_insert));
+}
+
+// A function with the same name implements this on the Python side.
+// Please replicate any changes here to that function as well.
+function expand_reverse_template(
+    reverse_template: string,
+    variables: Record<string, string>,
+): string {
+    const output: string[] = [];
+    let index = 0;
+    while (index < reverse_template.length) {
+        if (reverse_template.startsWith("{{", index)) {
+            output.push("{");
+            index += 2;
+        } else if (reverse_template.startsWith("}}", index)) {
+            output.push("}");
+            index += 2;
+        } else if (reverse_template[index] === "{") {
+            const end_index = reverse_template.indexOf("}", index + 1);
+            // This should not fail with a valid reverse_template.
+            assert(end_index !== -1);
+
+            const name = reverse_template.slice(index + 1, end_index);
+            // This should not fail with a valid reverse_template.
+            assert(name !== "");
+
+            const value = variables[name];
+            // This should not fail with a valid reverse_template.
+            assert(value !== undefined);
+
+            output.push(value);
+            index = end_index + 1;
+        } else {
+            output.push(reverse_template[index]!);
+            index += 1;
+        }
+    }
+    return output.join("");
+}
+
+function expand_url_template_from_match(
+    match: RegExpExecArray,
+    url_template: Template,
+    group_number_to_name: Record<number, string>,
+): string | null {
+    const context: Record<string, string> = {};
+    const capturing_groups = match.slice(1).entries();
+    for (const [index, capturing_group] of capturing_groups) {
+        const name = group_number_to_name[index + 1];
+        if (!name) {
+            return null;
+        }
+        context[name] = capturing_group;
+    }
+    return url_template.expand(context);
+}
+
+function reverse_linkify_segment(segment: string): string | null {
+    const linkifier_map = linkifiers.get_linkifier_map();
+    for (const [pattern, {url_template, group_number_to_name, reverse_template}] of linkifier_map) {
+        if (!reverse_template) {
+            continue;
+        }
+
+        const template_context = url_template.match(segment);
+        if (!template_context) {
+            continue;
+        }
+
+        const reversed_text = expand_reverse_template(reverse_template, template_context);
+        pattern.lastIndex = 0;
+        const match = pattern.exec(reversed_text);
+        if (!match) {
+            continue;
+        }
+
+        // Validate that expanding the captured groups round-trips to the original URL.
+        const expanded_url = expand_url_template_from_match(
+            match,
+            url_template,
+            group_number_to_name,
+        );
+        if (expanded_url !== segment) {
+            continue;
+        }
+        return reversed_text;
+    }
+    return null;
+}
+
+export function reverse_linkify_text(text: string): string | null {
+    // We keep the spaces around in a capturing group so we can join it later.
+    const segments = text.split(/(\s+)/);
+    let changed = false;
+
+    for (let i = 0; i < segments.length; i += 1) {
+        const segment = segments[i]!;
+        if (segment.trim() === "") {
+            continue;
+        }
+        const replacement = reverse_linkify_segment(segment) ?? segment;
+        if (replacement !== segment) {
+            changed = true;
+            segments[i] = replacement;
+        }
+    }
+
+    return changed ? segments.join("") : null;
 }
 
 export let format_text = (
