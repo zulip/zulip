@@ -59,6 +59,7 @@ from zerver.lib.exceptions import (
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_configured
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.rate_limiter import readable_expiry_string_for_html
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -1287,10 +1288,11 @@ def password_reset(request: HttpRequest) -> HttpResponse:
         )(request)
     except RateLimitedError as e:
         assert e.secs_to_freedom is not None
+        retry_after_string = readable_expiry_string_for_html(int(e.secs_to_freedom))
         return render(
             request,
             "zerver/portico_error_pages/rate_limit_exceeded.html",
-            context={"retry_after": int(e.secs_to_freedom)},
+            context={"retry_after_string": retry_after_string},
             status=429,
         )
     assert isinstance(response, HttpResponse)
