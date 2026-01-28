@@ -7,9 +7,15 @@ import type Template from "uri-template-lite";
 import render_channel_message_link from "../templates/channel_message_link.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 import marked from "../third/marked/lib/marked.cjs";
-import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
+import type {
+    LinkifierMatch,
+    MarkedOptions,
+    ParseOptions,
+    RegExpOrStub,
+} from "../third/marked/lib/marked.cjs";
 
 import * as fenced_code from "./fenced_code.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 // This contains zulip's frontend Markdown implementation; see
@@ -171,6 +177,74 @@ function content_contains_backend_only_syntax(
         contains_problematic_linkifier(content, get_linkifier_map) ||
         contains_topic_wildcard_mention(content)
     );
+}
+
+export function get_first_disallowed_group_mention(content: string): string | null {
+    const helpers = web_app_helpers;
+    if (!helpers) {
+        return null;
+    }
+
+    let found_disallowed_group_name: string | null = null;
+
+    const noop_string = (): string => "";
+    const noop_undefined = (): undefined => undefined;
+
+    const marked_options: MarkedOptions = {
+        groupMentionHandler(name: string, silently: boolean): string | undefined {
+            if (found_disallowed_group_name || silently) {
+                return undefined;
+            }
+            const group_stub = helpers.get_user_group_from_name(name);
+            if (group_stub) {
+                const group = user_groups.maybe_get_user_group_from_id(group_stub.id);
+                if (
+                    group &&
+                    !user_groups.is_user_in_setting_group(
+                        group.can_mention_group,
+                        helpers.my_user_id(),
+                    )
+                ) {
+                    found_disallowed_group_name = group.name;
+                }
+            }
+            return undefined;
+        },
+        userMentionHandler: noop_undefined,
+        silencedMentionHandler: noop_string,
+
+        // We need to provide these options to avoid crashing marked,
+        // and to satisfy the MarkedOptions type definition.
+        get_linkifier_regexes: () => [],
+        linkifierHandler: noop_string,
+        emojiHandler: noop_string,
+        unicodeEmojiHandler: noop_string,
+        streamHandler: noop_undefined,
+        streamTopicHandler: noop_undefined,
+        texHandler: noop_string,
+        timestampHandler: noop_string,
+        renderer: {
+            code: noop_string,
+            link: noop_string,
+            br: noop_string,
+            paragraph: noop_string,
+            text: noop_string,
+        },
+        preprocessors: [],
+
+        gfm: true,
+        tables: true,
+        breaks: true,
+        pedantic: false,
+        sanitize: true,
+        smartLists: true,
+        smartypants: false,
+        zulip: true,
+    };
+
+    marked(content + "\n\n", marked_options);
+
+    return found_disallowed_group_name;
 }
 
 function parse_with_options(
