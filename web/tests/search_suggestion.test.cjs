@@ -16,6 +16,7 @@ const {Filter} = zrequire("filter");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
+const emoji = zrequire("emoji");
 const search = zrequire("search_suggestion");
 const {set_current_user, set_realm} = zrequire("state_data");
 
@@ -747,6 +748,78 @@ test("topic_suggestions", ({override}) => {
         "channel:6 topic:tower",
     ];
     assert.deepEqual(suggestions.strings, expected);
+});
+
+test("reaction_suggestions", () => {
+    const emoji_frequency_data = zrequire("emoji_frequency_data");
+
+    const emoji_codes = {
+        name_to_codepoint: {
+            octopus: "1f419",
+            zulip: "zulip",
+            tada: "1f389",
+        },
+        codepoint_to_name: {
+            "1f419": "octopus",
+            zulip: "zulip",
+            "1f389": "tada",
+        },
+        emoji_catalog: {},
+        emoticon_conversions: {},
+        names: [],
+    };
+    emoji.initialize({realm_emoji: {}, emoji_codes});
+
+    emoji.emojis_by_name.set("octopus", {
+        name: "octopus",
+        is_realm_emoji: false,
+        emoji_code: "1f419",
+        aliases: [],
+    });
+    emoji.emojis_by_name.set("tada", {
+        name: "tada",
+        is_realm_emoji: false,
+        emoji_code: "1f389",
+        aliases: [],
+    });
+
+    emoji_frequency_data.reaction_data.set("unicode_emoji,1f419", {
+        score: 10,
+        emoji_code: "1f419",
+        emoji_type: "unicode_emoji",
+        message_ids: new Set(),
+        current_user_reacted_message_ids: new Set(),
+    });
+
+    emoji_frequency_data.reaction_data.set("zulip_extra_emoji,zulip", {
+        score: 5,
+        emoji_code: "zulip",
+        emoji_type: "zulip_extra_emoji",
+        message_ids: new Set(),
+        current_user_reacted_message_ids: new Set(),
+    });
+
+    // Test sorting by score
+    // octopus has score 10
+    // zulip has score 5
+    // tada has score 0 (default)
+    let query = "reaction:";
+    let suggestions = get_suggestions(query);
+    let expected = ["reaction:octopus", "reaction:zulip", "reaction:tada"];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = "reaction:oct";
+    suggestions = get_suggestions(query);
+    expected = ["reaction:octopus"];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = "reaction:t";
+    suggestions = get_suggestions(query);
+    expected = ["reaction:tada"];
+    assert.deepEqual(suggestions.strings, expected);
+
+    emoji.emojis_by_name.clear();
+    emoji_frequency_data.reaction_data.clear();
 });
 
 test("topic_suggestions (limits)", () => {

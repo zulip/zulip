@@ -27,3 +27,15 @@ export function message_has_attachment(message_content: string): boolean {
 export function message_has_reaction(message: Message): boolean {
     return message.clean_reactions.size > 0;
 }
+
+export function message_has_specific_reaction_name(
+    message: Message,
+    reaction_name: string,
+): boolean {
+    return (
+        message.clean_reactions.size > 0 &&
+        [...message.clean_reactions.values()].some(
+            (reaction) => reaction.emoji_name === reaction_name,
+        )
+    );
+}
