@@ -290,7 +290,9 @@ function update_members_panel_ui(group: UserGroup): void {
         group,
         $parent_container: $member_container,
     });
-    update_add_members_elements(group);
+    if (!group.is_system_group) {
+        update_add_members_elements(group);
+    }
 }
 
 export function update_group_management_ui(): void {
