@@ -7568,7 +7568,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/NonExistingChannelIdError"
                       - description: |
@@ -7723,7 +7723,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/NonExistingChannelIdError"
                       - description: |
@@ -7832,7 +7832,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/InvalidChannelError"
                       - description: |
@@ -8048,7 +8048,7 @@ paths:
                         operator:
                           type: string
                         operand:
-                          oneOf:
+                          - oneOf:
                             - type: string
                             - type: integer
                             - type: array
@@ -8502,7 +8502,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/NonExistingChannelNameError"
                       - description: |
@@ -8935,7 +8935,7 @@ paths:
 
         **Changes**: New in Zulip 6.0 (feature level 155).
       x-curl-examples-parameters:
-        oneOf:
+        - oneOf:
           - type: exclude
             parameters:
               enum:
@@ -8997,7 +8997,7 @@ paths:
                     of search/narrow filter documentation.
                   type: array
                   items:
-                    oneOf:
+                    - oneOf:
                       - type: object
                         required:
                           - operator
@@ -9007,7 +9007,7 @@ paths:
                           operator:
                             type: string
                           operand:
-                            oneOf:
+                            - oneOf:
                               - type: string
                               - type: integer
                               - type: array
@@ -9189,7 +9189,7 @@ paths:
       description: |
         Add an [emoji reaction](/help/emoji-reactions) to a message.
       x-curl-examples-parameters:
-        oneOf:
+        - oneOf:
           - type: exclude
             parameters:
               enum:
@@ -9228,7 +9228,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -9259,7 +9259,7 @@ paths:
       description: |
         Remove an [emoji reaction](/help/emoji-reactions) from a message.
       x-curl-examples-parameters:
-        oneOf:
+        - oneOf:
           - type: exclude
             parameters:
               enum:
@@ -9296,7 +9296,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -9757,7 +9757,7 @@ paths:
         [config-message-editing]: /help/restrict-message-editing-and-deletion
         [restrict-move-messages]: /help/restrict-moving-messages
       x-curl-examples-parameters:
-        oneOf:
+        - oneOf:
           - type: exclude
             parameters:
               enum:
@@ -9938,7 +9938,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - properties:
@@ -10103,7 +10103,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/InvalidMessageError"
                       - description: |
@@ -10687,7 +10687,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -11704,7 +11704,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -12921,7 +12921,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -13095,7 +13095,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -13146,7 +13146,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -13213,7 +13213,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - description: |
@@ -13271,7 +13271,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - description: |
@@ -13375,7 +13375,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - description: |
@@ -15904,7 +15904,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/InvitationFailedError"
                       - example:
@@ -16120,7 +16120,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -16223,7 +16223,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -23073,7 +23073,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/InvalidChannelError"
                       - description: |
@@ -24664,7 +24664,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
+                - oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
