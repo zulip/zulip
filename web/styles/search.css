@@ -216,7 +216,9 @@
     }
 
     #searchbox-input-container .user-pill-container,
-    .typeahead-menu .user-pill-container {
+    #searchbox-input-container .channel-pill-container,
+    .typeahead-menu .user-pill-container,
+    .typeahead-menu .channel-pill-container {
         border: 1px solid transparent;
 
         > .pill-label {
@@ -273,6 +275,13 @@
             background-color: var(--color-background-input-pill-search);
         }
 
+        /* Override generic pill background for channel and user pills */
+        .channel-tile,
+        .channel-pill-container .pill:not(.deactivated-pill),
+        .user-pill-container .pill:not(.deactivated-pill) {
+            background-color: var(--color-background-user-pill) !important;
+        }
+
         &:not(.focused) {
             height: var(--search-box-height);
             overflow: hidden;
@@ -287,11 +296,13 @@
             }
         }
 
-        &.focused .user-pill-container {
+        &.focused .user-pill-container,
+        &.focused .channel-pill-container {
             flex-flow: row wrap;
         }
 
-        .user-pill-container {
+        .user-pill-container,
+        .channel-pill-container {
             gap: 2px 5px;
             /* Don't enforce a height, as user-pill containers
                 can contain multiple user pills that wrap onto
@@ -333,6 +344,15 @@
                 align-content: center;
                 /* Don't inherit large line-height for user pills themselves, either. */
                 line-height: 1.1;
+            }
+        }
+
+        .channel-pill-container {
+            .pill {
+                /* Channel pills don't have images, so remove that column */
+                grid-template-columns: minmax(0, 1fr) var(
+                        --length-input-pill-exit
+                    );
             }
         }
     }
@@ -443,7 +463,8 @@
             }
         }
 
-        .user-pill-container {
+        .user-pill-container,
+        .channel-pill-container {
             gap: 5px;
         }
 

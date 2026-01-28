@@ -27,7 +27,6 @@ import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
-import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as util from "./util.ts";
 
@@ -261,8 +260,8 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
 function handle_operators_supporting_id_based_api(narrow_parameter: string): string {
     // We use the canonical operator when checking these sets, so legacy
     // operators, such as "pm-with" and "stream", are not included here.
-    const operators_supporting_ids = new Set(["dm"]);
-    const operators_supporting_id = new Set(["id", "channel", "sender", "dm-including"]);
+    const operators_supporting_ids = new Set(["dm", "channel"]);
+    const operators_supporting_id = new Set(["id", "sender", "dm-including"]);
     const raw_narrow_term_array_schema = z.array(
         z.object({
             negated: z.optional(z.boolean()),
@@ -294,29 +293,39 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
         const canonical_operator = filter_util.canonicalize_operator(parsed_narrow_operator);
 
         if (operators_supporting_ids.has(canonical_operator)) {
-            const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
-            assert(user_ids_array !== undefined);
-            narrow_term.operand = user_ids_array;
+            if (canonical_operator === "channel") {
+                // Convert comma-separated channel IDs to integer array
+                const channel_ids: number[] = [];
+                for (const id_str of raw_term.operand.split(",")) {
+                    const trimmed = id_str.trim();
+                    if (trimmed) {
+                        const parsed_id = Number.parseInt(trimmed, 10);
+                        if (!Number.isNaN(parsed_id)) {
+                            channel_ids.push(parsed_id);
+                        }
+                    }
+                }
+                // If we successfully parsed channel IDs, use them
+                // If not (e.g., operand is a channel name from page_params.narrow),
+                // keep the string operand for backend to resolve
+                if (channel_ids.length > 0) {
+                    narrow_term.operand = channel_ids;
+                }
+                // Note: Unlike DM, we don't assert here because the operand
+                // could be a channel name string (from page_params.narrow)
+                // which the backend can resolve.
+            } else {
+                // DM operator: convert emails to user ID array
+                const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
+                assert(user_ids_array !== undefined);
+                narrow_term.operand = user_ids_array;
+            }
         }
 
         if (operators_supporting_id.has(canonical_operator)) {
             if (canonical_operator === "id") {
                 // The message ID may not exist locally,
                 // so send the term to the server as is.
-                narrow_terms.push(narrow_term);
-                continue;
-            }
-
-            if (canonical_operator === "channel") {
-                // An unknown channel will have an empty string set for
-                // the operand. And the page_params.narrow may have a
-                // channel name as the operand. But all other cases
-                // should have the channel ID set as the string value
-                // for the operand.
-                const stream = stream_data.get_sub_by_id_string(raw_term.operand);
-                if (stream !== undefined) {
-                    narrow_term.operand = stream.stream_id;
-                }
                 narrow_terms.push(narrow_term);
                 continue;
             }

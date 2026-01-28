@@ -258,6 +258,72 @@ function get_channel_suggestions(
     });
 }
 
+// This function enables multi-channel selection by allowing users to add
+// more channels to an existing channel term (similar to get_group_suggestions for DM).
+function get_group_channel_suggestions(last: NarrowTerm, terms: NarrowTerm[]): Suggestion[] {
+    // We only suggest group channels once a term with a valid channel already exists
+    if (terms.length === 0) {
+        return [];
+    }
+    const last_complete_term = terms.at(-1)!;
+    if (last_complete_term.operator !== "channel") {
+        return [];
+    }
+
+    // If they started typing since a channel pill, we'll parse that as "search"
+    // but they might actually want to add another channel.
+    let existing_operand: string;
+    let query: string;
+    if (last.operator === "search") {
+        query = last.operand;
+        existing_operand = last_complete_term.operand;
+    } else if (last.operator === "") {
+        query = "";
+        existing_operand = last_complete_term.operand;
+    } else {
+        // If they already started another term with another operator, we're
+        // no longer dealing with a group channel situation.
+        return [];
+    }
+
+    // Get existing channel IDs from the operand
+    const existing_ids = new Set(existing_operand.split(",").map((id) => id.trim()));
+
+    let channels = stream_data.subscribed_streams();
+
+    // Filter out channels that are already in the operand
+    channels = channels.filter((channel_name) => {
+        const sub = stream_data.get_sub_by_name(channel_name);
+        if (sub === undefined) {
+            return false;
+        }
+        return !existing_ids.has(sub.stream_id.toString());
+    });
+
+    // Filter by query
+    if (query !== "") {
+        channels = channels.filter((channel_name) => channel_matches_query(channel_name, query));
+    }
+
+    channels = typeahead_helper.sorter(query, channels, (x) => x);
+
+    // Take top 15 channels
+    channels = channels.slice(0, 15);
+
+    return channels.map((channel_name) => {
+        const channel = stream_data.get_sub_by_name(channel_name);
+        assert(channel !== undefined);
+        const new_operand = existing_operand + "," + channel.stream_id.toString();
+        const term: NarrowTerm = {
+            operator: "channel",
+            operand: new_operand,
+            negated: last_complete_term.negated,
+        };
+        const search_string = Filter.unparse([term]);
+        return {search_string};
+    });
+}
+
 function get_group_suggestions(
     group_operator: "dm" | "dm-including",
 ): (last: NarrowCanonicalTermSuggestion, terms: NarrowCanonicalTerm[]) => Suggestion[] {
@@ -1047,6 +1113,21 @@ class Attacher {
                     new_search_string.includes(last_base_string)
                 ) {
                     suggestion_line = [...this.base.slice(0, -1), suggestion];
+                } else if (
+                    // When we add a channel to a channel group, we
+                    // replace the last channel pill.
+                    new_search_string.startsWith("channel:") &&
+                    new_search_string.includes(",") &&
+                    last_base_string.startsWith("channel:")
+                ) {
+                    // Extract the last base channel ID
+                    const last_base_operand = last_base_string.slice("channel:".length);
+                    // Check if the new suggestion includes this channel ID
+                    if (new_search_string.includes(last_base_operand)) {
+                        suggestion_line = [...this.base.slice(0, -1), suggestion];
+                    } else {
+                        suggestion_line = [...this.base, suggestion];
+                    }
                 } else {
                     suggestion_line = [...this.base, suggestion];
                 }
@@ -1174,6 +1255,7 @@ export function get_search_result(
         // searching user probably is looking to make a group DM.
         get_group_suggestions("dm"),
         get_group_suggestions("dm-including"),
+        get_group_channel_suggestions,
         get_channels_filter_suggestions,
         get_operator_suggestions,
         get_is_filter_suggestions,

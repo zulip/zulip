@@ -25,6 +25,7 @@ from zerver.lib.validator import (
     check_string_in,
     check_string_or_int,
     check_string_or_int_list,
+    check_string_or_int_or_int_list,
     check_union,
     check_url,
     equals,
@@ -322,6 +323,31 @@ class ValidatorTestCase(ZulipTestCase):
         x = None
         with self.assertRaisesRegex(ValidationError, r"x is not a string or integer"):
             check_string_or_int("x", x)
+
+    def test_check_string_or_int_or_int_list(self) -> None:
+        # String case
+        x: Any = "channel_name"
+        check_string_or_int_or_int_list("x", x)
+
+        # Integer case
+        x = 42
+        check_string_or_int_or_int_list("x", x)
+
+        # List of integers case (covers lines 591-592)
+        x = [1, 2, 3]
+        check_string_or_int_or_int_list("x", x)
+
+        # Invalid type (covers lines 594-596)
+        x = 3.14
+        with self.assertRaisesRegex(
+            ValidationError, r"x is not a string, integer, or integer list"
+        ):
+            check_string_or_int_or_int_list("x", x)
+
+        # List with non-integer (delegate to check_list validation)
+        x = [1, "not_an_int"]
+        with self.assertRaisesRegex(ValidationError, r"x\[1\] is not an integer"):
+            check_string_or_int_or_int_list("x", x)
 
     def test_wild_value(self) -> None:
         x = to_wild_value("x", '{"a": 1, "b": ["c", false, null]}')

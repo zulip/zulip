@@ -151,6 +151,11 @@ export let stream_id = (
     if (channel_terms.length === 1) {
         const channel_operand = channel_terms[0]?.operand;
         if (channel_operand !== undefined) {
+            // Multi-channel search uses comma-separated IDs; in that case,
+            // return undefined since there's no single channel context.
+            if (channel_operand.includes(",")) {
+                return undefined;
+            }
             const id = Number.parseInt(channel_operand, 10);
             if (!Number.isNaN(id)) {
                 return only_valid_id ? stream_data.get_sub_by_id(id)?.stream_id : id;
@@ -162,6 +167,27 @@ export let stream_id = (
 
 export function rewire_stream_id(value: typeof stream_id): void {
     stream_id = value;
+}
+
+// Returns array of stream IDs for multi-channel narrows.
+// Returns undefined if not a multi-channel narrow.
+export function stream_ids(current_filter: Filter | undefined = filter()): number[] | undefined {
+    if (current_filter === undefined) {
+        return undefined;
+    }
+    const channel_terms = current_filter.terms_with_operator("channel");
+    if (channel_terms.length === 1) {
+        const channel_operand = channel_terms[0]?.operand;
+        if (channel_operand?.includes(",")) {
+            // Multi-channel search: parse comma-separated IDs
+            const ids = channel_operand
+                .split(",")
+                .map((id_str) => Number.parseInt(id_str.trim(), 10));
+            // Filter out any NaN values from invalid IDs
+            return ids.filter((id) => !Number.isNaN(id));
+        }
+    }
+    return undefined;
 }
 
 export function stream_name(current_filter: Filter | undefined = filter()): string | undefined {

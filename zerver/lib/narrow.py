@@ -67,6 +67,7 @@ from zerver.lib.validator import (
     check_string,
     check_string_or_int,
     check_string_or_int_list,
+    check_string_or_int_or_int_list,
 )
 from zerver.models import (
     DirectMessageGroup,
@@ -116,7 +117,6 @@ class NarrowParameter(BaseModel):
         # in handle_operators_supporting_id_based_api function where you will need to
         # update operators_supporting_id, or operators_supporting_ids array.
         operators_supporting_id = [
-            *channel_operators,
             "id",
             "sender",
             "group-pm-with",
@@ -125,6 +125,7 @@ class NarrowParameter(BaseModel):
             "with",
         ]
         operators_supporting_ids = ["pm-with", "dm"]
+        operators_supporting_int_or_ids = [*channel_operators]
         operators_non_empty_operand = {"search"}
 
         operator = self.operator
@@ -132,6 +133,9 @@ class NarrowParameter(BaseModel):
             operand_validator: Validator[object] = check_string_or_int
         elif operator in operators_supporting_ids:
             operand_validator = check_string_or_int_list
+        elif operator in operators_supporting_int_or_ids:
+            # Channel operators accept string, single int, or list of ints
+            operand_validator = check_string_or_int_or_int_list
         elif operator in operators_non_empty_operand:
             operand_validator = check_required_string
         else:
@@ -462,10 +466,53 @@ class NarrowBuilder:
     _alphanum = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
     def by_channel(
-        self, query: Select, operand: str | int, maybe_negate: ConditionTransform
+        self, query: Select, operand: str | int | Iterable[int], maybe_negate: ConditionTransform
     ) -> Select:
         self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
+        # Handle list of channel IDs (multi-channel search, preferred API)
+        if not isinstance(operand, (str, int)):
+            # operand is Iterable[int] - list of channel IDs from frontend
+            recipient_ids = []
+            for channel_id in operand:
+                try:
+                    channel = get_stream_by_narrow_operand_access_unchecked(channel_id, self.realm)
+                    if self.is_web_public_query and not channel.is_web_public:  # nocoverage
+                        continue
+                    if channel.recipient_id is not None:
+                        recipient_ids.append(channel.recipient_id)
+                except Stream.DoesNotExist:
+                    continue
+
+            if len(recipient_ids) == 0:
+                raise BadNarrowOperatorError("unknown channels in " + str(operand))
+
+            cond = column("recipient_id", Integer).in_(recipient_ids)
+            return query.where(maybe_negate(cond))
+
+        # Check if operand is a comma-separated string (backwards compatibility)
+        if isinstance(operand, str) and "," in operand:
+            channel_id_strings = [s.strip() for s in operand.split(",") if s.strip()]
+            recipient_ids = []
+            for channel_id_str in channel_id_strings:
+                try:
+                    # Convert string ID to integer for ID-based lookup
+                    channel_id = int(channel_id_str)
+                    channel = get_stream_by_narrow_operand_access_unchecked(channel_id, self.realm)
+                    if self.is_web_public_query and not channel.is_web_public:  # nocoverage
+                        continue
+                    if channel.recipient_id is not None:
+                        recipient_ids.append(channel.recipient_id)
+                except (Stream.DoesNotExist, ValueError):
+                    continue
+
+            if len(recipient_ids) == 0:
+                raise BadNarrowOperatorError("unknown channels in " + str(operand))
+
+            cond = column("recipient_id", Integer).in_(recipient_ids)
+            return query.where(maybe_negate(cond))
+
+        # Single channel case
         try:
             # Because you can see your own message history for
             # private channels you are no longer subscribed to, we
@@ -835,11 +882,27 @@ def ok_to_include_history(
     if narrow is not None:
         for term in narrow:
             if term.operator in channel_operators and not term.negated:
-                operand: str | int = term.operand
+                operand = term.operand
                 if isinstance(operand, str):
-                    include_history = can_access_stream_history_by_name(user_profile, operand)
-                else:
+                    # Handle multi-channel search (comma-separated IDs)
+                    if "," in operand:
+                        channel_ids = [s.strip() for s in operand.split(",") if s.strip()]
+                        # Include history if ALL channels allow it
+                        include_history = all(
+                            can_access_stream_history_by_id(user_profile, int(channel_id))
+                            for channel_id in channel_ids
+                            if channel_id.isdigit()
+                        )
+                    else:
+                        include_history = can_access_stream_history_by_name(user_profile, operand)
+                elif isinstance(operand, int):
                     include_history = can_access_stream_history_by_id(user_profile, operand)
+                elif isinstance(operand, list):
+                    # Handle list of channel IDs (from frontend array)
+                    include_history = all(
+                        can_access_stream_history_by_id(user_profile, channel_id)
+                        for channel_id in operand
+                    )
             elif (
                 term.operator in channels_operators
                 and term.operand in ["public", "web-public"]
@@ -864,7 +927,13 @@ def get_channel_from_narrow_access_unchecked(
     if narrow is not None:
         for term in narrow:
             if term.operator in channel_operators:
-                return get_stream_by_narrow_operand_access_unchecked(term.operand, realm)
+                operand = term.operand
+                # Multi-channel operand (list or comma-separated) - no single channel context
+                if isinstance(operand, list):
+                    return None
+                if isinstance(operand, str) and "," in operand:
+                    return None
+                return get_stream_by_narrow_operand_access_unchecked(operand, realm)
     return None
 
 
@@ -879,6 +948,12 @@ def can_narrow_define_conversation(narrow: list[NarrowParameter]) -> bool:
             return True
 
         elif term.operator in ["stream", "channel"]:
+            # Multi-channel cannot define a single conversation
+            operand = term.operand
+            if isinstance(operand, list):
+                continue
+            if isinstance(operand, str) and "," in operand:
+                continue
             contains_channel_term = True
 
         elif term.operator == "topic":

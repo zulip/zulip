@@ -88,6 +88,44 @@ test("stream", () => {
     assert.deepEqual(public_terms, expected_terms);
 });
 
+test("multi_channel", () => {
+    // Multi-channel narrow: stream_id should return undefined
+    set_filter([["channel", "1,2,3"]]);
+    assert.equal(narrow_state.stream_id(), undefined);
+    assert.deepEqual(narrow_state.stream_ids(), [1, 2, 3]);
+
+    // Single channel should still work
+    const test_stream_id = 15;
+    const test_stream = {name: "Test", stream_id: test_stream_id};
+    stream_data.add_sub_for_tests(test_stream);
+    set_filter([["channel", test_stream_id.toString()]]);
+    assert.equal(narrow_state.stream_id(), test_stream_id);
+    assert.equal(narrow_state.stream_ids(), undefined);
+
+    // Multi-channel with various IDs
+    set_filter([["channel", "99,42,15"]]);
+    assert.equal(narrow_state.stream_id(), undefined);
+    assert.deepEqual(narrow_state.stream_ids(), [99, 42, 15]);
+
+    // stream_name should return undefined for multi-channel
+    set_filter([["channel", "1,2"]]);
+    assert.equal(narrow_state.stream_name(), undefined);
+    assert.equal(narrow_state.stream_sub(), undefined);
+
+    // stream_ids with no filter should return undefined (covers line 178)
+    // Reset message_lists to undefined state to test the undefined filter branch
+    message_lists.set_current(undefined);
+    assert.equal(narrow_state.stream_ids(), undefined);
+
+    // Test public_search_terms with multi-channel and narrow_stream set
+    // This covers the branch where multi-channel operands are kept when page_params.narrow_stream exists
+    page_params.narrow_stream = "SomeChannel";
+    set_filter([["channel", "1,2,3"]]);
+    const public_terms = narrow_state.public_search_terms();
+    assert.deepEqual(public_terms, [{negated: false, operator: "channel", operand: "1,2,3"}]);
+    page_params.narrow_stream = undefined;
+});
+
 const foo_stream_id = 72;
 const foo_stream = {name: "Foo", stream_id: foo_stream_id};
 test("narrowed", () => {

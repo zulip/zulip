@@ -530,6 +530,21 @@ test("basics", () => {
     ]);
 });
 
+test("get_by_id_string", () => {
+    const denmark = {
+        name: "Denmark",
+        stream_id: 1,
+        subscribed: true,
+    };
+    stream_data.add_sub_for_tests(denmark);
+
+    assert.equal(stream_data.get_sub_by_id_string("1"), denmark);
+    assert.equal(stream_data.get_sub_by_id_string("99"), undefined);
+
+    assert.equal(stream_data.get_valid_sub_by_id_string("1"), denmark);
+    assert.throws(() => stream_data.get_valid_sub_by_id_string("99"));
+});
+
 test("get_streams_for_user", async ({override}) => {
     channel.get = (payload) =>
         payload.success({
