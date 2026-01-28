@@ -1213,18 +1213,29 @@ export async function build_move_topic_to_stream_popover(
 }
 
 export function initialize(): void {
-    $("#stream_filters").on("click", ".stream-sidebar-menu-icon", function (this: HTMLElement, e) {
+    function on_sidebar_menu_icon_click(element: HTMLElement, e: JQuery.ClickEvent): void {
         e.preventDefault();
-        const $stream_li = $(this).parents("li");
+        const $stream_li = $(element).parents("li");
         const stream_id = elem_to_stream_id($stream_li);
 
         build_stream_popover({
-            elt: this,
+            elt: element,
             stream_id,
         });
 
         e.stopPropagation();
+    }
+    $("#stream_filters").on("click", ".stream-sidebar-menu-icon", function (this: HTMLElement, e) {
+        on_sidebar_menu_icon_click(this, e);
     });
+
+    $("#left-sidebar-modal").on(
+        "click",
+        "#more-topics-modal .stream-sidebar-menu-icon",
+        function (this: HTMLElement, e) {
+            on_sidebar_menu_icon_click(this, e);
+        },
+    );
 
     $("body").on("click", ".inbox-stream-menu", function (this: HTMLElement, e) {
         const stream_id = Number.parseInt($(this).attr("data-stream-id")!, 10);

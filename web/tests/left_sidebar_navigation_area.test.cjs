@@ -126,8 +126,6 @@ run_test("update_count_in_dom", () => {
 
     make_elem($(".top_left_reminders"), "<reminders-count>");
 
-    make_elem($("#topics_header"), "<topics-count>");
-
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
     left_sidebar_navigation_area.update_starred_count(444, false);
     left_sidebar_navigation_area.update_scheduled_messages_row();
@@ -141,7 +139,6 @@ run_test("update_count_in_dom", () => {
     assert.equal($("<reminders-count>").text(), "1");
     assert.ok(!$(".top_left_scheduled_messages").hasClass("hidden-by-filters"));
     assert.ok(!$(".top_left_reminders").hasClass("hidden-by-filters"));
-    assert.equal($("<topics-count>").text(), "666");
 
     counts.mentioned_message_count = 0;
     message_reminder.set_reminders_by_id_for_testing(new Map());

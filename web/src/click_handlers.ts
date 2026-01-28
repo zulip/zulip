@@ -872,7 +872,7 @@ export function initialize(): void {
         topic_list.clear_topic_search,
     );
 
-    $("body").on("click", "#direct-messages-section-header.zoom-out", (e) => {
+    $("body").on("click", "#direct-messages-section-header", (e) => {
         if ($(e.target).closest(".show-all-direct-messages").length === 1) {
             // Let the browser handle the "direct message feed" widget.
             return;
@@ -902,7 +902,7 @@ export function initialize(): void {
     /* The DIRECT MESSAGES label's click behavior is complicated;
      * only when zoomed in does it have a navigation effect, so we need
      * this click handler rather than just a link. */
-    $("body").on("click", "#direct-messages-section-header.zoom-in", (e) => {
+    $("body").on("click", "#direct-messages-modal-section-header", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -912,7 +912,7 @@ export function initialize(): void {
     $("body").on("click", ".direct-messages-search-section", (e) => {
         // We don't want clicking on the filter to trigger the DM
         // narrow defined on click for
-        // `#direct-messages-section-header.zoom-in`.
+        // `#direct-messages-modal-section-header`.
         e.stopPropagation();
     });
 
