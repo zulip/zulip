@@ -181,6 +181,14 @@ export function get_all_realm_user_groups(
     });
 }
 
+export function get_system_groups_list(): UserGroup[] {
+    const system_groups = settings_config.system_user_groups_list
+        .toReversed()
+        .map((system_group) => get_user_group_from_name(system_group.name)!);
+
+    return convert_name_to_display_name_for_groups(system_groups);
+}
+
 export function get_user_groups_allowed_to_mention(): UserGroup[] {
     const user_groups = get_realm_user_groups();
     return user_groups.filter((group) => {
