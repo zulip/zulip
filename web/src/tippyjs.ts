@@ -191,7 +191,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#subscription_overlay .subscription_settings .sub-stream-name, #groups_overlay .user_group_settings_wrapper .group-name",
+        target: "#subscription_overlay .subscription_settings .sub-stream-name, #groups_overlay .user_group_settings_wrapper .group-name, #user_group_settings_title .selected-group-name",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         placement: "top",

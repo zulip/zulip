@@ -3,6 +3,7 @@ import * as z from "zod/mini";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
+import render_new_channel_members_title from "../templates/stream_settings/new_channel_members_title.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -34,6 +35,30 @@ export let archived_status_filter_dropdown_widget: DropdownWidget;
 export let channel_creation_privacy_widget: DropdownWidget;
 let folder_filter_dropdown_widget: DropdownWidget;
 
+function set_visibility_for_archive_and_unarchive_buttons(sub: StreamSubscription): void {
+    // This is for the Archive/Unarchive button in the right panel.
+    const $archive_button = $(
+        `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .deactivate`,
+    );
+    const $unarchive_button = $(
+        `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .reactivate`,
+    );
+
+    if (!stream_data.can_administer_channel(sub)) {
+        $archive_button.hide();
+        $unarchive_button.hide();
+        return;
+    }
+
+    if (sub.is_archived) {
+        $archive_button.hide();
+        $unarchive_button.show();
+    } else {
+        $unarchive_button.hide();
+        $archive_button.show();
+    }
+}
+
 export function set_right_panel_title(sub: StreamSubscription): void {
     let title_icon_color = "#333333";
     if (settings_data.using_dark_theme()) {
@@ -41,18 +66,26 @@ export function set_right_panel_title(sub: StreamSubscription): void {
     }
 
     const preview_url = hash_util.channel_url_by_user_setting(sub.stream_id);
-    $("#subscription_overlay .stream-info-title").html(
-        render_selected_stream_title({sub, title_icon_color, preview_url}),
-    );
+    const settings_sub = stream_settings_data.get_sub_for_settings(sub);
+    $("#subscription_overlay .stream-info-title")
+        .html(
+            render_selected_stream_title({
+                sub: settings_sub,
+                title_icon_color,
+                preview_url,
+            }),
+        )
+        .toggleClass("new-channel-members-title", false);
+    set_visibility_for_archive_and_unarchive_buttons(sub);
 }
 
 export const show_subs_pane = {
     nothing_selected(): void {
         $(".settings, #stream-creation").hide();
         $(".nothing-selected").show();
-        $("#subscription_overlay .stream-info-title").text(
-            $t({defaultMessage: "Channel settings"}),
-        );
+        $("#subscription_overlay .stream-info-title")
+            .text($t({defaultMessage: "Channel settings"}))
+            .toggleClass("new-channel-members-title", false);
         resize.resize_settings_overlay($("#channels_overlay_container"));
     },
     settings(sub: StreamSubscription): void {
@@ -71,19 +104,21 @@ export const show_subs_pane = {
     ): void {
         $(".stream_creation_container").hide();
         if (container_name === "configure_channel_settings") {
-            $("#subscription_overlay .stream-info-title").text(
-                $t({defaultMessage: "Configure new channel settings"}),
-            );
+            $("#subscription_overlay .stream-info-title")
+                .text($t({defaultMessage: "Configure new channel settings"}))
+                .toggleClass("new-channel-members-title", false);
         } else {
-            $("#subscription_overlay .stream-info-title").html(
-                render_selected_stream_title({
-                    sub: sub ?? {
-                        name: "",
-                        invite_only: false,
-                        is_web_public: false,
-                    },
-                }),
-            );
+            $("#subscription_overlay .stream-info-title")
+                .html(
+                    render_new_channel_members_title({
+                        sub: sub ?? {
+                            name: "",
+                            invite_only: false,
+                            is_web_public: false,
+                        },
+                    }),
+                )
+                .toggleClass("new-channel-members-title", true);
         }
         update_footer_buttons(container_name);
         $(`.${CSS.escape(container_name)}`).show();
