@@ -1,4 +1,4 @@
-import re
+import email.utils
 from typing import Annotated
 
 from django.conf import settings
@@ -206,14 +206,12 @@ def invite_users_backend(
 
 
 def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
-    invitee_emails_list = set(re.split(r"[,\n]", invitee_emails_raw))
-    invitee_emails = set()
-    for email in invitee_emails_list:
-        is_email_with_name = re.search(r"<(?P<email>.*)>", email)
-        if is_email_with_name:
-            email = is_email_with_name.group("email")
-        invitee_emails.add(email.strip())
-    return invitee_emails
+    return {
+        email_addr
+        for name, email_addr in email.utils.getaddresses(
+            invitee_emails_raw.split("\n"), strict=False
+        )
+    } - {""}
 
 
 @require_member_or_admin
