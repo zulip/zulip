@@ -27,6 +27,7 @@ export function set_right_panel_title(group: UserGroup): void {
         render_selected_group_title({
             group_name,
             group_id: group.id,
+            is_system_group: group.is_system_group,
             is_direct_member: user_groups.is_direct_member_of(
                 people.my_current_user_id(),
                 group.id,

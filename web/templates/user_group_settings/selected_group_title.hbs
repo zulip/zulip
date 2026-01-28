@@ -3,19 +3,21 @@
         <span class="selected-group-name" data-tippy-content="{{group_name}}">{{group_name}}</span>
         <i class="fa fa-ban deactivated-user-icon deactivated-user-group-icon-right"></i>
     </div>
-    <div class="button-group selected-group-buttons" data-group-id="{{group_id}}">
-        <div class="join_leave_button_wrapper inline-block">
-            {{#if is_direct_member}}
-            {{> ../components/action_button label=(t "Leave group") custom_classes="join_leave_button" type="button"
-              variant="subtle" intent="neutral" }}
-            {{else}}
-            {{> ../components/action_button label=(t "Join group") custom_classes="join_leave_button" type="button"
-              variant="subtle" intent="brand" }}
-            {{/if}}
+    {{#unless is_system_group}}
+        <div class="button-group selected-group-buttons" data-group-id="{{group_id}}">
+            <div class="join_leave_button_wrapper inline-block">
+                {{#if is_direct_member}}
+                {{> ../components/action_button label=(t "Leave group") custom_classes="join_leave_button" type="button"
+                  variant="subtle" intent="neutral" }}
+                {{else}}
+                {{> ../components/action_button label=(t "Join group") custom_classes="join_leave_button" type="button"
+                  variant="subtle" intent="brand" }}
+                {{/if}}
+            </div>
+            {{> ../components/icon_button icon="user-group-x" intent="danger" custom_classes="deactivate-group-button deactivate tippy-zulip-delayed-tooltip"
+              data-tippy-content=(t 'Deactivate group') }}
+            {{> ../components/icon_button icon="user-group-plus" intent="success" custom_classes="reactivate-group-button reactivate tippy-zulip-delayed-tooltip"
+              data-tippy-content=(t 'Reactivate group') }}
         </div>
-        {{> ../components/icon_button icon="user-group-x" intent="danger" custom_classes="deactivate-group-button deactivate tippy-zulip-delayed-tooltip"
-          data-tippy-content=(t 'Deactivate group') }}
-        {{> ../components/icon_button icon="user-group-plus" intent="success" custom_classes="reactivate-group-button reactivate tippy-zulip-delayed-tooltip"
-          data-tippy-content=(t 'Reactivate group') }}
-    </div>
+    {{/unless}}
 </div>
