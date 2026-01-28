@@ -1530,7 +1530,7 @@ def fetch_client_data(response: TableData, client_ids: set[int]) -> None:
 
 
 def fetch_submessage_data(response: TableData, message_ids: set[int]) -> None:
-    query = SubMessage.objects.filter(message_id__in=list(message_ids))
+    query = SubMessage.objects.filter(message_id__in=list(message_ids)).order_by("id")
     response["zerver_submessage"] = make_raw(query.iterator())
 
 
