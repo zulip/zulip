@@ -93,14 +93,17 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
         {operator: "pm-with"},
         {operator: "channel"},
         {operator: "is", operand: "resolved"},
+        {operator: "mentions"},
     ],
     "pm-with": [
         {operator: "dm"},
         {operator: "pm-with"},
         {operator: "channel"},
         {operator: "is", operand: "resolved"},
+        {operator: "mentions"},
     ],
     "dm-including": [{operator: "channel"}, {operator: "stream"}],
+    mentions: [{operator: "is", operand: "dm"}, {operator: "pm-with"}, {operator: "dm"}],
     "is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
@@ -120,6 +123,7 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
         {operator: "dm"},
         {operator: "in"},
         {operator: "topic"},
+        {operator: "mentions"},
     ],
     sender: [{operator: "sender"}, {operator: "from"}],
     from: [{operator: "sender"}, {operator: "from"}],
@@ -400,7 +404,7 @@ function get_person_suggestions(
     people_getter: () => User[],
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
-    autocomplete_operator: "dm" | "sender" | "dm-including",
+    autocomplete_operator: "dm" | "sender" | "dm-including" | "mentions",
 ): Suggestion[] {
     if (last.operator === "is" && last.operand === "dm") {
         last = {operator: "dm", operand: "", negated: false};
@@ -914,6 +918,7 @@ function get_operator_suggestions(
             "pm-with",
             "streams",
             "stream",
+            "mentions",
         ];
     }
 
@@ -1100,7 +1105,7 @@ export function get_search_result(
         last = text_search_terms.at(-1)!;
     }
 
-    const person_suggestion_ops = ["sender", "dm", "dm-including"];
+    const person_suggestion_ops = ["sender", "dm", "dm-including", "mentions"];
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_terms is one out of person_suggestion_ops.
@@ -1156,7 +1161,7 @@ export function get_search_result(
     const people_getter = make_people_getter(last);
 
     function get_people(
-        flavor: "dm" | "sender" | "dm-including",
+        flavor: "dm" | "sender" | "dm-including" | "mentions",
     ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
         return function (
             last: NarrowCanonicalTermSuggestion,
@@ -1182,6 +1187,7 @@ export function get_search_result(
         get_people("dm"),
         get_people("sender"),
         get_people("dm-including"),
+        get_people("mentions"),
         get_topic_suggestions,
         get_has_filter_suggestions,
     ];

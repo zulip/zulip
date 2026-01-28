@@ -639,6 +639,29 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         ),
     );
 
+    current_filter = set_filter([["mentions", "alice@example.com"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: No messages mention Alice Smith yet."),
+    );
+
+    current_filter = set_filter([["mentions", "Yo"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: The user does not exist!"),
+    );
+
+    people.add_active_user(me);
+    people.initialize_current_user(me.user_id);
+    current_filter = set_filter([["mentions", me.email]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: No messages mention you yet."),
+    );
+
     // The channel is private, and the user cannot subscribe (e.g., they
     // have access to channel metadata, but don't have content access).
     const private_sub = {

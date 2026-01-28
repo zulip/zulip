@@ -390,3 +390,14 @@ function process_emoji_only_message(content: DocumentFragment): void {
     // the emoji in CSS.
     content.firstElementChild?.classList.add("emoji-only");
 }
+
+export function process_user_mention(message_content: string, user_id: number): boolean {
+    inertDocument ??= new DOMParser().parseFromString("", "text/html");
+
+    const template = inertDocument.createElement("template");
+    template.innerHTML = message_content;
+
+    const span_ele = template.content.querySelector(`span.user-mention[data-user-id="${user_id}"]`);
+
+    return span_ele !== null && !span_ele.classList.contains("silent");
+}

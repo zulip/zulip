@@ -460,6 +460,7 @@ test("check_is_suggestions", ({override}) => {
         "dm:alice@zulip.com",
         "sender:alice@zulip.com",
         "dm-including:alice@zulip.com",
+        "mentions:alice@zulip.com",
         "has:image",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -597,7 +598,13 @@ test("topic_suggestions", ({override}) => {
     stream_data.add_sub_for_tests({stream_id: office_id, name: "office", subscribed: true});
 
     suggestions = get_suggestions("te");
-    expected = ["te", "dm:ted@zulip.com", "sender:ted@zulip.com", "dm-including:ted@zulip.com"];
+    expected = [
+        "te",
+        "dm:ted@zulip.com",
+        "sender:ted@zulip.com",
+        "dm-including:ted@zulip.com",
+        "mentions:ted@zulip.com",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     stream_topic_history.add_message({
@@ -618,6 +625,7 @@ test("topic_suggestions", ({override}) => {
         "dm:ted@zulip.com",
         "sender:ted@zulip.com",
         "dm-including:ted@zulip.com",
+        "mentions:ted@zulip.com",
         `channel:${office_id} topic:team`,
         `channel:${office_id} topic:✔+team+work`,
         `channel:${office_id} topic:test`,
@@ -893,6 +901,8 @@ test("people_suggestions", ({override}) => {
         "sender:ted@zulip.com",
         "dm-including:bob@zulip.com",
         "dm-including:ted@zulip.com",
+        "mentions:bob@zulip.com",
+        "mentions:ted@zulip.com",
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -916,12 +926,21 @@ test("people_suggestions", ({override}) => {
         "dm-including:bob@zulip.com",
         "dm-including:ted@zulip.com",
         "dm-including:user299@zulipdev.com",
+        "mentions:bob@zulip.com",
+        "mentions:ted@zulip.com",
+        "mentions:user299@zulipdev.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
     suggestions = get_suggestions("Ted "); // note space
 
-    expected = ["Ted", "dm:ted@zulip.com", "sender:ted@zulip.com", "dm-including:ted@zulip.com"];
+    expected = [
+        "Ted",
+        "dm:ted@zulip.com",
+        "sender:ted@zulip.com",
+        "dm-including:ted@zulip.com",
+        "mentions:ted@zulip.com",
+    ];
 
     assert.deepEqual(suggestions.strings, expected);
 

@@ -24,7 +24,7 @@ export type SearchUserPill = {
 } & SearchUserPillContext;
 
 export type SearchUserPillContext = {
-    operator: "dm" | "dm-including" | "sender";
+    operator: "dm" | "dm-including" | "sender" | "mentions";
     negated: boolean;
     users: {
         full_name: string;
@@ -143,6 +143,7 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
         switch (search_pill.operator) {
             case "dm":
             case "dm-including":
+            case "mentions":
             case "sender":
                 return search_user_pill_data_from_term(narrow_term);
             case "topic":
@@ -277,7 +278,10 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
 
 function search_user_pill_data_from_term(term: NarrowCanonicalTerm): SearchUserPill {
     assert(
-        term.operator === "dm" || term.operator === "dm-including" || term.operator === "sender",
+        term.operator === "dm" ||
+            term.operator === "dm-including" ||
+            term.operator === "sender" ||
+            term.operator === "mentions",
     );
     const emails = term.operand.split(",");
     const users = emails.map((email) => {
@@ -298,7 +302,7 @@ function is_sent_by_me_pill(pill: SearchUserPill): boolean {
 
 function search_user_pill_data(
     users: User[],
-    operator: "dm" | "dm-including" | "sender",
+    operator: "dm" | "dm-including" | "sender" | "mentions",
     negated: boolean,
 ): SearchUserPill {
     return {
@@ -320,7 +324,7 @@ function search_user_pill_data(
 function append_user_pill(
     users: User[],
     pill_widget: SearchPillWidget,
-    operator: "dm" | "dm-including" | "sender",
+    operator: "dm" | "dm-including" | "sender" | "mentions",
     negated: boolean,
 ): void {
     const pill_data = search_user_pill_data(users, operator, negated);
@@ -374,6 +378,7 @@ export function set_search_bar_contents(
         switch (term.operator) {
             case "dm":
             case "dm-including":
+            case "mentions":
             case "sender":
                 if (term.operand !== "") {
                     const users = term.operand.split(",").map((email) => {
