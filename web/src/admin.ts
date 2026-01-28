@@ -208,6 +208,10 @@ export function build_page(): void {
         realm_night_logo_url,
         realm_topics_policy: realm.realm_topics_policy,
         realm_topics_policy_values: settings_config.get_realm_topics_policy_values(),
+        realm_topic_resolution_message_requirement:
+            realm.realm_topic_resolution_message_requirement,
+        topic_resolution_message_requirement_values:
+            settings_config.topic_resolution_message_requirement_values,
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
         realm_send_welcome_emails: realm.realm_send_welcome_emails,
         realm_enable_welcome_message_custom_text:

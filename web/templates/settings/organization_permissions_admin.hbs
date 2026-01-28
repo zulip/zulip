@@ -251,6 +251,16 @@
             {{> group_setting_value_pill_input
               setting_name="realm_can_resolve_topics_group"
               label=group_setting_labels.can_resolve_topics_group}}
+
+            <div class="input-group">
+                <label for="id_realm_topic_resolution_message_requirement" class="settings-field-label">{{t "Topic
+                    resolution message" }}</label>
+                <select name="realm_topic_resolution_message_requirement"
+                  id="id_realm_topic_resolution_message_requirement"
+                  class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
+                    {{> dropdown_options_widget option_values=topic_resolution_message_requirement_values}}
+                </select>
+            </div>
         </div>
 
         <div id="org-msg-deletion" class="settings-subsection-parent">

@@ -218,6 +218,7 @@ class HomeTest(ZulipTestCase):
         "realm_send_channel_events_messages",
         "realm_send_welcome_emails",
         "realm_signup_announcements_stream_id",
+        "realm_topic_resolution_message_requirement",
         "realm_topics_policy",
         "realm_upload_quota_mib",
         "realm_uri",
