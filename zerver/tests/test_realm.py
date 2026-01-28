@@ -1319,6 +1319,33 @@ class RealmTest(ZulipTestCase):
             zoom_server_to_server_provider_id,
         )
 
+        constructor_groups_provider_id = Realm.VIDEO_CHAT_PROVIDERS["constructor_groups"]["id"]
+        req = {"video_chat_provider": f"{constructor_groups_provider_id}"}
+        with self.settings(CONSTRUCTOR_GROUPS_URL=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {constructor_groups_provider_id}"
+            )
+
+        with self.settings(CONSTRUCTOR_GROUPS_ACCESS_KEY=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {constructor_groups_provider_id}"
+            )
+
+        with self.settings(CONSTRUCTOR_GROUPS_SECRET_KEY=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(
+                result, f"Invalid video_chat_provider {constructor_groups_provider_id}"
+            )
+
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        self.assertEqual(
+            get_realm("zulip").video_chat_provider,
+            constructor_groups_provider_id,
+        )
+
     def test_data_deletion_schedule_when_deactivating_realm(self) -> None:
         self.login("desdemona")
 

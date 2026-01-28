@@ -962,6 +962,9 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
     Integration(
         "big-blue-button", ["video-calling", "communication"], display_name="BigBlueButton"
     ),
+    Integration(
+        "constructor-groups", ["video-calling", "communication"], display_name="Constructor Groups"
+    ),
     Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
     Integration("zoom", ["video-calling", "communication"]),
 ]
@@ -1136,7 +1139,7 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Outgoing integrations
     | {"email", "onyx"}
     # Video call integrations
-    | {"big-blue-button", "jitsi", "zoom"}
+    | {"big-blue-button", "constructor-groups", "jitsi", "zoom"}
     | {
         # these integrations do not send messages
         "giphy",
