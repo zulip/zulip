@@ -34,6 +34,7 @@ from zerver.lib.event_types import (
     EventDraftsAdd,
     EventDraftsRemove,
     EventDraftsUpdate,
+    EventHasWebexToken,
     EventHasZoomToken,
     EventHeartbeat,
     EventInvitesChanged,
@@ -246,6 +247,7 @@ check_web_reload_client_event = make_checker(EventWebReloadClient)
 _check_channel_folder_update = make_checker(EventChannelFolderUpdate)
 _check_delete_message = make_checker(EventDeleteMessage)
 _check_has_zoom_token = make_checker(EventHasZoomToken)
+_check_has_webex_token = make_checker(EventHasWebexToken)
 _check_legacy_presence = make_checker(EventLegacyPresence)
 _check_modern_presence = make_checker(EventModernPresence)
 _check_muted_topics = make_checker(EventMutedTopics)
@@ -323,6 +325,15 @@ def check_has_zoom_token(
     value: bool,
 ) -> None:
     _check_has_zoom_token(var_name, event)
+    assert event["value"] == value
+
+
+def check_has_webex_token(
+    var_name: str,
+    event: dict[str, object],
+    value: bool,
+) -> None:
+    _check_has_webex_token(var_name, event)
     assert event["value"] == value
 
 

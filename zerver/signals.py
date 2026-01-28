@@ -117,7 +117,7 @@ def clear_zoom_token_on_logout(
     sender: object, *, user: UserProfile | None, **kwargs: object
 ) -> None:
     # Loaded lazily so django.setup() succeeds before static asset generation
-    from zerver.actions.video_calls import do_set_zoom_token
+    from zerver.actions.video_calls import do_set_video_call_provider_token
 
     if user is not None and user.third_party_api_state.get("zoom") is not None:
-        do_set_zoom_token(user, None)
+        do_set_video_call_provider_token(user, "zoom", None)

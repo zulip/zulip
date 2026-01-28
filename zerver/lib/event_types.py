@@ -229,6 +229,11 @@ class EventHasZoomToken(BaseEvent):
     value: bool
 
 
+class EventHasWebexToken(BaseEvent):
+    type: Literal["has_webex_token"]
+    value: bool
+
+
 class EventHeartbeat(BaseEvent):
     type: Literal["heartbeat"]
 
