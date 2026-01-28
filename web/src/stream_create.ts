@@ -618,14 +618,15 @@ export function set_up_handlers(): void {
         }
 
         if (principals.length >= 50) {
-            const html_body = render_subscription_invites_warning_modal({
+            const modal_content_html = render_subscription_invites_warning_modal({
                 channel_name: stream_name,
                 count: principals.length,
             });
 
             confirm_dialog.launch({
-                html_heading: $t_html({defaultMessage: "Large number of subscribers"}),
-                html_body,
+                modal_title_html: $t_html({defaultMessage: "Large number of subscribers"}),
+                modal_content_html,
+                is_compact: true,
                 on_click() {
                     create_stream();
                 },

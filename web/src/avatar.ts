@@ -1,7 +1,5 @@
 import $ from "jquery";
 
-import render_confirm_delete_user_avatar from "../templates/confirm_dialog/confirm_delete_user_avatar.hbs";
-
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
@@ -107,11 +105,13 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
                 },
             });
         }
-        const html_body = render_confirm_delete_user_avatar({});
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete profile picture"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Delete profile picture"}),
+            modal_content_html: $t_html({
+                defaultMessage: "Are you sure you want to delete your profile picture?",
+            }),
+            is_compact: true,
             on_click: delete_user_avatar,
         });
     });

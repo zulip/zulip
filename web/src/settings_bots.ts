@@ -238,7 +238,7 @@ function bot_owner_full_name(owner_id: number | null): string | undefined {
 }
 
 export function add_a_new_bot(): void {
-    const html_body = render_add_new_bot_form({
+    const modal_content_html = render_add_new_bot_form({
         bot_types: get_allowed_bot_types(),
         realm_embedded_bots: realm.realm_embedded_bots,
         realm_bot_domain: realm.realm_bot_domain,
@@ -366,9 +366,9 @@ export function add_a_new_bot(): void {
     dialog_widget.launch({
         form_id: "create_bot_form",
         help_link: "/help/add-a-bot-or-integration",
-        html_body,
-        html_heading: $t_html({defaultMessage: "Add a new bot"}),
-        html_submit_button: $t_html({defaultMessage: "Add"}),
+        modal_content_html,
+        modal_title_html: $t_html({defaultMessage: "Add a new bot"}),
+        modal_submit_button_text: $t({defaultMessage: "Add"}),
         loading_spinner: true,
         on_click: create_a_new_bot,
         on_shown: () => $("#create_bot_type").trigger("focus"),

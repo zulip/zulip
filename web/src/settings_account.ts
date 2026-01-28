@@ -548,13 +548,13 @@ export function set_up(): void {
         }
 
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Change password"}),
-            html_body: render_dialog_change_password({
+            modal_title_html: $t_html({defaultMessage: "Change password"}),
+            modal_content_html: render_dialog_change_password({
                 password_min_length: realm.password_min_length,
                 password_max_length: realm.password_max_length,
                 password_min_guesses: realm.password_min_guesses,
             }),
-            html_submit_button: $t_html({defaultMessage: "Change"}),
+            modal_submit_button_text: $t({defaultMessage: "Change"}),
             loading_spinner: true,
             id: "change_password_modal",
             form_id: "change_password_container",
@@ -686,9 +686,11 @@ export function set_up(): void {
         e.stopPropagation();
         if (settings_data.user_can_change_email()) {
             dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Change email"}),
-                html_body: render_change_email_modal({delivery_email: current_user.delivery_email}),
-                html_submit_button: $t_html({defaultMessage: "Change"}),
+                modal_title_html: $t_html({defaultMessage: "Change email"}),
+                modal_content_html: render_change_email_modal({
+                    delivery_email: current_user.delivery_email,
+                }),
+                modal_submit_button_text: $t({defaultMessage: "Change"}),
                 loading_spinner: true,
                 id: "change_email_modal",
                 form_id: "change_email_form",
@@ -776,14 +778,14 @@ export function set_up(): void {
             current_user.delivery_email === ""
         ) {
             dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Add email"}),
-                html_body: render_demo_organization_add_email_modal({
+                modal_title_html: $t_html({defaultMessage: "Add email"}),
+                modal_content_html: render_demo_organization_add_email_modal({
                     delivery_email: current_user.delivery_email,
                     full_name: current_user.full_name,
                     email_address_visibility_values:
                         settings_config.email_address_visibility_values,
                 }),
-                html_submit_button: $t_html({defaultMessage: "Add"}),
+                modal_submit_button_text: $t({defaultMessage: "Add"}),
                 loading_spinner: true,
                 id: "demo_organization_add_email_modal",
                 form_id: "demo_organization_add_email_form",
