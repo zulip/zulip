@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.markdown import markdown_convert
 from zerver.lib.stream_subscription import get_user_ids_for_streams
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
@@ -59,10 +60,13 @@ def create_user_group_in_database(
     group_settings_map: Mapping[str, UserGroup] = {},
     is_system_group: bool = False,
 ) -> NamedUserGroup:
+    rendered_description_html = markdown_convert(description, message_realm=realm).rendered_content
+
     user_group = NamedUserGroup(
         name=name,
         realm=realm,
         description=description,
+        rendered_description_html=rendered_description_html,
         is_system_group=is_system_group,
         realm_for_sharding=realm,
         creator=acting_user,
@@ -204,6 +208,7 @@ def do_send_create_user_group_event(
             date_created=date_created,
             members=member_ids,
             description=user_group.description,
+            rendered_description_html=user_group.rendered_description_html,
             id=user_group.id,
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=direct_subgroup_ids,
@@ -295,8 +300,12 @@ def do_update_user_group_description(
     user_group: NamedUserGroup, description: str, *, acting_user: UserProfile | None
 ) -> None:
     old_value = user_group.description
+    rendered_description_html = markdown_convert(
+        description, message_realm=user_group.realm
+    ).rendered_content
     user_group.description = description
-    user_group.save(update_fields=["description"])
+    user_group.rendered_description_html = rendered_description_html
+    user_group.save(update_fields=["description", "rendered_description_html"])
     RealmAuditLog.objects.create(
         realm=user_group.realm,
         modified_user_group=user_group,
@@ -308,7 +317,10 @@ def do_update_user_group_description(
             RealmAuditLog.NEW_VALUE: description,
         },
     )
-    do_send_user_group_update_event(user_group, dict(description=description))
+    do_send_user_group_update_event(
+        user_group,
+        dict(description=description, rendered_description_html=rendered_description_html),
+    )
 
 
 def do_send_user_group_members_update_event(
