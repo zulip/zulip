@@ -1107,7 +1107,9 @@ export function show_settings_for(group: UserGroup): void {
 
     $edit_container.show();
     show_membership_settings(group);
-    show_general_settings(group);
+    if (!group.is_system_group) {
+        show_general_settings(group);
+    }
 
     update_group_deactivated_banner(group);
 
