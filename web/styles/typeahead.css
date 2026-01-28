@@ -140,6 +140,9 @@
 }
 
 .typeahead.dropdown-menu {
+    /* Position relative to allow absolute positioning of the shadow overlay */
+    position: relative;
+
     .typeahead-menu {
         list-style: none;
         margin: 4px 0;
@@ -253,4 +256,27 @@
     .status-emoji {
         margin-left: 0;
     }
+}
+
+/* Add shadow overlay for scrollable typeaheads */
+.typeahead.dropdown-menu.overflowing::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 25px;
+    pointer-events: none;
+    /* Fade from transparent to the dropdown background color */
+    /* stylelint-disable-next-line declaration-property-value-no-unknown */
+    background: light-dark(
+        linear-gradient(to bottom, transparent, hsl(240deg 20% 98%)),
+        linear-gradient(to bottom, transparent, hsl(240deg 5% 16%))
+    );
+    z-index: 1052;
+}
+
+/* Ensure shadow doesn't appear when not overflowing */
+.typeahead.dropdown-menu:not(.overflowing)::after {
+    display: none;
 }
