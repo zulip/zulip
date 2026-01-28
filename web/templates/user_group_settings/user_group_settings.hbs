@@ -53,7 +53,11 @@
         <div class="group_setting_section" data-group-section="permissions">
             <div class="group-assigned-permissions">
                 <span class="no-permissions-for-group-text {{#unless group_has_no_permissions}}hide{{/unless}}">
-                    {{t 'This group has no assigned permissions.'}}
+                    {{#if group.is_system_group}}
+                        {{t 'This role has no assigned permissions.'}}
+                    {{else}}
+                        {{t 'This group has no assigned permissions.'}}
+                    {{/if}}
                 </span>
                 {{> group_permission_settings .}}
             </div>
