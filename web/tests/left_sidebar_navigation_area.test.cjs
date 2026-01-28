@@ -12,6 +12,8 @@ mock_esm("../src/resize", {
 
 const {Filter} = zrequire("../src/filter");
 const left_sidebar_navigation_area = zrequire("left_sidebar_navigation_area");
+const scheduled_messages = zrequire("scheduled_messages");
+const message_reminder = zrequire("message_reminder");
 
 run_test("narrowing", ({override_rewire}) => {
     override_rewire(
@@ -100,6 +102,13 @@ run_test("update_count_in_dom", () => {
         stream_unread_messages: 666,
         stream_count: new Map(),
     };
+    message_reminder.set_reminders_by_id_for_testing(new Map([[1, {id: 1}]]));
+    scheduled_messages.set_scheduled_messages_by_id_for_testing(
+        new Map([
+            [1, {id: 1}],
+            [2, {id: 2}],
+        ]),
+    );
 
     $(".selected-home-view").set_find_results(".sidebar-menu-icon", $("<menu-icon>"));
 
@@ -121,18 +130,22 @@ run_test("update_count_in_dom", () => {
 
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
     left_sidebar_navigation_area.update_starred_count(444, false);
-    // Calls left_sidebar_navigation_area.update_scheduled_messages_row
-    left_sidebar_navigation_area.initialize();
+    left_sidebar_navigation_area.update_scheduled_messages_row();
+    left_sidebar_navigation_area.update_reminders_row();
 
     assert.equal($("<mentioned-count>").text(), "222");
     assert.equal($("<home-count>").text(), "333");
     assert.equal($("<condensed-unread-count>").text(), "333");
     assert.equal($("<starred-count>").text(), "444");
-    assert.equal($("<scheduled-count>").text(), "");
-    assert.equal($("<reminders-count>").text(), "");
+    assert.equal($("<scheduled-count>").text(), "2");
+    assert.equal($("<reminders-count>").text(), "1");
+    assert.ok(!$(".top_left_scheduled_messages").hasClass("hidden-by-filters"));
+    assert.ok(!$(".top_left_reminders").hasClass("hidden-by-filters"));
     assert.equal($("<topics-count>").text(), "666");
 
     counts.mentioned_message_count = 0;
+    message_reminder.set_reminders_by_id_for_testing(new Map());
+    scheduled_messages.set_scheduled_messages_by_id_for_testing(new Map());
 
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
     // Starred count is hidden.
@@ -144,6 +157,6 @@ run_test("update_count_in_dom", () => {
     assert.equal($("<mentioned-count>").text(), "");
     assert.equal($("<starred-count>").text(), "444");
     assert.ok($(".top_left_starred_messages").hasClass("hide_starred_message_count"));
-    assert.ok(!$(".top_left_scheduled_messages").visible());
-    assert.ok(!$(".top_left_reminders").visible());
+    assert.ok($(".top_left_scheduled_messages").hasClass("hidden-by-filters"));
+    assert.ok($(".top_left_reminders").hasClass("hidden-by-filters"));
 });
