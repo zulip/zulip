@@ -341,8 +341,95 @@ export function create<ItemType extends {type: string}>(
             }
             return true;
         },
-    };
 
+        // Edit a pill by converting it to an editable input at the same position.
+        // This is triggered by double-clicking on a pill or pressing Enter while focused.
+        editPill($pill: JQuery) {
+            const pill_data = this.getByElement($pill[0]!);
+            if (!pill_data || pill_data.disabled) {
+                return;
+            }
+
+            // Store original item data for restoration on cancel
+            const original_item = pill_data.item;
+
+            // Get text value from the item
+            const text = store.get_text_from_item(pill_data.item);
+
+            // Create editable input element using DOM building (not HTML parsing)
+            const editable = document.createElement("div");
+            editable.className = "input editable-pill";
+            editable.contentEditable = "true";
+            editable.textContent = text;
+            const $editable = $(editable);
+
+            // Insert at pill's position, then remove pill
+            $pill.before($editable);
+            this.removePill($pill[0]!, "backspace");
+
+            // Focus and place cursor at end
+            $editable.trigger("focus");
+            ui_util.place_caret_at_end(util.the($editable));
+
+            // Handle keydown events on the editable pill.
+            // We use native addEventListener with capture:true to intercept
+            // Escape BEFORE Micromodal's document-level handler closes the modal.
+            editable.addEventListener(
+                "keydown",
+                (e) => {
+                    // Check for Enter key (with IME composing check)
+                    if (e.key === "Enter" && !e.isComposing) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const value = $editable.text().trim();
+                        if (value.length > 0) {
+                            const ret = this.appendPill(value);
+                            if (ret) {
+                                $editable.remove();
+                                store.$input.trigger("focus");
+                            }
+                        }
+                    }
+                    // Escape to cancel edit - restore original pill
+                    if (e.key === "Escape") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+
+                        // Restore the original pill
+                        this.appendValidatedData(original_item, false, true);
+
+                        // Remove the editable input
+                        $editable.remove();
+                        store.$input.trigger("focus");
+                    }
+                },
+                true, // capture phase - runs before bubbling
+            );
+
+            // Handle blur on editable pill - pillify or discard
+            $editable.on("blur", function (this: HTMLElement, e) {
+                // Don't pillify if clicking on typeahead menu
+                const related_target = e.relatedTarget;
+                if (
+                    related_target instanceof Element &&
+                    related_target.closest(".typeahead-menu")
+                ) {
+                    return;
+                }
+
+                const value = $(this).text().trim();
+                if (value.length > 0) {
+                    const ret = funcs.appendPill(value);
+                    if (ret) {
+                        $(this).remove();
+                    }
+                } else {
+                    $(this).remove();
+                }
+            });
+        },
+    };
     {
         store.$parent.on("keydown", ".input", function (this: HTMLElement, e) {
             // `convert_to_pill_on_enter = false` allows some pill containers,
@@ -441,6 +528,11 @@ export function create<ItemType extends {type: string}>(
                 case "ArrowRight":
                     $pill.next().trigger("focus");
                     break;
+                case "Enter":
+                    // Edit the focused pill
+                    e.preventDefault();
+                    funcs.editPill($pill);
+                    break;
                 case "Backspace": {
                     const $prev = $pill.prev();
                     const $next = $pill.next();
@@ -456,6 +548,13 @@ export function create<ItemType extends {type: string}>(
                     break;
                 }
             }
+        });
+
+        // Double-click on pill to edit it
+        store.$parent.on("dblclick", ".pill", function (this: HTMLElement, e) {
+            e.stopPropagation();
+            const $pill = $(this);
+            funcs.editPill($pill);
         });
 
         // when the shake animation is applied to the ".input" on invalid input,
@@ -525,6 +624,30 @@ export function create<ItemType extends {type: string}>(
             e.originalEvent.clipboardData?.setData("text/plain", store.get_text_from_item(item));
             e.preventDefault();
         });
+
+        // Pillify valid input when user clicks outside the input field (Item 4 of #29510).
+        // This is most relevant to the invite modal (emails) but applies elsewhere too.
+        // store.$parent.on("blur", ".input:not(.editable-pill)", function (this: HTMLElement, e) {
+        //     const related_target = e.relatedTarget;
+
+        //     // Don't pillify if clicking on typeahead menu
+        //     if (related_target instanceof Element && related_target.closest(".typeahead-menu")) {
+        //         return;
+        //     }
+
+        //     // Don't pillify if focus is moving to another element in the same container
+        //     if (related_target instanceof Node && store.$parent[0]?.contains(related_target)) {
+        //         return;
+        //     }
+
+        //     const value = funcs.value(this).trim();
+        //     if (value.length > 0) {
+        //         const ret = funcs.appendPill(value);
+        //         if (ret) {
+        //             funcs.clear(this);
+        //         }
+        //     }
+        // });
     }
 
     // the external, user-accessible prototype.
