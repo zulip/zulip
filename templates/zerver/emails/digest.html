@@ -11,7 +11,7 @@
                     <div class='hot_convo_message_content'>
                         {% for sender_block in recipient_block.senders %}
                             {% for message_block in sender_block.content %}
-                            <div class='hot_convo_message_content_block'>
+                            <div class='hot_convo_message_content_block digest_rendered_markdown'>
                                 {{ message_block.html|safe }}
                             </div>
                             {% endfor %}
