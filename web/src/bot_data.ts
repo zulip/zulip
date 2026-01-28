@@ -8,6 +8,10 @@ import type {StateData} from "./state_data.ts";
 export type ServerUpdateBotData = z.infer<typeof server_update_bot_schema>;
 export type ServerAddBotData = z.infer<typeof server_add_bot_schema>;
 export type Bot = Omit<ServerAddBotData, "services">;
+export type BotType = {
+    type_id: number;
+    name: string;
+};
 
 export type Services = z.infer<typeof services_schema>;
 
@@ -41,10 +45,14 @@ export function update(bot_id: number, bot_update: ServerUpdateBotData): void {
 
     Object.assign(bot, bot_update_rest);
 
-    // We currently only support one service per bot.
-    const service = services.get(bot_id)![0];
-    if (service !== undefined && services_update !== undefined && services_update.length > 0) {
-        Object.assign(service, services_update[0]);
+    // We currently support only one service per bot.
+    // Therefore, we can directly assign `services_update` to the
+    // bot's services. This will either update the existing service
+    // (if one already exists), or add a new service
+    // (e.g., when changing the bot_type from INCOMING_WEBHOOK_BOT
+    // to OUTGOING_WEBHOOK_BOT, which initially had no service).
+    if (services_update !== undefined && services_update.length > 0) {
+        services.set(bot_id, services_update);
     }
 }
 

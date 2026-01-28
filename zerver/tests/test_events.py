@@ -158,8 +158,11 @@ from zerver.actions.user_settings import (
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
+    do_add_service,
     do_change_is_imported_stub,
     do_deactivate_user,
+    do_update_bot_type,
+    do_update_embedded_bot_service,
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_zoom_token
@@ -3458,6 +3461,60 @@ class NormalActionsTest(BaseAction):
             do_change_full_name(bot, "New Bot Name", self.user_profile, notify=False)
         check_realm_bot_update("events[1]", events[1], "full_name")
 
+    def test_update_bot_type(self) -> None:
+        bot = self.create_bot("test")
+        with self.verify_action(num_events=2) as events:
+            do_update_bot_type(bot, UserProfile.OUTGOING_WEBHOOK_BOT, acting_user=self.user_profile)
+        check_realm_bot_update("events[0]", events[0], "bot_type")
+        self.assertEqual(events[1]["type"], "realm_user")
+
+    def test_add_webhook_service_while_editing_bot_type(self) -> None:
+        bot = self.create_bot("test")
+        with self.verify_action(num_events=3) as events:
+            do_add_service(
+                service_name=bot.email.split("-bot@")[0],
+                bot_profile=bot,
+                bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+                service_payload_url="https://foo.bar.com",
+                service_interface=Service.GENERIC,
+            )
+            do_update_bot_type(bot, UserProfile.OUTGOING_WEBHOOK_BOT, acting_user=self.user_profile)
+        check_realm_bot_update("events[0]", events[0], "services")
+
+        bot_service = get_bot_services(bot.id)[0]
+        event_data_service = events[0]["bot"]["services"][0]
+        self.assertEqual(
+            {
+                "base_url": bot_service.base_url,
+                "interface": bot_service.interface,
+                "token": bot_service.token,
+            },
+            event_data_service,
+        )
+
+    def test_add_embedded_bot_service_while_editing_bot_type(self) -> None:
+        bot = self.create_bot("test")
+        with self.verify_action(num_events=3) as events:
+            do_add_service(
+                service_name="encrypt",
+                bot_profile=bot,
+                bot_type=UserProfile.EMBEDDED_BOT,
+                service_payload_url="",
+                service_interface=Service.GENERIC,
+            )
+            do_update_bot_type(bot, UserProfile.EMBEDDED_BOT, acting_user=self.user_profile)
+        check_realm_bot_update("events[0]", events[0], "services")
+
+        bot_service = get_bot_services(bot.id)[0]
+        event_data_service = events[0]["bot"]["services"][0]
+        self.assertEqual(
+            {
+                "config_data": {},
+                "service_name": bot_service.name,
+            },
+            event_data_service,
+        )
+
     def test_regenerate_bot_api_key(self) -> None:
         bot = self.create_bot("test")
         with self.verify_action() as events:
@@ -3586,6 +3643,46 @@ class NormalActionsTest(BaseAction):
                 bot,
                 interface=2,
                 base_url="http://hostname.domain2.com",
+                acting_user=self.user_profile,
+            )
+
+    def test_do_update_embedded_bot_service(self) -> None:
+        self.user_profile = self.example_user("iago")
+        bot = self.create_test_bot(
+            "test",
+            self.user_profile,
+            full_name="Test Bot",
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="converter",
+        )
+        with self.verify_action() as events:
+            do_update_embedded_bot_service(
+                bot,
+                name="encrypt",
+                acting_user=self.user_profile,
+            )
+
+        check_realm_bot_update("events[0]", events[0], "services")
+
+        # Check the updated Service data we send as event on commit.
+        bot_service = get_bot_services(bot.id)[0]
+        event_data_service = events[0]["bot"]["services"][0]
+        self.assertEqual(
+            {
+                "config_data": {},
+                "service_name": bot_service.name,
+            },
+            event_data_service,
+        )
+
+        with self.verify_action(num_events=0, state_change_expected=False) as events:
+            do_update_embedded_bot_service(bot, acting_user=self.user_profile)
+
+        # Trying to update with the same value as existing value results in no op.
+        with self.verify_action(num_events=0, state_change_expected=False) as events:
+            do_update_embedded_bot_service(
+                bot,
+                name="encrypt",
                 acting_user=self.user_profile,
             )
 
