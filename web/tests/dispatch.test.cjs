@@ -1489,6 +1489,18 @@ run_test("user_settings", ({override}) => {
     override(settings_exports, "refresh_allow_private_data_export_banner", noop);
     dispatch(event);
     assert_same(user_settings.allow_private_data_export, true);
+
+    event = event_fixtures.user_settings__pin_direct_messages;
+    override(user_settings, "pin_direct_messages", 1);
+    override(pm_list, "pin_direct_messages", noop);
+    dispatch(event);
+    assert_same(user_settings.pin_direct_messages, 2);
+
+    event = event_fixtures.user_settings__unpin_direct_messages;
+    override(user_settings, "pin_direct_messages", 2);
+    override(pm_list, "unpin_direct_messages", noop);
+    dispatch(event);
+    assert_same(user_settings.pin_direct_messages, 1);
 });
 
 run_test("update_message (read)", ({override}) => {

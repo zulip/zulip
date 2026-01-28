@@ -374,6 +374,7 @@ class ChangeSettingsTest(ZulipTestCase):
             automatically_follow_topics_policy=1,
             automatically_unmute_topics_in_muted_streams_policy=1,
             resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum.always.name,
+            pin_direct_messages=2,
         )
 
         self.login("hamlet")
@@ -389,6 +390,7 @@ class ChangeSettingsTest(ZulipTestCase):
             "web_mark_read_on_scroll_policy",
             "web_channel_default_view",
             "web_stream_unreads_count_display_policy",
+            "pin_direct_messages",
         ]:
             data = {setting_name: test_value}
         else:
@@ -497,6 +499,11 @@ class ChangeSettingsTest(ZulipTestCase):
                 "setting_name": "resolved_topic_notice_auto_read_policy",
                 "value": "invalid",
                 "error_msg": "Invalid resolved_topic_notice_auto_read_policy",
+            },
+            {
+                "setting_name": "pin_direct_messages",
+                "value": 10,
+                "error_msg": "Invalid pin_direct_messages: Value error, Not in the list of possible values",
             },
         ]
         self.login("hamlet")

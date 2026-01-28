@@ -41,4 +41,14 @@
             {{> dropdown_options_widget option_values=(object_values demote_inactive_streams_values)}}
         </select>
     </div>
+
+    <div class="input-group">
+        <label class="settings-field-label">
+            {{t "Automatically collapse direct messages section in the left sidebar"}}
+        </label>
+        <select name="pin_direct_messages" class="setting_pin_dm_section prop-element bootstrap-focus-style
+          settings_select" id="{{prefix}}pin_direct_messages" data-setting-widget-type="number" >
+            {{> dropdown_options_widget option_values=pin_left_sidebar_section_values}}
+        </select>
+    </div>
 </div>

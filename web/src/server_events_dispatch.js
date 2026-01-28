@@ -929,6 +929,7 @@ export function dispatch_normal_event(event) {
                 "fluid_layout_width",
                 "hide_ai_features",
                 "high_contrast_mode",
+                "pin_direct_messages",
                 "receives_typing_notifications",
                 "resolved_topic_notice_auto_read_policy",
                 "starred_message_counts",
@@ -1094,6 +1095,14 @@ export function dispatch_normal_event(event) {
                     msg_list.rerender();
                 }
             }
+            if (event.property === "pin_direct_messages") {
+                if (event.value === settings_config.pin_left_sidebar_section_values.never.code) {
+                    pm_list.pin_direct_messages();
+                } else {
+                    pm_list.unpin_direct_messages();
+                }
+            }
+
             settings_preferences.update_page(event.property);
             break;
         }

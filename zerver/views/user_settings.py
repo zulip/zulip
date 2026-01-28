@@ -317,6 +317,10 @@ def json_change_settings(
     new_password: str | None = None,
     notification_sound: str | None = None,
     old_password: str | None = None,
+    pin_direct_messages: Annotated[
+        Json[int], check_int_in_validator(UserProfile.PIN_DIRECT_MESSAGES_CHOICES)
+    ]
+    | None = None,
     pm_content_in_desktop_notifications: Json[bool] | None = None,
     presence_enabled: Json[bool] | None = None,
     realm_name_in_email_notifications_policy: Annotated[
