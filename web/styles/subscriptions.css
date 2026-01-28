@@ -954,6 +954,14 @@ h4.user_group_setting_subsection_title {
         width: calc(100% - 2.5625em);
     }
 
+    &.system-group .group-info-box {
+        /* We want to align this with the search filter placeholder.
+           Search filter box and group info box have the same left
+           margin in ems. Since filter box has a left padding of 6px,
+           we set the same as left margin here. */
+        margin-left: var(--input-horizontal-padding);
+    }
+
     .sub-info-box,
     .group-info-box {
         margin-right: 0.25em; /* 4px at 16px font size */
