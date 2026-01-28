@@ -2334,6 +2334,8 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         "input",
         "#inbox-search",
         _.debounce(() => {
+            // Reset focus to first row on new search.
+            row_focus = DEFAULT_ROW_FOCUS;
             search_and_update();
         }, 300),
     );
