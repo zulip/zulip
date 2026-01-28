@@ -508,7 +508,16 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         display_recipient = get_display_recipient(recipient)
         emails = [user_dict["email"] for user_dict in display_recipient]
         recipient_str = ", ".join(emails)
-        internal_send_group_direct_message(user_profile.realm, user_profile, body, emails=emails)
+        try:
+            internal_send_group_direct_message(user_profile.realm, user_profile, body, emails=emails)
+        except JsonableError as e:
+            if "is no longer using Zulip" in str(e):
+                logger.warning(
+                    "Swallowed email-mirror group DM send error for missed message reply: %s",
+                    e,
+                )
+                return
+            raise
     else:
         raise AssertionError("Invalid recipient type!")
 
