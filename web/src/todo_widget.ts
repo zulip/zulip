@@ -16,6 +16,82 @@ import {TaskData} from "./todo_data.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData} from "./widget_schema.ts";
 
+function update_edit_controls($elem: JQuery): void {
+    const has_title =
+        $elem.find<HTMLInputElement>("input.todo-task-list-title").val()?.trim() !== "";
+    $elem.find("button.todo-task-list-title-check").toggle(has_title);
+}
+
+function render_task_list_title(task_data: TaskData, $elem: JQuery): void {
+    const task_list_title = task_data.get_task_list_title();
+    const input_mode = task_data.get_input_mode();
+    const can_edit = task_data.is_my_task_list() && !input_mode;
+
+    $elem.find(".todo-task-list-title-header").toggle(!input_mode);
+    $elem.find(".todo-task-list-title-header").text(task_list_title);
+    $elem.find(".todo-edit-task-list-title").toggle(can_edit);
+    update_edit_controls($elem);
+
+    $elem.find(".todo-task-list-title-bar").toggle(input_mode);
+}
+
+function update_add_task_button(task_data: TaskData, $elem: JQuery): void {
+    const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+    const task_exists = task_data.name_in_use(task);
+    const $add_task_wrapper = $elem.find(".add-task-wrapper");
+    const $add_task_button = $elem.find("button.add-task");
+
+    if (task === "") {
+        $add_task_wrapper.attr(
+            "data-tippy-content",
+            $t({defaultMessage: "Name the task before adding."}),
+        );
+        $add_task_button.prop("disabled", true);
+    } else if (task_exists) {
+        $add_task_wrapper.attr(
+            "data-tippy-content",
+            $t({defaultMessage: "Cannot add duplicate task."}),
+        );
+        $add_task_button.prop("disabled", true);
+    } else {
+        $add_task_wrapper.removeAttr("data-tippy-content");
+        $add_task_button.prop("disabled", false);
+    }
+}
+
+function render_results(
+    task_data: TaskData,
+    $elem: JQuery,
+    callback: (data: TodoWidgetOutboundData) => void,
+): void {
+    const widget_data = task_data.get_widget_data();
+    const html = render_widgets_todo_widget_tasks(widget_data);
+    $elem.find("ul.todo-widget").html(html);
+    $elem.find(".widget-error").text("");
+
+    $elem.find("input.task").on("click", (e) => {
+        e.stopPropagation();
+
+        if (page_params.is_spectator) {
+            // Logically, spectators should not be able to toggle
+            // TODO checkboxes. However, the browser changes the
+            // checkbox's state before calling handlers like this,
+            // so we need to just toggle the checkbox back to its
+            // previous state.
+            $(e.target).prop("checked", !$(e.target).is(":checked"));
+            $(e.target).trigger("blur");
+            return;
+        }
+        const key = $(e.target).attr("data-key");
+        assert(key !== undefined);
+
+        const data = task_data.handle.strike.outbound(key);
+        callback(data);
+    });
+
+    update_add_task_button(task_data, $elem);
+}
+
 export function activate({
     $elem,
     callback,
@@ -35,40 +111,21 @@ export function activate({
         tasks,
         report_error_function: blueslip.warn,
     });
-    const is_my_task_list = task_data.is_my_task_list();
+
     const message_container = message_lists.current?.view.message_containers.get(message.id);
-
-    function update_edit_controls(): void {
-        const has_title =
-            $elem.find<HTMLInputElement>("input.todo-task-list-title").val()?.trim() !== "";
-        $elem.find("button.todo-task-list-title-check").toggle(has_title);
-    }
-
-    function render_task_list_title(): void {
-        const task_list_title = task_data.get_task_list_title();
-        const input_mode = task_data.get_input_mode();
-        const can_edit = is_my_task_list && !input_mode;
-
-        $elem.find(".todo-task-list-title-header").toggle(!input_mode);
-        $elem.find(".todo-task-list-title-header").text(task_list_title);
-        $elem.find(".todo-edit-task-list-title").toggle(can_edit);
-        update_edit_controls();
-
-        $elem.find(".todo-task-list-title-bar").toggle(input_mode);
-    }
 
     function start_editing(): void {
         task_data.set_input_mode();
 
         const task_list_title = task_data.get_task_list_title();
         $elem.find("input.todo-task-list-title").val(task_list_title);
-        render_task_list_title();
+        render_task_list_title(task_data, $elem);
         $elem.find("input.todo-task-list-title").trigger("focus");
     }
 
     function abort_edit(): void {
         task_data.clear_input_mode();
-        render_task_list_title();
+        render_task_list_title(task_data, $elem);
     }
 
     function submit_task_list_title(): void {
@@ -84,7 +141,7 @@ export function activate({
 
         // Optimistically set the task list title locally.
         task_data.set_task_list_title(new_task_list_title);
-        render_task_list_title();
+        render_task_list_title(task_data, $elem);
 
         // If there were no actual edits, we can exit now.
         if (new_task_list_title === old_task_list_title) {
@@ -132,12 +189,12 @@ export function activate({
         const throttled_update_add_task_button = _.throttle(update_add_task_button, 300);
         $elem.find("input.add-task").on("keyup", (e) => {
             e.stopPropagation();
-            throttled_update_add_task_button();
+            throttled_update_add_task_button(task_data, $elem);
         });
 
         $elem.find("input.todo-task-list-title").on("keyup", (e) => {
             e.stopPropagation();
-            update_edit_controls();
+            update_edit_controls($elem);
         });
 
         $elem.find("input.todo-task-list-title").on("keydown", (e) => {
@@ -183,59 +240,6 @@ export function activate({
         });
     }
 
-    function update_add_task_button(): void {
-        const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
-        const task_exists = task_data.name_in_use(task);
-        const $add_task_wrapper = $elem.find(".add-task-wrapper");
-        const $add_task_button = $elem.find("button.add-task");
-
-        if (task === "") {
-            $add_task_wrapper.attr(
-                "data-tippy-content",
-                $t({defaultMessage: "Name the task before adding."}),
-            );
-            $add_task_button.prop("disabled", true);
-        } else if (task_exists) {
-            $add_task_wrapper.attr(
-                "data-tippy-content",
-                $t({defaultMessage: "Cannot add duplicate task."}),
-            );
-            $add_task_button.prop("disabled", true);
-        } else {
-            $add_task_wrapper.removeAttr("data-tippy-content");
-            $add_task_button.prop("disabled", false);
-        }
-    }
-
-    function render_results(): void {
-        const widget_data = task_data.get_widget_data();
-        const html = render_widgets_todo_widget_tasks(widget_data);
-        $elem.find("ul.todo-widget").html(html);
-        $elem.find(".widget-error").text("");
-
-        $elem.find("input.task").on("click", (e) => {
-            e.stopPropagation();
-
-            if (page_params.is_spectator) {
-                // Logically, spectators should not be able to toggle
-                // TODO checkboxes. However, the browser changes the
-                // checkbox's state before calling handlers like this,
-                // so we need to just toggle the checkbox back to its
-                // previous state.
-                $(e.target).prop("checked", !$(e.target).is(":checked"));
-                $(e.target).trigger("blur");
-                return;
-            }
-            const key = $(e.target).attr("data-key");
-            assert(key !== undefined);
-
-            const data = task_data.handle.strike.outbound(key);
-            callback(data);
-        });
-
-        update_add_task_button();
-    }
-
     const handle_events = function (events: Event[]): void {
         // We don't have to handle events now since we go through
         // handle_event loop again when we unmute the message.
@@ -247,8 +251,8 @@ export function activate({
             task_data.handle_event(event.sender_id, event.data);
         }
 
-        render_task_list_title();
-        render_results();
+        render_task_list_title(task_data, $elem);
+        render_results(task_data, $elem, callback);
     };
 
     if (message_container?.is_hidden) {
@@ -256,8 +260,8 @@ export function activate({
         $elem.html(html);
     } else {
         build_widget();
-        render_task_list_title();
-        render_results();
+        render_task_list_title(task_data, $elem);
+        render_results(task_data, $elem, callback);
     }
 
     return handle_events;
