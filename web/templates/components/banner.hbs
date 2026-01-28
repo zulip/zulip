@@ -8,7 +8,7 @@
             {{/if}}
         </span>
         {{#unless (eq buttons undefined)}}
-            {{#if buttons.length}}
+            {{#unless (eq buttons.length 0)}}
             <span class="banner-action-buttons">
                 {{!-- squash whitespace so :empty selector works when no buttons --}}
                 {{~!-- squash whitespace --~}}
@@ -21,7 +21,7 @@
                 {{/each}}
                 {{~!-- squash whitespace --~}}
             </span>
-            {{/if}}
+            {{/unless}}
         {{/unless}}
     </span>
     {{#if close_button}}
