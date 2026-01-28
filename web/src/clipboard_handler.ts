@@ -42,6 +42,7 @@ export async function copy_link_to_clipboard(link: string): Promise<void> {
                     stream_name: stream.name,
                     topic_name: stream_topic_details.topic_name,
                     message_id: stream_topic_details.message_id,
+                    escape_for_markdown: true,
                 });
 
                 const copy_in_html_syntax = topic_link_util.as_html_link_syntax_unsafe(text, link);

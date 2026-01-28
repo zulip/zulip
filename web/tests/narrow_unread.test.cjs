@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 
 mock_esm("../src/user_topics", {
     is_topic_muted: () => false,
@@ -55,7 +55,9 @@ function candidate_ids() {
     return narrow_state._possible_unread_message_ids(message_lists.current?.data.filter);
 }
 
-run_test("get_unread_ids", () => {
+run_test("get_unread_ids", ({override_rewire}) => {
+    override_rewire(message_store, "save_topic_links", noop);
+
     unread.declare_bankruptcy();
     message_lists.set_current(undefined);
 

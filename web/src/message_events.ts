@@ -646,6 +646,21 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 // before we modify the topic field on the message.
                 unread.update_unread_topics(moved_message, event);
 
+                // Before editing the topic or stream, update the topic
+                // links to point to the right place.
+                if (topic_edited || stream_changed) {
+                    message_store.process_topic_edit({
+                        message_ids: event.message_ids,
+                        new_stream_id: new_stream_id ?? old_stream_id,
+                        new_topic: get_post_edit_topic(
+                            topic_edited,
+                            event,
+                            new_topic,
+                            anchor_message,
+                        ),
+                    });
+                }
+
                 // Now edit the attributes of our message object.
                 if (topic_edited) {
                     moved_message.topic = new_topic;
