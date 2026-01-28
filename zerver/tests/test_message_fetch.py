@@ -536,6 +536,13 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm-including", operand=self.hamlet_email)
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
+    def test_add_term_using_dm_with_operator(self) -> None:
+        term = NarrowParameter(operator="dm-with", operand=self.othello_email)
+        self._do_add_term_test(
+            term,
+            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
+        )
+
     def test_add_term_using_dm_including_operator_with_different_user_email(self) -> None:
         # Test without any such group direct messages existing
         term = NarrowParameter(operator="dm-including", operand=self.othello_email)
@@ -1158,6 +1165,11 @@ class NarrowLibraryTest(ZulipTestCase):
         self.assertFalse(
             is_spectator_compatible(
                 [NarrowParameter(operator="dm-including", operand="hamlet@zulip.com")]
+            )
+        )
+        self.assertFalse(
+            is_spectator_compatible(
+                [NarrowParameter(operator="dm-with", operand="hamlet@zulip.com")]
             )
         )
         self.assertTrue(
@@ -2674,6 +2686,67 @@ class GetOldMessagesTest(ZulipTestCase):
         test_operands = [cordelia.email, cordelia.id]
         for operand in test_operands:
             narrow = [dict(operator="dm-including", operand=operand)]
+            result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+            for message in result["messages"]:
+                self.assertIn(message["id"], matching_message_ids)
+                self.assertNotIn(message["id"], non_matching_message_ids)
+
+    def test_get_messages_with_narrow_dm_with(self) -> None:
+        """
+        A request for old messages with a narrow by "dm-with" only
+        returns direct messages (both group and 1:1) with that user.
+        """
+        me = self.example_user("hamlet")
+
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        matching_message_ids = [
+            # group direct message, sent by current user
+            self.send_group_direct_message(
+                me,
+                [iago, cordelia, othello],
+            ),
+            # group direct message, sent by searched user
+            self.send_group_direct_message(
+                cordelia,
+                [me, othello],
+            ),
+            # group direct message, sent by another user
+            self.send_group_direct_message(
+                othello,
+                [me, cordelia],
+            ),
+            # direct 1:1 message, sent by current user to searched user
+            self.send_personal_message(me, cordelia),
+            # direct 1:1 message, sent by searched user to current user
+            self.send_personal_message(cordelia, me),
+        ]
+
+        non_matching_message_ids = [
+            # direct 1:1 message, does not include current user
+            self.send_personal_message(iago, cordelia),
+            # direct 1:1 message, does not include searched user
+            self.send_personal_message(iago, me),
+            # direct 1:1 message, current user to self
+            self.send_personal_message(me, me),
+            # group direct message, sent by current user
+            self.send_group_direct_message(
+                me,
+                [iago, othello],
+            ),
+            # group direct message, sent by searched user
+            self.send_group_direct_message(
+                cordelia,
+                [iago, othello],
+            ),
+        ]
+
+        self.login_user(me)
+        test_operands = [cordelia.email, cordelia.id]
+        for operand in test_operands:
+            narrow = [dict(operator="dm-with", operand=operand)]
             result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
             for message in result["messages"]:
                 self.assertIn(message["id"], matching_message_ids)

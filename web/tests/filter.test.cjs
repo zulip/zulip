@@ -499,7 +499,7 @@ test("basics", () => {
     // "group-pm-with" was replaced with "dm-including"
     terms = [{operator: "group-pm-with", operand: "joe@example.com"}];
     filter = new Filter(terms);
-    assert.ok(filter.has_operator("dm-including"));
+    assert.ok(filter.has_operator("dm-with"));
     assert.ok(!filter.has_operator("group-pm-with"));
     assert.ok(!filter.is_channel_view());
     assert.ok(!filter.has_exactly_channel_topic_operators());
@@ -1017,7 +1017,11 @@ test("canonicalization", () => {
 
     // "group-pm-with" was replaced with "dm-including"
     term = Filter.canonicalize_term({operator: "group-pm-with", operand: "joe@example.com"});
-    assert.equal(term.operator, "dm-including");
+    assert.equal(term.operator, "dm-with");
+    assert.equal(term.operand, "joe@example.com");
+
+    term = Filter.canonicalize_term({operator: "dm-including", operand: "joe@example.com"});
+    assert.equal(term.operator, "dm-with");
     assert.equal(term.operand, "joe@example.com");
 
     term = Filter.canonicalize_term({operator: "search", operand: "foo"});
@@ -1336,6 +1340,35 @@ test("predicate_basics", ({override}) => {
     );
 
     predicate = get_predicate([["dm-including", "Joe@example.com"]]);
+    assert.ok(
+        predicate({
+            type: direct_message,
+            display_recipient: [{id: joe.user_id}, {id: steve.user_id}, {id: me.user_id}],
+        }),
+    );
+    assert.ok(
+        predicate({
+            type: direct_message,
+            display_recipient: [{id: joe.user_id}, {id: me.user_id}],
+        }),
+    );
+    assert.ok(
+        !predicate({
+            type: direct_message,
+            display_recipient: [{id: steve.user_id}, {id: me.user_id}],
+        }),
+    );
+    assert.ok(!predicate({type: stream_message}));
+
+    predicate = get_predicate([["dm-with", "nobody@example.com"]]);
+    assert.ok(
+        !predicate({
+            type: direct_message,
+            display_recipient: [{id: joe.user_id}, {id: me.user_id}],
+        }),
+    );
+
+    predicate = get_predicate([["dm-with", "Joe@example.com"]]);
     assert.ok(
         predicate({
             type: direct_message,
@@ -1898,7 +1931,11 @@ test("describe", ({mock_template, override}) => {
     assert.equal(Filter.search_description_as_html(terms, true), string);
 
     terms = [{operator: "dm-including", operand: ""}];
-    string = "direct messages including";
+    string = "direct messages with";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "dm-with", operand: ""}];
+    string = "direct messages with";
     assert.equal(Filter.search_description_as_html(terms, true), string);
 });
 
@@ -2111,6 +2148,8 @@ test("convert_suggestion_to_term", () => {
         ["channels:private", false],
         ["topic:GhostTown", true],
         ["dm-including:alice@example.com", true],
+        ["dm-with:alice@example.com", true],
+        ["dm-with:invalid@example.com", false],
         ["sender:ghost@zulip.com", false],
         ["sender:me", true],
         ["dm:alice@example.com,ghost@example.com", false],

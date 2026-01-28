@@ -463,7 +463,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 }),
             };
         }
-        case "dm-including": {
+        case "dm-with": {
             const people_in_dms = first_term.operand
                 .split(",")
                 .map((email) => people.get_by_email(email));

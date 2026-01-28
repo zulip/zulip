@@ -58,6 +58,9 @@ as an empty string.
 
 ## Changes
 
+* In Zulip 12.0 (feature level 456), the `dm-with` operator replaced and
+  deprecated the `dm-including` operator.
+
 * In Zulip 12.0 (feature level 446), add the `mentions` operator,
   matching messages that contain a direct personal mention of the
   specified user.
@@ -173,7 +176,7 @@ help center because they are primarily useful to API clients:
   you and user ID `1234`.
 * `dm:1234,5678`: Search the direct message conversation between
   you, user ID `1234`, and user ID `5678`.
-* `dm-including:1234`: Search all direct messages (1-on-1 and group)
+* `dm-with:1234`: Search all direct messages (1-on-1 and group)
   that include you and user ID `1234`.
 
 !!! tip ""
