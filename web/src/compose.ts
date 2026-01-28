@@ -82,6 +82,8 @@ export function clear_preview_area(): void {
     // so here we are re-enabling those compose_control_buttons
     $("#compose").removeClass("preview_mode");
     $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", 0);
+
+    compose_ui.clear_thumbnail_polling();
 }
 
 export function show_preview_area(): void {
