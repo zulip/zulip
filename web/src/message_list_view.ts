@@ -51,6 +51,8 @@ import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
 import * as util from "./util.ts";
 
+const RESOLVE_TOPIC_NOTIFICATION = 2;
+
 export type MessageContainer = {
     background_color?: string;
     date_divider_html: string | undefined;
@@ -578,125 +580,115 @@ export class MessageListView {
     }
 
     get_calculated_message_container_variables(
-        message: Message,
-        existing_include_sender: boolean,
-        is_revealed = false,
-    ): {
-        timestr: string;
-        background_color?: string;
-        small_avatar_url: string;
-        sender_is_bot: boolean;
-        sender_is_guest: boolean;
-        sender_is_deactivated: boolean;
-        should_add_guest_indicator_for_sender: boolean;
-        is_hidden: boolean;
-        mention_classname: string | undefined;
-        include_sender: boolean;
-        status_message: string | false;
-        last_edit_timestamp: number | undefined;
-        last_moved_timestamp: number | undefined;
-        edited: boolean;
-        moved: boolean;
-        modified: boolean;
+    message: Message,
+    existing_include_sender: boolean,
+    is_revealed = false, ): 
+    {
+    timestr: string;
+    background_color?: string;
+    small_avatar_url: string;
+    sender_is_bot: boolean;
+    sender_is_guest: boolean;
+    sender_is_deactivated: boolean;
+    should_add_guest_indicator_for_sender: boolean;
+    is_hidden: boolean;
+    mention_classname: string | undefined;
+    include_sender: boolean;
+    status_message: string | false;
+    last_edit_timestamp: number | undefined;
+    last_moved_timestamp: number | undefined;
+    edited: boolean;
+    moved: boolean;
+    modified: boolean;
+    resolved_topic_status_text?: string;
     } {
-        const is_typing = typing_data.is_message_editing(message.id);
-        if (is_typing) {
-            // Ensure the typing animation is rendered when a user switches
-            // to a view where someone is editing a message.
-            setTimeout(() => {
-                typing_events.render_message_editing_typing(message.id, true);
-            }, 0);
+    let resolved_topic_status_text: string | undefined;
+
+    const is_typing = typing_data.is_message_editing(message.id);
+    if (is_typing) {
+        setTimeout(() => {
+            typing_events.render_message_editing_typing(message.id, true);
+        }, 0);
+    }
+
+    
+    if (message.message_type === RESOLVE_TOPIC_NOTIFICATION) {
+        const sender = people.maybe_get_user_by_id(message.sender_id);
+        const user = sender ? sender.full_name : "";
+
+        if (message.content.includes("unresolved")) {
+            resolved_topic_status_text = $t(
+                {defaultMessage: "{user} has marked this topic as unresolved."},
+                {user},
+            );
+        } else {
+            resolved_topic_status_text = $t(
+                {defaultMessage: "{user} has marked this topic as resolved."},
+                {user},
+            );
         }
+    }
 
-        /*
-            If the message needs to be hidden because the sender was muted, we do
-            a few things:
-            1. Replace the sender's avatar with that of a muted sender and name them as "Muted sender".
-            2. Hide reactions on that message.
-            3. Do not give a background color to that message even if it mentions the
-               current user.
+    const is_hidden = muted_users.is_user_muted(message.sender_id) && !is_revealed;
 
-            Further, is a hidden message was just revealed, we make sure to show
-            the sender.
-        */
+    let mention_classname;
 
-        const is_hidden = muted_users.is_user_muted(message.sender_id) && !is_revealed;
+    if (!is_hidden && message.mentioned) {
+        let is_user_mention = false;
+        const $msg = $(message.content);
+        $msg.find(".user-mention:not(.silent)").each(function () {
+            const user_id = rendered_markdown.get_user_id_for_mention_button(this);
+            if (user_id !== undefined && people.is_my_user_id(user_id)) {
+                is_user_mention = true;
+            }
+        });
 
-        let mention_classname;
-
-        // Make sure the right thing happens if the message was edited to mention us.
-        if (!is_hidden && message.mentioned) {
-            // Currently the API does not differentiate between a group mention and
-            // a user mention. For now, we parse the markdown to see if the message
-            // mentions the user.
-            let is_user_mention = false;
-            const $msg = $(message.content);
-            $msg.find(".user-mention:not(.silent)").each(function () {
-                const user_id = rendered_markdown.get_user_id_for_mention_button(this);
-                if (user_id === "*") {
-                    return;
-                }
-                if (user_id !== undefined && people.is_my_user_id(user_id)) {
-                    is_user_mention = true;
-                }
-            });
-
-            // If a message includes a user mention, then we don't care if there is a
-            // group/wildcard mention, and color the message as a user mention. If the
-            // message didn't include a user mention, then it was a usergroup/wildcard
-            // mention (which is the only other option for `mentioned` being true).
-            if (message.mentioned_me_directly && is_user_mention) {
-                // Highlight messages having personal mentions only in DMs and subscribed streams.
-                if (message.type === "private" || stream_data.is_subscribed(message.stream_id)) {
-                    mention_classname = "direct_mention";
-                } else {
-                    mention_classname = undefined;
-                }
-            } else {
-                mention_classname = "group_mention";
+        if (message.mentioned_me_directly && is_user_mention) {
+            if (message.type === "private" || stream_data.is_subscribed(message.stream_id)) {
+                mention_classname = "direct_mention";
             }
         } else {
-            mention_classname = undefined;
+            mention_classname = "group_mention";
         }
-        let include_sender = existing_include_sender;
-        if (is_revealed) {
-            // If the message is to be revealed, we show the sender anyways, because the
-            // the first message in the group (which would hold the sender) can still be
-            // hidden.
-            include_sender = true;
-        }
-
-        const sender_is_bot = people.sender_is_bot(message);
-        const sender_is_guest = people.sender_is_guest(message);
-        const sender_is_deactivated = people.sender_is_deactivated(message);
-        const should_add_guest_indicator_for_sender = people.should_add_guest_user_indicator(
-            message.sender_id,
-        );
-
-        const small_avatar_url = is_hidden
-            ? people.get_muted_user_avatar_url()
-            : people.small_avatar_url(message);
-        let background_color;
-        if (message.type === "stream") {
-            background_color = stream_data.get_color(message.stream_id);
-        }
-
-        return {
-            timestr: get_timestr(message),
-            // this is only relevant for streams, don't use it if it wasn't set
-            ...(background_color && {background_color}),
-            small_avatar_url,
-            sender_is_bot,
-            sender_is_guest,
-            sender_is_deactivated,
-            should_add_guest_indicator_for_sender,
-            is_hidden,
-            mention_classname,
-            include_sender,
-            ...this._maybe_get_me_message(is_hidden, message),
-            ...this._get_message_edited_and_moved_vars(message),
-        };
     }
+
+    let include_sender = existing_include_sender;
+    if (is_revealed) {
+        include_sender = true;
+    }
+
+    const sender_is_bot = people.sender_is_bot(message);
+    const sender_is_guest = people.sender_is_guest(message);
+    const sender_is_deactivated = people.sender_is_deactivated(message);
+    const should_add_guest_indicator_for_sender =
+        people.should_add_guest_user_indicator(message.sender_id);
+
+    const small_avatar_url = is_hidden
+        ? people.get_muted_user_avatar_url()
+        : people.small_avatar_url(message);
+
+    let background_color;
+    if (message.type === "stream") {
+        background_color = stream_data.get_color(message.stream_id);
+    }
+
+    return {
+        timestr: get_timestr(message),
+        ...(background_color && {background_color}),
+        small_avatar_url,
+        sender_is_bot,
+        sender_is_guest,
+        sender_is_deactivated,
+        should_add_guest_indicator_for_sender,
+        is_hidden,
+        mention_classname,
+        include_sender,
+        resolved_topic_status_text,
+        ...this._maybe_get_me_message(is_hidden, message),
+        ...this._get_message_edited_and_moved_vars(message),
+    };
+    }
+
 
     maybe_add_subscription_marker_to_group(
         group: MessageGroup,
