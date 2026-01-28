@@ -19,6 +19,7 @@ import * as echo from "./echo.ts";
 import type {PostMessageAPIData} from "./echo.ts";
 import * as message_events from "./message_events.ts";
 import type {LocalMessage} from "./message_helper.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as reload from "./reload.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -26,6 +27,7 @@ import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
 import * as transmit from "./transmit.ts";
+import * as unread from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 import * as zcommand from "./zcommand.ts";
@@ -483,4 +485,13 @@ function schedule_message_to_custom_date(): void {
 
 export function is_topic_input_focused(): boolean {
     return $("#stream_message_recipient_topic").is(":focus");
+}
+
+export function update_compose_unread(): void {
+    const topic = narrow_state.topic();
+    const stream_id = narrow_state.stream_id();
+    const unreadVal: number =
+        stream_id && topic ? unread.num_unread_for_topic(stream_id, topic) : 0;
+
+    $("#new-message-count").text(unreadVal);
 }
