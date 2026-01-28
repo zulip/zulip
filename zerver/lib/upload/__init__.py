@@ -432,6 +432,7 @@ def upload_emoji_image(
     emoji_file_name: str,
     user_profile: UserProfile,
     content_type: str,
+    resize_method: str = "crop",
     backend: ZulipUploadBackend | None = None,
 ) -> bool:
     if backend is None:
@@ -455,7 +456,9 @@ def upload_emoji_image(
     backend.upload_single_emoji_image(
         f"{emoji_path}.original", content_type, user_profile, image_data
     )
-    resized_image_data, still_image_data = resize_emoji(image_data, emoji_file_name)
+    resized_image_data, still_image_data = resize_emoji(
+        image_data, emoji_file_name, resize_method=resize_method
+    )
     if still_image_data is not None:
         if len(still_image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
             raise BadImageError(_("Image size exceeds limit"))

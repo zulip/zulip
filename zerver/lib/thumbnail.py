@@ -21,6 +21,7 @@ from zerver.models import Attachment, ImageAttachment
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
 DEFAULT_EMOJI_SIZE = 64
+DEFAULT_RESIZE_METHOD = "crop"
 
 # We refuse to deal with any image whose total pixelcount exceeds
 # this.  This is chosen to be around a quarter of a gigabyte for a
@@ -119,6 +120,14 @@ THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
         "image/webp",
     ]
 )
+
+# These formats have reliable alpha support, so we can safely
+# pad images with transparent backgrounds when resizing.
+TRANSPARENT_PADDING_FORMATS = {
+    ".png",
+    ".webp",
+    ".avif",
+}
 
 # This is what enforces security limitations on which formats are
 # parsed; we disable all loaders, then re-enable the ones we support
@@ -232,8 +241,45 @@ def resize_logo(image_data: bytes) -> bytes:
         ).write_to_buffer(".png")
 
 
+def resize_fit(image_data: bytes, size: int, ext: str) -> bytes:
+    # This will scale down the image by adding a transparent
+    # padding if the format supports it, otherwise a white padding
+    # is added.
+    image = pyvips.Image.new_from_buffer(image_data, "")
+
+    scale = min(1.0, size / max(image.width, image.height))
+    if scale < 1.0:
+        image = image.resize(scale)
+
+    if ext in TRANSPARENT_PADDING_FORMATS:
+        if not image.hasalpha():  # nocoverage
+            image = image.addalpha()
+        image = image.gravity(
+            pyvips.CompassDirection.CENTRE,
+            size,
+            size,
+            extend=pyvips.Extend.BACKGROUND,
+            background=[0, 0, 0, 0],
+        )
+    else:
+        if image.hasalpha():
+            image = image.flatten(background=[255, 255, 255])
+        image = image.gravity(
+            pyvips.CompassDirection.CENTRE,
+            size,
+            size,
+            extend=pyvips.Extend.BACKGROUND,
+            background=[255, 255, 255],
+        )
+
+    return image.write_to_buffer(ext)
+
+
 def resize_emoji(
-    image_data: bytes, emoji_file_name: str, size: int = DEFAULT_EMOJI_SIZE
+    image_data: bytes,
+    emoji_file_name: str,
+    size: int = DEFAULT_EMOJI_SIZE,
+    resize_method: str = DEFAULT_RESIZE_METHOD,
 ) -> tuple[bytes, bytes | None]:
     # Square brackets are used for providing options to libvips' save
     # operation; the extension on the filename comes from reversing
@@ -247,15 +293,20 @@ def resize_emoji(
     # 2) If it is animated, the still image data i.e. first frame of gif.
     with libvips_check_image(image_data) as source_image:
         if source_image.get_n_pages() == 1:
-            return (
-                pyvips.Image.thumbnail_buffer(
-                    image_data,
-                    size,
-                    height=size,
-                    crop=pyvips.Interesting.CENTRE,
-                ).write_to_buffer(write_file_ext),
-                None,
-            )
+            if resize_method == "crop":
+                return (
+                    pyvips.Image.thumbnail_buffer(
+                        image_data,
+                        size,
+                        height=size,
+                        crop=pyvips.Interesting.CENTRE,
+                    ).write_to_buffer(write_file_ext),
+                    None,
+                )
+            elif resize_method == "fit":
+                return (resize_fit(image_data, size, write_file_ext), None)
+            else:  # nocoverage
+                raise ValueError(f"Unknown resize_method: {resize_method}")
         first_still = pyvips.Image.thumbnail_buffer(
             image_data,
             size,
