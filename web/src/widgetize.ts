@@ -1,7 +1,11 @@
 import $ from "jquery";
 
 import type {GenericWidget, PostToServerFunction} from "./generic_widget.ts";
-import {create_widget_instance, is_supported_widget_type} from "./generic_widget.ts";
+import {
+    create_widget_instance,
+    is_supported_widget_type,
+    widget_rerender,
+} from "./generic_widget.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import type {Event} from "./widget_data.ts";
@@ -90,20 +94,49 @@ export function activate(in_opts: ActivateArguments): void {
     // harmless, but there's still no point.
     if (events.length > 0) {
         generic_widget.handle_inbound_events(events);
+        if (any_data.widget_type === "todo") {
+            widget_rerender({
+                post_to_server,
+                $widget_elem: $row,
+                message,
+            });
+        }
     }
 }
 
-export function handle_event(widget_event: Event & {message_id: number}): void {
+export function handle_event(
+    widget_event: Event & {
+        message_id: number;
+        post_to_server: PostToServerFunction;
+        message: Message;
+    },
+): void {
     const generic_widget = generic_widget_map.get(widget_event.message_id);
 
-    if (!generic_widget || message_lists.current?.get_row(widget_event.message_id).length === 0) {
-        // It is common for submessage events to arrive on
-        // messages that we don't yet have in view. We
-        // just ignore them completely here.
+    if (!generic_widget) {
         return;
     }
 
     const events = [widget_event];
 
-    generic_widget.handle_inbound_events(events);
+    // It is common for submessage events to arrive on
+    // messages that we don't yet have in view. Currently, we handle
+    // todo inbound events regardless of message view. We just ignore
+    // render for todo if it isn't in view. For other widget types, we
+    // just ignore them completely here.
+    if (generic_widget.get_widget_type() === "todo") {
+        generic_widget.handle_inbound_events(events);
+
+        const $row = message_lists.current?.get_row(widget_event.message_id);
+
+        if ($row && widget_event.message) {
+            widget_rerender({
+                post_to_server: widget_event.post_to_server,
+                $widget_elem: $row,
+                message: widget_event.message,
+            });
+        }
+    } else if (message_lists.current?.get_row(widget_event.message_id).length !== 0) {
+        generic_widget.handle_inbound_events(events);
+    }
 }

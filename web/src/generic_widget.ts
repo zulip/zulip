@@ -21,6 +21,11 @@ type WidgetImplementation = {
         message: Message;
         any_data: AnyWidgetData;
     }) => HandleInboundEventsFunction;
+    rerender?: (
+        message_id: number,
+        $elem: JQuery,
+        callback: (data: TodoWidgetOutboundData) => void,
+    ) => void;
 };
 
 export const widgets = new Map<string, WidgetImplementation>();
@@ -91,4 +96,25 @@ export function create_widget_instance(info: {
     });
 
     return new GenericWidget(inbound_events_handler, any_data.widget_type);
+}
+
+export function widget_rerender(info: {
+    post_to_server: PostToServerFunction;
+    $widget_elem: JQuery;
+    message: Message;
+}): void {
+    // We only rerender todo widget using this function.
+    // Other widgets get rerendered while handling events.
+    const {post_to_server, $widget_elem, message} = info;
+    const widget_implementation = widgets.get("todo")!;
+    function post_to_server_callback(data: WidgetOutboundData): void {
+        post_to_server({
+            msg_type: "widget",
+            data,
+        });
+    }
+
+    if (widget_implementation.rerender) {
+        widget_implementation.rerender(message.id, $widget_elem, post_to_server_callback);
+    }
 }

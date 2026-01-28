@@ -16,6 +16,8 @@ import {TaskData} from "./todo_data.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData} from "./widget_schema.ts";
 
+export const widget_map = new Map<number, TaskData>();
+
 function update_edit_controls($elem: JQuery): void {
     const has_title =
         $elem.find<HTMLInputElement>("input.todo-task-list-title").val()?.trim() !== "";
@@ -111,7 +113,7 @@ export function activate({
         tasks,
         report_error_function: blueslip.warn,
     });
-
+    widget_map.set(message.id, task_data);
     const message_container = message_lists.current?.view.message_containers.get(message.id);
 
     function start_editing(): void {
@@ -250,9 +252,6 @@ export function activate({
         for (const event of events) {
             task_data.handle_event(event.sender_id, event.data);
         }
-
-        render_task_list_title(task_data, $elem);
-        render_results(task_data, $elem, callback);
     };
 
     if (message_container?.is_hidden) {
@@ -265,4 +264,17 @@ export function activate({
     }
 
     return handle_events;
+}
+
+export function rerender(
+    message_id: number,
+    $elem: JQuery,
+    callback: (data: TodoWidgetOutboundData) => void,
+): void {
+    const task_data = widget_map.get(message_id);
+    if (!task_data) {
+        return;
+    }
+    render_task_list_title(task_data, $elem);
+    render_results(task_data, $elem, callback);
 }

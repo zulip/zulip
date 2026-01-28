@@ -151,10 +151,14 @@ export function handle_event(submsg: Submessage): void {
         return;
     }
 
+    const post_to_server = make_server_callback(submsg.message_id);
+
     widgetize.handle_event({
         sender_id: submsg.sender_id,
         message_id: submsg.message_id,
         data,
+        post_to_server,
+        message,
     });
 }
 
