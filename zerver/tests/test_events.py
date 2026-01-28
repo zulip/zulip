@@ -56,6 +56,7 @@ from zerver.actions.default_streams import (
 )
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
+    do_edit_multiuse_invite_link,
     do_invite_users,
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
@@ -4377,6 +4378,52 @@ class NormalActionsTest(BaseAction):
                 acting_user=self.user_profile,
             )
         check_user_settings_update("events[0]", events[0])
+
+    def test_multiuse_invite_edit_event(self) -> None:
+        self.user_profile = self.example_user("iago")
+        self.login("iago")
+
+        do_create_multiuse_invite_link(
+            self.user_profile,
+            PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            invite_expires_in_minutes=None,
+            include_realm_default_subscriptions=True,
+        )
+
+        multiuse_object = MultiuseInvite.objects.get()
+
+        # Change only the `invite_as` field
+        modified_invited_as = PreregistrationUser.INVITE_AS["MODERATOR"]
+        with self.verify_action(state_change_expected=False, num_events=1) as events:
+            do_edit_multiuse_invite_link(multiuse_object, invited_as=modified_invited_as)
+        check_invites_changed("events[0]", events[0])
+
+        # Change only the `stream_ids` field
+        modified_streams = [get_stream("Verona", self.user_profile.realm)]
+        with self.verify_action(state_change_expected=False, num_events=1) as events:
+            do_edit_multiuse_invite_link(multiuse_object, streams=modified_streams)
+        check_invites_changed("events[0]", events[0])
+
+        # Change only the `group_ids` field
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm=self.user_profile.realm
+        )
+        with self.verify_action(state_change_expected=False) as events:
+            do_edit_multiuse_invite_link(multiuse_object, user_groups=[hamletcharacters_group])
+        check_invites_changed("events[0]", events[0])
+
+        # Change only the `include_realm_default_subscriptions` field
+        with self.verify_action(state_change_expected=False, num_events=1) as events:
+            do_edit_multiuse_invite_link(multiuse_object, include_realm_default_subscriptions=False)
+        check_invites_changed("events[0]", events[0])
+
+        # Change only the `welcome_message_custom_text` field
+        with self.verify_action(state_change_expected=False, num_events=1) as events:
+            do_edit_multiuse_invite_link(
+                multiuse_object,
+                welcome_message_custom_text="Welcome to our organization!",
+            )
+        check_invites_changed("events[0]", events[0])
 
 
 class RealmPropertyActionTest(BaseAction):
