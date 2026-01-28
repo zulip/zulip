@@ -135,6 +135,7 @@ run_test("update_count_in_dom", () => {
     counts.mentioned_message_count = 0;
 
     left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
+    // Starred count is hidden.
     left_sidebar_navigation_area.update_starred_count(444, true);
     left_sidebar_navigation_area.update_scheduled_messages_row();
     left_sidebar_navigation_area.update_reminders_row();
@@ -142,6 +143,7 @@ run_test("update_count_in_dom", () => {
     assert.ok(!$("<mentioned-count>").visible());
     assert.equal($("<mentioned-count>").text(), "");
     assert.equal($("<starred-count>").text(), "444");
+    assert.ok($(".top_left_starred_messages").hasClass("hide_starred_message_count"));
     assert.ok(!$(".top_left_scheduled_messages").visible());
     assert.ok(!$(".top_left_reminders").visible());
 });
