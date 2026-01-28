@@ -111,6 +111,14 @@ function set_message_for_message_content($content, value) {
     // no message row found
     if (value === undefined) {
         $content.closest = (closest_opts) => {
+            if (closest_opts === ".preview_content") {
+                const $reply = $(".reply");
+                const $preview_content = $(".preview_content");
+                $content.set_find_results(".reply", $reply);
+                $reply.parent = () => ({remove: noop});
+                $preview_content.length = 1;
+                return $preview_content;
+            }
             assert.equal(closest_opts, ".message_row");
             return [];
         };
@@ -119,6 +127,9 @@ function set_message_for_message_content($content, value) {
     // message row found
     const $message_row = $.create(".message-row");
     $content.closest = (closest_opts) => {
+        if (closest_opts === ".preview_content") {
+            return [];
+        }
         assert.equal(closest_opts, ".message_row");
         return $message_row;
     };

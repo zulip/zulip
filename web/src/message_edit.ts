@@ -25,6 +25,7 @@ import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
+import * as compose_state from "./compose_state.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -627,17 +628,26 @@ function edit_message($row: JQuery, raw_content: string): void {
 
     const is_editable = is_content_editable(message, seconds_left_buffer);
 
+    // Get the message without the reply part.
+    const message_without_reply = compose_state.render_reply_and_get_parsed_message(raw_content);
     const $form = $(
         render_message_edit_form({
             message_id: message.id,
             is_editable,
-            content: raw_content,
+            content: message_without_reply,
             file_upload_enabled,
             giphy_enabled: gif_state.is_giphy_enabled(),
             tenor_enabled: gif_state.is_tenor_enabled(),
             minutes_to_edit: Math.floor((realm.realm_message_content_edit_limit_seconds ?? 0) / 60),
             max_message_length: realm.max_message_length,
         }),
+    );
+
+    // Separately add the reply UI above the message edit textarea.
+    compose_state.render_reply_and_get_parsed_message(
+        raw_content,
+        $form.find(".reply-container"),
+        is_editable,
     );
 
     const $button_bar = $form.find(".compose-scrollable-buttons");
@@ -1314,7 +1324,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     const $edit_content_input = $row.find<HTMLTextAreaElement>("textarea.message_edit_content");
     const can_edit_content = $edit_content_input.attr("readonly") !== "readonly";
     if (can_edit_content) {
-        new_content = $edit_content_input.val();
+        new_content = compose_state.get_message_with_raw_reply_content($edit_content_input);
         changed = old_content !== new_content;
     }
 
@@ -1830,6 +1840,7 @@ export function show_preview_area($element: JQuery): void {
 
     $row.find(".markdown_preview").hide();
     $row.find(".undo_markdown_preview").show();
+    $row.find(".reply-container").addClass("reply-preview");
 
     render_preview_area($row);
 }
@@ -1843,8 +1854,9 @@ export function render_preview_area($row: JQuery): void {
         $row,
         $row.find(".markdown_preview_spinner"),
         $row.find(".preview_content"),
-        content,
+        compose_state.get_message_with_raw_reply_content($msg_edit_content),
     );
+    $msg_edit_content.find(".reply-container").addClass("message-edit-reply-preview");
     const edit_height = $msg_edit_content.height();
     $preview_message_area.css({"min-height": edit_height + "px"});
     $preview_message_area.show();
@@ -1862,4 +1874,5 @@ export function clear_preview_area($element: JQuery): void {
     $row.find(".preview_message_area").hide();
     $row.find(".preview_content").empty();
     $row.find(".markdown_preview").show();
+    $row.find(".reply-container").removeClass("reply-preview");
 }

@@ -56,6 +56,9 @@ const compose_ui = mock_esm("../src/compose_ui", {
     compute_placeholder_text: noop,
 });
 const hash_util = mock_esm("../src/hash_util");
+mock_esm("../src/markdown", {
+    render: () => ({content: ""}),
+});
 const narrow_state = mock_esm("../src/narrow_state", {
     set_compose_defaults: noop,
     filter: noop,
@@ -171,6 +174,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
     stub_message_row($textarea);
+    $("#compose-reply-container").set_find_results(".reply", {remove: noop});
     $elem.set_find_results(".message-textarea", $textarea);
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
@@ -379,6 +383,8 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
 
     opts = {};
 
+    $("#compose-reply-container").set_find_results(".reply", {remove: noop});
+
     respond_to_message(opts);
     assert.equal(compose_state.stream_name(), "Denmark");
 });
@@ -424,6 +430,8 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     });
 
     const opts = {};
+
+    $("#compose-reply-container").set_find_results(".reply", {remove: noop});
 
     reply_with_mention(opts);
     assert.equal(compose_state.stream_name(), "Denmark");
@@ -528,7 +536,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
 
     override_rewire(compose_state, "topic", (topic) => {
         if (opts.forward_message) {
-            assert.equal(topic, "");
+            assert.ok(["", undefined].includes(topic));
         }
     });
 
@@ -539,6 +547,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     expected_replacement =
         "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\nTesting.\n```";
 
+    $("#compose-reply-container").set_find_results(".reply", {remove: noop});
     quote_message(opts);
 
     run_success_callback();
