@@ -177,6 +177,8 @@ export type Message = (
     // tried to edit the message).
     raw_content?: string | undefined;
 
+    has_widget_data?: boolean;
+
     // Added in `message_helper.process_new_message`.
     sent_by_me: boolean;
     reply_to: string;

@@ -1078,6 +1078,8 @@ export class MessageListView {
             $row,
             message_id: id,
         });
+
+        submessage.maybe_render_todo_submessage($row, id);
     }
 
     _get_message_template(message_container: MessageContainer): string {

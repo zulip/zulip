@@ -2,8 +2,8 @@ import * as z from "zod/mini";
 
 import {poll_widget_extra_data_schema} from "./poll_data.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
-import {todo_widget_extra_data_schema} from "./todo_widget.ts";
-import type {TodoWidgetOutboundData} from "./todo_widget.ts";
+import {todo_widget_extra_data_schema} from "./todo_data.ts";
+import type {TodoWidgetOutboundData} from "./todo_data.ts";
 import {zform_widget_extra_data_schema} from "./zform_data.ts";
 
 /*
