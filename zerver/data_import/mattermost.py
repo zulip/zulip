@@ -7,7 +7,6 @@ import logging
 import os
 import re
 import shutil
-from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, TypeAlias
 
@@ -326,7 +325,7 @@ def convert_direct_message_group_data(
         )
 
         if len(direct_message_group_members) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
-            if direct_message_group_id_mapper.has(direct_message_group_members):
+            if subscriber_handler.get_zulip_recipient_id(direct_message_group_members):
                 logging.info("Duplicate direct message group found in the export data. Skipping.")
                 continue
             direct_message_group_id = direct_message_group_id_mapper.get(
@@ -493,7 +492,7 @@ def process_raw_message_batch(
     user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
     added_channels: AddedChannelsT,
-    get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
+    subscriber_handler: SubscriberHandler[frozenset[str]],
     is_pm_data: bool,
     output_dir: str,
     zerver_realmemoji: list[dict[str, Any]],
@@ -544,9 +543,18 @@ def process_raw_message_batch(
             recipient_id = added_channels[raw_message["channel_name"]].zulip_recipient_id
         elif "direct_message_group_members" in raw_message:
             is_direct_message_type = True
-            recipient_id = get_recipient_id_from_direct_message_group_members(
+            if group_recipient_id := subscriber_handler.get_zulip_recipient_id(
                 raw_message["direct_message_group_members"]
-            )
+            ):
+                recipient_id = group_recipient_id
+            else:  # nocoverage
+                # Theoretically this happens when none of the group dm participants get
+                # converted.
+                logging.info(
+                    "Skipped a group direct message since none of the participants got converted. Participants: %s",
+                    str(raw_message["direct_message_group_members"]),
+                )
+                continue
         elif "pm_members" in raw_message:
             is_direct_message_type = True
             members = raw_message["pm_members"]
@@ -644,7 +652,7 @@ def process_posts(
     realm_id: int,
     post_data: list[dict[str, Any]],
     added_channels: AddedChannelsT,
-    get_recipient_id_from_direct_message_group_members: Callable[[frozenset[str]], int],
+    subscriber_handler: SubscriberHandler[frozenset[str]],
     subscriber_map: dict[int, set[int]],
     output_dir: str,
     is_pm_data: bool,
@@ -737,7 +745,7 @@ def process_posts(
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
             added_channels=added_channels,
-            get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
+            subscriber_handler=subscriber_handler,
             is_pm_data=is_pm_data,
             output_dir=output_dir,
             zerver_realmemoji=zerver_realmemoji,
@@ -766,7 +774,7 @@ def write_message_data(
     output_dir: str,
     masking_content: bool,
     added_channels: AddedChannelsT,
-    direct_message_group_id_mapper: IdMapper[frozenset[str]],
+    subscriber_handler: SubscriberHandler[frozenset[str]],
     user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
     zerver_realmemoji: list[dict[str, Any]],
@@ -775,18 +783,6 @@ def write_message_data(
     zerver_attachment: list[ZerverFieldsT],
     mattermost_data_dir: str,
 ) -> None:
-    direct_message_group_id_to_recipient_id = {}
-
-    for d in zerver_recipient:
-        if d["type"] == Recipient.DIRECT_MESSAGE_GROUP:
-            direct_message_group_id_to_recipient_id[d["type_id"]] = d["id"]
-
-    def get_recipient_id_from_direct_message_group_members(
-        direct_message_group_members: frozenset[str],
-    ) -> int:
-        receiver_id = direct_message_group_id_mapper.get(direct_message_group_members)
-        return direct_message_group_id_to_recipient_id[receiver_id]
-
     if num_teams == 1:
         post_types = ["channel_post", "direct_post"]
     else:
@@ -802,7 +798,7 @@ def write_message_data(
             realm_id=realm_id,
             post_data=post_data[post_type],
             added_channels=added_channels,
-            get_recipient_id_from_direct_message_group_members=get_recipient_id_from_direct_message_group_members,
+            subscriber_handler=subscriber_handler,
             subscriber_map=subscriber_map,
             output_dir=output_dir,
             is_pm_data=post_type == "direct_post",
@@ -1083,7 +1079,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             output_dir=realm_output_dir,
             masking_content=masking_content,
             added_channels=added_channels,
-            direct_message_group_id_mapper=direct_message_group_id_mapper,
+            subscriber_handler=subscriber_handler,
             user_id_mapper=user_id_mapper,
             user_handler=user_handler,
             zerver_realmemoji=zerver_realmemoji,
