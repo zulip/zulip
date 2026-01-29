@@ -97,6 +97,7 @@ class SubscriberHandler:
     def __init__(self) -> None:
         self.stream_info: dict[int, set[int]] = {}
         self.direct_message_group_info: dict[int, set[int]] = {}
+        self.mattermost_user_id_to_zulip_recipient_id: dict[frozenset[str], int] = {}
 
     def set_info(
         self,
@@ -110,6 +111,18 @@ class SubscriberHandler:
             self.direct_message_group_info[direct_message_group_id] = users
         else:
             raise AssertionError("stream_id or direct_message_group_id is required")
+
+    def add_mattermost_group_members_to_zulip_recipient_id(
+        self, direct_message_group_members: frozenset[str], group_recipient_id: int
+    ) -> None:
+        # TODO: Maybe combine this with self.set_info() once when we do a refactor for
+        # the Rocketchat importer to use this function.
+        self.mattermost_user_id_to_zulip_recipient_id[direct_message_group_members] = (
+            group_recipient_id
+        )
+
+    def get_zulip_recipient_id(self, direct_message_group_members: frozenset[str]) -> int | None:
+        return self.mattermost_user_id_to_zulip_recipient_id.get(direct_message_group_members)
 
     def get_users(
         self, stream_id: int | None = None, direct_message_group_id: int | None = None

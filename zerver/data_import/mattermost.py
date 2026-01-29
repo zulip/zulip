@@ -28,7 +28,6 @@ from zerver.data_import.import_util import (
     build_realm,
     build_realm_emoji,
     build_recipient,
-    build_recipients,
     build_stream,
     build_stream_subscriptions,
     build_user_profile,
@@ -312,6 +311,7 @@ def convert_direct_message_group_data(
     subscriber_handler: SubscriberHandler,
     direct_message_group_id_mapper: IdMapper[frozenset[str]],
     user_id_mapper: IdMapper[str],
+    realm: ZerverFieldsT,
     realm_id: int,
     team_name: str,
 ) -> list[ZerverFieldsT]:
@@ -341,6 +341,20 @@ def convert_direct_message_group_data(
             subscriber_handler.set_info(
                 users=direct_message_group_user_ids,
                 direct_message_group_id=direct_message_group_id,
+            )
+
+            recipient_id = NEXT_ID("recipient")
+            recipient = Recipient(
+                type_id=direct_message_group_id,
+                id=recipient_id,
+                type=Recipient.DIRECT_MESSAGE_GROUP,
+            )
+            recipient_dict = model_to_dict(recipient)
+            realm["zerver_recipient"].append(recipient_dict)
+
+            subscriber_handler.add_mattermost_group_members_to_zulip_recipient_id(
+                direct_message_group_members=direct_message_group_members,
+                group_recipient_id=recipient_id,
             )
             zerver_direct_message_group.append(direct_message_group_dict)
     return zerver_direct_message_group
@@ -1010,19 +1024,11 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
                 subscriber_handler=subscriber_handler,
                 direct_message_group_id_mapper=direct_message_group_id_mapper,
                 user_id_mapper=user_id_mapper,
+                realm=realm,
                 realm_id=realm_id,
                 team_name=team_name,
             )
             realm["zerver_huddle"] = zerver_direct_message_group
-
-        zerver_recipient = build_recipients(
-            # We build the users' recipient as we convert user data.
-            zerver_userprofile=[],
-            # We build the channels' recipient as we convert channel data.
-            zerver_stream=[],
-            zerver_direct_message_group=zerver_direct_message_group,
-        )
-        realm["zerver_recipient"] += zerver_recipient
 
         stream_subscriptions = build_stream_subscriptions(
             get_users=subscriber_handler.get_users,
