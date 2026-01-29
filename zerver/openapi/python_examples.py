@@ -1723,6 +1723,16 @@ def register_push_device(client: Client) -> None:
     validate_against_openapi_schema(result, "/mobile_push/register", "post", "200")
 
 
+@openapi_test_function("/register_client_device:post")
+def register_device(client: Client) -> None:
+    # {code_example|start}
+    # Register a logged-in device.
+    result = client.call_endpoint(url="/register_client_device", method="POST")
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/register_client_device", "post", "200")
+
+
 @openapi_test_function("/typing:post")
 def set_typing_status(client: Client) -> None:
     ensure_users([10, 11], ["hamlet", "iago"])
@@ -2051,6 +2061,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     add_fcm_token(client)
     remove_fcm_token(client)
     register_push_device(client)
+    register_device(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:

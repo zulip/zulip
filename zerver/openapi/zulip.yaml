@@ -12986,6 +12986,38 @@ paths:
                     description: |
                       An example JSON response for when no realm is registered for
                       the authenticated server on the bouncer for the given `realm_uuid`:
+  /register_client_device:
+    post:
+      operationId: register-client-device
+      summary: Register a logged-in device
+      tags: ["mobile"]
+      description: |
+        Logged-in mobile devices use this endpoint as an initial step to
+        register themselves, before registering for E2EE push notifications.
+
+        This endpoint is currently not useful for clients other than mobile.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    required:
+                      - device_id
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      device_id:
+                        type: integer
+                        description: |
+                          The ID of the newly registered device.
+                    example: {"msg": "", "device_id": 2, "result": "success"}
   /user_topics:
     post:
       operationId: update-user-topic
