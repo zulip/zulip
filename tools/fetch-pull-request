@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 this_dir=${BASH_SOURCE[0]%/*}
 # shellcheck source=lib/git-tools.bash
@@ -7,7 +7,11 @@ this_dir=${BASH_SOURCE[0]%/*}
 
 require_clean_work_tree 'check out PR as branch'
 
-request_id="$1"
+request_id="${1-}"
+if [ -z "$request_id" ]; then
+    echo "Usage: $0 pr_id" >&2
+    exit 1
+fi
 remote=${2:-"upstream"}
 
 set -x

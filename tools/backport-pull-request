@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-
-set -e
+set -euo pipefail
 
 usage() {
     cat >&2 <<EOF
@@ -19,7 +18,7 @@ EOF
     exit 1
 }
 
-pr_id="$1"
+pr_id="${1-}"
 
 if [ -z "$pr_id" ]; then
     usage

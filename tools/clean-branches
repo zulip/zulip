@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 # usage: clean-branches
 # Deletes any local branches which are ancestors of origin/main,
@@ -65,6 +65,6 @@ git fetch --prune origin
 
 eval "$(git for-each-ref --shell --format='clean_ref %(refname);')"
 
-if [ "${#push_args}" -ne 0 ]; then
+if [ "${#push_args[@]}" -ne 0 ]; then
     git push origin "${push_args[@]}"
 fi
