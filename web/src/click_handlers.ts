@@ -1003,7 +1003,8 @@ export function initialize(): void {
                 $(e.target).closest(".micromodal").length === 0 &&
                 $(e.target).closest("[data-tippy-root]").length === 0 &&
                 $(e.target).closest(".typeahead").length === 0 &&
-                $(e.target).closest(".flatpickr-calendar").length === 0 &&
+                $(e.target).closest("input[type='datetime-local']").length === 0 &&
+                $(e.target).closest("input[type='date']").length === 0 &&
                 $(e.target).closest("body").length > 0
             ) {
                 // Unfocus our compose area if we click out of it. Don't let exits out

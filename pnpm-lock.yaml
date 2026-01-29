@@ -143,9 +143,6 @@ importers:
       expose-loader:
         specifier: ^5.0.0
         version: 5.0.1(webpack@5.104.1)
-      flatpickr:
-        specifier: ^4.5.7
-        version: 4.6.13
       font-awesome:
         specifier: ^4.7.0
         version: 4.7.0
@@ -5007,9 +5004,6 @@ packages:
   flat@5.0.2:
     resolution: {integrity: sha512-b6suED+5/3rTpUBdG1gupIl8MPFCAMA0QXwmljLhvCUKcUvdE4gWky9zpuGCcXHOsz4J9wPGNWq6OKpmIzz3hQ==}
     hasBin: true
-
-  flatpickr@4.6.13:
-    resolution: {integrity: sha512-97PMG/aywoYpB4IvbvUJi0RQi8vearvU0oov1WW3k0WZPBMrTQVqekSX5CjSG/M4Q3i6A/0FKXC7RyAoAUUSPw==}
 
   flatted@3.3.3:
     resolution: {integrity: sha512-GX+ysw4PBCz0PzosHDepZGANEuFCMLrnRTiEy9McGjmkCQYwRq4A/X786G/fjM/+OjsWSU1ZrY5qyARZmO/uwg==}
@@ -15066,8 +15060,6 @@ snapshots:
       hookified: 1.15.0
 
   flat@5.0.2: {}
-
-  flatpickr@4.6.13: {}
 
   flatted@3.3.3: {}
 
