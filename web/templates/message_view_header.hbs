@@ -2,6 +2,12 @@
 <a class="message-header-stream-settings-button tippy-zulip-tooltip" data-tooltip-template-id="stream-details-tooltip-template" data-tippy-placement="bottom" href="{{stream_settings_link}}">
     {{> navbar_icon_and_title . }}
 </a>
+{{#if rendered_narrow_description}}
+<button id="extend-narrow-description" class="tippy-zulip-delayed-tooltip" type="button" aria-label="{{t 'View description'}}" data-tooltip-template-id="narrow-description-tooltip-template">
+    <i class="info-icon zulip-icon zulip-icon-info" data-tooltip-template-id="narrow-description-tooltip-template" aria-hidden="true"></i>
+</button>
+{{/if}}
+
 <template id="stream-details-tooltip-template">
     <div>
         <div>{{t "Go to channel settings" }}</div>
@@ -28,6 +34,9 @@
     {{> navbar_icon_and_title . }}
 </span>
 {{#if description}}
+    <button id="extend-narrow-description" class="tippy-zulip-delayed-tooltip" type="button" aria-label="{{t 'View description'}}" data-tooltip-template-id="narrow-description-tooltip-template">
+        <i class="info-icon zulip-icon zulip-icon-info" data-tooltip-template-id="narrow-description-tooltip-template" aria-hidden="true"></i>
+    </button>
     <span class="narrow_description rendered_markdown single-line-rendered-markdown">{{description}}
         {{#if link}}
         <a class="help_link_widget" href="{{link}}" target="_blank" rel="noopener noreferrer">
