@@ -1855,6 +1855,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     bulk_import_model(data, Reaction)
 
     if "zerver_submessage" in data:
+        data["zerver_submessage"].sort(key=lambda row: row["id"])
         re_map_foreign_keys(data, "zerver_submessage", "message", related_table="message")
         re_map_foreign_keys(data, "zerver_submessage", "sender", related_table="user_profile")
         update_model_ids(SubMessage, data, "submessage")
