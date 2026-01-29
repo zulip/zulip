@@ -107,12 +107,6 @@
         opacity: 0.2;
     }
 
-    .zoom-in {
-        #topics_header {
-            background-color: var(--color-background);
-        }
-    }
-
     #recent_view_table {
         .zulip-icon-user {
             opacity: 0.7;

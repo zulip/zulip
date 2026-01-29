@@ -1214,6 +1214,7 @@ function render_channel_view(channel_id: number): void {
     channel_view_topic_widget = new InboxTopicListWidget(
         $("#inbox-list"),
         channel_id,
+        false,
         (topic_names: string[]) => filter_topics_in_channel(channel_id, topic_names),
     );
     channel_view_topic_widget.build();

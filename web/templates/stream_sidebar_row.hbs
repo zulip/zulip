@@ -1,7 +1,6 @@
 {{! Stream sidebar rows }}
-
-<li class="narrow-filter{{#if is_muted}} out_of_home_view{{/if}}" data-stream-id="{{id}}">
-    <div class="bottom_left_row">
+<li {{#if for_modal}}id="more-topics-modal" {{/if}}class="narrow-filter{{#if is_muted}} out_of_home_view{{/if}}" data-stream-id="{{id}}">
+    <div class="bottom_left_row channel-header">
         <a href="{{url}}" class="subscription_block selectable_sidebar_block" draggable="false">
 
             <span class="stream-privacy-original-color-{{id}} stream-privacy filter-icon" style="color: {{color}}">
@@ -29,4 +28,5 @@
             <span class="sidebar-menu-icon stream-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
         </a>
     </div>
+    {{#if for_modal}}<div class="topic-list-scroll-container" data-simplebar data-simplebar-tab-index="-1"></div>{{/if}}
 </li>

@@ -63,6 +63,10 @@ Files: tools/check-thirdparty
 Copyright: 2020 Kandra Labs, Inc.
 License: GPL-2.0+
 
+Files: web/icons/arrow-left.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/arrow-left)
+License: ISC License
+
 Files: web/icons/arrow-left-circle.svg
 Copyright: 2013-2017 Cole Bemis (https://feathericons.com)
 License: Expat
