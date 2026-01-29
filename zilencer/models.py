@@ -654,6 +654,7 @@ class RemotePushDevice(AbstractPushDevice):
     # FCM and APNs don't specify a maximum token length, so we only enforce
     # that they're at most the maximum FCM / APNs payload size of 4096 bytes.
     token = models.CharField(max_length=4096)
+    token_id = models.BigIntegerField()
 
     # If the token is expired, the date when the bouncer learned it
     # was expired via an error from the FCM/APNs server. Used to

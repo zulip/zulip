@@ -2,15 +2,17 @@ from typing import Annotated
 
 import orjson
 from django.conf import settings
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from pydantic import Json
 
-from zerver.actions.push_notifications import do_register_push_device
+from zerver.actions.push_notifications import do_register_for_push_notification, do_rotate_push_key
 from zerver.decorator import human_users_only, zulip_login_required
 from zerver.lib import redis_utils
+from zerver.lib.devices import check_device_id
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
@@ -296,49 +298,75 @@ def register_push_device(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    device_id: Json[int],
     token_kind: Annotated[str, check_string_in_validator(PushDevice.TokenKind.values)],
-    push_account_id: Json[int],
     # Key that the client is requesting be used for encrypting
     # push notifications for delivery to it.
     # Consists of a 1-byte prefix identifying the symmetric
     # cryptosystem in use, followed by the secret key.
     push_key: str,
+    push_key_id: Json[int],
     # Key that the client claims was used to encrypt
     # `encrypted_push_registration`.
     bouncer_public_key: str,
     # Registration data encrypted by mobile client for bouncer.
     encrypted_push_registration: str,
+    token_id: Json[int],
 ) -> HttpResponse:
     if not (settings.ZILENCER_ENABLED or uses_notification_bouncer()):
         raise PushServiceNotConfiguredError
 
+    device = check_device_id(device_id, user_profile.id)
     push_key_bytes = check_push_key(push_key)
 
-    # Idempotency
-    already_registered = PushDevice.objects.filter(
-        user=user_profile, push_account_id=push_account_id, error_code__isnull=True
-    ).exists()
-    if already_registered:
+    latest_token_id = (
+        device.pending_push_token_id
+        if device.pending_push_token_id is not None
+        else device.push_token_id
+    )
+
+    if (
+        device.push_registration_error_code is None
+        and device.push_key_id == push_key_id
+        and token_id == latest_token_id
+    ):
         return json_success(request)
 
-    do_register_push_device(user_profile, push_account_id, token_kind, push_key_bytes)
+    if (
+        device.push_registration_error_code is None
+        and token_id == latest_token_id
+        and device.push_key_id != push_key_id
+    ):
+        do_rotate_push_key(user_profile, device, push_key_bytes, push_key_id)
+        return json_success(request)
 
-    # We use a queue worker to make the request to the bouncer
-    # to complete the registration, so that any transient failures
-    # can be managed between the two servers, without the mobile
-    # device and its often-irregular network access in the picture.
-    queue_item: RegisterPushDeviceToBouncerQueueItem = {
-        "user_profile_id": user_profile.id,
-        "bouncer_public_key": bouncer_public_key,
-        "encrypted_push_registration": encrypted_push_registration,
-        "push_account_id": push_account_id,
-    }
-    queue_event_on_commit(
-        "missedmessage_mobile_notifications",
-        {
-            "type": "register_push_device_to_bouncer",
-            "payload": queue_item,
-        },
-    )
+    with transaction.atomic(durable=True):
+        do_register_for_push_notification(
+            user_profile,
+            device,
+            token_kind=token_kind,
+            push_key_bytes=push_key_bytes,
+            push_key_id=push_key_id,
+            token_id=token_id,
+        )
+
+        # We use a queue worker to make the request to the bouncer
+        # to complete the registration, so that any transient failures
+        # can be managed between the two servers, without the mobile
+        # device and its often-irregular network access in the picture.
+        queue_item: RegisterPushDeviceToBouncerQueueItem = {
+            "user_profile_id": user_profile.id,
+            "device_id": device_id,
+            "bouncer_public_key": bouncer_public_key,
+            "encrypted_push_registration": encrypted_push_registration,
+            "token_id": token_id,
+        }
+        queue_event_on_commit(
+            "missedmessage_mobile_notifications",
+            {
+                "type": "register_push_device_to_bouncer",
+                "payload": queue_item,
+            },
+        )
 
     return json_success(request)

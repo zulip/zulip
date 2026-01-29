@@ -1,5 +1,7 @@
+from django.utils.translation import gettext as _
 from typing_extensions import TypedDict
 
+from zerver.lib.exceptions import JsonableError
 from zerver.models.devices import Device
 from zerver.models.users import UserProfile
 
@@ -23,3 +25,12 @@ def get_devices(user_profile: UserProfile) -> dict[int, DeviceInfoDict]:
         }
         for device in devices
     }
+
+
+def check_device_id(device_id: int, user_id: int) -> Device:
+    try:
+        device = Device.objects.get(id=device_id, user_id=user_id)
+    except Device.DoesNotExist:
+        raise JsonableError(_("Invalid `device_id`"))
+
+    return device
