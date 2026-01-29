@@ -7581,22 +7581,22 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/NonExistingChannelIdError"
-                      - description: |
-                          A typical failed JSON response for when a channel message is scheduled
-                          to be sent to a channel that does not exist:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid user ID 10",
-                            "result": "error",
-                          }
-                        description: |
-                          A typical failed JSON response for when a direct message is scheduled
-                          to be sent to a user that does not exist:
+                  - schema:
+                    $ref: "#/components/schemas/NonExistingChannelIdError"
+                    description: |
+                        A typical failed JSON response for when a channel message is scheduled
+                        to be sent to a channel that does not exist:
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                        {
+                          "code": "BAD_REQUEST",
+                          "msg": "Invalid user ID 10",
+                          "result": "error",
+                        }
+                    description: |
+                        A typical failed JSON response for when a direct message is scheduled
+                        to be sent to a user that does not exist:
   /scheduled_messages/{scheduled_message_id}:
     patch:
       operationId: update-scheduled-message
@@ -7736,22 +7736,22 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/NonExistingChannelIdError"
-                      - description: |
-                          A typical failed JSON response for when a channel message is scheduled
-                          to be sent to a channel that does not exist:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid user ID 10",
-                            "result": "error",
-                          }
-                        description: |
-                          A typical failed JSON response for when a direct message is scheduled
-                          to be sent to a user that does not exist:
+                  - schema:
+                    $ref: "#/components/schemas/NonExistingChannelIdError"
+                    description: |
+                        A typical failed JSON response for when a channel message is scheduled
+                        to be sent to a channel that does not exist:
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                        {
+                          "code": "BAD_REQUEST",
+                          "msg": "Invalid user ID 10",
+                          "result": "error",
+                        }
+                    description: |
+                        A typical failed JSON response for when a direct message is scheduled
+                        to be sent to a user that does not exist:
         "404":
           description: Not Found.
           content:
@@ -7845,21 +7845,21 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/InvalidChannelError"
-                      - description: |
-                          A typical failed JSON response for when an invalid channel ID is passed:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Private channels cannot be made default.",
-                            "result": "error",
-                          }
-                        description: |
-                          A typical failed JSON response for when a user tries to add a private channel
-                          to the default channels set:
+                  - schema:
+                    $ref: "#/components/schemas/InvalidChannelError"
+                    description: |
+                      A typical failed JSON response for when an invalid channel ID is passed:
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                        {
+                          "code": "BAD_REQUEST",
+                          "msg": "Private channels cannot be made default.",
+                          "result": "error",
+                        }
+                    description: |
+                        A typical failed JSON response for when a user tries to add a private channel
+                        to the default channels set:
     delete:
       operationId: remove-default-stream
       summary: Remove a default channel
@@ -8515,56 +8515,56 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/NonExistingChannelNameError"
-                      - description: |
-                          A typical failed JSON response for when a channel message is sent to a channel
-                          that does not exist:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid email 'eeshan@zulip.com'",
-                            "result": "error",
-                          }
-                        description: |
-                          A typical failed JSON response for when a direct message is sent to a user
-                          that does not exist:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "You do not have permission to use channel wildcard mentions in this channel.",
-                            "code": "STREAM_WILDCARD_MENTION_NOT_ALLOWED",
-                          }
-                        description: |
-                          An example JSON error response for when the message was rejected because
-                          the message contains a stream wildcard mention, but the user doesn't have
-                          permission to use such a mention in this channel as the user is not present
-                          in `can_mention_many_users_group` and the channel contains a large number
-                          of subscribers.
+                  - schema:
+                    $ref: "#/components/schemas/NonExistingChannelNameError"
+                    description: |
+                      A typical failed JSON response for when a channel message is sent to a channel
+                      that does not exist:
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid email 'eeshan@zulip.com'",
+                        "result": "error",
+                      }
+                    description: |
+                      A typical failed JSON response for when a direct message is sent to a user
+                      that does not exist:
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "You do not have permission to use channel wildcard mentions in this channel.",
+                        "code": "STREAM_WILDCARD_MENTION_NOT_ALLOWED",
+                      }
+                    description: |
+                      An example JSON error response for when the message was rejected because
+                      the message contains a stream wildcard mention, but the user doesn't have
+                      permission to use such a mention in this channel as the user is not present
+                      in `can_mention_many_users_group` and the channel contains a large number
+                      of subscribers.
 
-                          **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
-                          error returned the `"BAD_REQUEST"` code.
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "You do not have permission to use topic wildcard mentions in this topic.",
-                            "code": "TOPIC_WILDCARD_MENTION_NOT_ALLOWED",
-                          }
-                        description: |
-                          An example JSON error response for when the message was rejected because
-                          the message contains a topic wildcard mention, but the user doesn't have
-                          permission to use such a mention in this topic as the user is not present
-                          in `can_mention_many_users_group` and the topic contains a large number
-                          of participants.
+                      **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
+                      error returned the `"BAD_REQUEST"` code.
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "You do not have permission to use topic wildcard mentions in this topic.",
+                        "code": "TOPIC_WILDCARD_MENTION_NOT_ALLOWED",
+                      }
+                    description: |
+                      An example JSON error response for when the message was rejected because
+                      the message contains a topic wildcard mention, but the user doesn't have
+                      permission to use such a mention in this topic as the user is not present
+                      in `can_mention_many_users_group` and the topic contains a large number
+                      of participants.
 
-                          **Changes**: New in Zulip 8.0 (feature level 229). Previously,
-                          `wildcard_mention_policy` was not enforced for topic mentions.
+                      **Changes**: New in Zulip 8.0 (feature level 229). Previously,
+                      `wildcard_mention_policy` was not enforced for topic mentions.
   /messages/{message_id}/history:
     get:
       operationId: get-message-history
@@ -9241,29 +9241,29 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Invalid emoji code",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response for when the emoji code is invalid:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Reaction already exists.",
-                            "code": "REACTION_ALREADY_EXISTS",
-                          }
-                        description: |
-                          An example JSON error response for when the reaction already exists.
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "Invalid emoji code",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      An example JSON error response for when the emoji code is invalid:
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "Reaction already exists.",
+                        "code": "REACTION_ALREADY_EXISTS",
+                      }
+                    description: |
+                      An example JSON error response for when the reaction already exists.
 
-                          **Changes**: New in Zulip 8.0 (feature level 193). Previously, this
-                          error returned the `"BAD_REQUEST"` code.
+                      **Changes**: New in Zulip 8.0 (feature level 193). Previously, this
+                      error returned the `"BAD_REQUEST"` code.
     delete:
       operationId: remove-reaction
       summary: Remove an emoji reaction
@@ -9309,29 +9309,29 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Invalid emoji code",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response for when the emoji code is invalid:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Reaction doesn't exist.",
-                            "code": "REACTION_DOES_NOT_EXIST",
-                          }
-                        description: |
-                          An example JSON error response for when the reaction does not exist.
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "Invalid emoji code",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      An example JSON error response for when the emoji code is invalid:
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "Reaction doesn't exist.",
+                        "code": "REACTION_DOES_NOT_EXIST",
+                      }
+                    description: |
+                      An example JSON error response for when the reaction does not exist.
 
-                          **Changes**: New in Zulip 8.0 (feature level 193). Previously, this
-                          error returned the `"BAD_REQUEST"` code.
+                      **Changes**: New in Zulip 8.0 (feature level 193). Previously, this
+                      error returned the `"BAD_REQUEST"` code.
 
   /messages/{message_id}/read_receipts:
     get:
@@ -9951,120 +9951,120 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - properties:
-                          msg:
-                            enum:
-                              - Your organization has turned off message editing
-                              - You don't have permission to edit this message
-                              - The time limit for editing this message has past
-                              - Nothing to change
-                              - Topic can't be empty
-                        example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "You don't have permission to edit this message",
-                            "result": "error",
-                          }
-                        description: |
-                          A typical JSON response for when one doesn't have the permission to
-                          edit a particular message:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED",
-                            "first_message_id_allowed_to_move": 123,
-                            "msg": "You only have permission to move the 2/5 most recent messages in this topic.",
-                            "result": "error",
-                            "total_messages_allowed_to_move": 2,
-                            "total_messages_in_topic": 5,
-                          }
-                        description: |
-                          A special failed JSON response (`"code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"`)
-                          for when the user has permission to move
-                          the target message, but asked to move all messages in a topic
-                          (`"propagate_mode": "change_all"`) and the user does not have permission
-                          to move the entire topic.
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    properties:
+                      msg:
+                        enum:
+                          - Your organization has turned off message editing
+                          - You don't have permission to edit this message
+                          - The time limit for editing this message has past
+                          - Nothing to change
+                          - Topic can't be empty
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "You don't have permission to edit this message",
+                        "result": "error",
+                      }
+                    description: |
+                      A typical JSON response for when one doesn't have the permission to
+                      edit a particular message:
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                      {
+                        "code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED",
+                        "first_message_id_allowed_to_move": 123,
+                        "msg": "You only have permission to move the 2/5 most recent messages in this topic.",
+                        "result": "error",
+                        "total_messages_allowed_to_move": 2,
+                        "total_messages_in_topic": 5,
+                      }
+                    description: |
+                      A special failed JSON response (`"code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"`)
+                      for when the user has permission to move
+                      the target message, but asked to move all messages in a topic
+                      (`"propagate_mode": "change_all"`) and the user does not have permission
+                      to move the entire topic.
 
-                          This happens when the topic contains some messages that are older than an
-                          applicable time limit for the requested topic move (see
-                          `move_messages_within_stream_limit_seconds` and/or
-                          `move_messages_between_streams_limit_seconds` in the
-                          [`POST /register`](/api/register-queue) response).
+                      This happens when the topic contains some messages that are older than an
+                      applicable time limit for the requested topic move (see
+                      `move_messages_within_stream_limit_seconds` and/or
+                      `move_messages_between_streams_limit_seconds` in the
+                      [`POST /register`](/api/register-queue) response).
 
-                          The error response contains data on which portion of this topic the user has
-                          permission to move. `first_message_id_allowed_to_move` is the oldest message
-                          ID in this topic that the user has permission to move.
-                          There are `total_messages_in_topic` in the topic, but the user only has
-                          permission to move the (most recent) `total_messages_allowed_to_move`
-                          messages.
+                      The error response contains data on which portion of this topic the user has
+                      permission to move. `first_message_id_allowed_to_move` is the oldest message
+                      ID in this topic that the user has permission to move.
+                      There are `total_messages_in_topic` in the topic, but the user only has
+                      permission to move the (most recent) `total_messages_allowed_to_move`
+                      messages.
 
-                          Clients should support this error code with
-                          `"first_message_id_allowed_to_move": null` for forward compatibility
-                          with future server versions that may use this error code with other
-                          propagation modes where the user does not have permission to move any
-                          messages, or where the server did not calculate the total message counts
-                          noted above.
+                      Clients should support this error code with
+                      `"first_message_id_allowed_to_move": null` for forward compatibility
+                      with future server versions that may use this error code with other
+                      propagation modes where the user does not have permission to move any
+                      messages, or where the server did not calculate the total message counts
+                      noted above.
 
-                          Clients can either only present the error to the user or, if
-                          `first_message_id_allowed_to_move` is not `null`, prompt the user to adjust
-                          their query with the above information.
+                      Clients can either only present the error to the user or, if
+                      `first_message_id_allowed_to_move` is not `null`, prompt the user to adjust
+                      their query with the above information.
 
-                          If clients choose to present a prompt for this error code, they should
-                          recommend the option of cancelling and (manually) asking a moderator to
-                          move the entire topic, since that's often a better experience than
-                          partially moving a topic. This API supports a client that wishes to allow
-                          the user to repeat the request with a `change_later` propagation mode and
-                          a target message ID of `first_message_id_allowed_to_move`, if the user
-                          desires to move only the portion of the topic that they can.
+                      If clients choose to present a prompt for this error code, they should
+                      recommend the option of cancelling and (manually) asking a moderator to
+                      move the entire topic, since that's often a better experience than
+                      partially moving a topic. This API supports a client that wishes to allow
+                      the user to repeat the request with a `change_later` propagation mode and
+                      a target message ID of `first_message_id_allowed_to_move`, if the user
+                      desires to move only the portion of the topic that they can.
 
-                          Note that in a [private channel with protected history][private-channels],
-                          the Zulip security model requires that the above calculations only include
-                          messages the acting user has access to. So in the rare case of a user
-                          attempting to move a topic that started before the user joined a private
-                          channel with protected history, this API endpoint might move only the portion
-                          of a topic that they have access to, without this error or any confirmation
-                          dialog.
+                      Note that in a [private channel with protected history][private-channels],
+                      the Zulip security model requires that the above calculations only include
+                      messages the acting user has access to. So in the rare case of a user
+                      attempting to move a topic that started before the user joined a private
+                      channel with protected history, this API endpoint might move only the portion
+                      of a topic that they have access to, without this error or any confirmation
+                      dialog.
 
-                          **Changes**: New in Zulip 7.0 (feature level 172).
+                      **Changes**: New in Zulip 7.0 (feature level 172).
 
-                          [private-channels]: /help/channel-permissions#private-channels
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "You do not have permission to use channel wildcard mentions in this channel.",
-                            "code": "STREAM_WILDCARD_MENTION_NOT_ALLOWED",
-                          }
-                        description: |
-                          An example JSON error response for when the message was rejected because
-                          the message contains a stream wildcard mention, but the user doesn't have
-                          permission to use such a mention in this channel as the user is not present
-                          in `can_mention_many_users_group` and the channel contains a large number
-                          of subscribers.
+                      [private-channels]: /help/channel-permissions#private-channels
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "You do not have permission to use channel wildcard mentions in this channel.",
+                        "code": "STREAM_WILDCARD_MENTION_NOT_ALLOWED",
+                      }
+                    description: |
+                      An example JSON error response for when the message was rejected because
+                      the message contains a stream wildcard mention, but the user doesn't have
+                      permission to use such a mention in this channel as the user is not present
+                      in `can_mention_many_users_group` and the channel contains a large number
+                      of subscribers.
 
-                          **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
-                          error returned the `"BAD_REQUEST"` code.
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "You do not have permission to use topic wildcard mentions in this topic.",
-                            "code": "TOPIC_WILDCARD_MENTION_NOT_ALLOWED",
-                          }
-                        description: |
-                          An example JSON error response for when the message was rejected because
-                          the message contains a topic wildcard mention, but the user doesn't have
-                          permission to use such a mention in this topic as the user is not present
-                          in `can_mention_many_users_group` and the topic contains a large number
-                          of participants.
+                      **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
+                      error returned the `"BAD_REQUEST"` code.
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "You do not have permission to use topic wildcard mentions in this topic.",
+                        "code": "TOPIC_WILDCARD_MENTION_NOT_ALLOWED",
+                      }
+                    description: |
+                      An example JSON error response for when the message was rejected because
+                      the message contains a topic wildcard mention, but the user doesn't have
+                      permission to use such a mention in this topic as the user is not present
+                      in `can_mention_many_users_group` and the topic contains a large number
+                      of participants.
 
-                          **Changes**: New in Zulip 8.0 (feature level 229). Previously,
-                          `wildcard_mention_policy` was not enforced for topic mentions.
+                      **Changes**: New in Zulip 8.0 (feature level 229). Previously,
+                      `wildcard_mention_policy` was not enforced for topic mentions.
     delete:
       operationId: delete-message
       summary: Delete a message
@@ -10116,21 +10116,21 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/InvalidMessageError"
-                      - description: |
-                          An example JSON response for when the specified message does not exist:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - description: |
-                          An example JSON response for when the user making the query does not
-                          have permission to delete the message:
-                        example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "You don't have permission to delete this message",
-                            "result": "error",
-                          }
+                  - schema:
+                    $ref: "#/components/schemas/InvalidMessageError"
+                    description: |
+                      An example JSON response for when the specified message does not exist:
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    description: |
+                      An example JSON response for when the user making the query does not
+                      have permission to delete the message:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "You don't have permission to delete this message",
+                        "result": "error",
+                      }
   /messages/{message_id}/report:
     post:
       operationId: report-message
@@ -10696,80 +10696,74 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Insufficient permission",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response user making request does not have permission to update other user's status.:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Client did not pass any new values.",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when no changes were requested:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "status_text is too long (limit: 60 characters)",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when the
-                          `status_text` message exceeds the limit of
-                          60 characters:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Client must pass emoji_name if they pass either emoji_code or reaction_type.",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when `emoji_name` is not specified
-                          but `emoji_code` or `reaction_type` is specified:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Emoji 'invalid' does not exist",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when the emoji name does not exist:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Invalid emoji name.",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when the emoji name is invalid:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Invalid custom emoji.",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when the custom emoji is invalid:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                no_permission:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Insufficient permission",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response user making request does not have permission to update other user's status.:
+                no_changes:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Client did not pass any new values.",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when no changes were requested:
+                too_long:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "status_text is too long (limit: 60 characters)",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when the
+                    `status_text` message exceeds the limit of
+                    60 characters:
+                no_emoji_name:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Client must pass emoji_name if they pass either emoji_code or reaction_type.",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when `emoji_name` is not specified
+                    but `emoji_code` or `reaction_type` is specified:
+                emoji_name_not_exist:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Emoji 'invalid' does not exist",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when the emoji name does not exist:
+                emoji_name_invalid:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Invalid emoji name.",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when the emoji name is invalid:
+                custom_emoji_invalid:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Invalid custom emoji.",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when the custom emoji is invalid:
     get:
       operationId: get-user-status
       summary: Get a user's status
@@ -11710,70 +11704,65 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Client did not pass any new values.",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when no changes were requested:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "status_text is too long (limit: 60 characters)",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when the
-                          `status_text` message exceeds the limit of
-                          60 characters:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Client must pass emoji_name if they pass either emoji_code or reaction_type.",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when `emoji_name` is not specified
-                          but `emoji_code` or `reaction_type` is specified:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Emoji 'invalid' does not exist",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when the emoji name does not exist:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Invalid emoji name.",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when the emoji name is invalid:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Invalid custom emoji.",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          An example JSON error response when the custom emoji is invalid:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                no_changes:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Client did not pass any new values.",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when no changes were requested:
+                too_long:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "status_text is too long (limit: 60 characters)",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when the
+                    `status_text` message exceeds the limit of
+                    60 characters:
+                no_emoji_name:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Client must pass emoji_name if they pass either emoji_code or reaction_type.",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when `emoji_name` is not specified
+                    but `emoji_code` or `reaction_type` is specified:
+                emoji_name_not_exist:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Emoji 'invalid' does not exist",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when the emoji name does not exist:
+                emoji_name_invalid:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Invalid emoji name.",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when the emoji name is invalid:
+                custom_emoji_invalid:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Invalid custom emoji.",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    An example JSON error response when the custom emoji is invalid:
   /users/me/{stream_id}/topics:
     get:
       operationId: get-stream-topics
@@ -12927,38 +12916,36 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "INVALID_BOUNCER_PUBLIC_KEY",
-                            "msg": "Invalid bouncer_public_key",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON response for when the given `bouncer_public_key` is invalid:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "REQUEST_EXPIRED",
-                            "msg": "Request expired",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON response for when the given `encrypted_push_registration` is stale:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid encrypted_push_registration",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON response for when either the bouncer fails to decrypt
-                          the given `encrypted_push_registration` or the decrypted data is invalid:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                public_key_invalid:
+                  value:
+                    {
+                      "code": "INVALID_BOUNCER_PUBLIC_KEY",
+                      "msg": "Invalid bouncer_public_key",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON response for when the given `bouncer_public_key` is invalid:
+                stale_registration:
+                  value:
+                    {
+                      "code": "REQUEST_EXPIRED",
+                      "msg": "Request expired",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON response for when the given `encrypted_push_registration` is stale:
+                decryption_fail:
+                  value:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "Invalid encrypted_push_registration",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON response for when either the bouncer fails to decrypt
+                    the given `encrypted_push_registration` or the decrypted data is invalid:
         "403":
           description: |
             Forbidden.
@@ -13101,38 +13088,36 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Cannot mute self",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON response for when the user ID is the current
-                          user's ID:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "No such user",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON response for when the user is nonexistent or inaccessible:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "User already muted",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON response for when the user is already muted:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                mute_self:
+                  value:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "Cannot mute self",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON response for when the user ID is the current
+                    user's ID:
+                user_not_exist:
+                  value:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "No such user",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON response for when the user is nonexistent or inaccessible:
+                already_muted:
+                  value:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "User already muted",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON response for when the user is already muted:
     delete:
       operationId: unmute-user
       summary: Unmute a user
@@ -13152,27 +13137,26 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "No such user",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON response for when the user is nonexistent or inaccessible:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "User is not muted",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON response for when the user is not previously muted:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                user_not_exist:
+                  value:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "No such user",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON response for when the user is nonexistent or inaccessible:
+                not_muted:
+                  value:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "User is not muted",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON response for when the user is not previously muted:
   /users/me/apns_device_token:
     post:
       deprecated: true
@@ -13219,28 +13203,27 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - description: |
-                          A typical failed JSON response for when the token's length is invalid
-                          or it is empty:
-                        example:
-                          {
-                            "result": "error",
-                            "msg": "Empty or invalid length token",
-                            "code": "BAD_REQUEST",
-                          }
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Invalid APNS token",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          A typical failed JSON response for when the APNs token is invalid:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                invalid_token_length:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Empty or invalid length token",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    A typical failed JSON response for when the token's length is invalid
+                    or it is empty:
+                invalid_token:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Invalid APNS token",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    A typical failed JSON response for when the APNs token is invalid:
     delete:
       deprecated: true
       operationId: remove-apns-token
@@ -13277,28 +13260,27 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - description: |
-                          A typical failed JSON response for when the token's length is invalid
-                          or it is empty:
-                        example:
-                          {
-                            "result": "error",
-                            "msg": "Empty or invalid length token",
-                            "code": "BAD_REQUEST",
-                          }
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Token does not exist",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          A typical failed JSON response for when the token does not exist:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                invalid_token_length:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Empty or invalid length token",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    A typical failed JSON response for when the token's length is invalid
+                    or it is empty:
+                invalid_token:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Token does not exist",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    A typical failed JSON response for when the token does not exist:
   /users/me/android_gcm_reg_id:
     post:
       deprecated: true
@@ -13381,28 +13363,27 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - description: |
-                          A typical failed JSON response for when the token's length is invalid
-                          or is empty:
-                        example:
-                          {
-                            "result": "error",
-                            "msg": "Empty or invalid length token",
-                            "code": "BAD_REQUEST",
-                          }
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Token does not exist",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          A typical failed JSON response for when the token does not exist:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                invalid_token_length:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Empty or invalid length token",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    A typical failed JSON response for when the token's length is invalid
+                    or is empty:
+                token_not_exist:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Token does not exist",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    A typical failed JSON response for when the token does not exist:
   /users/{user_id}/subscriptions/{stream_id}:
     get:
       operationId: get-subscription-status
@@ -15957,70 +15938,69 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/InvitationFailedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Some of those addresses are already using Zulip, so we didn't send them an invitation. We did send invitations to everyone else!",
-                            "errors":
-                              [
-                                [
-                                  "hamlet@zulip.com",
-                                  "Already has an account.",
-                                  false,
-                                ],
-                              ],
-                            "sent_invitations": true,
-                            "license_limit_reached": false,
-                            "daily_limit_reached": false,
-                            "code": "INVITATION_FAILED",
-                          }
-                        description: |
-                          An example JSON error response for when some of the specified email addresses
-                          have existing Zulip accounts.
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
+                  - schema:
+                    $ref: "#/components/schemas/InvitationFailedError"
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "Some of those addresses are already using Zulip, so we didn't send them an invitation. We did send invitations to everyone else!",
+                        "errors":
+                          [
+                            [
+                              "hamlet@zulip.com",
+                              "Already has an account.",
+                              false,
+                            ],
+                          ],
+                        "sent_invitations": true,
+                        "license_limit_reached": false,
+                        "daily_limit_reached": false,
+                        "code": "INVITATION_FAILED",
+                      }
+                    description: |
+                      An example JSON error response for when some of the specified email addresses
+                      have existing Zulip accounts.
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    examples:
+                      insufficient_permission:
+                        value:
                           {
                             "code": "BAD_REQUEST",
                             "msg": "Insufficient permission",
                             "result": "error",
                           }
-                        description: |
+                        summary: |
                           An example JSON error response for when the user doesn't have permission
                           to send invitations.
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
+                      missing_email:
+                        value:
                           {
                             "code": "BAD_REQUEST",
                             "msg": "You must specify at least one email address.",
                             "result": "error",
                           }
-                        description: |
+                        summary: |
                           An example JSON error response for when no email address is specified.
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
+                      invalid_channel_id:
+                        value:
                           {
                             "code": "BAD_REQUEST",
                             "msg": "Invalid channel ID 11. No invites were sent.",
                             "result": "error",
                           }
-                        description: |
+                        summary: |
                           An example JSON error response for when any of the specified channels
                           does not exist or the user does not have permission to access one of
                           the targeted channels.
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
+                      no_permission:
+                        value:
                           {
                             "code": "BAD_REQUEST",
                             "msg": "You do not have permission to subscribe other users to channels.",
                             "result": "error",
                           }
-                        description: |
+                        summary: |
                           An example JSON error response for when the user doesn't have permission
                           to subscribe other users to channels and `stream_ids` is not empty.
   /invites/multiuse:
@@ -16172,41 +16152,39 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Insufficient permission",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON error response for when the user doesn't have permission
-                          to send invitations.
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid channel ID 11. No invites were sent.",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON error response for when any of the specified channels
-                          does not exist or the user does not have permission to access one of
-                          the targeted channels.
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "You do not have permission to subscribe other users to channels.",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON error response for when the user doesn't have permission
-                          to subscribe other users to channels and `stream_ids` is not empty.
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                insufficient_permission:
+                  value:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "Insufficient permission",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON error response for when the user doesn't have permission
+                    to send invitations.
+                invalid_channel_id:
+                  value:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "Invalid channel ID 11. No invites were sent.",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON error response for when any of the specified channels
+                    does not exist or the user does not have permission to access one of
+                    the targeted channels.
+                no_permission:
+                  value:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "You do not have permission to subscribe other users to channels.",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON error response for when the user doesn't have permission
+                    to subscribe other users to channels and `stream_ids` is not empty.
   /invites/{invite_id}:
     delete:
       operationId: revoke-email-invite
@@ -16234,17 +16212,15 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "No such invitation",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          A typical failed JSON response for an invalid email invitation ID:
+                $ref: "#/components/schemas/CodedError"
+                example:
+                  {
+                    "result": "error",
+                    "msg": "No such invitation",
+                    "code": "BAD_REQUEST",
+                  }
+                description: |
+                  A typical failed JSON response for an invalid email invitation ID:
   /invites/multiuse/{invite_id}:
     delete:
       operationId: revoke-invite-link
@@ -16275,28 +16251,27 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "No such invitation",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          A typical failed JSON response for an invalid invitation link ID:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "result": "error",
-                            "msg": "Invitation has already been revoked",
-                            "code": "BAD_REQUEST",
-                          }
-                        description: |
-                          A typical failed JSON response for when the invitation link has already
-                          been revoked:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                no_invitation:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "No such invitation",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    A typical failed JSON response for an invalid invitation link ID:
+                already_revoked:
+                  value:
+                    {
+                      "result": "error",
+                      "msg": "Invitation has already been revoked",
+                      "code": "BAD_REQUEST",
+                    }
+                  summary: |
+                    A typical failed JSON response for when the invitation link has already
+                    been revoked:
   /invites/{invite_id}/resend:
     post:
       operationId: resend-email-invite
@@ -23126,30 +23101,31 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/InvalidChannelError"
-                      - description: |
-                          An example JSON response for when the supplied channel does not exist:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid parameters",
-                            "result": "error",
-                          }
-                        description: |
+                  - schema:
+                    $ref: "#/components/schemas/InvalidChannelError"
+                    description: |
+                      An example JSON response for when the supplied channel does not exist:
+                  - schema:
+                    $ref: "#/components/schemas/CodedError"
+                    examples:
+                      invalid_parameters:
+                        value:
+                            {
+                              "code": "BAD_REQUEST",
+                              "msg": "Invalid parameters",
+                              "result": "error",
+                            }
+                        summary: |
                           An example JSON response for when invalid combination of channel permission
                           parameters are passed:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
+                      no_public_moderation:
+                        value:
                           {
                             "code": "BAD_REQUEST",
                             "msg": "A moderation request channel cannot be public.",
                             "result": "error",
                           }
-                        description: |
+                        summary: |
                           An example JSON response for when trying to set moderation request channel to
                           be public:
   /streams/{stream_id}/email_address:
@@ -24719,39 +24695,38 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                invalid_user_group:
+                  value:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "Invalid user group",
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON response when the user group ID is invalid.
+                user_group_in_use:
+                  value:
+                    {
+                      "code": "CANNOT_DEACTIVATE_GROUP_IN_USE",
+                      "msg": "Cannot deactivate user group in use.",
+                      "objections":
+                        [
                           {
-                            "code": "BAD_REQUEST",
-                            "msg": "Invalid user group",
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON response when the user group ID is invalid.
-                  - allOf:
-                      - $ref: "#/components/schemas/CodedError"
-                      - example:
-                          {
-                            "code": "CANNOT_DEACTIVATE_GROUP_IN_USE",
-                            "msg": "Cannot deactivate user group in use.",
-                            "objections":
-                              [
-                                {
-                                  "type": "realm",
-                                  "settings":
-                                    ["can_create_public_channel_group"],
-                                },
-                              ],
-                            "result": "error",
-                          }
-                        description: |
-                          An example JSON response when the user group being deactivated
-                          is used for a setting or as a subgroup.
+                            "type": "realm",
+                            "settings":
+                              ["can_create_public_channel_group"],
+                          },
+                        ],
+                      "result": "error",
+                    }
+                  summary: |
+                    An example JSON response when the user group being deactivated
+                    is used for a setting or as a subgroup.
 
-                          **Changes**: New in Zulip 10.0 (feature level 298). Previously,
-                          this error returned the `"BAD_REQUEST"` code.
+                    **Changes**: New in Zulip 10.0 (feature level 298). Previously,
+                    this error returned the `"BAD_REQUEST"` code.
   /channel_folders/create:
     post:
       operationId: create-channel-folder
