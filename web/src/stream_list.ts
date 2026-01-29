@@ -19,6 +19,7 @@ import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as left_sidebar_filter from "./left_sidebar_filter.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
 import * as mouse_drag from "./mouse_drag.ts";
@@ -343,6 +344,7 @@ export function build_stream_list(force_rerender: boolean): void {
     const stream_groups = stream_list_sort.sort_groups(
         streams,
         ui_util.get_left_sidebar_search_term(),
+        left_sidebar_filter.get_topics_state(),
     );
 
     if (stream_groups.same_as_before && !force_rerender) {
@@ -434,7 +436,11 @@ export function build_stream_list(force_rerender: boolean): void {
     update_unread_counts_visibility();
     set_sections_states();
     // Show inactive channels when user starts typing.
-    $("#streams_list").toggleClass("is_searching", ui_util.get_left_sidebar_search_term() !== "");
+    $("#streams_list").toggleClass(
+        "is_searching",
+        ui_util.get_left_sidebar_search_term() !== "" ||
+            left_sidebar_filter.get_topics_state() !== "",
+    );
 }
 
 export function mention_counts_by_section(): Map<
@@ -1499,16 +1505,21 @@ function toggle_inactive_or_muted_channels($section_container: JQuery): void {
 }
 
 export function searching(): boolean {
-    return $(".left-sidebar-search-input").expectOne().is(":focus");
+    const $filter_input = $("#left-sidebar-filter-query").expectOne();
+    if ($filter_input.is(":focus")) {
+        return true;
+    }
+
+    return $("#left-sidebar-filter-input .pill").is(":focus");
 }
 
 export function clear_search(): void {
-    const $filter = $(".left-sidebar-search-input").expectOne();
-    if ($filter.val() !== "") {
-        $filter.val("");
-        $filter.trigger("input");
+    const $filter = $("#left-sidebar-filter-query").expectOne();
+    const has_search_value = $filter.text().trim() !== "";
+    const has_topic_state_filter = left_sidebar_filter.get_topics_state() !== "";
+    if (has_search_value || has_topic_state_filter) {
+        $("#left-sidebar-search .input-close-filter-button").trigger("click");
     }
-    $filter.trigger("blur");
 }
 
 export let scroll_stream_into_view = function ($stream_li?: JQuery): void {
