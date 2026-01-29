@@ -157,3 +157,30 @@ test("has_conversation", ({override}) => {
     assert.ok(!pmc.recent.has_conversation("2"));
     assert.ok(!pmc.recent.has_conversation("72"));
 });
+
+test("remove", () => {
+    pmc.recent.initialize(params);
+
+    // Initial state verification.
+    assert.deepEqual(pmc.recent.get_strings(), ["1", "3", "1,2", "1,2,3", "15"]);
+    assert.ok(pmc.recent.has_conversation("1"));
+
+    // Test removing a standard 1:1 conversation.
+    pmc.recent.remove("1");
+    assert.ok(!pmc.recent.has_conversation("1"));
+    assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2", "1,2,3", "15"]);
+
+    // Test removing a group conversation.
+    pmc.recent.remove("1,2,3");
+    assert.ok(!pmc.recent.has_conversation("1,2,3"));
+    assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2", "15"]);
+
+    // Test removing a self-DM.
+    pmc.recent.remove("15");
+    assert.ok(!pmc.recent.has_conversation("15"));
+    assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2"]);
+
+    // Removing a non-existent conversation should be a no-op.
+    pmc.recent.remove("999");
+    assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2"]);
+});
