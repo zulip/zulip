@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 function error_out() {
     echo -en '\e[0;31m'
@@ -7,11 +8,12 @@ function error_out() {
     exit 1
 }
 
-status=$(git status --porcelain | grep -v '^??')
-[ -n "$status" ] && error_out "Working directory or index not clean"
+[ -z "$(git status --porcelain --untracked-files=no)" ] || error_out "Working directory or index not clean"
 
 old_ref=$(git rev-list --max-count=1 HEAD)
-branch=$1
+branch=${1-}
+[ -z "$branch" ] && error_out "You must specify a branch name to deploy"
+
 branch_ref=$(git rev-list --max-count=1 "$branch") || error_out "Unknown branch: $branch"
 
 if [ "$old_ref" == "$branch_ref" ]; then
@@ -23,8 +25,6 @@ else
         new_ref=$old_ref
     fi
 fi
-
-[ -z "$branch" ] && error_out "You must specify a branch name to deploy"
 
 git fetch -p
 
