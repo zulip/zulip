@@ -1,3 +1,5 @@
+import base64
+import hashlib
 import logging
 from collections import Counter
 from datetime import datetime, timedelta, timezone
@@ -42,6 +44,7 @@ from analytics.lib.counts import (
 from corporate.models.customers import get_customer_by_remote_realm
 from corporate.models.plans import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
+from zerver.lib.devices import b64decode_token_id
 from zerver.lib.email_validation import validate_is_not_disposable
 from zerver.lib.exceptions import (
     ErrorCode,
@@ -583,11 +586,11 @@ class PushRegistration(BaseModel):
 def do_register_remote_push_device(
     bouncer_public_key: str,
     encrypted_push_registration: str,
-    push_account_id: int,
+    token_id: str,
     *,
     realm: Realm | None = None,
     remote_realm: RemoteRealm | None = None,
-) -> int:
+) -> None:
     assert (realm is None) ^ (remote_realm is None)
 
     if bouncer_public_key not in settings.PUSH_REGISTRATION_ENCRYPTION_KEYS:
@@ -610,30 +613,37 @@ def do_register_remote_push_device(
     except PydanticValidationError:
         raise InvalidEncryptedPushRegistrationError
 
+    hash_bytes = hashlib.sha256(push_registration.token.encode()).digest()
+    expected_token_id = base64.b64encode(hash_bytes[0:8]).decode()
+    if token_id != expected_token_id:
+        raise InvalidEncryptedPushRegistrationError
+
     if (
         datetime_to_timestamp(timezone_now()) - push_registration.timestamp
         > PUSH_REGISTRATION_LIVENESS_TIMEOUT
     ):
         raise RequestExpiredError
 
-    # If already registered, return the device_id.
+    # If already registered, return.
     # The query uses the unique index created by the
-    # 'unique_remote_push_device_push_account_id_token' constraint.
-    remote_push_device = RemotePushDevice.objects.filter(
-        token=push_registration.token, push_account_id=push_account_id
-    ).first()
-    if remote_push_device:
-        return remote_push_device.device_id
+    # 'unique_remote_push_device_token_id_realm_remote_realm' constraint.
+    token_id_int = b64decode_token_id(token_id)
+    remote_push_device_exists = RemotePushDevice.objects.filter(
+        token_id=token_id_int,
+        realm=realm,
+        remote_realm=remote_realm,
+    ).exists()
+    if remote_push_device_exists:
+        return
 
-    remote_push_device = RemotePushDevice.objects.create(
+    RemotePushDevice.objects.create(
         realm=realm,
         remote_realm=remote_realm,
         token=push_registration.token,
         token_kind=push_registration.token_kind,
-        push_account_id=push_account_id,
+        token_id=token_id_int,
         ios_app_id=push_registration.ios_app_id,
     )
-    return remote_push_device.device_id
 
 
 @typed_endpoint
@@ -642,7 +652,7 @@ def register_remote_push_device_for_e2ee_push_notification(
     server: RemoteZulipServer,
     *,
     realm_uuid: str,
-    push_account_id: Json[int],
+    token_id: str,
     encrypted_push_registration: str,
     bouncer_public_key: str,
 ) -> HttpResponse:
@@ -653,14 +663,13 @@ def register_remote_push_device_for_e2ee_push_notification(
         remote_realm.last_request_datetime = timezone_now()
         remote_realm.save(update_fields=["last_request_datetime"])
 
-    device_id = do_register_remote_push_device(
+    do_register_remote_push_device(
         bouncer_public_key,
         encrypted_push_registration,
-        push_account_id,
+        token_id,
         remote_realm=remote_realm,
     )
-
-    return json_success(request, {"device_id": device_id})
+    return json_success(request)
 
 
 @typed_endpoint

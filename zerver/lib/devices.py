@@ -1,7 +1,10 @@
 import base64
+import binascii
 
+from django.utils.translation import gettext as _
 from typing_extensions import TypedDict
 
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models.devices import Device
 from zerver.models.users import UserProfile
@@ -18,6 +21,15 @@ class DeviceInfoDict(TypedDict):
 def b64encode_token_id(token_id: int) -> str:
     token_id_bytes = token_id.to_bytes(8, byteorder="big", signed=True)
     return base64.b64encode(token_id_bytes).decode()
+
+
+def b64decode_token_id(token_id_base64: str) -> int:
+    try:
+        token_id_bytes = base64.b64decode(token_id_base64, validate=True)
+    except binascii.Error:
+        raise JsonableError(_("Invalid `token_id`"))
+
+    return int.from_bytes(token_id_bytes, byteorder="big", signed=True)
 
 
 def get_devices(user_profile: UserProfile) -> dict[str, DeviceInfoDict]:
@@ -41,3 +53,12 @@ def get_devices(user_profile: UserProfile) -> dict[str, DeviceInfoDict]:
         }
         for device in devices
     }
+
+
+def check_device_id(device_id: int, user_id: int) -> Device:
+    try:
+        device = Device.objects.get(id=device_id, user_id=user_id)
+    except Device.DoesNotExist:
+        raise JsonableError(_("Invalid `device_id`"))
+
+    return device

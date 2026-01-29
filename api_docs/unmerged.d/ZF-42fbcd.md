@@ -4,3 +4,8 @@
   field to response.
 * [`GET /events`](/api/get-events):  A `device` event is sent
   to clients to live-update the `devices` dictionary.
+* [`POST /mobile_push/register`](register-push-device): Redesigned
+  the endpoint to support rotation of `push_key` and FCM/APNs provided token.
+* [`POST /remotes/push/e2ee/register`](/api/register-remote-push-device):
+  Replaced `push_account_id` with `token_id` to support rotation
+  of `push_key` and FCM/APNs provided token.

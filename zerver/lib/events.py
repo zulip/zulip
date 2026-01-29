@@ -2020,6 +2020,23 @@ def apply_event(
                 "push_token_last_updated_timestamp": None,
                 "push_registration_error_code": None,
             }
+        elif event["op"] == "update":
+            if "push_key_id" in event:
+                state["devices"][str(event["device_id"])]["push_key_id"] = event["push_key_id"]
+            if "push_token_id" in event:
+                state["devices"][str(event["device_id"])]["push_token_id"] = event["push_token_id"]
+            if "pending_push_token_id" in event:
+                state["devices"][str(event["device_id"])]["pending_push_token_id"] = event[
+                    "pending_push_token_id"
+                ]
+            if "push_token_last_updated_timestamp" in event:
+                state["devices"][str(event["device_id"])]["push_token_last_updated_timestamp"] = (
+                    event["push_token_last_updated_timestamp"]
+                )
+            if "push_registration_error_code" in event:
+                state["devices"][str(event["device_id"])]["push_registration_error_code"] = event[
+                    "push_registration_error_code"
+                ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     else:

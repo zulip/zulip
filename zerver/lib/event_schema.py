@@ -31,6 +31,7 @@ from zerver.lib.event_types import (
     EventDefaultStreams,
     EventDeleteMessage,
     EventDeviceAdd,
+    EventDeviceUpdate,
     EventDirectMessage,
     EventDraftsAdd,
     EventDraftsRemove,
@@ -176,6 +177,7 @@ check_custom_profile_fields = make_checker(EventCustomProfileFields)
 check_default_stream_groups = make_checker(EventDefaultStreamGroups)
 check_default_streams = make_checker(EventDefaultStreams)
 check_device_add = make_checker(EventDeviceAdd)
+check_device_update = make_checker(EventDeviceUpdate)
 check_direct_message = make_checker(EventDirectMessage)
 check_draft_add = make_checker(EventDraftsAdd)
 check_draft_remove = make_checker(EventDraftsRemove)

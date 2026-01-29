@@ -178,6 +178,7 @@ from zerver.lib.event_schema import (
     check_default_streams,
     check_delete_message,
     check_device_add,
+    check_device_update,
     check_direct_message,
     check_draft_add,
     check_draft_remove,
@@ -283,6 +284,7 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     Attachment,
     CustomProfileField,
+    Device,
     ImageAttachment,
     Message,
     MultiuseInvite,
@@ -4305,6 +4307,26 @@ class NormalActionsTest(BaseAction):
         with self.verify_action() as events:
             do_register_device(self.user_profile)
         check_device_add("events[0]", events[0])
+
+    def test_register_push_device(self) -> None:
+        self.login_user(self.user_profile)
+        device = Device.objects.create(user=self.user_profile)
+
+        with (
+            mock.patch("zerver.lib.push_registration.do_register_remote_push_device"),
+            self.verify_action(num_events=2) as events,
+        ):
+            payload = {
+                "device_id": device.id,
+                "token_kind": Device.PushTokenKind.FCM,
+                "push_key": "MY+paNlyduYJRQFNZva8w7Gv3PkBua9kIj581F9Vr301",
+                "push_key_id": 2408,
+                "bouncer_public_key": "bouncer-public-key",
+                "encrypted_push_registration": "encrypted-push-registration",
+                "token_id": "hGsEWGmyyfI=",
+            }
+            self.client_post("/json/mobile_push/register", payload)
+        check_device_update("events[0]", events[0])
 
     def test_notify_realm_export_on_failure(self) -> None:
         self.set_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)

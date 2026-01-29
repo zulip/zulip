@@ -1708,14 +1708,18 @@ def remove_fcm_token(client: Client) -> None:
 
 @openapi_test_function("/mobile_push/register:post")
 def register_push_device(client: Client) -> None:
+    result = client.call_endpoint(url="/register_client_device", method="POST")
+    device_id = result["device_id"]
     # {code_example|start}
-    # Register a push device.
+    # Register a device for push notifications.
     request = {
+        "device_id": device_id,
         "token_kind": "fcm",
-        "push_account_id": 2408,
         "push_key": "MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt",
+        "push_key_id": 2408,
         "bouncer_public_key": "bouncer-public-key",
         "encrypted_push_registration": "encrypted-push-registration-data",
+        "token_id": "hGsEWGmyyfI=",
     }
     result = client.call_endpoint(url="/mobile_push/register", method="POST", request=request)
     # {code_example|end}
