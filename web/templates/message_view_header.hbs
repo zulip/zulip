@@ -2,6 +2,10 @@
 <a class="message-header-stream-settings-button tippy-zulip-tooltip" data-tooltip-template-id="stream-details-tooltip-template" data-tippy-placement="bottom" href="{{stream_settings_link}}">
     {{> navbar_icon_and_title . }}
 </a>
+{{#if rendered_narrow_description}}
+<i class="notepad-text zulip-icon zulip-icon-notepad-text"></i>
+{{/if}}
+
 <template id="stream-details-tooltip-template">
     <div>
         <div>{{t "Go to channel settings" }}</div>
@@ -28,6 +32,7 @@
     {{> navbar_icon_and_title . }}
 </span>
 {{#if description}}
+    <i class="notepad-text zulip-icon zulip-icon-notepad-text"></i>
     <span class="narrow_description rendered_markdown single-line-rendered-markdown">{{description}}
         {{#if link}}
         <a class="help_link_widget" href="{{link}}" target="_blank" rel="noopener noreferrer">
