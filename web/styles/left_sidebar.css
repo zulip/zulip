@@ -228,6 +228,23 @@
     }
 }
 
+.direct-message-section-bottom-divider-container {
+    display: block;
+    margin-right: var(--left-sidebar-right-margin);
+    padding: var(--left-sidebar-direct-messages-bottom-divider-padding) 0;
+    position: sticky;
+    top: var(--line-height-sidebar-row-prominent);
+    background: var(--color-background);
+    z-index: 3;
+}
+
+.direct-message-section-bottom-divider {
+    opacity: 1 !important; /* override .dark-theme:root hr */
+    border-color: var(--color-left-sidebar-direct-messages-bottom-divider);
+    border-width: 0.5px;
+    margin: 0;
+}
+
 #hide-more-direct-messages,
 #direct-messages-section-header {
     grid-template-columns:
@@ -400,7 +417,11 @@
     cursor: pointer;
     background-color: var(--color-background);
     position: sticky;
-    top: var(--line-height-sidebar-row-prominent);
+    /* height of DM header + 1px divider line and its top/bottom padding */
+    top: calc(
+        var(--line-height-sidebar-row-prominent) + 1px + 2 *
+            var(--left-sidebar-direct-messages-bottom-divider-padding)
+    );
     /* Must be more than .sidebar-topic-check and less than #left-sidebar-search
        and #direct-messages-section-header */
     z-index: 2;
@@ -2349,6 +2370,10 @@ li.topic-list-item {
 
 #left_sidebar_scroll_container.direct-messages-hidden-by-filters {
     #direct-messages-section-header {
+        display: none;
+    }
+
+    .direct-message-section-bottom-divider-container {
         display: none;
     }
 
