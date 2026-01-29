@@ -16,14 +16,12 @@ import {TaskData} from "./todo_data.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData} from "./widget_schema.ts";
 
+export const widget_map = new Map<number, TaskData>();
+
 export function activate({
-    $elem,
-    callback,
     any_data,
     message,
 }: {
-    $elem: JQuery;
-    callback: (data: TodoWidgetOutboundData) => void;
     any_data: AnyWidgetData;
     message: Message;
 }): (events: Event[]) => void {
@@ -35,21 +33,32 @@ export function activate({
         tasks,
         report_error_function: blueslip.warn,
     });
+    widget_map.set(message.id, task_data);
 
-    return render({$elem, callback, message, task_data});
+    const handle_events = function (events: Event[]): void {
+        for (const event of events) {
+            task_data.handle_event(event.sender_id, event.data);
+        }
+    };
+
+    return handle_events;
 }
 
 export function render({
     $elem,
     callback,
     message,
-    task_data,
+    rerender,
 }: {
     $elem: JQuery;
     callback: (data: TodoWidgetOutboundData) => void;
     message: Message;
-    task_data: TaskData;
-}): (events: Event[]) => void {
+    rerender: boolean;
+}): void {
+    const task_data = widget_map.get(message.id);
+    if (!task_data) {
+        return;
+    }
     const is_my_task_list = task_data.is_my_task_list();
     const message_container = message_lists.current?.view.message_containers.get(message.id);
 
@@ -251,29 +260,19 @@ export function render({
         update_add_task_button();
     }
 
-    const handle_events = function (events: Event[]): void {
-        // We don't have to handle events now since we go through
-        // handle_event loop again when we unmute the message.
-        if (message_container?.is_hidden) {
-            return;
-        }
-
-        for (const event of events) {
-            task_data.handle_event(event.sender_id, event.data);
-        }
-
-        render_task_list_title();
-        render_results();
-    };
-
-    if (message_container?.is_hidden) {
+    if (message_container?.is_hidden && !rerender) {
         const html = render_message_hidden_dialog();
         $elem.html(html);
+    } else if (message_container?.is_hidden) {
+        return;
+    } else if (rerender) {
+        render_task_list_title();
+        render_results();
     } else {
         build_widget();
         render_task_list_title();
         render_results();
     }
 
-    return handle_events;
+    return;
 }

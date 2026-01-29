@@ -15,12 +15,13 @@ type WidgetOutboundData = PollWidgetOutboundData | TodoWidgetOutboundData;
 // They are currently injected into us from another module
 // for historical reasons. (as of January 2026)
 type WidgetImplementation = {
-    activate: (data: {
+    activate: (data: {message: Message; any_data: AnyWidgetData}) => HandleInboundEventsFunction;
+    render: (data: {
         $elem: JQuery;
         callback: (data: WidgetOutboundData) => void;
         message: Message;
-        any_data: AnyWidgetData;
-    }) => HandleInboundEventsFunction;
+        rerender: boolean;
+    }) => void;
 };
 
 export const widgets = new Map<string, WidgetImplementation>();
@@ -60,16 +61,38 @@ export class GenericWidget {
 }
 
 export function create_widget_instance(info: {
-    post_to_server: PostToServerFunction;
-    $widget_elem: JQuery;
     message: Message;
     any_data: AnyWidgetData;
-}): GenericWidget {
-    const {post_to_server, $widget_elem, message, any_data} = info;
+}): GenericWidget | undefined {
+    const {message, any_data} = info;
 
     // For historical reasons, we don't directly import the
     // modules that handle poll, todo, and zform.
     const widget_implementation = widgets.get(any_data.widget_type)!;
+
+    if (any_data.widget_type === "zform") {
+        return undefined;
+    }
+
+    const inbound_events_handler = widget_implementation.activate({
+        message,
+        any_data,
+    });
+
+    return new GenericWidget(inbound_events_handler, any_data.widget_type);
+}
+
+export function render_widget_instance(info: {
+    post_to_server: PostToServerFunction;
+    $widget_elem: JQuery;
+    message: Message;
+    widget_type: string;
+    rerender: boolean;
+}): void {
+    // We only rerender todo widget using this function.
+    // Other widgets get rerendered while handling events.
+    const {post_to_server, $widget_elem, message, widget_type, rerender} = info;
+    const widget_implementation = widgets.get(widget_type)!;
 
     // We pass this is into the widgets to provide them a black-box
     // service that sends any events **outbound** to the other active
@@ -83,12 +106,10 @@ export function create_widget_instance(info: {
         });
     }
 
-    const inbound_events_handler = widget_implementation.activate({
+    widget_implementation.render({
         $elem: $widget_elem,
         callback: post_to_server_callback,
         message,
-        any_data,
+        rerender,
     });
-
-    return new GenericWidget(inbound_events_handler, any_data.widget_type);
 }
