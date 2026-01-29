@@ -1,4 +1,4 @@
-now please remove that# Zulip overview
+# Zulip overview
 
 [Zulip](https://zulip.com) is an open-source organized team chat app with unique
 [topic-based threading][why-zulip] that combines the best of email and chat to
