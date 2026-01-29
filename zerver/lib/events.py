@@ -29,6 +29,7 @@ from zerver.lib.channel_folders import (
 )
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
+from zerver.lib.devices import get_devices
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.i18n import get_available_language_codes
@@ -948,6 +949,9 @@ def fetch_initial_state_data(
 
     if want("push_device"):
         state["push_devices"] = {} if user_profile is None else get_push_devices(user_profile)
+
+    if want("device"):
+        state["devices"] = {} if user_profile is None else get_devices(user_profile)
 
     if user_profile is None:
         # To ensure we have the correct user state set.
