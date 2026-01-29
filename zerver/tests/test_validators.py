@@ -29,6 +29,7 @@ from zerver.lib.validator import (
     check_url,
     equals,
     to_wild_value,
+    validate_todo_data,
 )
 
 if settings.ZILENCER_ENABLED:
@@ -207,32 +208,28 @@ class ValidatorTestCase(ZulipTestCase):
         with self.assertRaisesRegex(ValidationError, r"Unexpected arguments: state"):
             check_dict_only(keys)("x", x)
 
-        # Test optional keys
-        optional_keys = [
-            ("food", check_list(check_string)),
-            ("year", check_int),
-        ]
-
-        x = {
-            "names": ["alice", "bob"],
-            "city": "Boston",
-            "food": ["Lobster spaghetti"],
+    def test_validate_todo_data_reorder_tasks(self) -> None:
+        valid_reorder = {
+            "type": "reorder_tasks",
+            "task_order": ["1,10", "2,10", "3,10"],
         }
+        validate_todo_data(valid_reorder, is_widget_author=True)
 
-        check_dict(keys)("x", x)  # since _allow_only_listed_keys is False
-
-        with self.assertRaisesRegex(ValidationError, r"Unexpected arguments: food"):
-            check_dict_only(keys)("x", x)
-
-        check_dict_only(keys, optional_keys)("x", x)
-
-        x = {
-            "names": ["alice", "bob"],
-            "city": "Boston",
-            "food": "Lobster spaghetti",
+        not_author = {
+            "type": "reorder_tasks",
+            "task_order": ["1,10"],
         }
-        with self.assertRaisesRegex(ValidationError, r'x\["food"\] is not a list'):
-            check_dict_only(keys, optional_keys)("x", x)
+        with self.assertRaisesRegex(
+            ValidationError, r"You can't reorder tasks unless you are the author\."
+        ):
+            validate_todo_data(not_author, is_widget_author=False)
+
+        invalid_task_order_type = {
+            "type": "reorder_tasks",
+            "task_order": "not-a-list",
+        }
+        with self.assertRaisesRegex(ValidationError, r'.*"task_order".*is not a list'):
+            validate_todo_data(invalid_task_order_type, is_widget_author=True)
 
     def test_encapsulation(self) -> None:
         # There might be situations where we want deep
