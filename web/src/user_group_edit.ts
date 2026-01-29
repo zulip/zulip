@@ -1073,19 +1073,20 @@ export function show_settings_for(group: UserGroup): void {
     const group_assigned_user_group_permissions =
         settings_components.get_group_assigned_user_group_permissions(group);
 
+    let date_created_string = null;
+    if (group.date_created) {
+        date_created_string = timerender.get_localized_date_or_time_for_format(
+            // We get timestamp in seconds from the API but timerender
+            // needs milliseconds.
+            new Date(group.date_created * 1000),
+            "dayofyear_year",
+        );
+    }
+
     const html = render_user_group_settings({
         group,
         group_name: user_groups.get_display_group_name(group.name),
-        date_created_string: timerender.get_localized_date_or_time_for_format(
-            // We get timestamp in seconds from the API but timerender
-            // needs milliseconds.
-            //
-            // Note that the 0 value will never be used in practice,
-            // because group.date_created is undefined precisely when
-            // group.creator_id is unset.
-            new Date((group.date_created ?? 0) * 1000),
-            "dayofyear_year",
-        ),
+        date_created_string,
         creator: stream_data.maybe_get_creator_details(group.creator_id),
         is_creator: group.creator_id === current_user.user_id,
         ...get_membership_status_context(group),
