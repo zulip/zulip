@@ -160,6 +160,7 @@ ALL_ZULIP_TABLES = {
     "zerver_defaultstream",
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
+    "zerver_device",
     "zerver_draft",
     "zerver_emailchangestatus",
     "zerver_externalauthid",
@@ -244,6 +245,7 @@ NON_EXPORTED_TABLES = {
     "zerver_scheduledmessagenotificationemail",
     # When switching servers, clients will need to re-log in and
     # reregister for push notifications anyway.
+    "zerver_device",
     "zerver_pushdevice",
     "zerver_pushdevicetoken",
     # We don't use these generated Django tables
