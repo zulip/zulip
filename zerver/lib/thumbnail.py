@@ -204,6 +204,8 @@ def resize_avatar(image_data: bytes, size: int = DEFAULT_AVATAR_SIZE) -> bytes:
     # This will scale up, if necessary, and will scale the smallest
     # dimension to fit.  That is, a 1x1000 image will end up with the
     # one middle pixel enlarged to fill the full square.
+    # The resizing dimensions should be kept in sync with the client-side
+    # resizing code in web/upload_widget.ts.
     with libvips_check_image(image_data):
         return pyvips.Image.thumbnail_buffer(
             image_data,
@@ -223,6 +225,8 @@ def resize_logo(image_data: bytes) -> bytes:
     # pixels; it does not add any padding to make it exactly that
     # size.  A 1000x10 pixel image will end up as 800x8; a 10x10 will
     # end up 10x10.
+    # The resizing dimensions should be kept in sync with the client-side
+    # resizing code in web/upload_widget.ts.
     with libvips_check_image(image_data):
         return pyvips.Image.thumbnail_buffer(
             image_data,
