@@ -30,7 +30,6 @@ export function activate({
     assert(any_data.widget_type === "poll");
     const {extra_data} = any_data;
     const widget_context = new ZulipWidgetContext(message);
-    const container_is_hidden = widget_context.is_container_hidden();
     const is_my_poll = widget_context.is_my_poll();
     const poll_owner_user_id = widget_context.owner_user_id();
 
@@ -43,6 +42,23 @@ export function activate({
         comma_separated_names: people.get_full_names_for_poll_option,
         report_error_function: blueslip.warn,
     });
+
+    return render({$elem, callback, poll_data, widget_context});
+}
+
+export function render({
+    $elem,
+    callback,
+    poll_data,
+    widget_context,
+}: {
+    $elem: JQuery;
+    callback: (data: PollWidgetOutboundData) => void;
+    poll_data: PollData;
+    widget_context: ZulipWidgetContext;
+}): (events: Event[]) => void {
+    const container_is_hidden = widget_context.is_container_hidden();
+    const is_my_poll = widget_context.is_my_poll();
 
     function update_edit_controls(): void {
         const has_question =
