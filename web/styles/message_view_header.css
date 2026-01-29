@@ -4,8 +4,9 @@
     float: left;
     height: var(--header-height);
     width: 100%;
+    line-height: var(--header-height);
     display: flex;
-    align-items: center;
+    align-items: baseline;
     white-space: nowrap;
     cursor: default;
 
@@ -13,11 +14,10 @@
         display: none;
     }
 
-    .zulip-icon,
-    .navbar-icon,
-    .message-header-stream-settings-button .zulip-icon {
-        align-self: center !important;
-        line-height: 1;
+    .navbar-icon {
+        /* Apply spacing and alignment previously handled by .navbar_title span */
+        align-self: center;
+        margin: 0 6px 0 5px;
     }
 
     .message-header-stream-settings-button {
@@ -29,9 +29,6 @@
         /* Create a flex container for the icon and
            stream name. */
         display: flex;
-        /* We want to use baseline alignment so that the
-           stream name and narrow description sit on
-           the same invisible line. */
         align-items: baseline;
 
         .zulip-icon-inbox {
@@ -41,26 +38,15 @@
         @media (height < $short_navbar_cutoff_height) {
             padding: 0 3.5px; /* based on having ~41.66% decrease */
         }
-
-        .navbar-icon {
-            margin: 0 6px 0 5px;
-            /* Align all icons to center. */
-        }
     }
 
     .message-header-navbar-title {
         font-weight: 600;
-        /* 16px at 14px em */
-        font-size: 1.1429em;
-        /* Allow long navbar titles (e.g., stream names) to collapse. */
-        flex: 0 1 auto;
         overflow: hidden;
         text-overflow: ellipsis;
-
-        .channel-privacy-type-icon {
-            width: auto;
-        }
+        white-space: nowrap;
     }
+}
 
     .message-header-archived {
         color: var(--color-text-message-header-archived);
