@@ -835,6 +835,10 @@
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
     );
+    --color-navbar-direct-messages-bottom-divider: light-dark(
+        hsl(0deg 0% 0% / 15%),
+        hsl(0deg 0% 100% / 15%)
+    );
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: light-dark(
         hsl(0deg 0% 80%),
