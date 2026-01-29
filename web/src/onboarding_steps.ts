@@ -96,19 +96,19 @@ function narrow_to_dm_with_welcome_bot_new_user(
 function show_navigation_tour_video(navigation_tour_video_url: string | null): void {
     if (ONE_TIME_NOTICES_TO_DISPLAY.has("navigation_tour_video")) {
         assert(navigation_tour_video_url !== null);
-        const html_body = render_navigation_tour_video_modal({
+        const modal_content_html = render_navigation_tour_video_modal({
             video_src: navigation_tour_video_url,
             poster_src: "/static/images/navigation-tour-video-thumbnail.png",
         });
         let watch_later_clicked = false;
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Welcome to Zulip!"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Welcome to Zulip!"}),
+            modal_content_html,
             on_click() {
                 // Do nothing
             },
-            html_submit_button: $t_html({defaultMessage: "Skip video — I'm familiar with Zulip"}),
-            html_exit_button: $t_html({defaultMessage: "Watch later"}),
+            modal_submit_button_text: $t({defaultMessage: "Skip video — I'm familiar with Zulip"}),
+            modal_exit_button_text: $t({defaultMessage: "Watch later"}),
             close_on_submit: true,
             id: "navigation-tour-video-modal",
             footer_minor_text: $t({defaultMessage: "Tip: You can watch this video without sound."}),

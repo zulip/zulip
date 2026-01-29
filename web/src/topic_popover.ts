@@ -188,15 +188,15 @@ export function initialize(): void {
                 });
 
                 $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
-                    const html_body = render_delete_topic_modal({
+                    const modal_content_html = render_delete_topic_modal({
                         topic_display_name,
                         is_empty_string_topic,
                     });
 
                     confirm_dialog.launch({
-                        html_heading: $t_html({defaultMessage: "Delete topic"}),
+                        modal_title_html: $t_html({defaultMessage: "Delete topic"}),
                         help_link: "/help/delete-a-topic",
-                        html_body,
+                        modal_content_html,
                         on_click() {
                             message_delete.delete_topic(stream_id, topic_name);
                         },

@@ -548,18 +548,18 @@ function remove_member({
     }
 
     if (people.is_my_user_id(target_user_id) && !settings_data.can_join_user_group(group_id)) {
-        const html_body = render_leave_user_group_modal({
+        const modal_content_html = render_leave_user_group_modal({
             message: $t({
                 defaultMessage: "Once you leave this group, you will not be able to rejoin.",
             }),
         });
 
         confirm_dialog.launch({
-            html_heading: $t_html(
+            modal_title_html: $t_html(
                 {defaultMessage: "Leave {group_name}"},
                 {group_name: user_groups.get_display_group_name(group.name)},
             ),
-            html_body,
+            modal_content_html,
             on_click: do_remove_user_from_group,
         });
         return;

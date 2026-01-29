@@ -2,7 +2,6 @@ import $ from "jquery";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_confirm_delete_data_export from "../templates/confirm_dialog/confirm_delete_data_export.hbs";
 import render_export_modal_warning_notes from "../templates/export_modal_warning_notes.hbs";
 import render_allow_private_data_export_banner from "../templates/modal_banner/allow_private_data_export_banner.hbs";
 import render_admin_export_consent_list from "../templates/settings/admin_export_consent_list.hbs";
@@ -378,7 +377,7 @@ function maybe_show_notes_about_unusable_users_if_exported(
 }
 
 function show_start_export_modal(): void {
-    const html_body = render_start_export_modal({
+    const modal_content_html = render_start_export_modal({
         export_type_values: get_export_type_options_to_render(),
     });
 
@@ -443,9 +442,9 @@ function show_start_export_modal(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Start export?"}),
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Start export"}),
+        modal_title_html: $t_html({defaultMessage: "Start export?"}),
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Start export"}),
         id: "start-export-modal",
         loading_spinner: true,
         on_click: start_export,
@@ -529,11 +528,11 @@ export function set_up(): void {
         const url =
             "/json/export/realm/" +
             encodeURIComponent($button.closest("tr").attr("data-export-id")!);
-        const html_body = render_confirm_delete_data_export();
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete data export?"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Delete data export?"}),
+            modal_content_html: $t({defaultMessage: "This action cannot be undone."}),
+            is_compact: true,
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});
             },

@@ -493,7 +493,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     const show_group_pill_container =
         user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0;
 
-    const html_body = render_invite_user_modal({
+    const modal_content_html = render_invite_user_modal({
         is_admin: current_user.is_admin,
         is_owner: current_user.is_owner,
         show_group_pill_container,
@@ -688,7 +688,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 reset_invite_modal_banners();
             },
         });
-        const $container = $("#invite_users_option_tabs_container");
+        const $tab_switcher_container = $("#invite-user-modal .modal__tab-switcher-container");
         if (!settings_data.user_can_invite_users_by_email()) {
             toggler.disable_tab("invite-email-tab");
             toggler.goto("invite-link-tab");
@@ -697,7 +697,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             toggler.disable_tab("invite-link-tab");
         }
         const $elem = toggler.get();
-        $container.append($elem);
+        $tab_switcher_container.append($elem);
         setTimeout(() => {
             $(".invite_users_option_tabs .ind-tab.selected").trigger("focus");
         }, 0);
@@ -715,9 +715,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Invite users to organization"}),
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Invite"}),
+        modal_title_html: $t_html({defaultMessage: "Invite users to organization"}),
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Invite"}),
+        has_tab_switcher: true,
         id: "invite-user-modal",
         loading_spinner: true,
         on_click: invite_users,

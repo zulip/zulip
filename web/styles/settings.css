@@ -95,12 +95,6 @@ h3,
     max-width: 90%;
 }
 
-#change_email_modal {
-    #change_email_form {
-        margin: 0;
-    }
-}
-
 .disabled_setting_tooltip {
     cursor: not-allowed;
 }
@@ -926,14 +920,15 @@ input[type="checkbox"] {
         display: inline-flex;
     }
 
-    .default_stream_choices_table {
-        margin-top: 2px;
-    }
-
     .choice-row {
         margin-bottom: 10px;
 
         &:last-of-type {
+            /* Remove margin-bottom for last choice row
+               to remove extra space between the modal
+               content and footer. */
+            margin-bottom: 0;
+
             .delete-choice {
                 display: none;
             }
@@ -957,10 +952,6 @@ input[type="checkbox"] {
 }
 
 #add-custom-emoji-modal {
-    & form {
-        margin: 0;
-    }
-
     & input[type="text"] {
         padding: 6px;
     }
@@ -1070,7 +1061,6 @@ input[type="checkbox"] {
 
 .edit_bot_form {
     font-size: 100%;
-    margin: 0;
     padding: 0;
 
     .buttons {
@@ -1145,12 +1135,6 @@ input[type="checkbox"] {
         position: absolute;
         right: 20px;
         top: 0;
-    }
-}
-
-#change_password_modal {
-    #change_password_container {
-        margin: 0;
     }
 }
 
@@ -1449,7 +1433,7 @@ label.preferences-radio-choice-label {
     .sidebar {
         height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
-        border-right: 1px solid var(--color-border-modal);
+        border-right: 1px solid var(--color-border-modal-bar);
 
         .your-bots-link {
             text-decoration: none;
@@ -1484,7 +1468,7 @@ label.preferences-radio-choice-label {
             transition:
                 background-color 0.2s ease,
                 border-bottom 0.2s ease;
-            border-bottom: 1px solid var(--color-border-modal);
+            border-bottom: 1px solid var(--color-border-modal-bar);
 
             &:last-of-type .text {
                 border-bottom: none;
