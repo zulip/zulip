@@ -10688,9 +10688,6 @@ paths:
 
                     **Changes**: New in Zulip 5.0 (feature level 86).
                   example: unicode_emoji
-            encoding:
-              away:
-                contentType: application/json
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -11705,9 +11702,6 @@ paths:
 
                     **Changes**: New in Zulip 5.0 (feature level 86).
                   example: unicode_emoji
-            encoding:
-              away:
-                contentType: application/json
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -24326,7 +24320,7 @@ paths:
                   example: true
                   default: false
             encoding:
-              allow_deactivated:
+              include_deactivated_groups:
                 contentType: application/json
       responses:
         "200":
