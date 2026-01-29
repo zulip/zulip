@@ -650,4 +650,34 @@ export class MessageListData {
         const msg = this._items[msg_index];
         return msg;
     }
+
+    find_date_anchor_message_id(anchor_date: string): Message | undefined {
+        const anchor_timestamp = Math.floor(Date.parse(anchor_date) / 1000);
+        if (this.visibly_empty()) {
+            return undefined;
+        }
+
+        const first_message = this.first()!;
+        if (anchor_timestamp < first_message.timestamp && this.fetch_status.has_found_oldest()) {
+            return first_message;
+        }
+        const last_message = this.last()!;
+        if (anchor_timestamp > last_message.timestamp && this.fetch_status.has_found_newest()) {
+            return last_message;
+        }
+        // We need to fetch the message from the server if we have not found the oldest
+        // message in the list and if the there is no message older than the timestamp on
+        // the list.
+        if (!this.fetch_status.has_found_oldest() && anchor_timestamp <= first_message.timestamp) {
+            return undefined;
+        }
+
+        return this.all_messages_after_mute_filtering().find(
+            (message) => message.timestamp >= anchor_timestamp,
+        );
+    }
+
+    date_anchor_exists(anchor_date: string): boolean {
+        return Boolean(this.find_date_anchor_message_id(anchor_date));
+    }
 }
