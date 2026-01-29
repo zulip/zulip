@@ -1568,3 +1568,43 @@ ul.popover-menu-list {
     flex: 1;
     min-width: 0;
 }
+
+/* Native datetime picker styles */
+.native-datetime-picker-container {
+    position: absolute;
+    z-index: 9999;
+    background: var(--color-background);
+    border: 1px solid var(--color-border-popover-menu);
+    border-radius: 6px;
+    padding: 16px;
+    box-shadow: 0 4px 20px hsl(0deg 0% 0% / 15%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .native-datetime-picker-input {
+        padding: 8px 12px;
+        font-size: 1em;
+        border: 1px solid var(--color-border-popover-menu);
+        border-radius: 4px;
+        background: var(--color-background);
+        color: var(--color-text-default);
+        min-width: 200px;
+    }
+
+    .native-datetime-confirm-btn {
+        padding: 8px 16px;
+        font-size: 1em;
+        font-weight: 600;
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(213deg 90% 65%);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        align-self: flex-end;
+
+        &:hover {
+            background-color: hsl(213deg 90% 55%);
+        }
+    }
+}

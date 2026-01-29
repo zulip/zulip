@@ -1491,8 +1491,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
     user-select: none;
 }
 
+/* flatpickr styles removed - now using native browser date picker */
+/*
 .flatpickr-calendar {
-    /* Hide the up and down arrows in the Flatpickr datepicker year */
     .flatpickr-months .numInputWrapper span {
         display: none;
     }
@@ -1515,9 +1516,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 
     @media (width < $md_min) {
-        /* Center align flatpickr on mobile
-         * devices so that it doesn't go out of
-         * the viewport. */
         left: 0 !important;
         right: 0 !important;
         margin: auto;
@@ -1528,6 +1526,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         }
     }
 }
+*/
 
 #about-zulip {
     .exit {
