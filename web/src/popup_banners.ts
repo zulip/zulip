@@ -8,7 +8,9 @@ import {$t} from "./i18n.ts";
 export type ReloadingReason = "reload" | "update";
 
 let retry_connection_interval: ReturnType<typeof setInterval> | undefined;
+let api_rate_limit_retry_interval: ReturnType<typeof setInterval> | undefined;
 let original_retry_delay_secs = 0;
+let api_rate_limit_original_retry_delay_secs = 0;
 
 function fade_out_popup_banner($banner: JQuery): void {
     $banner.addClass("fade-out");
@@ -34,6 +36,56 @@ const get_connection_error_label = (retry_delay_secs: number): string => {
     );
 };
 
+function get_minutes_and_seconds(total_seconds: number): {
+    minutes: number;
+    seconds: number;
+} {
+    const minutes = Math.floor(total_seconds / 60);
+    const seconds = total_seconds % 60;
+    return {minutes, seconds};
+}
+
+const get_api_rate_limit_exceeded_label = (retry_delay_secs: number): string => {
+    if (api_rate_limit_original_retry_delay_secs < 5) {
+        return $t({
+            defaultMessage: "You’ve exceeded Zulip’s usage limits. Trying again soon…",
+        });
+    }
+
+    const {minutes, seconds} = get_minutes_and_seconds(retry_delay_secs);
+
+    // Less than a minute
+    if (minutes === 0) {
+        return $t(
+            {
+                defaultMessage:
+                    "You’ve exceeded Zulip’s usage limits. {seconds, plural, one {Please close any extra Zulip tabs and try again in # second…} other {Please close any extra Zulip tabs, and try again in # seconds…}}",
+            },
+            {seconds},
+        );
+    }
+
+    // Exact minutes
+    if (seconds === 0) {
+        return $t(
+            {
+                defaultMessage:
+                    "You’ve exceeded Zulip’s usage limits. {minutes, plural, one {Please close any extra Zulip tabs and try again in # minute…} other {Please close any extra Zulip tabs, and try again in # minutes…}}",
+            },
+            {minutes},
+        );
+    }
+
+    // Minutes + seconds
+    return $t(
+        {
+            defaultMessage:
+                "You’ve exceeded Zulip’s usage limits. Please close any extra Zulip tabs and try again in {minutes, plural, one {# minute} other {# minutes}} {seconds, plural, one {# second…} other {# seconds…}}",
+        },
+        {minutes, seconds},
+    );
+};
+
 const connection_error_popup_banner = (retry_seconds: number): Banner => ({
     intent: "danger",
     label: get_connection_error_label(retry_seconds),
@@ -46,6 +98,20 @@ const connection_error_popup_banner = (retry_seconds: number): Banner => ({
     ],
     close_button: true,
     custom_classes: "connection-error-banner popup-banner",
+});
+
+const api_rate_limit_exceeded_banner = (retry_seconds: number): Banner => ({
+    intent: "danger",
+    label: get_api_rate_limit_exceeded_label(retry_seconds),
+    buttons: [
+        {
+            variant: "subtle",
+            label: $t({defaultMessage: "Try now"}),
+            custom_classes: "retry-connection",
+        },
+    ],
+    close_button: true,
+    custom_classes: "api-rate-limit-exceeded-banner popup-banner",
 });
 
 const update_connection_error_banner = ($banner: JQuery, retry_delay_secs: number): void => {
@@ -68,6 +134,26 @@ const update_connection_error_banner = ($banner: JQuery, retry_delay_secs: numbe
             buttons.show_button_loading_indicator($retry_connection_button);
         }
         $banner_label.text(get_connection_error_label(retry_delay_secs));
+    }, 1000);
+};
+
+const update_api_rate_limit_exceeded_banner = ($banner: JQuery, retry_delay_secs: number): void => {
+    api_rate_limit_original_retry_delay_secs = retry_delay_secs;
+    if (api_rate_limit_retry_interval !== undefined) {
+        clearInterval(api_rate_limit_retry_interval);
+    }
+    const $banner_label = $banner.find(".banner-label");
+    api_rate_limit_retry_interval = setInterval(() => {
+        retry_delay_secs -= 1;
+        if (retry_delay_secs <= 0) {
+            clearInterval(api_rate_limit_retry_interval);
+            return;
+        }
+        if (retry_delay_secs <= 1) {
+            const $retry_connection_button = $banner.find(".retry-connection");
+            buttons.show_button_loading_indicator($retry_connection_button);
+        }
+        $banner_label.text(get_api_rate_limit_exceeded_label(retry_delay_secs));
     }, 1000);
 };
 
@@ -239,9 +325,15 @@ function retry_connection_click_handler(e: JQuery.ClickEvent, on_retry_callback:
     e.stopPropagation();
 
     const $banner = $(e.currentTarget).closest(".banner");
-    $banner
-        .find(".banner-label")
-        .text($t({defaultMessage: "Unable to connect to Zulip. Trying to reconnect soon…"}));
+    if ($banner.hasClass("api-rate-limit-exceeded-banner")) {
+        $banner
+            .find(".banner-label")
+            .text($t({defaultMessage: "You've exceeded Zulip's usage limits. Trying again…"}));
+    } else {
+        $banner
+            .find(".banner-label")
+            .text($t({defaultMessage: "Unable to connect to Zulip. Trying to reconnect soon…"}));
+    }
 
     const $button = $(e.currentTarget).closest(".retry-connection");
 
@@ -255,6 +347,69 @@ function retry_connection_click_handler(e: JQuery.ClickEvent, on_retry_callback:
 
     buttons.show_button_loading_indicator($button);
     on_retry_callback();
+}
+
+export function open_api_rate_limit_exceeded_banner(opts: {
+    caller: "server_events" | "message_fetch";
+    retry_delay_secs: number;
+    on_retry_callback: () => void;
+}): void {
+    opts.retry_delay_secs = Math.round(opts.retry_delay_secs);
+    const retry_connection_attached_click_handler = (e: JQuery.ClickEvent): void => {
+        retry_connection_click_handler(e, opts.on_retry_callback);
+    };
+    let $banner = $("#popup_banners_wrapper").find(".api-rate-limit-exceeded-banner");
+    if ($banner.length > 0) {
+        if ($banner.attr("data-caller") !== opts.caller) {
+            return;
+        }
+        update_api_rate_limit_exceeded_banner($banner, opts.retry_delay_secs);
+        const $retry_connection_button = $banner.find(".retry-connection");
+        if ($retry_connection_button.find(".button-loading-indicator").length > 0) {
+            setTimeout(() => {
+                buttons.hide_button_loading_indicator($retry_connection_button);
+            }, 1000);
+        }
+        $retry_connection_button.off("click");
+        $retry_connection_button.on("click", retry_connection_attached_click_handler);
+        return;
+    }
+
+    banners.append(
+        api_rate_limit_exceeded_banner(opts.retry_delay_secs),
+        $("#popup_banners_wrapper"),
+    );
+
+    $banner = $("#popup_banners_wrapper").find(".api-rate-limit-exceeded-banner");
+    if (opts.caller === "server_events") {
+        $banner.attr("data-caller", "server_events");
+    } else if (opts.caller === "message_fetch") {
+        $banner.attr("data-caller", "message_fetch");
+    }
+
+    update_api_rate_limit_exceeded_banner($banner, opts.retry_delay_secs);
+
+    $("#popup_banners_wrapper").on(
+        "click",
+        ".api-rate-limit-exceeded-banner .retry-connection",
+        retry_connection_attached_click_handler,
+    );
+}
+
+export function close_api_rate_limit_exceeded_banner(
+    caller: "server_events" | "message_fetch",
+): void {
+    const $banner = $("#popup_banners_wrapper").find(".api-rate-limit-exceeded-banner");
+    if ($banner.length === 0) {
+        return;
+    }
+    if ($banner.attr("data-caller") !== caller) {
+        return;
+    }
+    if (api_rate_limit_retry_interval !== undefined) {
+        clearInterval(api_rate_limit_retry_interval);
+    }
+    fade_out_popup_banner($banner);
 }
 
 export function open_connection_error_popup_banner(opts: {
