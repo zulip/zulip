@@ -262,7 +262,7 @@ class MatterMostImporter(ZulipTestCase):
         reset_mirror_dummy_users(username_to_user)
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[frozenset[str]]()
         stream_id_mapper = IdMapper[str]()
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
@@ -430,7 +430,7 @@ class MatterMostImporter(ZulipTestCase):
         reset_mirror_dummy_users(username_to_user)
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[frozenset[str]]()
         direct_message_group_id_mapper = IdMapper[frozenset[str]]()
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
@@ -452,6 +452,7 @@ class MatterMostImporter(ZulipTestCase):
                 subscriber_handler=subscriber_handler,
                 direct_message_group_id_mapper=direct_message_group_id_mapper,
                 user_id_mapper=user_id_mapper,
+                realm=realm,
                 realm_id=3,
                 team_name=team_name,
             )
@@ -483,7 +484,7 @@ class MatterMostImporter(ZulipTestCase):
         reset_mirror_dummy_users(username_to_user)
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[frozenset[str]]()
         direct_message_group_id_mapper = IdMapper[frozenset[str]]()
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
@@ -505,6 +506,7 @@ class MatterMostImporter(ZulipTestCase):
                 subscriber_handler=subscriber_handler,
                 direct_message_group_id_mapper=direct_message_group_id_mapper,
                 user_id_mapper=user_id_mapper,
+                realm=realm,
                 realm_id=3,
                 team_name=team_name,
             )

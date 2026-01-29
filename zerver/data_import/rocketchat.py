@@ -219,7 +219,7 @@ def convert_stream_subscription_data(
     zerver_stream: list[ZerverFieldsT],
     stream_id_mapper: IdMapper[str],
     user_id_mapper: IdMapper[str],
-    subscriber_handler: SubscriberHandler,
+    subscriber_handler: SubscriberHandler[str],
 ) -> None:
     stream_members_map: dict[int, set[int]] = {}
 
@@ -249,7 +249,7 @@ def convert_direct_message_group_data(
     direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]],
     direct_message_group_id_mapper: IdMapper[str],
     user_id_mapper: IdMapper[str],
-    subscriber_handler: SubscriberHandler,
+    subscriber_handler: SubscriberHandler[str],
 ) -> list[ZerverFieldsT]:
     zerver_direct_message_group: list[ZerverFieldsT] = []
 
@@ -1089,7 +1089,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     username_to_user_id_map: dict[str, str] = map_username_to_user_id(user_id_to_user_map)
 
     user_handler = UserHandler()
-    subscriber_handler = SubscriberHandler()
+    subscriber_handler = SubscriberHandler[str]()
     user_id_mapper = IdMapper[str]()
     stream_id_mapper = IdMapper[str]()
     direct_message_group_id_mapper = IdMapper[str]()

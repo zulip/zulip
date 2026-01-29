@@ -5,12 +5,12 @@ import secrets
 import shutil
 import subprocess
 from collections import defaultdict
-from collections.abc import Callable, Iterable, Iterator, Mapping
+from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from email.errors import HeaderDefect
 from email.headerregistry import Address
-from typing import Any, Protocol, TypeAlias, TypeVar
+from typing import Any, Generic, Protocol, TypeAlias, TypeVar
 from urllib.parse import SplitResult
 
 import orjson
@@ -93,10 +93,14 @@ class UploadFileRequest:
     kwargs: dict[str, Any]
 
 
-class SubscriberHandler:
+GroupDMKey = TypeVar("GroupDMKey", bound=Hashable)
+
+
+class SubscriberHandler(Generic[GroupDMKey]):
     def __init__(self) -> None:
         self.stream_info: dict[int, set[int]] = {}
         self.direct_message_group_info: dict[int, set[int]] = {}
+        self.group_dm_key_to_zulip_recipient_id: dict[GroupDMKey, int] = {}
 
     def set_info(
         self,
@@ -110,6 +114,16 @@ class SubscriberHandler:
             self.direct_message_group_info[direct_message_group_id] = users
         else:
             raise AssertionError("stream_id or direct_message_group_id is required")
+
+    def add_group_dm_key_to_zulip_recipient_id(
+        self, key: GroupDMKey, group_recipient_id: int
+    ) -> None:
+        # TODO: Currently only Mattermost importer uses this. Maybe refactor this into
+        # self.set_info() once other importers starts using this method too.
+        self.group_dm_key_to_zulip_recipient_id[key] = group_recipient_id
+
+    def get_zulip_recipient_id(self, key: GroupDMKey) -> int | None:
+        return self.group_dm_key_to_zulip_recipient_id.get(key)
 
     def get_users(
         self, stream_id: int | None = None, direct_message_group_id: int | None = None

@@ -349,7 +349,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         stream_id_mapper = IdMapper[str]()
 
@@ -458,7 +458,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         direct_message_group_id_mapper = IdMapper[str]()
 
@@ -516,7 +516,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         direct_message_group_id_mapper = IdMapper[str]()
 
@@ -622,7 +622,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         stream_id_mapper = IdMapper[str]()
         direct_message_group_id_mapper = IdMapper[str]()
