@@ -14,14 +14,14 @@ import * as compose_validate from "./compose_validate.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
-import type {RawLocalMessage} from "./echo.ts";
-import type {Filter} from "./filter.ts";
+import type { RawLocalMessage } from "./echo.ts";
+import type { Filter } from "./filter.ts";
 import * as lightbox from "./lightbox.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_events_util from "./message_events_util.ts";
 import * as message_helper from "./message_helper.ts";
-import type {LocalMessage} from "./message_helper.ts";
+import type { LocalMessage } from "./message_helper.ts";
 import * as message_list_data_cache from "./message_list_data_cache.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_notifications from "./message_notifications.ts";
@@ -40,11 +40,11 @@ import * as recent_senders from "./recent_senders.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as resolved_topic from "./resolved_topic.ts";
-import type {UpdateMessageEvent} from "./server_event_types.ts";
-import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
+import type { UpdateMessageEvent } from "./server_event_types.ts";
+import { message_edit_history_visibility_policy_values } from "./settings_config.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
-import {realm} from "./state_data.ts";
+import { realm } from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
@@ -208,7 +208,7 @@ export let update_views_filtered_on_message_property = (
                     const messages_to_add: Message[] = [];
                     const messages_to_remove = new Set(message_ids);
                     for (const raw_message of z
-                        .object({messages: z.array(raw_message_schema)})
+                        .object({ messages: z.array(raw_message_schema) })
                         .parse(data).messages) {
                         messages_to_remove.delete(raw_message.id);
                         const message = message_store.get(raw_message.id);
@@ -296,15 +296,15 @@ export function rewire_update_views_filtered_on_message_property(
 export type InsertNewMessagesOpts = {
     sent_by_this_client: boolean;
 } & (
-    | {
-          type: "server_message";
-          raw_messages: RawMessage[];
-      }
-    | {
-          type: "local_message";
-          raw_messages: RawLocalMessage[];
-      }
-);
+        | {
+            type: "server_message";
+            raw_messages: RawMessage[];
+        }
+        | {
+            type: "local_message";
+            raw_messages: RawLocalMessage[];
+        }
+    );
 
 export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
     const deliver_locally = opts.type === "local_message";
@@ -351,7 +351,7 @@ export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
         }
 
         // Update the message list's rendering for the newly arrived messages.
-        const render_info = list.add_messages(messages, {messages_are_new: true});
+        const render_info = list.add_messages(messages, { messages_are_new: true });
 
         // The render_info.need_user_to_scroll calculation, which
         // looks at message feed scroll positions to see whether the
@@ -380,7 +380,7 @@ export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
     if (opts.sent_by_this_client) {
         compose_notifications.notify_local_mixes(messages, need_user_to_scroll, {
             narrow_to_recipient(message_id) {
-                message_view.narrow_by_topic(message_id, {trigger: "outside_current_view"});
+                message_view.narrow_by_topic(message_id, { trigger: "outside_current_view" });
             },
         });
     }
@@ -566,7 +566,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 message_lists.current !== undefined &&
                 current_selected_id !== undefined &&
                 event.message_ids.includes(current_selected_id);
-            const event_messages: (Message & {type: "stream"})[] = [];
+            const event_messages: (Message & { type: "stream" })[] = [];
             for (const message_id of event.message_ids) {
                 // We don't need to concern ourselves updating data structures
                 // for messages we don't have stored locally.
@@ -855,7 +855,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             anchor_message !== undefined &&
             $("#message-edit-history").parents(".micromodal").hasClass("modal--open") &&
             anchor_message.id ===
-                Number.parseInt($("#message-history").attr("data-message-id")!, 10)
+            Number.parseInt($("#message-history").attr("data-message-id")!, 10)
         ) {
             message_edit_history.fetch_and_render_message_history(anchor_message);
         }
@@ -915,6 +915,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
 
     unread_ui.update_unread_counts();
     stream_list.update_streams_sidebar();
+
     pm_list.update_private_messages();
 }
 
