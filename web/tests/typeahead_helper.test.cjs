@@ -1807,3 +1807,26 @@ test("query_matches_person matches custom profile fields when they are enabled f
     assert.equal(th.query_matches_person("alpha", a_user_item, undefined, undefined, true), true);
     assert.equal(th.query_matches_person("beta", a_user_item, undefined, undefined, true), false);
 });
+
+test("sort_recipients prioritizes exact diacritic matches", () => {
+    const aaron_item = {
+        type: "user",
+        user: {full_name: "aaron", email: "aaron@zulip.com", is_bot: false},
+    };
+
+    const aaron_pl_item = {
+        type: "user",
+        user: {full_name: "Ąaron", email: "aaron_pl@zulip.com", is_bot: false},
+    };
+
+    const users = [aaron_item, aaron_pl_item];
+
+    const result = th.sort_recipients({
+        users,
+        query: "ą",
+        groups: [],
+        max_num_items: 10,
+    });
+
+    assert.deepEqual(result, [aaron_pl_item, aaron_item]);
+});
