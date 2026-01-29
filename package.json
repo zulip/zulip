@@ -31,6 +31,7 @@
     "clipboard": "^2.0.4",
     "colord": "^2.9.3",
     "compression-webpack-plugin": "^11.1.0",
+    "compressorjs": "^1.2.1",
     "core-js": "^3.48.0",
     "css-loader": "^7.1.1",
     "css-minimizer-webpack-plugin": "^7.0.0",
