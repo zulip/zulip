@@ -144,6 +144,7 @@ def convert_user_data(
     user_handler: UserHandler,
     user_id_mapper: IdMapper[str],
     user_data_map: dict[str, dict[str, Any]],
+    realm: ZerverFieldsT,
     realm_id: int,
     team_name: str,
 ) -> None:
@@ -151,6 +152,22 @@ def convert_user_data(
     for user_data in user_data_map.values():
         if check_user_in_team(user_data, team_name) or user_data["is_mirror_dummy"]:
             user = process_user(user_data, realm_id, team_name, user_id_mapper)
+
+            type_id = user["id"]
+            type = Recipient.PERSONAL
+            recipient_id = NEXT_ID("recipient")
+            recipient = Recipient(
+                type_id=type_id,
+                id=recipient_id,
+                type=type,
+            )
+            recipient_dict = model_to_dict(recipient)
+            realm["zerver_recipient"].append(recipient_dict)
+            user_handler.add_exported_user_id_to_zulip_recipient_id(
+                exported_user_id=user_data["username"],
+                zulip_recipient_id=recipient_id,
+            )
+
             user_handler.add_user(user)
             if user["role"] == UserProfile.ROLE_REALM_OWNER:
                 has_owner = True
@@ -960,6 +977,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
             user_data_map=username_to_user,
+            realm=realm,
             realm_id=realm_id,
             team_name=team_name,
         )
@@ -988,10 +1006,9 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             )
             realm["zerver_huddle"] = zerver_direct_message_group
 
-        all_users = user_handler.get_all_users()
-
         zerver_recipient = build_recipients(
-            zerver_userprofile=all_users,
+            # We build the users' recipient as we convert user data.
+            zerver_userprofile=[],
             # We build the channels' recipient as we convert channel data.
             zerver_stream=[],
             zerver_direct_message_group=zerver_direct_message_group,
