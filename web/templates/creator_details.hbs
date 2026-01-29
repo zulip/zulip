@@ -18,13 +18,13 @@
         {{#*inline "z-date-created"}}{{date_created_string}}{{/inline}}
     {{/tr}}
 {{/if}}
-{{#if stream_id}}
+{{#unless (eq stream_id undefined)}}
 {{# tr}}
     &nbsp;Channel ID: {stream_id}.
 {{/tr}}
-{{/if}}
-{{#if group_id}}
+{{/unless}}
+{{#unless (eq group_id undefined)}}
 {{# tr}}
     &nbsp;Group ID: {group_id}.
 {{/tr}}
-{{/if}}
+{{/unless}}

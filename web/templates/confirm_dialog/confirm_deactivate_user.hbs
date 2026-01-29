@@ -12,7 +12,7 @@
         {{/tr}}
     {{/if}}
 </p>
-{{#if bots_owned_by_user.length}}
+{{#unless (eq bots_owned_by_user.length 0)}}
     <p>
         {{t "They administer the following bots:"}}
     </p>
@@ -21,7 +21,7 @@
             <li>{{this.full_name}}</li>
         {{/each}}
     </ul>
-{{/if}}
+{{/unless}}
 <label class="checkbox">
     <input type="checkbox" class="send_email" />
     <span class="rendered-checkbox"></span>

@@ -75,10 +75,10 @@
 
 <div class="message_length_controller"></div>
 
-{{#if (and (not is_hidden) msg.message_reactions.length)}}
+{{#unless (or is_hidden (eq msg.message_reactions.length 0))}}
     {{> message_reactions . }}
-{{/if}}
+{{/unless}}
 
-{{#if msg.reminders.length}}
+{{#unless (eq msg.reminders.length 0)}}
     {{> message_reminders . }}
-{{/if}}
+{{/unless}}
