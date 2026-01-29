@@ -82,35 +82,43 @@ export function initialize(): void {
         );
     });
 
-    $("textarea#compose-textarea").on("input", () => {
-        if ($("#compose").hasClass("preview_mode")) {
-            compose.render_preview_area();
-        }
-        const recipient_widget_hidden =
-            $(".compose_select_recipient-dropdown-list-container").length === 0;
-        if (recipient_widget_hidden) {
-            compose_validate.warn_if_topic_resolved(false);
-        }
-        const compose_text_length = compose_validate.check_overflow_text($("#send_message_form"));
-
-        // Change compose close button tooltip as per condition.
-        // We save compose text in draft only if its length is > 2.
-        if (compose_text_length > 2) {
-            $("#compose_close").attr(
-                "data-tooltip-template-id",
-                "compose_close_and_save_tooltip_template",
+    $("textarea#compose-textarea").on(
+        "input",
+        _.throttle(() => {
+            if ($("#compose").hasClass("preview_mode")) {
+                compose.render_preview_area();
+            }
+            const recipient_widget_hidden =
+                $(".compose_select_recipient-dropdown-list-container").length === 0;
+            if (recipient_widget_hidden) {
+                compose_validate.warn_if_topic_resolved(false);
+            }
+            const compose_text_length = compose_validate.check_overflow_text(
+                $("#send_message_form"),
             );
-        } else {
-            $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
-        }
 
-        // The poll widget requires an empty compose box.
-        $(".needs-empty-compose").toggleClass("disabled-on-hover", compose_text_length > 0);
+            // Change compose close button tooltip as per condition.
+            // We save compose text in draft only if its length is > 2.
+            if (compose_text_length > 2) {
+                $("#compose_close").attr(
+                    "data-tooltip-template-id",
+                    "compose_close_and_save_tooltip_template",
+                );
+            } else {
+                $("#compose_close").attr(
+                    "data-tooltip-template-id",
+                    "compose_close_tooltip_template",
+                );
+            }
 
-        if (compose_state.get_is_content_unedited_restored_draft()) {
-            compose_state.set_is_content_unedited_restored_draft(false);
-        }
-    });
+            // The poll widget requires an empty compose box.
+            $(".needs-empty-compose").toggleClass("disabled-on-hover", compose_text_length > 0);
+
+            if (compose_state.get_is_content_unedited_restored_draft()) {
+                compose_state.set_is_content_unedited_restored_draft(false);
+            }
+        }, 25),
+    );
 
     $("#compose form").on("submit", (e) => {
         e.preventDefault();
