@@ -115,7 +115,6 @@
             animation: contract-extended-description 100ms ease-in both !important;
         }
     }
-}
 
 /* Media Queries */
 @media only screen and (width <= 620px) {
