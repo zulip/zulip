@@ -137,6 +137,7 @@ export const allowed_web_public_narrow_operators = [
     "streams",
     "stream",
     "topic",
+    "topic-contains",
     "sender",
     "has",
     "search",
