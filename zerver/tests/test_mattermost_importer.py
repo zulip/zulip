@@ -177,7 +177,10 @@ class MatterMostImporter(ZulipTestCase):
 
         team_name = "gryffindor"
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
+        realm = make_realm(realm_id=0, team={"name": team_name})
+        convert_user_data(
+            user_handler, user_id_mapper, username_to_user, realm, realm_id, team_name
+        )
         self.assert_length(user_handler.get_all_users(), 2)
         self.assertTrue(user_id_mapper.has("harry"))
         self.assertTrue(user_id_mapper.has("ron"))
@@ -190,7 +193,10 @@ class MatterMostImporter(ZulipTestCase):
 
         team_name = "slytherin"
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
+        realm = make_realm(realm_id=0, team={"name": team_name})
+        convert_user_data(
+            user_handler, user_id_mapper, username_to_user, realm, realm_id, team_name
+        )
         self.assert_length(user_handler.get_all_users(), 3)
         self.assertTrue(user_id_mapper.has("malfoy"))
         self.assertTrue(user_id_mapper.has("pansy"))
@@ -200,13 +206,19 @@ class MatterMostImporter(ZulipTestCase):
         # Snape is a mirror dummy user in Harry's team.
         label_mirror_dummy_users(2, team_name, mattermost_data, username_to_user)
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
+        realm = make_realm(realm_id=0, team={"name": team_name})
+        convert_user_data(
+            user_handler, user_id_mapper, username_to_user, realm, realm_id, team_name
+        )
         self.assert_length(user_handler.get_all_users(), 3)
         self.assertTrue(user_id_mapper.has("snape"))
 
         team_name = "slytherin"
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
+        realm = make_realm(realm_id=0, team={"name": team_name})
+        convert_user_data(
+            user_handler, user_id_mapper, username_to_user, realm, realm_id, team_name
+        )
         self.assert_length(user_handler.get_all_users(), 3)
 
         # Warn if the converted realm will have no realm owner.
@@ -218,7 +230,12 @@ class MatterMostImporter(ZulipTestCase):
         }
         with self.assertLogs(level="INFO") as info_log:
             convert_user_data(
-                user_handler, user_id_mapper, user_map_with_no_realm_owner, realm_id, team_name
+                user_handler,
+                user_id_mapper,
+                user_map_with_no_realm_owner,
+                realm,
+                realm_id,
+                team_name,
             )
         self.assertEqual(
             info_log.output,
@@ -229,8 +246,11 @@ class MatterMostImporter(ZulipTestCase):
         team_name = "gryffindor"
         bad_email1 = username_to_user["harry"]["email"] = "harry.ceramicist@zuL1[p.c0m"
         bad_email2 = username_to_user["ron"]["email"] = "ron.ferret@zulup...com"
+        realm = make_realm(realm_id=0, team={"name": team_name})
         with self.assertRaises(Exception) as e:
-            convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
+            convert_user_data(
+                user_handler, user_id_mapper, username_to_user, realm, realm_id, team_name
+            )
         error_message = str(e.exception)
         expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email2}, {bad_email1}']"
         self.assertEqual(error_message, expected_error_message)
@@ -247,13 +267,14 @@ class MatterMostImporter(ZulipTestCase):
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
 
-        mock_realm_dict: ZerverFieldsT = make_realm(realm_id=0, team={"name": "test-realm"})
+        mock_realm_dict: ZerverFieldsT = make_realm(realm_id=0, team={"name": team_name})
         zerver_realm = mock_realm_dict["zerver_realm"]
 
         convert_user_data(
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
             user_data_map=username_to_user,
+            realm=mock_realm_dict,
             realm_id=3,
             team_name=team_name,
         )
@@ -413,11 +434,13 @@ class MatterMostImporter(ZulipTestCase):
         direct_message_group_id_mapper = IdMapper[frozenset[str]]()
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
+        realm = make_realm(realm_id=0, team={"name": team_name})
 
         convert_user_data(
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
             user_data_map=username_to_user,
+            realm=realm,
             realm_id=3,
             team_name=team_name,
         )
@@ -464,11 +487,13 @@ class MatterMostImporter(ZulipTestCase):
         direct_message_group_id_mapper = IdMapper[frozenset[str]]()
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
+        realm = make_realm(realm_id=0, team={"name": team_name})
 
         convert_user_data(
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
             user_data_map=username_to_user,
+            realm=realm,
             realm_id=3,
             team_name=team_name,
         )
@@ -563,11 +588,13 @@ class MatterMostImporter(ZulipTestCase):
         user_handler = UserHandler()
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
+        realm = make_realm(realm_id=0, team={"name": team_name})
 
         convert_user_data(
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
             user_data_map=username_to_user,
+            realm=realm,
             realm_id=3,
             team_name=team_name,
         )
