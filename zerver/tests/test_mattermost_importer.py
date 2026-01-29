@@ -514,12 +514,16 @@ class MatterMostImporter(ZulipTestCase):
         expected_dm_groups = [
             (0, {2, 3}),  # direct_channel[0] should have users 2, 3
             (1, {1, 2, 3}),  # direct_channel[1] should have users 1, 2, 3
-            (3, {3, 4}),  # direct_channel[3] should have users 3, 4
+            (3, {3}),  # direct_channel[3] should have users 3
         ]
 
         for channel_index, expected_users in expected_dm_groups:
             direct_message_group_members = frozenset(
-                mattermost_data["direct_channel"][channel_index]["members"]
+                [
+                    username
+                    for username in mattermost_data["direct_channel"][channel_index]["members"]
+                    if user_id_mapper.has(username)
+                ]
             )
             self.assertTrue(direct_message_group_id_mapper.has(direct_message_group_members))
             actual_users = subscriber_handler.get_users(
