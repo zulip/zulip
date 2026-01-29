@@ -18,6 +18,7 @@ from zerver.data_import.mattermost import (
     do_convert_data,
     get_mentioned_user_ids,
     label_mirror_dummy_users,
+    make_realm,
     mattermost_data_file_to_dict,
     process_message_attachments,
     process_user,
@@ -246,7 +247,7 @@ class MatterMostImporter(ZulipTestCase):
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
 
-        mock_realm_dict: ZerverFieldsT = dict(zerver_realm=[dict()])
+        mock_realm_dict: ZerverFieldsT = make_realm(realm_id=0, team={"name": "test-realm"})
         zerver_realm = mock_realm_dict["zerver_realm"]
 
         convert_user_data(
@@ -271,7 +272,7 @@ class MatterMostImporter(ZulipTestCase):
                 realm_id=3,
                 team_name=team_name,
             )
-
+        zerver_stream = mock_realm_dict["zerver_stream"]
         self.assert_length(zerver_stream, 7)
 
         self.assertEqual(zerver_stream[0]["name"], "Gryffindor common room")
@@ -343,7 +344,7 @@ class MatterMostImporter(ZulipTestCase):
 
         # Converting channel data when a user's `teams` value is `null`.
         username_to_user["ron"].update(teams=None)
-        mock_realm_dict = dict(zerver_realm=[dict()])
+        mock_realm_dict = make_realm(realm_id=0, team={"name": "test-realm"})
         zerver_stream = convert_channel_data(
             realm=mock_realm_dict,
             channel_data=mattermost_data["channel"],
@@ -372,7 +373,7 @@ class MatterMostImporter(ZulipTestCase):
         )
 
         team_name = "slytherin"
-        mock_realm_dict = dict(zerver_realm=[dict()])
+        mock_realm_dict = make_realm(realm_id=0, team={"name": "test-realm"})
         zerver_stream = convert_channel_data(
             realm=mock_realm_dict,
             channel_data=mattermost_data["channel"],
