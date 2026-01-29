@@ -431,6 +431,7 @@ class MatterMostImporter(ZulipTestCase):
                 subscriber_handler=subscriber_handler,
                 direct_message_group_id_mapper=direct_message_group_id_mapper,
                 user_id_mapper=user_id_mapper,
+                realm=realm,
                 realm_id=3,
                 team_name=team_name,
             )
@@ -484,6 +485,7 @@ class MatterMostImporter(ZulipTestCase):
                 subscriber_handler=subscriber_handler,
                 direct_message_group_id_mapper=direct_message_group_id_mapper,
                 user_id_mapper=user_id_mapper,
+                realm=realm,
                 realm_id=3,
                 team_name=team_name,
             )
