@@ -86,7 +86,10 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
 // This enables mentions to display inline, while adjusting
 // the outer element's font-size for better appearance on
 // lines of message text.
-function wrap_mention_content_in_dom_element(element: HTMLElement, is_bot = false): HTMLElement {
+export function wrap_mention_content_in_dom_element(
+    element: HTMLElement,
+    is_bot = false,
+): HTMLElement {
     const mention_text = $(element).text();
     $(element).html(render_mention_content_wrapper({mention_text, is_bot}));
     return element;
@@ -133,6 +136,12 @@ export const update_elements = ($content: JQuery): void => {
             // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/load
             this.load();
         });
+    }
+
+    // Don't show the reply part of the message when previewing the message
+    // as there will be reply UI already above the textarea.
+    if ($content.closest(".preview_content").length > 0) {
+        $content.find(".reply").parent("p").remove();
     }
 
     // personal and stream wildcard mentions

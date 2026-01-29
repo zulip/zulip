@@ -329,7 +329,7 @@ export function snapshot_message(force_save = false): LocalStorageDraft | undefi
     // Save what we can.
     const message = {
         type: compose_state.get_message_type(),
-        content: compose_state.message_content(),
+        content: compose_state.get_message_with_raw_reply_content($("textarea#compose-textarea")),
         updatedAt: getTimestamp(),
     };
     if (message.type === "private") {

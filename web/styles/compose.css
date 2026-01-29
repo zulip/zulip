@@ -347,10 +347,10 @@
 #message-content-container {
     grid-area: message-content-container;
     display: grid;
-    grid-template: minmax(0, 1fr) / minmax(0, 1fr) var(
+    grid-template: auto minmax(0, 1fr) / minmax(0, 1fr) var(
             --composebox-buttons-width
         );
-    grid-template-areas: "message-content composebox-buttons";
+    grid-template-areas: "reply-container reply-container" "message-content composebox-buttons";
     border-radius: 4px;
     border: 1px solid var(--color-message-content-container-border);
 
@@ -551,6 +551,20 @@
 
     &:focus {
         outline: 0;
+    }
+}
+
+.reply-container {
+    background-color: var(--color-compose-message-content-background);
+    grid-area: reply-container;
+
+    .reply {
+        /* To match the padding of composebox textarea. */
+        padding: 5px 0 0 5px;
+
+        a {
+            pointer-events: none;
+        }
     }
 }
 

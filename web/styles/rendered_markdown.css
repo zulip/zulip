@@ -25,12 +25,16 @@
                ordinary bottom space by half. */
             margin-bottom: calc(var(--markdown-interelement-space-px) / 2);
         }
+
+        &:has(> .reply:first-child) {
+            margin: 0;
+        }
     }
 
     /* The spacing between two paragraphs is double the usual value.
        We coordinate this spacing matches so that it matches the
        spacing between paragraphs in two consecutive 1-line messages. */
-    & p + p {
+    & p:not(:has(> .reply:first-child)) + p {
         margin-top: var(--markdown-interelement-doubled-space-px);
     }
 
@@ -917,6 +921,83 @@
         font-size: 1.1363em;
         border: 1px solid var(--color-copy-button-square-bg-active);
         backdrop-filter: blur(20px);
+    }
+
+    .reply {
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-columns: auto auto auto 1fr auto auto;
+        grid-template-areas: "reply-icon topic-link user-mention message-link mention-button close-button";
+        gap: 4px;
+        padding-bottom: 3px;
+        /* Reply needs to be slightly smaller than the actual content. */
+        font-size: 0.875em; /* 14px at 16px em */
+
+        /* To avoid double gap between reply icon and user mention */
+        &:has(.referenced-message-topic-link.hidden) {
+            grid-template-columns: auto auto 1fr auto auto;
+            grid-template-areas: "reply-icon user-mention message-link mention-button close-button";
+        }
+
+        .reply-icon {
+            grid-area: reply-icon;
+        }
+
+        .user-mention {
+            grid-area: user-mention;
+        }
+
+        .referenced-message-link {
+            grid-area: message-link;
+        }
+
+        .mention-button {
+            grid-area: mention-button;
+        }
+
+        .remove-reply-button {
+            grid-area: close-button;
+        }
+
+        .reply-icon,
+        .reply-action-button {
+            opacity: 0.5;
+            font-size: 1.25em; /* 20px at 16px em */
+        }
+
+        .reply-action-button {
+            padding: 0;
+        }
+
+        a {
+            opacity: 0.5;
+            max-width: fit-content;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 100%));
+            text-decoration-line: underline;
+            text-underline-offset: 0.25em;
+            text-decoration-color: light-dark(
+                hsl(0deg 0% 15% / 30%),
+                hsl(0deg 0% 100% / 30%)
+            );
+
+            &:hover {
+                color: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 100%));
+                opacity: 0.75;
+            }
+
+            &:active {
+                color: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 100%));
+                opacity: 0.85;
+            }
+        }
+
+        .referenced-message-topic-link {
+            max-width: 7.5em; /* 120px at 16px em */
+            grid-area: topic-link;
+        }
     }
 }
 
