@@ -297,6 +297,12 @@ class EventPushDevice(BaseEvent):
     error_code: str | None = None
 
 
+class EventDeviceAdd(BaseEvent):
+    type: Literal["device"]
+    op: Literal["add"]
+    device_id: int
+
+
 class NavigationViewFields(BaseModel):
     fragment: str
     is_pinned: bool

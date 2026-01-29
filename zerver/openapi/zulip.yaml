@@ -1832,6 +1832,70 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to a user's clients when they [register a device](/api/register-client-device).
+
+                                Helps clients to live-update the `devices` dictionary
+                                returned in [`POST /register`](/api/register-queue) response.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - device
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                device_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the new registered device.
+                              example:
+                                {
+                                  "id": 1,
+                                  "type": "device",
+                                  "op": "add",
+                                  "device_id": 1144,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to a user's clients when they deregister a device.
+
+                                Helps clients to live-update the `devices` dictionary
+                                returned in [`POST /register`](/api/register-queue) response.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - device
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                device_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the device which deregistered.
+                              example:
+                                {
+                                  "id": 1,
+                                  "type": "device",
+                                  "op": "remove",
+                                  "device_id": 1144,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent when a submessage is added to a message.
 
                                 Submessages are an **experimental** API used for widgets such as the
@@ -18509,6 +18573,58 @@ paths:
                                 If the status is `"failed"`, a [Zulip API error
                                 code](/api/rest-error-handling) indicating the type of failure that
                                 occurred.
+
+                                The following error codes have recommended client behavior:
+
+                                - `"INVALID_BOUNCER_PUBLIC_KEY"` - Inform the user to update app.
+                                - `"REQUEST_EXPIRED` - Retry with a fresh payload.
+                      devices:
+                        type: object
+                        description: |
+                          Present if `device` is present in `fetch_event_types`.
+
+                          Dictionary where each entry describes the user's logged-in devices,
+                          registered using [`POST /register_client_device`](/api/register-client-device).
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd).
+                        additionalProperties:
+                          description: |
+                            `{device_id}`: Dictionary containing the details of
+                            a device with the device ID as the key.
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            push_key_id:
+                              type: integer
+                              nullable: true
+                              description: |
+                                ID to reference the encryption key used to encrypt
+                                push notifications sent to the device.
+                            push_token_id:
+                              type: string
+                              nullable: true
+                              description: |
+                                ID to reference the token provided by FCM/APNs to the device,
+                                which is registered to the push bouncer service.
+                            pending_push_token_id:
+                              type: string
+                              nullable: true
+                              description: |
+                                ID to reference the token provided by FCM/APNs to the device,
+                                whose registration is in progress to the push bouncer service.
+                            push_token_last_updated_timestamp:
+                              type: integer
+                              nullable: true
+                              description: |
+                                The UNIX timestamp for the last time when `pending_push_token_id`
+                                was set to a new non-null value, in UTC seconds.
+                            push_registration_error_code:
+                              type: string
+                              nullable: true
+                              description: |
+                                If the push registration failed, a [Zulip API error
+                                code](/api/rest-error-handling) indicating the type of
+                                failure that occurred.
 
                                 The following error codes have recommended client behavior:
 

@@ -29,6 +29,7 @@ from zerver.lib.channel_folders import (
 )
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
+from zerver.lib.devices import get_devices
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.i18n import get_available_language_codes
@@ -948,6 +949,9 @@ def fetch_initial_state_data(
 
     if want("push_device"):
         state["push_devices"] = {} if user_profile is None else get_push_devices(user_profile)
+
+    if want("device"):
+        state["devices"] = {} if user_profile is None else get_devices(user_profile)
 
     if user_profile is None:
         # To ensure we have the correct user state set.
@@ -2007,6 +2011,17 @@ def apply_event(
     elif event["type"] == "push_device":
         state["push_devices"][str(event["push_account_id"])]["status"] = event["status"]
         state["push_devices"][str(event["push_account_id"])]["error_code"] = event.get("error_code")
+    elif event["type"] == "device":
+        if event["op"] == "add":
+            state["devices"][str(event["device_id"])] = {
+                "push_key_id": None,
+                "push_token_id": None,
+                "pending_push_token_id": None,
+                "push_token_last_updated_timestamp": None,
+                "push_registration_error_code": None,
+            }
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 

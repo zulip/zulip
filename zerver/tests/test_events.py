@@ -54,6 +54,7 @@ from zerver.actions.default_streams import (
     do_remove_streams_from_default_stream_group,
     lookup_default_stream_groups,
 )
+from zerver.actions.devices import do_register_device
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_invite_users,
@@ -176,6 +177,7 @@ from zerver.lib.event_schema import (
     check_default_stream_groups,
     check_default_streams,
     check_delete_message,
+    check_device_add,
     check_direct_message,
     check_draft_add,
     check_draft_remove,
@@ -4298,6 +4300,11 @@ class NormalActionsTest(BaseAction):
         check_push_device("events[0]", events[0])
         self.assertEqual(events[0]["status"], "failed")
         self.assertEqual(events[0]["error_code"], "INVALID_BOUNCER_PUBLIC_KEY")
+
+    def test_register_device(self) -> None:
+        with self.verify_action() as events:
+            do_register_device(self.user_profile)
+        check_device_add("events[0]", events[0])
 
     def test_notify_realm_export_on_failure(self) -> None:
         self.set_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
