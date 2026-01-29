@@ -727,6 +727,11 @@ export function update_unread_topics(
         stream_id: new_stream_id ?? msg.stream_id,
         topic: new_topic ?? msg.topic,
     });
+
+    // Rebuild mention cache if this message had mentions.
+    if (unread_mentions_counter.has(msg.id)) {
+        clear_and_populate_unread_mentions();
+    }
 }
 
 export function process_loaded_messages(

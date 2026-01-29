@@ -241,6 +241,57 @@ test("changing_topics", () => {
     unread.update_unread_topics(sticky_message, {});
 });
 
+test("topic_rename_updates_mention_cache", () => {
+    // Test that renaming a topic with mentions updates the mention cache.
+    const stream_id = 100;
+    const sub = {
+        stream_id,
+        name: "development",
+        subscribed: true,
+        is_muted: false,
+    };
+    sub_store.add_hydrated_sub(stream_id, sub);
+
+    const message_with_mention = {
+        id: 101,
+        type: "stream",
+        stream_id,
+        topic: "old_topic",
+        mentioned: true,
+        mentioned_me_directly: true,
+        unread: true,
+    };
+
+    message_store.update_message_cache({
+        type: "server_message",
+        message: message_with_mention,
+    });
+
+    // Process the message with mention
+    unread.process_loaded_messages([message_with_mention]);
+
+    // Verify that mention cache has the old topic
+    let topics_with_mentions = unread.get_topics_with_unread_mentions(stream_id);
+    assert.ok(topics_with_mentions.has("old_topic"));
+    assert.equal(topics_with_mentions.size, 1);
+
+    // Rename the topic
+    const rename_event = {
+        topic: "new_topic",
+    };
+    unread.update_unread_topics(message_with_mention, rename_event);
+
+    // The key assertion: mention cache should be updated
+    // The bug was that the old topic name remained in the cache
+    topics_with_mentions = unread.get_topics_with_unread_mentions(stream_id);
+    assert.ok(!topics_with_mentions.has("old_topic"), "old topic should not have mentions");
+    assert.ok(topics_with_mentions.has("new_topic"), "new topic should have mentions");
+    assert.equal(topics_with_mentions.size, 1);
+
+    // Clean up
+    unread.mark_as_read(message_with_mention.id);
+});
+
 test("muting", () => {
     const stream_id = social.stream_id;
     const unknown_stream_id = 555;
