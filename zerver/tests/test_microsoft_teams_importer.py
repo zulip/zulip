@@ -34,7 +34,7 @@ from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import messages_for_topic
 from zerver.models.messages import Message
-from zerver.models.realms import get_realm
+from zerver.models.realms import Realm, get_realm
 from zerver.models.recipients import Recipient
 from zerver.models.streams import Stream, Subscription
 from zerver.models.users import UserProfile, get_system_bot
@@ -222,6 +222,19 @@ def mock_microsoft_graph_api_calls(
     return _wrapped
 
 
+def get_channel_subscriber_emails(realm: Realm, channel: str | Stream) -> set[str]:
+    if isinstance(channel, str):
+        imported_channel = Stream.objects.get(
+            name=channel,
+            realm=realm,
+        )
+    else:
+        imported_channel = channel  # nocoverage
+    subscriptions = Subscription.objects.filter(recipient=imported_channel.recipient)
+    users = {sub.user_profile.email for sub in subscriptions}
+    return users
+
+
 class MicrosoftTeamsImportTestCase(ZulipTestCase):
     def get_exported_microsoft_teams_user_data(self) -> list[MicrosoftTeamsFieldsT]:
         return json.loads(
@@ -232,18 +245,6 @@ class MicrosoftTeamsImportTestCase(ZulipTestCase):
 
 
 class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
-    def get_imported_channel_subscriber_emails(self, channel: str | Stream) -> set[str]:
-        if isinstance(channel, str):
-            imported_channel = Stream.objects.get(
-                name=channel,
-                realm=get_realm(self.test_realm_subdomain),
-            )
-        else:
-            imported_channel = channel  # nocoverage
-        subscriptions = Subscription.objects.filter(recipient=imported_channel.recipient)
-        users = {sub.user_profile.email for sub in subscriptions}
-        return users
-
     def convert_microsoft_teams_export_fixture(self, fixture_folder: str) -> None:
         fixture_file_path = self.fixture_file_name(fixture_folder, "microsoft_teams_fixtures")
         if not os.path.isdir(fixture_file_path):
@@ -330,8 +331,8 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
             self.assertEqual(channel.invite_only, raw_team_data["Visibility"] == "private")
 
             # Teams subscription are imported correctly.
-            imported_channel_subscriber_emails = self.get_imported_channel_subscriber_emails(
-                channel_name
+            imported_channel_subscriber_emails = get_channel_subscriber_emails(
+                get_realm(self.test_realm_subdomain), channel_name
             )
             raw_subscription_list = get_exported_team_subscription_list(
                 EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
