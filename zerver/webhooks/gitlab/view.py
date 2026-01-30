@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
@@ -14,11 +14,14 @@ from zerver.lib.validator import WildValue, check_int, check_none_or, check_stri
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
-    get_event_header,
+    validate_extract_webhook_http_header,
 )
+
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
     EMPTY_SHA,
+    EMOJI_AWARD_MESSAGE_TEMPLATE,
+    EMOJI_REVOKE_MESSAGE_TEMPLATE,
     RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME,
     RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME_WITHOUT_URL,
     TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE,
@@ -33,8 +36,9 @@ from zerver.lib.webhooks.git import (
 from zerver.models import UserProfile
 
 TOPIC_WITH_DESIGN_INFO_TEMPLATE = "{repo} / {type} {design_name}"
-DESIGN_COMMENT_MESSAGE_TEMPLATE = "{user_name} {action}{design_part}:\n{content_message}"
-DESIGN_PART_TEMPLATE = " on design [{design_name}]({design_url})"
+DESIGN_COMMENT_MESSAGE_TEMPLATE = (
+    "{user_name} {action} on design [{design_name}]({design_url}):\n{content_message}"
+)
 
 FEATURE_FLAG_MESSAGE_TEMPLATE = "{user} {action} the feature flag [{name}]({url})."
 
@@ -43,10 +47,8 @@ ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE = "The access token [{name}]({url}) will ex
 
 def fixture_to_headers(fixture_name: str) -> dict[str, str]:
     if fixture_name.startswith("build"):
-        return {}  # Since there are 2 possible event types.
+        return {}
 
-    # Map "push_hook__push_commits_more_than_limit.json" into GitLab's
-    # HTTP event title "Push Hook".
     return {"HTTP_X_GITLAB_EVENT": fixture_name.split("__")[0].replace("_", " ").title()}
 
 
@@ -101,11 +103,10 @@ def get_tag_push_event_body(payload: WildValue, include_title: bool) -> str:
 
 def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str:
     description = payload["object_attributes"].get("description")
-    # Filter out multiline hidden comments
     if description:
         stringified_description = description.tame(check_string)
         stringified_description = re.sub(
-            r"<!--.*?-->", "", stringified_description, count=0, flags=re.DOTALL
+            r"", "", stringified_description, count=0, flags=re.DOTALL
         )
         stringified_description = stringified_description.rstrip()
     else:
@@ -204,12 +205,6 @@ def get_assignees(payload: WildValue) -> list[WildValue] | WildValue:
 def replace_assignees_username_with_name(
     assignees: list[WildValue] | WildValue,
 ) -> list[dict[str, str]]:
-    """Replace the username of each assignee with their (full) name.
-
-    This is a hack-like adaptor so that when assignees are passed to
-    `get_pull_request_event_message` we can use the assignee's name
-    and not their username (for more consistency).
-    """
     formatted_assignees = []
     for assignee in assignees:
         formatted_assignee = {}
@@ -220,14 +215,8 @@ def replace_assignees_username_with_name(
 
 def parse_design_comment(comment: WildValue, repository_url: str) -> tuple[str, str, str]:
     note_id = comment["id"].tame(check_int)
-
-    # As there is no issue field in the payloads related to designs,
-    # we need to parse the issue number from the new_path field.
     design_path = comment["position"]["new_path"].tame(check_string)
-
-    # Sample design_path: "designs/issue-1/Screenshot_20250302_230445.png"
     _, issue_subpath, design_name = design_path.split("/")
-
     issue_number = issue_subpath.split("-")[-1]
     design_url = f"{repository_url}/-/issues/{issue_number}/designs/{design_name}"
     comment_url = f"{design_url}#note_{note_id}"
@@ -249,8 +238,7 @@ def get_commented_commit_event_body(payload: WildValue, include_title: bool) -> 
 
 def get_commented_merge_request_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
-    comment_url = comment["url"].tame(check_string)
-    action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
+    action = "[commented]({}) on".format(comment["url"].tame(check_string))
     url = payload["merge_request"]["url"].tame(check_string)
 
     return get_pull_request_event_message(
@@ -260,15 +248,13 @@ def get_commented_merge_request_event_body(payload: WildValue, include_title: bo
         number=payload["merge_request"]["iid"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="MR",
-        title=payload["merge_request"]["title"].tame(check_string),
-        include_topic_reference=include_title,
+        title=payload["merge_request"]["title"].tame(check_string) if include_title else None,
     )
 
 
 def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
-    comment_url = comment["url"].tame(check_string)
-    action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
+    action = "[commented]({}) on".format(comment["url"].tame(check_string))
     url = payload["issue"]["url"].tame(check_string)
 
     return get_pull_request_event_message(
@@ -278,8 +264,7 @@ def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> s
         number=payload["issue"]["iid"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="issue",
-        title=payload["issue"]["title"].tame(check_string),
-        include_topic_reference=include_title,
+        title=payload["issue"]["title"].tame(check_string) if include_title else None,
     )
 
 
@@ -291,25 +276,18 @@ def get_commented_design_event_body(payload: WildValue, include_title: bool) -> 
     action = f"[commented]({comment_url})"
     content_message = CONTENT_MESSAGE_TEMPLATE.format(message=comment["note"].tame(check_string))
 
-    design_part = (
-        DESIGN_PART_TEMPLATE.format(design_name=design_name, design_url=design_url)
-        if include_title
-        else ""
-    )
-
     return DESIGN_COMMENT_MESSAGE_TEMPLATE.format(
         user_name=get_issue_user_name(payload),
         action=action,
+        design_name=design_name,
+        design_url=design_url,
         content_message=content_message,
-        design_part=design_part,
     )
 
 
 def get_commented_snippet_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
-    comment_url = comment["url"].tame(check_string)
-    action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
-    # Snippet URL is only available in GitLab 16.1+
+    action = "[commented]({}) on".format(comment["url"].tame(check_string))
     if "url" in payload["snippet"]:
         url = payload["snippet"]["url"].tame(check_string)
     else:
@@ -325,8 +303,7 @@ def get_commented_snippet_event_body(payload: WildValue, include_title: bool) ->
         number=payload["snippet"]["id"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="snippet",
-        title=payload["snippet"]["title"].tame(check_string),
-        include_topic_reference=include_title,
+        title=payload["snippet"]["title"].tame(check_string) if include_title else None,
     )
 
 
@@ -437,10 +414,6 @@ def get_feature_flag_event_body(payload: WildValue, include_title: bool) -> str:
 
 
 def get_access_token_page_url(payload: WildValue) -> str:
-    """
-    Generate the URL for the access tokens based on whether it's
-    for a group or a project.
-    """
     if "group" in payload:
         group_path = payload["group"]["group_path"].tame(check_string)
         return f"https://gitlab.com/groups/{group_path}/-/settings/access_tokens"
@@ -452,12 +425,41 @@ def get_access_token_page_url(payload: WildValue) -> str:
 def get_resource_access_token_expiry_event_body(payload: WildValue, include_title: bool) -> str:
     access_token = payload["object_attributes"]
     expiry_date = access_token["expires_at"].tame(check_string)
-    formatted_date = datetime.fromisoformat(expiry_date).strftime("%b %d, %Y")
+    formatted_date = (
+        datetime.strptime(expiry_date, "%Y-%m-%d")
+        .replace(tzinfo=timezone.utc)
+        .strftime("%b %d, %Y")
+    )
 
     return ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE.format(
         name=access_token["name"].tame(check_string),
         url=get_access_token_page_url(payload),
         date=formatted_date,
+    )
+
+
+def get_emoji_event_body(payload: WildValue) -> str:
+    attributes = payload["object_attributes"]
+    event_type = payload["event_type"].tame(check_string)
+    emoji_name = attributes["name"].tame(check_string)
+    awardable_type = attributes["awardable_type"].tame(check_string)
+
+    if event_type == "award":
+        template = EMOJI_AWARD_MESSAGE_TEMPLATE
+    else:
+        template = EMOJI_REVOKE_MESSAGE_TEMPLATE
+
+    display_id = attributes["awardable_id"].tame(check_int)
+    if "issue" in payload:
+        display_id = payload["issue"]["iid"].tame(check_int)
+
+    return template.format(
+        user_name=get_issue_user_name(payload),
+        emoji_name=emoji_name,
+        awardable_type=awardable_type,
+        id=display_id,
+        url=attributes.get("awarded_on_url", "").tame(check_string),
+        title=payload.get("issue", {}).get("title", "").tame(check_string),
     )
 
 
@@ -488,9 +490,6 @@ def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
 
-    # Apparently, Job Hook payloads don't have a `project` section,
-    # but the repository name is accessible from the `repository`
-    # section.
     return payload["repository"]["name"].tame(check_string)
 
 
@@ -521,11 +520,7 @@ def get_object_url(payload: WildValue) -> str:
 
 
 def skip_previews(event: str) -> bool:
-    # Add event names to this array for which previews should be skipped.
     return event in [
-        # Design events link to images, but the images cannot be
-        # accessed without authentication, so trying to preview them
-        # doesn't work.
         "Note Hook DesignManagement::Design",
         "Confidential Note Hook DesignManagement::Design",
     ]
@@ -556,8 +551,6 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Note Hook Snippet": get_commented_snippet_event_body,
     "Merge Request Hook approved": partial(get_merge_request_event_body, "approved"),
     "Merge Request Hook unapproved": partial(get_merge_request_event_body, "unapproved"),
-    # approval and unapproval events are triggered only if there's more than one required approver
-    # ref: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/8742
     "Merge Request Hook approval": partial(get_merge_request_event_body, "approval"),
     "Merge Request Hook unapproval": partial(get_merge_request_event_body, "unapproval"),
     "Merge Request Hook open": partial(get_merge_request_open_or_updated_body, "created"),
@@ -574,6 +567,7 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Feature Flag Hook": get_feature_flag_event_body,
     "Resource Access Token Hook": get_resource_access_token_expiry_event_body,
     "Deployment Hook": get_deployment_event_body,
+    "Emoji Hook": get_emoji_event_body,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -598,7 +592,6 @@ def api_gitlab_webhook(
             include_title=user_specified_topic is not None,
         )
 
-        # Add a link to the project if a custom topic is set
         if user_specified_topic:
             project_url = f"[{get_repo_name(payload)}]({get_project_homepage(payload)})"
             body = f"[{project_url}] {body}"
@@ -621,6 +614,28 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
         return "{} / {}".format(
             payload["repository"]["name"].tame(check_string), get_branch_name(payload)
         )
+    elif event == "Emoji Hook":
+        attributes = payload["object_attributes"]
+        awardable_type = attributes["awardable_type"].tame(check_string)
+
+        if awardable_type == "Issue" or (awardable_type == "Note" and "issue" in payload):
+            type_label = "issue"
+            id_val = payload["issue"]["iid"].tame(check_int)
+            title = payload["issue"]["title"].tame(check_string)
+        elif awardable_type == "MergeRequest" or (awardable_type == "Note" and "merge_request" in payload):
+            type_label = "MR"
+            id_val = payload["merge_request"]["iid"].tame(check_int)
+            title = payload["merge_request"]["title"].tame(check_string)
+        else:
+            return get_repo_name(payload)
+
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type=type_label,
+            id=id_val,
+            title=title,
+        )
+
     elif event == "Pipeline Hook":
         return "{} / {}".format(
             get_repo_name(payload),
@@ -694,9 +709,8 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
 
 
 def get_event(request: HttpRequest, payload: WildValue, branches: str | None) -> str | None:
-    event = get_event_header(request, "X-GitLab-Event", "GitLab")
+    event = validate_extract_webhook_http_header(request, "X-GitLab-Event", "GitLab")
     if event == "System Hook":
-        # Convert the event name to a GitLab event title
         if "event_name" in payload:
             event_name = payload["event_name"].tame(check_string)
         else:

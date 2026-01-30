@@ -58,6 +58,8 @@ PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action}{assignee} [{type}
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITHOUT_REFERENCE = "{user_name} {action}"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
+EMOJI_AWARD_MESSAGE_TEMPLATE = "{user_name} awarded :{emoji_name}: to {awardable_type} [#{id}]({url}) {title}"
+EMOJI_REVOKE_MESSAGE_TEMPLATE = "{user_name} removed :{emoji_name}: from {awardable_type} [#{id}]({url}) {title}"
 
 CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~"
 

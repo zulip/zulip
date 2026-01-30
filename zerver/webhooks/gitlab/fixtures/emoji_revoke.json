@@ -1,0 +1,18 @@
+{
+  "object_kind": "emoji",
+  "event_type": "revoke",
+  "user": {
+    "name": "Zulip User",
+    "username": "webhook-user"
+  },
+  "object_attributes": {
+    "awardable_type": "Issue",
+    "awardable_id": 1,
+    "name": "thumbsup",
+    "awarded_on_url": "https://gitlab.com/zulip/zulip/-/issues/1"
+  },
+  "issue": {
+    "iid": 1,
+    "title": "Support GitLab emoji events"
+  }
+}
