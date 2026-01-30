@@ -18,6 +18,7 @@ from zerver.lib.webhooks.common import (
 )
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
+    EMOJI_AWARD_MESSAGE_TEMPLATE,
     EMPTY_SHA,
     RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME,
     RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME_WITHOUT_URL,
@@ -436,6 +437,49 @@ def get_feature_flag_event_body(payload: WildValue, include_title: bool) -> str:
     )
 
 
+def get_emoji_event_body(payload: WildValue, include_title: bool) -> str:
+    attributes = payload["object_attributes"]
+    emoji_name = attributes["name"].tame(check_string)
+    awardable_type = attributes["awardable_type"].tame(check_string)
+    awardable_id = attributes["awardable_id"].tame(check_int)
+
+    title = ""
+    url = ""
+    display_id = awardable_id
+
+    if awardable_type == "Issue":
+        issue = payload["issue"]
+        title = issue["title"].tame(check_string)
+        url = issue["url"].tame(check_string)
+        display_id = issue["iid"].tame(check_int)
+    elif awardable_type == "MergeRequest":
+        mr = payload["merge_request"]
+        title = mr["title"].tame(check_string)
+        url = mr["url"].tame(check_string)
+        display_id = mr["iid"].tame(check_int)
+    elif awardable_type == "Note":
+        note = payload["note"]
+        url = note["url"].tame(check_string)
+        # Try to find context for the note
+        if "issue" in payload:
+            display_id = payload["issue"]["iid"].tame(check_int)
+            title = payload["issue"]["title"].tame(check_string)
+            awardable_type = "Issue Note"
+        elif "merge_request" in payload:
+            display_id = payload["merge_request"]["iid"].tame(check_int)
+            title = payload["merge_request"]["title"].tame(check_string)
+            awardable_type = "MR Note"
+
+    return EMOJI_AWARD_MESSAGE_TEMPLATE.format(
+        user_name=get_issue_user_name(payload),
+        emoji_name=emoji_name,
+        awardable_type=awardable_type,
+        id=display_id,
+        url=url,
+        title=title,
+    )
+
+
 def get_access_token_page_url(payload: WildValue) -> str:
     """
     Generate the URL for the access tokens based on whether it's
@@ -574,6 +618,7 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Feature Flag Hook": get_feature_flag_event_body,
     "Resource Access Token Hook": get_resource_access_token_expiry_event_body,
     "Deployment Hook": get_deployment_event_body,
+    "Emoji Hook": get_emoji_event_body,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -685,10 +730,34 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
 
     elif event == "Resource Access Token Hook" and payload.get("group"):
         return payload["group"]["group_name"].tame(check_string)
+        return "{} / {}".format(
+            get_repo_name(payload),
+            payload["environment"].tame(check_string),
+        )
     elif event == "Deployment Hook":
         return "{} / {}".format(
             get_repo_name(payload),
             payload["environment"].tame(check_string),
+        )
+    elif event == "Emoji Hook":
+        attributes = payload["object_attributes"]
+        awardable_type = attributes["awardable_type"].tame(check_string)
+        if awardable_type == "Issue" or (awardable_type == "Note" and "issue" in payload):
+            type_label = "issue"
+            id_val = payload["issue"]["iid"].tame(check_int)
+            title = payload["issue"]["title"].tame(check_string)
+        elif awardable_type == "MergeRequest" or (awardable_type == "Note" and "merge_request" in payload):
+            type_label = "MR"
+            id_val = payload["merge_request"]["iid"].tame(check_int)
+            title = payload["merge_request"]["title"].tame(check_string)
+        else:
+            return get_repo_name(payload)
+
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type=type_label,
+            id=id_val,
+            title=title,
         )
     return get_repo_name(payload)
 

@@ -755,3 +755,13 @@ A trivial change that should probably be ignored.
             expected_message,
             HTTP_X_GITLAB_EVENT="Deployment Hook",
         )
+
+    def test_emoji_award_event(self) -> None:
+        expected_topic = "Gitlab Test / issue #1 Ut commodi ullam eos dolores perferendis nihil sunt."
+        expected_message = "Administrator awarded :smile: to Issue [#1](http://example.com/gitlab-org/gitlab-test/issues/1) Ut commodi ullam eos dolores perferendis nihil sunt."
+        self.check_webhook(
+            "emoji_award",
+            expected_topic,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Emoji Hook",
+        )

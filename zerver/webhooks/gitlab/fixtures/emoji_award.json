@@ -1,0 +1,50 @@
+{
+  "object_kind": "emoji",
+  "event_type": "award",
+  "user": {
+    "name": "Administrator",
+    "username": "root",
+    "avatar_url": "http://www.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80&d=identicon"
+  },
+  "project_id": 1,
+  "project": {
+    "name": "Gitlab Test",
+    "description": "Aut reprehenderit ut est.",
+    "web_url": "http://example.com/gitlab-org/gitlab-test",
+    "avatar_url": null,
+    "git_ssh_url": "git@example.com:gitlab-org/gitlab-test.git",
+    "git_http_url": "http://example.com/gitlab-org/gitlab-test.git",
+    "namespace": "Gitlab Org",
+    "visibility_level": 20,
+    "path_with_namespace": "gitlab-org/gitlab-test",
+    "default_branch": "master",
+    "homepage": "http://example.com/gitlab-org/gitlab-test",
+    "url": "git@example.com:gitlab-org/gitlab-test.git",
+    "ssh_url": "git@example.com:gitlab-org/gitlab-test.git",
+    "http_url": "http://example.com/gitlab-org/gitlab-test.git"
+  },
+  "object_attributes": {
+    "user_id": 1,
+    "created_at": "2011-10-12T04:07:19.144Z",
+    "id": 12454,
+    "name": "smile",
+    "awardable_type": "Issue",
+    "awardable_id": 1
+  },
+  "issue": {
+    "id": 1,
+    "title": "Ut commodi ullam eos dolores perferendis nihil sunt.",
+    "assignee_id": null,
+    "author_id": 1,
+    "project_id": 1,
+    "created_at": "2012-05-28T04:42:42-07:00",
+    "updated_at": "2012-05-28T04:42:42-07:00",
+    "position": 0,
+    "branch_name": null,
+    "description": "Omnis vero earum sunt corporis dolor et placeat.",
+    "milestone_id": null,
+    "state": "closed",
+    "iid": 1,
+    "url": "http://example.com/gitlab-org/gitlab-test/issues/1"
+  }
+}
