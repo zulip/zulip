@@ -59,6 +59,17 @@ DISCUSSION_TEMPLATES = {
     "edited_body": "{sender} edited [discussion #{discussion_number}{configured_title}]({url}):\n\n{body_fence} quote\n{body}\n{body_fence}",
 }
 
+CHECK_RUN_CONCLUSION_EMOJI = {
+    "success": ":check:",
+    "failure": ":warning:",
+    "cancelled": ":not_allowed:",
+    "skipped": ":fast_forward:",
+    "timed_out": ":times_up:",
+    "action_required": ":wrench:",
+    "neutral": ":minus:",
+    "stale": ":sleeping:",
+}
+
 
 class Helper:
     def __init__(
@@ -798,7 +809,7 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
 def get_check_run_body(helper: Helper) -> str:
     payload = helper.payload
     template = """
-Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
+{emoji} Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
 """.strip()
 
     kwargs = {
@@ -811,6 +822,9 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
             payload["check_run"]["head_sha"].tame(check_string),
         ),
         "conclusion": payload["check_run"]["conclusion"].tame(check_string),
+        "emoji": CHECK_RUN_CONCLUSION_EMOJI.get(
+            payload["check_run"]["conclusion"].tame(check_string), ""
+        ),
     }
 
     return template.format(**kwargs)
