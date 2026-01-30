@@ -1503,7 +1503,10 @@ function focus_inbox_search(): void {
     focus_current_id();
 }
 
-function is_list_focused(): boolean {
+function is_navigated_to_list(): boolean {
+    // We check if the inbox list is either currently
+    // focused or was the last focused element in inbox
+    // that user can navigate to.
     return (
         current_focus_id === undefined ||
         ![INBOX_SEARCH_ID, INBOX_FILTERS_DROPDOWN_ID].includes(current_focus_id)
@@ -1551,7 +1554,7 @@ export function revive_current_focus(): void {
     if (!is_in_focus()) {
         return;
     }
-    if (is_list_focused()) {
+    if (is_navigated_to_list()) {
         set_list_focus();
     } else {
         focus_current_id();
@@ -1595,7 +1598,7 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
     | {msg_type: "stream"; stream_id: number; topic?: string}
     | {msg_type?: never}
 ) {
-    if (!is_list_focused()) {
+    if (!is_navigated_to_list()) {
         return {message: undefined};
     }
 
@@ -1748,11 +1751,17 @@ function focus_filters_dropdown(): void {
     $(`#${CSS.escape(INBOX_FILTERS_DROPDOWN_ID)}`).trigger("focus");
 }
 
-function is_search_focused(): boolean {
+function is_navigated_to_search(): boolean {
+    // We check if the inbox search is either currently
+    // focused or was the last focused element in inbox
+    // that user can navigate to.
     return current_focus_id === INBOX_SEARCH_ID;
 }
 
-function is_filters_dropdown_focused(): boolean {
+function is_navigated_to_filters_dropdown(): boolean {
+    // We check if the filters dropdown is either currently
+    // focused or was the last focused element in inbox
+    // that user can navigate to.
     return current_focus_id === INBOX_FILTERS_DROPDOWN_ID;
 }
 
@@ -1805,7 +1814,7 @@ export function change_focused_element(input_key: string): boolean {
         // Start showing visible focus outlines.
         $("#inbox-view").removeClass("no-visible-focus-outlines");
     }
-    if (is_first_user_keypress && !is_search_focused()) {
+    if (is_first_user_keypress && !is_navigated_to_search()) {
         // User has barely scrolled the page.
         if (window.scrollY < 30) {
             // Find the first visible row and focus it.
@@ -1857,7 +1866,7 @@ export function change_focused_element(input_key: string): boolean {
         return false;
     }
 
-    if (is_search_focused()) {
+    if (is_navigated_to_search()) {
         const textInput = $<HTMLInputElement>(`input#${CSS.escape(INBOX_SEARCH_ID)}`).get(0);
         assert(textInput !== undefined);
         const start = textInput.selectionStart ?? 0;
@@ -1891,7 +1900,7 @@ export function change_focused_element(input_key: string): boolean {
                 set_list_focus();
                 return true;
         }
-    } else if (is_filters_dropdown_focused()) {
+    } else if (is_navigated_to_filters_dropdown()) {
         switch (input_key) {
             case "vim_down":
             case "down_arrow":
@@ -2265,7 +2274,7 @@ function move_focus_to_visible_area(): void {
 
     // Focus on the row below inbox filters if the focused
     // row is not visible.
-    if (!inbox_util.is_visible() || !is_list_focused()) {
+    if (!inbox_util.is_visible() || !is_navigated_to_list()) {
         return;
     }
 
