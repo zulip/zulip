@@ -10,6 +10,7 @@ import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_li
 
 import * as compose_validate from "./compose_validate.ts";
 import * as flatpickr from "./flatpickr.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -17,6 +18,7 @@ import * as reactions from "./reactions.ts";
 import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
 import {
     INTERACTIVE_HOVER_DELAY,
@@ -484,6 +486,101 @@ export function initialize(): void {
             if (is_disabled) {
                 return false;
             }
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    message_list_tooltip(".message_content a[data-message-link-type='external_named_link']", {
+        delay: 0,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const href = $elem.attr("href");
+
+            if (!href) {
+                return false;
+            }
+
+            $elem.removeAttr("title");
+
+            instance.setContent(href);
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    message_list_tooltip(".message_content a[data-message-link-type='external_plain_url']", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const href = $elem.attr("href");
+
+            if (!href) {
+                return false;
+            }
+
+            $elem.removeAttr("title");
+
+            instance.setContent(href);
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    message_list_tooltip(".message_content a[data-message-link-type='internal_named_link']", {
+        delay: 0,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const href = $elem.attr("href");
+
+            if (!href) {
+                return false;
+            }
+
+            $elem.removeAttr("title");
+
+            let tooltip_content;
+            const stream_topic = hash_util.decode_stream_topic_from_url(href);
+
+            if (stream_topic !== null) {
+                const channel = stream_data.get_stream_name_from_id(stream_topic.stream_id);
+                const topic = stream_topic.topic_name;
+                const canonical_format = topic ? `#${channel} > ${topic}` : `#${channel}`;
+                tooltip_content = $t(
+                    {defaultMessage: "Go to {canonical_format}"},
+                    {canonical_format},
+                );
+            } else {
+                tooltip_content = href;
+            }
+
+            instance.setContent(tooltip_content);
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    message_list_tooltip(".message_content a[data-message-link-type='user_upload']", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const title_content = $elem.attr("title");
+
+            if (!title_content) {
+                return false;
+            }
+
+            $elem.removeAttr("title");
+
+            instance.setContent(title_content);
             return undefined;
         },
         onHidden(instance) {
