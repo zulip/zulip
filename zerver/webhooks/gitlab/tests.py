@@ -757,7 +757,9 @@ A trivial change that should probably be ignored.
         )
 
     def test_emoji_award_event(self) -> None:
-        expected_topic = "Gitlab Test / issue #1 Ut commodi ullam eos dolores perferendis nihil sunt."
+        expected_topic = (
+            "Gitlab Test / issue #1 Ut commodi ullam eos dolores perferendis nihil sunt."
+        )
         expected_message = "Administrator awarded :smile: to Issue [#1](http://example.com/gitlab-org/gitlab-test/issues/1) Ut commodi ullam eos dolores perferendis nihil sunt."
         self.check_webhook(
             "emoji_award",

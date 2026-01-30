@@ -746,7 +746,9 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             type_label = "issue"
             id_val = payload["issue"]["iid"].tame(check_int)
             title = payload["issue"]["title"].tame(check_string)
-        elif awardable_type == "MergeRequest" or (awardable_type == "Note" and "merge_request" in payload):
+        elif awardable_type == "MergeRequest" or (
+            awardable_type == "Note" and "merge_request" in payload
+        ):
             type_label = "MR"
             id_val = payload["merge_request"]["iid"].tame(check_int)
             title = payload["merge_request"]["title"].tame(check_string)
