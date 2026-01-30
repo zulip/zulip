@@ -10,7 +10,9 @@ import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_
 import {$t} from "./i18n.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as stream_data from "./stream_data.ts";
+import * as markdown_config from "./markdown_config.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import type {MarkdownHelpers} from "./markdown.ts";
 
 export let scroll_to_message_banner_message_id: number | null = null;
 export function set_scroll_to_message_banner_message_id(val: number | null): void {
@@ -314,4 +316,117 @@ export function show_convert_pasted_text_to_file_banner({
     $new_row.on("click", ".main-view-banner-action-button.paste-to-compose", paste_to_compose_cb);
     append_compose_banner_to_banner_list($new_row, $("#compose_banners"));
     return $new_row;
+}
+
+// Syncs "users not subscribed" banners with actual mentions present
+// in the compose textarea. If a mention was removed, remove its banner.
+export function remove_banners_of_not_mentioned_users(
+    message_text: string,
+    $banner_container: JQuery,
+): void {
+    const $existing_banners = $banner_container.find(
+        `.${CSS.escape(CLASSNAMES.recipient_not_subscribed)}`,
+    );
+
+    if ($existing_banners.length === 0) {
+        return;
+    }
+
+    const invites = [...$existing_banners].map((row) => {
+        const $row = $(row);
+        return {
+            user_id: Number($row.attr("data-user-id")),
+            name: $row.attr("data-name"),
+        };
+    });
+
+    const helper_config = markdown_config.get_helpers();
+    const mentions = extract_mentions_from_text(message_text, helper_config);
+
+    const invites_to_remove = invites.filter(
+        (invite) =>
+            !mentions.some((mention) =>
+                mention.user_id !== null
+                    ? mention.user_id === invite.user_id
+                    : mention.full_name === invite.name,
+            ),
+    );
+
+    for (const invite of invites_to_remove) {
+        if (invite.user_id) {
+            $banner_container
+                .find(
+                    `.${CSS.escape(CLASSNAMES.recipient_not_subscribed)}[data-user-id="${invite.user_id}"]`,
+                )
+                .remove();
+        } else {
+            $banner_container
+                .find(
+                    `.${CSS.escape(CLASSNAMES.recipient_not_subscribed)}[data-name="${invite.name}"]`,
+                )
+                .remove();
+        }
+    }
+}
+
+// Extract user mentions from raw compose textarea text.
+// Matches Zulip mention syntax: @**Full Name|123** or @_**Name**.
+export function extract_mentions_from_text(
+    text: string,
+    helper_config: MarkdownHelpers,
+) {
+    const results = [];
+
+    // Matches @_?**mention**
+    const MENTION_REGEX = /@_?\*\*([^*]+)\*\*/g;
+
+    let match: RegExpExecArray | null;
+
+    while ((match = MENTION_REGEX.exec(text)) !== null) {
+        const mention = match[1]!.trim();
+
+        let full_name;
+        let user_id;
+
+        // EXACT same regex as parse_with_options
+        const id_regex = /^(.+)?\|(\d+)$/;
+        const id_match = id_regex.exec(mention);
+
+        if (id_match) {
+            full_name = id_match[1];
+            user_id = Number.parseInt(id_match[2]!, 10);
+
+            if (full_name === undefined) {
+                // @**|id** syntax
+                if (!helper_config.is_valid_user_id(user_id)) {
+                    continue;
+                }
+                full_name = helper_config.get_actual_name_from_user_id(user_id);
+            } else {
+                // @**name|id** syntax
+                if (
+                    !helper_config.is_valid_full_name_and_user_id(
+                        full_name,
+                        user_id,
+                    )
+                ) {
+                    continue;
+                }
+            }
+        } else {
+            // @**name** syntax
+            full_name = mention;
+            user_id = helper_config.get_user_id_from_name(full_name);
+        }
+
+        if (user_id === undefined) {
+            continue;
+        }
+
+        full_name = helper_config.get_actual_name_from_user_id(user_id);
+
+        results.push({ full_name, user_id });
+    }
+
+    return results;
 }

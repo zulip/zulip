@@ -17,6 +17,7 @@ import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
+import * as compose_banner from "./compose_banner.ts";
 import * as compose_state from "./compose_state.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -621,6 +622,13 @@ export function handle_keyup(
     }
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     rtl.set_rtl_class_for_textarea($textarea);
+
+    const message_text = $textarea.val() ?? "";
+    const $banner_container = compose_banner.get_compose_banner_container($textarea);
+
+    // Sync banners with current mentions
+    // If a mention was removed, its corresponding banner will be removed too.
+    compose_banner.remove_banners_of_not_mentioned_users(message_text, $banner_container);
 }
 
 /**
