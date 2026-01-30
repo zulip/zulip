@@ -2209,9 +2209,7 @@ def _save_s3_key_to_file(key_name: str) -> None:
     # data into the filesystem sink, because we've already prevented directory
     # traversal with our assertion above.
     dirname = mark_sanitized(os.path.dirname(filename))
-
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
+    os.makedirs(dirname, exist_ok=True)
 
     context.bucket.Object(key_name).download_file(Filename=filename)
 
