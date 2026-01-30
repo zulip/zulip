@@ -899,6 +899,10 @@ run_test("dm_matches_search_string", () => {
     result = people.dm_matches_search_string([linus], "ltorv");
     assert.ok(result);
 
+    // Match with user id.
+    result = people.dm_matches_search_string([linus], "304");
+    assert.ok(result);
+
     // Test filtering of names with diacritics. This should match
     // Nöôáàh by ignoring diacritics, and also match Nooaah.
     result = people.dm_matches_search_string([noah], "noOa");
