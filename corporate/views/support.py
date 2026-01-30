@@ -1,3 +1,4 @@
+import re
 import uuid
 from collections.abc import Iterable
 from contextlib import suppress
@@ -595,13 +596,17 @@ def support(
                 context["error_message"] = error.msg
 
     if query:
-        key_words = get_invitee_emails_set(query)
-
+        possible_emails = get_invitee_emails_set(query)
         case_insensitive_users_q = Q()
-        for key_word in key_words:
-            case_insensitive_users_q |= Q(delivery_email__iexact=key_word)
+        for email_address in possible_emails:
+            case_insensitive_users_q |= Q(delivery_email__iexact=email_address)
         users = set(UserProfile.objects.filter(case_insensitive_users_q))
-        realms = set(Realm.objects.filter(string_id__in=key_words))
+
+        key_words = re.split(r"\s*[,;]\s*", query.strip())
+        possible_string_ids = [
+            key_word for key_word in key_words if re.match(r"^[a-z0-9-]+$", key_word)
+        ]
+        realms = set(Realm.objects.filter(string_id__in=possible_string_ids))
 
         for key_word in key_words:
             try:
