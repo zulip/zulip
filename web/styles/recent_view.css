@@ -494,6 +494,7 @@
 
         .recent-view-dm-name,
         .recent-view-channel-name {
+            opacity: 0.8;
             display: inline-block;
             max-width: 100%;
             vertical-align: bottom;
