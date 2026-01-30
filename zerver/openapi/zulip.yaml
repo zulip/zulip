@@ -25713,6 +25713,13 @@ components:
             owner_id:
               nullable: true
             services: {}
+            email:
+              type: string
+              description: |
+                The Zulip display email address of the bot, used for authentication.
+
+                **Changes**: New in Zulip 12.0 (feature level 461). Previously,
+                only `realm_user` events were sent when updating a bot’s email.
             is_active:
               type: boolean
               description: |

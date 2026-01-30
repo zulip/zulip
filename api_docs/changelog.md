@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 461**
+
+* [`GET /events`](/api/get-events): `realm_bot` update events are
+  now sent when a bot's Zulip display email address is changed.
+
 **Feature level 460**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

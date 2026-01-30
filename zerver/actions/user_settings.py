@@ -134,6 +134,15 @@ def do_change_user_delivery_email(
 
     send_event_on_commit(user_profile.realm, event, delivery_email_visible_user_ids)
 
+    if user_profile.is_bot:
+        bot_payload = dict(user_id=user_profile.id, email=new_email)
+        bot_event = dict(type="realm_bot", op="update", bot=bot_payload)
+        send_event_on_commit(
+            user_profile.realm,
+            bot_event,
+            bot_owner_user_ids(user_profile),
+        )
+
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
         # If the user is using Gravatar to manage their email address,
         # their Gravatar just changed, and we need to notify other
