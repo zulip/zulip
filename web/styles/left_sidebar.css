@@ -454,6 +454,11 @@
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
         background-color: var(--color-background-hover-narrow-filter);
         border-radius: 4px;
+
+        .left-sidebar-title,
+        .stream-list-section-toggle {
+            opacity: var(--opacity-sidebar-heading-hover);
+        }
     }
 
     .stream-list-section-toggle {
