@@ -1,3 +1,5 @@
+from typing import Literal
+
 from django.db import models
 
 from zerver.lib.exceptions import (
@@ -39,3 +41,13 @@ class Device(models.Model):
     push_registration_error_code = models.CharField(
         max_length=100, choices=ErrorCode.choices, null=True
     )
+
+    @property
+    def push_registration_status(self) -> Literal["active", "pending", "failed", "unregistered"]:
+        if self.push_registration_error_code is not None:
+            return "failed"
+        elif self.pending_push_token_id is not None:
+            return "pending"
+        elif self.push_token_id is not None:
+            return "active"
+        return "unregistered"

@@ -9,7 +9,11 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from pydantic import Json
 
-from zerver.actions.push_notifications import do_register_for_push_notification, do_rotate_push_key
+from zerver.actions.push_notifications import (
+    do_register_for_push_notification,
+    do_rotate_push_key,
+    do_rotate_token,
+)
 from zerver.decorator import human_users_only, zulip_login_required
 from zerver.lib import redis_utils
 from zerver.lib.devices import check_device_id
@@ -299,56 +303,88 @@ def register_push_device(
     user_profile: UserProfile,
     *,
     device_id: Json[int],
-    token_kind: Annotated[str, check_string_in_validator(PushDevice.TokenKind.values)],
+    token_kind: Annotated[
+        str | None, check_string_in_validator(PushDevice.TokenKind.values)
+    ] = None,
     # Key that the client is requesting be used for encrypting
     # push notifications for delivery to it.
     # Consists of a 1-byte prefix identifying the symmetric
     # cryptosystem in use, followed by the secret key.
-    push_key: str,
-    push_key_id: Json[int],
+    push_key: str | None = None,
+    push_key_id: Json[int] | None = None,
     # Key that the client claims was used to encrypt
     # `encrypted_push_registration`.
-    bouncer_public_key: str,
+    bouncer_public_key: str | None = None,
     # Registration data encrypted by mobile client for bouncer.
-    encrypted_push_registration: str,
-    token_id: Json[int],
+    encrypted_push_registration: str | None = None,
+    token_id: Json[int] | None = None,
 ) -> HttpResponse:
     if not (settings.ZILENCER_ENABLED or uses_notification_bouncer()):
         raise PushServiceNotConfiguredError
 
     device = check_device_id(device_id, user_profile.id)
-    push_key_bytes = check_push_key(push_key)
 
-    latest_token_id = (
-        device.pending_push_token_id
-        if device.pending_push_token_id is not None
-        else device.push_token_id
+    # Another pending registration, forbid a new request for time-being.
+    if device.push_registration_status == "pending":
+        raise JsonableError(_("Another request already in progress, retry later"))
+
+    is_push_key_field_missing = push_key is None or push_key_id is None
+    is_token_field_missing = (
+        bouncer_public_key is None
+        or encrypted_push_registration is None
+        or token_id is None
+        or token_kind is None
     )
+    no_field_missing = not (is_push_key_field_missing or is_token_field_missing)
 
-    if (
-        device.push_registration_error_code is None
-        and device.push_key_id == push_key_id
-        and token_id == latest_token_id
-    ):
-        return json_success(request)
+    if is_push_key_field_missing and is_token_field_missing:
+        raise JsonableError(
+            _(
+                "Missing parameters: must provide either all push key fields, all token fields, or both."
+            )
+        )
 
-    if (
-        device.push_registration_error_code is None
-        and token_id == latest_token_id
-        and device.push_key_id != push_key_id
-    ):
+    if not is_push_key_field_missing and is_token_field_missing:
+        if device.push_registration_status != "active":
+            raise JsonableError(_("No active registration to rotate key for"))
+
+        assert push_key is not None and push_key_id is not None
+        push_key_bytes = check_push_key(push_key)
         do_rotate_push_key(user_profile, device, push_key_bytes, push_key_id)
         return json_success(request)
 
     with transaction.atomic(durable=True):
-        do_register_for_push_notification(
-            user_profile,
-            device,
-            token_kind=token_kind,
-            push_key_bytes=push_key_bytes,
-            push_key_id=push_key_id,
-            token_id=token_id,
-        )
+        assert token_id is not None
+        assert token_kind is not None
+        assert bouncer_public_key is not None
+        assert encrypted_push_registration is not None
+
+        if is_push_key_field_missing and not is_token_field_missing:
+            if device.push_registration_status != "active":
+                raise JsonableError(_("No active registration to rotate token for"))
+
+            if device.push_token_id == token_id:
+                return json_success(request)
+
+            do_rotate_token(user_profile, device, token_id)
+
+        if no_field_missing:
+            assert push_key is not None
+            assert push_key_id is not None
+            push_key_bytes = check_push_key(push_key)
+
+            # TODO: Do we want to allow rotating key and token at once ?
+            if device.push_registration_status == "active":
+                return json_success(request)
+
+            do_register_for_push_notification(
+                user_profile,
+                device,
+                token_kind=token_kind,
+                push_key_bytes=push_key_bytes,
+                push_key_id=push_key_id,
+                token_id=token_id,
+            )
 
         # We use a queue worker to make the request to the bouncer
         # to complete the registration, so that any transient failures
