@@ -48,7 +48,7 @@ from zerver.lib.remote_server import (
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApnsAppId, typed_endpoint, typed_endpoint_without_parameters
 from zerver.lib.typed_endpoint_validators import check_string_in_validator
-from zerver.models import PushDevice, PushDeviceToken, UserProfile
+from zerver.models import Device, PushDevice, PushDeviceToken, UserProfile
 from zerver.views.errors import config_error
 
 redis_client = redis_utils.get_redis_client()
@@ -122,18 +122,18 @@ def send_test_push_notification_api(
 @human_users_only
 @typed_endpoint
 def send_e2ee_test_push_notification_api(
-    request: HttpRequest, user_profile: UserProfile, *, push_account_id: Json[int] | None = None
+    request: HttpRequest, user_profile: UserProfile, *, device_id: Json[int] | None = None
 ) -> HttpResponse:
-    # We skip push devices with `bouncer_device_id` set to `null` as they are
+    # We skip devices with `push_token_id` set to `null` as they are
     # not yet registered with the bouncer to send mobile push notifications.
-    if push_account_id is not None:
+    if device_id is not None:
         # Uses unique index created for 'unique_push_device_user_push_account_id' constraint.
-        push_devices = PushDevice.objects.filter(
-            user=user_profile, push_account_id=push_account_id, bouncer_device_id__isnull=False
+        push_devices = Device.objects.filter(
+            id=device_id, user=user_profile, push_token_id__isnull=False
         )
     else:
         # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
-        push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
+        push_devices = Device.objects.filter(user=user_profile, push_token_id__isnull=False)
 
     if len(push_devices) == 0:
         raise NoActivePushDeviceError
