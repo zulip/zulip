@@ -545,14 +545,14 @@ class PermissionTest(ZulipTestCase):
 
         # Must be a valid user ID in the realm
         with self.assertRaises(JsonableError):
-            access_user_by_id(iago, 1234, for_admin=False)
+            access_user_by_id(iago, 1234, allow_bots=False, for_admin=False)
         with self.assertRaises(JsonableError):
-            access_user_by_id_including_cross_realm(iago, 1234, for_admin=False)
+            access_user_by_id_including_cross_realm(iago, 1234, allow_bots=False, for_admin=False)
         with self.assertRaises(JsonableError):
-            access_user_by_id(iago, self.mit_user("sipbtest").id, for_admin=False)
+            access_user_by_id(iago, self.mit_user("sipbtest").id, allow_bots=False, for_admin=False)
         with self.assertRaises(JsonableError):
             access_user_by_id_including_cross_realm(
-                iago, self.mit_user("sipbtest").id, for_admin=False
+                iago, self.mit_user("sipbtest").id, allow_bots=False, for_admin=False
             )
 
         # Can only access bot users if allow_bots is passed
@@ -560,9 +560,9 @@ class PermissionTest(ZulipTestCase):
         access_user_by_id(iago, bot.id, allow_bots=True, for_admin=True)
         access_user_by_id_including_cross_realm(iago, bot.id, allow_bots=True, for_admin=True)
         with self.assertRaises(JsonableError):
-            access_user_by_id(iago, bot.id, for_admin=True)
+            access_user_by_id(iago, bot.id, allow_bots=False, for_admin=True)
         with self.assertRaises(JsonableError):
-            access_user_by_id_including_cross_realm(iago, bot.id, for_admin=True)
+            access_user_by_id_including_cross_realm(iago, bot.id, allow_bots=False, for_admin=True)
 
         # Only the including_cross_realm variant works for system bots.
         system_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
@@ -573,43 +573,61 @@ class PermissionTest(ZulipTestCase):
         )
         # And even then, only if `allow_bots` was passed.
         with self.assertRaises(JsonableError):
-            access_user_by_id(iago, system_bot.id, for_admin=False)
+            access_user_by_id(iago, system_bot.id, allow_bots=False, for_admin=False)
         with self.assertRaises(JsonableError):
-            access_user_by_id_including_cross_realm(iago, system_bot.id, for_admin=False)
+            access_user_by_id_including_cross_realm(
+                iago, system_bot.id, allow_bots=False, for_admin=False
+            )
 
         # Can only access deactivated users if allow_deactivated is passed
         hamlet = self.example_user("hamlet")
         do_deactivate_user(hamlet, acting_user=None)
         with self.assertRaises(JsonableError):
-            access_user_by_id(iago, hamlet.id, for_admin=False)
+            access_user_by_id(iago, hamlet.id, allow_bots=False, for_admin=False)
         with self.assertRaises(JsonableError):
-            access_user_by_id_including_cross_realm(iago, hamlet.id, for_admin=False)
+            access_user_by_id_including_cross_realm(
+                iago, hamlet.id, allow_bots=False, for_admin=False
+            )
 
         with self.assertRaises(JsonableError):
-            access_user_by_id(iago, hamlet.id, for_admin=True)
+            access_user_by_id(iago, hamlet.id, allow_bots=False, for_admin=True)
         with self.assertRaises(JsonableError):
-            access_user_by_id_including_cross_realm(iago, hamlet.id, for_admin=True)
-        access_user_by_id(iago, hamlet.id, allow_deactivated=True, for_admin=True)
+            access_user_by_id_including_cross_realm(
+                iago, hamlet.id, allow_bots=False, for_admin=True
+            )
+        access_user_by_id(iago, hamlet.id, allow_bots=False, allow_deactivated=True, for_admin=True)
         access_user_by_id_including_cross_realm(
-            iago, hamlet.id, allow_deactivated=True, for_admin=True
+            iago, hamlet.id, allow_bots=False, allow_deactivated=True, for_admin=True
         )
 
         # Non-admin user can't admin another user
         with self.assertRaises(JsonableError):
             access_user_by_id(
-                self.example_user("cordelia"), self.example_user("aaron").id, for_admin=True
+                self.example_user("cordelia"),
+                self.example_user("aaron").id,
+                allow_bots=False,
+                for_admin=True,
             )
         with self.assertRaises(JsonableError):
             access_user_by_id_including_cross_realm(
-                self.example_user("cordelia"), self.example_user("aaron").id, for_admin=True
+                self.example_user("cordelia"),
+                self.example_user("aaron").id,
+                allow_bots=False,
+                for_admin=True,
             )
 
         # But does have read-only access to it.
         access_user_by_id(
-            self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
+            self.example_user("cordelia"),
+            self.example_user("aaron").id,
+            allow_bots=False,
+            for_admin=False,
         )
         access_user_by_id_including_cross_realm(
-            self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
+            self.example_user("cordelia"),
+            self.example_user("aaron").id,
+            allow_bots=False,
+            for_admin=False,
         )
 
     def test_access_user_by_id_when_personal_recipient_is_none(self) -> None:
@@ -628,12 +646,12 @@ class PermissionTest(ZulipTestCase):
         )
 
         aaron = self.example_user("aaron")
-        target_user = access_user_by_id(polonius, aaron.id, for_admin=False)
+        target_user = access_user_by_id(polonius, aaron.id, allow_bots=False, for_admin=False)
         self.assertEqual(target_user, aaron)
 
         othello = self.example_user("othello")
         with self.assertRaises(JsonableError):
-            access_user_by_id(polonius, othello.id, for_admin=False)
+            access_user_by_id(polonius, othello.id, allow_bots=False, for_admin=False)
 
     def check_property_for_role(self, user_profile: UserProfile, role: int) -> bool:
         if role == UserProfile.ROLE_REALM_ADMINISTRATOR:
