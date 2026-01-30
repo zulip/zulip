@@ -563,12 +563,12 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_check_run_success(self) -> None:
         expected_topic_name = "hello-world / checks"
         expected_message = """
-Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
+:check: Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
 """.strip()
         self.check_webhook("check_run__completed_success", expected_topic_name, expected_message)
 
     def test_check_run_failure(self) -> None:
-        expected_message = "Check [success_job](https://github.com/Pritesh-30/test-repo/actions/runs/21484616811/job/61890143312) completed (failure). ([e9a540c97cd](https://github.com/Pritesh-30/test-repo/commit/e9a540c97cd4efe9505bbd03bad55fe508bc863c))"
+        expected_message = ":warning: Check [success_job](https://github.com/Pritesh-30/test-repo/actions/runs/21484616811/job/61890143312) completed (failure). ([e9a540c97cd](https://github.com/Pritesh-30/test-repo/commit/e9a540c97cd4efe9505bbd03bad55fe508bc863c))"
         self.check_webhook("check_run__completed_failure", "test-repo / checks", expected_message)
 
     def test_team_edited_description(self) -> None:
