@@ -1500,7 +1500,7 @@ function focus_current_id(): void {
     $(`#${CSS.escape(current_navigated_id)}`).trigger("focus");
 }
 
-function focus_inbox_search(): void {
+export function focus_inbox_search(): void {
     current_navigated_id = INBOX_SEARCH_ID;
     focus_current_id();
 }
@@ -1751,6 +1751,14 @@ function set_list_focus(input_key?: string): void {
 function focus_filters_dropdown(): void {
     current_navigated_id = INBOX_FILTERS_DROPDOWN_ID;
     $(`#${CSS.escape(INBOX_FILTERS_DROPDOWN_ID)}`).trigger("focus");
+}
+
+export function is_search_focused(): boolean {
+    const active_element = document.activeElement;
+    if (!(active_element instanceof HTMLInputElement)) {
+        return false;
+    }
+    return active_element.id === INBOX_SEARCH_ID;
 }
 
 function is_navigated_to_search(): boolean {
