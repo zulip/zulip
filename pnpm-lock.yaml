@@ -9,6 +9,9 @@ overrides:
   source-map@^0.6: npm:source-map-js@^1.2.1
 
 patchedDependencies:
+  autosize:
+    hash: f08807ede2459b743c2cbdf5c266a685abe39d73930ccc4e469a9cb67cd2560b
+    path: patches/autosize.patch
   handlebars:
     hash: 53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9
     path: patches/handlebars.patch
@@ -91,7 +94,7 @@ importers:
         version: 2.3.0
       autosize:
         specifier: ^5.0.2
-        version: 5.0.2
+        version: 5.0.2(patch_hash=f08807ede2459b743c2cbdf5c266a685abe39d73930ccc4e469a9cb67cd2560b)
       babel-loader:
         specifier: ^10.0.0
         version: 10.0.0(@babel/core@7.28.6)(webpack@5.104.1)
@@ -13195,7 +13198,7 @@ snapshots:
       postcss: 8.5.6
       postcss-value-parser: 4.2.0
 
-  autosize@5.0.2: {}
+  autosize@5.0.2(patch_hash=f08807ede2459b743c2cbdf5c266a685abe39d73930ccc4e469a9cb67cd2560b): {}
 
   available-typed-arrays@1.0.7:
     dependencies:
