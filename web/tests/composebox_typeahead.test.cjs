@@ -2,14 +2,14 @@
 
 const assert = require("node:assert/strict");
 
-const {get_final_topic_display_name} = require("../src/util.ts");
+const { get_final_topic_display_name } = require("../src/util.ts");
 
-const {mock_banners} = require("./lib/compose_banner.cjs");
-const {make_user_group} = require("./lib/example_group.cjs");
-const {make_realm} = require("./lib/example_realm.cjs");
+const { mock_banners } = require("./lib/compose_banner.cjs");
+const { make_user_group } = require("./lib/example_group.cjs");
+const { make_realm } = require("./lib/example_realm.cjs");
 const example_settings = require("./lib/example_settings.cjs");
-const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
-const {run_test, noop} = require("./lib/test.cjs");
+const { mock_esm, set_global, with_overrides, zrequire } = require("./lib/namespace.cjs");
+const { run_test, noop } = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 let autosize_called;
@@ -67,8 +67,8 @@ const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_recipient = zrequire("compose_recipient");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
-const {set_current_user, set_realm} = zrequire("state_data");
-const {initialize_user_settings} = zrequire("user_settings");
+const { set_current_user, set_realm } = zrequire("state_data");
+const { initialize_user_settings } = zrequire("user_settings");
 const current_user = {};
 set_current_user(current_user);
 const realm = make_realm({
@@ -79,16 +79,16 @@ set_realm(realm);
 const user_settings = {
     web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
 };
-initialize_user_settings({user_settings});
+initialize_user_settings({ user_settings });
 
 const ct = composebox_typeahead;
 
 function user_item(user) {
-    return {type: "user", user};
+    return { type: "user", user };
 }
 
 function broadcast_item(user) {
-    return {type: "broadcast", user};
+    return { type: "broadcast", user };
 }
 
 function slash_item(slash) {
@@ -708,7 +708,7 @@ function test(label, f) {
     });
 }
 
-test("topics_seen_for", ({override, override_rewire}) => {
+test("topics_seen_for", ({ override, override_rewire }) => {
     override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
         return ["With Twisted Metal", "acceptance", "civil fears"];
@@ -728,7 +728,7 @@ test("topics_seen_for", ({override, override_rewire}) => {
     assert.deepEqual(ct.topics_seen_for(""), []);
 });
 
-test("content_typeahead_selected", ({override}) => {
+test("content_typeahead_selected", ({ override }) => {
     const input_element = {
         $element: {},
         type: "textarea",
@@ -830,7 +830,7 @@ test("content_typeahead_selected", ({override}) => {
 
     query = "@back";
     ct.get_or_set_token_for_testing("back");
-    with_overrides(({disallow}) => {
+    with_overrides(({ disallow }) => {
         disallow(compose_validate, "warn_if_mentioning_unsubscribed_user");
         actual_value = ct.content_typeahead_selected(backend, query, input_element);
     });
@@ -851,7 +851,7 @@ test("content_typeahead_selected", ({override}) => {
     };
     query = "@_kin";
     ct.get_or_set_token_for_testing("kin");
-    with_overrides(({disallow}) => {
+    with_overrides(({ disallow }) => {
         disallow(compose_validate, "warn_if_mentioning_unsubscribed_user");
         actual_value = ct.content_typeahead_selected(silent_hamlet, query, input_element);
     });
@@ -883,7 +883,7 @@ test("content_typeahead_selected", ({override}) => {
         ...backend,
         is_silent: true,
     };
-    with_overrides(({disallow}) => {
+    with_overrides(({ disallow }) => {
         disallow(compose_validate, "warn_if_mentioning_unsubscribed_user");
         actual_value = ct.content_typeahead_selected(silent_backend, query, input_element);
     });
@@ -1180,7 +1180,7 @@ const sweden_topics_to_show = [
     "",
 ];
 
-test("initialize", ({override, override_rewire, mock_template}) => {
+test("initialize", ({ override, override_rewire, mock_template }) => {
     mock_banners();
 
     let pill_items = [];
@@ -1191,8 +1191,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
             cleared = true;
         },
         items: () => pill_items,
-        onPillCreate() {},
-        onPillRemove() {},
+        onPillCreate() { },
+        onPillRemove() { },
         appendValidatedData(item) {
             appended_names.push(user_pill.get_display_value_from_item(item));
         },
@@ -1203,7 +1203,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
     let expected_value;
     override(realm, "custom_profile_field_types", {
-        PRONOUNS: {id: 8, name: "Pronouns"},
+        PRONOUNS: { id: 8, name: "Pronouns" },
     });
 
     mock_template("typeahead_list_item.hbs", true, (data, html) => {
@@ -1487,7 +1487,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 actual_value = options.updater(cordelia_item, event);
                 assert.deepEqual(appended_names, ["Cordelia, Lear's daughter"]);
 
-                const click_event = {type: "click", target: "#doesnotmatter"};
+                const click_event = { type: "click", target: "#doesnotmatter" };
                 options.query = "othello";
                 // Focus lost (caused by the click event in the typeahead list)
                 $("#private_message_recipient").trigger("blur");
@@ -1502,7 +1502,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.deepEqual(appended_names, ["King Lear"]);
                 assert.ok(cleared);
 
-                pill_items = [{user_id: lear.user_id, type: "user"}];
+                pill_items = [{ user_id: lear.user_id, type: "user" }];
                 appended_names = [];
                 cleared = false;
                 options.updater(hamletcharacters, event);
@@ -1791,7 +1791,52 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $stub_target.attr("id", "private_message_recipient");
     $("form#send_message_form").trigger(event);
 
+    // Test Shift+Space for list continuation
+    event.key = " ";
+    event.shiftKey = true;
+    event.metaKey = false;
+    event.ctrlKey = false;
+    event.altKey = false;
+    $stub_target.attr("id", "compose-textarea");
+
+    // Test Shift+Space with bulleted list
+    $("textarea#compose-textarea").val("- List item 1\n- List item 2");
+    $("textarea#compose-textarea")[0].selectionStart = 27;
+    $("textarea#compose-textarea")[0].selectionEnd = 27;
+    override(compose_ui, "cursor_inside_code_block", () => false);
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n- ");
+    });
+    $("form#send_message_form").trigger(event);
+
+    // Test Shift+Space with numbered list
+    $("textarea#compose-textarea").val("1. List item 1\n2. List item 2");
+    $("textarea#compose-textarea")[0].selectionStart = 29;
+    $("textarea#compose-textarea")[0].selectionEnd = 29;
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n3. ");
+    });
+    $("form#send_message_form").trigger(event);
+
+    // Test Shift+Space with nested bulleted list (indented)
+    $("textarea#compose-textarea").val("- List item 1\n  - Nested item");
+    $("textarea#compose-textarea")[0].selectionStart = 30;
+    $("textarea#compose-textarea")[0].selectionEnd = 30;
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n  - ");
+    });
+    $("form#send_message_form").trigger(event);
+
+    // Test Shift+Space should not trigger list continuation when not in a list
+    $("textarea#compose-textarea").val("Regular text");
+    $("textarea#compose-textarea")[0].selectionStart = 12;
+    $("textarea#compose-textarea")[0].selectionEnd = 12;
+    // For regular text, preventDefault should not be called, so the default space should be inserted
+    // We don't override insert_and_scroll_into_view here, so if it gets called, the test will fail
+    $("form#send_message_form").trigger(event);
+
     event.key = "a";
+    event.shiftKey = false;
     $("form#send_message_form").trigger(event);
 
     // the UI of selecting a stream is tested in puppeteer tests.
@@ -1831,7 +1876,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok(compose_textarea_typeahead_called);
 });
 
-test("begins_typeahead", ({override, override_rewire}) => {
+test("begins_typeahead", ({ override, override_rewire }) => {
     override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         assert.equal(stream_id, sweden_stream.stream_id);
         return sweden_topics_to_show;
@@ -2358,9 +2403,9 @@ test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo #bar@foo"), "#bar@foo");
 });
 
-test("content_item_html", ({override_rewire}) => {
+test("content_item_html", ({ override_rewire }) => {
     ct.get_or_set_completing_for_tests("emoji");
-    const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯", type: "emoji"};
+    const emoji = { emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯", type: "emoji" };
     let th_render_typeahead_item_called = false;
     override_rewire(typeahead_helper, "render_emoji", (item) => {
         assert.deepEqual(item, emoji);
@@ -2417,7 +2462,7 @@ test("content_item_html", ({override_rewire}) => {
         });
         th_render_typeahead_item_called = true;
     });
-    ct.content_item_html({type: "syntax", language: "py"});
+    ct.content_item_html({ type: "syntax", language: "py" });
 
     // Verify that all stub functions have been called.
     assert.ok(th_render_typeahead_item_called);
@@ -2435,7 +2480,7 @@ function possibly_silent_list(list, is_silent) {
     }));
 }
 
-test("filter_and_sort_mentions (normal)", ({override}) => {
+test("filter_and_sort_mentions (normal)", ({ override }) => {
     compose_state.set_message_type("stream");
     const is_silent = false;
     override(current_user, "user_id", 101);
@@ -2467,7 +2512,7 @@ test("filter_and_sort_mentions (normal)", ({override}) => {
     );
 });
 
-test("filter_and_sort_mentions (silent)", ({override}) => {
+test("filter_and_sort_mentions (silent)", ({ override }) => {
     const is_silent = true;
 
     let suggestions = ct.filter_and_sort_mentions(is_silent, "al");
@@ -2488,7 +2533,7 @@ test("filter_and_sort_mentions (silent)", ({override}) => {
     );
 });
 
-test("typeahead_results", ({override}) => {
+test("typeahead_results", ({ override }) => {
     const stream_list = [
         denmark_stream,
         sweden_stream,
@@ -2661,7 +2706,7 @@ test("typeahead_results", ({override}) => {
     assert_stream_matches("Mobile", [mobile_team_stream, mobile_stream]);
 });
 
-test("message people", ({override, override_rewire}) => {
+test("message people", ({ override, override_rewire }) => {
     let results;
 
     /*

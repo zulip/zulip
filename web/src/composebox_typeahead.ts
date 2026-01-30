@@ -406,6 +406,34 @@ function handle_keydown(
             $nextFocus = $("textarea#compose-textarea");
         }
     }
+
+    // Handle Shift+Space for list continuation
+    if (key === " " && e.shiftKey) {
+        const target_id = $(e.target).attr("id");
+        const target_sel = target_id ? `#${CSS.escape(target_id)}` : undefined;
+        const on_compose = target_sel === "#compose-textarea";
+
+        if (on_compose) {
+            const $textarea = $("textarea#compose-textarea");
+            // Only handle list continuation if we're inside a list
+            if (!compose_ui.cursor_inside_code_block($textarea)) {
+                const val = $textarea.val();
+                assert(val !== undefined);
+                const before_text = split_at_cursor(val, $textarea)[0];
+                const previous_line = bulleted_numbered_list_util.get_last_line(before_text);
+
+                // Check if we're in a bulleted or numbered list
+                if (
+                    bulleted_numbered_list_util.is_bulleted(previous_line) ||
+                    bulleted_numbered_list_util.is_numbered(previous_line)
+                ) {
+                    // Prevent default space behavior and handle as list continuation
+                    e.preventDefault();
+                    handle_bulleting_or_numbering($textarea, e);
+                }
+            }
+        }
+    }
 }
 
 function handle_keyup(e: JQuery.KeyUpEvent): void {
