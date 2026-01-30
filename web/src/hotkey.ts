@@ -28,6 +28,7 @@ import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as lightbox from "./lightbox.ts";
 import * as list_util from "./list_util.ts";
 import * as message_actions_popover from "./message_actions_popover.ts";
@@ -1208,6 +1209,11 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             browser_history.go_to_location("#recent");
             return true;
         case "open_inbox":
+            // Focus search if already in (non-channel) inbox view.
+            if (!inbox_util.is_channel_view() && !inbox_ui.is_search_focused()) {
+                inbox_ui.focus_inbox_search();
+                return true;
+            }
             browser_history.go_to_location("#inbox");
             return true;
         case "open_starred_message_view":
@@ -1242,6 +1248,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
                 }
             }
             if (inbox_ui.is_in_focus()) {
+                // Focus search if already in channel view.
+                if (inbox_util.is_channel_view()) {
+                    inbox_ui.focus_inbox_search();
+                    return true;
+                }
+
                 const msg = inbox_ui.get_focused_row_message();
                 if (msg?.msg_type === "stream") {
                     list_of_channel_topics_channel_id = msg.stream_id;
