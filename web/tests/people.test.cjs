@@ -1909,6 +1909,7 @@ run_test("fetch_users", async ({override}) => {
     assert.ok(people.is_valid_user_id(42));
     assert.ok(people.is_valid_user_id(17));
     assert.ok(people.is_valid_user_ids([15, 16, 42, 17]));
+    assert.ok(!people.is_valid_user_ids([15, 16, 42, 9999]));
     assert.equal(people.get_by_email("alice@example.com").user_id, 16);
     assert.equal(people.get_by_email("retiree@example.com").user_id, 15);
 
