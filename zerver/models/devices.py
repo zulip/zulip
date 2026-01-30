@@ -60,6 +60,9 @@ class Device(models.Model):
         ]
         indexes = [
             models.Index(
+                # Used in 'get_recipient_info', `do_clear_mobile_push_notifications_for_ids`,
+                # `prepare_payload_and_send_push_notifications`, `send_push_notifications`,
+                # and `send_e2ee_test_push_notification_api`.
                 fields=["user", "push_token_id"],
                 condition=Q(push_token_id__isnull=False),
                 name="zerver_device_user_push_token_id_idx",

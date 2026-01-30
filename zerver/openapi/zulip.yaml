@@ -12845,9 +12845,9 @@ paths:
             schema:
               type: object
               properties:
-                push_account_id:
+                device_id:
                   description: |
-                    The push account ID for the device to which to send the test notification.
+                    The ID for the device to which to send the test notification.
 
                     If this parameter is not submitted, the E2EE test notification will
                     be sent to all of the user's devices registered on the server.
@@ -12855,10 +12855,14 @@ paths:
                     A mobile client should pass this parameter, to avoid triggering a test
                     notification for other clients.
 
-                    See [`POST /mobile_push/register`](/api/register-push-device)
-                    for details on push account IDs.
+                    See [`POST /register_client_device`](/api/register-client-device)
+                    for details on device ID.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd).
+
+                    Previously, `push_account_id` was used.
                   type: integer
-                  example: 111222
+                  example: 1144
       responses:
         "200":
           description: Success.

@@ -612,7 +612,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         # * 1 : `get_user_profile_by_id`
         # * 2 : `access_message_and_usermessage` (Fetch Message + UserMessage)
         # * 1 : update fetched user_message flag
-        # * 3 : fetch PushDeviceToken, update RealmCount, fetch PushDevice
+        # * 3 : fetch PushDeviceToken, update RealmCount, fetch Device
         message = self.get_message(
             Recipient.PERSONAL,
             type_id=self.personal_recipient_user.id,

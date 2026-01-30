@@ -19,7 +19,7 @@ from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
 from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
-from zerver.models import Message, PushDevice, PushDeviceToken, Recipient, UserMessage, UserProfile
+from zerver.models import Device, Message, PushDeviceToken, Recipient, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit, send_event_rollback_unsafe
 
 
@@ -268,9 +268,9 @@ def do_clear_mobile_push_notifications_for_ids(
         PushDeviceToken.objects.filter(user_id__in=clear_notifications_user_ids)
         .values_list("user_id", flat=True)
         .union(
-            # Uses index "zerver_pushdevice_user_bouncer_device_id_idx".
-            PushDevice.objects.filter(
-                user_id__in=clear_notifications_user_ids, bouncer_device_id__isnull=False
+            # Uses index "zerver_device_user_push_token_id_idx".
+            Device.objects.filter(
+                user_id__in=clear_notifications_user_ids, push_token_id__isnull=False
             ).values_list("user_id", flat=True)
         )
     )
