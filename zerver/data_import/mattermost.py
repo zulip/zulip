@@ -678,9 +678,12 @@ def process_posts(
         if post_team == team_name:
             post_data_list.append(post)
 
-    def message_to_dict(post_dict: dict[str, Any]) -> dict[str, Any]:
+    def message_to_dict(post_dict: dict[str, Any]) -> dict[str, Any] | None:
         sender_username = post_dict["user"]
-        sender_id = user_id_mapper.get(sender_username)
+        if user_id_mapper.has(sender_username):
+            sender_id = user_id_mapper.get(sender_username)
+        else:  # nocoverage
+            return None
         content = post_dict["message"]
 
         if masking_content:
@@ -725,7 +728,10 @@ def process_posts(
 
     raw_messages = []
     for post_dict in post_data_list:
-        raw_messages.append(message_to_dict(post_dict))
+        message_dict = message_to_dict(post_dict)
+        if message_dict is None:  # nocoverage
+            continue
+        raw_messages.append(message_dict)
         message_replies = post_dict["replies"]
         # Replies to a message in Mattermost are stored in the main message object.
         # For now, we just append the replies immediately after the original message.
@@ -735,7 +741,10 @@ def process_posts(
                     reply["channel"] = post_dict["channel"]
                 else:  # nocoverage
                     reply["channel_members"] = post_dict["channel_members"]
-                raw_messages.append(message_to_dict(reply))
+                reply_dict = message_to_dict(reply)
+                if reply_dict is None:  # nocoverage
+                    continue
+                raw_messages.append(reply_dict)
 
     def process_batch(lst: list[dict[str, Any]]) -> None:
         process_raw_message_batch(
