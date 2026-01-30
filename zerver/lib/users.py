@@ -324,7 +324,7 @@ def access_user_by_id(
     target_user_id: int,
     *,
     allow_deactivated: bool = False,
-    allow_bots: bool = False,
+    allow_bots: bool,
     for_admin: bool,
 ) -> UserProfile:
     """Master function for accessing another user by ID in API code;
@@ -345,7 +345,7 @@ def access_user_by_id_including_cross_realm(
     target_user_id: int,
     *,
     allow_deactivated: bool = False,
-    allow_bots: bool = False,
+    allow_bots: bool,
     for_admin: bool,
 ) -> UserProfile:
     """Variant of access_user_by_id allowing cross-realm bots to be accessed."""

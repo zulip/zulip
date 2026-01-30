@@ -72,7 +72,7 @@ def get_presence_backend(
 def get_status_backend(
     request: HttpRequest, user_profile: UserProfile, user_id: int
 ) -> HttpResponse:
-    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+    target_user = access_user_by_id(user_profile, user_id, allow_bots=False, for_admin=False)
     return json_success(request, data={"status": get_user_status(target_user)})
 
 
@@ -160,7 +160,7 @@ def update_user_status_admin(
     emoji_code: str | None = None,
     emoji_type: Annotated[str | None, ApiParamConfig("reaction_type")] = None,
 ) -> HttpResponse:
-    target_user = access_user_by_id(user_profile, user_id, for_admin=True)
+    target_user = access_user_by_id(user_profile, user_id, allow_bots=False, for_admin=True)
     return update_user_status_backend(
         request,
         user_profile=target_user,
