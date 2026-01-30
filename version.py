@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 456
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (366, 0)  # bumped 2026-01-14 to add uri-template-lite
+PROVISION_VERSION = (367, 0)  # bumped 2026-01-30 to patch autosize
