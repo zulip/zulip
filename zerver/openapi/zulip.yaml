@@ -2146,19 +2146,24 @@ paths:
                                 messages' recipient. May also be sent to additional users
                                 who had access to it, including, in particular, an
                                 administrator user deleting messages in a stream that they
-                                are not subscribed to.
+                                are not subscribed to but have content access to.
 
-                                This means that clients can assume that they will always
-                                receive an event of this type for deletions that the
-                                client itself initiated.
+                                This means that clients can assume that they will receive an
+                                event of this type for deletions that the client itself initiated
+                                only if they have content access to the messages' recipient.
 
                                 This event is also sent when the user loses access to a message,
                                 such as when it is [moved to a channel][message-move-channel] that
                                 the user does not [have permission to access][channel-access].
 
-                                **Changes**: Prior to Zulip 12.0 (feature level 452) messages
-                                deleted via a message retention policy incorrectly failed to
-                                generate `delete_message` events.
+                                **Changes**: Before Zulip 12.0 (feature level ZF-d64167), this
+                                event was always sent to the client that initiated the deletion
+                                irrespective of whether they had content access to the
+                                messages' recipient.
+
+                                Prior to Zulip 12.0 (feature level 452) messages deleted via a
+                                message retention policy incorrectly failed to generate
+                                `delete_message` events.
 
                                 Before Zulip 9.0 (feature level 274), this event was only sent to
                                 subscribers of the message's recipient.
@@ -2185,8 +2190,16 @@ paths:
 
                                     A sorted list containing the IDs of the newly deleted messages.
 
-                                    **Changes**: Before Zulip 11.0 (feature level 393), this list was
-                                    not guaranteed to be sorted.
+                                    If messages are deleted in a private channel with protected history,
+                                    for the client who initiated the deletion, this list will only include
+                                    the IDs of the deleted messages that the client had access to.
+
+                                    **Changes**: Before Zulip 12.0 (feature level ZF-d64167), this list
+                                    would include IDs of all the deleted messages, even in a private channel
+                                    with protected history.
+
+                                    Before Zulip 11.0 (feature level 393), this list was not guaranteed to
+                                    be sorted.
 
                                     [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                   items:
@@ -15147,6 +15160,49 @@ paths:
         given their user ID.
       parameters:
         - $ref: "#/components/parameters/UserId"
+        - name: actions
+          in: query
+          description: |
+            The policy for performing various actions related to the user profile and
+            their messages after deactivation.
+
+            An object with boolean values for each message type:
+
+            - `delete_profile`: Delete user profile
+            - `delete_public_channel_messages`: Delete messages in public channels
+            - `delete_private_channel_messages`: Delete messages in private channels
+            - `delete_direct_messages`: Delete direct messages
+
+            If all values are false or the object is empty, profile will not be deleted
+            and no messages will be deleted.
+            This is first applied to any bots created by the user and then to the user.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-01a225).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  delete_profile:
+                    type: boolean
+                    description: |
+                      Whether to delete the user profile by updating their name
+                      to "Deleted user" and removing their profile picture.
+                  delete_public_channel_messages:
+                    type: boolean
+                    description: Whether to delete messages in public channels.
+                  delete_private_channel_messages:
+                    type: boolean
+                    description: Whether to delete messages in private channels.
+                  delete_direct_messages:
+                    type: boolean
+                    description: Whether to delete direct messages.
+              example:
+                delete_profile: false
+                delete_public_channel_messages: false
+                delete_private_channel_messages: false
+                delete_direct_messages: false
+          required: false
       requestBody:
         required: false
         content:
