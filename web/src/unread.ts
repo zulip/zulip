@@ -1,12 +1,12 @@
 import type * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
-import { FoldDict } from "./fold_dict.ts";
+import {FoldDict} from "./fold_dict.ts";
 import * as message_store from "./message_store.ts";
-import type { Message } from "./message_store.ts";
+import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
-import type { UpdateMessageEvent } from "./server_event_types.ts";
+import type {UpdateMessageEvent} from "./server_event_types.ts";
 import * as settings_config from "./settings_config.ts";
 import type {
     StateData,
@@ -14,9 +14,9 @@ import type {
     unread_direct_message_info_schema,
 } from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import type { TopicHistoryEntry } from "./stream_topic_history.ts";
+import type {TopicHistoryEntry} from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
-import { user_settings } from "./user_settings.ts";
+import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
@@ -73,7 +73,7 @@ type DirectMessageCountInfo = {
 
 type DirectMessageCountInfoWithLatestMsgId = {
     total_count: number;
-    pm_dict: Map<string, { count: number; latest_msg_id: number }>;
+    pm_dict: Map<string, {count: number; latest_msg_id: number}>;
 };
 
 class UnreadDirectMessageCounter {
@@ -102,11 +102,11 @@ class UnreadDirectMessageCounter {
 
     set_message_ids(user_ids_string: string, unread_message_ids: number[]): void {
         for (const message_id of unread_message_ids) {
-            this.add({ message_id, user_ids_string });
+            this.add({message_id, user_ids_string});
         }
     }
 
-    add({ message_id, user_ids_string }: { message_id: number; user_ids_string: string }): void {
+    add({message_id, user_ids_string}: {message_id: number; user_ids_string: string}): void {
         if (user_ids_string) {
             let bucket = this.bucketer.get(user_ids_string);
             if (bucket === undefined) {
@@ -148,7 +148,7 @@ class UnreadDirectMessageCounter {
     }
 
     get_counts_with_latest_msg_id(): DirectMessageCountInfoWithLatestMsgId {
-        const pm_dict = new Map<string, { count: number; latest_msg_id: number }>(); // Hash by user_ids_string -> count Optional[, max_id]
+        const pm_dict = new Map<string, {count: number; latest_msg_id: number}>(); // Hash by user_ids_string -> count Optional[, max_id]
         let total_count = 0;
         for (const [user_ids_string, id_set] of this.bucketer) {
             const count = id_set.size;
@@ -231,21 +231,21 @@ type UnreadTopicCounts = {
 class UnreadTopicCounter {
     bucketer = new Map<number, FoldDict<Set<number>>>();
     // Maps the message id to the (stream, topic) we stored it under in the bucketer.
-    reverse_lookup = new Map<number, { stream_id: number; topic: string }>();
+    reverse_lookup = new Map<number, {stream_id: number; topic: string}>();
 
     clear(): void {
         this.bucketer.clear();
         this.reverse_lookup.clear();
     }
 
-    set_streams(objs: { stream_id: number; topic: string; unread_message_ids: number[] }[]): void {
+    set_streams(objs: {stream_id: number; topic: string; unread_message_ids: number[]}[]): void {
         for (const obj of objs) {
             const stream_id = obj.stream_id;
             const topic = obj.topic;
             const unread_message_ids = obj.unread_message_ids;
 
             for (const message_id of unread_message_ids) {
-                this.add({ message_id, stream_id, topic });
+                this.add({message_id, stream_id, topic});
             }
         }
     }
@@ -269,7 +269,7 @@ class UnreadTopicCounter {
             bucket = new Set();
             per_stream_bucketer.set(topic, bucket);
         }
-        this.reverse_lookup.set(message_id, { stream_id, topic });
+        this.reverse_lookup.set(message_id, {stream_id, topic});
         bucket.add(message_id);
     }
 
@@ -278,7 +278,7 @@ class UnreadTopicCounter {
         if (stream_topic === undefined) {
             return;
         }
-        const { stream_id, topic } = stream_topic;
+        const {stream_id, topic} = stream_topic;
         this.bucketer.get(stream_id)?.get(topic)?.delete(message_id);
         this.reverse_lookup.delete(message_id);
     }
@@ -287,7 +287,7 @@ class UnreadTopicCounter {
         let stream_unread_messages = 0;
         const topic_counts_by_stream_id = new Map<
             number,
-            Map<string, { topic_count: number; latest_msg_id: number }>
+            Map<string, {topic_count: number; latest_msg_id: number}>
         >(); // hash by stream_id -> count
         for (const [stream_id, per_stream_bucketer] of this.bucketer) {
             // We track unread counts for streams that may be currently
@@ -299,7 +299,7 @@ class UnreadTopicCounter {
                 continue;
             }
 
-            const topic_unread = new Map<string, { topic_count: number; latest_msg_id: number }>();
+            const topic_unread = new Map<string, {topic_count: number; latest_msg_id: number}>();
             let stream_count = 0;
             for (const [topic, msgs] of per_stream_bucketer) {
                 const topic_count = msgs.size;
@@ -359,7 +359,7 @@ class UnreadTopicCounter {
     get_missing_topics(opts: {
         stream_id: number;
         topic_dict: FoldDict<TopicHistoryEntry>;
-    }): { pretty_name: string; message_id: number }[] {
+    }): {pretty_name: string; message_id: number}[] {
         /* Clients have essentially complete unread data. If we don't
          * yet have full topic history for the channel, we need to
          * display the union of topics with unread messages and locally
@@ -535,7 +535,7 @@ class UnreadTopicCounter {
                 // This is a direct message containing a mention.
                 continue;
             }
-            const { stream_id, topic } = stream_topic;
+            const {stream_id, topic} = stream_topic;
 
             const stream_is_muted = sub_store.get(stream_id)?.is_muted;
             if (stream_is_muted) {
@@ -559,7 +559,7 @@ class UnreadTopicCounter {
                 // This is a direct message containing a mention.
                 continue;
             }
-            const { stream_id, topic } = stream_topic;
+            const {stream_id, topic} = stream_topic;
 
             if (user_topics.is_topic_followed(stream_id, topic)) {
                 followed_topic_unread_mentions += 1;
@@ -636,7 +636,7 @@ function remove_message_from_unread_mentions(message_id: number): void {
     const stream_topic = unread_topic_counter.reverse_lookup.get(message_id);
     const user_ids_string = unread_direct_message_counter.reverse_lookup.get(message_id);
     if (stream_topic) {
-        const { stream_id, topic } = stream_topic;
+        const {stream_id, topic} = stream_topic;
         const topic_key = recent_view_util.get_topic_key(stream_id, topic);
         unread_mention_topics.get(topic_key)?.delete(message_id);
     } else if (user_ids_string) {
@@ -669,7 +669,7 @@ export function clear_and_populate_unread_mentions(): void {
         const stream_topic = unread_topic_counter.reverse_lookup.get(message_id);
         const user_ids_string = unread_direct_message_counter.reverse_lookup.get(message_id);
         if (stream_topic) {
-            const { stream_id, topic } = stream_topic;
+            const {stream_id, topic} = stream_topic;
 
             const topic_key = recent_view_util.get_topic_key(stream_id, topic);
             const topic_message_ids = unread_mention_topics.get(topic_key);
@@ -706,11 +706,11 @@ export function get_unread_message_count(): number {
 }
 
 export function update_unread_topics(
-    msg: Message & { type: "stream" },
+    msg: Message & {type: "stream"},
     event: UpdateMessageEvent,
 ): void {
     const new_topic = util.get_edit_event_topic(event);
-    const { new_stream_id } = event;
+    const {new_stream_id} = event;
 
     if (new_topic === undefined && new_stream_id === undefined) {
         return;
@@ -796,16 +796,16 @@ type UnreadMessageData = {
     mentioned_me_directly: boolean | undefined;
     unread: boolean;
 } & (
-        | {
-            type: "private";
-            user_ids_string: string;
-        }
-        | {
-            type: "stream";
-            stream_id: number;
-            topic: string;
-        }
-    );
+    | {
+          type: "private";
+          user_ids_string: string;
+      }
+    | {
+          type: "stream";
+          stream_id: number;
+          topic: string;
+      }
+);
 
 export function process_unread_message(message: UnreadMessageData): void {
     // The `message` here just needs to require certain fields. For example,
@@ -1103,7 +1103,7 @@ export function get_all_msg_ids(): number[] {
 export function get_missing_topics(opts: {
     stream_id: number;
     topic_dict: FoldDict<TopicHistoryEntry>;
-}): { pretty_name: string; message_id: number }[] {
+}): {pretty_name: string; message_id: number}[] {
     return unread_topic_counter.get_missing_topics(opts);
 }
 
