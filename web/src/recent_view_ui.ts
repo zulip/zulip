@@ -1680,12 +1680,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
         switch (input_key) {
             //  Allow browser to handle all
             //  character keypresses.
-            case "vim_left":
-            case "vim_right":
-            case "vim_down":
-            case "vim_up":
-            case "open_recent_view":
-                return false;
+
             case "left_arrow":
                 if (start !== 0 || is_selected) {
                     return false;
