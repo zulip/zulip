@@ -77,6 +77,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.alert_words import flush_alert_word
+from zerver.models.bots import get_default_service_bot_triggers
 from zerver.models.clients import get_client
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.onboarding_steps import OnboardingStep
@@ -640,6 +641,7 @@ class Command(ZulipBaseCommand):
                 interface=Service.GENERIC,
                 base_url="http://127.0.0.1:5002",
                 token=generate_api_key(),
+                triggers=get_default_service_bot_triggers(),
             )
 
             # Add the realm internal bots to each realm.

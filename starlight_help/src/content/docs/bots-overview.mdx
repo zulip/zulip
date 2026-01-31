@@ -46,13 +46,13 @@ A **generic** bot acts like a normal Zulip user that can only access Zulip via
 the API. There's a handful of actions bots can't take, including creating other
 bots.
 
-An **outgoing webhook** bot can read direct messages where the bot
-is a participant, and channel messages where the bot is
-[mentioned](/help/mention-a-user-or-group). When the bot is DM'd or
-mentioned, it POSTs the message content to a URL of your choice. The
-POST request format can be in a Zulip format or a Slack-compatible
-format. This is the preferred bot type for interactive bots built on
-top of Zulip Botserver.
+An **outgoing webhook** bot responds based on its configured
+[triggers](/help/bots-overview#outgoing-webhook-bot-triggers). Depending on the
+bot's triggers, it can read direct messages where the bot is a participant, and
+channel messages where the bot is [mentioned](/help/mention-a-user-or-group).
+When triggered, it POSTs the message content to a URL of your choice. The POST
+request format can be in a Zulip format or a Slack-compatible format. This is
+the preferred bot type for interactive bots built on top of Zulip Botserver.
 
 Use the most limited bot type that supports your integration. Anyone with the
 bot's API key can do anything the bot can, so giving bots unnecessary
@@ -89,6 +89,15 @@ permission to send messages as users in your organization. Bots with the
 `can_forge_sender` permission can also see the names of all channels,
 including private channels. This is important for implementing integrations
 like the Jabber and IRC mirrors.
+
+## Outgoing webhook bot triggers
+
+These determine what events will trigger an outgoing webhook bot's POST action.
+
+| Trigger                                                     | Description                                                                                                                                                                                                                         |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mentions of the bot, whether or not it received the message | Any message directly [mentioning](/help/mention-a-user-or-group) the bot, regardless of whether or not the bot actually receives it. Topic, group and @-all mentions are not direct mentions, and therefore do not trigger the bot. |
+| Direct messages the bot receives                            | Both one-on-one or group direct messages.                                                                                                                                                                                           |
 
 ## Related articles
 

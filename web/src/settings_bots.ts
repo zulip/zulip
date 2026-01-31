@@ -30,6 +30,7 @@ import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
+import {show_service_bot_trigger_options} from "./user_profile.ts";
 import * as user_sort from "./user_sort.ts";
 import * as util from "./util.ts";
 
@@ -259,6 +260,14 @@ export function add_a_new_bot(): void {
         const service_name = $<HTMLSelectOneElement>(
             "select:not([multiple])#select_service_name",
         ).val()!;
+        const selected_service_bot_triggers = $(
+            "#bot_triggers_checkbox_container .setting-widget:checked",
+        )
+            .map(function () {
+                return this.id;
+            })
+            .get();
+
         const formData = new FormData();
         assert(csrf_token !== undefined);
         formData.append("csrfmiddlewaretoken", csrf_token);
@@ -270,6 +279,7 @@ export function add_a_new_bot(): void {
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
             formData.append("payload_url", JSON.stringify(payload_url));
             formData.append("interface_type", interface_type);
+            formData.append("service_triggers", JSON.stringify(selected_service_bot_triggers));
         } else if (bot_type === EMBEDDED_BOT_TYPE) {
             formData.append("service_name", service_name);
             const config_data: Record<string, string> = {};
@@ -281,6 +291,7 @@ export function add_a_new_bot(): void {
                 config_data[key] = value;
             });
             formData.append("config_data", JSON.stringify(config_data));
+            formData.append("service_triggers", JSON.stringify(selected_service_bot_triggers));
         }
         const files = $<HTMLInputElement>("input#bot_avatar_file_input")[0]!.files;
         assert(files !== null);
@@ -306,6 +317,9 @@ export function add_a_new_bot(): void {
     }
 
     function set_up_form_fields(): void {
+        const $bot_triggers_container = $("#bot_triggers_checkbox_container");
+        const $service_bot_triggers_field = $("#service_bot_triggers_field");
+        $service_bot_triggers_field.hide();
         $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE);
         $("#payload_url_inputbox").hide();
         $("#create_payload_url").val("");
@@ -326,15 +340,20 @@ export function add_a_new_bot(): void {
             $("#config_inputbox").hide();
 
             $("#payload_url_inputbox").hide();
+            $service_bot_triggers_field.hide();
             $("#create_payload_url").removeClass("required");
             if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
                 $("#payload_url_inputbox").show();
                 $("#create_payload_url").addClass("required");
+                $service_bot_triggers_field.show();
+                show_service_bot_trigger_options($bot_triggers_container);
             } else if (bot_type === EMBEDDED_BOT_TYPE) {
                 $("#service_name_list").show();
                 $("#select_service_name").addClass("required");
                 $("#select_service_name").trigger("change");
                 $("#config_inputbox").show();
+                $service_bot_triggers_field.show();
+                show_service_bot_trigger_options($bot_triggers_container);
             }
         });
 
