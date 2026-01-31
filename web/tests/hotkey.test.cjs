@@ -504,11 +504,7 @@ test_while_not_editing_text("misc", ({override}) => {
     override(message_edit, "can_move_message", () => false);
     assert_unmapped("m");
 
-    assert_mapping("V", read_receipts, "show_user_list", true);
-
-    override(modals, "any_active", () => true);
-    override(modals, "active_modal", () => "#read_receipts_modal");
-    assert_mapping("V", read_receipts, "hide_user_list", true);
+    assert_mapping("V", read_receipts, "toggle_read_receipts", true);
 });
 
 test_while_not_editing_text("lightbox overlay open", ({override}) => {
