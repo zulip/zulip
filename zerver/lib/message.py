@@ -18,7 +18,7 @@ from zerver.lib.cache import generic_bulk_cached_fetch, to_dict_cache_key_id
 from zerver.lib.display_recipient import get_display_recipient, get_display_recipient_by_id
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
-from zerver.lib.mention import MentionData, sender_can_mention_group
+from zerver.lib.mention import MentionData
 from zerver.lib.message_cache import MessageDict, extract_message_dict, stringify_message_dict
 from zerver.lib.partial import partial
 from zerver.lib.request import RequestVariableConversionError
@@ -46,7 +46,6 @@ from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import (
     Message,
-    NamedUserGroup,
     Realm,
     Recipient,
     Stream,
@@ -1579,16 +1578,14 @@ def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: 
     return can_mention_many_users(sender)
 
 
-def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: list[int]) -> None:
-    user_groups = NamedUserGroup.objects.filter(id__in=user_group_ids).select_related(
-        "can_mention_group", "can_mention_group__named_user_group"
-    )
-
-    for group in user_groups:
-        if not sender_can_mention_group(sender, group):
+def check_user_group_mention_allowed(
+    mentioned_group_ids: set[int], mention_data: MentionData
+) -> None:
+    for group_id in mentioned_group_ids:
+        if group_id not in mention_data.allowed_mention_group_ids:
             raise JsonableError(
                 _("You are not allowed to mention user group '{user_group_name}'.").format(
-                    user_group_name=group.name
+                    user_group_name=mention_data.get_user_group_name(group_id)
                 )
             )
 
