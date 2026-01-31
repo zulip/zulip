@@ -101,7 +101,7 @@ export function changehash(
     trigger: string,
     remove_current_hash_from_history = false,
 ): void {
-    if (browser_history.state.changing_hash || remove_current_hash_from_history) {
+    if (browser_history.state.changing_hash) {
         // If we retargeted the narrow operation because a message was moved,
         // we want to have the current narrow hash in the browser history.
         if (trigger === "retarget message location") {
@@ -111,15 +111,26 @@ export function changehash(
     }
     message_viewport.stop_auto_scrolling();
 
-    if (trigger === "retarget topic location") {
-        // It is important to use `replaceState` rather than `replace`
-        // here for the `back` button to work; we don't want to use
-        // any metadata potentially stored by
-        // update_current_history_state_data associated with an old
-        // URL for the target conversation, and conceptually we want
-        // to replace the inaccurate/old URL for the conversation with
-        // the current/corrected value.
-        window.history.replaceState(null, "", newhash);
+    if (remove_current_hash_from_history) {
+        switch (trigger) {
+            case "retarget topic location":
+            case "stream/topic change":
+                // It is important to use `replaceState` rather than `replace`
+                // here for the `back` button to work; we don't want to use
+                // any metadata potentially stored by
+                // update_current_history_state_data associated with an old
+                // URL for the target conversation, and conceptually we want
+                // to replace the inaccurate/old URL for the conversation with
+                // the current/corrected value.
+                window.history.replaceState(null, "", newhash);
+                break;
+            case "retarget message location":
+            case "old_unreads_missing":
+                // We want to preserve the metadata associated with the current
+                // narrow in the browser history, so we use `location.replace` here.
+                window.location.replace(newhash);
+                break;
+        }
     } else {
         browser_history.set_hash(newhash);
     }
@@ -255,20 +266,8 @@ function create_and_update_message_list(
     // the current message list as we are trying to emulate the `hashchange`
     // workflow we have which calls `message_view.show` after hash is updated.
     if (opts.change_hash) {
-        let remove_current_hash_from_history = false;
-        let trigger = opts.trigger ?? "unknown";
-        if (opts.trigger === "old_unreads_missing") {
-            // We are not navigating user to a different place but want to
-            // keep user at the same place but avoid marking messages as read.
-            // Assuming current narrow doesn't have a `near` term,
-            // we replace the current history entry with
-            // the new hash which has a `near` term.
-            assert(!narrow_state.filter()!.has_operator("near"));
-            assert(msg_list.data.filter.has_operator("near"));
-            remove_current_hash_from_history = true;
-            trigger = "retarget message location";
-        }
-
+        const remove_current_hash_from_history = opts.remove_current_hash_from_history ?? false;
+        const trigger = opts.trigger ?? "unknown";
         update_hash_to_match_filter(filter, trigger, remove_current_hash_from_history);
         opts.show_more_topics = browser_history.get_current_state_show_more_topics() ?? false;
     }
@@ -377,7 +376,12 @@ export function try_rendering_locally_for_same_narrow(
     }
 
     message_lists.current.data.filter = filter;
-    update_hash_to_match_filter(filter, "retarget message location");
+    const remove_current_hash_from_history = opts.remove_current_hash_from_history ?? false;
+    update_hash_to_match_filter(
+        filter,
+        "retarget message location",
+        remove_current_hash_from_history,
+    );
     message_view_header.render_title_area();
     return true;
 }
@@ -391,6 +395,7 @@ export type ShowMessageViewOpts = {
     then_select_id?: number | undefined;
     then_select_offset?: number | undefined;
     show_more_topics?: boolean;
+    remove_current_hash_from_history?: boolean;
 };
 
 export function get_id_info(): TargetMessageIdInfo {
@@ -795,7 +800,12 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                             // We've already adjusted our filter via
                             // filter.try_adjusting_for_moved_with_target, and
                             // should update the URL hash accordingly.
-                            update_hash_to_match_filter(filter, "retarget topic location");
+                            const remove_current_hash_from_history = true;
+                            update_hash_to_match_filter(
+                                filter,
+                                "retarget topic location",
+                                remove_current_hash_from_history,
+                            );
                             // Since filter is updated, we need to handle various things
                             // like updating the message view header title, unread banner
                             // based on the updated filter.
@@ -890,8 +900,14 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                         // make sense, and checks like is_conversation_view_with_near do not
                         // handle that combination correctly.
                         terms = terms.filter((term) => term.operator !== "with");
+                        // We are not navigating user to a different place but want to
+                        // keep user at the same place but avoid marking messages as read.
+                        // Assuming current narrow doesn't have a `near` term,
+                        // we replace the current history entry with
+                        // the new hash which has a `near` term.
                         const opts = {
                             trigger: "old_unreads_missing",
+                            remove_current_hash_from_history: true,
                         };
                         show(terms, opts);
                         const new_message_list_id = message_lists.current?.id;
