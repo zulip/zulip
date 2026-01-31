@@ -41,8 +41,15 @@ export function set_right_panel_title(sub: StreamSubscription): void {
     }
 
     const preview_url = hash_util.channel_url_by_user_setting(sub.stream_id);
+    const can_change_name_description =
+        stream_data.can_change_permissions_requiring_metadata_access(sub);
     $("#subscription_overlay .stream-info-title").html(
-        render_selected_stream_title({sub, title_icon_color, preview_url}),
+        render_selected_stream_title({
+            sub,
+            title_icon_color,
+            preview_url,
+            can_change_name_description,
+        }),
     );
 }
 
@@ -81,6 +88,7 @@ export const show_subs_pane = {
                         name: "",
                         invite_only: false,
                         is_web_public: false,
+                        can_change_name_description: false,
                     },
                 }),
             );
