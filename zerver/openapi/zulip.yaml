@@ -13535,6 +13535,19 @@ paths:
                   type: string
                   format: binary
                   example: /path/to/img.png
+                resize_method:
+                  type: string
+                  enum: ["crop", "fit"]
+                  default: "crop"
+                  example: crop
+                  description: |
+                    Controls how the uploaded emoji image is resized.
+
+                    - `crop` (default): Crop the image to a square.
+                    - `fit`: Fit the image within a square, padding as needed.
+            encoding:
+              resize_method:
+                contentType: text/plain
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"

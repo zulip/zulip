@@ -2,19 +2,35 @@
     <div>
         <input type="file" name="emoji_file_input" class="notvisible"
           id="emoji_file_input" value="{{t 'Upload image or GIF' }}"/>
-        {{> ../components/action_button
-          label=(t "Clear image")
-          variant="subtle"
-          intent="danger"
-          id="emoji_image_clear_button"
-          hidden=true
-          }}
-        {{> ../components/action_button
-          label=(t "Upload image or GIF")
-          variant="subtle"
-          intent="brand"
-          id="emoji_upload_button"
-          }}
+        <div class="add-custom-emoji-form-actions">
+            {{> ../components/action_button
+              label=(t "Clear image")
+              variant="subtle"
+              intent="danger"
+              id="emoji_image_clear_button"
+              hidden=true
+              }}
+            {{> ../components/action_button
+              label=(t "Upload image or GIF")
+              variant="subtle"
+              intent="brand"
+              id="emoji_upload_button"
+              }}
+            {{> ../components/action_button
+              label=(t "Crop to square")
+              variant="subtle"
+              intent="brand"
+              id="resize-by-crop-button"
+              hidden=true
+              }}
+            {{> ../components/action_button
+              label=(t "Pad to square")
+              variant="subtle"
+              intent="brand"
+              id="resize-by-pad-button"
+              hidden=true
+              }}
+        </div>
         <div style="display: none;" id="emoji_preview_text">
             {{t "Preview:" }} <i id="emoji_placeholder_icon" class="fa fa-file-image-o" aria-hidden="true"></i><img class="emoji" id="emoji_preview_image" src=""/>
         </div>
