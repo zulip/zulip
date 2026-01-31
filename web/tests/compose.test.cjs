@@ -716,6 +716,11 @@ test_ui("on_events", ({override, override_rewire}) => {
     })();
 
     (function test_markdown_preview_compose_clicked() {
+        $("#compose .preview_content").set_find_results(
+            ".image-loading-placeholder",
+            $.create("no-images", {children: []}),
+        );
+
         function setup_mock_markdown_contains_backend_only_syntax(msg_content, return_val) {
             override(markdown, "contains_backend_only_syntax", (msg) => {
                 assert.equal(msg, msg_content);
