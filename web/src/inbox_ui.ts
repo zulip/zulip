@@ -15,6 +15,7 @@ import render_users_with_status_icons from "../templates/users_with_status_icons
 import * as animate from "./animate.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as channel_folders from "./channel_folders.ts";
+import * as compose_actions from "./compose_actions.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -2511,7 +2512,7 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         complete_rerender();
     });
 
-    $(document).on("compose_canceled.zulip", () => {
+    compose_actions.register_compose_cancel_hook(() => {
         if (inbox_util.is_visible()) {
             revive_current_focus();
         }
