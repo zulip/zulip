@@ -32,9 +32,9 @@ export function append_custom_profile_fields(element_id: string, user_id: number
     const all_field_types = realm.custom_profile_field_types;
 
     const all_field_template_types = new Map([
-        [all_field_types.LONG_TEXT.id, "text"],
+        [all_field_types.PARAGRAPH.id, "text"],
         [all_field_types.SHORT_TEXT.id, "text"],
-        [all_field_types.SELECT.id, "select"],
+        [all_field_types.DROPDOWN.id, "select"],
         [all_field_types.USER.id, "user"],
         [all_field_types.DATE.id, "date"],
         [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
@@ -48,7 +48,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             rendered_value: "",
         };
         const editable_by_user = current_user.is_admin || field.editable_by_user;
-        const is_select_field = field.type === all_field_types.SELECT.id;
+        const is_select_field = field.type === all_field_types.DROPDOWN.id;
         const field_choices = [];
 
         if (is_select_field) {
@@ -68,7 +68,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             field,
             field_type: all_field_template_types.get(field.type),
             field_value,
-            is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
+            is_long_text_field: field.type === all_field_types.PARAGRAPH.id,
             is_user_field: field.type === all_field_types.USER.id,
             is_date_field: field.type === all_field_types.DATE.id,
             is_url_field: field.type === all_field_types.URL.id,
