@@ -39,6 +39,8 @@ EXCLUDED_URLS = [
     "https://giphy.com",
     "https://giphy.com/apps/giphycapture",
     "https://www.udemy.com/course/the-complete-react-native-and-redux-course/",
+    # Constructor Groups integration not yet in production
+    "https://zulip.com/integrations/constructor-groups",
 ]
 
 VNU_IGNORE = [

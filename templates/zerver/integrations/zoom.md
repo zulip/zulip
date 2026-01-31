@@ -39,3 +39,4 @@ in order to use this integration.
 - [How to start a call](/help/start-a-call)
 - [Jitsi Meet integration](/integrations/jitsi)
 - [BigBlueButton integration](/integrations/big-blue-button)
+- [Constructor Groups integration](/integrations/constructor-groups)
