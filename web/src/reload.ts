@@ -14,6 +14,7 @@ import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
 import type {ReloadingReason} from "./popup_banners.ts";
 import * as reload_state from "./reload_state.ts";
+import * as stream_list from "./stream_list.ts";
 import * as util from "./util.ts";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
@@ -26,6 +27,7 @@ export const reload_metadata_schema = z.object({
     message_view_scroll_offset: z.optional(z.number()),
     compose_active_draft_id: z.optional(z.string()),
     compose_active_draft_send_immediately: z.optional(z.boolean()),
+    left_sidebar_topics_zoomed: z.optional(z.boolean()),
     timestamp: z.number(),
 });
 
@@ -97,6 +99,7 @@ function preserve_state(
         compose_active_draft_id: draft_id,
         message_view_pointer,
         message_view_scroll_offset,
+        left_sidebar_topics_zoomed: stream_list.is_zoomed_in(),
         hash: hash_util.get_reload_hash(),
         timestamp: Date.now(),
     };

@@ -68,6 +68,28 @@ export function is_zoomed_in(): boolean {
     return zoomed_in;
 }
 
+// This is set during reload_setup.initialize() if the user had
+// "more topics" expanded before the reload.
+let pending_zoom_from_reload = false;
+
+export function set_left_sidebar_topics_zoomed_on_reload(): void {
+    // We can't zoom in immediately because the stream list hasn't
+    // been rendered yet. We set a flag that will be checked when
+    // the stream list is first rendered.
+    pending_zoom_from_reload = true;
+}
+
+export function maybe_zoom_in_from_reload(): void {
+    if (pending_zoom_from_reload) {
+        pending_zoom_from_reload = false;
+        // Only zoom in if there's an active stream in the narrow.
+        const stream_id = topic_list.active_stream_id();
+        if (stream_id !== undefined) {
+            zoom_in();
+        }
+    }
+}
+
 function zoom_in(): void {
     zoomed_in = true;
     const stream_id = topic_list.active_stream_id();
@@ -435,6 +457,10 @@ export function build_stream_list(force_rerender: boolean): void {
     set_sections_states();
     // Show inactive channels when user starts typing.
     $("#streams_list").toggleClass("is_searching", ui_util.get_left_sidebar_search_term() !== "");
+
+    // If we're restoring from a reload and the user had "more topics"
+    // expanded, zoom in now that the stream list is rendered.
+    maybe_zoom_in_from_reload();
 }
 
 export function mention_counts_by_section(): Map<
