@@ -2,17 +2,17 @@
 
 const assert = require("node:assert/strict");
 
-const {make_realm} = require("./lib/example_realm.cjs");
-const {$t} = require("./lib/i18n.cjs");
-const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
-const {run_test, noop} = require("./lib/test.cjs");
+const { make_realm } = require("./lib/example_realm.cjs");
+const { $t } = require("./lib/i18n.cjs");
+const { mock_esm, set_global, zrequire } = require("./lib/namespace.cjs");
+const { run_test, noop } = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 set_global("navigator", {});
 
 const autosize = noop;
 autosize.update = noop;
-mock_esm("autosize", {default: autosize});
+mock_esm("autosize", { default: autosize });
 
 mock_esm("../src/message_lists", {
     current: {},
@@ -28,12 +28,12 @@ const compose_reply = zrequire("compose_reply");
 const compose_actions = zrequire("compose_actions");
 const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
-const {set_realm} = zrequire("state_data");
-const {initialize_user_settings} = zrequire("user_settings");
+const { set_realm } = zrequire("state_data");
+const { initialize_user_settings } = zrequire("user_settings");
 
-const realm = make_realm({realm_topics_policy: "allow_empty_topic"});
+const realm = make_realm({ realm_topics_policy: "allow_empty_topic" });
 set_realm(realm);
-initialize_user_settings({user_settings: {}});
+initialize_user_settings({ user_settings: {} });
 
 const alice = {
     email: "alice@zulip.com",
@@ -51,7 +51,7 @@ people.add_active_user(bob);
 
 function make_textbox(s) {
     // Simulate a jQuery textbox for testing purposes.
-    const $widget = {s, length: 1, [0]: "textarea", focused: false};
+    const $widget = { s, length: 1, [0]: "textarea", focused: false };
 
     $widget.caret = function (arg) {
         if (typeof arg === "number") {
@@ -87,7 +87,7 @@ function make_textbox(s) {
     return $widget;
 }
 
-run_test("autosize_textarea", ({override}) => {
+run_test("autosize_textarea", ({ override }) => {
     const textarea_autosized = {};
 
     override(autosize, "update", (textarea) => {
@@ -102,7 +102,7 @@ run_test("autosize_textarea", ({override}) => {
     assert.ok(textarea_autosized.autosized);
 });
 
-run_test("insert_syntax_and_focus", ({override}) => {
+run_test("insert_syntax_and_focus", ({ override }) => {
     $("textarea#compose-textarea").val("xyz ");
     $("textarea#compose-textarea").caret = () => 4;
     $("textarea#compose-textarea")[0] = "compose-textarea";
@@ -115,7 +115,7 @@ run_test("insert_syntax_and_focus", ({override}) => {
     compose_ui.insert_syntax_and_focus(":octopus:");
 });
 
-run_test("smart_insert", ({override}) => {
+run_test("smart_insert", ({ override }) => {
     let $textbox = make_textbox("abc");
     $textbox.caret(4);
     function override_with_expected_syntax(expected_syntax) {
@@ -159,7 +159,7 @@ run_test("smart_insert", ({override}) => {
     // like emojis and file links.
 });
 
-run_test("replace_syntax", ({override}) => {
+run_test("replace_syntax", ({ override }) => {
     const $textbox = make_textbox("aBca$$");
     $textbox.caret(2);
     override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
@@ -186,7 +186,7 @@ run_test("replace_syntax", ({override}) => {
     assert.equal(prev_caret + "$$\\pi$$".length - "Bca".length, $textbox.caret());
 });
 
-run_test("compute_placeholder_text", ({override}) => {
+run_test("compute_placeholder_text", ({ override }) => {
     let opts = {
         message_type: "stream",
         stream_id: undefined,
@@ -197,7 +197,7 @@ run_test("compute_placeholder_text", ({override}) => {
     // Stream narrows
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
-        $t({defaultMessage: "Compose your message here"}),
+        $t({ defaultMessage: "Compose your message here" }),
     );
 
     const stream_all = {
@@ -207,12 +207,12 @@ run_test("compute_placeholder_text", ({override}) => {
     };
     stream_data.add_sub_for_tests(stream_all);
     opts.stream_id = stream_all.stream_id;
-    assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message #all"}));
+    assert.equal(compose_ui.compute_placeholder_text(opts), $t({ defaultMessage: "Message #all" }));
 
     opts.topic = "Test";
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
-        $t({defaultMessage: "Message #all > Test"}),
+        $t({ defaultMessage: "Message #all > Test" }),
     );
 
     // direct message narrows
@@ -224,7 +224,7 @@ run_test("compute_placeholder_text", ({override}) => {
     };
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
-        $t({defaultMessage: "Compose your message here"}),
+        $t({ defaultMessage: "Compose your message here" }),
     );
 
     opts.direct_message_user_ids = [bob.user_id];
@@ -234,7 +234,7 @@ run_test("compute_placeholder_text", ({override}) => {
     });
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
-        $t({defaultMessage: "Message Bob (out to lunch)"}),
+        $t({ defaultMessage: "Message Bob (out to lunch)" }),
     );
 
     opts.direct_message_user_ids = [alice.user_id];
@@ -242,30 +242,30 @@ run_test("compute_placeholder_text", ({override}) => {
         user_id: alice.user_id,
         status_text: "",
     });
-    assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message Alice"}));
+    assert.equal(compose_ui.compute_placeholder_text(opts), $t({ defaultMessage: "Message Alice" }));
 
     // group direct message
     opts.direct_message_user_ids = [alice.user_id, bob.user_id];
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
-        $t({defaultMessage: "Message Alice and Bob"}),
+        $t({ defaultMessage: "Message Alice and Bob" }),
     );
 
     alice.is_guest = true;
     override(realm, "realm_enable_guest_user_indicator", true);
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
-        $t({defaultMessage: "Message translated: Alice (guest) and Bob"}),
+        $t({ defaultMessage: "Message translated: Alice (guest) and Bob" }),
     );
 
     override(realm, "realm_enable_guest_user_indicator", false);
     assert.equal(
         compose_ui.compute_placeholder_text(opts),
-        $t({defaultMessage: "Message Alice and Bob"}),
+        $t({ defaultMessage: "Message Alice and Bob" }),
     );
 });
 
-run_test("quote_message", ({override, override_rewire}) => {
+run_test("quote_message", ({ override, override_rewire }) => {
     const devel_stream = {
         subscribed: false,
         name: "devel",
@@ -369,16 +369,16 @@ run_test("quote_message", ({override, override_rewire}) => {
             assert.equal(
                 new_syntax(),
                 "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n" +
-                    "```quote\n" +
-                    `${quote_text}\n` +
-                    "```",
+                "```quote\n" +
+                `${quote_text}\n` +
+                "```",
             );
         });
     }
     let quote_text = "Testing caret position";
     override_with_quote_text(quote_text);
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
-    compose_reply.quote_message({message_id: 100});
+    compose_reply.quote_message({ message_id: 100 });
     run_success_callback();
 
     reset_test_state();
@@ -390,7 +390,7 @@ run_test("quote_message", ({override, override_rewire}) => {
         assert.equal(syntax, "translated: [Quoting…]\n\n");
     });
     set_compose_content_with_caret("%hello there");
-    compose_reply.quote_message({message_id: 100});
+    compose_reply.quote_message({ message_id: 100 });
 
     quote_text = "Testing with caret initially positioned at 0.";
     override_with_quote_text(quote_text);
@@ -441,7 +441,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     });
 
     set_compose_content_with_caret("hello %there");
-    compose_reply.quote_message({forward_message: true});
+    compose_reply.quote_message({ forward_message: true });
     assert.ok(new_message);
 
     override_with_quote_text(quote_text);
@@ -493,7 +493,7 @@ run_test("set_compose_box_top", () => {
     assert.equal(compose_top, "");
 });
 
-run_test("test_compose_height_changes", ({override, override_rewire}) => {
+run_test("test_compose_height_changes", ({ override, override_rewire }) => {
     let autosize_destroyed = false;
     override(autosize, "destroy", () => {
         autosize_destroyed = true;
@@ -526,7 +526,7 @@ $textarea.get = () => ({
             length: end - start,
         });
     },
-    click() {},
+    click() { },
 });
 
 // The argument `text_representation` is a string representing the text
@@ -538,20 +538,20 @@ function init_textarea_state(text_representation) {
     $textarea.val = () => text_representation.replaceAll(/[<>|]/g, "");
     $textarea.range = text_representation.includes("|")
         ? () => ({
-              start: text_representation.indexOf("|"),
-              end: text_representation.indexOf("|"),
-              text: "",
-              length: 0,
-          })
+            start: text_representation.indexOf("|"),
+            end: text_representation.indexOf("|"),
+            text: "",
+            length: 0,
+        })
         : () => ({
-              start: text_representation.indexOf("<"),
-              end: text_representation.indexOf(">") - 1,
-              text: text_representation.slice(
-                  text_representation.indexOf("<") + 1,
-                  text_representation.indexOf(">"),
-              ),
-              length: text_representation.indexOf(">") - text_representation.indexOf("<") - 1,
-          });
+            start: text_representation.indexOf("<"),
+            end: text_representation.indexOf(">") - 1,
+            text: text_representation.slice(
+                text_representation.indexOf("<") + 1,
+                text_representation.indexOf(">"),
+            ),
+            length: text_representation.indexOf(">") - text_representation.indexOf("<") - 1,
+        });
 }
 
 // Returns a string representing the text in the compose box, of the same
@@ -563,7 +563,7 @@ function get_textarea_state() {
     return before_text + selected_text + after_text;
 }
 
-run_test("format_text - bold and italic", ({override, override_rewire}) => {
+run_test("format_text - bold and italic", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -658,7 +658,7 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
     assert.equal(get_textarea_state(), "before <**abc**> after");
 });
 
-run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
+run_test("format_text - bulleted and numbered lists", ({ override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -719,7 +719,7 @@ run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
     assert.equal(get_textarea_state(), "<first_item\nsecond_item>");
 });
 
-run_test("format_text - strikethrough", ({override, override_rewire}) => {
+run_test("format_text - strikethrough", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -771,7 +771,7 @@ run_test("format_text - strikethrough", ({override, override_rewire}) => {
     assert.equal(get_textarea_state(), "before <abc> after");
 });
 
-run_test("format_text - latex", ({override, override_rewire}) => {
+run_test("format_text - latex", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -842,7 +842,7 @@ run_test("format_text - latex", ({override, override_rewire}) => {
     assert.equal(get_textarea_state(), "Before\n<abc\ndef>\nAfter");
 });
 
-run_test("format_text - code", ({override, override_rewire}) => {
+run_test("format_text - code", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -913,7 +913,7 @@ run_test("format_text - code", ({override, override_rewire}) => {
     assert.equal(get_textarea_state(), "before\n<abc\ndef>\nafter");
 });
 
-run_test("format_text - quote", ({override, override_rewire}) => {
+run_test("format_text - quote", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -977,7 +977,7 @@ run_test("format_text - quote", ({override, override_rewire}) => {
     assert.equal(get_textarea_state(), "before\n<abc\ndef>\nafter");
 });
 
-run_test("format_text - spoiler", ({override, override_rewire}) => {
+run_test("format_text - spoiler", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -1049,7 +1049,7 @@ run_test("format_text - spoiler", ({override, override_rewire}) => {
     assert.equal(get_textarea_state(), "before\n<abc>\nafter");
 });
 
-run_test("format_text - link", ({override, override_rewire}) => {
+run_test("format_text - link", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -1156,7 +1156,7 @@ run_test("format_text - link", ({override, override_rewire}) => {
     assert.equal(get_textarea_state(), "before | after");
 });
 
-run_test("markdown_shortcuts", ({override_rewire}) => {
+run_test("markdown_shortcuts", ({ override_rewire }) => {
     let format_text_type;
     override_rewire(compose_ui, "format_text", (_$textarea, type) => {
         format_text_type = type;
@@ -1279,9 +1279,9 @@ run_test("right-to-left", () => {
 });
 
 const get_focus_area = compose_ui._get_focus_area;
-run_test("get_focus_area", ({override}) => {
+run_test("get_focus_area", ({ override }) => {
     assert.equal(
-        get_focus_area({message_type: "private", private_message_recipient_ids: []}),
+        get_focus_area({ message_type: "private", private_message_recipient_ids: [] }),
         "#private_message_recipient",
     );
     assert.equal(
@@ -1292,7 +1292,7 @@ run_test("get_focus_area", ({override}) => {
         "textarea#compose-textarea",
     );
     assert.equal(
-        get_focus_area({message_type: "stream"}),
+        get_focus_area({ message_type: "stream" }),
         "#compose_select_recipient_widget_wrapper",
     );
 
@@ -1305,16 +1305,16 @@ run_test("get_focus_area", ({override}) => {
 
     override(realm, "realm_topics_policy", "disable_empty_topic");
     assert.equal(
-        get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
+        get_focus_area({ message_type: "stream", stream_name: "fun", stream_id: 4 }),
         "input#stream_message_recipient_topic",
     );
     override(realm, "realm_topics_policy", "allow_empty_topic");
     assert.equal(
-        get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
+        get_focus_area({ message_type: "stream", stream_name: "fun", stream_id: 4 }),
         "textarea#compose-textarea",
     );
     assert.equal(
-        get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4, topic: "more"}),
+        get_focus_area({ message_type: "stream", stream_name: "fun", stream_id: 4, topic: "more" }),
         "textarea#compose-textarea",
     );
     assert.equal(
@@ -1326,4 +1326,151 @@ run_test("get_focus_area", ({override}) => {
         }),
         "input#stream_message_recipient_topic",
     );
+});
+
+run_test("handle_indent_or_outdent - bulleted lists", ({ override_rewire }) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+
+    override_rewire(compose_ui, "cursor_inside_code_block", () => false);
+    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+
+    // Test indenting a single bulleted list item
+    init_textarea_state("- item 1\n- |item 2");
+    let result = compose_ui.handle_indent_or_outdent($textarea, true);
+    assert.ok(result);
+    assert.equal($textarea.val(), "  - item 1\n- item 2");
+
+    // Test outdenting an indented bulleted list item
+    init_textarea_state("  - item 1\n- |item 2");
+    $textarea.val = () => "  - item 1\n- item 2";
+    result = compose_ui.handle_indent_or_outdent($textarea, false);
+    assert.ok(result);
+    assert.equal($textarea.val(), "- item 1\n- item 2");
+
+    // Test that outdenting a non-indented item does nothing
+    init_textarea_state("- |item 1");
+    $textarea.val = () => "- item 1";
+    result = compose_ui.handle_indent_or_outdent($textarea, false);
+    assert.ok(result);
+    assert.equal($textarea.val(), "- item 1");
+});
+
+run_test("handle_indent_or_outdent - numbered lists", ({ override_rewire }) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+
+    override_rewire(compose_ui, "cursor_inside_code_block", () => false);
+    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+
+    // Test indenting a numbered list item
+    init_textarea_state("1. item 1\n2. |item 2");
+    let result = compose_ui.handle_indent_or_outdent($textarea, true);
+    assert.ok(result);
+    assert.equal($textarea.val(), "  1. item 1\n2. item 2");
+
+    // Test outdenting an indented numbered list item
+    init_textarea_state("  1. item 1\n2. |item 2");
+    $textarea.val = () => "  1. item 1\n2. item 2";
+    result = compose_ui.handle_indent_or_outdent($textarea, false);
+    assert.ok(result);
+    assert.equal($textarea.val(), "1. item 1\n2. item 2");
+});
+
+run_test("handle_indent_or_outdent - multi-line selection", ({ override_rewire }) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+
+    override_rewire(compose_ui, "cursor_inside_code_block", () => false);
+    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+
+    // Test indenting multiple list items
+    init_textarea_state("<- item 1\n- item 2>\n- item 3");
+    let result = compose_ui.handle_indent_or_outdent($textarea, true);
+    assert.ok(result);
+    assert.equal($textarea.val(), "  - item 1\n  - item 2\n- item 3");
+
+    // Test outdenting multiple indented list items
+    init_textarea_state("<  - item 1\n  - item 2>\n- item 3");
+    $textarea.val = () => "  - item 1\n  - item 2\n- item 3";
+    result = compose_ui.handle_indent_or_outdent($textarea, false);
+    assert.ok(result);
+    assert.equal($textarea.val(), "- item 1\n- item 2\n- item 3");
+});
+
+run_test("handle_indent_or_outdent - non-list context", ({ override_rewire }) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+
+    override_rewire(compose_ui, "cursor_inside_code_block", () => false);
+    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+
+    // Test that Tab doesn't trigger on non-list text
+    init_textarea_state("regular |text\nmore text");
+    let result = compose_ui.handle_indent_or_outdent($textarea, true);
+    assert.ok(!result); // Should return false for non-list context
+});
+
+run_test("handle_indent_or_outdent - inside code block", ({ override_rewire }) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+
+    // Mock being inside a code block
+    override_rewire(compose_ui, "cursor_inside_code_block", () => true);
+    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+
+    // Test that Tab doesn't trigger inside code blocks
+    init_textarea_state("- |item 1");
+    let result = compose_ui.handle_indent_or_outdent($textarea, true);
+    assert.ok(!result); // Should return false inside code block
+});
+
+run_test("handle_indent_or_outdent - mixed list markers", ({ override_rewire }) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val = () => content;
+        },
+    );
+
+    override_rewire(compose_ui, "cursor_inside_code_block", () => false);
+    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+
+    // Test with different bullet markers (-, *, +)
+    init_textarea_state("<- item 1\n* item 2\n+ item 3>");
+    let result = compose_ui.handle_indent_or_outdent($textarea, true);
+    assert.ok(result);
+    assert.equal($textarea.val(), "  - item 1\n  * item 2\n  + item 3");
 });
