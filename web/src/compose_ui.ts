@@ -838,6 +838,46 @@ export let format_text = (
         }
     };
 
+    const format_multiline_per_paragraph = (syntax: string, syntax_end = syntax): boolean => {
+        if (!selected_text.includes("\n")) {
+            return false;
+        }
+
+        const lines = selected_text.split("\n");
+
+        const all_lines_formatted = lines.every((line) => {
+            if (line.trim() === "") {
+                return true;
+            }
+            return (
+                line.length >= syntax.length + syntax_end.length &&
+                line.startsWith(syntax) &&
+                line.endsWith(syntax_end)
+            );
+        });
+
+        const result = lines
+            .map((line) => {
+                if (line.trim() === "") {
+                    return line;
+                }
+
+                if (all_lines_formatted) {
+                    return line.slice(syntax.length, line.length - syntax_end.length);
+                }
+
+                return `${syntax}${line}${syntax_end}`;
+            })
+            .join("\n");
+
+        text = text.slice(0, range.start) + result + text.slice(range.end);
+
+        // setFieldText is used internally → undo supported
+        insert_and_scroll_into_view(text, $textarea, true);
+        field.setSelectionRange(range.start, range.start + result.length);
+        return true;
+    };
+
     const format = (syntax_start: string, syntax_end = syntax_start): boolean => {
         let linebreak_start = "";
         let linebreak_end = "";
@@ -1150,9 +1190,14 @@ export let format_text = (
     switch (type) {
         case "bold":
             // Ctrl + B: Toggle bold syntax on selection.
-            format(bold_syntax);
+            if (!format_multiline_per_paragraph(bold_syntax)) {
+                format(bold_syntax);
+            }
             break;
         case "italic":
+            if (format_multiline_per_paragraph(italic_syntax)) {
+                break;
+            }
             // Ctrl + I: Toggle italic syntax on selection. This is
             // much more complex than toggling bold syntax, because of
             // the following subtle detail: If our selection is
@@ -1244,7 +1289,9 @@ export let format_text = (
             break;
         case "strikethrough": {
             const strikethrough_syntax = "~~";
-            format(strikethrough_syntax);
+            if (!format_multiline_per_paragraph(strikethrough_syntax)) {
+                format(strikethrough_syntax);
+            }
             break;
         }
         case "code": {
