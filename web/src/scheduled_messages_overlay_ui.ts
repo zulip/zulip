@@ -173,28 +173,37 @@ export function remove_scheduled_message_id(scheduled_msg_id: number): void {
 }
 
 export function initialize(): void {
+    // Handle image clicks in scheduled message content - using same selectors as lightbox.ts
+    $("body").on(
+        "click",
+        ".scheduled-message-row .message-media-inline-image a, .scheduled-message-row .message-media-preview-image:not(.message_inline_video) a, .scheduled-message-row .message_inline_animated_image_still",
+        function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const $img = $(this).find<HTMLImageElement>("img");
+            if ($img.length > 0) {
+                overlays.close_overlay("scheduled");
+                lightbox.handle_inline_media_element_click($img, true);
+            }
+        },
+    );
+
+    // Handle video clicks in scheduled message content - using same selector as lightbox.ts
+    $("body").on("click", ".scheduled-message-row .message_inline_video", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const $video = $(e.currentTarget).find<HTMLMediaElement>("video");
+        overlays.close_overlay("scheduled");
+        lightbox.handle_inline_media_element_click($video, true);
+    });
+
+    // Handle restore/edit scheduled message - images/videos are handled above
     $("body").on("click", ".scheduled-message-row .restore-overlay-message", (e) => {
         if (mouse_drag.is_drag(e)) {
             return;
         }
-        const $img = $(e.target).closest("img");
-        if ($img.length > 0) {
-            e.stopPropagation();
-            e.preventDefault();
-            overlays.close_overlay("scheduled");
-            lightbox.handle_inline_media_element_click($img, true);
-            return;
-        }
-
-        const $video = $(e.target).closest("video");
-        if ($video.length > 0) {
-            e.stopPropagation();
-            e.preventDefault();
-            overlays.close_overlay("scheduled");
-            lightbox.handle_inline_media_element_click($video, true);
-            return;
-        }
-
+        // Images and videos are handled by their own handlers above,
+        // so we only need to handle the restore action here.
         const scheduled_msg_id = Number.parseInt(
             $(e.currentTarget).closest(".scheduled-message-row").attr("data-scheduled-message-id")!,
             10,
