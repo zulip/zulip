@@ -135,7 +135,15 @@ run_test("update_messages", ({override, override_rewire}) => {
     const $modal = $.create("micromodal").addClass("modal--open");
     $message_edit_history_modal.set_parents_result(".micromodal", $modal);
 
+    const $row = $.create("<stub message row>");
+    const $message_edit = $.create("<stub message edit>");
+    $message_edit.addClass("hide");
+    $message_edit.length = 1;
+    $row.set_find_results(".message_edit", $message_edit);
+    override(message_lists.current, "get_row", () => $row);
+
     // TEST THIS:
+    override(message_edit, "currently_echoing_messages", new Map());
     message_events.update_messages(events);
 
     assert.ok(!unread.unread_mentions_counter.has(original_message.id));
