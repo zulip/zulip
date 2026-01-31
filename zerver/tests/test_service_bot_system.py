@@ -17,10 +17,11 @@ from zerver.lib.bot_storage import StateError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.validator import check_string
-from zerver.models import Recipient, UserProfile
+from zerver.models import Recipient, Service, UserProfile
 from zerver.models.messages import UserMessage
 from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.models.users import get_user
 
 BOT_TYPE_TO_QUEUE_NAME = {
     UserProfile.OUTGOING_WEBHOOK_BOT: "outgoing_webhooks",
@@ -629,3 +630,57 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             user_profile=self.bot_profile, message=message_id
         )
         self.assertIn("read", bot_user_message.flags_list())
+
+    @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
+    def test_changing_bot_type_to_service_bot(self, mock_queue_event_on_commit: mock.Mock) -> None:
+        """Creates a generic bot, updates its bot_type to OUTGOING_WEBHOOK_BOT,
+        and verifies that the service bot triggers correctly on mentions."""
+        realm = get_realm("zulip")
+        email = "gen-bot@zulip.com"
+
+        bot = do_create_user(
+            email=email,
+            password="test",
+            realm=realm,
+            full_name="GenBot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=self.user_profile,
+            acting_user=None,
+        )
+
+        # Change to OUTGOING_WEBHOOK_BOT via the API
+        self.login_user(self.user_profile)
+
+        req = dict(
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            service_payload_url=orjson.dumps("https://foo.bar.com").decode(),
+            service_interface=Service.GENERIC,
+        )
+        result = self.client_patch(f"/json/bots/{bot.id}", req)
+        self.assert_json_success(result)
+        bot = get_user(email, realm)
+        self.assertEqual(bot.bot_type, UserProfile.OUTGOING_WEBHOOK_BOT)
+
+        content = "@**GenBot** hello!!!"
+        recipient = "Denmark"
+        trigger = "mention"
+        recipient_type = "stream"
+
+        def check_values_passed(
+            queue_name: Any,
+            trigger_event: dict[str, Any],
+            processor: Callable[[Any], None] | None = None,
+        ) -> None:
+            assert bot.bot_type
+            self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[bot.bot_type])
+            self.assertEqual(trigger_event["message"]["content"], content)
+            self.assertEqual(trigger_event["message"]["display_recipient"], recipient)
+            self.assertEqual(trigger_event["message"]["sender_email"], self.user_profile.email)
+            self.assertEqual(trigger_event["message"]["type"], recipient_type)
+            self.assertEqual(trigger_event["trigger"], trigger)
+            self.assertEqual(trigger_event["user_profile_id"], bot.id)
+
+        mock_queue_event_on_commit.side_effect = check_values_passed
+
+        self.send_stream_message(self.user_profile, "Denmark", content)
+        self.assertTrue(mock_queue_event_on_commit.called)
