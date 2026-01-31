@@ -441,17 +441,17 @@ test("marked", ({override}) => {
         {
             input: "mmm...:burrito:s",
             expected:
-                '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/generated/emoji/images/emoji/burrito.png" title="burrito">s</p>',
+                '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/generated/emoji/images/emoji/burrito.png" data-emoji-name="burrito">s</p>',
         },
         {
             input: "This is an :poop: message",
             expected:
-                '<p>This is an <span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span> message</p>',
+                '<p>This is an <span aria-label="poop" class="emoji emoji-1f4a9" role="img" data-emoji-name="poop">:poop:</span> message</p>',
         },
         {
             input: "\uD83D\uDCA9",
             expected:
-                '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
+                '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" data-emoji-name="poop">:poop:</span></p>',
         },
         {
             input: "Silent mention: @_**Cordelia, Lear's daughter**",
@@ -602,7 +602,7 @@ test("marked", ({override}) => {
         {
             input: ":)",
             expected:
-                '<p><span aria-label="slight smile" class="emoji emoji-1f642" role="img" title="slight smile">:slight_smile:</span></p>',
+                '<p><span aria-label="slight smile" class="emoji emoji-1f642" role="img" data-emoji-name="slight smile">:slight_smile:</span></p>',
             translate_emoticons: true,
         },
         // Test HTML escaping in custom Zulip rules
@@ -1053,7 +1053,7 @@ test("missing unicode emojis", ({override}) => {
     };
     assert.equal(
         message.content,
-        '<p><span aria-label="bike" class="emoji emoji-1f6b2" role="img" title="bike">:bike:</span></p>',
+        '<p><span aria-label="bike" class="emoji emoji-1f6b2" role="img" data-emoji-name="bike">:bike:</span></p>',
     );
 
     // Now simulate that we don't know this emoji name.
