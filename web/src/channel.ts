@@ -3,10 +3,10 @@ import $ from "jquery";
 import _ from "lodash";
 import * as z from "zod/mini";
 
-import {page_params} from "./base_page_params.ts";
+import { page_params } from "./base_page_params.ts";
 import * as blueslip from "./blueslip.ts";
 import * as reload_state from "./reload_state.ts";
-import {normalize_path, shouldCreateSpanForRequest} from "./sentry.ts";
+import { normalize_path, shouldCreateSpanForRequest } from "./sentry.ts";
 import * as spectators from "./spectators.ts";
 
 // We omit `success` handler from original `AjaxSettings` type because it types
@@ -15,12 +15,12 @@ type AjaxRequestHandlerOptions = Omit<JQuery.AjaxSettings, "success"> & {
     url: string;
     ignore_reload?: boolean;
     success?:
-        | ((
-              data: unknown,
-              textStatus: JQuery.Ajax.SuccessTextStatus,
-              jqXHR: JQuery.jqXHR<unknown>,
-          ) => void)
-        | undefined;
+    | ((
+        data: unknown,
+        textStatus: JQuery.Ajax.SuccessTextStatus,
+        jqXHR: JQuery.jqXHR<unknown>,
+    ) => void)
+    | undefined;
     error?: JQuery.Ajax.ErrorCallback<unknown>;
 };
 
@@ -34,6 +34,11 @@ export function set_password_change_in_progress(value: boolean): void {
     if (!value) {
         password_changes += 1;
     }
+}
+
+let rate_limit_handler: ((xhr: JQuery.jqXHR<unknown>) => void) | undefined;
+export function set_rate_limit_handler(handler: (xhr: JQuery.jqXHR<unknown>) => void): void {
+    rate_limit_handler = handler;
 }
 
 function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
@@ -56,7 +61,7 @@ function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefine
     if (!shouldCreateSpanForRequest(args.url)) {
         return call_in_span(undefined, args);
     }
-    return Sentry.startSpanManual({...span_data, name: txn_title}, (span) => {
+    return Sentry.startSpanManual({ ...span_data, name: txn_title }, (span) => {
         try {
             return call_in_span(span, args);
         } catch (error) /* istanbul ignore next */ {
@@ -135,11 +140,13 @@ function call_in_span(
                     args,
                 });
             } else if (
-                z.object({code: z.literal("CSRF_FAILED")}).safeParse(xhr.responseJSON).success &&
+                z.object({ code: z.literal("CSRF_FAILED") }).safeParse(xhr.responseJSON).success &&
                 reload_state.csrf_failed_handler !== undefined
             ) {
                 reload_state.csrf_failed_handler();
             }
+        } else if (xhr.status === 429 && rate_limit_handler !== undefined) {
+            rate_limit_handler(xhr);
         }
         orig_error(xhr, error_type, xhn);
     };
@@ -171,28 +178,28 @@ function call_in_span(
 }
 
 export function get(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
-    const args = {type: "GET", dataType: "json", ...options};
+    const args = { type: "GET", dataType: "json", ...options };
     return call(args);
 }
 
 export function post(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
-    const args = {type: "POST", dataType: "json", ...options};
+    const args = { type: "POST", dataType: "json", ...options };
     return call(args);
 }
 
 export function put(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
-    const args = {type: "PUT", dataType: "json", ...options};
+    const args = { type: "PUT", dataType: "json", ...options };
     return call(args);
 }
 
 // Not called exports.delete because delete is a reserved word in JS
 export function del(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
-    const args = {type: "DELETE", dataType: "json", ...options};
+    const args = { type: "DELETE", dataType: "json", ...options };
     return call(args);
 }
 
 export function patch(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
-    const args = {type: "PATCH", dataType: "json", ...options};
+    const args = { type: "PATCH", dataType: "json", ...options };
     return call(args);
 }
 
@@ -201,7 +208,7 @@ export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): 
     if (
         xhr.status >= 400 &&
         xhr.status < 500 &&
-        (parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON)).success
+        (parsed = z.object({ msg: z.string() }).safeParse(xhr.responseJSON)).success
     ) {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
