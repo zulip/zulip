@@ -91,11 +91,11 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
             break;
         }
         case "ArrowUp": {
-            focus_gif_at_index(curr_gif_index - 3);
+            focus_gif_at_index(curr_gif_index - 2);
             break;
         }
         case "ArrowDown": {
-            focus_gif_at_index(curr_gif_index + 3);
+            focus_gif_at_index(curr_gif_index + 2);
             break;
         }
     }

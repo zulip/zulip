@@ -169,9 +169,11 @@
        Chrome 105) that do not support dynamic viewport
        units. 100% is the legacy full-height value. */
     --full-height-dynamic-viewport: 100%;
+    --gif-scroll-container-height: 80vh;
 
     @supports (height: 100dvh) {
         --full-height-dynamic-viewport: 100dvh;
+        --gif-scroll-container-height: 80dvh;
     }
 
     /*
