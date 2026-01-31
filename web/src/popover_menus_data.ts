@@ -94,7 +94,7 @@ type PersonalMenuContext = {
     status_content_available: boolean;
     show_placeholder_for_status_text: boolean;
     status_text: string | undefined;
-    status_emoji_info: UserStatusEmojiInfo | undefined;
+    status_emoji_info: (UserStatusEmojiInfo & {emoji_animation_setting: string}) | undefined;
     user_color_scheme: number;
     color_scheme_values: ColorSchemeValues;
     web_font_size_px: number;
@@ -330,6 +330,7 @@ export function get_personal_menu_content_context(): PersonalMenuContext {
     const invisible_mode = !user_settings.presence_enabled;
     const status_text = user_status.get_status_text(my_user_id);
     const status_emoji_info = user_status.get_status_emoji(my_user_id);
+    const emoji_animation_setting = user_settings.web_animate_image_previews;
     return {
         user_id: my_user_id,
         invisible_mode,
@@ -348,7 +349,10 @@ export function get_personal_menu_content_context(): PersonalMenuContext {
         status_content_available: Boolean(status_text ?? status_emoji_info),
         show_placeholder_for_status_text: !status_text && status_emoji_info !== undefined,
         status_text,
-        status_emoji_info,
+        status_emoji_info:
+            status_emoji_info !== undefined
+                ? {...status_emoji_info, emoji_animation_setting}
+                : undefined,
 
         // user color scheme
         user_color_scheme: user_settings.color_scheme,

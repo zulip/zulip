@@ -42,6 +42,20 @@ set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 
+mock_esm("../src/emoji", {
+    all_realm_emojis_by_url: new Map(
+        Object.entries({
+            "/test/url": {
+                id: "emoji_id",
+                emoji_name: "party_parrot",
+                emoji_url: "/test/url",
+                still_url: "/test/still-url",
+                deactivated: true,
+            },
+        }),
+    ),
+});
+
 const iago = {
     email: "iago@zulip.com",
     user_id: 30,
@@ -148,6 +162,7 @@ const get_content_element = () => {
     $content.set_find_results("time", $array([]));
     $content.set_find_results("span.timestamp-error", $array([]));
     $content.set_find_results(".emoji", $array([]));
+    $content.set_find_results("img.emoji", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
     $content.set_find_results(".message_inline_video video", $array([]));
@@ -651,6 +666,7 @@ run_test("emoji", ({override}) => {
     const $emoji = $.create("emoji-stub");
     $emoji.attr("title", "tada");
     let called = false;
+    let element_replaced = false;
     $emoji.text = (f) => {
         const text = f.call($emoji);
         assert.equal(":tada:", text);
@@ -666,6 +682,39 @@ run_test("emoji", ({override}) => {
 
     // Set page parameters back so that test run order is independent
     override(user_settings, "emojiset", "apple");
+    override(user_settings, "web_animate_image_previews", "on_hover");
+
+    $emoji.addClass("emoji");
+    $content.set_find_results("img.emoji", $array([$emoji]));
+    $emoji.attr("src", "/test/url");
+    $emoji.replaceWith = ($new_emoji) => {
+        element_replaced = true;
+        const expected_value = `<span class="realm-emoji-wrapper">\n    <img src="/test/url" class="emoji animated-emoji" alt="party_parrot" />\n    <img src="/test/still-url" class="emoji still-emoji" alt="party_parrot" />\n</span>\n`;
+        assert.equal($new_emoji.html(), expected_value);
+    };
+    rm.update_elements($content);
+    assert.equal(element_replaced, true);
+
+    override(user_settings, "web_animate_image_previews", "never");
+    element_replaced = false;
+    $emoji.replaceWith = ($new_emoji) => {
+        element_replaced = true;
+        const expected_value = `<span class="realm-emoji-wrapper">\n    <img src="/test/still-url" class="emoji " alt="party_parrot" />\n</span>\n`;
+        assert.equal($new_emoji.html(), expected_value);
+    };
+    rm.update_elements($content);
+    assert.equal(element_replaced, true);
+
+    element_replaced = false;
+    $emoji.attr("src", "");
+    // emoji with no url
+    rm.update_elements($content);
+    assert.equal(element_replaced, false);
+
+    // emoji with no mapped url
+    $emoji.attr("src", "fake_url");
+    rm.update_elements($content);
+    assert.equal(element_replaced, false);
 });
 
 run_test("spoiler-header", () => {
