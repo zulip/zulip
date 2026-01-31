@@ -53,6 +53,10 @@
     {{/if}}
 </div>
 
+<div class="multiple_messages_select no-select hide">
+    <input type="checkbox" name="msg-delete" data-message-id="{{msg/id}}">
+</div>
+
 {{#unless status_message}}
     {{#unless is_hidden}}
     <div class="message_content rendered_markdown">
