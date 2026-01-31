@@ -1,0 +1,30 @@
+<div class="popover-menu no-auto-hide-left-sidebar-overlay" id="topic-links-menu-popover" data-simplebar data-simplebar-tab-index="-1">
+    {{#if links_from_narrow.length}}
+    <div class="topic-links-menu-link-list">
+        <p class="topic-links-menu-title">
+            <i class="zulip-icon zulip-icon-internal-link"></i>
+            {{t "Links from this topic"}}
+        </p>
+        <div role="separator" class="popover-menu-separator"></div>
+        <ul class="popover-topic-links-list">
+            {{#each links_from_narrow}}
+                <li><a href="{{this.url}}">{{this.text}}</a></li>
+            {{/each}}
+        </ul>
+    </div>
+    {{/if}}
+    {{#if links_to_narrow.length}}
+    <div class="topic-links-menu-link-list">
+        <p class="topic-links-menu-title">
+            <i class="zulip-icon zulip-icon-inbound-link"></i>
+            {{t "Links to this topic"}}
+        </p>
+        <div role="separator" class="popover-menu-separator"></div>
+        <ul class="popover-topic-links-list">
+            {{#each links_to_narrow}}
+                <li><a href="{{this.url}}">{{this.text}}</a></li>
+            {{/each}}
+        </ul>
+    </div>
+    {{/if}}
+</div>

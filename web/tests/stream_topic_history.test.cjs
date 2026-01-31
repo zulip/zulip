@@ -217,7 +217,9 @@ test("server_history", () => {
     assert.deepEqual(history, ["hist2", "hist1", "hist3"]);
 });
 
-test("test_unread_logic", () => {
+test("test_unread_logic", ({override_rewire}) => {
+    override_rewire(message_store, "save_topic_links", noop);
+
     const stream_id = 77;
 
     stream_topic_history.add_message({

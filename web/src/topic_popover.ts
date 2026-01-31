@@ -4,12 +4,14 @@ import type * as tippy from "tippy.js";
 
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_left_sidebar_topic_actions_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_actions_popover.hbs";
+import render_left_sidebar_topic_links_popover from "../templates/popovers/left_sidebar/left_sidebar_topic_links_popover.hbs";
 
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
+import * as message_store from "./message_store.ts";
 import * as message_summary from "./message_summary.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
@@ -17,6 +19,7 @@ import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
+import * as tippyjs from "./tippyjs.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as user_topics from "./user_topics.ts";
@@ -57,6 +60,35 @@ function get_conversation(instance: tippy.Instance): {
     return {stream_id, topic_name, url};
 }
 
+export function open_cross_topic_links(
+    stream_id: number,
+    topic_name: string,
+    placement: tippy.Placement,
+    target: tippy.ReferenceElement,
+): void {
+    popover_menus.toggle_popover_menu(target, {
+        theme: "popover-menu",
+        placement,
+        onShow(instance) {
+            popover_menus.popover_instances.topic_links = instance;
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
+            popover_menus.on_show_prep(instance);
+
+            const context = {
+                links_from_narrow: message_store.topic_links_from_narrow(stream_id, topic_name),
+                links_to_narrow: message_store.topic_links_to_narrow(stream_id, topic_name),
+            };
+            instance.setContent(
+                ui_util.parse_html(render_left_sidebar_topic_links_popover(context)),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_menus.popover_instances.topic_links = null;
+        },
+    });
+}
+
 export function initialize(): void {
     $("body").on("click", ".recipient-bar-copy-link-to-topic", (e) => {
         e.preventDefault();
@@ -84,189 +116,195 @@ export function initialize(): void {
             }
         })();
     });
+    register_popover_menu("#stream_filters .topic-sidebar-menu-icon", "right");
+    register_popover_menu(".inbox-row .inbox-topic-menu", "bottom");
+    register_popover_menu(
+        ".recipient-row-topic-menu, .recent_view_focusable .visibility-status-icon",
+        "bottom",
+    );
+}
 
-    popover_menus.register_popover_menu(
-        "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu, .recent_view_focusable .visibility-status-icon",
-        {
-            ...popover_menus.left_sidebar_tippy_options,
-            onShow(instance) {
-                popover_menus.popover_instances.topics_menu = instance;
-                ui_util.show_left_sidebar_menu_icon(instance.reference);
-                popover_menus.on_show_prep(instance);
+function register_popover_menu(target: string, placement: tippy.Placement): void {
+    popover_menus.register_popover_menu(target, {
+        theme: "popover-menu",
+        placement,
+        onShow(instance) {
+            popover_menus.popover_instances.topics_menu = instance;
+            ui_util.show_left_sidebar_menu_icon(instance.reference);
+            popover_menus.on_show_prep(instance);
 
-                const context = popover_menus_data.get_topic_popover_content_context(
-                    get_conversation(instance),
+            const context = popover_menus_data.get_topic_popover_content_context(
+                get_conversation(instance),
+            );
+            instance.setContent(
+                ui_util.parse_html(render_left_sidebar_topic_actions_popover(context)),
+            );
+        },
+        onMount(instance) {
+            const $reference = $(instance.reference);
+            const $popper = $(instance.popper);
+            const {stream_id, topic_name, url} = get_conversation(instance);
+            const context = popover_menus_data.get_topic_popover_content_context({
+                stream_id,
+                topic_name,
+                url,
+            });
+            const is_topic_empty = context.is_topic_empty;
+            const topic_display_name = context.topic_display_name;
+            const is_empty_string_topic = context.is_empty_string_topic;
+
+            const $elt = $(instance.reference).closest(".recent_view_focusable");
+            if ($elt.length === 1) {
+                $elt.addClass("topic-popover-visible");
+            }
+
+            if (!stream_id) {
+                popover_menus.hide_current_popover_if_visible(instance);
+                return;
+            }
+
+            $popper.on("change", "input[name='sidebar-topic-visibility-select']", (e) => {
+                const start_time = Date.now();
+                const visibility_policy = Number.parseInt(
+                    $(e.currentTarget).attr("data-visibility-policy")!,
+                    10,
                 );
-                instance.setContent(
-                    ui_util.parse_html(render_left_sidebar_topic_actions_popover(context)),
-                );
-            },
-            onMount(instance) {
-                const $reference = $(instance.reference);
-                const $popper = $(instance.popper);
-                const {stream_id, topic_name, url} = get_conversation(instance);
-                const context = popover_menus_data.get_topic_popover_content_context({
+
+                const success_cb = (): void => {
+                    setTimeout(
+                        () => {
+                            popover_menus.hide_current_popover_if_visible(instance);
+                        },
+                        util.get_remaining_time(start_time, 500),
+                    );
+                };
+
+                const error_cb = (): void => {
+                    const prev_visibility_policy = user_topics.get_topic_visibility_policy(
+                        stream_id,
+                        topic_name,
+                    );
+                    const $prev_visibility_policy_input = $(e.currentTarget)
+                        .parent()
+                        .find(`input[data-visibility-policy="${prev_visibility_policy}"]`);
+                    setTimeout(
+                        () => {
+                            $prev_visibility_policy_input.prop("checked", true);
+                        },
+                        util.get_remaining_time(start_time, 500),
+                    );
+                };
+
+                user_topics.set_user_topic_visibility_policy(
                     stream_id,
                     topic_name,
-                    url,
-                });
-                const is_topic_empty = context.is_topic_empty;
-                const topic_display_name = context.topic_display_name;
-                const is_empty_string_topic = context.is_empty_string_topic;
-
-                const $elt = $(instance.reference).closest(".recent_view_focusable");
-                if ($elt.length === 1) {
-                    $elt.addClass("topic-popover-visible");
-                }
-
-                if (!stream_id) {
-                    popover_menus.hide_current_popover_if_visible(instance);
-                    return;
-                }
-
-                $popper.on("change", "input[name='sidebar-topic-visibility-select']", (e) => {
-                    const start_time = Date.now();
-                    const visibility_policy = Number.parseInt(
-                        $(e.currentTarget).attr("data-visibility-policy")!,
-                        10,
-                    );
-
-                    const success_cb = (): void => {
-                        setTimeout(
-                            () => {
-                                popover_menus.hide_current_popover_if_visible(instance);
-                            },
-                            util.get_remaining_time(start_time, 500),
-                        );
-                    };
-
-                    const error_cb = (): void => {
-                        const prev_visibility_policy = user_topics.get_topic_visibility_policy(
-                            stream_id,
-                            topic_name,
-                        );
-                        const $prev_visibility_policy_input = $(e.currentTarget)
-                            .parent()
-                            .find(`input[data-visibility-policy="${prev_visibility_policy}"]`);
-                        setTimeout(
-                            () => {
-                                $prev_visibility_policy_input.prop("checked", true);
-                            },
-                            util.get_remaining_time(start_time, 500),
-                        );
-                    };
-
-                    user_topics.set_user_topic_visibility_policy(
-                        stream_id,
-                        topic_name,
-                        visibility_policy,
-                        false,
-                        false,
-                        undefined,
-                        success_cb,
-                        error_cb,
-                    );
-                });
-
-                if (is_topic_empty) {
-                    return;
-                }
-
-                $popper.one("click", ".sidebar-popover-unstar-all-in-topic", () => {
-                    starred_messages_ui.confirm_unstar_all_messages_in_topic(stream_id, topic_name);
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-mark-topic-read", () => {
-                    unread_ops.mark_topic_as_read(stream_id, topic_name);
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-mark-topic-unread", () => {
-                    unread_ops.mark_topic_as_unread(stream_id, topic_name);
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
-                    const html_body = render_delete_topic_modal({
-                        topic_display_name,
-                        is_empty_string_topic,
-                    });
-
-                    confirm_dialog.launch({
-                        html_heading: $t_html({defaultMessage: "Delete topic"}),
-                        help_link: "/help/delete-a-topic",
-                        html_body,
-                        on_click() {
-                            message_delete.delete_topic(stream_id, topic_name);
-                        },
-                    });
-
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-summarize-topic", () => {
-                    message_summary.get_narrow_summary(stream_id, topic_name);
-
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
-                    message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
-                        assert(message_id !== undefined);
-                        let $recipient_row;
-                        if ($reference.hasClass("recipient-row-topic-menu")) {
-                            // If the popover was opened from the recipient row, we
-                            // we pass the recipient row to the toggle_resolve_topic
-                            // function to show the loading indicator accordingly.
-                            $recipient_row = $reference.closest(".recipient_row");
-                        }
-                        message_edit.toggle_resolve_topic(
-                            message_id,
-                            topic_name,
-                            true,
-                            $recipient_row,
-                        );
-                    });
-
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-move-topic-messages", () => {
-                    void stream_popover.build_move_topic_to_stream_popover(
-                        stream_id,
-                        topic_name,
-                        false,
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.one("click", ".sidebar-popover-rename-topic-messages", () => {
-                    void stream_popover.build_move_topic_to_stream_popover(
-                        stream_id,
-                        topic_name,
-                        true,
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.on(
-                    "click",
-                    ".sidebar-popover-copy-link-to-topic",
-                    function (this: HTMLElement) {
-                        void clipboard_handler.popover_copy_link_to_clipboard(instance, $(this));
-                    },
+                    visibility_policy,
+                    false,
+                    false,
+                    undefined,
+                    success_cb,
+                    error_cb,
                 );
-            },
-            onHidden(instance) {
-                const $elt = $(instance.reference).closest(".recent_view_focusable");
-                if ($elt.length === 1) {
-                    $elt.removeClass("topic-popover-visible");
-                }
-                instance.destroy();
-                popover_menus.popover_instances.topics_menu = null;
-                ui_util.hide_left_sidebar_menu_icon();
-            },
+            });
+
+            if (is_topic_empty) {
+                return;
+            }
+
+            $popper.one("click", ".sidebar-popover-unstar-all-in-topic", () => {
+                starred_messages_ui.confirm_unstar_all_messages_in_topic(stream_id, topic_name);
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".sidebar-popover-mark-topic-read", () => {
+                unread_ops.mark_topic_as_read(stream_id, topic_name);
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".sidebar-popover-mark-topic-unread", () => {
+                unread_ops.mark_topic_as_unread(stream_id, topic_name);
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
+                const html_body = render_delete_topic_modal({
+                    topic_display_name,
+                    is_empty_string_topic,
+                });
+
+                confirm_dialog.launch({
+                    html_heading: $t_html({defaultMessage: "Delete topic"}),
+                    help_link: "/help/delete-a-topic",
+                    html_body,
+                    on_click() {
+                        message_delete.delete_topic(stream_id, topic_name);
+                    },
+                });
+
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".sidebar-popover-summarize-topic", () => {
+                message_summary.get_narrow_summary(stream_id, topic_name);
+
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
+                message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
+                    assert(message_id !== undefined);
+                    let $recipient_row;
+                    if ($reference.hasClass("recipient-row-topic-menu")) {
+                        // If the popover was opened from the recipient row, we
+                        // we pass the recipient row to the toggle_resolve_topic
+                        // function to show the loading indicator accordingly.
+                        $recipient_row = $reference.closest(".recipient_row");
+                    }
+                    message_edit.toggle_resolve_topic(message_id, topic_name, true, $recipient_row);
+                });
+
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".sidebar-popover-move-topic-messages", () => {
+                void stream_popover.build_move_topic_to_stream_popover(
+                    stream_id,
+                    topic_name,
+                    false,
+                );
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".sidebar-popover-rename-topic-messages", () => {
+                void stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, true);
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.on("click", ".sidebar-open-topic-links", () => {
+                const {stream_id, topic_name} = get_conversation(instance);
+                // Keep the same placement when replacing the popover.
+                const placement = tippyjs.get_actual_placement(instance);
+                const reference = instance.reference;
+                popover_menus.hide_current_popover_if_visible(instance);
+                open_cross_topic_links(stream_id, topic_name, placement, reference);
+            });
+
+            $popper.on(
+                "click",
+                ".sidebar-popover-copy-link-to-topic",
+                function (this: HTMLElement) {
+                    void clipboard_handler.popover_copy_link_to_clipboard(instance, $(this));
+                },
+            );
         },
-    );
+        onHidden(instance) {
+            const $elt = $(instance.reference).closest(".recent_view_focusable");
+            if ($elt.length === 1) {
+                $elt.removeClass("topic-popover-visible");
+            }
+            instance.destroy();
+            popover_menus.popover_instances.topics_menu = null;
+            ui_util.hide_left_sidebar_menu_icon();
+        },
+    });
 }

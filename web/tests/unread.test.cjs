@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 
 const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 
 set_global("document", "document-stub");
 const {FoldDict} = zrequire("fold_dict");
@@ -88,7 +88,9 @@ test("empty_counts_while_home", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
-test("changing_topics", () => {
+test("changing_topics", ({override_rewire}) => {
+    override_rewire(message_store, "save_topic_links", noop);
+
     // Summary: change the topic of a message from 'lunch'
     // to 'dinner' using update_unread_topics().
     let count = unread.num_unread_for_topic(social.stream_id, "lunch");
@@ -285,7 +287,9 @@ test("muting", () => {
     });
 });
 
-test("num_unread_for_topic", () => {
+test("num_unread_for_topic", ({override_rewire}) => {
+    override_rewire(message_store, "save_topic_links", noop);
+
     // Test the num_unread_for_topic() function using many
     // messages.
     const stream_id = 301;
@@ -444,7 +448,9 @@ test("archived_stream", () => {
     assert.equal(counts.home_unread_messages, 1);
 });
 
-test("phantom_messages", () => {
+test("phantom_messages", ({override_rewire}) => {
+    override_rewire(message_store, "save_topic_links", noop);
+
     const message = {
         id: 999,
         type: "stream",
