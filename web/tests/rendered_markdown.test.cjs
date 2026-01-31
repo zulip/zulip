@@ -206,6 +206,33 @@ run_test("message_inline_video", () => {
     window.GestureEvent = false;
 });
 
+run_test("message_inline_video_unsupported_format", () => {
+    const $content = get_content_element();
+    const $video = $.create("video_element");
+    const $video_container = $.create("message_inline_video_container");
+
+    $video.closest = (selector) => {
+        assert.equal(selector, ".message_inline_video");
+        return $video_container;
+    };
+
+    let error_handler;
+    $video.on = (event, handler) => {
+        assert.equal(event, "error");
+        error_handler = handler;
+    };
+
+    $content.set_find_results(".message_inline_video video", $array([$video]));
+    rm.update_elements($content);
+
+    assert.ok(error_handler);
+
+    // Simulate video error (browser cannot play the format)
+    error_handler.call($video);
+
+    assert.ok($video_container.hasClass("video-format-unsupported"));
+});
+
 run_test("user-mention", ({override}) => {
     // Setup
     const $content = get_content_element();
