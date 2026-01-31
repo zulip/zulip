@@ -127,6 +127,13 @@ class zulip::app_frontend_base {
     notify  => Service['nginx'],
   }
 
+  $local_uploads_dir_raw = get_django_setting_slow('LOCAL_UPLOADS_DIR')
+  $local_uploads_dir = $local_uploads_dir_raw ? {
+    undef   => '/home/zulip/uploads',
+    ''      => '/home/zulip/uploads',
+    'None'  => '/home/zulip/uploads',
+    default => $local_uploads_dir_raw,
+  }
   file { '/etc/nginx/zulip-include/app.d/uploads-internal.conf':
     ensure  => file,
     require => Package[$zulip::common::nginx],
@@ -134,7 +141,7 @@ class zulip::app_frontend_base {
     group   => 'root',
     mode    => '0644',
     notify  => Service['nginx'],
-    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/uploads-internal.conf',
+    content => template('zulip/nginx/uploads-internal.conf.template.erb'),
   }
 
   # This determines whether we run queue processors multithreaded or
