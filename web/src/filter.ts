@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import render_search_description from "../templates/search_description.hbs";
 
+import * as emoji from "./emoji.ts";
 import * as filter_util from "./filter_util.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
@@ -64,6 +65,11 @@ type Part =
           prefix_for_operator: string;
           operand: string;
           is_empty_string_topic?: boolean;
+      }
+    | {
+          type: "reaction";
+          verb: string;
+          emoji_details: emoji.EmojiRenderingDetails;
       };
 
 const channels_operands = new Set(["public", "web-public"]);
@@ -98,6 +104,9 @@ function message_matches_search_term(message: Message, term: NarrowTerm): boolea
                 default:
                     return false; // has:something_else returns false
             }
+
+        case "reaction":
+            return message_parser.message_has_specific_reaction_name(message, term.operand);
 
         case "is":
             switch (term.operand) {
@@ -563,6 +572,8 @@ export class Filter {
             case "dm":
             case "dm-including":
                 return people.is_valid_user_ids(term.operand);
+            case "reaction":
+                return emoji.emojis_by_name.has(term.operand);
             case "search":
             case "":
                 return true;
@@ -685,6 +696,8 @@ export class Filter {
                 return verb + "messages in a specific channel";
             case "channels":
                 return verb + "channel type";
+            case "reaction":
+                return verb + "messages with a specific reaction";
             case "near":
                 return verb + "messages around";
 
@@ -807,6 +820,15 @@ export class Filter {
             }
             const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
             if (prefix_for_operator !== "") {
+                if (term.operator === "reaction" && term.operand !== "") {
+                    const verb = term.negated ? "exclude " : "";
+                    const emoji_details = emoji.get_emoji_details_by_name(term.operand);
+                    return {
+                        type: "reaction",
+                        verb,
+                        emoji_details,
+                    };
+                }
                 if (term.operator === "channel") {
                     const stream = stream_data.get_sub_by_id_string(term.operand);
                     const verb = term.negated ? "exclude " : "";

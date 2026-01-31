@@ -523,6 +523,15 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 ),
             };
         }
+        case "reaction":
+            return {
+                title: $t(
+                    {
+                        defaultMessage: "There are no messages with reaction {reaction_name}.",
+                    },
+                    {reaction_name: first_term.operand},
+                ),
+            };
     }
     return default_banner;
 }
