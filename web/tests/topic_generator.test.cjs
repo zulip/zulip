@@ -123,6 +123,33 @@ run_test("topics", () => {
 
         assert.deepEqual(next(1, "c1"), {stream_id: 2, topic: "c2"});
     }
+
+    // NEW Case 4: Channel with no topics (Fixes #37108 - Edge Case)
+    {
+        const sorted_channels_info = [
+            {channel_id: 1, is_collapsed: false},
+            {channel_id: 2, is_collapsed: false},
+        ];
+        const topics_by_stream = new Map([[1, []], [2, ["t1"]]]);
+        const unread_topic_names = new Set(["t1"]);
+
+        const next = make_next_topic(sorted_channels_info, topics_by_stream, unread_topic_names);
+
+        // It should skip empty channel 1 and find the unread in channel 2
+        assert.deepEqual(next(1, undefined), {stream_id: 2, topic: "t1"});
+    }
+
+    // NEW Case 5: Starting from a topic that doesn't exist (Fixes #37108 - Robustness)
+    {
+        const sorted_channels_info = [{channel_id: 1, is_collapsed: false}];
+        const topics_by_stream = new Map([[1, ["known_topic"]]]);
+        const unread_topic_names = new Set(["known_topic"]);
+
+        const next = make_next_topic(sorted_channels_info, topics_by_stream, unread_topic_names);
+
+        // Should default to the first available unread topic in the stream
+        assert.deepEqual(next(1, "deleted_topic"), {stream_id: 1, topic: "known_topic"});
+    }
 });
 
 run_test("get_next_unread_pm_string", ({override}) => {
