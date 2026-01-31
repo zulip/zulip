@@ -116,6 +116,7 @@
 * [Get all alert words](/api/get-alert-words)
 * [Add alert words](/api/add-alert-words)
 * [Remove alert words](/api/remove-alert-words)
+* [Get a bot's API key](/api/get-bot-api-key)
 
 #### Invitations
 
