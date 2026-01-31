@@ -59,6 +59,9 @@ export function update_stream_colors(): void {
             $stream_privacy_icon.css("color", stream_color.get_stream_privacy_icon_color(color));
         }
 
-        $stream_header.css("background", background_color);
+        $stream_header.css(
+            "background",
+            `linear-gradient(to bottom, color-mix(in oklch, ${background_color} 80%, var(--color-background-inbox-row)), color-mix(in oklch, ${background_color} 24%, var(--color-background-inbox-row)) 3%, var(--color-background-inbox-row))`,
+        );
     });
 }
