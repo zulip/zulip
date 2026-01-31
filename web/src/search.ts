@@ -166,6 +166,10 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     search_pill_widget = search_pill.create_pills($pill_container);
     search_pill_widget.onPillRemove(() => {
         search_input_has_changed = true;
+        if (search_pill_widget?.items().length === 0) {
+            return;
+        }
+        narrow_to_search_contents_with_search_bar_open();
     });
 
     $search_query_box.on("change", () => {
