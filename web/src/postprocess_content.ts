@@ -390,3 +390,20 @@ function process_emoji_only_message(content: DocumentFragment): void {
     // the emoji in CSS.
     content.firstElementChild?.classList.add("emoji-only");
 }
+
+export function process_user_mention(message_content: string, user_ids: number[]): boolean {
+    inertDocument ??= new DOMParser().parseFromString("", "text/html");
+
+    const template = inertDocument.createElement("template");
+    template.innerHTML = message_content;
+
+    for (const user_id of user_ids) {
+        const span_ele = template.content.querySelector(
+            `span.user-mention[data-user-id="${user_id}"]`,
+        );
+        if (span_ele !== null && !span_ele.classList.contains("silent")) {
+            return true;
+        }
+    }
+    return false;
+}

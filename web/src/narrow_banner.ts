@@ -523,6 +523,51 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 ),
             };
         }
+
+        case "mentions": {
+            const mentioned_users = first_term.operand.map((user_id) =>
+                people.maybe_get_user_by_id(user_id, true),
+            );
+
+            if (mentioned_users.length === 1 && !mentioned_users[0]) {
+                return {
+                    title: $t({defaultMessage: "This user does not exist!"}),
+                };
+            }
+
+            const valid_people_in_mentions: people.User[] = [];
+            for (const user of mentioned_users.values()) {
+                if (user === undefined) {
+                    return {
+                        // Same as dm-including.
+                        title: $t({defaultMessage: "This user does not exist!"}),
+                    };
+                }
+                valid_people_in_mentions.push(user);
+            }
+
+            if (
+                valid_people_in_mentions.length === 1 &&
+                people.is_my_user_id(valid_people_in_mentions[0]!.user_id)
+            ) {
+                return {
+                    title: $t({
+                        defaultMessage: "No messages mention you yet.",
+                    }),
+                };
+            }
+
+            return {
+                title: $t(
+                    {
+                        defaultMessage: "No messages mention {person} yet.",
+                    },
+                    {
+                        person: valid_people_in_mentions.map((user) => user.full_name).join(", "),
+                    },
+                ),
+            };
+        }
     }
     return default_banner;
 }
