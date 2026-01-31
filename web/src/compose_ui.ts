@@ -586,6 +586,17 @@ export function handle_keydown(
     if (event.key === "Shift") {
         shift_pressed = true;
     }
+    
+    // Handle Tab and Shift+Tab for list indentation
+    if (event.key === "Tab") {
+        const is_indent = !event.shiftKey;
+        const handled = handle_indent_or_outdent($textarea, is_indent);
+        if (handled) {
+            event.preventDefault();
+            return;
+        }
+    }
+    
     // The event.key property will have uppercase letter if
     // the "Shift + <key>" combo was used or the Caps Lock
     // key was on. We turn to key to lowercase so the key bindings
@@ -1338,6 +1349,92 @@ export let format_text = (
 
 export function rewire_format_text(value: typeof format_text): void {
     format_text = value;
+}
+
+export function handle_indent_or_outdent(
+    $textarea: JQuery<HTMLTextAreaElement>,
+    is_indent: boolean,
+): boolean {
+    // Returns true if indentation was handled, false otherwise
+    const field = $textarea.get(0)!;
+    const text = $textarea.val()!;
+    const range = $textarea.range();
+    const selection_start = range.start;
+    const selection_end = range.end;
+
+    // Check if we're in a code block or inline code span - don't handle Tab in those contexts
+    if (
+        cursor_inside_code_block($textarea) ||
+        cursor_inside_inline_code_span($textarea)
+    ) {
+        return false;
+    }
+
+    // Find the start and end of the lines containing the selection
+    const before_selection = text.slice(0, selection_start);
+    const line_start = before_selection.lastIndexOf("\n") + 1;
+    
+    const after_selection = text.slice(selection_end);
+    const line_end_offset = after_selection.indexOf("\n");
+    const line_end = line_end_offset === -1 ? text.length : selection_end + line_end_offset;
+
+    // Get all lines in the selection
+    const selected_text = text.slice(line_start, line_end);
+    const lines = selected_text.split("\n");
+
+    // Check if at least one line is a list item
+    const has_list_item = lines.some((line) => bulleted_numbered_list_util.is_list_item(line));
+    
+    if (!has_list_item) {
+        return false;
+    }
+
+    // Process each line
+    const processed_lines = lines.map((line) => {
+        if (!bulleted_numbered_list_util.is_list_item(line)) {
+            // Don't modify non-list lines
+            return line;
+        }
+        
+        if (is_indent) {
+            return bulleted_numbered_list_util.indent_line(line);
+        } else {
+            return bulleted_numbered_list_util.outdent_line(line);
+        }
+    });
+
+    const new_selected_text = processed_lines.join("\n");
+    const new_text = text.slice(0, line_start) + new_selected_text + text.slice(line_end);
+
+    // Update the textarea
+    insert_and_scroll_into_view(new_text, $textarea, true);
+
+    // Restore selection, adjusting for the change in text length
+    const length_diff = new_selected_text.length - selected_text.length;
+    
+    // Calculate new selection positions
+    let new_selection_start = selection_start;
+    let new_selection_end = selection_end + length_diff;
+    
+    // If the selection started at the beginning of a line, keep it there
+    if (selection_start === line_start) {
+        new_selection_start = line_start;
+    } else {
+        // Adjust for indentation change on the first line
+        const first_line_changed = bulleted_numbered_list_util.is_list_item(lines[0] || "");
+        if (first_line_changed) {
+            new_selection_start = selection_start + (is_indent ? 2 : Math.max(-2, line_start - selection_start));
+        }
+    }
+    
+    // Ensure selection bounds are valid
+    const final_selection_start = Math.max(line_start, Math.min(new_selection_start, new_text.length));
+    const final_selection_end = Math.max(final_selection_start, Math.min(new_selection_end, new_text.length));
+    
+    field.setSelectionRange(final_selection_start, final_selection_end);
+    
+    autosize_textarea($textarea);
+    return true;
 }
 
 /* TODO: This functions don't belong in this module, as they have
