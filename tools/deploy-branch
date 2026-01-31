@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 function error_out() {
     echo -en '\e[0;31m'
@@ -7,7 +8,7 @@ function error_out() {
     exit 1
 }
 
-status=$(git status --porcelain | grep -v '^??')
+status=$(git status --porcelain | grep -v '^??' || true)
 [ -n "$status" ] && error_out "Working directory or index not clean"
 
 old_ref=$(git rev-list --max-count=1 HEAD)
