@@ -382,7 +382,7 @@ function get_person_suggestions(
     people_getter: () => User[],
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
-    autocomplete_operator: "dm" | "sender" | "dm-including",
+    autocomplete_operator: "dm" | "sender" | "dm-including" | "from",
 ): Suggestion[] {
     if (last.operator === "is" && last.operand === "dm") {
         last = {operator: "dm", operand: "", negated: false};
@@ -1191,15 +1191,44 @@ export function get_search_result(
     // only make one people_getter to avoid duplicate work
     const people_getter = make_people_getter(last);
 
-    function get_people(
-        flavor: "dm" | "sender" | "dm-including",
-    ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
-        return function (
-            last: NarrowCanonicalTermSuggestion,
-            base_terms: NarrowCanonicalTerm[],
-        ): Suggestion[] {
-            return get_person_suggestions(people_getter, last, base_terms, flavor);
-        };
+    function get_people_suggestions(
+        last: NarrowCanonicalTermSuggestion,
+        base_terms: NarrowCanonicalTerm[],
+    ): Suggestion[] {
+        let person_operators: ("dm" | "sender" | "dm-including" | "from")[] = [
+            "dm",
+            "sender",
+            "dm-including",
+            "from",
+        ];
+        if (page_params.is_spectator) {
+            person_operators = ["sender", "from"];
+        }
+        const all_person_suggestions: Suggestion[] = [];
+
+        for (const operator of person_operators) {
+            const suggestions = get_person_suggestions(people_getter, last, base_terms, operator);
+            all_person_suggestions.push(...suggestions);
+        }
+
+        all_person_suggestions.sort((a, b) => {
+            const email_a = Filter.parse(a.search_string)[0]!.operand;
+            const email_b = Filter.parse(b.search_string)[0]!.operand;
+
+            const user_a = people.get_by_email(email_a);
+            const user_b = people.get_by_email(email_b);
+            assert(user_a !== undefined);
+            assert(user_b !== undefined);
+
+            const active_a = people.is_person_active(user_a.user_id);
+            const active_b = people.is_person_active(user_b.user_id);
+
+            if (active_a !== active_b) {
+                return active_a ? -1 : 1;
+            }
+            return 0;
+        });
+        return all_person_suggestions;
     }
 
     // Remember to update the spectator list when changing this.
@@ -1215,9 +1244,7 @@ export function get_search_result(
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
         get_channel_suggestions,
-        get_people("dm"),
-        get_people("sender"),
-        get_people("dm-including"),
+        get_people_suggestions,
         get_topic_suggestions,
         get_has_filter_suggestions,
     ];
@@ -1228,7 +1255,7 @@ export function get_search_result(
             get_operator_suggestions,
             get_is_filter_suggestions,
             get_channel_suggestions,
-            get_people("sender"),
+            get_people_suggestions,
             get_topic_suggestions,
             get_has_filter_suggestions,
         ];
