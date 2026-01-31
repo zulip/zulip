@@ -41,6 +41,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.clients import get_client
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zproject.backends import is_user_active
@@ -198,10 +199,22 @@ def construct_zulip_body(
 
 
 def send_zulip(sender: UserProfile, stream: Stream, topic_name: str, content: str) -> None:
+    truncated_topic = truncate_topic(topic_name)
+
+    if len(topic_name) > MAX_TOPIC_NAME_LENGTH:
+        subject_line = f"**Subject:** {topic_name}"
+        if content.startswith("**From:**"):
+            parts = content.split("\n", 1)
+            _from = parts[0]
+            body = parts[1]
+            content = f"{_from}\n{subject_line}\n\n{body}"
+        else:
+            content = f"{subject_line}\n\n{content}"
+
     internal_send_stream_message(
         sender,
         stream,
-        truncate_topic(topic_name),
+        truncated_topic,
         normalize_body(content),
         email_gateway=True,
     )
