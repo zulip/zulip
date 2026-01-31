@@ -1522,6 +1522,7 @@ export function initialize_topic_edit_typeahead(
     form_field: JQuery<HTMLInputElement>,
     stream_name: string,
     dropup: boolean,
+    open_on_focus = true,
 ): Typeahead<string> {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: form_field,
@@ -1529,6 +1530,8 @@ export function initialize_topic_edit_typeahead(
     };
     return new Typeahead(bootstrap_typeahead_input, {
         dropup,
+        openOnFocus: open_on_focus,
+        helpOnEmptyStrings: open_on_focus,
         item_html(item: string): string {
             const is_empty_string_topic = item === "";
             const topic_display_name = util.get_final_topic_display_name(item);
@@ -1706,6 +1709,8 @@ export function initialize({
     };
     stream_message_topic_typeahead = new Typeahead(stream_message_typeahead_input, {
         dropup: true,
+        openOnFocus: true,
+        helpOnEmptyStrings: true,
         source(query: string): (UserPillData | string)[] {
             let people_candidates: UserPillData[] = [];
             if (query && query.length > 3) {

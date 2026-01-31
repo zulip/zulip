@@ -267,6 +267,11 @@ export class Typeahead<ItemType extends string | object> {
     // Used to determine whether the typeahead should be shown,
     // when the user clicks anywhere on the input element.
     showOnClick: boolean;
+    // Used to determine whether the typeahead should be shown immediately
+    // when the input element receives focus. This is useful for cases where
+    // the user should select from existing options (e.g., when they cannot
+    // create new topics in a stream).
+    openOnFocus: boolean;
     // Used for custom situations where we want to hide the typeahead
     // after selecting an option, instead of the default call to lookup().
     hideAfterSelect: () => boolean;
@@ -315,6 +320,7 @@ export class Typeahead<ItemType extends string | object> {
         this.shouldHighlightFirstResult = options.shouldHighlightFirstResult ?? (() => true);
         this.updateElementContent = options.updateElementContent ?? true;
         this.showOnClick = options.showOnClick ?? true;
+        this.openOnFocus = options.openOnFocus ?? false;
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
@@ -645,6 +651,7 @@ export class Typeahead<ItemType extends string | object> {
             .on("keyup", this.keyup.bind(this))
             .on("click", this.element_click.bind(this))
             .on("keydown", this.keydown.bind(this))
+            .on("focus", this.element_focus.bind(this))
             .on("typeahead.refreshPosition", this.refreshPosition.bind(this));
 
         this.$menu
@@ -867,11 +874,23 @@ export class Typeahead<ItemType extends string | object> {
             return;
         }
 
-        // Update / hide the typeahead menu if the user clicks anywhere
-        // inside the typing area. This is important in textarea elements
-        // such as the compose box where multiple typeahead can exist,
-        // and we want to prevent misplaced typeahead insertion.
-        this.lookup(false);
+        // Show the typeahead menu when clicking on the input element.
+        // For topic inputs, this will display all existing topics.
+        // The second parameter (true) ensures the typeahead shows even with empty input.
+        this.lookup(false, true);
+    }
+
+    element_focus(): void {
+        if (!this.openOnFocus) {
+            // If openOnFocus is false, we don't want to automatically show
+            // the typeahead when the input element receives focus.
+            return;
+        }
+
+        // Open the typeahead when the input receives focus.
+        // This is useful when users can only select from existing options
+        // (e.g., topics) and cannot create new ones.
+        this.lookup(false, true);
     }
 
     click(e: JQuery.ClickEvent): void {
@@ -949,6 +968,7 @@ type TypeaheadOptions<ItemType> = {
     shouldHighlightFirstResult?: () => boolean;
     updateElementContent?: boolean;
     showOnClick?: boolean;
+    openOnFocus?: boolean;
     hideAfterSelect?: () => boolean;
     getCustomItemClassname?: (item: ItemType) => string;
 };
