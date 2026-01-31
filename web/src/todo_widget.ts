@@ -29,7 +29,7 @@ export type TodoWidgetExtraData = z.infer<typeof todo_widget_extra_data_schema>;
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
-        type: z.enum(["new_task", "new_task_list_title", "strike"]),
+        type: z.enum(["new_task", "new_task_list_title", "strike", "reorder_tasks"]),
     }),
     z.record(z.string(), z.unknown()),
 );
@@ -58,6 +58,11 @@ type TaskStrikeOutboundData = {
     key: string;
 };
 
+type TaskReorderOutboundData = {
+    type: "reorder_tasks";
+    task_order: string[];
+};
+
 type TodoTask = {
     task: string;
     desc: string;
@@ -74,7 +79,8 @@ type Task = {
 export type TodoWidgetOutboundData =
     | NewTaskTitleOutboundData
     | NewTaskOutboundData
-    | TaskStrikeOutboundData;
+    | TaskStrikeOutboundData
+    | TaskReorderOutboundData;
 
 export class TaskData {
     message_sender_id: number;
@@ -84,6 +90,7 @@ export class TaskData {
     report_error_function: (msg: string, more_info?: Record<string, unknown>) => void;
     task_list_title: string;
     task_map = new Map<string, Task>();
+    task_order: string[] = []; //  Track the order of task keys
     my_idx = 1;
 
     handle = {
@@ -173,6 +180,8 @@ export class TaskData {
 
                 if (!this.name_in_use(task)) {
                     this.task_map.set(key, task_data);
+                    // Add key to task_order to maintain insertion order
+                    this.task_order.push(key);
                 }
 
                 // I may have added a task from another device.
@@ -215,6 +224,52 @@ export class TaskData {
                 }
 
                 item.completed = !item.completed;
+            },
+        },
+
+        reorder_tasks: {
+            outbound(task_order: string[]): TaskReorderOutboundData {
+                const event = {
+                    type: "reorder_tasks" as const,
+                    task_order,
+                };
+
+                return event;
+            },
+
+            inbound: (sender_id: number, raw_data: unknown): void => {
+                const task_reorder_inbound_data_schema = z.object({
+                    type: z.literal("reorder_tasks"),
+                    task_order: z.array(z.string()),
+                });
+                const parsed = task_reorder_inbound_data_schema.safeParse(raw_data);
+                if (!parsed.success) {
+                    blueslip.warn("todo widget: bad type for reorder_tasks", {
+                        error: parsed.error,
+                    });
+                    return;
+                }
+                // Only the message author can reorder tasks
+                if (sender_id !== this.message_sender_id) {
+                    blueslip.warn(
+                        `user ${sender_id} is not allowed to reorder tasks. Only message author (${this.message_sender_id}) can.`,
+                    );
+                    return;
+                }
+
+                const data = parsed.data;
+                // Validate that all keys in the reorder are valid
+                const valid_keys = new Set(this.task_map.keys());
+                // every(...) returns true only if all keys are known tasks.
+                const all_valid = data.task_order.every((key) => valid_keys.has(key));
+
+                if (!all_valid) {
+                    blueslip.warn("todo widget: reorder contains invalid task keys");
+                    return;
+                }
+
+                // Update the task order
+                this.task_order = data.task_order;
             },
         },
     };
@@ -281,7 +336,11 @@ export class TaskData {
     get_widget_data(): {
         all_tasks: Task[];
     } {
-        const all_tasks = [...this.task_map.values()];
+        // Return tasks in the order maintained by task_order
+        const all_tasks = this.task_order
+            .map((key) => this.task_map.get(key))
+            // Type predicate: after filtering, items are guaranteed to be Task.
+            .filter((task): task is Task => task !== undefined);
 
         const widget_data = {
             all_tasks,
@@ -339,6 +398,51 @@ export function activate({
         report_error_function: blueslip.warn,
     });
     const message_container = message_lists.current?.view.message_containers.get(message.id);
+    let dragged_task_key: string | undefined;
+
+    function is_todo_extra_data(
+        extra_data: AnyWidgetData["extra_data"],
+    ): extra_data is TodoWidgetExtraData {
+        return (
+            extra_data !== null &&
+            extra_data !== undefined &&
+            ("tasks" in extra_data || "task_list_title" in extra_data)
+        );
+    }
+
+    function reorder_tasks(from_key: string, to_key: string): void {
+        if (from_key === to_key) {
+            return;
+        }
+        const order = [...task_data.task_order];
+        const from_index = order.indexOf(from_key);
+        const to_index = order.indexOf(to_key);
+
+        if (from_index === -1 || to_index === -1) {
+            return;
+        }
+
+        order.splice(from_index, 1);
+        order.splice(to_index, 0, from_key);
+
+        // Optimistically update locally.
+        task_data.task_order = order;
+
+        // Update the message's extra_data.tasks to reflect new order for persistence
+        const extra_data = any_data.extra_data;
+        if (is_todo_extra_data(extra_data) && Array.isArray(extra_data.tasks)) {
+            const reordered_tasks = order
+                .map((key) => task_data.task_map.get(key))
+                .filter((task): task is Task => task !== undefined)
+                .map((task) => ({task: task.task, desc: task.desc}));
+            extra_data.tasks = reordered_tasks;
+        }
+
+        render_results();
+
+        const data = task_data.handle.reorder_tasks.outbound(order);
+        callback(data);
+    }
 
     function update_edit_controls(): void {
         const has_title =
@@ -512,6 +616,37 @@ export function activate({
         const html = render_widgets_todo_widget_tasks(widget_data);
         $elem.find("ul.todo-widget").html(html);
         $elem.find(".widget-error").text("");
+
+        if (is_my_task_list && !page_params.is_spectator) {
+            $elem.find(".todo-drag-handle, li.todo-task-row").on("dragstart", (e) => {
+                const $target = $(e.currentTarget);
+                dragged_task_key = $target.attr("data-key") ?? undefined;
+                const original_event = e.originalEvent;
+                if (original_event instanceof DragEvent) {
+                    original_event.dataTransfer?.setData("text/plain", dragged_task_key ?? "");
+                }
+            });
+
+            $elem.find("li.todo-task-row").on("dragover", (e) => {
+                e.preventDefault();
+            });
+
+            $elem.find("li.todo-task-row").on("drop", (e) => {
+                e.preventDefault();
+                const $target = $(e.currentTarget);
+                const target_key = $target.attr("data-key") ?? undefined;
+
+                if (dragged_task_key && target_key) {
+                    reorder_tasks(dragged_task_key, target_key);
+                }
+
+                dragged_task_key = undefined;
+            });
+
+            $elem.find("li.todo-task-row").on("dragend", () => {
+                dragged_task_key = undefined;
+            });
+        }
 
         $elem.find("input.task").on("click", (e) => {
             e.stopPropagation();
