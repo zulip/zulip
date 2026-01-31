@@ -1260,7 +1260,12 @@ export function change_state(
     }
 
     toggler.goto("subscribed");
-    stream_edit.empty_right_panel();
+    if (right_side_tab === "new") {
+        do_open_create_stream(folder_id);
+        show_right_section();
+    } else {
+        stream_edit.empty_right_panel();
+    }
 }
 
 export function launch(
@@ -1390,7 +1395,11 @@ export function do_open_create_stream(folder_id?: number): void {
 
 export function open_create_stream(): void {
     do_open_create_stream();
-    browser_history.update("#channels/new");
+    if (window.location.hash === "#channels/all") {
+        browser_history.update("#channels/all/new");
+    } else {
+        browser_history.update("#channels/new");
+    }
 }
 
 export function initialize(): void {
