@@ -30,6 +30,20 @@ Come find us on the [development community chat](https://zulip.com/development-c
 [rust-case-study]: https://zulip.com/case-studies/rust/
 [features]: https://zulip.com/features/
 
+## New contributor quick start
+
+👋 Welcome! If you're looking to contribute to Zulip, here's how to get started:
+
+1. **Read the guide.** Start with our [guide for new contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html). It covers setting up your environment, coding standards, and our development workflow.
+
+2. **Join the community.** Connect with us on the [Zulip development community server](https://zulip.com/development-community/). Introduce yourself in [#new members](https://chat.zulip.org/#narrow/channel/95-new-members)!
+
+3. **Find your first task.** Browse issues labeled [good first issue](https://github.com/zulip/zulip/labels/good%20first%20issue) to find beginner-friendly tasks. Documentation improvements, bug fixes, and small features are all great starting points.
+
+4. **Explore the codebase.** Set up your [development environment](https://zulip.readthedocs.io/en/latest/development/overview.html) and try our [new feature tutorial](https://zulip.readthedocs.io/en/latest/tutorials/new-feature-tutorial.html) to understand how Zulip is organized.
+
+**Note:** Documentation-only contributions are valuable and welcome! You don't need to write code to make a meaningful impact.
+
 ## Getting started
 
 - **Contributing code**. Check out our [guide for new
