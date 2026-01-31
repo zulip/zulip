@@ -160,6 +160,66 @@
         background: var(--color-table-background);
     }
 
+    &.education-features-comparison {
+        --zulip-cell-background-color: hsl(223deg 40% 30% / 100%);
+        --zulip-cell-foreground-color: hsl(209deg 41% 94%);
+        --zulip-column-border-width: 8px;
+        --zulip-column-border-negative-offset: calc(
+            var(--zulip-column-border-width) * -1
+        );
+
+        .comparison-table {
+            font-weight: normal;
+            table-layout: fixed;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .comparison-table-feature {
+            width: 30%;
+        }
+
+        th.zulip-cell {
+            padding: 0;
+        }
+
+        th.zulip-cell .label-zulip {
+            display: block;
+            border-top: var(--zulip-column-border-width) solid
+                var(--zulip-cell-background-color);
+            margin: var(--zulip-column-border-negative-offset)
+                var(--zulip-column-border-negative-offset) 0;
+            /* The hard-coded numeric values here keep the Zulip
+               label aligned with other labels in the table-header
+               row. */
+            padding: calc(var(--zulip-column-border-width) + 7px)
+                calc(var(--zulip-column-border-width) + 2px)
+                calc(var(--zulip-column-border-width) + 5px);
+        }
+
+        .zulip-cell {
+            color: var(--zulip-cell-foreground-color);
+            background: var(--zulip-cell-background-color);
+            border-left: var(--zulip-column-border-width) solid
+                var(--zulip-cell-background-color);
+            border-right: var(--zulip-column-border-width) solid
+                var(--zulip-cell-background-color);
+            /* Don't display stripes in the Zulip column. */
+            border-top-color: var(--zulip-cell-background-color);
+        }
+
+        .zulip-cell .bottom-border {
+            display: block;
+            width: 100%;
+            padding: 0 var(--zulip-column-border-width);
+            border-bottom: var(--zulip-column-border-width) solid
+                var(--zulip-cell-background-color);
+            position: absolute;
+            bottom: var(--zulip-column-border-negative-offset);
+            left: var(--zulip-column-border-negative-offset);
+        }
+    }
+
     .comparison-table a {
         color: var(--color-table-link);
         text-underline-offset: 4px;
@@ -199,6 +259,11 @@
         font-weight: 700;
         color: hsl(223deg 40% 30% / 100%);
         background: hsl(209deg 41% 94%);
+    }
+
+    .comparison-table .competitor-cell {
+        padding: 12px 10px 10px;
+        font-weight: normal;
     }
 
     .comparison-table th .icon {
