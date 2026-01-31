@@ -232,7 +232,9 @@ class MissedMessageWorker(QueueProcessingWorker):
 
             # Batch the entries by user
             events_by_recipient: dict[int, dict[int, MissedMessageData]] = defaultdict(dict)
+            seen_events = []
             for event in events_to_process:
+                seen_events.append(event.id)
                 events_by_recipient[event.user_profile_id][event.message_id] = MissedMessageData(
                     trigger=event.trigger, mentioned_user_group_id=event.mentioned_user_group_id
                 )
@@ -261,7 +263,8 @@ class MissedMessageWorker(QueueProcessingWorker):
                             stack_info=True,
                         )
 
-            events_to_process.delete()
+            # These were already locked, above.
+            ScheduledMessageNotificationEmail.objects.filter(id__in=seen_events).delete()
 
     @override
     def stop(self) -> None:
