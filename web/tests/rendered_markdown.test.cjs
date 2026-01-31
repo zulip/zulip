@@ -100,8 +100,8 @@ stream_data.add_sub_for_tests(stream);
 
 const $array = (array) => {
     const each = (func) => {
-        for (const e of array) {
-            func.call(e);
+        for (const [index, e] of array.entries()) {
+            func.call(e, index, e);
         }
     };
     return {each};
@@ -193,7 +193,6 @@ run_test("misc_helpers", ({override}) => {
 run_test("message_inline_video", () => {
     const $content = get_content_element();
     const $elem = $.create("message_inline_video");
-    const original_gesture_event = window.GestureEvent;
 
     let load_called = false;
     $elem.load = () => {
@@ -201,15 +200,34 @@ run_test("message_inline_video", () => {
     };
 
     $content.set_find_results(".message_inline_video video", $array([$elem]));
+
+    // Test with GestureEvent undefined (non-Safari)
+    assert.equal(window.GestureEvent, undefined);
     window.GestureEvent = true;
     rm.update_elements($content);
     assert.equal(load_called, true);
-    if (original_gesture_event === undefined) {
-        // Remove the property so util.is_client_safari() returns false.
-        delete window.GestureEvent;
-    } else {
-        window.GestureEvent = original_gesture_event;
-    }
+    // Restore: since original was undefined, delete the property
+    delete window.GestureEvent;
+    assert.equal(window.GestureEvent, undefined);
+
+    // Test with GestureEvent already defined (Safari-like environment)
+    load_called = false;
+    const fake_gesture_event = {fake: true};
+    window.GestureEvent = fake_gesture_event;
+    const $elem2 = $.create("message_inline_video_2");
+    $elem2.load = () => {
+        load_called = true;
+    };
+    $content.set_find_results(".message_inline_video video", $array([$elem2]));
+    const original_gesture_event = window.GestureEvent;
+    window.GestureEvent = true;
+    rm.update_elements($content);
+    assert.equal(load_called, true);
+    // Restore: since original was defined, assign it back
+    window.GestureEvent = original_gesture_event;
+    assert.deepEqual(window.GestureEvent, fake_gesture_event);
+    // Clean up for other tests
+    delete window.GestureEvent;
 });
 
 run_test("message_inline_video_unsupported_format", () => {

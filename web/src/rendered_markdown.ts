@@ -137,9 +137,8 @@ export const update_elements = ($content: JQuery): void => {
 
     // Hide video preview for browsers that cannot play the format.
     // The download link remains available.
-    $content.find<HTMLMediaElement>(".message_inline_video video").each(function () {
-        const video = this;
-        $(video).on("error", function () {
+    $content.find<HTMLMediaElement>(".message_inline_video video").each((_index, video) => {
+        $(video).on("error", () => {
             $(video).closest(".message_inline_video").addClass("video-format-unsupported");
         });
     });
