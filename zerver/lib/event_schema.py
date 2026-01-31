@@ -444,6 +444,7 @@ def check_realm_update(
     var_name: str,
     event: dict[str, object],
     prop: str,
+    extra_keys: set[str] | None = None,
 ) -> None:
     """
     Realm updates have these two fields:
@@ -457,6 +458,14 @@ def check_realm_update(
     for the property.
     """
     _check_realm_update(var_name, event)
+
+    # Initialize extra_keys if None
+    if extra_keys is None:
+        extra_keys = set()
+
+    # Validate that expected extra keys are present
+    for key in extra_keys:
+        assert key in event
 
     assert prop == event["property"]
     value = event["value"]

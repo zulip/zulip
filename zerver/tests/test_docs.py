@@ -13,6 +13,7 @@ from django.utils.timezone import now as timezone_now
 
 from corporate.models.customers import Customer
 from corporate.models.plans import CustomerPlan
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.context_processors import get_apps_page_url
 from zerver.lib.integrations import BOT_INTEGRATIONS, CATEGORIES, INTEGRATIONS, META_CATEGORY
 from zerver.lib.test_classes import ZulipTestCase
@@ -360,14 +361,12 @@ class DocPageTest(ZulipTestCase):
         realm.want_advertise_in_communities_directory = True
         realm.save()
 
-        realm.description = ""
-        realm.save()
+        do_set_realm_property(realm, "description", "", acting_user=None)
         result = self.client_get("/communities/")
         # Not shown because the realm has default description set.
         self.assert_not_in_success_response(["Zulip Dev"], result)
 
-        realm.description = "Some description"
-        realm.save()
+        do_set_realm_property(realm, "description", "Some description", acting_user=None)
         self._test("/communities/", ["Open communities directory", "Zulip Dev", "Some description"])
 
         # No org with research type so research category not displayed.

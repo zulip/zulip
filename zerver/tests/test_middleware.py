@@ -4,6 +4,7 @@ from unittest.mock import patch
 from bs4 import BeautifulSoup
 from django.http import HttpResponse
 
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import ZulipTestCase
@@ -129,8 +130,7 @@ class OpenGraphTest(ZulipTestCase):
             "* note-3\n\n"
             "Enjoy!"
         )
-        realm.description = description
-        realm.save(update_fields=["description"])
+        do_set_realm_property(realm, "description", description, acting_user=None)
 
         self.check_title_and_description(
             "/login/",

@@ -85,7 +85,15 @@ def do_set_realm_property(
         return
 
     setattr(realm, name, value)
-    realm.save(update_fields=[name])
+    # Special handling for description to cache rendered content
+    if name == "description":
+        from zerver.lib.realm_description import render_realm_description
+
+        # Render and cache the description (preserves empty strings)
+        realm.rendered_description = render_realm_description(value, realm)
+        realm.save(update_fields=[name, "rendered_description"])
+    else:
+        realm.save(update_fields=[name])
 
     event = dict(
         type="realm",
@@ -93,6 +101,10 @@ def do_set_realm_property(
         property=name,
         value=value,
     )
+
+    # Include rendered_description in the event when description is updated
+    if name == "description":
+        event["rendered_description"] = realm.rendered_description
 
     # These settings have a different event format due to their history.
     message_edit_settings = [
