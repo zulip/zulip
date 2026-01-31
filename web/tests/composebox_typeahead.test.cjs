@@ -728,6 +728,115 @@ test("topics_seen_for", ({override, override_rewire}) => {
     assert.deepEqual(ct.topics_seen_for(""), []);
 });
 
+
+
+run_test("mention typeahead prioritizes exact diacritic matches over fuzzy matches", () => {
+    // Create two users that differ only by diacritics
+    const aa_plain = {
+        user_id: 1,
+        full_name: "Aa",
+        email: "aa@example.com",
+        is_active: true,
+        is_bot: false,
+    };
+
+    const aa_diacritic = {
+        user_id: 2,
+        full_name: "Ąa",
+        email: "aa_diacritic@example.com",
+        is_active: true,
+        is_bot: false,
+    };
+
+    // Add users to the people module (test-only state)
+    people.add_active_user(aa_plain);
+    people.add_active_user(aa_diacritic);
+
+    // Simulate typing "@ą"
+    const suggestions = composebox_typeahead.get_person_suggestions("ą", {
+        want_broadcast: false,
+        filter_pills: false,
+        stream_id: undefined,
+        topic: undefined,
+    });
+
+    const names = suggestions.filter((item) => item.type === "user").map((item) => item.user.full_name);
+
+
+    // Exact diacritic match should be ranked before fuzzy match
+    assert.deepEqual(names.slice(0, 2), ["Ąa", "Aa"]);
+});
+run_test("mention typeahead keeps fuzzy matching for ascii queries", () => {
+    const users = [
+        {
+            user_id: 3,
+            full_name: "Aa",
+            email: "aa2@example.com",
+            is_active: true,
+            is_bot: false,
+        },
+        {
+            user_id: 4,
+            full_name: "Ąa",
+            email: "a2-diacritic@example.com",
+            is_active: true,
+            is_bot: false,
+        },
+    ];
+
+    people._add_test_users(users);
+
+    const results = composebox_typeahead.get_person_suggestions("a", {
+        want_broadcast: false,
+        filter_pills: false,
+        stream_id: undefined,
+        topic: undefined,
+    });
+
+    const names = results
+    .filter((r) => r.type === "user")
+    .map((r) => r.user.full_name);
+
+    assert.deepEqual(names.slice(0, 2), ["Aa", "Ąa"]);
+});
+run_test("mention typeahead handles case with diacritics correctly", () => {
+    const users = [
+        {
+            user_id: 5,
+            full_name: "ądam",
+            email: "adam1@example.com",
+            is_active: true,
+            is_bot: false,
+        },
+        {
+            user_id: 6,
+            full_name: "Adam",
+            email: "adam2@example.com",
+            is_active: true,
+            is_bot: false,
+        },
+    ];
+
+    people._add_test_users(users);
+
+    const results = composebox_typeahead.get_person_suggestions("Ą", {
+        want_broadcast: false,
+        filter_pills: false,
+        stream_id: undefined,
+        topic: undefined,
+    });
+
+    const names = results
+    .filter((r) => r.type === "user")
+    .map((r) => r.user.full_name);
+
+    assert.deepEqual(names.slice(0, 2), ["ądam", "Adam"]);
+});
+
+
+
+
+
 test("content_typeahead_selected", ({override}) => {
     const input_element = {
         $element: {},
