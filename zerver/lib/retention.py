@@ -58,6 +58,7 @@ from zerver.models import (
     Reaction,
     Realm,
     Recipient,
+    ScheduledMessageNotificationEmail,
     Stream,
     SubMessage,
     UserMessage,
@@ -396,6 +397,18 @@ def _process_grouped_messages_deletion(
                 accessible_message_ids = [msg.id for msg in accessible_messages]
                 acting_user_event = copy.deepcopy(event)
                 acting_user_event["message_ids"] = sorted(accessible_message_ids)
+
+    # We handle deleting the related ScheduledMessageNotificationEmail
+    # objects explicitly here, rather than letting Django's cascade
+    # handle it, because they need to be deleted _in order_ in order
+    # to not deadlock with the missed_message worker, which also locks
+    # and deletes them.
+    ScheduledMessageNotificationEmail.objects.filter(
+        id__in=ScheduledMessageNotificationEmail.objects.filter(message_id__in=message_ids)
+        .order_by("id")
+        .select_for_update()
+        .values_list("id", flat=True)
+    ).delete()
 
     # Uses index: zerver_message_pkey
     Message.objects.filter(id__in=message_ids).delete()

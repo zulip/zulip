@@ -2,7 +2,7 @@ from typing import TypedDict
 
 from django.conf import settings
 from django.db import models
-from django.db.models import CASCADE, Q
+from django.db.models import CASCADE, DO_NOTHING, Q
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -90,7 +90,7 @@ class ScheduledMessageNotificationEmail(models.Model):
     """
 
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    message = models.ForeignKey(Message, on_delete=CASCADE)
+    message = models.ForeignKey(Message, on_delete=DO_NOTHING)  # This must be handled manually
 
     EMAIL_NOTIFICATION_TRIGGER_CHOICES = [
         (NotificationTriggers.DIRECT_MESSAGE, "Direct message"),
