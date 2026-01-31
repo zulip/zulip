@@ -17,6 +17,9 @@ internet connection throughout the entire installation processes.** You can
 [Vagrant development environment][install-vagrant]** on
 macOS and Linux based OS and [WSL 2 setup][install-via-wsl] on Windows.
 
+Windows users running Ubuntu inside WSL 2 can use the WSL 2 setup directly without Vagrant,
+following the Linux development environment instructions.
+
 ## Vagrant setup
 
 [Vagrant setup][install-vagrant] creates a virtual machine (for Windows and macOS) or a
