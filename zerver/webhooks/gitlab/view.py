@@ -10,7 +10,7 @@ from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
+from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
@@ -590,6 +590,43 @@ def api_gitlab_webhook(
     use_merge_request_title: Json[bool] = True,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
+    ignore_private_repos = request.GET.get("ignore_private_repositories", "false") == "true"
+
+    if ignore_private_repos:
+        project = payload.get("project", {})
+        repository = payload.get("repository", {})
+
+        project_visibility_node = project.get("visibility")
+        if isinstance(project_visibility_node, WildValue):
+            project_visibility = project_visibility_node.tame(check_string)
+        else:  # nocoverage
+            project_visibility = project_visibility_node  # type: ignore[unreachable] # unreachable due to WildValue guard
+
+        project_public_flag_node = project.get("public")
+        if isinstance(project_public_flag_node, WildValue):
+            project_public_flag = project_public_flag_node.tame(check_bool)
+        else:  # nocoverage
+            project_public_flag = bool(project_public_flag_node)  # type: ignore[unreachable] # unreachable due to WildValue guard
+
+        project_is_private = project_visibility == "private" or project_public_flag is False
+
+        repo_visibility_level_node = repository.get("visibility_level")
+        if isinstance(repo_visibility_level_node, WildValue):
+            repo_visibility_level = repo_visibility_level_node.tame(check_int)
+        else:  # nocoverage
+            repo_visibility_level = repo_visibility_level_node  # type: ignore[unreachable] # unreachable due to WildValue guard
+
+        repo_public_flag_node = repository.get("public")
+        if isinstance(repo_public_flag_node, WildValue):
+            repo_public_flag = repo_public_flag_node.tame(check_bool)
+        else:  # nocoverage
+            repo_public_flag = bool(repo_public_flag_node)  # type: ignore[unreachable] # unreachable due to WildValue guard
+
+        repo_is_private = repo_visibility_level == 0 or repo_public_flag is False
+
+        if project_is_private or repo_is_private:
+            return json_success(request)
+
     event = get_event(request, payload, branches)
     if event is not None:
         event_body_function = get_body_based_on_event(event)
@@ -598,15 +635,21 @@ def api_gitlab_webhook(
             include_title=user_specified_topic is not None,
         )
 
-        # Add a link to the project if a custom topic is set
         if user_specified_topic:
-            project_url = f"[{get_repo_name(payload)}]({get_project_homepage(payload)})"
-            body = f"[{project_url}] {body}"
+            project_url = f"[[{get_repo_name(payload)}]({get_project_homepage(payload)})]"
+            body = f"{project_url} {body}"
 
         topic_name = get_topic_based_on_event(event, payload, use_merge_request_title)
+
         check_send_webhook_message(
-            request, user_profile, topic_name, body, event, no_previews=skip_previews(event)
+            request,
+            user_profile,
+            topic_name,
+            body,
+            event,
+            no_previews=skip_previews(event),
         )
+
     return json_success(request)
 
 
