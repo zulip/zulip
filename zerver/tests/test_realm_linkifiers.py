@@ -60,10 +60,96 @@ class RealmFilterTest(ZulipTestCase):
             result, "Group 'id' in linkifier pattern is not present in URL template."
         )
 
-        data["url_template"] = "https://realm.com/my_realm_filter/#hashtag/{id}"
+        data["pattern"] = r"ZUL-(?P<id>\d+)"
+        data["url_template"] = "https://realm.com/my_realm_filter/{id}"
+        data["example_input"] = "no match"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result, "example_input and reverse_template must either both be set or both be null."
+        )
+
+        data["reverse_template"] = "ZUL-{id}"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Example input does not match the linkifier pattern.")
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+            "reverse_template": "ZUL-{id}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result, "example_input and reverse_template must either both be set or both be null."
+        )
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-{id}-x",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Example input does not match reverse_template.")
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-{id",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Invalid reverse_template: missing '}' character.")
+
+        data["reverse_template"] = "ZUL-{}"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Invalid reverse_template: empty field name.")
+
+        data["reverse_template"] = "ZUL-{other}"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result, "Group 'other' in reverse_template is not present in linkifier pattern."
+        )
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/#hashtag/{id}",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-{id}",
+        }
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data["pattern"], "ZUL-15"))
+
+        data = {
+            "pattern": r"ZUL-NEW-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/#hashtag/{id}",
+            "example_input": "ZUL-NEW-42",
+            "reverse_template": "ZUL-NEW-{id}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "ZUL-NEW-42"))
+
+        data = {
+            "pattern": r"ZUL-\{(?P<id>\d+)\}",
+            "url_template": "https://realm.com/my_realm_filter/#hashtag/{id}",
+            "example_input": "ZUL-{15}",
+            "reverse_template": "ZUL-{{{id}}}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "ZUL-{15}"))
+
+        data = {
+            "pattern": "ZUL-15",
+            "url_template": "https://realm.com/example_url",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-15",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        data.pop("example_input")
+        data.pop("reverse_template")
 
         data["pattern"] = r"ZUL2-(?P<id>\d+)"
         data["url_template"] = "https://realm.com/my_realm_filter/?value={id}"
