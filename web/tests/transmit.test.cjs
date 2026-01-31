@@ -20,6 +20,9 @@ const sent_messages = mock_esm("../src/sent_messages", {
         callback();
     },
 });
+mock_esm("../src/compose_banner", {
+    show_user_group_mention_not_allowed_error: noop,
+});
 const server_events_state = mock_esm("../src/server_events_state");
 
 const people = zrequire("people");
@@ -101,6 +104,35 @@ run_test("transmit_message_ajax_reload_pending", () => {
     };
     transmit.send_message(request, success, error);
     assert.ok(reload_initiated);
+});
+
+run_test("user group mention not allowed", ({override}) => {
+    /* istanbul ignore next */
+    const success = () => {
+        throw new Error("unexpected success");
+    };
+    /* istanbul ignore next */
+    const error = (_response, server_error_code) => {
+        assert.equal(server_error_code, "USER_GROUP_MENTION_NOT_ALLOWED");
+    };
+
+    override(reload_state, "is_pending", () => false);
+
+    const request = {foo: "bar"};
+    override(channel, "post", (opts) => {
+        assert.equal(opts.url, "/json/messages");
+        assert.equal(opts.data.foo, "bar");
+
+        const xhr = {
+            responseJSON: {
+                code: "USER_GROUP_MENTION_NOT_ALLOWED",
+                user_group_name: "Test Group",
+            },
+        };
+        opts.error(xhr, "bad request");
+    });
+
+    transmit.send_message(request, success, error);
 });
 
 run_test("topic wildcard mention not allowed", ({override}) => {
