@@ -12,13 +12,13 @@ import type {ZFormExtraData} from "./zform_data.ts";
 
 export const widget_type = "zform";
 
+export const widget_map = new Map<number, ZFormExtraData>();
+
 export function activate(opts: {
-    $elem: JQuery;
     any_data: AnyWidgetData;
     message: Message;
 }): (events: Event[]) => void {
     assert(opts.any_data.widget_type === "zform");
-    const $outer_elem = opts.$elem;
     if (opts.any_data.extra_data === null) {
         blueslip.error("invalid zform extra data");
         return (_events: Event[]): void => {
@@ -26,16 +26,31 @@ export function activate(opts: {
         };
     }
     const data = opts.any_data.extra_data;
+    const data_with_choices_with_idx = {
+        ...data,
+        choices: data.choices.map((choice, idx) => ({...choice, idx})),
+    };
+
+    widget_map.set(opts.message.id, data_with_choices_with_idx);
+
+    const handle_events = function (events: Event[]): void {
+        if (events) {
+            blueslip.info("unexpected");
+        }
+    };
+
+    return handle_events;
+}
+
+export function render(opts: {$elem: JQuery; message: Message}): void {
+    const $outer_elem = opts.$elem;
+    const data_with_choices_with_idx = widget_map.get(opts.message.id);
+
+    if (!data_with_choices_with_idx) {
+        return;
+    }
 
     function make_choices(data: ZFormExtraData): JQuery {
-        // Assign idx values to each of our choices so that
-        // our template can create data-idx values for our
-        // JS code to use later.
-        const data_with_choices_with_idx = {
-            ...data,
-            choices: data.choices.map((choice, idx) => ({...choice, idx})),
-        };
-
         const html = render_widgets_zform_choices(data_with_choices_with_idx);
         const $elem = $(html);
 
@@ -55,20 +70,13 @@ export function activate(opts: {
         return $elem;
     }
 
-    function render(): void {
+    function render(data: ZFormExtraData): void {
         if (data.type === "choices") {
             $outer_elem.html(make_choices(data).html());
         }
     }
 
-    const handle_events = function (events: Event[]): void {
-        if (events) {
-            blueslip.info("unexpected");
-        }
-        render();
-    };
+    render(data_with_choices_with_idx);
 
-    render();
-
-    return handle_events;
+    return;
 }

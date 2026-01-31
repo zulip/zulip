@@ -225,9 +225,7 @@ run_test("activate another person poll", ({mock_template}) => {
         out_data = data;
     };
 
-    const opts = {
-        $elem: $widget_elem,
-        callback,
+    const activate_opts = {
         message: {
             sender_id: alice.user_id,
         },
@@ -237,6 +235,15 @@ run_test("activate another person poll", ({mock_template}) => {
                 question: "What do you want?",
             },
         },
+    };
+
+    const render_opts = {
+        $elem: $widget_elem,
+        callback,
+        message: {
+            sender_id: alice.user_id,
+        },
+        rerender: false,
     };
 
     const set_widget_find_result = (selector) => {
@@ -261,7 +268,8 @@ run_test("activate another person poll", ({mock_template}) => {
     set_widget_find_result("button.poll-question-remove");
     set_widget_find_result("input.poll-question");
 
-    const handle_events = poll_widget.activate(opts);
+    const handle_events = poll_widget.activate(activate_opts);
+    poll_widget.render(render_opts);
 
     assert.ok($poll_option_container.visible());
     assert.ok($poll_question_header.visible());
@@ -339,9 +347,7 @@ run_test("activate own poll", ({mock_template}) => {
     const callback = (data) => {
         out_data = data;
     };
-    const opts = {
-        $elem: $widget_elem,
-        callback,
+    const activate_opts = {
         message: {
             sender_id: me.user_id,
         },
@@ -351,6 +357,15 @@ run_test("activate own poll", ({mock_template}) => {
                 question: "Where to go?",
             },
         },
+    };
+
+    const render_opts = {
+        $elem: $widget_elem,
+        callback,
+        message: {
+            sender_id: me.user_id,
+        },
+        rerender: false,
     };
 
     const set_widget_find_result = (selector) => {
@@ -383,7 +398,8 @@ run_test("activate own poll", ({mock_template}) => {
         assert.ok(!$poll_please_wait.visible());
     }
 
-    poll_widget.activate(opts);
+    poll_widget.activate(activate_opts);
+    poll_widget.render(render_opts);
 
     assert_visibility();
     assert.ok(!$poll_question_submit.visible());

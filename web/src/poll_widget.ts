@@ -16,21 +16,18 @@ import {ZulipWidgetContext} from "./widget_context.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData} from "./widget_schema.ts";
 
+export const widget_map = new Map<number, PollData>();
+
 export function activate({
-    $elem,
-    callback,
     any_data,
     message,
 }: {
-    $elem: JQuery;
-    callback: (data: PollWidgetOutboundData) => void;
     any_data: AnyWidgetData;
     message: Message;
 }): (events: Event[]) => void {
     assert(any_data.widget_type === "poll");
     const {extra_data} = any_data;
     const widget_context = new ZulipWidgetContext(message);
-    const container_is_hidden = widget_context.is_container_hidden();
     const is_my_poll = widget_context.is_my_poll();
     const poll_owner_user_id = widget_context.owner_user_id();
 
@@ -43,6 +40,63 @@ export function activate({
         comma_separated_names: people.get_full_names_for_poll_option,
         report_error_function: blueslip.warn,
     });
+
+    widget_map.set(message.id, poll_data);
+
+    function update_state_from_event(sender_id: number, data: unknown): void {
+        assert(
+            typeof data === "object" &&
+                data !== null &&
+                "type" in data &&
+                typeof data.type === "string",
+        );
+        const type = data.type;
+        switch (type) {
+            case "new_option": {
+                poll_data.handle_new_option_event(sender_id, new_option_schema.parse(data));
+                break;
+            }
+            case "question": {
+                poll_data.handle_question_event(sender_id, question_schema.parse(data));
+                break;
+            }
+            case "vote": {
+                poll_data.handle_vote_event(sender_id, vote_schema.parse(data));
+                break;
+            }
+            default: {
+                blueslip.warn(`poll widget: unknown inbound type: ${type}`);
+            }
+        }
+    }
+
+    function handle_events(events: Event[]): void {
+        for (const event of events) {
+            update_state_from_event(event.sender_id, event.data);
+        }
+    }
+
+    return handle_events;
+}
+
+export function render({
+    $elem,
+    callback,
+    message,
+    rerender,
+}: {
+    $elem: JQuery;
+    callback: (data: PollWidgetOutboundData) => void;
+    message: Message;
+    rerender: boolean;
+}): void {
+    const poll_data = widget_map.get(message.id);
+    if (!poll_data) {
+        return;
+    }
+    const widget_context = new ZulipWidgetContext(message);
+    const container_is_hidden = widget_context.is_container_hidden();
+    const is_my_poll = widget_context.is_my_poll();
 
     function update_edit_controls(): void {
         const has_question =
@@ -225,56 +279,19 @@ export function activate({
             });
     }
 
-    function update_state_from_event(sender_id: number, data: unknown): void {
-        assert(
-            typeof data === "object" &&
-                data !== null &&
-                "type" in data &&
-                typeof data.type === "string",
-        );
-        const type = data.type;
-        switch (type) {
-            case "new_option": {
-                poll_data.handle_new_option_event(sender_id, new_option_schema.parse(data));
-                break;
-            }
-            case "question": {
-                poll_data.handle_question_event(sender_id, question_schema.parse(data));
-                break;
-            }
-            case "vote": {
-                poll_data.handle_vote_event(sender_id, vote_schema.parse(data));
-                break;
-            }
-            default: {
-                blueslip.warn(`poll widget: unknown inbound type: ${type}`);
-            }
-        }
-    }
-
-    function handle_events(events: Event[]): void {
-        // We don't have to handle events now since we go through
-        // handle_event loop again when we unmute the message.
-        if (container_is_hidden) {
-            return;
-        }
-
-        for (const event of events) {
-            update_state_from_event(event.sender_id, event.data);
-        }
-
-        render_question();
-        render_results();
-    }
-
-    if (container_is_hidden) {
+    if (container_is_hidden && !rerender) {
         const html = render_message_hidden_dialog();
         $elem.html(html);
+    } else if (container_is_hidden) {
+        return;
+    } else if (rerender) {
+        render_question();
+        render_results();
     } else {
         build_widget();
         render_question();
         render_results();
     }
 
-    return handle_events;
+    return;
 }
