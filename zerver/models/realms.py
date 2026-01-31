@@ -656,6 +656,10 @@ class Realm(models.Model):
             "name": "Zoom",
             "id": 5,
         },
+        "webex": {
+            "name": "Webex",
+            "id": 6,
+        },
     }
 
     video_chat_provider = models.PositiveSmallIntegerField(
@@ -1073,6 +1077,10 @@ class Realm(models.Model):
                 settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID is None
                 or settings.VIDEO_ZOOM_CLIENT_ID is None
                 or settings.VIDEO_ZOOM_CLIENT_SECRET is None
+            ):
+                continue
+            if provider == "webex" and (
+                settings.VIDEO_WEBEX_CLIENT_ID is None or settings.VIDEO_WEBEX_CLIENT_SECRET is None
             ):
                 continue
             enabled_video_chat_providers[provider] = self.VIDEO_CHAT_PROVIDERS[provider]
