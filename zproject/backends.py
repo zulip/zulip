@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from email.headerregistry import Address
 from typing import Any, TypedDict, TypeVar, cast
 
+import ldap
 import magic
 import orjson
 from decorator import decorator
@@ -38,7 +39,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser, _LDAPUserGroups, ldap_error
-from django_auth_ldap.config import LDAPSettings
+from django_auth_ldap.config import LDAPSearch, LDAPSettings
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2 import compat as onelogin_saml2_compat
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
@@ -95,6 +96,7 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.user_groups import check_user_group_name, get_role_based_system_groups_dict
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
     NamedUserGroup,
@@ -633,7 +635,7 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
 ldap_logger = logging.getLogger("zulip.ldap")
 
 
-class LDAPReverseEmailSearch(_LDAPUser):
+class ZulipLDAPSearch(_LDAPUser):
     """
     This class is a workaround - we want to use
     django-auth-ldap to query the ldap directory for
@@ -654,12 +656,20 @@ class LDAPReverseEmailSearch(_LDAPUser):
         # for only making a search query, so we pass an empty string.
         super().__init__(LDAPBackend(), username="")
 
+    def do_search(
+        self, ldap_search: LDAPSearch, kwargs_dict: dict[str, str]
+    ) -> list[tuple[str, dict[str, list[object]]]]:
+        return ldap_search.execute(self.connection, kwargs_dict)
+
+
+class LDAPReverseEmailSearch(ZulipLDAPSearch):
     def search_for_users(self, email: str) -> list[_LDAPUser]:
         search = settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
         USERNAME_ATTR = settings.AUTH_LDAP_USERNAME_ATTR
+        assert USERNAME_ATTR is not None
 
         assert search is not None
-        results = search.execute(self.connection, {"email": email})
+        results = self.do_search(search, {"email": email})
 
         ldap_users = []
         for result in results:
@@ -1042,6 +1052,39 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         except Exception as e:
             raise ZulipLDAPError(str(e)) from e
 
+    def sync_external_auth_id_from_ldap(
+        self, user_profile: UserProfile, ldap_user: "ZulipLDAPUser"
+    ) -> None:
+        if not ldap_external_auth_id_sync_enabled():
+            return
+
+        ldap_external_auth_id = ldap_user.get_external_auth_id()
+        try:
+            external_auth_id_obj = ExternalAuthID.objects.get(
+                external_auth_method_name=self.name,
+                user=user_profile,
+            )
+        except ExternalAuthID.DoesNotExist:
+            ExternalAuthID.objects.create(
+                external_auth_method_name=self.name,
+                external_auth_id=ldap_external_auth_id,
+                realm=user_profile.realm,
+                user=user_profile,
+            )
+        else:
+            original_value = external_auth_id_obj.external_auth_id
+            if original_value == ldap_external_auth_id:
+                return
+
+            self.logger.warning(
+                "User %s had mismatched ExternalAuthID record. Updating %s => %s",
+                user_profile.id,
+                original_value,
+                ldap_external_auth_id,
+            )
+            external_auth_id_obj.external_auth_id = ldap_external_auth_id
+            external_auth_id_obj.save(update_fields=["external_auth_id"])
+
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
@@ -1134,34 +1177,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         # We need to ensure the email address of the Zulip account remains synced with what's in the ldap
         # directory. That's the point of external_auth_id-based authentication.
-        if user_profile.delivery_email != email:
-            # We intentionally do a case-sensitive comparison, despite emails in Zulip being
-            # case-insensitive in auth contexts. We want to support the case of sync tweaking just
-            # capitalization of the email address.
-            self.logger.info(
-                "User %s, logged in via ExternalAuthId %s, has mismatched email. Syncing: %s => %s",
-                user_profile.id,
-                external_auth_id,
-                user_profile.delivery_email,
-                email,
-            )
-            if (
-                UserProfile.objects.filter(realm=self._realm, delivery_email__iexact=email)
-                # The EXISTS query has a somewhat strange shape because we need
-                # to again consider the edge case where we might be simply
-                # updating capitalization of the email for the user. In such a
-                # situation, a "conflict" on (realm, delivery_email__iexact) is
-                # not an actual conflict.
-                .exclude(id=user_profile.id)
-                .exists()
-            ):
-                self.logger.warning(
-                    "Can't sync email for user %s: another user exists with target email %s",
-                    user_profile.id,
-                    email,
-                )
-            else:
-                do_change_user_delivery_email(user_profile, email, acting_user=None)
+        ldap_sync_delivery_email(user_profile, email, external_auth_id, self.logger)
 
         return user_profile
 
@@ -1444,6 +1460,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
         self.sync_full_name_from_ldap(user, ldap_user)
         self.sync_custom_profile_fields_from_ldap(user, ldap_user)
         self.sync_groups_from_ldap(user, ldap_user)
+        self.sync_external_auth_id_from_ldap(user, ldap_user)
         return (user, built)
 
 
@@ -1466,22 +1483,157 @@ def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
     raise PopulateUserLDAPError(type(kwargs["exception"]).__name__)
 
 
+def ldap_sync_delivery_email(
+    user_profile: UserProfile, email: str, external_auth_id: str, logger: logging.Logger
+) -> None:
+    if user_profile.delivery_email == email:
+        # We intentionally do a case-sensitive comparison, despite emails in Zulip being
+        # case-insensitive in auth contexts. We want to support the case of sync tweaking just
+        # capitalization of the email address.
+        return
+
+    logger.info(
+        "User %s, being synced via ExternalAuthId %s, has mismatched email. Syncing: %s => %s",
+        user_profile.id,
+        external_auth_id,
+        user_profile.delivery_email,
+        email,
+    )
+
+    if (
+        UserProfile.objects.filter(realm=user_profile.realm, delivery_email__iexact=email)
+        # The EXISTS query has a somewhat strange shape because we need
+        # to again consider the edge case where we might be simply
+        # updating capitalization of the email for the user. In such a
+        # situation, a "conflict" on (realm, delivery_email__iexact) is
+        # not an actual conflict.
+        .exclude(id=user_profile.id)
+        .exists()
+    ):
+        logger.warning(
+            "Can't sync email for user %s: another user exists with target email %s",
+            user_profile.id,
+            email,
+        )
+    else:
+        do_change_user_delivery_email(user_profile, email, acting_user=None)
+
+
+def prepare_ldap_user_for_sync_by_external_auth_id(
+    backend: ZulipLDAPUserPopulator, user_profile: UserProfile, logger: logging.Logger
+) -> ZulipLDAPUser | None:
+    """
+    The purpose of this function is to take a UserProfile meant for syncing with LDAP,
+    and if it is connected to an LDAP user entry via a ExternalAuthID record, follow
+    that connection to fetch the associated LDAP user.
+    This allows the UserProfile to be linked to its associated LDAP user even if there's
+    a mismatch in the email - most commonly caused by an update to the user's email in the
+    LDAP directory.
+    If such a mismatch is detected, the UserProfile's email is synced to the LDAP value
+    in order to facilitate the rest of the sync codepath being able to successfully do
+    its job.
+    """
+    try:
+        external_auth_id_obj = ExternalAuthID.objects.get(
+            user=user_profile,
+            realm=user_profile.realm,
+            external_auth_method_name=ZulipLDAPAuthBackendBase.name,
+        )
+    except ExternalAuthID.DoesNotExist:
+        # This UserProfile doesn't have any records connecting it to an LDAP user entry.
+        # We can't do anything here.
+        return None
+
+    ldap_external_auth_id = external_auth_id_obj.external_auth_id
+
+    attr_name = settings.AUTH_LDAP_USER_ATTR_MAP.get("unique_account_id")
+    assert attr_name is not None
+
+    dn_as_external_auth_id = attr_name.lower() == "dn"
+
+    # We have an external_auth_id value, which should allow us to find the matching LDAP
+    # user. We need to prepare the appropriate LDAP search query.
+    ldap_user_search_obj = assert_is_not_none(settings.AUTH_LDAP_USER_SEARCH)
+    base_dn = ldap_user_search_obj.base_dn
+    scope = ldap_user_search_obj.scope
+
+    if not dn_as_external_auth_id:
+        ldap_search_args = (base_dn, scope, f"({attr_name}=%(external_auth_id)s)")
+        search_kwargs_dict = {"external_auth_id": ldap_external_auth_id}
+    else:
+        # Searching by the DN has a different structure than by a normal attribute.
+        ldap_search_args = (ldap_external_auth_id, ldap.SCOPE_BASE, "(objectClass=*)")
+        search_kwargs_dict = {}
+
+    results = ZulipLDAPSearch().do_search(LDAPSearch(*ldap_search_args), search_kwargs_dict)
+    results_dns = [result[0] for result in results]
+    if not results:
+        return None
+    elif len(results) > 1:
+        raise AssertionError(
+            f"LDAPSearch{ldap_search_args} returned multiple results:"
+            f"result DNs: {results_dns}."
+            "The search MUST be unique."
+        )
+
+    assert len(results) == 1
+    user_dn, user_attrs = results[0]
+
+    # We need to return a correct ZulipLDAPUser entry to the caller. To initialize
+    # an instance of this class, we need to read the username of the target LDAP
+    # user.
+    USERNAME_ATTR = assert_is_not_none(settings.AUTH_LDAP_USERNAME_ATTR)
+    username = user_attrs[USERNAME_ATTR][0]
+    assert isinstance(username, str)
+
+    ldap_user = ZulipLDAPUser(backend, username, realm=user_profile.realm)
+    # We've already fetched the user's data, so we can set it on the relevant internal
+    # fields of _LDAPUser to avoid django-auth-ldap doing an unnecessary re-fetch.
+    ldap_user._user_dn = user_dn
+    ldap_user._user_attrs = user_attrs
+
+    email = backend.user_email_from_ldapuser(username, ldap_user)
+    # If we detect that the email in LDAP has changed relative to what's on the UserProfile,
+    # we need to update it - so that the rest of the sync job, which relies
+    # on the email as user identifier, can succeed.
+    ldap_sync_delivery_email(user_profile, email, ldap_external_auth_id, logger)
+
+    return ldap_user
+
+
 def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bool:
     backend = ZulipLDAPUserPopulator()
-    try:
-        ldap_username = backend.django_to_ldap_username(user_profile.delivery_email)
-    except NoMatchingLDAPUserError:
-        if (
-            settings.ONLY_LDAP
-            if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS is None
-            else settings.LDAP_DEACTIVATE_NON_MATCHING_USERS
-        ):
-            do_deactivate_user(user_profile, acting_user=None)
-            logger.info("Deactivated non-matching user: %s", user_profile.delivery_email)
-            return True
-        elif user_profile.is_active:
-            logger.warning("Did not find %s in LDAP.", user_profile.delivery_email)
-        return False
+    ldap_user = None
+    if ldap_external_auth_id_sync_enabled():
+        # If we can fetch the LDAP user data based on the ExternalAuthID connection, then that's the best case.
+        # This allows us to find the LDAP user even if its email value has changed.
+        ldap_user = prepare_ldap_user_for_sync_by_external_auth_id(backend, user_profile, logger)
+        if ldap_user is not None:
+            logger.info(
+                "Syncing user %s (id=%s) via external auth id. Result DN: %s",
+                user_profile.delivery_email,
+                user_profile.id,
+                ldap_user.dn,
+            )
+
+    if ldap_user is None:
+        try:
+            ldap_username = backend.django_to_ldap_username(user_profile.delivery_email)
+        except NoMatchingLDAPUserError:
+            if (
+                settings.ONLY_LDAP
+                if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS is None
+                else settings.LDAP_DEACTIVATE_NON_MATCHING_USERS
+            ):
+                do_deactivate_user(user_profile, acting_user=None)
+                logger.info("Deactivated non-matching user: %s", user_profile.delivery_email)
+                return True
+            elif user_profile.is_active:
+                logger.warning("Did not find %s in LDAP.", user_profile.delivery_email)
+            return False
+        ldap_user = ZulipLDAPUser(backend, ldap_username, realm=user_profile.realm)
+
+    assert ldap_user is not None
 
     # What one would expect to see like to do here is just a call to
     # `backend.populate_user`, which in turn just creates the
@@ -1498,7 +1650,7 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
     #
     # Ideally, we'd contribute changes to `django-auth-ldap` upstream
     # making this flow possible in a more directly supported fashion.
-    updated_user = ZulipLDAPUser(backend, ldap_username, realm=user_profile.realm).populate_user()
+    updated_user = ldap_user.populate_user()
     if updated_user:
         logger.info("Updated %s.", user_profile.delivery_email)
         return True
