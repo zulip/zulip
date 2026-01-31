@@ -6,7 +6,11 @@ Receive GitLab notifications in Zulip!
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-webhook-url-with-branch-filtering.md!}
+1. Decide where to send {{ integration_display_name }} notifications, and
+   [generate the integration URL](/help/generate-integration-url). You'll be
+   able to configure which branches you'll receive notifications from, and
+   whether to include the merge request title in addition to the merge
+   request ID in the topic name.
 
 1. Go to your repository on GitLab and click **Settings** on the left
    sidebar.  Click on **Webhooks** and select **Add new webhook**.
@@ -31,13 +35,6 @@ Receive GitLab notifications in Zulip!
 ![](/static/images/integrations/gitlab/001.png)
 
 {!event-filtering-additional-feature.md!}
-
-### Configuration options
-
-* By default, the Zulip topics for merge requests will contain the title
-  of the GitLab merge request. You can change the topic format to just
-  contain the merge request ID by adding `&use_merge_request_title=false`
-  to the generated URL.
 
 ### Related documentation
 

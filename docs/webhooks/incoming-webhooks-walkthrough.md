@@ -244,7 +244,9 @@ These URL options can be declared as follows:
 offer when generating the integration URL:
 
 - `name`: The parameter name that is used to encode the user input in the
-  integration's webhook URL.
+  integration's webhook URL. Names with the "\_true" suffix when used
+  with the `check_bool` validator are reserved for optional boolean flags
+  that are true by default.
 - `label`: A short descriptive label for this URL parameter in the web
   app UI.
 - `validator`: A validator function, which is used to determine the input
@@ -256,6 +258,12 @@ offer when generating the integration URL:
 To add support for other validators, you can update
 `web/src/integration_url_modal.ts`. Common validators are available in
 `zerver/lib/validator.py`.
+
+For optional boolean parameters that are true by default, append "\_true"
+to the parameter name when defining the `WebhookUrlOption` object. For
+example, the `use_merge_request_title` parameter in the GitLab webhook
+integration is defined as
+`WebhookUrlOption(name="use_merge_request_title_true", ...)`.
 
 In rare cases, it may be necessary for an incoming webhook to require
 additional user configuration beyond what is specified in the POST URL.
