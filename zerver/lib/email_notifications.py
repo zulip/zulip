@@ -144,7 +144,7 @@ def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
 
 def fix_spoilers_in_html(fragment: lxml.html.HtmlElement, language: str) -> None:
     with override_language(language):
-        spoiler_title: str = _("Open Zulip to see the spoiler content")
+        spoiler_title: str = _("View spoiler content in Zulip")
     spoilers = fragment.find_class("spoiler-block")
     for spoiler in spoilers:
         header = spoiler.find_class("spoiler-header")[0]
@@ -158,7 +158,7 @@ def fix_spoilers_in_html(fragment: lxml.html.HtmlElement, language: str) -> None
             # Add a space.
             rear = header_content[-1] if len(header_content) else header_content
             rear.tail = (rear.tail or "") + " "
-        span_elem = e.SPAN(f"({spoiler_title})", **e.CLASS("spoiler-title"), title=spoiler_title)
+        span_elem = e.SPAN(f" {spoiler_title}", **e.CLASS("spoiler-title"), title=spoiler_title)
         header_content.append(span_elem)
         header.drop_tag()
         spoiler_content.drop_tree()
@@ -166,7 +166,7 @@ def fix_spoilers_in_html(fragment: lxml.html.HtmlElement, language: str) -> None
 
 def fix_spoilers_in_text(content: str, language: str) -> str:
     with override_language(language):
-        spoiler_title: str = _("Open Zulip to see the spoiler content")
+        spoiler_title: str = _("View spoiler content in Zulip")
     lines = content.split("\n")
     output = []
     open_fence = None
@@ -178,7 +178,7 @@ def fix_spoilers_in_text(content: str, language: str) -> str:
             if lang == "spoiler":
                 open_fence = fence
                 output.append(line)
-                output.append(f"({spoiler_title})")
+                output.append(f" {spoiler_title}")
             elif fence == open_fence:
                 open_fence = None
                 output.append(line)
