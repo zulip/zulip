@@ -436,6 +436,32 @@ export function get_user_time(user_id: number): string | undefined {
     return undefined;
 }
 
+export function check_member_is_new(user_id: number): boolean {
+    const user_profile = get_by_user_id(user_id);
+    const waiting_period = realm.realm_waiting_period_threshold;
+    const account_age = Date.now() - new Date(user_profile.date_joined).getTime();
+    const waiting_period_time = waiting_period * 24 * 60 * 60 * 1000;
+
+    return account_age < waiting_period_time;
+}
+
+export function get_user_type_with_waiting_period(user_id: number): string | undefined {
+    const user_profile = get_by_user_id(user_id);
+
+    if (
+        realm.realm_waiting_period_threshold === 0 ||
+        user_profile.role !== settings_config.user_role_values.member.code
+    ) {
+        return settings_config.user_role_map.get(user_profile.role);
+    }
+
+    const role_code = check_member_is_new(user_id)
+        ? settings_config.user_role_values_with_provisional_member.provisional_member.code
+        : settings_config.user_role_values_with_provisional_member.full_member.code;
+
+    return settings_config.user_role_map_with_provisional_member.get(role_code);
+}
+
 export function get_user_type(user_id: number): string | undefined {
     const user_profile = get_by_user_id(user_id);
     return settings_config.user_role_map.get(user_profile.role);
@@ -1785,7 +1811,22 @@ export function matches_user_settings_search(person: User, value: string): boole
 }
 
 function matches_user_settings_role(person: User, role_code: number): boolean {
-    if (role_code === 0 || role_code === person.role) {
+    let user_role_code = person.role;
+
+    if (
+        person.role === settings_config.user_role_values.member.code &&
+        realm.realm_waiting_period_threshold > 0
+    ) {
+        if (check_member_is_new(person.user_id)) {
+            user_role_code =
+                settings_config.user_role_values_with_provisional_member.provisional_member.code;
+        } else {
+            user_role_code =
+                settings_config.user_role_values_with_provisional_member.full_member.code;
+        }
+    }
+
+    if (role_code === 0 || role_code === user_role_code) {
         return true;
     }
     return false;

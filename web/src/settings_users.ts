@@ -20,7 +20,7 @@ import * as presence from "./presence.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
 import * as setting_invites from "./settings_invites.ts";
-import {current_user} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_profile from "./user_profile.ts";
@@ -215,7 +215,22 @@ function count_users_by_role(user_ids: number[]): Record<number, number> {
 
     for (const user_id of user_ids) {
         const user = people.get_by_user_id(user_id);
-        const role_code = user.role;
+        let role_code = user.role;
+        const is_new_member = people.check_member_is_new(user_id);
+
+        if (
+            realm.realm_waiting_period_threshold > 0 &&
+            role_code === settings_config.user_role_values.member.code
+        ) {
+            if (is_new_member) {
+                role_code =
+                    settings_config.user_role_values_with_provisional_member.provisional_member
+                        .code;
+            } else {
+                role_code =
+                    settings_config.user_role_values_with_provisional_member.full_member.code;
+            }
+        }
 
         role_counts[role_code] = (role_counts[role_code] ?? 0) + 1;
     }
@@ -225,12 +240,17 @@ function count_users_by_role(user_ids: number[]): Record<number, number> {
 
 function get_roles_with_counts(user_ids: number[]): dropdown_widget.Option[] {
     const role_counts = count_users_by_role(user_ids);
+    const waiting_period = realm.realm_waiting_period_threshold ?? 0;
+    const roles_to_show =
+        waiting_period === 0
+            ? Object.values(settings_config.user_role_values)
+            : Object.values(settings_config.user_role_values_with_provisional_member);
     return [
         {
             unique_id: 0,
             name: $t({defaultMessage: "All roles ({count})"}, {count: user_ids.length}),
         },
-        ...Object.values(settings_config.user_role_values)
+        ...roles_to_show
             .map((user_role_value) => ({
                 unique_id: user_role_value.code,
                 name: $t(
@@ -348,7 +368,7 @@ function human_info(person: User): {
 } {
     return {
         is_bot: false,
-        user_role_text: people.get_user_type(person.user_id),
+        user_role_text: people.get_user_type_with_waiting_period(person.user_id),
         is_active: people.is_person_active(person.user_id),
         user_id: person.user_id,
         full_name: person.full_name,
