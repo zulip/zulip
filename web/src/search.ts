@@ -206,6 +206,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         helpOnEmptyStrings: true,
         stopAdvance: true,
         requireHighlight: false,
+        enableMacCtrlNPNavigation: true,
         item_html(item: string, query: string): string {
             const obj = search_map.get(item);
             assert(obj !== undefined);
