@@ -523,8 +523,22 @@ def validate_todo_data(todo_data: object, is_widget_author: bool) -> None:
 
     assert isinstance(todo_data, dict)
 
-    if todo_data["type"] == "new_task":
+    if todo_data["type"] == "edit_task":
+        if not is_widget_author:
+            raise ValidationError("You can't edit a task unless you are the author.")
         checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("key", check_string),
+                ("task", check_string),
+                ("desc", check_string),
+            ]
+        )
+        checker("todo data", todo_data)
+        return
+
+    if todo_data["type"] == "new_task":
+        check_dict_only(
             [
                 ("type", check_string),
                 ("key", check_int_range(0, MAX_IDX)),
@@ -532,8 +546,7 @@ def validate_todo_data(todo_data: object, is_widget_author: bool) -> None:
                 ("desc", check_string),
                 ("completed", check_bool),
             ]
-        )
-        checker("todo data", todo_data)
+        )("todo data", todo_data)
         return
 
     if todo_data["type"] == "strike":
