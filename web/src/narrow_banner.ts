@@ -523,6 +523,11 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 ),
             };
         }
+        case "has": {
+            return {
+                title: NO_SEARCH_RESULTS_TITLE,
+            };
+        }
     }
     return default_banner;
 }
@@ -531,6 +536,7 @@ export function show_empty_narrow_message(current_filter: Filter): void {
     $(".empty_feed_notice_main").empty();
     const rendered_narrow_banner = narrow_error(pick_empty_narrow_banner(current_filter));
     $(".empty_feed_notice_main").html(rendered_narrow_banner);
+    $(".empty_feed_notice a.search-shared-history").hide();
 }
 
 export function hide_empty_narrow_message(): void {
