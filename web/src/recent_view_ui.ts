@@ -153,8 +153,10 @@ export function is_in_focus(): boolean {
 export function set_default_focus(): void {
     // If at any point we are confused about the currently
     // focused element, we switch focus to search.
+    const focus_action = should_select_search_text ? "select" : "focus";
     $current_focus_elem = $("#recent_view_search");
-    $current_focus_elem.trigger("focus");
+    $current_focus_elem.trigger(focus_action);
+    should_select_search_text = false;
     compose_closed_ui.set_standard_text_for_reply_button();
 }
 
@@ -1409,6 +1411,7 @@ export function update_recent_view_rendered_time(): void {
     }
 }
 
+let should_select_search_text = false;
 export function show(): void {
     assert(hide_other_views_callback !== undefined);
     hide_other_views_callback();
@@ -1433,6 +1436,10 @@ export function show(): void {
         complete_rerender,
     });
     last_scroll_offset = undefined;
+
+    if ($("#recent_view_search").val() !== "") {
+        should_select_search_text = true;
+    }
 
     if (reattach_event_handlers) {
         assert(topics_widget !== undefined);
