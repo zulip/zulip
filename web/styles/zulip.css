@@ -1,3 +1,8 @@
+/* Moved from inline style in apps.html */
+#download-mac-alt {
+    margin-top: 10px;
+}
+
 html {
     overflow: hidden scroll;
     overscroll-behavior-y: none;
