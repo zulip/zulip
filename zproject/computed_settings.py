@@ -532,6 +532,10 @@ DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret("big_blue_button_secret")
 
+# Nextcloud Talk credentials (other settings are in default_settings.py)
+NEXTCLOUD_TALK_USERNAME = get_secret("nextcloud_talk_username")
+NEXTCLOUD_TALK_PASSWORD = get_secret("nextcloud_talk_password")
+
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [
     {

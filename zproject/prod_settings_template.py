@@ -728,6 +728,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## set big_blue_button_secret in zulip-secrets.conf.
 # BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 
+## Controls the Nextcloud Talk video call integration.  You must also
+## set nextcloud_talk_username and nextcloud_talk_password in zulip-secrets.conf.
+# NEXTCLOUD_SERVER = "https://nextcloud.example.com"
+
 ################
 ## AI Features
 ##

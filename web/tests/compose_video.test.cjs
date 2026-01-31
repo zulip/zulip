@@ -64,6 +64,10 @@ const realm_available_video_chat_providers = {
         id: 4,
         name: "BigBlueButton",
     },
+    nextcloud_talk: {
+        id: 6,
+        name: "Nextcloud Talk",
+    },
 };
 
 function test(label, f) {
@@ -268,6 +272,54 @@ test("videos", ({override}) => {
             /\[translated: Join voice call\.]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&moderator=%22AAAAAAAAAA%22&lock_settings_disable_cam=true&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, audio_link_regex);
+    })();
+
+    (function test_nextcloud_talk_audio_and_video_links_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const $textarea = $.create("nextcloud-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+            called = true;
+        });
+
+        $("textarea#compose-textarea").val("");
+
+        override(
+            realm,
+            "realm_video_chat_provider",
+            realm_available_video_chat_providers.nextcloud_talk.id,
+        );
+
+        override(compose_closed_ui, "get_recipient_label", () => ({label_text: "general"}));
+
+        channel.post = (options) => {
+            assert.equal(options.url, "/json/calls/nextcloud_talk/create");
+            assert.equal(options.data.meeting_name, "general meeting");
+            options.success({
+                result: "success",
+                msg: "",
+                url: "https://nextcloud.example.com/index.php/call/abc123token",
+            });
+            return {abort() {}};
+        };
+
+        $("textarea#compose-textarea").val("");
+
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler.call($textarea, ev);
+        const video_link_regex =
+            /\[translated: Join video call\.]\(https:\/\/nextcloud\.example\.com\/index\.php\/call\/abc123token\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
     })();
 });
 

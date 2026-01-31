@@ -1,6 +1,7 @@
 from unittest import mock
 
 import orjson
+import requests
 import responses
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect
@@ -533,3 +534,111 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 {"bigbluebutton": self.signed_bbb_a_object},
             )
             self.assert_json_error(response, "BigBlueButton is not configured.")
+
+
+@override_settings(
+    NEXTCLOUD_SERVER="https://nextcloud.example.com",
+    NEXTCLOUD_TALK_USERNAME="test-user",
+    NEXTCLOUD_TALK_PASSWORD="test-password",
+)
+class NextcloudVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+        self.nextcloud_api_url = "https://nextcloud.example.com/ocs/v2.php/apps/spreed/api/v4/room"
+
+    @responses.activate
+    def test_create_nextcloud_talk_video_call_success(self) -> None:
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            json={
+                "ocs": {
+                    "meta": {"status": "ok", "statuscode": 200, "message": "OK"},
+                    "data": {
+                        "token": "abc123token",
+                        "name": "Test Meeting",
+                        "displayName": "Test Meeting",
+                        "type": 3,
+                    },
+                }
+            },
+            status=200,
+        )
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create", {"meeting_name": "Test Meeting"}
+        )
+        self.assertEqual(responses.calls[0].request.url, self.nextcloud_api_url)
+
+        self.assertEqual(
+            responses.calls[0].request.headers["OCS-APIRequest"],
+            "true",
+        )
+        self.assertEqual(
+            responses.calls[0].request.headers["Accept"],
+            "application/json",
+        )
+        self.assertIn("Authorization", responses.calls[0].request.headers)
+        self.assertTrue(responses.calls[0].request.headers["Authorization"].startswith("Basic "))
+
+        assert responses.calls[0].request.body is not None
+        self.assertEqual(
+            orjson.loads(responses.calls[0].request.body),
+            {
+                "roomType": 3,
+                "roomName": "Test Meeting",
+            },
+        )
+
+        json = self.assert_json_success(response)
+        self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
+
+    def test_create_nextcloud_talk_not_configured(self) -> None:
+        for setting_name in [
+            "NEXTCLOUD_SERVER",
+            "NEXTCLOUD_TALK_USERNAME",
+            "NEXTCLOUD_TALK_PASSWORD",
+        ]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_post(
+                    "/json/calls/nextcloud_talk/create",
+                    {"meeting_name": "Test Meeting"},
+                )
+                self.assert_json_error(response, "Nextcloud Talk is not configured.")
+
+    @responses.activate
+    def test_create_nextcloud_talk_connection_error(self) -> None:
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            body=requests.RequestException("Connection failed"),
+        )
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create", {"meeting_name": "Test Meeting"}
+        )
+
+        self.assert_json_error(response, "Error connecting to the Nextcloud Talk server.")
+
+    @responses.activate
+    def test_create_nextcloud_talk_invalid_response(self) -> None:
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            json={
+                "ocs": {
+                    "meta": {"status": "ok"},
+                    "data": {},  # Missing 'token' field
+                }
+            },
+            status=200,
+        )
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create",
+            {"meeting_name": "Test Meeting"},
+        )
+        self.assert_json_error(response, "Failed to create Nextcloud Talk conversation")
