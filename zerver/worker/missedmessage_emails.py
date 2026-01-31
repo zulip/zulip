@@ -226,9 +226,13 @@ class MissedMessageWorker(QueueProcessingWorker):
         current_time = timezone_now()
 
         with transaction.atomic(durable=True):
-            events_to_process = ScheduledMessageNotificationEmail.objects.filter(
-                scheduled_timestamp__lte=current_time
-            ).select_for_update()
+            events_to_process = (
+                ScheduledMessageNotificationEmail.objects.filter(
+                    scheduled_timestamp__lte=current_time
+                )
+                .order_by("id")
+                .select_for_update()
+            )
 
             # Batch the entries by user
             events_by_recipient: dict[int, dict[int, MissedMessageData]] = defaultdict(dict)
