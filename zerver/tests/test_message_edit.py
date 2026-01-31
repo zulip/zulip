@@ -7,7 +7,11 @@ import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
 
-from zerver.actions.message_edit import get_mentions_for_message_updates
+from zerver.actions.alert_words import do_add_alert_words
+from zerver.actions.message_edit import (
+    get_mentions_for_message_updates,
+    get_watched_phrases_for_message_updates,
+)
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_change_realm_plan_type,
@@ -809,6 +813,23 @@ class EditMessageTest(ZulipTestCase):
 
         mention_user_ids = get_mentions_for_message_updates(message)
         self.assertEqual(mention_user_ids, {cordelia.id})
+
+    def test_watched_phrases_for_message_updates(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        # Set alert words for cordelia
+        do_add_alert_words(cordelia, ["foo"])
+
+        self.login_user(hamlet)
+        self.subscribe(hamlet, "Denmark")
+        self.subscribe(cordelia, "Denmark")
+
+        msg_id = self.send_stream_message(hamlet, "Denmark", content="This has foo in it")
+        message = Message.objects.get(id=msg_id)
+
+        watched_phrase_user_ids = get_watched_phrases_for_message_updates(message)
+        self.assertEqual(watched_phrase_user_ids, {cordelia.id})
 
     def test_edit_and_moved_timestamps(self) -> None:
         self.login("hamlet")
@@ -2060,6 +2081,136 @@ class EditMessageTest(ZulipTestCase):
                 },
             )
         self.assert_json_success(result)
+
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
+    def test_watched_phrases_when_editing(self, mock_send_event: mock.MagicMock) -> None:
+        stream_name = "Macbeth"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+        self.login_user(hamlet)
+
+        # Set alert word for cordelia
+        do_add_alert_words(cordelia, ["foo"])
+
+        message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
+
+        self.check_message_flags(
+            message_id,
+            user_ids=[hamlet.id, cordelia.id],
+            flag="has_alert_word",
+            check_present=False,
+        )
+
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["read"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": ["has_alert_word"],
+                },
+            ],
+            key=itemgetter("id"),
+        )
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "content": "Hello foo",
+            },
+        )
+        self.assert_json_success(result)
+
+        # Extract the send_event call where event type is 'update_message'.
+        # Here we assert 'prior_watched_phrase_user_ids' (who previously had
+        # alert words) is empty and the flag is added.
+        called = False
+        for call_args in mock_send_event.call_args_list:
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
+            if arg_event["type"] == "update_message":
+                self.assertEqual(arg_event["type"], "update_message")
+                self.assertEqual(arg_event["prior_watched_phrase_user_ids"], [])
+                self.assertEqual(
+                    sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
+                )
+                called = True
+        self.assertTrue(called)
+
+        self.check_message_flags(
+            message_id, user_ids=[cordelia.id], flag="has_alert_word", check_present=True
+        )
+        self.check_message_flags(
+            message_id, user_ids=[hamlet.id], flag="has_alert_word", check_present=False
+        )
+
+    @mock.patch("zerver.actions.message_edit.send_event_on_commit")
+    def test_remove_watched_phrases_when_editing(self, mock_send_event: mock.MagicMock) -> None:
+        stream_name = "Macbeth"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+        self.login_user(hamlet)
+
+        # Set alert word for cordelia
+        do_add_alert_words(cordelia, ["foo"])
+
+        message_id = self.send_stream_message(hamlet, stream_name, "Hello foo")
+
+        self.check_message_flags(
+            message_id, user_ids=[cordelia.id], flag="has_alert_word", check_present=True
+        )
+        self.check_message_flags(
+            message_id, user_ids=[hamlet.id], flag="has_alert_word", check_present=False
+        )
+
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["read"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": [],
+                },
+            ],
+            key=itemgetter("id"),
+        )
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "content": "Hello everyone",
+            },
+        )
+        self.assert_json_success(result)
+
+        # Extract the send_event call where event type is 'update_message'.
+        # Here we assert that 'prior_watched_phrase_user_ids' (who previously had
+        # alert words) has been set properly and the flag is removed.
+        called = False
+        for call_args in mock_send_event.call_args_list:
+            (_arg_realm, arg_event, arg_notified_users) = call_args[0]
+            if arg_event["type"] == "update_message":
+                self.assertEqual(arg_event["type"], "update_message")
+                self.assertEqual(arg_event["prior_watched_phrase_user_ids"], [cordelia.id])
+                self.assertEqual(
+                    sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
+                )
+                called = True
+        self.assertTrue(called)
+
+        self.check_message_flags(
+            message_id,
+            user_ids=[hamlet.id, cordelia.id],
+            flag="has_alert_word",
+            check_present=False,
+        )
 
     def test_user_group_mentions_via_subgroup_when_editing(self) -> None:
         user_profile = self.example_user("iago")

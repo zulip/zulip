@@ -203,3 +203,17 @@ run_test("basic get/set operations", () => {
     assert.ok(alert_words.has_alert_word("lunch"));
     assert.ok(!alert_words.has_alert_word("dinner"));
 });
+
+run_test("has_alert_words_configured", () => {
+    // Test with no alert words configured
+    alert_words.initialize({alert_words: []});
+    assert.ok(!alert_words.has_alert_words_configured());
+
+    // Test with alert words configured
+    alert_words.set_words(["breakfast", "lunch"]);
+    assert.ok(alert_words.has_alert_words_configured());
+
+    // Test clearing alert words
+    alert_words.set_words([]);
+    assert.ok(!alert_words.has_alert_words_configured());
+});

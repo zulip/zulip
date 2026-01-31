@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import * as alert_words from "./alert_words.ts";
 import * as drafts from "./drafts.ts";
 import type {Filter} from "./filter.ts";
 import {localstorage} from "./localstorage.ts";
@@ -16,6 +17,7 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 
 let last_mention_count = 0;
+let last_alert_word_count = 0;
 const ls_key = "left_sidebar_views_state";
 const ls = localstorage();
 
@@ -66,6 +68,12 @@ export function update_reminders_row(): void {
     ui_util.update_unread_count_in_dom($reminders_li, count);
 }
 
+export function update_alert_words_row(): void {
+    const $alert_words_li = $(".top_left_alert_words");
+    const has_alert_words = alert_words.has_alert_words_configured();
+    $alert_words_li.toggleClass("hidden-by-filters", !has_alert_words);
+}
+
 export let update_dom_with_unread_counts = function (
     counts: unread.FullUnreadCountsData,
     skip_animations: boolean,
@@ -74,20 +82,28 @@ export let update_dom_with_unread_counts = function (
 
     // mentioned/home views have simple integer counts
     const $mentioned_li = $(".top_left_mentions");
+    const $alert_words_li = $(".top_left_alert_words");
     const $home_view_li = $(".selected-home-view");
     const $condensed_view_li = $(".top_left_condensed_unread_marker");
     const $back_to_streams = $("#topics_header");
 
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
+    ui_util.update_unread_count_in_dom($alert_words_li, counts.alert_word_message_count);
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
     ui_util.update_unread_count_in_dom($condensed_view_li, counts.home_unread_messages);
     ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
 
     if (!skip_animations) {
         animate_unread_changes($mentioned_li, counts.mentioned_message_count, last_mention_count);
+        animate_unread_changes(
+            $alert_words_li,
+            counts.alert_word_message_count,
+            last_alert_word_count,
+        );
     }
 
     last_mention_count = counts.mentioned_message_count;
+    last_alert_word_count = counts.alert_word_message_count;
 };
 
 export function rewire_update_dom_with_unread_counts(
@@ -125,12 +141,19 @@ export function handle_narrow_activated(filter: Filter): void {
     terms = filter.terms_with_operator("is");
     if (terms[0] !== undefined) {
         filter_name = terms[0].operand;
-        if (filter_name === "starred") {
-            select_top_left_corner_item(".top_left_starred_messages");
-            return;
-        } else if (filter_name === "mentioned") {
-            select_top_left_corner_item(".top_left_mentions");
-            return;
+        switch (filter_name) {
+            case "starred": {
+                select_top_left_corner_item(".top_left_starred_messages");
+                return;
+            }
+            case "mentioned": {
+                select_top_left_corner_item(".top_left_mentions");
+                return;
+            }
+            case "alerted": {
+                select_top_left_corner_item(".top_left_alert_words");
+                return;
+            }
         }
     }
     const term_types = filter.sorted_term_types();
@@ -327,6 +350,13 @@ export function get_built_in_popover_condensed_views(): navigation_views.BuiltIn
         if (view.fragment === "drafts") {
             view.unread_count = drafts.draft_model.getDraftCount();
         }
+        if (view.fragment === "narrow/is/alerted") {
+            // Hide alert words view if user has no alert words configured
+            if (!alert_words.has_alert_words_configured()) {
+                return false;
+            }
+            view.unread_count = unread.unread_alert_words_counter.size;
+        }
         // Remove views that are already visible.
         return !visible_condensed_views.some(
             (visible_view) => visible_view.fragment === view.fragment,
@@ -341,6 +371,7 @@ export function get_built_in_views(): navigation_views.BuiltInViewMetadata[] {
 export function initialize(): void {
     update_reminders_row();
     update_scheduled_messages_row();
+    update_alert_words_row();
     restore_views_state();
 
     $("body").on(
