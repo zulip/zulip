@@ -1,8 +1,11 @@
 import filecmp
 import os
+import shutil
 import sys
+import tempfile
+from collections import defaultdict
 from typing import Any
-from unittest.mock import call, patch
+from unittest.mock import patch
 
 import orjson
 from django.test import override_settings
@@ -18,6 +21,7 @@ from zerver.data_import.mattermost import (
     do_convert_data,
     get_mentioned_user_ids,
     label_mirror_dummy_users,
+    make_realm,
     mattermost_data_file_to_dict,
     process_message_attachments,
     process_user,
@@ -32,15 +36,37 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Reaction, Recipient, UserProfile
 from zerver.models.presence import PresenceSequence
 from zerver.models.realms import get_realm
-from zerver.models.streams import Stream
+from zerver.models.streams import Stream, get_stream
 from zerver.models.users import get_user
+from zerver.tests.test_import_export import make_export_output_dir
+from zerver.tests.test_microsoft_teams_importer import get_channel_subscriber_emails
+
+
+def get_exported_messages_from_a_channel(
+    message_dict: list[dict[str, Any]],
+    mattermost_channel_id: str,
+    excluded_usernames: list[str],
+) -> list[dict[str, Any]]:
+    exported_channel_messages: list[dict[str, Any]] = []
+    for m in message_dict:
+        if m["channel"] != mattermost_channel_id or m["user"] in excluded_usernames:
+            continue
+        exported_channel_messages.append(m)
+
+        if m["replies"] is None:
+            continue
+        exported_channel_messages += [
+            m for m in m["replies"] if m["user"] not in excluded_usernames
+        ]
+
+    return exported_channel_messages
 
 
 class MatterMostImporter(ZulipTestCase):
     def test_mattermost_data_file_to_dict(self) -> None:
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
-        self.assert_length(mattermost_data, 7)
+        self.assert_length(mattermost_data, 9)
 
         self.assertEqual(mattermost_data["version"], [1])
 
@@ -176,7 +202,10 @@ class MatterMostImporter(ZulipTestCase):
 
         team_name = "gryffindor"
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
+        realm = make_realm(realm_id=0, team={"name": team_name})
+        convert_user_data(
+            user_handler, user_id_mapper, username_to_user, realm, realm_id, team_name
+        )
         self.assert_length(user_handler.get_all_users(), 2)
         self.assertTrue(user_id_mapper.has("harry"))
         self.assertTrue(user_id_mapper.has("ron"))
@@ -189,7 +218,10 @@ class MatterMostImporter(ZulipTestCase):
 
         team_name = "slytherin"
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
+        realm = make_realm(realm_id=0, team={"name": team_name})
+        convert_user_data(
+            user_handler, user_id_mapper, username_to_user, realm, realm_id, team_name
+        )
         self.assert_length(user_handler.get_all_users(), 3)
         self.assertTrue(user_id_mapper.has("malfoy"))
         self.assertTrue(user_id_mapper.has("pansy"))
@@ -199,21 +231,30 @@ class MatterMostImporter(ZulipTestCase):
         # Snape is a mirror dummy user in Harry's team.
         label_mirror_dummy_users(2, team_name, mattermost_data, username_to_user)
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
+        realm = make_realm(realm_id=0, team={"name": team_name})
+        convert_user_data(
+            user_handler, user_id_mapper, username_to_user, realm, realm_id, team_name
+        )
         self.assert_length(user_handler.get_all_users(), 3)
         self.assertTrue(user_id_mapper.has("snape"))
 
         team_name = "slytherin"
         user_handler = UserHandler()
-        convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
+        realm = make_realm(realm_id=0, team={"name": team_name})
+        convert_user_data(
+            user_handler, user_id_mapper, username_to_user, realm, realm_id, team_name
+        )
         self.assert_length(user_handler.get_all_users(), 3)
 
         # Importer should raise error when user emails are malformed
         team_name = "gryffindor"
         bad_email1 = username_to_user["harry"]["email"] = "harry.ceramicist@zuL1[p.c0m"
         bad_email2 = username_to_user["ron"]["email"] = "ron.ferret@zulup...com"
+        realm = make_realm(realm_id=0, team={"name": team_name})
         with self.assertRaises(Exception) as e:
-            convert_user_data(user_handler, user_id_mapper, username_to_user, realm_id, team_name)
+            convert_user_data(
+                user_handler, user_id_mapper, username_to_user, realm, realm_id, team_name
+            )
         error_message = str(e.exception)
         expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email2}, {bad_email1}']"
         self.assertEqual(error_message, expected_error_message)
@@ -230,13 +271,14 @@ class MatterMostImporter(ZulipTestCase):
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
 
-        mock_realm_dict: ZerverFieldsT = dict(zerver_realm=[dict()])
+        mock_realm_dict: ZerverFieldsT = make_realm(realm_id=0, team={"name": team_name})
         zerver_realm = mock_realm_dict["zerver_realm"]
 
         convert_user_data(
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
             user_data_map=username_to_user,
+            realm=mock_realm_dict,
             realm_id=3,
             team_name=team_name,
         )
@@ -245,7 +287,7 @@ class MatterMostImporter(ZulipTestCase):
             "zerver.data_import.mattermost.MATTERMOST_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME",
             "Gryffindor common room",
         ):
-            zerver_stream = convert_channel_data(
+            convert_channel_data(
                 realm=mock_realm_dict,
                 channel_data=mattermost_data["channel"],
                 user_data_map=username_to_user,
@@ -255,7 +297,7 @@ class MatterMostImporter(ZulipTestCase):
                 realm_id=3,
                 team_name=team_name,
             )
-
+        zerver_stream = mock_realm_dict["zerver_stream"]
         self.assert_length(zerver_stream, 7)
 
         self.assertEqual(zerver_stream[0]["name"], "Gryffindor common room")
@@ -327,7 +369,7 @@ class MatterMostImporter(ZulipTestCase):
 
         # Converting channel data when a user's `teams` value is `null`.
         username_to_user["ron"].update(teams=None)
-        mock_realm_dict = dict(zerver_realm=[dict()])
+        mock_realm_dict = make_realm(realm_id=0, team={"name": "test-realm"})
         zerver_stream = convert_channel_data(
             realm=mock_realm_dict,
             channel_data=mattermost_data["channel"],
@@ -356,7 +398,7 @@ class MatterMostImporter(ZulipTestCase):
         )
 
         team_name = "slytherin"
-        mock_realm_dict = dict(zerver_realm=[dict()])
+        mock_realm_dict = make_realm(realm_id=0, team={"name": "test-realm"})
         zerver_stream = convert_channel_data(
             realm=mock_realm_dict,
             channel_data=mattermost_data["channel"],
@@ -396,11 +438,13 @@ class MatterMostImporter(ZulipTestCase):
         direct_message_group_id_mapper = IdMapper[frozenset[str]]()
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
+        realm = make_realm(realm_id=0, team={"name": team_name})
 
         convert_user_data(
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
             user_data_map=username_to_user,
+            realm=realm,
             realm_id=3,
             team_name=team_name,
         )
@@ -412,6 +456,7 @@ class MatterMostImporter(ZulipTestCase):
                 subscriber_handler=subscriber_handler,
                 direct_message_group_id_mapper=direct_message_group_id_mapper,
                 user_id_mapper=user_id_mapper,
+                realm=realm,
                 realm_id=3,
                 team_name=team_name,
             )
@@ -447,11 +492,13 @@ class MatterMostImporter(ZulipTestCase):
         direct_message_group_id_mapper = IdMapper[frozenset[str]]()
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
+        realm = make_realm(realm_id=0, team={"name": team_name})
 
         convert_user_data(
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
             user_data_map=username_to_user,
+            realm=realm,
             realm_id=3,
             team_name=team_name,
         )
@@ -463,6 +510,7 @@ class MatterMostImporter(ZulipTestCase):
                 subscriber_handler=subscriber_handler,
                 direct_message_group_id_mapper=direct_message_group_id_mapper,
                 user_id_mapper=user_id_mapper,
+                realm=realm,
                 realm_id=3,
                 team_name=team_name,
             )
@@ -472,12 +520,16 @@ class MatterMostImporter(ZulipTestCase):
         expected_dm_groups = [
             (0, {2, 3}),  # direct_channel[0] should have users 2, 3
             (1, {1, 2, 3}),  # direct_channel[1] should have users 1, 2, 3
-            (3, {3, 4}),  # direct_channel[3] should have users 3, 4
+            (3, {3}),  # direct_channel[3] should have users 3
         ]
 
         for channel_index, expected_users in expected_dm_groups:
             direct_message_group_members = frozenset(
-                mattermost_data["direct_channel"][channel_index]["members"]
+                [
+                    username
+                    for username in mattermost_data["direct_channel"][channel_index]["members"]
+                    if user_id_mapper.has(username)
+                ]
             )
             self.assertTrue(direct_message_group_id_mapper.has(direct_message_group_members))
             actual_users = subscriber_handler.get_users(
@@ -546,11 +598,13 @@ class MatterMostImporter(ZulipTestCase):
         user_handler = UserHandler()
         user_id_mapper = IdMapper[str]()
         team_name = "gryffindor"
+        realm = make_realm(realm_id=0, team={"name": team_name})
 
         convert_user_data(
             user_handler=user_handler,
             user_id_mapper=user_id_mapper,
             user_data_map=username_to_user,
+            realm=realm,
             realm_id=3,
             team_name=team_name,
         )
@@ -770,16 +824,12 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
+        with self.assertLogs(level="WARNING") as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=False,
             )
-        self.assertEqual(
-            mock_print.mock_calls,
-            [call("Generating data for", "gryffindor"), call("Generating data for", "slytherin")],
-        )
         self.assertEqual(
             warn_log.output,
             [
@@ -896,18 +946,12 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch("builtins.print") as mock_print, self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"):
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=False,
             )
-        self.assertEqual(
-            mock_print.mock_calls,
-            [
-                call("Generating data for", "gryffindor"),
-            ],
-        )
 
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         self.assertEqual(os.path.exists(os.path.join(harry_team_output_dir, "avatars")), True)
@@ -1035,7 +1079,7 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch("builtins.print"), self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"):
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
@@ -1155,16 +1199,13 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
+        with self.assertLogs(level="WARNING") as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=True,
             )
-        self.assertEqual(
-            mock_print.mock_calls,
-            [call("Generating data for", "gryffindor"), call("Generating data for", "slytherin")],
-        )
+
         self.assertEqual(
             warn_log.output,
             [
@@ -1190,16 +1231,12 @@ class MatterMostImporter(ZulipTestCase):
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
 
-        with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING") as warn_log:
+        with self.assertLogs(level="WARNING") as warn_log:
             do_convert_data(
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=True,
             )
-        self.assertEqual(
-            mock_print.mock_calls,
-            [call("Generating data for", "gryffindor"), call("Generating data for", "slytherin")],
-        )
         self.assertEqual(
             warn_log.output,
             [
@@ -1231,3 +1268,158 @@ class MatterMostImporter(ZulipTestCase):
             self.assertIsNotNone(message.rendered_content)
 
         self.verify_emoji_code_foreign_keys()
+
+    def test_import_unknown_jsonl_file(self) -> None:
+        export_dir = tempfile.mkdtemp()
+        output_dir = self.make_import_output_dir("mattermost")
+        try:
+            with self.assertRaises(AssertionError) as e:
+                do_convert_data(
+                    mattermost_data_dir=export_dir,
+                    output_dir=output_dir,
+                    masking_content=True,
+                )
+            self.assertEqual(
+                f"Missing import.jsonl or export.json file in {export_dir}. Files: []",
+                str(e.exception),
+            )
+        finally:
+            shutil.rmtree(export_dir)
+
+    def test_e2e_export_data_v11_1_0(self) -> None:
+        fixture_file_name = self.fixture_file_name(
+            "import.jsonl", "mattermost_v11.1.0_fixtures/raw_mmctl_output"
+        )
+        mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
+        self.assert_length(mattermost_data, 9)
+        self.assert_length(mattermost_data["team"], 1)
+        self.assertEqual(mattermost_data["team"][0]["name"], "ad-1")
+        self.assert_length(mattermost_data["channel"], 4)
+        self.assert_length(mattermost_data["user"], 20)
+        self.assert_length(mattermost_data["emoji"], 0)
+        self.assert_length(mattermost_data["post"]["channel_post"], 50)
+        self.assert_length(mattermost_data["post"]["direct_post"], 50)
+        self.assert_length(mattermost_data["direct_channel"], 50)
+        self.assert_length(mattermost_data["role"], 23)
+        exported_bot_users = [user for user in mattermost_data["user"] if user.get("is_bot")]
+        self.assert_length(exported_bot_users, 3)
+
+        mattermost_data_dir = self.fixture_file_name(
+            "", "mattermost_v11.1.0_fixtures/raw_mmctl_output"
+        )
+        output_dir = make_export_output_dir()
+
+        with self.assertLogs(level="INFO"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=True,
+            )
+
+        imported_realm_subdomain = "test-mattermost_v11.1.0"
+        output_dir = self.team_output_dir(output_dir, "ad-1")
+
+        with self.assertLogs(level="INFO"):
+            do_import_realm(
+                import_dir=output_dir,
+                subdomain=imported_realm_subdomain,
+            )
+        imported_realm = get_realm(imported_realm_subdomain)
+
+        imported_user_profiles = UserProfile.objects.filter(realm=imported_realm)
+        self.assert_length(
+            imported_user_profiles,
+            len(mattermost_data["user"]),
+        )
+        imported_users = imported_user_profiles.filter(is_bot=False, is_mirror_dummy=False)
+        self.assert_length(imported_users, len(mattermost_data["user"]))
+
+        imported_realm_owners = imported_user_profiles.filter(
+            is_bot=False, role=UserProfile.ROLE_REALM_OWNER, is_mirror_dummy=False
+        )
+        self.assert_length(imported_realm_owners, 1)
+        self.assertEqual(imported_realm_owners[0].email, "sysadmin@sample.mattermost.com")
+
+        imported_realm_guests = imported_user_profiles.filter(
+            is_bot=False, role=UserProfile.ROLE_GUEST, is_mirror_dummy=False
+        )
+        self.assert_length(imported_realm_guests, 1)
+        self.assertEqual(imported_realm_guests[0].email, "guest@sample.mattermost.com")
+
+        # This is the Mattermost channel ID for "nesciunt".
+        mattermost_public_channel_id = "sequi-7"
+        public_channel_name = "nesciunt"
+        imported_public_channel = get_stream(public_channel_name, imported_realm)
+        imported_public_channel_messages = Message.objects.filter(
+            recipient=imported_public_channel.recipient,
+            realm=imported_realm,
+            sender__is_bot=False,
+        ).order_by("id")
+        self.assert_length(
+            imported_public_channel_messages,
+            27,
+        )
+
+        imported_public_channel_subscriber_emails = get_channel_subscriber_emails(
+            imported_realm, imported_public_channel
+        )
+
+        exported_channel_subscriber_list = set()
+        username_to_email_map: dict[str, str] = {}
+        for user in mattermost_data["user"]:
+            exported_user_channels = [channel["name"] for channel in user["teams"][0]["channels"]]
+            if mattermost_public_channel_id in exported_user_channels:
+                exported_channel_subscriber_list.add(user["email"])
+            username_to_email_map[user["username"]] = user["email"]
+
+        # Channel subscriber list is correct.
+        self.assertSetEqual(
+            exported_channel_subscriber_list, set(imported_public_channel_subscriber_emails)
+        )
+
+        exported_bot_usernames = [user["username"] for user in mattermost_data["bot"]]
+        exported_channel_messages = get_exported_messages_from_a_channel(
+            mattermost_data["post"]["channel_post"],
+            mattermost_public_channel_id,
+            exported_bot_usernames,
+        )
+        exported_message_datetimes: list[float] = []
+        exported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
+        for message in exported_channel_messages:
+            message_datesent = float(int(message["create_at"] / 1000))
+            exported_message_datetimes.append(message_datesent)
+            exported_sender_messages_map[username_to_email_map[message["user"]]].append(
+                message_datesent
+            )
+
+        imported_message_datetimes: list[float] = []
+        imported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
+        last_date_sent: float = float("-inf")
+        for imported_message in imported_public_channel_messages:
+            message_date_sent = imported_message.date_sent.timestamp()
+            # Imported messages are sorted chronologically.
+            self.assertLessEqual(last_date_sent, message_date_sent)
+            last_date_sent = max(last_date_sent, message_date_sent)
+
+            # Message content is not empty.
+            self.assertIsNotNone(imported_message.content)
+            self.assertIsNotNone(imported_message.rendered_content)
+
+            imported_message_datetimes.append(message_date_sent)
+            imported_sender_messages_map[imported_message.sender.email].append(message_date_sent)
+
+        self.assertListEqual(
+            sorted(imported_message_datetimes),
+            sorted(exported_message_datetimes),
+        )
+
+        # Message sender is correct.
+        for sender_email, users_exported_message_datetimes in exported_sender_messages_map.items():
+            self.assertListEqual(
+                sorted(users_exported_message_datetimes),
+                sorted(imported_sender_messages_map[sender_email]),
+            )
+
+        private_channel_name = "private-channel"
+        private_channel = get_stream(private_channel_name, imported_realm)
+        self.assertFalse(private_channel.is_public())
