@@ -35,19 +35,9 @@
                             </p>
                         </div>
                         {{else}}
-                        {{#if stream_changed}}
+                        {{#if move_content_html}}
                         <div class="message_content message_edit_history_content">
-                            <p>{{t "Channel" }}: <span class="highlight_text_inserted">{{ new_stream }}</span>
-                                <span class="highlight_text_deleted">{{ prev_stream }}</span>
-                            </p>
-                        </div>
-                        {{/if}}
-                        {{#if topic_edited}}
-                        <div class="message_content message_edit_history_content">
-                            <p>{{t "Topic" }}:
-                                <span class="highlight_text_inserted {{#if is_empty_string_new_topic}}empty-topic-display{{/if}}">{{ new_topic_display_name }}</span>
-                                <span class="highlight_text_deleted {{#if is_empty_string_prev_topic}}empty-topic-display{{/if}}">{{ prev_topic_display_name }}</span>
-                            </p>
+                            <p>{{{move_content_html}}}</p>
                         </div>
                         {{/if}}
                         {{#if body_to_render}}
