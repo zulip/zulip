@@ -34,7 +34,7 @@ function two_column_mode(): boolean {
     return Number.parseInt($("#settings_content").css("--column-count"), 10) === 2;
 }
 
-function set_settings_header(key: string): void {
+function set_settings_header($elem: JQuery, key: string): void {
     const selected_tab_key = $("#settings_page .tab-switcher .selected").attr("data-tab-key");
     let header_prefix = $t_html({defaultMessage: "Personal settings"});
     if (selected_tab_key === "organization") {
@@ -42,9 +42,7 @@ function set_settings_header(key: string): void {
     }
     $(".settings-header h1 .header-prefix").text(header_prefix);
 
-    const header_text = $(
-        `#settings_page .sidebar-list [data-section='${CSS.escape(key)}'] .text`,
-    ).text();
+    const header_text = $elem.find(`[data-section='${CSS.escape(key)}'] .text`).text();
     if (header_text) {
         $(".settings-header h1 .section").text(" / " + header_text);
     } else {
@@ -60,20 +58,26 @@ function set_settings_header(key: string): void {
 export class SettingsPanelMenu {
     $main_elem: JQuery;
     hash_prefix: string;
+    base: string;
     $curr_li: JQuery;
     current_tab: string;
     current_user_settings_tab: string | undefined;
-    current_bot_settings_tab: string | undefined;
+    current_bot_settings_tab: Record<string, string>;
     org_user_settings_toggler: Toggle;
     org_bot_settings_toggler: Toggle;
+    personal_bot_settings_toggler: Toggle;
 
     constructor(opts: {$main_elem: JQuery; hash_prefix: string}) {
         this.$main_elem = opts.$main_elem;
         this.hash_prefix = opts.hash_prefix;
+        this.base = opts.hash_prefix === "settings/" ? "settings" : "organization";
         this.$curr_li = this.$main_elem.children("li").eq(0);
         this.current_tab = this.$curr_li.attr("data-section")!;
         this.current_user_settings_tab = "active";
-        this.current_bot_settings_tab = "all-bots";
+        this.current_bot_settings_tab = {
+            org: "all-bots",
+            personal: "your-bots",
+        };
         this.org_user_settings_toggler = components.toggle({
             html_class: "org-user-settings-switcher",
             child_wants_focus: true,
@@ -98,28 +102,8 @@ export class SettingsPanelMenu {
             },
         });
 
-        this.org_bot_settings_toggler = components.toggle({
-            html_class: "org-bot-settings-switcher",
-            child_wants_focus: true,
-            values: [
-                {label: $t({defaultMessage: "All bots"}), key: "all-bots"},
-                {
-                    label: $t({defaultMessage: "Your bots"}),
-                    key: "your-bots",
-                },
-            ],
-            callback: (_name, key) => {
-                browser_history.update(`#organization/bots/${key}`);
-                this.set_bot_settings_tab(key);
-                $(".bot-settings-section").hide();
-                if (key === "all-bots") {
-                    redraw_all_bots_list();
-                } else if (key === "your-bots") {
-                    redraw_your_bots_list();
-                }
-                $(`[data-bot-settings-section="${CSS.escape(key)}"]`).show();
-            },
-        });
+        this.org_bot_settings_toggler = this.set_up_bot_settings_toggler("org");
+        this.personal_bot_settings_toggler = this.set_up_bot_settings_toggler("personal");
 
         this.$main_elem.on("click", "li[data-section]", (e) => {
             const section = $(e.currentTarget).attr("data-section")!;
@@ -130,6 +114,31 @@ export class SettingsPanelMenu {
             // not to this click handler.
 
             e.stopPropagation();
+        });
+    }
+
+    set_up_bot_settings_toggler(prefix: string): Toggle {
+        return components.toggle({
+            html_class: `${prefix}-bot-settings-switcher`,
+            child_wants_focus: true,
+            values: [
+                {label: $t({defaultMessage: "All bots"}), key: "all-bots"},
+                {
+                    label: $t({defaultMessage: "Your bots"}),
+                    key: "your-bots",
+                },
+            ],
+            callback: (_name, key) => {
+                browser_history.update(`#${this.base}/bots/${key}`);
+                this.set_bot_settings_tab(key, prefix);
+                $(".bot-settings-section").hide();
+                if (key === "all-bots") {
+                    redraw_all_bots_list();
+                } else if (key === "your-bots") {
+                    redraw_your_bots_list();
+                }
+                $(`[data-bot-settings-section="${CSS.escape(key)}"]`).show();
+            },
         });
     }
 
@@ -155,15 +164,15 @@ export class SettingsPanelMenu {
         }
     }
 
-    show_org_bot_settings_toggler(): void {
-        if ($("#admin-bot-list").find(".tab-switcher").length === 0) {
-            const toggler_html = util.the(this.org_bot_settings_toggler.get());
-            $("#admin-bot-list .tab-container").html(toggler_html);
+    show_bot_settings_toggler(toggler: Toggle, $container: JQuery): void {
+        if ($container.find(".tab-switcher").length === 0) {
+            const toggler_html = util.the(toggler.get());
+            $container.find(".tab-container").html(toggler_html);
 
             // We need to re-register these handlers since they are
             // destroyed once the settings modal closes.
-            this.org_bot_settings_toggler.register_event_handlers();
-            this.set_key_handlers(this.org_bot_settings_toggler, $(".org-bot-settings-switcher"));
+            toggler.register_event_handlers();
+            this.set_key_handlers(toggler, $container.find(".tab-switcher"));
         }
     }
 
@@ -172,7 +181,7 @@ export class SettingsPanelMenu {
     }
 
     li_for_section(section: string): JQuery {
-        const $li = $(`#settings_overlay_container li[data-section='${CSS.escape(section)}']`);
+        const $li = this.$main_elem.find(`li[data-section='${CSS.escape(section)}']`);
         return $li;
     }
 
@@ -226,8 +235,8 @@ export class SettingsPanelMenu {
         this.current_user_settings_tab = tab;
     }
 
-    set_bot_settings_tab(tab: string | undefined): void {
-        this.current_bot_settings_tab = tab;
+    set_bot_settings_tab(tab: string, prefix: string): void {
+        this.current_bot_settings_tab[prefix] = tab;
     }
 
     get_settings_tab(section: string): string | undefined {
@@ -236,7 +245,10 @@ export class SettingsPanelMenu {
         }
 
         if (section === "bots") {
-            return this.current_bot_settings_tab;
+            if (this.base === "organization") {
+                return this.current_bot_settings_tab["org"];
+            }
+            return this.current_bot_settings_tab["personal"];
         }
 
         return undefined;
@@ -287,15 +299,26 @@ export class SettingsPanelMenu {
             this.org_user_settings_toggler.goto(settings_tab);
         }
 
-        if (section === "bots" && this.org_bot_settings_toggler !== undefined) {
-            assert(settings_tab !== undefined);
-            this.show_org_bot_settings_toggler();
-            this.org_bot_settings_toggler.goto(settings_tab);
+        if (section === "bots") {
+            if (this.org_bot_settings_toggler !== undefined && this.base === "organization") {
+                assert(settings_tab !== undefined);
+                this.show_bot_settings_toggler(this.org_bot_settings_toggler, $("#admin-bot-list"));
+                this.org_bot_settings_toggler.goto(settings_tab);
+            }
+
+            if (this.personal_bot_settings_toggler !== undefined && this.base === "settings") {
+                assert(settings_tab !== undefined);
+                this.show_bot_settings_toggler(
+                    this.personal_bot_settings_toggler,
+                    $("#personal-bot-list"),
+                );
+                this.personal_bot_settings_toggler.goto(settings_tab);
+            }
         }
 
         $(".settings-section").removeClass("show");
 
-        settings_sections.load_settings_section(section);
+        settings_sections.load_settings_section(section, this.base);
 
         this.get_panel().addClass("show");
 
@@ -305,14 +328,14 @@ export class SettingsPanelMenu {
             mobile_activate_section();
         }
 
-        set_settings_header(section);
+        set_settings_header(this.$main_elem, section);
         resize_textareas_in_section(this.get_panel());
     }
 
     get_panel(): JQuery {
         const section = this.$curr_li.attr("data-section")!;
         const sel = `[data-name='${CSS.escape(section)}']`;
-        const $panel = $(".settings-section" + sel);
+        const $panel = $(`.${CSS.escape(this.base)}-box`).find(".settings-section" + sel);
         return $panel;
     }
 }

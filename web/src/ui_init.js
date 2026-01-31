@@ -505,6 +505,11 @@ export async function initialize_everything(state_data) {
     await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
 
+    // Must happen after people.initialize(). And also before
+    // settings.initialize(), as we check if the user owns any
+    // bot to show the lock icon for "Bots" panel
+    bot_data.initialize(state_data.bot);
+
     // The emoji module must be initialized before the right sidebar
     // module, so that we can display custom emoji in statuses.
     emoji.initialize({
@@ -643,7 +648,6 @@ export async function initialize_everything(state_data) {
     drafts.initialize(); // Must happen before reload_setup.initialize()
     reload_setup.initialize();
     unread.initialize(state_data.unread);
-    bot_data.initialize(state_data.bot); // Must happen after people.initialize()
     message_fetch.initialize(() => {
         recent_view_ui.set_initial_message_fetch_status(false);
         recent_view_ui.revive_current_focus();
