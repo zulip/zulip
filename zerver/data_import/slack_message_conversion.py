@@ -1,4 +1,4 @@
-import json
+import contextlib
 import re
 from datetime import datetime, timezone
 from itertools import zip_longest
@@ -18,7 +18,6 @@ from zerver.lib.validator import (
     check_string,
     check_string_in,
     check_url,
-    to_wild_value,
 )
 
 # stubs
@@ -255,29 +254,23 @@ def convert_to_zulip_markdown(
     return text, mentioned_users_id, message_has_link
 
 
-def render_block(block: WildValue) -> str:
-    # https://api.slack.com/reference/block-kit/blocks
-    block_type = block["type"].tame(
-        check_string_in(
-            [
-                "actions",
-                "context",
-                "call",
-                "contact_card",
-                "condition",
-                "divider",
-                "file",
-                "header",
-                "image",
-                "input",
-                "section",
-                "table",
-                "rich_text",
-            ]
-        )
-    )
+class LossyConversionError(Exception):
+    pass
 
-    unhandled_types = [
+
+def render_block(block: WildValue) -> str:
+    """
+    Raises `LossyConversionError` if it's a rich_text block type.
+    """
+    # https://api.slack.com/reference/block-kit/blocks
+    supported_types = {
+        "context",
+        "divider",
+        "header",
+        "image",
+        "section",
+    }
+    unhandled_types = {
         # `call` is a block type we've observed in the wild in a Slack export,
         # despite not being documented in
         # https://docs.slack.dev/reference/block-kit/blocks/
@@ -285,6 +278,7 @@ def render_block(block: WildValue) -> str:
         # probably it would be worth replacing with a string indicating a Slack
         # call occurred.
         "call",
+        "condition",
         "contact_card",
         "file",
         "table",
@@ -292,16 +286,25 @@ def render_block(block: WildValue) -> str:
         # buttons and similar elements, which Zulip currently doesn't support.
         # https://docs.slack.dev/reference/block-kit/blocks/actions-block
         "actions",
-        # All user-sent messages contain at least a "block" component with a
-        # "rich_text" block. This block contains the same string as the "text"
-        # field. We're skipping this because the Slack import tool already
-        # handles the "text" field and the Slack incoming integration
-        # overrides it.
-        # https://docs.slack.dev/reference/block-kit/blocks/rich-text-block/
+        "input",
+    }
+    known_types = {
+        *supported_types,
+        *unhandled_types,
+        # rich_text is a special case, it's responsible for very basic text
+        # formatting --such as plain text, bold, italic, etc--, so it's
+        # potentially used to compose the bulk of a message body. Adding
+        # support to process this block type means building another Slack
+        # text reformatter, so for now an Exception is raised to let the
+        # caller decide what to do.
         "rich_text",
-    ]
+    }
+    block_type = block["type"].tame(check_string_in(known_types))
+
     if block_type in unhandled_types:
         return ""
+    elif block_type == "rich_text":
+        raise LossyConversionError
     elif block_type == "context" and block.get("elements"):
         pieces = []
         # Slack renders these pieces left-to-right, packed in as
@@ -324,9 +327,6 @@ def render_block(block: WildValue) -> str:
         if "title" in block:
             alt_text = block["title"].tame(check_text_block(plain_text_only=True))["text"]
         return f"[{alt_text}]({image_url})"
-    elif block_type == "input":
-        # Unhandled
-        pass
     elif block_type == "section":
         pieces = []
         if "text" in block:
@@ -359,7 +359,7 @@ def render_block(block: WildValue) -> str:
 
         return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
-    return ""
+    return ""  # nocoverage
 
 
 class TextField(TypedDict):
@@ -435,7 +435,9 @@ def render_attachment(attachment: WildValue) -> str:
                 fields.append(f"{value}")
         pieces.append("\n".join(fields))
     if attachment.get("blocks"):
-        pieces += map(render_block, attachment["blocks"])
+        for block in attachment["blocks"]:
+            with contextlib.suppress(LossyConversionError):  # nocoverage
+                pieces.append(render_block(block))
     if image_url_wv := attachment.get("image_url"):
         try:
             image_url = image_url_wv.tame(check_url)
@@ -470,13 +472,23 @@ def replace_links(text: str) -> str:
     return text
 
 
-def process_slack_block_and_attachment(message: ZerverFieldsT) -> str:
-    slack_message: WildValue = to_wild_value("slack_message", json.dumps(message))
+def process_slack_block_and_attachment(message: WildValue) -> str:
     pieces: list[str] = []
+    raw_text = message["text"].tame(check_string)
 
-    if slack_message.get("blocks"):
-        pieces += map(render_block, slack_message["blocks"])
+    if message.get("blocks"):
+        try:
+            pieces += map(render_block, message["blocks"])
+        except LossyConversionError:
+            # rich_text is used for very basic text formatting and the Slack
+            # text reformatting functions can't be reused for this.
+            pieces.append(raw_text)
 
-    if slack_message.get("attachments"):
-        pieces += map(render_attachment, slack_message["attachments"])
+    if set(pieces) in ({""}, set()):
+        pieces.append(raw_text)
+
+    # The attachments are a lot safer to handle than the blocks since they typically
+    # don't have a corresponding raw value in message["text"] and only add to it.
+    if message.get("attachments"):
+        pieces += map(render_attachment, message["attachments"])
     return "\n".join(piece.strip() for piece in pieces if piece.strip() != "")
