@@ -2822,6 +2822,12 @@ class SAMLAuthBackendTest(SocialAuthBase):
             email=self.example_email("hamlet"), name="King Hamlet"
         )
 
+        # These are from the fixture
+        got_idps = [
+            "http://www.okta.com/exk1da4osrIL3Y7ip357",
+            "https://idp.testshib.org/idp/shibboleth",
+        ]
+
         # We change the entity_id of the configured test IdP, which means it won't match
         # the Entity ID in the SAMLResponse generated above.
         idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
@@ -2836,7 +2842,8 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 m.output,
                 [
                     self.logger_output(
-                        "/complete/saml/: No valid IdP as issuer of the SAMLResponse.", "info"
+                        f"/complete/saml/: No valid IdP found as issuer of the SAMLResponse; got {got_idps}",
+                        "info",
                     )
                 ],
             )
@@ -2870,7 +2877,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             m.output,
             [
                 "ERROR:zulip.auth.saml:Error parsing SAMLResponse: Issuer of the Assertion not found or multiple.",
-                "INFO:zulip.auth.saml:/complete/saml/: No valid IdP as issuer of the SAMLResponse.",
+                "INFO:zulip.auth.saml:/complete/saml/: No IdP issuers in SAMLResponse (parse failure?)",
             ],
         )
 
@@ -2898,7 +2905,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertIn("login", result["Location"])
 
-        self.assert_length(m.output, 3)
+        self.assert_length(m.output, 2)
 
     def test_social_auth_saml_bad_idp_param_on_login_page(self) -> None:
         with self.assertLogs(self.logger_string, level="INFO") as m:
