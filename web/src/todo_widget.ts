@@ -29,7 +29,7 @@ export type TodoWidgetExtraData = z.infer<typeof todo_widget_extra_data_schema>;
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
-        type: z.enum(["new_task", "new_task_list_title", "strike"]),
+        type: z.enum(["new_task", "new_task_list_title", "strike", "delete_task"]),
     }),
     z.record(z.string(), z.unknown()),
 );
@@ -58,9 +58,15 @@ type TaskStrikeOutboundData = {
     key: string;
 };
 
+type DeleteTaskOutboundData = {
+    type: "delete_task";
+    key: string;
+};
+
 type TodoTask = {
     task: string;
     desc: string;
+    key: string;
 };
 
 type Task = {
@@ -74,7 +80,8 @@ type Task = {
 export type TodoWidgetOutboundData =
     | NewTaskTitleOutboundData
     | NewTaskOutboundData
-    | TaskStrikeOutboundData;
+    | TaskStrikeOutboundData
+    | DeleteTaskOutboundData;
 
 export class TaskData {
     message_sender_id: number;
@@ -217,6 +224,61 @@ export class TaskData {
                 item.completed = !item.completed;
             },
         },
+        delete_task: {
+            outbound: (key: string): TodoWidgetOutboundData | undefined => {
+                const event = {
+                    type: "delete_task" as const,
+                    key,
+                };
+
+                if (this.is_my_task_list) {
+                    return event;
+                }
+                return undefined;
+            },
+
+            inbound: (sender_id: number, raw_data: unknown): void => {
+                const delete_task_inbound_data = z.object({
+                    type: z.literal("delete_task"),
+                    key: z.string(),
+                });
+
+                const parsed = delete_task_inbound_data.safeParse(raw_data);
+
+                if (!parsed.success) {
+                    this.report_error_function("todo widget: bad type for inbound delete task", {
+                        error: parsed.error,
+                    });
+                    return;
+                }
+
+                if (sender_id !== this.message_sender_id) {
+                    this.report_error_function(`user ${sender_id} is not allowed to delete tasks`);
+                    return;
+                }
+
+                if (
+                    typeof parsed.data !== "object" ||
+                    parsed.data === null ||
+                    !("key" in parsed.data) ||
+                    typeof parsed.data.key !== "string"
+                ) {
+                    return;
+                }
+
+                const k = parsed.data.key;
+                const t = this.task_map.get(k);
+                if (!t) {
+                    blueslip.warn("todo widget: attempted to delete non-existent task", {
+                        key: k,
+                        message_sender_id: this.message_sender_id,
+                        sender_id,
+                    });
+                    return;
+                }
+                this.remove_task(k);
+            },
+        },
     };
 
     constructor({
@@ -255,6 +317,9 @@ export class TaskData {
                 completed: false,
             });
         }
+    }
+    remove_task(key: string): void {
+        this.task_map.delete(key);
     }
 
     set_task_list_title(new_title: string): void {
@@ -330,12 +395,16 @@ export function activate({
     assert(any_data.widget_type === "todo");
     const {task_list_title = "", tasks = []} = any_data.extra_data ?? {};
     const is_my_task_list = people.is_my_user_id(message.sender_id);
+    const tasks_with_keys: TodoTask[] = tasks.map((task, idx) => ({
+        ...task,
+        key: `canned,${idx}`,
+    }));
     const task_data = new TaskData({
         message_sender_id: message.sender_id,
         current_user_id: people.my_current_user_id(),
         is_my_task_list,
         task_list_title,
-        tasks,
+        tasks: tasks_with_keys,
         report_error_function: blueslip.warn,
     });
     const message_container = message_lists.current?.view.message_containers.get(message.id);
@@ -531,6 +600,21 @@ export function activate({
 
             const data = task_data.handle.strike.outbound(key);
             callback(data);
+        });
+        $elem.find(".todo-task-delete").on("click", (e) => {
+            e.stopPropagation();
+
+            if (page_params.is_spectator) {
+                return;
+            }
+
+            const key = $(e.currentTarget).attr("data-key");
+            assert(key !== undefined);
+
+            const data = task_data.handle.delete_task.outbound(key);
+            if (data) {
+                callback(data);
+            }
         });
 
         update_add_task_button();
