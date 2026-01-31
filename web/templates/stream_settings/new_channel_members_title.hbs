@@ -1,0 +1,8 @@
+<span>
+    {{t "Add subscribers to "}}
+    {{> stream_privacy_icon
+      invite_only=sub.invite_only
+      is_web_public=sub.is_web_public
+      is_archived=sub.is_archived }}
+    <span class="stream-name-title">{{sub.name}}</span>
+</span>
