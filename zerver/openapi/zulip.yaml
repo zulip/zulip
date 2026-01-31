@@ -3533,6 +3533,11 @@ paths:
                                       description: |
                                         The new description of the group. Only present if the description
                                         changed.
+                                    rendered_description_html:
+                                      type: string
+                                      description: |
+                                        The new rendered description of the group, as HTML. Only present if the
+                                        description changed.
                                     can_add_members_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -24311,6 +24316,10 @@ paths:
                               type: string
                               description: |
                                 The human-readable description of the user group.
+                            rendered_description_html:
+                              type: string
+                              description: |
+                                The description of the user group, rendered as HTML.
                             id:
                               type: integer
                               description: |
@@ -26201,6 +26210,10 @@ components:
           type: string
           description: |
             The description of the user group.
+        rendered_description_html:
+          type: string
+          description: |
+            The description of the user group, rendered as HTML.
         members:
           type: array
           items:
