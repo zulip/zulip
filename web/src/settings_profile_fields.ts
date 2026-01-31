@@ -47,6 +47,7 @@ function setup_external_accounts_dropdown_widget(): void {
     const custom_option = {
         name: $t_html({defaultMessage: "Custom"}),
         unique_id: "custom",
+        is_option_styled: true,
     };
 
     function get_options_for_external_accounts_dropdown_widget(): Option[] {

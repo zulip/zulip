@@ -27,27 +27,31 @@
             </span>
         </a>
         {{else}}
-        <a class="dropdown-list-item-common-styles {{#if is_setting_disabled}}setting-disabled-option{{/if}}">
+        <a class="dropdown-list-item-common-styles {{#if is_setting_disabled}}setting-disabled-option setting-styled-option{{/if}} {{#if is_option_styled}}setting-styled-option{{/if}}">
             {{#if stream}}
                 {{> inline_decorated_channel_name stream=stream show_colored_icon=true}}
             {{else if is_direct_message}}
                 <i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i> <span class="decorated-dm-name">{{name}}</span>
             {{else if is_setting_disabled}}
-                {{#if show_disabled_icon}}
-                    <i class="setting-disabled-option-icon zulip-icon zulip-icon-deactivated-circle" aria-hidden="true"></i>
-                {{/if}}
+                <i class="setting-disabled-option-icon setting-styled-option-icon zulip-icon zulip-icon-deactivated-circle" aria-hidden="true"></i>
                 {{#if show_disabled_option_name}}
                     {{#if bold_current_selection}}
-                        <span class="setting-disabled-option-text dropdown-list-text-selected">{{name}}</span>
+                        <span class="setting-disabled-option-text setting-styled-option-text dropdown-list-text-selected">{{name}}</span>
                     {{else}}
-                        <span class="setting-disabled-option-text dropdown-list-text-neutral">{{name}}</span>
+                        <span class="setting-disabled-option-text setting-styled-option-text dropdown-list-text-neutral">{{name}}</span>
                     {{/if}}
                 {{else}}
                     {{#if bold_current_selection}}
-                        <span class="setting-disabled-option-text dropdown-list-text-selected">{{t "Disable" }}</span>
+                        <span class="setting-disabled-option-text setting-styled-option-text dropdown-list-text-selected">{{t "Disable" }}</span>
                     {{else}}
-                        <span class="setting-disabled-option-text dropdown-list-text-neutral">{{t "Disable" }}</span>
+                        <span class="setting-disabled-option-text setting-styled-option-text dropdown-list-text-neutral">{{t "Disable" }}</span>
                     {{/if}}
+                {{/if}}
+            {{else if is_option_styled}}
+                {{#if bold_current_selection}}
+                    <span class="setting-styled-option-text dropdown-list-text-selected">{{name}}</span>
+                {{else}}
+                    <span class="setting-styled-option-text dropdown-list-text-neutral">{{name}}</span>
                 {{/if}}
             {{else if (eq unique_id -2)}}
                 {{!-- This is the option for PresetUrlOption.CHANNEL_MAPPING --}}
