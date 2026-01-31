@@ -193,6 +193,7 @@ run_test("misc_helpers", ({override}) => {
 run_test("message_inline_video", () => {
     const $content = get_content_element();
     const $elem = $.create("message_inline_video");
+    const original_gesture_event = window.GestureEvent;
 
     let load_called = false;
     $elem.load = () => {
@@ -203,7 +204,12 @@ run_test("message_inline_video", () => {
     window.GestureEvent = true;
     rm.update_elements($content);
     assert.equal(load_called, true);
-    window.GestureEvent = false;
+    if (original_gesture_event === undefined) {
+        // Remove the property so util.is_client_safari() returns false.
+        delete window.GestureEvent;
+    } else {
+        window.GestureEvent = original_gesture_event;
+    }
 });
 
 run_test("message_inline_video_unsupported_format", () => {

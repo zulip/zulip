@@ -10,6 +10,7 @@ EXTRA_MIME_TYPES = [
     ("audio/wav", ".wav"),
     ("audio/webm", ".weba"),
     ("image/apng", ".apng"),
+    ("video/quicktime", ".mov"),
 ]
 
 if sys.version_info < (3, 11):  # nocoverage
