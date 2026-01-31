@@ -18,7 +18,7 @@ const stream_data = zrequire("stream_data");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = make_realm();
+const realm = make_realm({realm_empty_topic_display_name: "general chat"});
 set_realm(realm);
 
 function stub_pills() {
@@ -172,6 +172,88 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
+        }
+
+        {
+            let search_suggestions = {
+                lookup_table: new Map([
+                    [
+                        "topic:",
+                        {
+                            description_html: `Topic`,
+                            search_string: "topic:",
+                        },
+                    ],
+                    [
+                        "top",
+                        {
+                            description_html: "Search for top",
+                            search_string: "top",
+                        },
+                    ],
+                ]),
+                strings: ["top", "topic:"],
+            };
+
+            /* Test source */
+            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
+            let expected_source_value = search_suggestions.strings;
+            let source = opts.source("top");
+            assert.deepStrictEqual(source, expected_source_value);
+
+            /* Test topic autocomplete suggestion */
+            let description_html = "Search for top";
+            let expected_value = `<div class="search_list_item">\n            <div class="description">${description_html}</div>\n    \n</div>\n`;
+            assert.equal(opts.item_html(source[0], "top"), expected_value);
+
+            let search_string = "topic:";
+            description_html = "Topic";
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            ${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
+            assert.equal(opts.item_html(source[1], "top"), expected_value);
+
+            /* Test sorter */
+            assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
+
+            search_suggestions = {
+                lookup_table: new Map([
+                    [
+                        "topic:",
+                        {
+                            description_html: `Topic <span class="empty-topic-display">general chat</span>`,
+                            search_string: "topic:",
+                        },
+                    ],
+                ]),
+                strings: ["topic:"],
+            };
+
+            expected_source_value = search_suggestions.strings;
+            source = opts.source("topic:");
+            assert.deepStrictEqual(source, expected_source_value);
+
+            /* Test topic empty operand suggestion */
+            description_html = `Topic <span class="empty-topic-display">general chat</span>`;
+            search_string = `topic:<span class="empty-topic-display"> translated: general chat</span>`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            ${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
+            assert.equal(opts.item_html(source[0], "topic:"), expected_value);
+
+            search_suggestions = {
+                lookup_table: new Map([
+                    [
+                        "topic: zo",
+                        {
+                            description_html: undefined,
+                            search_string: "topic: zo",
+                        },
+                    ],
+                ]),
+                strings: ["topic: zo"],
+            };
+
+            /* Test topic empty operand suggestion */
+            source = opts.source("topic: zo");
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            topic:<span class="empty-topic-display"> translated: general chat</span>\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n                    <div class="description">search for zo</div>\n    \n</div>\n`;
+            assert.equal(opts.item_html(source[0], "zo"), expected_value);
         }
 
         {
