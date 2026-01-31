@@ -1008,7 +1008,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_subscription[1]["recipient"], zerver_subscription[3]["recipient"])
         self.assertEqual(zerver_subscription[1]["pin_to_top"], False)
 
-    def test_channels_to_zerver_stream(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_channels_to_zerver_stream_using_personal_recipient(self) -> None:
         slack_user_id_to_zulip_user_id = {
             "U061A1R2R": 1,
             "U061A3E0G": 8,
@@ -1116,7 +1117,6 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(self.get_set(realm["zerver_huddle"], "id"), {0, 1, 2})
         self.assertEqual(realm["zerver_userpresence"], [])
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_channels_to_zerver_stream_using_direct_message_group(self) -> None:
         slack_user_id_to_zulip_user_id = {
             "U061A1R2R": 1,
@@ -1332,7 +1332,10 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_usermessage[3]["message"], message_id)
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
-    def test_channel_message_to_zerver_message(self, mock_build_usermessage: mock.Mock) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_channel_message_to_zerver_message_using_personal_recipient(
+        self, mock_build_usermessage: mock.Mock
+    ) -> None:
         user_data = [
             {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
             {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
@@ -1586,7 +1589,6 @@ class SlackImporter(ZulipTestCase):
         self.assertTrue(zerver_message[9]["content"].startswith("Look!\n[Apple](/user_uploads/"))
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_channel_message_to_zerver_message_using_direct_message_group(
         self, mock_build_usermessage: mock.Mock
     ) -> None:

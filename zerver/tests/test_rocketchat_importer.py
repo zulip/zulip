@@ -204,6 +204,7 @@ class RocketChatImporter(ZulipTestCase):
         expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
         self.assertEqual(error_message, expected_error_message)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_categorize_channels_and_map_with_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -450,6 +451,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assert_length(subscriber_handler.get_users(stream_id=zerver_stream[6]["id"]), 0)
         self.assertFalse(zerver_stream[6]["deactivated"])
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_convert_direct_message_group_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -507,7 +509,6 @@ class RocketChatImporter(ZulipTestCase):
             subscriber_handler.get_users(direct_message_group_id=direct_message_group_id), {3, 4, 5}
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_convert_direct_message_group_data_without_personal_recipient(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -613,6 +614,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(records_json[2]["realm_id"], 3)
         self.assertTrue(os.path.isfile(os.path.join(output_dir, "emoji", records_json[2]["path"])))
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_map_receiver_id_to_recipient_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -715,6 +717,7 @@ class RocketChatImporter(ZulipTestCase):
             zerver_recipient[12]["id"],
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_separate_channel_private_and_livechat_messages(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -972,7 +975,8 @@ class RocketChatImporter(ZulipTestCase):
         with open(full_path, "rb") as f:
             return orjson.loads(f.read())
 
-    def test_do_convert_data(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_do_convert_data_using_personal_recipient(self) -> None:
         rocketchat_data_dir = self.fixture_file_name("", "rocketchat_fixtures")
         output_dir = self.make_import_output_dir("rocketchat")
 

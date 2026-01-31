@@ -327,6 +327,7 @@ class GetEventsTest(ZulipTestCase):
         email = user_profile.email
         recipient_user_profile = self.example_user("othello")
         recipient_email = recipient_user_profile.email
+        recipient = self.get_dm_group_recipient(user_profile, recipient_user_profile)
         self.login_user(user_profile)
 
         result = self.tornado_call(
@@ -402,7 +403,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["local_message_id"], local_id)
         self.assertEqual(events[0]["message"]["display_recipient"][0]["is_mirror_dummy"], False)
         self.assertEqual(events[0]["message"]["display_recipient"][1]["is_mirror_dummy"], False)
-        self.assertEqual(events[0]["message"]["recipient_id"], recipient_user_profile.recipient_id)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient.id)
 
         last_event_id = events[0]["id"]
         local_id = "10.02"
@@ -435,7 +436,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
-        self.assertEqual(events[0]["message"]["recipient_id"], recipient_user_profile.recipient_id)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient.id)
 
         # Test that the received message in the receiver's event queue
         # exists and does not contain a local id
@@ -456,11 +457,11 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(recipient_events[0]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[0])
         # Incoming DMs show the recipient_id that outgoing DMs would.
-        self.assertEqual(recipient_events[0]["message"]["recipient_id"], user_profile.recipient_id)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient.id)
         self.assertEqual(recipient_events[1]["type"], "message")
         self.assertEqual(recipient_events[1]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[1])
-        self.assertEqual(recipient_events[1]["message"]["recipient_id"], user_profile.recipient_id)
+        self.assertEqual(recipient_events[1]["message"]["recipient_id"], recipient.id)
 
     def test_get_events_narrow(self) -> None:
         user_profile = self.example_user("hamlet")
