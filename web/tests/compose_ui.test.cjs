@@ -1328,7 +1328,7 @@ run_test("get_focus_area", ({ override }) => {
     );
 });
 
-run_test("handle_indent_or_outdent - bulleted lists", ({ override_rewire }) => {
+run_test("handle_indent_or_outdent - bulleted lists", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -1338,8 +1338,8 @@ run_test("handle_indent_or_outdent - bulleted lists", ({ override_rewire }) => {
         },
     );
 
-    override_rewire(compose_ui, "cursor_inside_code_block", () => false);
-    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+    override(compose_ui, "cursor_inside_code_block", () => false);
+    override(compose_ui, "cursor_inside_inline_code_span", () => false);
 
     // Test indenting a single bulleted list item
     init_textarea_state("- item 1\n- |item 2");
@@ -1362,7 +1362,7 @@ run_test("handle_indent_or_outdent - bulleted lists", ({ override_rewire }) => {
     assert.equal($textarea.val(), "- item 1");
 });
 
-run_test("handle_indent_or_outdent - numbered lists", ({ override_rewire }) => {
+run_test("handle_indent_or_outdent - numbered lists", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -1372,8 +1372,8 @@ run_test("handle_indent_or_outdent - numbered lists", ({ override_rewire }) => {
         },
     );
 
-    override_rewire(compose_ui, "cursor_inside_code_block", () => false);
-    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+    override(compose_ui, "cursor_inside_code_block", () => false);
+    override(compose_ui, "cursor_inside_inline_code_span", () => false);
 
     // Test indenting a numbered list item
     init_textarea_state("1. item 1\n2. |item 2");
@@ -1389,7 +1389,7 @@ run_test("handle_indent_or_outdent - numbered lists", ({ override_rewire }) => {
     assert.equal($textarea.val(), "1. item 1\n2. item 2");
 });
 
-run_test("handle_indent_or_outdent - multi-line selection", ({ override_rewire }) => {
+run_test("handle_indent_or_outdent - multi-line selection", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -1399,8 +1399,8 @@ run_test("handle_indent_or_outdent - multi-line selection", ({ override_rewire }
         },
     );
 
-    override_rewire(compose_ui, "cursor_inside_code_block", () => false);
-    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+    override(compose_ui, "cursor_inside_code_block", () => false);
+    override(compose_ui, "cursor_inside_inline_code_span", () => false);
 
     // Test indenting multiple list items
     init_textarea_state("<- item 1\n- item 2>\n- item 3");
@@ -1416,7 +1416,7 @@ run_test("handle_indent_or_outdent - multi-line selection", ({ override_rewire }
     assert.equal($textarea.val(), "- item 1\n- item 2\n- item 3");
 });
 
-run_test("handle_indent_or_outdent - non-list context", ({ override_rewire }) => {
+run_test("handle_indent_or_outdent - non-list context", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -1426,8 +1426,8 @@ run_test("handle_indent_or_outdent - non-list context", ({ override_rewire }) =>
         },
     );
 
-    override_rewire(compose_ui, "cursor_inside_code_block", () => false);
-    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+    override(compose_ui, "cursor_inside_code_block", () => false);
+    override(compose_ui, "cursor_inside_inline_code_span", () => false);
 
     // Test that Tab doesn't trigger on non-list text
     init_textarea_state("regular |text\nmore text");
@@ -1435,7 +1435,7 @@ run_test("handle_indent_or_outdent - non-list context", ({ override_rewire }) =>
     assert.ok(!result); // Should return false for non-list context
 });
 
-run_test("handle_indent_or_outdent - inside code block", ({ override_rewire }) => {
+run_test("handle_indent_or_outdent - inside code block", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -1446,8 +1446,8 @@ run_test("handle_indent_or_outdent - inside code block", ({ override_rewire }) =
     );
 
     // Mock being inside a code block
-    override_rewire(compose_ui, "cursor_inside_code_block", () => true);
-    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+    override(compose_ui, "cursor_inside_code_block", () => true);
+    override(compose_ui, "cursor_inside_inline_code_span", () => false);
 
     // Test that Tab doesn't trigger inside code blocks
     init_textarea_state("- |item 1");
@@ -1455,7 +1455,7 @@ run_test("handle_indent_or_outdent - inside code block", ({ override_rewire }) =
     assert.ok(!result); // Should return false inside code block
 });
 
-run_test("handle_indent_or_outdent - mixed list markers", ({ override_rewire }) => {
+run_test("handle_indent_or_outdent - mixed list markers", ({ override, override_rewire }) => {
     override_rewire(
         compose_ui,
         "insert_and_scroll_into_view",
@@ -1465,8 +1465,8 @@ run_test("handle_indent_or_outdent - mixed list markers", ({ override_rewire }) 
         },
     );
 
-    override_rewire(compose_ui, "cursor_inside_code_block", () => false);
-    override_rewire(compose_ui, "cursor_inside_inline_code_span", () => false);
+    override(compose_ui, "cursor_inside_code_block", () => false);
+    override(compose_ui, "cursor_inside_inline_code_span", () => false);
 
     // Test with different bullet markers (-, *, +)
     init_textarea_state("<- item 1\n* item 2\n+ item 3>");
