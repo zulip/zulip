@@ -1160,12 +1160,11 @@ def api_github_webhook(
     body = body_function(helper)
 
     sent_message_id = check_send_webhook_message(request, user_profile, topic_name, body, event)
+    should_auto_resolve = (event == "closed_pull_request") or (
+        event == "issues" and payload.get("action", "").tame(check_string) == "closed"
+    )
 
-    if (
-        event == "closed_pull_request"
-        and user_specified_topic is None
-        and sent_message_id is not None
-    ):
+    if should_auto_resolve and user_specified_topic is None and sent_message_id is not None:
         transaction.on_commit(
             lambda: maybe_auto_resolve_topic(
                 user_profile=user_profile,
