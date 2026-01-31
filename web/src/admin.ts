@@ -106,6 +106,7 @@ function insert_tip_box(): void {
         .not("#admin-user-list")
         .not("#admin-active-users-list")
         .not("#admin-deactivated-users-list")
+        .not("#admin-imported-users-list")
         .prepend($(tip_box_html));
 }
 
@@ -288,6 +289,8 @@ export function build_page(): void {
         active_user_list_dropdown_widget_name: settings_users.active_user_list_dropdown_widget_name,
         deactivated_user_list_dropdown_widget_name:
             settings_users.deactivated_user_list_dropdown_widget_name,
+        imported_user_list_dropdown_widget_name:
+            settings_users.imported_user_list_dropdown_widget_name,
         gif_help_link,
         ...get_realm_level_notification_settings(),
         all_bots_list_dropdown_widget_name: settings_bots.all_bots_list_dropdown_widget_name,
