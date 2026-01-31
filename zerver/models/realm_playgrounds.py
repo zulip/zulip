@@ -18,6 +18,8 @@ class RealmPlayground(models.Model):
 
     MAX_PYGMENTS_LANGUAGE_LENGTH = 40
 
+    RESTRICTED_KEYWORDS = {"latex", "math", "quote", "spoiler"}
+
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     url_template = models.TextField(validators=[url_template_validator])
 
@@ -33,7 +35,7 @@ class RealmPlayground(models.Model):
         # language in the code block.
         validators=[
             RegexValidator(
-                regex=r"^[ a-zA-Z0-9_+-./#]*$", message=_("Invalid characters in pygments language")
+                regex=r"^[a-zA-Z0-9_+-./#]*$", message=_("Invalid characters in pygments language")
             )
         ],
     )
