@@ -13,6 +13,7 @@ import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as inbox_ui from "./inbox_ui.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view from "./message_view.ts";
@@ -170,6 +171,8 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         name(value) {
             stream_settings_ui.update_stream_name(sub, value);
             compose_recipient.possibly_update_stream_name_in_compose(sub.stream_id);
+            inbox_ui.complete_rerender();
+            recent_view_ui.complete_rerender();
         },
         description(value) {
             assert(other_values !== undefined);
@@ -191,6 +194,8 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
                 is_web_public: other_values.is_web_public,
             });
             compose_recipient.on_compose_select_recipient_update();
+            inbox_ui.complete_rerender();
+            recent_view_ui.complete_rerender();
         },
         message_retention_days(value) {
             stream_settings_ui.update_message_retention_setting(sub, value);
