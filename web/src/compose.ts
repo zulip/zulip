@@ -25,6 +25,7 @@ import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
+import * as topic_resolution_compose from "./topic_resolution_compose.ts";
 import * as transmit from "./transmit.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -47,6 +48,7 @@ export type SendMessageData = {
           type: "stream";
           stream_id: number;
           topic: string;
+          then_resolve_topic?: boolean;
       }
     | {
           type: "private";
@@ -152,6 +154,11 @@ export function send_message_success(
     echo.reify_message_id(sent_message.local_id, data.id);
     drafts.draft_model.deleteDrafts([sent_message.draft_id]);
 
+    // If this was a resolution message, clear the resolution state
+    if (topic_resolution_compose.has_pending_resolution()) {
+        topic_resolution_compose.clear_pending_resolution();
+    }
+
     if (sent_message.type === "stream") {
         if (data.automatic_new_visibility_policy) {
             if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
@@ -227,6 +234,10 @@ export let send_message = (): void => {
             stream_id,
             to: JSON.stringify([stream_id]),
             draft_id,
+            // If in resolution mode, include flag to resolve topic after message send
+            ...(topic_resolution_compose.has_pending_resolution() && {
+                then_resolve_topic: true,
+            }),
         };
     }
 
@@ -383,6 +394,10 @@ export let finish = (scheduling_message = false): boolean | undefined => {
         compose_ui.hide_compose_spinner();
         return false;
     }
+
+    // Note: If has_pending_resolution() is true, the message_data
+    // will include then_resolve_topic=true, and the server will
+    // resolve the topic after sending the message.
 
     if (scheduling_message) {
         schedule_message_to_custom_date();

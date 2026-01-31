@@ -48,6 +48,7 @@ import {realm} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
+import * as topic_resolution_compose from "./topic_resolution_compose.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as util from "./util.ts";
@@ -847,6 +848,14 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 pre_edit_topic,
                 post_edit_topic,
                 post_edit_stream_id,
+            );
+
+            // Check if concurrent resolution: if user is composing a resolution message
+            // for this topic and someone else just resolved it, silently exit compose mode.
+            topic_resolution_compose.check_and_cancel_if_topic_resolved(
+                old_stream_id,
+                pre_edit_topic,
+                post_edit_topic,
             );
         }
 

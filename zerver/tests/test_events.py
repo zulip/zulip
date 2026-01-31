@@ -4408,6 +4408,7 @@ class RealmPropertyActionTest(BaseAction):
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200, None],
             topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
             default_avatar_source=["G", "J"],
+            topic_resolution_message_requirement=Realm.TOPIC_RESOLUTION_MESSAGE_REQUIREMENT_TYPES,
         )
 
         vals = test_values.get(name)
