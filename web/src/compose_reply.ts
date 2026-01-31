@@ -14,6 +14,7 @@ import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
+import * as internal_url from "./internal_url.ts";
 import * as message_lists from "./message_lists.ts";
 import {type Message, single_message_content_schema} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -21,6 +22,8 @@ import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
+import * as topic_link_util from "./topic_link_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 
 export let respond_to_message = (opts: {
@@ -282,19 +285,56 @@ export function quote_message(opts: {
     }
 
     function replace_content(message: Message, raw_content: string): void {
-        // Final message looks like:
-        //     @_**Iago|5** [said](link to message):
-        //     ```quote
-        //     message content
-        //     ```
-        // Keep syntax in sync with zerver/lib/reminders.py
-        let content = $t(
-            {defaultMessage: "{username} [said]({link_to_message}):"},
-            {
-                username: `@_**${message.sender_full_name}|${message.sender_id}**`,
-                link_to_message: hash_util.by_conversation_and_time_url(message),
-            },
-        );
+        let content;
+        const sender_mention = `@_**${message.sender_full_name}|${message.sender_id}**`;
+        if (message.type === "stream") {
+            const link = internal_url.by_stream_topic_url(
+                message.stream_id,
+                message.topic,
+                sub_store.maybe_get_stream_name,
+                message.id,
+            );
+            const channel_name = sub_store.maybe_get_stream_name(message.stream_id)!;
+            const text = topic_link_util.get_stream_topic_link_syntax(channel_name, message.topic);
+            // Final message looks like:
+            //     @_**Iago|5** [said](link to message) in [#channel > topic](link to topic):
+            //     ```quote
+            //     message content
+            //     ```
+            content = $t(
+                {defaultMessage: "{username} [said]({link_to_message}) in {channel_link_syntax}:"},
+                {
+                    username: sender_mention,
+                    link_to_message: hash_util.by_conversation_and_time_url(message),
+                    channel_link_syntax: topic_link_util.as_markdown_link_syntax(text, link),
+                },
+            );
+        } else {
+            assert(message.type === "private");
+            const dm_user_ids = people.pm_with_user_ids(message)!;
+            const recipient_user_ids =
+                dm_user_ids.length > 1
+                    ? dm_user_ids.filter((id) => id !== message.sender_id)
+                    : [message.sender_id];
+            const recipient_users = recipient_user_ids.map((recipient_id) =>
+                people.get_by_user_id(recipient_id),
+            );
+            // Final message looks like:
+            //     @_**Iago|5** [said](link to message) to {direct message recipient mentions}:
+            //     ```quote
+            //     message content
+            //     ```
+            // Keep syntax in sync with zerver/lib/reminders.py
+            content = $t(
+                {defaultMessage: "{username} [said]({link_to_message}) to {recipients}:"},
+                {
+                    username: sender_mention,
+                    link_to_message: hash_util.by_conversation_and_time_url(message),
+                    recipients: people.get_user_mentions_for_display(recipient_users, true),
+                },
+            );
+        }
+
         content += "\n";
         const fence = fenced_code.get_unused_fence(raw_content);
         content += `${fence}quote\n${raw_content}\n${fence}`;

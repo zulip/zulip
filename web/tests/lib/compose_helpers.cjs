@@ -165,4 +165,17 @@ class FakeComposeBox {
     }
 }
 
-module.exports = {FakeComposeBox};
+const quote_message_template = ({
+    channel_link_syntax,
+    sender_full_name,
+    sender_id,
+    with_url,
+    near_url,
+    message,
+    fence,
+}) => `translated: @_**${sender_full_name}|${sender_id}** [said](${near_url}) in [${channel_link_syntax}](${with_url}):
+${fence}quote
+${message}
+${fence}`;
+
+module.exports = {FakeComposeBox, quote_message_template};

@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {quote_message_template} = require("./lib/compose_helpers.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
@@ -22,7 +23,7 @@ const compose_ui = zrequire("compose_ui");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const user_status = zrequire("user_status");
-const hash_util = mock_esm("../src/hash_util");
+const hash_util = zrequire("hash_util");
 const channel = mock_esm("../src/channel");
 const compose_reply = zrequire("compose_reply");
 const compose_actions = zrequire("compose_actions");
@@ -30,6 +31,10 @@ const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
+const internal_url = zrequire("internal_url");
+const topic_link_util = zrequire("topic_link_util");
+const sub_store = zrequire("sub_store");
+const fenced_code = zrequire("fenced_code");
 
 const realm = make_realm({realm_topics_policy: "allow_empty_topic"});
 set_realm(realm);
@@ -272,19 +277,16 @@ run_test("quote_message", ({override, override_rewire}) => {
         stream_id: 20,
     };
 
+    sub_store.add_hydrated_sub(devel_stream.stream_id, devel_stream);
+
     const selected_message = {
         type: "stream",
         stream_id: devel_stream.stream_id,
-        topic: "python",
+        topic: "Tornado",
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
+        id: 100,
     };
-
-    override(
-        hash_util,
-        "by_conversation_and_time_url",
-        () => "https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado",
-    );
 
     override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));
 
@@ -368,10 +370,23 @@ run_test("quote_message", ({override, override_rewire}) => {
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
                 new_syntax(),
-                "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n" +
-                    "```quote\n" +
-                    `${quote_text}\n` +
-                    "```",
+                quote_message_template({
+                    channel_link_syntax: topic_link_util.get_stream_topic_link_syntax(
+                        devel_stream.name,
+                        selected_message.topic,
+                    ),
+                    sender_full_name: selected_message.sender_full_name,
+                    sender_id: selected_message.sender_id,
+                    with_url: internal_url.by_stream_topic_url(
+                        selected_message.stream_id,
+                        selected_message.topic,
+                        sub_store.maybe_get_stream_name,
+                        selected_message.id,
+                    ),
+                    near_url: hash_util.by_conversation_and_time_url(selected_message),
+                    fence: fenced_code.get_unused_fence(quote_text),
+                    message: quote_text,
+                }),
             );
         });
     }
