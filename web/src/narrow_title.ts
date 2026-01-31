@@ -15,6 +15,7 @@ import type {FullUnreadCountsData} from "./unread.ts";
 export let unread_count = 0;
 let pm_count = 0;
 export let narrow_title = "home";
+const overlay_title_stack: string[] = [];
 
 export function compute_narrow_title(filter?: Filter): string {
     if (filter === undefined) {
@@ -68,17 +69,20 @@ export function compute_narrow_title(filter?: Filter): string {
 }
 
 export function redraw_title(): void {
-    // Update window title to reflect unread messages in current view
+    const realm_name = realm?.realm_name ?? "Zulip";
+
     const new_title =
         (unread_count ? "(" + unread_count + ") " : "") +
         narrow_title +
         " - " +
-        realm.realm_name +
-        " - " +
-        "Zulip";
+        realm_name +
+        " - Zulip";
 
-    document.title = new_title;
+    if (typeof document === "object" && document !== null) {
+        document.title = new_title;
+    }
 }
+
 
 export function update_unread_counts(counts: FullUnreadCountsData): void {
     const new_unread_count = unread.calculate_notifiable_count(counts);
@@ -103,4 +107,23 @@ export function update_unread_counts(counts: FullUnreadCountsData): void {
 export function update_narrow_title(filter?: Filter): void {
     narrow_title = compute_narrow_title(filter);
     redraw_title();
+}
+
+export function reset_for_tests(): void {
+    overlay_title_stack.length = 0;
+    narrow_title = "home";
+}
+
+export function set_overlay_title(title: string): void {
+    overlay_title_stack.push(narrow_title);
+    narrow_title = title;
+    redraw_title();
+}
+
+export function clear_overlay_title(): void {
+    const previous = overlay_title_stack.pop();
+    if (previous !== undefined) {
+        narrow_title = previous;
+        redraw_title();
+    }
 }
