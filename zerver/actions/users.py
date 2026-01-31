@@ -621,14 +621,8 @@ def do_change_user_role(
 ) -> None:
     # We want to both (a) take a lock on the UserProfile row, and (b)
     # modify the passed-in UserProfile object, so that callers see the
-    # changes in the object they hold.  Unfortunately,
-    # `select_for_update` cannot be combined with `refresh_from_db`
-    # (https://code.djangoproject.com/ticket/28344).  Call
-    # `select_for_update` and throw away the result, so that we know
-    # we have the lock on the row, then re-fill the `user_profile`
-    # object with the values now that the lock exists.
-    UserProfile.objects.select_for_update().get(id=user_profile.id)
-    user_profile.refresh_from_db()
+    # changes in the object they hold.
+    user_profile.refresh_from_db(from_queryset=UserProfile.objects.select_for_update(no_key=True))
 
     old_value = user_profile.role
     if old_value == value:
