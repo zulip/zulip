@@ -902,7 +902,7 @@ help_markdown_rules = RuleList(
             "pattern": "[a-z][.][A-Z]",
             "description": "Likely missing space after end of sentence",
             "include_only": {"starlight_help/src/content/docs/"},
-            "exclude_pattern": "Rocket.Chat|org.zulip.Zulip|Directory.Read.All|RoleManagement.Read.Directory|User.Read.All",
+            "exclude_pattern": "Rocket.Chat|org.zulip.Zulip|Directory.Read.All|RoleManagement.Read.Directory|User.Read.All|ChannelMessage.Read.All",
         },
         {
             "pattern": r"\b[rR]ealm[s]?\b",
