@@ -898,6 +898,29 @@ def bulk_add_subscriptions(
             subscriber_dict=subscriber_peer_info.subscribed_ids,
         )
 
+        # Send channel event notifications for users being subscribed to private streams.
+        if realm.send_channel_events_messages:
+            for sub_info in subs_to_add + subs_to_activate:
+                stream = sub_info.stream
+                target_user = sub_info.user
+
+                if stream.invite_only:
+                    content = None
+                    target_user_mention = silent_mention_syntax_for_user(target_user)
+
+                    if acting_user and acting_user.id != target_user.id:
+                        acting_user_mention = silent_mention_syntax_for_user(acting_user)
+                        content = f"{acting_user_mention} subscribed {target_user_mention} to this channel."
+                    else:
+                        content = f"{target_user_mention} subscribed to this channel."
+
+                    with override_language(stream.realm.default_language):
+                        maybe_send_channel_events_notice(
+                            get_system_bot(settings.NOTIFICATION_BOT, realm.id),
+                            stream,
+                            content,
+                        )
+
     if not all_users_accessible_by_everyone_in_realm(realm):
         send_user_creation_events_on_adding_subscriptions(
             realm,
@@ -1165,6 +1188,26 @@ def bulk_remove_subscriptions(
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
+
+    # Send channel event notifications for users being removed from private streams.
+    if realm.send_channel_events_messages:
+        for user_profile, stream in removed_sub_tuples:
+            if stream.invite_only:
+                content = None
+                target_user_mention = silent_mention_syntax_for_user(user_profile)
+
+                if acting_user and acting_user.id != user_profile.id:
+                    acting_user_mention = silent_mention_syntax_for_user(acting_user)
+                    content = f"{acting_user_mention} unsubscribed {target_user_mention} from this channel."
+                else:
+                    content = f"{target_user_mention} unsubscribed from this channel."
+
+                with override_language(stream.realm.default_language):
+                    maybe_send_channel_events_notice(
+                        get_system_bot(settings.NOTIFICATION_BOT, realm.id),
+                        stream,
+                        content,
+                    )
 
     return (
         removed_sub_tuples,
