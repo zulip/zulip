@@ -182,7 +182,7 @@
                     </a>
                 {{else}}
                     <a role="menuitem" class="popover-menu-link copy_mention_syntax" tabindex="0" data-clipboard-text="{{ user_mention_syntax }}">
-                        <i class="popover-menu-icon fa zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>
+                        <i class="popover-menu-icon zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>
                         <span class="popover-menu-label">{{t "Copy mention syntax" }}</span>
                         {{#if is_sender_popover}}
                             {{popover_hotkey_hints "@"}}
