@@ -31,12 +31,20 @@ const bot_data = zrequire("bot_data");
 const bot_helper = zrequire("bot_helper");
 const settings_bots = zrequire("settings_bots");
 const {set_current_user, set_realm} = zrequire("state_data");
+const people = zrequire("people");
+
+const error_bot = {
+    email: "error-bot@zulip.org",
+    delivery_email: "error-bot@zulip.org",
+    full_name: "Error bot",
+    user_id: 1,
+};
 
 const current_user = {};
 set_current_user(current_user);
 const realm = make_realm();
 set_realm(realm);
-
+people.add_active_user(error_bot);
 bot_data.initialize(bot_data_params);
 
 function test(label, f) {

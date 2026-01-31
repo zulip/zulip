@@ -6,6 +6,7 @@ import * as z from "zod/mini";
 import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as people from "./people.ts";
 import {realm} from "./state_data.ts";
 
 export function validate_bot_short_name(value: string): boolean {
@@ -16,7 +17,13 @@ export function validate_bot_short_name(value: string): boolean {
 export function generate_zuliprc_url(bot_id: number): string {
     const bot = bot_data.get(bot_id);
     assert(bot !== undefined);
-    const data = generate_zuliprc_content(bot);
+    const person = people.get_by_user_id(bot_id);
+    assert(person !== undefined);
+    assert(person.delivery_email !== null);
+    const data = generate_zuliprc_content({
+        ...bot,
+        email: person.delivery_email,
+    });
     return encode_zuliprc_as_url(data);
 }
 
@@ -73,7 +80,13 @@ export function initialize_clipboard_handlers(): void {
             const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
             const bot = bot_data.get(bot_id);
             assert(bot !== undefined);
-            const data = generate_zuliprc_content(bot);
+            const person = people.get_by_user_id(bot_id);
+            assert(person !== undefined);
+            assert(person.delivery_email !== null);
+            const data = generate_zuliprc_content({
+                ...bot,
+                email: person.delivery_email,
+            });
             return data;
         },
     }).on("success", (e) => {
