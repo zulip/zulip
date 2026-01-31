@@ -36,7 +36,7 @@ function small_avatar_url_for_test_notification(message: TestNotificationMessage
     return people.gravatar_url_for_email(message.sender_email);
 }
 
-function get_notification_content(message: Message | TestNotificationMessage): string {
+export function get_notification_content(message: Message | TestNotificationMessage): string {
     let content;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
@@ -190,41 +190,30 @@ export function process_notification(notification: {
             message.type === "test-notification"
                 ? small_avatar_url_for_test_notification(message)
                 : people.small_avatar_url(message);
-        notification_object = new desktop_notifications.NotificationAPI(title, {
+
+        const opts = {
             icon: icon_url,
             body: content,
             tag: message.id.toString(),
-        });
-        desktop_notifications.notice_memory.set(key, {
-            obj: notification_object,
-            msg_count,
-            message_id: message.id,
-        });
+        };
 
-        if (typeof notification_object.addEventListener === "function") {
-            // Sadly, some third-party Electron apps like Franz/Ferdi
-            // misimplement the Notification API not inheriting from
-            // EventTarget.  This results in addEventListener being
-            // unavailable for them.
-            notification_object.addEventListener("click", () => {
-                notification_object.close();
-                if (message.type !== "test-notification") {
-                    // Narrowing to message's near view helps to handle the case
-                    // where a user clicked the notification, but before narrowing
-                    // the message deletion got processed.
-                    message_view.narrow_to_message_near(message, "notification");
-                }
-                window.focus();
-            });
-            notification_object.addEventListener("close", () => {
-                const current_notice_memory = desktop_notifications.notice_memory.get(key);
-                // This check helps avoid race between close event for current notification
-                // object and the previous notification_object close handler.
-                if (current_notice_memory?.obj === notification_object) {
-                    desktop_notifications.notice_memory.delete(key);
-                }
-            });
+        function on_click(): void {
+            if (message.type !== "test-notification") {
+                // Narrowing to message's near view helps to handle the case
+                // where a user clicked the notification, but before narrowing
+                // the message deletion got processed.
+                message_view.narrow_to_message_near(message, "notification");
+            }
         }
+
+        desktop_notifications.create_notification(
+            opts,
+            key,
+            title,
+            message.id,
+            msg_count,
+            on_click,
+        );
     }
 }
 
