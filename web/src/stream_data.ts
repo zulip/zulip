@@ -14,6 +14,7 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import type {CurrentUser, GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import type {APIStream, StreamPermissionGroupSetting, StreamTopicsPolicy} from "./stream_types.ts";
 import * as sub_store from "./sub_store.ts";
 import type {
@@ -1232,6 +1233,17 @@ export function is_empty_topic_only_channel(stream_id: number | undefined): bool
     }
     return (
         topics_policy === settings_config.get_stream_topics_policy_values().empty_topic_only.code
+    );
+}
+
+// Returns whether the empty string topic ("general chat") should be displayed
+// as an option for the user in the given stream. This is true when the user can
+// create new topics, it's an empty_topic_only channel, or general chat already exists.
+export function should_display_empty_string_topic(stream_id: number): boolean {
+    return (
+        can_create_new_topics_in_stream(stream_id) ||
+        is_empty_topic_only_channel(stream_id) ||
+        stream_topic_history.stream_has_empty_string_topic(stream_id)
     );
 }
 
