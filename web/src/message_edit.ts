@@ -1074,11 +1074,22 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
     update_inline_topic_edit_input_max_width($inline_topic_edit_input);
     const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
+    const is_topic_creation_disabled = !stream_data.can_create_new_topics_in_stream(
+        message.stream_id,
+    );
     const typeahead = composebox_typeahead.initialize_topic_edit_typeahead(
         $inline_topic_edit_input,
         stream_name,
         false,
     );
+
+    // Auto-open topic typeahead on focus when the input is empty and topic
+    // creation is disabled, helping users select from existing topics.
+    $inline_topic_edit_input.on("focus", () => {
+        if (is_topic_creation_disabled && $inline_topic_edit_input.val() === "") {
+            typeahead.lookup(false);
+        }
+    });
 
     $form.on("keydown", (event) => {
         handle_inline_topic_edit_keydown($form, typeahead, event);

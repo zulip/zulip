@@ -1518,17 +1518,37 @@ function compose_trigger_selection(event: JQuery.KeyDownEvent): boolean {
     return false;
 }
 
+// Returns true if the typeahead should be suppressed because
+// the query already matches an existing topic exactly.
+function should_suppress_topic_typeahead(query: string, items: (string | UserPillData)[]): boolean {
+    const normalized_query = util.get_final_topic_display_name(query).trim().toLowerCase();
+    if (normalized_query === "") {
+        return false;
+    }
+    return items.some(
+        (item) =>
+            typeof item === "string" &&
+            util.get_final_topic_display_name(item).trim().toLowerCase() === normalized_query,
+    );
+}
+
 export function initialize_topic_edit_typeahead(
     form_field: JQuery<HTMLInputElement>,
     stream_name: string,
     dropup: boolean,
 ): Typeahead<string> {
+    const stream_id = stream_data.get_stream_id(stream_name);
+    const is_topic_creation_disabled = stream_id
+        ? !stream_data.can_create_new_topics_in_stream(stream_id)
+        : false;
+
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: form_field,
         type: "input",
     };
     return new Typeahead(bootstrap_typeahead_input, {
         dropup,
+        helpOnEmptyStrings: is_topic_creation_disabled,
         item_html(item: string): string {
             const is_empty_string_topic = item === "";
             const topic_display_name = util.get_final_topic_display_name(item);
@@ -1565,6 +1585,7 @@ export function initialize_topic_edit_typeahead(
             return "topic-edit-typeahead";
         },
         showOnClick: false,
+        shouldSuppressShowCallback: should_suppress_topic_typeahead,
     });
 }
 
@@ -1803,6 +1824,18 @@ export function initialize({
             }
             return get_footer_html_for_topic_typeahead(compose_state.stream_id(), contains_dm);
         },
+        shouldSuppressShowCallback: should_suppress_topic_typeahead,
+    });
+
+    // Register the typeahead with compose_recipient so it can update helpOnEmptyStrings
+    compose_recipient.set_stream_message_topic_typeahead(stream_message_topic_typeahead);
+
+    // Auto-open topic typeahead on focus when the input is empty and topic
+    // creation is disabled, helping users select from existing topics.
+    $("input#stream_message_recipient_topic").on("focus", function () {
+        if (stream_message_topic_typeahead.helpOnEmptyStrings && $(this).val() === "") {
+            stream_message_topic_typeahead.lookup(false);
+        }
     });
 
     const private_message_typeahead_input: TypeaheadInputElement = {
