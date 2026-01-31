@@ -325,6 +325,10 @@ export let try_deliver_locally = (
         return undefined;
     }
 
+    if (markdown.get_first_disallowed_group_mention(message_request.content)) {
+        return undefined;
+    }
+
     if (is_slash_command(message_request.content)) {
         return undefined;
     }
