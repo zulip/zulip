@@ -639,7 +639,9 @@ export function handle_keyup(
  * of backticks (`, ```, ...) and its still‑missing matching closer
  * where the cursor is placed.
  */
-export function cursor_inside_inline_code_span($textarea: JQuery<HTMLTextAreaElement>): boolean {
+export let cursor_inside_inline_code_span = (
+    $textarea: JQuery<HTMLTextAreaElement>,
+): boolean => {
     const text_area_element = $textarea[0];
     if (!text_area_element) {
         return false;
@@ -672,15 +674,25 @@ export function cursor_inside_inline_code_span($textarea: JQuery<HTMLTextAreaEle
         }
     }
     return open_backtick_count > 0;
+};
+
+export function rewire_cursor_inside_inline_code_span(
+    value: typeof cursor_inside_inline_code_span,
+): void {
+    cursor_inside_inline_code_span = value;
 }
 
-export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>): boolean {
+export let cursor_inside_code_block = ($textarea: JQuery<HTMLTextAreaElement>): boolean => {
     // Returns whether the cursor is at a point that would be inside
     // a code block on rendering the textarea content as markdown.
     const cursor_position = $textarea.caret();
     const current_content = $textarea.val()!;
 
     return position_inside_code_block(current_content, cursor_position);
+};
+
+export function rewire_cursor_inside_code_block(value: typeof cursor_inside_code_block): void {
+    cursor_inside_code_block = value;
 }
 
 export function position_inside_code_block(content: string, position: number): boolean {
