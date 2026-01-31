@@ -13,6 +13,7 @@ import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as echo_state from "./echo_state.ts";
 import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
 import * as local_message from "./local_message.ts";
 import * as markdown from "./markdown.ts";
 import type {InsertNewMessagesOpts} from "./message_events.ts";
@@ -40,6 +41,9 @@ import * as util from "./util.ts";
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
 type ServerMessage = RawMessage & {local_id?: string};
+
+const hang_timer = new Map<string, ReturnType<typeof setTimeout>>();
+const messages_with_hang_warning = new Set<string>();
 
 const send_message_api_response_schema = z.object({
     id: z.number(),
@@ -103,6 +107,59 @@ export type RawLocalMessage = MessageRequestObject & {
 } & (StreamMessageObject | PrivateMessageObject);
 
 export type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
+
+// This function creates a timer of 15s
+// which runs when a msg is sent, if no ack from server in 15s we show a warning in UI.
+function start_hang_timer(local_id: string): void {
+    const timeout = setTimeout(() => {
+        if (echo_state.get_message_waiting_for_ack(local_id) !== undefined) {
+            show_msg_hang_warning(local_id);
+        }
+    }, 15000);
+
+    hang_timer.set(local_id, timeout);
+}
+
+function clear_hang_timer(local_id: string): void {
+    const timer = hang_timer.get(local_id);
+    if (timer !== undefined) {
+        clearTimeout(timer);
+        hang_timer.delete(local_id);
+    }
+}
+
+let show_msg_hang_warning: (local_id: string) => void = (local_id) => {
+    if (messages_with_hang_warning.has(local_id)) {
+        return;
+    }
+
+    const $row = $(`div[zid="${local_id}"]`);
+    if ($row.length === 0) {
+        return;
+    }
+
+    $row.find(".message_content");
+
+    const $warning = $("<div>").addClass("message_not_received");
+
+    $warning.text($t({defaultMessage: "Message not received by server"}));
+    $row.find(".message_content").after($warning);
+    messages_with_hang_warning.add(local_id);
+}
+
+let clear_msg_hang_warning: (local_id: string) => void = (local_id) => {
+    if (!messages_with_hang_warning.has(local_id)) {
+        return;
+    }
+
+    const $row = $(`div[zid="${local_id}"]`);
+    if ($row.length === 0) {
+        return;
+    }
+
+    $row.find(".message_not_received").remove();
+    messages_with_hang_warning.delete(local_id);
+}
 
 // These retry spinner functions return true if and only if the
 // spinner already is in the requested state, which can be used to
@@ -277,6 +334,7 @@ export function insert_local_message(
         reactions: [],
     };
 
+    start_hang_timer(raw_local_message.local_id);
     raw_local_message.display_recipient = build_display_recipient(raw_local_message);
 
     const [message] = insert_new_messages({
@@ -542,6 +600,8 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
         }
 
         reify_message_id(local_id, message.id);
+        clear_hang_timer(local_id);
+        clear_msg_hang_warning(local_id);
 
         if (message_store.get(message.id)?.failed_request) {
             failed_message_success(message.id);
@@ -692,4 +752,16 @@ export function initialize({
 
     on_failed_action(".remove-failed-message", abort_message);
     on_failed_action(".refresh-failed-message", resend_message);
+}
+
+export function rewire_show_msg_hang_warning(
+    value: (local_id: string) => void,
+): void {
+    show_msg_hang_warning = value;
+}
+
+export function rewire_clear_msg_hang_warning(
+    value: (local_id: string) => void,
+): void {
+    clear_msg_hang_warning = value;
 }
