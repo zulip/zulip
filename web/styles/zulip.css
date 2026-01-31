@@ -395,6 +395,80 @@ p.n-margin {
     position: relative;
 }
 
+.zulip-icon-notepad-text {
+    margin: 0 6px 0 5px;
+    align-self: center;
+    color: var(--color-navbar-icon);
+    font-size: 1.125em;
+}
+
+#header-container {
+    position: relative;
+}
+
+#header-container #extended-narrow-description-overlay {
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--color-background-search);
+    color: var(--color-text-search);
+    margin-top: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10000000000;
+
+    &.expanded {
+        display: block !important;
+        box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
+    }
+
+    .close-btn-container {
+        height: var(--header-height);
+        position: absolute;
+        right: 0;
+
+        #extended-narrow-description-overlay-exit {
+            width: 2.75em;
+            height: 100%;
+            background: none;
+            border: none;
+            opacity: 0.5;
+            line-height: 0;
+            border-radius: 4px;
+            color: var(--color-search-icons);
+            padding: 0;
+            outline: none;
+        }
+    }
+
+    .content-container {
+        display: block;
+        /* (header-height + 6px) in order to match the navbar
+        text in message_view_header */
+        padding: 12px calc(var(--header-height) + 6px);
+        hyphens: auto;
+    }
+}
+
+@container header-container (width > $cq_sm_min) {
+    .zulip-icon-notepad-text {
+        display: none !important;
+    }
+}
+
+@media (width > $sm_min) {
+    .without-container-query-support {
+        .zulip-icon-notepad-text {
+            display: none !important;
+        }
+    }
+}
+
+.no-navbar-shadow {
+    box-shadow: none !important;
+}
+
 body.has-overlay-scrollbar {
     /* Move simplebar scrollbar to the left so that
        browser scrollbar doesn't overlap with it. */

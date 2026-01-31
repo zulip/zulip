@@ -1,0 +1,18 @@
+<div id="extended-narrow-description-overlay" tabindex="0">
+    <div class="close-btn-container">
+        <button type="button" id="extended-narrow-description-overlay-exit" aria-label="{{t 'Exit description' }}"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></button>
+    </div>
+    <span class="sub-stream-description rendered_markdown content-container">
+        {{#if (and stream_settings_link rendered_narrow_description)}}
+            {{rendered_markdown rendered_narrow_description}}
+        {{/if}}
+        {{#if description}}
+            {{description}}
+            {{#if link}}
+            <a class="help_link_widget" href="{{link}}" target="_blank" rel="noopener noreferrer">
+                <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+            </a>
+            {{/if}}
+        {{/if}}
+    </span>
+</div>
