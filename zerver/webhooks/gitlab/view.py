@@ -488,10 +488,15 @@ def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
 
-    # Apparently, Job Hook payloads don't have a `project` section,
-    # but the repository name is accessible from the `repository`
-    # section.
-    return payload["repository"]["name"].tame(check_string)
+    if "repository" in payload:
+        # Job Hook payloads don't have a `project` section,
+        # but the repository name is accessible from the `repository`
+        # section.
+        return payload["repository"]["name"].tame(check_string)
+
+    # Group-level events (e.g. group access token expiry) have neither
+    # `project` nor `repository`, but have a `group` section.
+    return payload["group"]["group_name"].tame(check_string)
 
 
 def get_user_name(payload: WildValue) -> str:
@@ -505,7 +510,11 @@ def get_issue_user_name(payload: WildValue) -> str:
 def get_project_homepage(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["web_url"].tame(check_string)
-    return payload["repository"]["homepage"].tame(check_string)
+    if "repository" in payload:
+        return payload["repository"]["homepage"].tame(check_string)
+    # Group-level events have a group path instead of a project URL.
+    group_path = payload["group"]["full_path"].tame(check_string)
+    return f"https://gitlab.com/groups/{group_path}"
 
 
 def get_branch_name(payload: WildValue) -> str:

@@ -721,6 +721,15 @@ A trivial change that should probably be ignored.
             "resource_access_token_hook__group_expiry", expected_topic_name, expected_message
         )
 
+    def test_resource_access_token_group_expiry_with_custom_topic(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic_name = "notifications"
+        expected_message = "[[Twitter](https://gitlab.com/groups/twitter)] The access token [acd](https://gitlab.com/groups/twitter/-/settings/access_tokens) will expire on Jan 26, 2024."
+
+        self.check_webhook(
+            "resource_access_token_hook__group_expiry", expected_topic_name, expected_message
+        )
+
     def test_deployment_started_event_message(self) -> None:
         expected_topic_name = "test / production"
         expected_message = "[Vedant Joshi](https://gitlab.com/theofficialvedantjoshi) started a new [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905389091):\n> [5879366](https://gitlab.com/vedant8600317/test/-/commit/58793660b22d6ceacbdc23b28a0562bca339702c) Update .gitlab-ci.yml file"
