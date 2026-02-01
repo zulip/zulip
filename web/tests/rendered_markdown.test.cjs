@@ -2,10 +2,10 @@
 
 const assert = require("node:assert/strict");
 
-const {make_realm} = require("./lib/example_realm.cjs");
-const {$t} = require("./lib/i18n.cjs");
-const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test, noop} = require("./lib/test.cjs");
+const { make_realm } = require("./lib/example_realm.cjs");
+const { $t } = require("./lib/i18n.cjs");
+const { mock_cjs, mock_esm, zrequire } = require("./lib/namespace.cjs");
+const { run_test, noop } = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -33,14 +33,14 @@ const message_store = mock_esm("../src/message_store");
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => false,
 });
-const {set_realm} = zrequire("state_data");
-const {initialize_user_settings} = zrequire("user_settings");
+const { set_realm } = zrequire("state_data");
+const { initialize_user_settings } = zrequire("user_settings");
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
-const realm = make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
+const realm = make_realm({ realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME });
 set_realm(realm);
 const user_settings = {};
-initialize_user_settings({user_settings});
+initialize_user_settings({ user_settings });
 
 const iago = {
     email: "iago@zulip.com",
@@ -104,7 +104,7 @@ const $array = (array) => {
             func.call(e);
         }
     };
-    return {each};
+    return { each };
 };
 
 function set_message_for_message_content($content, value) {
@@ -173,7 +173,7 @@ const get_content_element = () => {
     return $content;
 };
 
-run_test("misc_helpers", ({override}) => {
+run_test("misc_helpers", ({ override }) => {
     const $elem = $.create("user-mention");
     rm.set_name_in_mention_element($elem, "Aaron");
     assert.equal($elem.text(), "@Aaron");
@@ -206,7 +206,7 @@ run_test("message_inline_video", () => {
     window.GestureEvent = false;
 });
 
-run_test("user-mention", ({override}) => {
+run_test("user-mention", ({ override }) => {
     // Setup
     const $content = get_content_element();
     const $iago = $.create("user-mention(iago)");
@@ -233,13 +233,13 @@ run_test("user-mention", ({override}) => {
     assert.equal($polonius.text(), `translated: @${polonius.full_name} (guest)`);
 
     // message row found
-    const message = {mentioned_me_directly: true};
+    const message = { mentioned_me_directly: true };
     set_message_for_message_content($content, message);
     rm.update_elements($content);
     assert.ok($iago.hasClass("user-mention-me"));
 });
 
-run_test("user-mention without guest indicator", ({override}) => {
+run_test("user-mention without guest indicator", ({ override }) => {
     const $content = get_content_element();
     const $polonius = $.create("user-mention(polonius-again)");
     $polonius.set_find_results(".highlight", false);
@@ -280,7 +280,7 @@ run_test("user-mention (stream wildcard)", () => {
     const $mention = $.create("mention");
     $mention.attr("data-user-id", "*");
     $content.set_find_results(".user-mention", $array([$mention]));
-    const message = {stream_wildcard_mentioned: true};
+    const message = { stream_wildcard_mentioned: true };
     set_message_for_message_content($content, message);
 
     assert.ok(!$mention.hasClass("user-mention-me"));
@@ -410,7 +410,7 @@ run_test("user-group-mention (error)", () => {
     assert.ok(!$group.hasClass("user-mention-me"));
 });
 
-run_test("stream-links", ({mock_template}) => {
+run_test("stream-links", ({ mock_template }) => {
     // Setup
     const $content = get_content_element();
     const $stream = $.create("a.stream");
@@ -456,7 +456,7 @@ run_test("stream-links", ({mock_template}) => {
     assert.ok(!topic_link_rendered_html.includes("empty-topic-display"));
 });
 
-run_test("topic-link (empty string topic)", ({mock_template}) => {
+run_test("topic-link (empty string topic)", ({ mock_template }) => {
     // Setup
     const $content = get_content_element();
     const $channel_topic = $.create("a.stream-topic(empty-string-topic)");
@@ -491,7 +491,7 @@ run_test("topic-link (empty string topic)", ({mock_template}) => {
     assert.ok(topic_link_rendered_html.includes("empty-topic-display"));
 });
 
-run_test("message-links", ({mock_template}) => {
+run_test("message-links", ({ mock_template }) => {
     // Setup
     const $content = get_content_element();
     const $channel_topic_message = $.create("a.message-link");
@@ -539,7 +539,7 @@ run_test("timestamp without time", () => {
     assert.equal($timestamp.text(), "never-been-set");
 });
 
-run_test("audio", ({mock_template}) => {
+run_test("audio", ({ mock_template }) => {
     const audio_src = "http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3";
     const audio_title = "inline.mp3";
 
@@ -553,7 +553,7 @@ run_test("audio", ({mock_template}) => {
 
     let audio_html;
     mock_template("markdown_audio.hbs", true, (data, html) => {
-        assert.deepEqual(data, {audio_src, audio_title});
+        assert.deepEqual(data, { audio_src, audio_title });
         audio_html = html;
         return html;
     });
@@ -563,18 +563,18 @@ run_test("audio", ({mock_template}) => {
     assert.equal(
         audio_html,
         '<span class="media-audio-wrapper">\n' +
-            '    <audio controls="" preload="metadata" src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" title="inline.mp3" class="media-audio-element"></audio>\n' +
-            '    <a class="media-audio-download icon-button icon-button-square icon-button-neutral"\n' +
-            '      aria-label="translated: Download" href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" download>\n' +
-            '        <i class="media-download-icon zulip-icon zulip-icon-download"></i>\n' +
-            "    </a>\n" +
-            "</span>",
+        '    <audio controls="" preload="metadata" src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" title="inline.mp3" class="media-audio-element"></audio>\n' +
+        '    <a class="media-audio-download icon-button icon-button-square icon-button-neutral"\n' +
+        '      aria-label="translated: Download" href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" download>\n' +
+        '        <i class="media-download-icon zulip-icon zulip-icon-download"></i>\n' +
+        "    </a>\n" +
+        "</span>",
     );
 });
 
-run_test("timestamp", ({mock_template}) => {
+run_test("timestamp", ({ mock_template }) => {
     mock_template("markdown_timestamp.hbs", true, (data, html) => {
-        assert.deepEqual(data, {text: "Thu, Jan 1, 1970, 12:00 AM"});
+        assert.deepEqual(data, { text: "Thu, Jan 1, 1970, 12:00 AM" });
         return html;
     });
 
@@ -601,7 +601,7 @@ run_test("timestamp", ({mock_template}) => {
     assert.equal($timestamp_invalid.text(), "never-been-set");
 });
 
-run_test("timestamp-twenty-four-hour-time", ({mock_template, override}) => {
+run_test("timestamp-twenty-four-hour-time", ({ mock_template, override }) => {
     mock_template("markdown_timestamp.hbs", true, (data, html) => {
         // sanity check incoming data
         assert.ok(data.text.startsWith("Wed, Jul 15, 2020, "));
@@ -645,7 +645,7 @@ run_test("timestamp-error", () => {
     assert.equal($timestamp_error.text(), "translated: Invalid time format: the-time-format");
 });
 
-run_test("emoji", ({override}) => {
+run_test("emoji", ({ override }) => {
     // Setup
     const $content = get_content_element();
     const $emoji = $.create("emoji-stub");
@@ -655,7 +655,7 @@ run_test("emoji", ({override}) => {
         const text = f.call($emoji);
         assert.equal(":tada:", text);
         called = true;
-        return {contents: () => ({unwrap() {}})};
+        return { contents: () => ({ unwrap() { } }) };
     };
     $content.set_find_results(".emoji", $emoji);
     override(user_settings, "emojiset", "text");
@@ -663,6 +663,63 @@ run_test("emoji", ({override}) => {
     rm.update_elements($content);
 
     assert.ok(called);
+
+    // Set page parameters back so that test run order is independent
+    override(user_settings, "emojiset", "apple");
+});
+
+run_test("emoji_browser", ({ override }) => {
+    // Setup
+    const $content = get_content_element();
+
+    // Test Unicode emoji (span with emoji-{codepoint} class)
+    const $unicode_emoji = $.create("unicode-emoji-stub");
+    $unicode_emoji.attr("class", "emoji emoji-1f389");
+    $unicode_emoji.is = () => false; // Not an img tag
+    let unicode_called = false;
+    $unicode_emoji.text = (unicode_char) => {
+        assert.equal("🎉", unicode_char);
+        unicode_called = true;
+        return { contents: () => ({ unwrap() { } }) };
+    };
+
+    // Test realm emoji (img tag) - should not be converted
+    const $realm_emoji = $.create("realm-emoji-stub");
+    $realm_emoji.is = (selector) => selector === "img";
+    let realm_emoji_called = false;
+    $realm_emoji.text = () => {
+        realm_emoji_called = true;
+        return { contents: () => ({ unwrap() { } }) };
+    };
+
+    // Test emoji without emoji- prefix class (edge case)
+    const $emoji_no_prefix = $.create("emoji-no-prefix-stub");
+    $emoji_no_prefix.attr("class", "emoji some-other-class");
+    $emoji_no_prefix.is = () => false; // Not an img tag
+    let no_prefix_called = false;
+    $emoji_no_prefix.text = () => {
+        no_prefix_called = true;
+        return { contents: () => ({ unwrap() { } }) };
+    };
+
+    const $emojis = $array([$unicode_emoji, $realm_emoji, $emoji_no_prefix]);
+    let each_called = false;
+    $emojis.each = (f) => {
+        each_called = true;
+        f.call($unicode_emoji, 0, $unicode_emoji);
+        f.call($realm_emoji, 1, $realm_emoji);
+        f.call($emoji_no_prefix, 2, $emoji_no_prefix);
+    };
+
+    $content.set_find_results(".emoji", $emojis);
+    override(user_settings, "emojiset", "browser");
+
+    rm.update_elements($content);
+
+    assert.ok(each_called);
+    assert.ok(unicode_called);
+    assert.ok(!realm_emoji_called); // Realm emoji should not be converted
+    assert.ok(!no_prefix_called); // Emoji without emoji- prefix should not be converted
 
     // Set page parameters back so that test run order is independent
     override(user_settings, "emojiset", "apple");
@@ -706,7 +763,7 @@ run_test("spoiler-header-empty-fill", () => {
     $header.set_find_results("p", $.create("p"));
     rm.update_elements($content);
     assert.equal($appended[0].selector, "<p>");
-    assert.equal($appended[0].text(), $t({defaultMessage: "Spoiler"}));
+    assert.equal($appended[0].text(), $t({ defaultMessage: "Spoiler" }));
     assert.equal($appended[1].selector, toggle_button_html);
 });
 
@@ -739,7 +796,7 @@ function test_code_playground(mock_template, viewing_code) {
     const $code_buttons_container = $.create("code_buttons_container", {
         children: ["copy-code-stub", "view-code-stub"],
     });
-    const $copy_code_button = $.create("copy_code_button", {children: ["copy-code-stub"]});
+    const $copy_code_button = $.create("copy_code_button", { children: ["copy-code-stub"] });
     const $view_code_in_playground = $.create("view_code_in_playground");
 
     $code_buttons_container.set_find_results(".copy_codeblock", $copy_code_button);
@@ -758,12 +815,12 @@ function test_code_playground(mock_template, viewing_code) {
     if (viewing_code) {
         mock_template("code_buttons_container.hbs", true, (data) => {
             assert.equal(data.show_playground_button, true);
-            return {to_$: () => $code_buttons_container};
+            return { to_$: () => $code_buttons_container };
         });
     } else {
         mock_template("code_buttons_container.hbs", true, (data) => {
             assert.equal(data.show_playground_button, false);
-            return {to_$: () => $code_buttons_container};
+            return { to_$: () => $code_buttons_container };
         });
     }
 
@@ -777,7 +834,7 @@ function test_code_playground(mock_template, viewing_code) {
     };
 }
 
-run_test("code playground none", ({override, mock_template}) => {
+run_test("code playground none", ({ override, mock_template }) => {
     override(realm_playground, "get_playground_info_for_languages", (language) => {
         assert.equal(language, "javascript");
         return undefined;
@@ -785,7 +842,7 @@ run_test("code playground none", ({override, mock_template}) => {
 
     override(copied_tooltip, "show_copied_confirmation", noop);
 
-    const {prepends, $button_container, $view_code} = test_code_playground(mock_template, false);
+    const { prepends, $button_container, $view_code } = test_code_playground(mock_template, false);
     assert.deepEqual(prepends, [$button_container]);
     assert_clipboard_setup();
 
@@ -793,15 +850,15 @@ run_test("code playground none", ({override, mock_template}) => {
     assert.equal($view_code.attr("aria-label"), undefined);
 });
 
-run_test("code playground single", ({override, mock_template}) => {
+run_test("code playground single", ({ override, mock_template }) => {
     override(realm_playground, "get_playground_info_for_languages", (language) => {
         assert.equal(language, "javascript");
-        return [{name: "Some Javascript Playground"}];
+        return [{ name: "Some Javascript Playground" }];
     });
 
     override(copied_tooltip, "show_copied_confirmation", noop);
 
-    const {prepends, $button_container, $view_code} = test_code_playground(mock_template, true);
+    const { prepends, $button_container, $view_code } = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [$button_container]);
     assert_clipboard_setup();
 
@@ -813,7 +870,7 @@ run_test("code playground single", ({override, mock_template}) => {
     assert.equal($view_code.attr("aria-haspopup"), undefined);
 });
 
-run_test("code playground multiple", ({override, mock_template}) => {
+run_test("code playground multiple", ({ override, mock_template }) => {
     override(realm_playground, "get_playground_info_for_languages", (language) => {
         assert.equal(language, "javascript");
         return ["whatever", "whatever"];
@@ -821,7 +878,7 @@ run_test("code playground multiple", ({override, mock_template}) => {
 
     override(copied_tooltip, "show_copied_confirmation", noop);
 
-    const {prepends, $button_container, $view_code} = test_code_playground(mock_template, true);
+    const { prepends, $button_container, $view_code } = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [$button_container]);
     assert_clipboard_setup();
 

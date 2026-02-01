@@ -393,4 +393,29 @@ export const update_elements = ($content: JQuery): void => {
             .contents()
             .unwrap();
     }
+
+    // Display emoji as native Unicode characters if
+    // user_settings.emojiset is 'browser'.
+    if (user_settings.emojiset === "browser") {
+        $content.find(".emoji").each(function () {
+            const $emoji = $(this);
+            // For realm emoji (images), keep them as images
+            if ($emoji.is("img")) {
+                return;
+            }
+            // For Unicode emoji (spans with emoji-{codepoint} class),
+            // extract the codepoint and convert to Unicode character
+            const class_list = $emoji.attr("class")?.split(/\s+/) ?? [];
+            const emoji_class = class_list.find((cls) => cls.startsWith("emoji-"));
+            if (emoji_class) {
+                const codepoint = emoji_class.slice(6); // Remove "emoji-" prefix
+                // Convert hex codepoint to Unicode character
+                const unicode_char = codepoint
+                    .split("-")
+                    .map((hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
+                    .join("");
+                $emoji.text(unicode_char).contents().unwrap();
+            }
+        });
+    }
 };

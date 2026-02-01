@@ -25,6 +25,10 @@ const emojisets = new Map<string, EmojiSet>([
 // for displaying emojis in emoji picker and typeahead.
 emojisets.set("text", emojisets.get("google")!);
 
+// For `browser` emoji set we also fallback to `google` emoji set
+// for displaying emojis in emoji picker and typeahead.
+emojisets.set("browser", emojisets.get("google")!);
+
 let current_emojiset: EmojiSet | undefined;
 
 async function fetch_emojiset(name: string, url: string): Promise<void> {
