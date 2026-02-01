@@ -43,3 +43,4 @@ class SCIMConfigDict(TypedDict, total=False):
     scim_client_name: str
     name_formatted_included: bool
     create_guests_without_streams: bool
+    custom_profile_field_map: dict[str, str]

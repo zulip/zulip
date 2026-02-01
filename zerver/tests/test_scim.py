@@ -13,6 +13,7 @@ from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_groups import get_user_group_direct_member_ids
 from zerver.models import UserProfile
+from zerver.models.custom_profile_fields import CustomProfileField, CustomProfileFieldValue
 from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import get_realm
 
@@ -66,6 +67,13 @@ class SCIMTestCase(ZulipTestCase):
     def mock_name_formatted_included(self, value: bool) -> Iterator[None]:
         config_dict = copy.deepcopy(settings.SCIM_CONFIG)
         config_dict["zulip"]["name_formatted_included"] = value
+        with self.settings(SCIM_CONFIG=config_dict):
+            yield
+
+    @contextmanager
+    def mock_custom_profile_field_map(self, field_map: dict[str, str]) -> Iterator[None]:
+        config_dict = copy.deepcopy(settings.SCIM_CONFIG)
+        config_dict["zulip"]["custom_profile_field_map"] = field_map
         with self.settings(SCIM_CONFIG=config_dict):
             yield
 
@@ -824,6 +832,254 @@ class TestSCIMUser(SCIMTestCase):
             m.output[0],
         )
         self.assertEqual(result.status_code, 200)
+
+    def test_post_with_custom_profile_fields(self) -> None:
+        # A payload for creating a new user with custom profile fields.
+        field_map = {"phoneNumber": "phone_number", "birthday": "birthday"}
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "userName": "newuser@zulip.com",
+            "name": {"formatted": "New User"},
+            "active": True,
+            "phoneNumber": "123456789",
+            "birthday": "2000-01-01",
+        }
+
+        with self.mock_custom_profile_field_map(field_map):
+            result = self.client_post(
+                "/scim/v2/Users", payload, content_type="application/json", **self.scim_headers()
+            )
+        self.assertEqual(result.status_code, 201)
+        output_data = orjson.loads(result.content)
+
+        new_user = UserProfile.objects.get(delivery_email="newuser@zulip.com")
+
+        # Verify the custom field values are stored in the database.
+        phone_field = CustomProfileField.objects.get(realm=new_user.realm, name="Phone number")
+        phone_value = CustomProfileFieldValue.objects.get(user_profile=new_user, field=phone_field)
+        self.assertEqual(phone_value.value, "123456789")
+
+        birthday_field = CustomProfileField.objects.get(realm=new_user.realm, name="Birthday")
+        birthday_value = CustomProfileFieldValue.objects.get(
+            user_profile=new_user, field=birthday_field
+        )
+        self.assertEqual(birthday_value.value, "2000-01-01")
+
+        # The response includes custom field values because to_dict() is called
+        # within the custom_profile_field_map config context.
+        expected_response_schema = self.generate_user_schema(new_user)
+        expected_response_schema["phoneNumber"] = "123456789"
+        expected_response_schema["birthday"] = "2000-01-01"
+        self.assertEqual(output_data, expected_response_schema)
+
+    def test_put_with_custom_profile_fields(self) -> None:
+        hamlet = self.example_user("hamlet")
+        field_map = {"phoneNumber": "phone_number"}
+        # This payload sets a custom profile field via PUT.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "id": hamlet.id,
+            "userName": hamlet.delivery_email,
+            "name": {"formatted": hamlet.full_name},
+            "active": True,
+            "phoneNumber": "987654321",
+        }
+
+        with self.mock_custom_profile_field_map(field_map):
+            result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
+            self.assertEqual(result.status_code, 200)
+
+            # Verify the response includes the custom field value.
+            output_data = orjson.loads(result.content)
+            expected_response_schema = self.generate_user_schema(hamlet)
+            expected_response_schema["phoneNumber"] = "987654321"
+            self.assertEqual(output_data, expected_response_schema)
+
+        phone_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Phone number")
+        phone_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=phone_field)
+        self.assertEqual(phone_value.value, "987654321")
+
+    def test_patch_custom_profile_fields(self) -> None:
+        hamlet = self.example_user("hamlet")
+        field_map = {"phoneNumber": "phone_number"}
+
+        # First, test PATCH with a path specified.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {"op": "replace", "path": "phoneNumber", "value": "111222333"},
+            ],
+        }
+
+        with self.mock_custom_profile_field_map(field_map):
+            result = self.json_patch(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        phone_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Phone number")
+        phone_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=phone_field)
+        self.assertEqual(phone_value.value, "111222333")
+
+        # Now test the other PATCH form, without path, specifying
+        # the attribute to modify in the value dict.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [
+                {"op": "replace", "value": {"phoneNumber": "444555666"}},
+            ],
+        }
+
+        with self.mock_custom_profile_field_map(field_map):
+            result = self.json_patch(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+
+        phone_value.refresh_from_db()
+        self.assertEqual(phone_value.value, "444555666")
+
+    def test_get_with_custom_profile_fields(self) -> None:
+        hamlet = self.example_user("hamlet")
+        field_map = {"phoneNumber": "phone_number"}
+
+        phone_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Phone number")
+        CustomProfileFieldValue.objects.update_or_create(
+            user_profile=hamlet,
+            field=phone_field,
+            defaults={"value": "gettest123"},
+        )
+
+        with self.mock_custom_profile_field_map(field_map):
+            result = self.client_get(f"/scim/v2/Users/{hamlet.id}", {}, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+        output_data = orjson.loads(result.content)
+
+        # The response should include the standard schema plus the custom field.
+        expected_response_schema = self.generate_user_schema(hamlet)
+        expected_response_schema["phoneNumber"] = "gettest123"
+        self.assertEqual(output_data, expected_response_schema)
+
+    def test_custom_profile_field_invalid_data(self) -> None:
+        field_map = {"birthday": "birthday"}
+
+        # Test with an existing user (PUT): an invalid date string for a DATE field.
+        hamlet = self.example_user("hamlet")
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "id": hamlet.id,
+            "userName": hamlet.delivery_email,
+            "name": {"formatted": hamlet.full_name},
+            "active": True,
+            "birthday": "not-a-date",
+        }
+
+        with self.mock_custom_profile_field_map(field_map):
+            result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": "Invalid data for birthday field: Birthday is not a date",
+                "status": 400,
+            },
+        )
+
+        # Test with a new user (POST): same invalid data. The user should still
+        # be created (this is a known limitation consistent with the existing
+        # atomicity TODO in save()), but the error is reported.
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "userName": "newuser@zulip.com",
+            "name": {"formatted": "New User"},
+            "active": True,
+            "birthday": "not-a-date",
+        }
+
+        with self.mock_custom_profile_field_map(field_map):
+            result = self.client_post(
+                "/scim/v2/Users", payload, content_type="application/json", **self.scim_headers()
+            )
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": "Invalid data for birthday field: Birthday is not a date",
+                "status": 400,
+            },
+        )
+
+    def test_custom_profile_field_nonexistent_field(self) -> None:
+        # Map a SCIM attribute to a var_name that doesn't match any custom profile field.
+        field_map = {"someAttr": "nonexistent_field"}
+
+        # Test with an existing user (PUT).
+        hamlet = self.example_user("hamlet")
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "id": hamlet.id,
+            "userName": hamlet.delivery_email,
+            "name": {"formatted": hamlet.full_name},
+            "active": True,
+            "someAttr": "somevalue",
+        }
+
+        with self.mock_custom_profile_field_map(field_map):
+            result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": "Custom profile field with name nonexistent_field not found.",
+                "status": 400,
+            },
+        )
+
+        # Test with a new user (POST). The early validation should reject
+        # the request before creating the user.
+        original_user_count = UserProfile.objects.count()
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "userName": "newuser@zulip.com",
+            "name": {"formatted": "New User"},
+            "active": True,
+            "someAttr": "somevalue",
+        }
+
+        with self.mock_custom_profile_field_map(field_map):
+            result = self.client_post(
+                "/scim/v2/Users", payload, content_type="application/json", **self.scim_headers()
+            )
+        self.assertEqual(
+            orjson.loads(result.content),
+            {
+                "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
+                "detail": "Custom profile field with name nonexistent_field not found.",
+                "status": 400,
+            },
+        )
+        # Verify no user was created.
+        self.assertEqual(UserProfile.objects.count(), original_user_count)
+
+    def test_no_custom_profile_field_map_ignores_extra_attrs(self) -> None:
+        """When custom_profile_field_map is not configured, extra attributes
+        in the SCIM payload are silently ignored (backward compatibility)."""
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "userName": "newuser@zulip.com",
+            "name": {"formatted": "New User"},
+            "active": True,
+            "phoneNumber": "123456789",
+        }
+
+        result = self.client_post(
+            "/scim/v2/Users", payload, content_type="application/json", **self.scim_headers()
+        )
+        self.assertEqual(result.status_code, 201)
+
+        new_user = UserProfile.objects.get(delivery_email="newuser@zulip.com")
+        phone_field = CustomProfileField.objects.get(realm=new_user.realm, name="Phone number")
+        self.assertFalse(
+            CustomProfileFieldValue.objects.filter(
+                user_profile=new_user, field=phone_field
+            ).exists()
+        )
 
 
 class TestSCIMGroup(SCIMTestCase):
