@@ -2523,3 +2523,12 @@ body:not(.spectator-view) {
         outline: none;
     }
 }
+
+.message_not_received {
+    color: var(--color-failed-message-send-icon);
+    font-size: 14px;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

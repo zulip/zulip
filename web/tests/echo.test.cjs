@@ -450,6 +450,84 @@ run_test("test reify_message_id", ({override}) => {
     assert.equal(history.topics.get("test").message_id, 110);
 });
 
+run_test("hang warning - timer starts when message inserted", ({override}) => {
+    const local_id_float = 105.01;
+    let timer_created = false;
+    let timer_delay = 0;
+
+    override(markdown, "render", noop);
+    override(markdown, "get_topic_links", noop);
+    override(global, "setTimeout", (_func, delay) => {
+        timer_created = true;
+        timer_delay = delay;
+        return 888;
+    });
+
+    const message_request = {
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        sender_email: "iago@zulip.com",
+        sender_full_name: "Iago",
+        sender_id: 123,
+    };
+
+    echo.insert_local_message(message_request, local_id_float, (message_data) => {
+        const messages = message_data.raw_messages;
+        messages.map((message) => echo.track_local_message(message));
+        return messages;
+    });
+
+    assert.ok(timer_created);
+    assert.equal(timer_delay, 15000);
+});
+
+run_test("hang warning - timer cleared on server ACK", ({override}) => {
+    const local_id_float = 106.01;
+    const local_id = "106.01";
+    let timer_cleared = false;
+    const fake_timer_id = 999;
+
+    override(markdown, "render", noop);
+    override(markdown, "get_topic_links", noop);
+    override(message_store, "reify_message_id", noop);
+    override(compose_notifications, "reify_message_id", noop);
+    override(hash_util, "search_terms_to_hash", noop);
+    override(browser_history, "update_current_history_state_data", noop);
+    override(message_lists, "all_rendered_message_lists", () => []);
+    override(global, "setTimeout", () => fake_timer_id);
+    override(global, "clearTimeout", (id) => {
+        if (id === fake_timer_id) {
+            timer_cleared = true;
+        }
+    });
+
+    const message_request = {
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        sender_email: "iago@zulip.com",
+        sender_full_name: "Iago",
+        sender_id: 123,
+    };
+
+    echo.insert_local_message(message_request, local_id_float, (message_data) => {
+        const messages = message_data.raw_messages;
+        messages.map((message) => echo.track_local_message(message));
+        return messages;
+    });
+
+    echo.process_from_server([
+        {
+            local_id,
+            id: 1001,
+            sender_id: 123,
+        },
+    ]);
+
+    assert.ok(timer_cleared);
+});
+
 run_test("reset MockDate", () => {
     MockDate.reset();
 });

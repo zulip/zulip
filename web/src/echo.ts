@@ -13,6 +13,7 @@ import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as echo_state from "./echo_state.ts";
 import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
 import * as local_message from "./local_message.ts";
 import * as markdown from "./markdown.ts";
 import type {InsertNewMessagesOpts} from "./message_events.ts";
@@ -45,6 +46,8 @@ const send_message_api_response_schema = z.object({
     id: z.number(),
     automatic_new_visibility_policy: z.optional(z.number()),
 });
+
+const message_hang_timers = new Map<string, ReturnType<typeof setTimeout>>();
 
 type MessageRequestObject = {
     sender_id: number;
@@ -193,6 +196,71 @@ function resend_message(
     send_message(message, on_success, on_error);
 }
 
+function display_message_hang(local_id: string): void {
+    const row_id = Number.parseFloat(local_id);
+    const $row = message_lists.current?.get_row?.(row_id);
+
+    if (!$row || $row.length === 0) {
+        return;
+    }
+
+    const $content = $row.find(".message_content").last();
+    if ($content.length === 0) {
+        return;
+    }
+
+    // Avoid adding duplicate warnings.
+    if ($content.find(".message_not_received").length > 0) {
+        return;
+    }
+
+    const $warning = $("<div>")
+        .addClass("message_not_received")
+        .text($t({defaultMessage: "Message not received by server"}));
+
+    $content.append($warning);
+}
+
+function clear_message_hang(local_id: string): void {
+    const row_id = Number.parseFloat(local_id);
+    const $row = message_lists.current?.get_row?.(row_id);
+
+    if (!$row || $row.length === 0) {
+        return;
+    }
+
+    $row.find(".message_not_received").remove();
+}
+
+function set_hang_timeout(local_id: string): void {
+    if (message_hang_timers.has(local_id)) {
+        return;
+    }
+
+    const timer_id = setTimeout(() => {
+        // Only show warning if the message is still waiting for server acknowledgment
+        // and has not already been marked as a failed request.
+        const message = echo_state.get_message_waiting_for_ack(local_id);
+        if (message !== undefined && !message.failed_request) {
+            display_message_hang(local_id);
+        }
+
+        message_hang_timers.delete(local_id);
+    }, 15000);
+
+    message_hang_timers.set(local_id, timer_id);
+}
+
+function clear_hang_timeout(local_id: string): void {
+    const timer_id = message_hang_timers.get(local_id);
+    if (timer_id !== undefined) {
+        clearTimeout(timer_id);
+        message_hang_timers.delete(local_id);
+    }
+
+    clear_message_hang(local_id);
+}
+
 export function build_display_recipient(message: RawLocalMessage): DisplayRecipientUser[] | string {
     if (message.type === "stream") {
         return stream_data.get_stream_name_from_id(message.stream_id);
@@ -285,6 +353,7 @@ export function insert_local_message(
         sent_by_this_client: true,
     });
     assert(message !== undefined);
+    set_hang_timeout(raw_local_message.local_id);
 
     return message;
 }
@@ -542,6 +611,7 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
         }
 
         reify_message_id(local_id, message.id);
+        clear_hang_timeout(local_id);
 
         if (message_store.get(message.id)?.failed_request) {
             failed_message_success(message.id);
@@ -629,6 +699,10 @@ export function rewire_message_send_error(value: typeof message_send_error): voi
 }
 
 function abort_message(message: Message): void {
+    if (message.local_id !== undefined) {
+        clear_hang_timeout(message.local_id);
+    }
+
     // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
