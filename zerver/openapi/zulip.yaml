@@ -1791,12 +1791,15 @@ paths:
                                     - enum:
                                         - push_device
                                 push_account_id:
-                                  type: string
+                                  type: integer
                                   description: |
                                     The push account ID for this client registration.
 
                                     See [`POST /mobile_push/register`](/api/register-push-device)
                                     for details on push account IDs.
+
+                                    **Changes**: Prior to Zulip 12.0 (feature level 450),
+                                    the integer value was expressed as a string.
                                 status:
                                   type: string
                                   enum:
@@ -1823,7 +1826,7 @@ paths:
                                 {
                                   "id": 1,
                                   "type": "push_device",
-                                  "push_account_id": "1234",
+                                  "push_account_id": 1234,
                                   "status": "active",
                                 }
                             - type: object
@@ -2060,6 +2063,7 @@ paths:
                                         "order": 8,
                                         "required": true,
                                         "editable_by_user": true,
+                                        "use_for_user_matching": true,
                                       },
                                     ],
                                   "id": 0,
@@ -2138,22 +2142,38 @@ paths:
                               description: |
                                 Event sent when a message has been deleted.
 
-                                Sent to all users who currently are subscribed to the
-                                messages' recipient. May also be sent to additional users
-                                who had access to it, including, in particular, an
-                                administrator user deleting messages in a stream that they
-                                are not subscribed to.
+                                Sent to all users who currently are subscribed to the messages'
+                                recipient. May also be sent to additional users who had access to
+                                the deleted message, including, in particular, an administrator user
+                                deleting messages in a channel that they are not subscribed to, but
+                                have content access to. Clients can thus reliably remove the
+                                messages from whatever view the administrator was using to delete
+                                them.
 
-                                This means that clients can assume that they will always
-                                receive an event of this type for deletions that the
-                                client itself initiated.
+                                Clients will receive an event of this type for message deletions
+                                that the client itself initiated if and only if the user previously
+                                had access to the deleted messages. (Some moderation actions, such
+                                as deleting all messages sent by a user, allow deleting DMs or
+                                private channel messages that the acting user cannot themselves
+                                access. The user will not receive deletion events for such
+                                inaccessible messages).
 
                                 This event is also sent when the user loses access to a message,
                                 such as when it is [moved to a channel][message-move-channel] that
                                 the user does not [have permission to access][channel-access].
 
-                                **Changes**: Before Zulip 9.0 (feature level 274), this
-                                event was only sent to subscribers of the message's recipient.
+                                **Changes**: Before Zulip 12.0 (feature level 457), an
+                                administrator who initiated the deletion of messages that they did
+                                not have permission to access could theoretically receive this event
+                                for inaccessible messages. However, no Zulip feature actually
+                                generated events of that type.
+
+                                Prior to Zulip 12.0 (feature level 452) messages deleted via a
+                                message retention policy incorrectly failed to generate
+                                `delete_message` events.
+
+                                Before Zulip 9.0 (feature level 274), this event was only sent to
+                                subscribers of the message's recipient.
 
                                 Before Zulip 5.0 (feature level 77), events
                                 for direct messages contained additional `sender_id` and
@@ -4172,7 +4192,7 @@ paths:
                                         "deleted_timestamp": null,
                                         "failed_timestamp": 1594825444.4363360405,
                                         "pending": false,
-                                        "export_type": 1,
+                                        "export_type": "public",
                                       },
                                     ],
                                   "id": 1,
@@ -4963,6 +4983,15 @@ paths:
                                             to be of type integer and did not accept anonymous user groups.
 
                                             New in Zulip 8.0 (feature level 209).
+                                    default_avatar_source:
+                                      type: string
+                                      description: |
+                                        The avatar data source type for new users.
+
+                                        - "G" = Hosted by Gravatar
+                                        - "J" = Generated using Jdenticon
+
+                                        **Changes**: New in Zulip 12.0 (feature level 456).
                                     default_code_block_language:
                                       type: string
                                       description: |
@@ -5078,14 +5107,17 @@ paths:
                                         [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 
                                         **Changes**: New in Zulip 5.0 (feature level 109).
-                                    giphy_rating:
+                                    gif_rating_policy:
                                       type: integer
                                       description: |
                                         Maximum rating of the GIFs that will be retrieved by the
                                         GIPHY and Tenor integrations in this organization.
 
-                                        **Changes**: In Zulip 12.0 (feature level 442), is now used for
-                                        both the Tenor and GIPHY integrations.
+                                        **Changes**: Before Zulip 12.0 (feature level 453),
+                                        this was called `giphy_rating`.
+
+                                        Before Zulip 12.0 (feature level 442), this was only used
+                                        for the Giphy integration.
 
                                         New in Zulip 4.0 (feature level 55).
                                     icon_source:
@@ -13385,7 +13417,10 @@ paths:
       description: |
         Check whether a user is subscribed to a channel.
 
-        **Changes**: New in Zulip 3.0 (feature level 12).
+        **Changes**: Prior to Zulip 12.0 (feature level 458), this endpoint
+        did not support querying subscriptions of bot users.
+
+        New in Zulip 3.0 (feature level 12).
       parameters:
         - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/ChannelIdInPath"
@@ -13424,7 +13459,10 @@ paths:
         the target user is subscribed to, since organization administrators
         implicitly have metadata access to all channels.
 
-        **Changes**: New in Zulip 12.0 (feature level 440).
+        **Changes**: Prior to Zulip 12.0 (feature level 458), target users that
+        were bots resulted in a permissions error.
+
+        New in Zulip 12.0 (feature level 440).
       parameters:
         - $ref: "#/components/parameters/UserId"
       responses:
@@ -13771,6 +13809,7 @@ paths:
                               "order": 8,
                               "required": true,
                               "editable_by_user": true,
+                              "use_for_user_matching": true,
                             },
                             {
                               "id": 9,
@@ -13919,6 +13958,17 @@ paths:
                     **Changes**: New in Zulip 10.0 (feature level 296).
                   type: boolean
                   example: true
+                use_for_user_matching:
+                  description: |
+                    Whether this custom profile field should be used to match users in typeahead
+                    suggestions. Only allowed for Short Text and External Account
+                    [profile field types](/help/custom-profile-fields#profile-field-types).
+
+                    This field is only included when its value is `true`.
+
+                    **Changes**: New in Zulip 12.0 (feature level 455).
+                  type: boolean
+                  example: false
               required:
                 - field_type
             encoding:
@@ -13931,6 +13981,8 @@ paths:
               required:
                 contentType: application/json
               editable_by_user:
+                contentType: application/json
+              use_for_user_matching:
                 contentType: application/json
       responses:
         "200":
@@ -14146,11 +14198,14 @@ paths:
                     The [home view](/help/configure-home-view) used when opening a new
                     Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                    - "recent_topics" - Recent conversations view
+                    - "recent" - Recent conversations view
                     - "inbox" - Inbox view
                     - "all_messages" - Combined feed view
 
-                    **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                    **Changes**: Before Zulip 12.0 (feature level 454), the Recent
+                    view had `"recent_topics"` as its string encoding.
+
+                    New in Zulip 8.0 (feature level 219). Previously, this was
                     called `default_view`, which was new in Zulip 4.0 (feature level 42).
                   type: string
                   example: all_messages
@@ -15453,7 +15508,7 @@ paths:
 
         New in Zulip 2.1.
 
-        [export-data]: /help/export-your-organization#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server
+        [export-data]: /help/export-your-organization#export-data-in-an-importable-format
       responses:
         "200":
           description: Success.
@@ -15481,7 +15536,7 @@ paths:
                             {
                               "acting_user_id": 11,
                               "deleted_timestamp": null,
-                              "export_type": 1,
+                              "export_type": "public",
                               "export_time": 1722243168.134179,
                               "export_url": "http://example.zulipchat.com/user_avatars/exports/2/FprbwiF0c_sCN0O-rf-ryFtc/zulip-export-p6yuxc45.tar.gz",
                               "id": 323,
@@ -15511,7 +15566,7 @@ paths:
 
         New in Zulip 2.1.
 
-        [export-data]: /help/export-your-organization#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server
+        [export-data]: /help/export-your-organization#export-data-in-an-importable-format
         [data-export]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#data-export
         [backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
       requestBody:
@@ -15523,21 +15578,32 @@ paths:
               properties:
                 export_type:
                   description: |
-                    Whether to create a public or a standard data export.
+                    Whether the data export should be public, full with consent,
+                    or full without consent.
 
-                    - 1 = Public data export.
-                    - 2 = Standard data export.
+                    - `public` = Public data only export.
+                    - `full_with_consent` = Public and private data export (with consent), which includes
+                      private data for users who have granted consent.
+                    - `full_without_consent` = All public and private data export, which includes private data for
+                      all users. This option requires the organization to have
+                      the `owner_full_content_access` feature enabled.
 
-                    If not specified, defaults to 1.
+                    If not specified, defaults to `public`.
+
+                    **Changes**: Zulip 12.0 (feature level 449) changed the type of
+                    this field from int to string with `1` being replaced by `public` and
+                    `2` being replaced by `full_with_consent`. The option `full_without_consent`
+                    was added for full exports without member consent.
 
                     **Changes**: New in Zulip 10.0 (feature level 304). Previously,
                     all export requests were public data exports.
-                  type: integer
+                  type: string
                   enum:
-                    - 1
-                    - 2
-                  default: 1
-                  example: 2
+                    - public
+                    - full_with_consent
+                    - full_without_consent
+                  default: public
+                  example: full_with_consent
       responses:
         "200":
           description: Success
@@ -17876,11 +17942,14 @@ paths:
                               The [home view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                              - "recent_topics" - Recent conversations view
+                              - "recent" - Recent conversations view
                               - "inbox" - Inbox view
                               - "all_messages" - Combined feed view
 
-                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                              **Changes**: Before Zulip 12.0 (feature level 454), the Recent
+                              view had `"recent_topics"` as its string encoding.
+
+                              New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
                           web_escape_navigates_to_home_view:
                             type: boolean
@@ -19115,7 +19184,7 @@ paths:
                           **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
                           available as a server-level configuration, which was available via the
                           `jitsi_server_url` field.
-                      realm_giphy_rating:
+                      realm_gif_rating_policy:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
@@ -19123,8 +19192,11 @@ paths:
                           Maximum rating of the GIFs that will be retrieved by the
                           GIPHY and Tenor integrations in this organization.
 
-                          **Changes**: In Zulip 12.0 (feature level 442), is now used for
-                          both the Tenor and GIPHY integrations.
+                          **Changes**: Before Zulip 12.0 (feature level 453), this was called
+                          `realm_giphy_rating`.
+
+                          **Changes**: Before Zulip 12.0 (feature level 442), this was only used by
+                          the Giphy integration.
 
                           New in Zulip 4.0 (feature level 55).
                       realm_waiting_period_threshold:
@@ -19660,6 +19732,17 @@ paths:
                               description: |
                                 The regex pattern of the URL of a profile page
                                 on the external site.
+                      realm_default_avatar_source:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The avatar data source type for new users.
+
+                          - "G" = Hosted by Gravatar
+                          - "J" = Generated using Jdenticon
+
+                          **Changes**: New in Zulip 12.0 (feature level 456).
                       jitsi_server_url:
                         type: string
                         deprecated: true
@@ -19720,7 +19803,7 @@ paths:
                           This Zulip server's configured minimum `zxcvbn` minimum guesses.
                           Necessary for password change UI to show whether the password
                           will be accepted.
-                      gif_rating_options:
+                      gif_rating_policy_options:
                         type: object
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
@@ -19732,9 +19815,12 @@ paths:
                           Useful for administrative settings UI that allows changing the
                           allowed rating of GIFs.
 
-                          **Changes**: New in Zulip 12.0 (feature level 442). Previously,
-                          this was called `giphy_rating_options` and only supported the
-                          original GIPHY gif picker integration.
+                          **Changes**: Before Zulip 12.0 (feature level 453), this was
+                          called `gif_rating_options`.
+
+                          **Changes**: Before Zulip 12.0 (feature level 442), this was called
+                          `giphy_rating_options` and only supported the original GIPHY gif picker
+                          integration.
 
                           `giphy_rating_options` was new in Zulip 4.0 (feature level 55).
                         additionalProperties:
@@ -20174,11 +20260,14 @@ paths:
                               The [home view](/help/configure-home-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                              - "recent_topics" - Recent conversations view
+                              - "recent" - Recent conversations view
                               - "inbox" - Inbox view
                               - "all_messages" - Combined feed view
 
-                              **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
+                              **Changes**: Before Zulip 12.0 (feature level 454), the Recent
+                              view had `"recent_topics"` as its string encoding.
+
+                              New in Zulip 8.0 (feature level 219). Previously, this was
                               called `default_view`, which was new in Zulip 4.0 (feature level 42).
                           web_escape_navigates_to_home_view:
                             type: boolean
@@ -21489,12 +21578,15 @@ paths:
                     The [home view](/help/configure-home-view) used when opening a new
                     Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                    - "recent_topics" - Recent conversations view
+                    - "recent" - Recent conversations view
                     - "inbox" - Inbox view
                     - "all_messages" - Combined feed view
 
-                    **Changes**: New in Zulip 8.0 (feature level 219). Previously, this was
-                    called `default_view`, which was new in Zulip 4.0 (feature level 42).
+                    **Changes**: Before Zulip 12.0 (feature level 454), the Recent
+                    view had `"recent_topics"` as its string encoding.
+
+                    New in Zulip 8.0 (feature level 219). Previously, this was called
+                    `default_view`, which was new in Zulip 4.0 (feature level 42).
 
                     Before Zulip 5.0 (feature level 80), this setting was managed by
                     the `PATCH /settings/display` endpoint.
@@ -24532,7 +24624,10 @@ paths:
       description: |
         Check whether a user is member of user group.
 
-        **Changes**: Prior to Zulip 10.0 (feature level 303),
+        **Changes**: Prior to Zulip 12.0 (feature level 458), this endpoint
+        did not support querying group membership of bot users.
+
+        Prior to Zulip 10.0 (feature level 303),
         this would return true when passed a deactivated user
         who was a member of the user group before being deactivated.
 
@@ -25832,6 +25927,17 @@ components:
 
             **Changes**: New in Zulip 10.0 (feature level 296).
           default: true
+        use_for_user_matching:
+          type: boolean
+          description: |
+            Whether this custom profile field should be used to match users in typeahead
+            suggestions. Only allowed for Short Text and External Account
+            [profile field types](/help/custom-profile-fields#profile-field-types).
+
+            This field is only included when its value is `true`.
+
+            **Changes**: New in Zulip 12.0 (feature level 455).
+          default: false
       required:
         - id
         - type
@@ -26036,12 +26142,23 @@ components:
             anywhere from seconds to an hour to generate the data
             export.
         export_type:
-          type: integer
+          type: string
+          enum:
+            - public
+            - full_with_consent
+            - full_without_consent
           description: |
-            Whether the data export is a public or a standard data export.
+            Whether the data export is public, full with consent, or full without consent.
 
-            - 1 = Public data export.
-            - 2 = Standard data export.
+            - `public` = Public data export.
+            - `full_with_consent` = Public and private data export (with consent), which includes private data
+              for users who have granted consent.
+            - `full_without_consent` = All public and private data, which includes private data for all users.
+
+            **Changes**: Zulip 12.0 (feature level 449) changed the type of
+            this field from int to string with `1` being replaced by `public` and
+            `2` being replaced by `full_with_consent`. The option `full_without_consent`
+            was added for full exports without member consent.
 
             **Changes**: New in Zulip 10.0 (feature level 304). Previously,
             the export type was not included in these objects because only

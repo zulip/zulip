@@ -39,6 +39,7 @@ a.help_link_widget {
     &:hover {
         color: inherit;
         opacity: 1;
+        text-decoration: none;
     }
 }
 
@@ -188,8 +189,12 @@ h3,
 .play_notification_sound {
     .notification-sound-icon {
         font-size: 1.5714em; /* 22px at 14px / em */
-        /* Visually center with chevron in select */
-        line-height: 1.8571em; /* 26px at 14px / em */
+        /* Visually center with chevron in select
+        by setting the line-height equal to the height
+        of select which is equal to - 1.4em + 8px (4px
+        each for top and bottom paddings) + 2px (1px each
+        for top and bottom borders). */
+        line-height: calc(1.4 * var(--base-font-size-px) + 10px);
         cursor: pointer;
     }
 }
@@ -537,7 +542,7 @@ input[type="checkbox"] {
 
 .admin-realm-form {
     & h3 {
-        margin: 10px 0 5px;
+        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
     }
 
     .subsection-header h3 {
@@ -549,7 +554,7 @@ input[type="checkbox"] {
 .notification-settings-form {
     .subsection-header h3 {
         display: inline-block;
-        margin: 10px 0 5px;
+        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
     }
 
     .tip {
@@ -1291,6 +1296,35 @@ label.preferences-radio-choice-label {
     }
 }
 
+.default_avatar_source_values {
+    width: 25em; /* 400px / 16px em */
+
+    .preferences-radio-choice-label {
+        align-items: center;
+
+        .radio-choice-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="radio"] {
+            top: 0;
+            margin-right: 0.5em; /* 8px / 16px em */
+        }
+    }
+
+    .right {
+        display: flex;
+        gap: 0.5em; /* 8px / 16px em */
+    }
+
+    .avatar {
+        height: 2.625em; /* 42px / 16px em */
+        width: 2.625em; /* 42px / 16px em */
+        border-radius: 0.25em; /* 4px / 16px em */
+    }
+}
+
 .user_list_style_values {
     max-width: 25em; /* 350px / 14px em */
 
@@ -1745,6 +1779,36 @@ label.preferences-radio-choice-label {
     margin-bottom: var(--margin-bottom-field-description);
     /* Avoid having the clickable area extend to the full width of the containing element */
     width: fit-content;
+}
+
+#realm-user-default-settings {
+    .settings-field-label,
+    .settings-checkbox-wrapper,
+    .info-density-controls {
+        .reset-user-setting-to-default {
+            display: inline-flex;
+            padding: 0.1875em; /* 3px at 16px */
+            margin-left: 0.1875em; /* 3px at 16px */
+
+            position: relative;
+            top: -0.0625em; /* 1px at 16px */
+
+            .zulip-icon {
+                width: 1em; /* 15px at 16px */
+                height: 1em; /* 15px at 16px */
+                font-size: 0.9375em; /* 15px at 16px */
+            }
+        }
+    }
+
+    .general_notifications .reset-user-setting-to-default {
+        font-size: 1.2em;
+        margin-top: 0.3125em; /* 6px at 16px */
+        /* This is needed to adjust the gap property used
+        for flex layout so that button is not too far from
+        the heading. */
+        margin-left: -0.5em; /* 9.6px at 16px */
+    }
 }
 
 .settings-profile-user-field-hint {

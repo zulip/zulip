@@ -243,7 +243,7 @@ export let fetch_presence_for_popover = (user_id: number): void => {
         return;
     }
 
-    if (!people.is_active_user_for_popover(user_id) || people.get_by_user_id(user_id).is_bot) {
+    if (!people.is_active_user_or_system_bot(user_id) || people.get_by_user_id(user_id).is_bot) {
         return;
     }
 
@@ -311,7 +311,7 @@ function get_user_card_popover_data(
         invisible_mode = !user_settings.presence_enabled;
     }
 
-    const is_active = people.is_active_user_for_popover(user.user_id);
+    const is_active = people.is_active_user_or_system_bot(user.user_id);
     const is_system_bot = user.is_system_bot;
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
@@ -359,7 +359,7 @@ function get_user_card_popover_data(
         pm_with_url: hash_util.pm_with_url(user.user_id.toString()),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
-        sent_by_url: hash_util.by_sender_url(user.email),
+        sent_by_url: hash_util.by_sender_url(user.user_id),
         user_email: user.delivery_email,
         user_full_name: user.full_name,
         user_id: user.user_id,
@@ -409,7 +409,7 @@ function show_user_card_popover(
     let popover_html;
     let args;
     if (user.is_inaccessible_user) {
-        const sent_by_url = hash_util.by_sender_url(user.email);
+        const sent_by_url = hash_util.by_sender_url(user.user_id);
         const user_avatar = people.small_avatar_url_for_person(user);
         args = {
             user_id: user.user_id,
@@ -734,12 +734,11 @@ function register_click_handlers(): void {
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const email = people.get_by_user_id(user_id).email;
         message_view.show(
             [
                 {
                     operator: "dm",
-                    operand: email,
+                    operand: [user_id],
                 },
             ],
             {trigger: "user sidebar popover"},
@@ -754,12 +753,11 @@ function register_click_handlers(): void {
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const email = people.get_by_user_id(user_id).email;
         message_view.show(
             [
                 {
                     operator: "sender",
-                    operand: email,
+                    operand: user_id,
                 },
             ],
             {trigger: "user sidebar popover"},
@@ -846,7 +844,7 @@ function register_click_handlers(): void {
         }
         const user_id = elem_to_user_id($(this).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
-        const is_active = people.is_active_user_for_popover(user_id);
+        const is_active = people.is_active_user_or_system_bot(user_id);
         const mention = people.get_mention_syntax(name, user_id, !is_active);
         compose_ui.insert_syntax_and_focus(mention);
         message_user_card.hide();

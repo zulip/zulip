@@ -59,7 +59,7 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
             !filter.is_personal_filter() &&
             !(
                 _.isEqual(filter._sorted_term_types, ["sender", "has-reaction"]) &&
-                filter.terms_with_operator("sender")[0]!.operand === people.my_current_email()
+                filter.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
             )
         ) {
             show_end_of_results_notice();

@@ -557,6 +557,14 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     } else if (is_youtube_video) {
         type = "youtube-video";
         source = "https://www.youtube.com/embed/" + $parent.attr("data-id");
+        // YouTube URLs support a `start` parameter that can be either
+        // an integer or a string-encoded time offset like
+        // "1h20m12s". The embed API only supports the integer format,
+        // so we may need to convert the format.
+        const start_time = util.parse_youtube_start_time(url);
+        if (start_time !== undefined) {
+            source += "?start=" + start_time;
+        }
     } else if (is_vimeo_video) {
         type = "vimeo-video";
         source = "https://player.vimeo.com/video/" + $parent.attr("data-id");

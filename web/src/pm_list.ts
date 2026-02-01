@@ -240,7 +240,7 @@ export function update_dom_with_unread_counts(
     last_direct_message_count = new_direct_message_count;
 }
 
-export function highlight_all_private_messages_view(): void {
+function highlight_all_private_messages_view(): void {
     $(".direct-messages-container").addClass("active-direct-messages-section");
 }
 
@@ -322,7 +322,6 @@ function zoom_in(): void {
     $(".direct-messages-container").removeClass("zoom-out").addClass("zoom-in");
     $("#hide-more-direct-messages").addClass("dm-zoomed-in");
     $("#streams_list").hide();
-    $(".left-sidebar .right-sidebar-items").hide();
 
     const $filter = $(".direct-messages-list-filter").expectOne();
     $filter.trigger("focus");
@@ -335,7 +334,6 @@ function zoom_out(): void {
     $(".direct-messages-container").removeClass("zoom-in").addClass("zoom-out");
     $("#hide-more-direct-messages").removeClass("dm-zoomed-in");
     $("#streams_list").show();
-    $(".left-sidebar .right-sidebar-items").show();
 }
 
 export function clear_search(): void {

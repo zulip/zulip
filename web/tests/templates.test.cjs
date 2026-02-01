@@ -36,6 +36,30 @@ run_test("or", () => {
     assert.equal(html, "\n<p>last or</p>\n<p>true or</p>\n");
 });
 
+run_test("map_entries", () => {
+    const html = require("./templates/map_entries.hbs")({
+        m: new Map([
+            ["a", "b"],
+            ["c", "d"],
+        ]),
+    });
+    assert.equal(html, "a:b\nc:d\n");
+});
+
+run_test("object_entries", () => {
+    const html = require("./templates/object_entries.hbs")({
+        o: {a: "b", c: "d"},
+    });
+    assert.equal(html, "a:b\nc:d\n");
+});
+
+run_test("object_values", () => {
+    const html = require("./templates/object_values.hbs")({
+        o: {a: "b", c: "d"},
+    });
+    assert.equal(html, "b\nd\n");
+});
+
 run_test("rendered_markdown", () => {
     const html = require("./templates/rendered_markdown.hbs")();
     const expected_html =
@@ -110,7 +134,7 @@ run_test("list_each", ({override}) => {
 `,
     );
     assert.equal(
-        require("./templates/list_each.hbs")({stuff: {}}),
+        require("./templates/list_each.hbs")({stuff: []}),
         `\
 empty
 

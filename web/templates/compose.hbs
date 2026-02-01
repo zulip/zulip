@@ -10,8 +10,8 @@
             </div>
         </div>
     </div>
-    <div id="compose_controls">
-        <div id="compose_buttons">
+    <div id="closed-compose-controls">
+        <div id="legacy-closed-compose-box">
             <div class="reply_button_container">
                 <div class="compose-reply-button-wrapper" data-reply-button-type="selected_message">
                     <button type="button" class="compose_reply_button"
@@ -62,7 +62,7 @@
                             <div class="topic-marker-container">
                                 <a role="button" class="conversation-arrow zulip-icon zulip-icon-chevron-right"></a>
                             </div>
-                            <div id="compose_recipient_box">
+                            <div id="compose-channel-recipient">
                                 <input type="text" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
                                 <span id="topic-not-mandatory-placeholder" class="placeholder">
                                     {{> topic_not_mandatory_placeholder_text empty_string_topic_display_name=empty_string_topic_display_name}}

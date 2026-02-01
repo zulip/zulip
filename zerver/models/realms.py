@@ -1,7 +1,7 @@
 from email.headerregistry import Address
 from enum import Enum, IntEnum
 from types import UnionType
-from typing import TYPE_CHECKING, Optional, TypedDict
+from typing import TYPE_CHECKING, Literal, Optional, TypedDict
 from uuid import uuid4
 
 import django.contrib.auth
@@ -30,6 +30,8 @@ if TYPE_CHECKING:
 
 
 SECONDS_PER_DAY = 86400
+RealmExportSlug = Literal["public", "full_with_consent", "full_without_consent"]
+DEFAULT_REALM_EXPORT_TYPE_SLUG: RealmExportSlug = "public"
 
 
 # This simple call-once caching saves ~500us in auth_enabled_helper,
@@ -663,8 +665,8 @@ class Realm(models.Model):
     JITSI_SERVER_SPECIAL_VALUES_MAP = {"default": None}
     jitsi_server_url = models.URLField(null=True, default=None)
 
-    # Please access this via get_gif_rating_options.
-    GIF_RATING_OPTIONS = {
+    # Please access this via get_gif_rating_policy_options.
+    GIF_RATING_POLICY_OPTIONS = {
         "disabled": {
             "name": gettext_lazy("GIF integration disabled"),
             "id": 0,
@@ -690,9 +692,10 @@ class Realm(models.Model):
         },
     }
 
-    # maximum rating of the GIFs that will be retrieved.
-    # This is now used as a common rating for both Tenor and GIPHY.
-    giphy_rating = models.PositiveSmallIntegerField(default=GIF_RATING_OPTIONS["g"]["id"])
+    # Rating policy of the GIFs that will be retrieved.
+    gif_rating_policy = models.PositiveSmallIntegerField(
+        default=GIF_RATING_POLICY_OPTIONS["g"]["id"]
+    )
 
     default_code_block_language = models.TextField(default="")
 
@@ -706,10 +709,22 @@ class Realm(models.Model):
     # Whether to notify client when a DM has a guest recipient.
     enable_guest_user_dm_warning = models.BooleanField(default=True)
 
+    # Avatar source for new users
+    AVATAR_FROM_GRAVATAR = "G"
+    AVATAR_FROM_JDENTICON = "J"
+    AVATAR_SOURCES = (
+        (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
+        (AVATAR_FROM_JDENTICON, "Generated using Jdenticon"),
+    )
+    default_avatar_source = models.CharField(
+        default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1
+    )
+
     # Define the types of the various automatically managed properties
     property_types: dict[str, type | UnionType] = dict(
         allow_message_editing=bool,
         avatar_changes_disabled=bool,
+        default_avatar_source=str,
         default_code_block_language=str,
         default_language=str,
         description=str,
@@ -722,7 +737,7 @@ class Realm(models.Model):
         enable_guest_user_indicator=bool,
         enable_read_receipts=bool,
         enable_spectator_access=bool,
-        giphy_rating=int,
+        gif_rating_policy=int,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,
@@ -923,12 +938,12 @@ class Realm(models.Model):
     def __str__(self) -> str:
         return f"{self.string_id} {self.id}"
 
-    def get_gif_rating_options(self) -> dict[str, dict[str, object]]:
-        """Wrapper function for GIF_RATING_OPTIONS that ensures evaluation
+    def get_gif_rating_policy_options(self) -> dict[str, dict[str, object]]:
+        """Wrapper function for GIF_RATING_POLICY_OPTIONS that ensures evaluation
         of the lazily evaluated `name` field without modifying the original."""
         return {
             rating_type: {"name": str(rating["name"]), "id": rating["id"]}
-            for rating_type, rating in self.GIF_RATING_OPTIONS.items()
+            for rating_type, rating in self.GIF_RATING_POLICY_OPTIONS.items()
         }
 
     def authentication_methods_dict(self) -> dict[str, bool]:
@@ -1407,11 +1422,11 @@ class RealmExport(models.Model):
     EXPORT_PUBLIC = 1
     EXPORT_FULL_WITH_CONSENT = 2
     EXPORT_FULL_WITHOUT_CONSENT = 3
-    EXPORT_TYPES = [
-        EXPORT_PUBLIC,
-        EXPORT_FULL_WITH_CONSENT,
-        EXPORT_FULL_WITHOUT_CONSENT,
-    ]
+    EXPORT_TYPES: dict[RealmExportSlug, int] = {
+        "public": EXPORT_PUBLIC,
+        "full_with_consent": EXPORT_FULL_WITH_CONSENT,
+        "full_without_consent": EXPORT_FULL_WITHOUT_CONSENT,
+    }
     type = models.PositiveSmallIntegerField(default=EXPORT_PUBLIC)
 
     REQUESTED = 1

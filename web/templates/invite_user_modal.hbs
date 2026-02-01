@@ -30,7 +30,7 @@
     <div class="input-group">
         <label for="expires_in" class="modal-field-label">{{t "Invitation expires after" }}</label>
         <select id="expires_in" name="expires_in" class="invite-user-select modal_select bootstrap-focus-style">
-            {{#each expires_in_options}}
+            {{#each (object_values expires_in_options)}}
                 <option {{#if this.default }}selected{{/if}} value="{{this.value}}">{{this.description}}</option>
             {{/each}}
         </select>
@@ -39,7 +39,7 @@
             <label class="modal-field-label">{{t "Custom time" }}</label>
             <input id="custom-expiration-time-input" name="custom-expiration-time-input" class="custom-time-input-value inline-block" type="text" autocomplete="off" value="" maxlength="3"/>
             <select id="custom-expiration-time-unit" name="custom-expiration-time-unit" class="custom-time-input-unit invite-user-select modal_select bootstrap-focus-style">
-                {{#each time_choices}}
+                {{#each (object_values time_choices)}}
                     <option value="{{this.name}}">{{this.description}}</option>
                 {{/each}}
             </select>
@@ -104,7 +104,7 @@
     {{/if}}
     {{#if is_admin}}
     <div class="input-group">
-        {{#if default_welcome_message_custom_text.length}}
+        {{#if default_welcome_message_custom_text}}
         <label class="checkbox display-block modal-field-label">
             <input type="checkbox" id="send_default_realm_welcome_message_custom_text" checked="checked"/>
             <span class="rendered-checkbox"></span>

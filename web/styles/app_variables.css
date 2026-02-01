@@ -164,6 +164,16 @@
 
     color-scheme: light;
 
+    /* Variable for setting the viewport to full height.
+       As of late 2025, we still support browsers (e.g.,
+       Chrome 105) that do not support dynamic viewport
+       units. 100% is the legacy full-height value. */
+    --full-height-dynamic-viewport: 100%;
+
+    @supports (height: 100dvh) {
+        --full-height-dynamic-viewport: 100dvh;
+    }
+
     /*
     This is the header, aka the navbar.
     */
@@ -1115,32 +1125,28 @@
         hsl(0deg 0% 0% / 20%)
     );
     --color-border-recent-view-table: light-dark(
-        hsl(0deg 0% 0% / 60%),
-        hsl(0deg 0% 88%)
+        hsl(0deg 0% 0% / 10%),
+        hsl(0deg 0% 0% / 10%)
     );
     --color-background-recent-view-row: light-dark(
-        hsl(100deg 11% 96%),
-        hsl(0deg 0% 11%)
+        hsl(0deg 0% 96%),
+        hsl(0deg 0% 14%)
     );
     --color-background-recent-view-row-hover: light-dark(
-        hsl(210deg 100% 97%),
-        hsl(208deg 26% 11% / 60%)
+        hsl(222deg 70% 12% / 7%),
+        hsl(220deg 18% 95% / 7%)
     );
     --color-background-recent-view-unread-row: light-dark(
         hsl(0deg 0% 100%),
-        hsl(212deg 30% 22% / 40%)
+        color-mix(in srgb, hsl(0deg 0% 100%) 8%, hsl(0deg 0% 11%))
     );
     --color-background-recent-view-unread-row-hover: light-dark(
-        hsl(210deg 100% 97%),
-        hsl(212deg 30% 22% / 60%)
+        hsl(220deg 5% 12% / 3%),
+        color-mix(in srgb, hsl(0deg 0% 100%) 11%, hsl(0deg 0% 11%))
     );
     --color-recent-view-link: light-dark(
-        hsl(205deg 47% 42%),
-        hsl(206deg 89% 74%)
-    );
-    --color-recent-view-link-hover: light-dark(
-        hsl(214deg 40% 58%),
-        hsl(208deg 64% 52%)
+        hsl(0deg 0% 15%),
+        hsl(0deg 0% 100% / 75%)
     );
     --color-background-recent-filters-button-focus: light-dark(
         hsl(0deg 0% 80%),
@@ -1167,12 +1173,24 @@
         hsl(228deg 11% 17%)
     );
     --color-background-recent-view-table-thead-th: light-dark(
-        hsl(0deg 0% 100%),
-        hsl(228deg 11% 17%)
+        var(--grey-50),
+        hsl(0deg 0% 100% / 10%)
     );
     --color-background-recent-view-table-thead-sort-header: light-dark(
-        hsl(0deg 0% 95%),
-        hsl(211deg 29% 14%)
+        hsl(229deg 9% 36% / 7%),
+        hsl(230deg 9% 60% / 14%)
+    );
+    --color-text-recent-view-table-thead-th: light-dark(
+        var(--grey-600),
+        var(--grey-300)
+    );
+    --color-arrow-recent-view-table-thead-th: light-dark(
+        hsl(229deg 9% 36% / 50%),
+        hsl(229deg 10% 70% / 50%)
+    );
+    --color-text-recent-view-last-msg-time: light-dark(
+        hsl(0deg 0% 15% / 75%),
+        hsl(0deg 0% 100% / 50%)
     );
 
     /* Compose box colors */

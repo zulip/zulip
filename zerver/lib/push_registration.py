@@ -55,7 +55,7 @@ def handle_registration_to_bouncer_failure(
     )
     event = dict(
         type="push_device",
-        push_account_id=str(push_account_id),
+        push_account_id=push_account_id,
         status="failed",
         error_code=error_code,
     )
@@ -137,7 +137,7 @@ def handle_register_push_device_to_bouncer(
     )
     event = dict(
         type="push_device",
-        push_account_id=str(push_account_id),
+        push_account_id=push_account_id,
         status="active",
     )
     send_event_on_commit(user_profile.realm, event, [user_profile.id])

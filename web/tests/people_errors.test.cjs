@@ -42,9 +42,6 @@ run_test("report_late_add", ({override}) => {
 run_test("blueslip", () => {
     const unknown_email = "alicebobfred@example.com";
 
-    blueslip.expect("debug", "User email operand unknown: " + unknown_email);
-    people.id_matches_email_operand(42, unknown_email);
-
     blueslip.expect("error", "Unknown user_id");
     people.get_actual_name_from_user_id(9999);
 

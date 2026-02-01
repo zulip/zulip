@@ -250,10 +250,13 @@ class RegisterPushDeviceToServer(BouncerTestCase):
 
         payload = self.get_register_push_device_payload()
 
-        # Verify the created `PushDevice` row while the
-        # `register_push_device_to_bouncer` event is still not
-        # consumed by the `PushNotificationsWorker` worker.
-        with mock_queue_publish("zerver.views.push_notifications.queue_event_on_commit") as m:
+        # Verify the created `PushDevice` row and `push_device` event
+        # while the `register_push_device_to_bouncer` event is still
+        # not consumed by the `PushNotificationsWorker` worker.
+        with (
+            self.capture_send_event_calls(expected_num_events=1) as events,
+            mock_queue_publish("zerver.views.push_notifications.queue_event_on_commit") as m,
+        ):
             result = self.client_post("/json/mobile_push/register", payload)
         self.assert_json_success(result)
         m.assert_called_once()
@@ -261,6 +264,10 @@ class RegisterPushDeviceToServer(BouncerTestCase):
         self.assert_length(push_devices, 1)
         self.assertIsNone(push_devices[0].bouncer_device_id)
         self.assertEqual(push_devices[0].status, "pending")
+        self.assertEqual(
+            events[0]["event"],
+            dict(type="push_device", push_account_id=2408, status="pending"),
+        )
 
         queue_name = m.call_args[0][0]
         queue_message = m.call_args[0][1]
@@ -274,7 +281,7 @@ class RegisterPushDeviceToServer(BouncerTestCase):
         self.assertEqual(push_devices[0].status, "active")
         self.assertEqual(
             events[0]["event"],
-            dict(type="push_device", push_account_id="2408", status="active"),
+            dict(type="push_device", push_account_id=2408, status="active"),
         )
 
         # Idempotent
@@ -288,7 +295,7 @@ class RegisterPushDeviceToServer(BouncerTestCase):
         # instead of a `do_register_remote_push_device` function call.
         with (
             self.settings(ZILENCER_ENABLED=False),
-            self.capture_send_event_calls(expected_num_events=1) as events,
+            self.capture_send_event_calls(expected_num_events=2) as events,
         ):
             payload["push_account_id"] = 5555
             result = self.client_post("/json/mobile_push/register", payload)
@@ -299,7 +306,11 @@ class RegisterPushDeviceToServer(BouncerTestCase):
         self.assertEqual(push_devices[1].status, "active")
         self.assertEqual(
             events[0]["event"],
-            dict(type="push_device", push_account_id="5555", status="active"),
+            dict(type="push_device", push_account_id=5555, status="pending"),
+        )
+        self.assertEqual(
+            events[1]["event"],
+            dict(type="push_device", push_account_id=5555, status="active"),
         )
 
     @override_settings(ZILENCER_ENABLED=False)
@@ -353,7 +364,7 @@ class RegisterPushDeviceToServer(BouncerTestCase):
 
         # Verify InvalidBouncerPublicKeyError
         invalid_bouncer_public_key_payload = {**payload, "bouncer_public_key": "invalid public key"}
-        with self.capture_send_event_calls(expected_num_events=1) as events:
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             result = self.client_post(
                 "/json/mobile_push/register", invalid_bouncer_public_key_payload
             )
@@ -364,9 +375,13 @@ class RegisterPushDeviceToServer(BouncerTestCase):
         self.assertEqual(push_devices[0].status, "failed")
         self.assertEqual(
             events[0]["event"],
+            dict(type="push_device", push_account_id=2408, status="pending"),
+        )
+        self.assertEqual(
+            events[1]["event"],
             dict(
                 type="push_device",
-                push_account_id="2408",
+                push_account_id=2408,
                 status="failed",
                 error_code="INVALID_BOUNCER_PUBLIC_KEY",
             ),
@@ -374,13 +389,21 @@ class RegisterPushDeviceToServer(BouncerTestCase):
 
         # Retrying with correct payload results in success.
         # `error_code` of the same PushDevice row updated to None.
-        with self.capture_send_event_calls(expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             result = self.client_post("/json/mobile_push/register", payload)
         self.assert_json_success(result)
         push_devices = PushDevice.objects.all()
         self.assert_length(push_devices, 1)
         self.assertIsNone(push_devices[0].error_code)
         self.assertEqual(push_devices[0].status, "active")
+        self.assertEqual(
+            events[0]["event"],
+            dict(type="push_device", push_account_id=2408, status="pending"),
+        )
+        self.assertEqual(
+            events[1]["event"],
+            dict(type="push_device", push_account_id=2408, status="active"),
+        )
 
     @activate_push_notification_service()
     @override_settings(ZILENCER_ENABLED=False)
@@ -395,19 +418,24 @@ class RegisterPushDeviceToServer(BouncerTestCase):
 
         # Verify InvalidEncryptedPushRegistrationError
         invalid_token_payload = self.get_register_push_device_payload(token="")
-        with self.capture_send_event_calls(expected_num_events=1) as events:
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             result = self.client_post("/json/mobile_push/register", invalid_token_payload)
         self.assert_json_success(result)
         push_devices = PushDevice.objects.all()
         self.assert_length(push_devices, 1)
+        self.assertEqual(push_devices[0].status, "failed")
         self.assertEqual(
             push_devices[0].error_code, InvalidEncryptedPushRegistrationError.code.name
         )
         self.assertEqual(
             events[0]["event"],
+            dict(type="push_device", push_account_id=2408, status="pending"),
+        )
+        self.assertEqual(
+            events[1]["event"],
             dict(
                 type="push_device",
-                push_account_id="2408",
+                push_account_id=2408,
                 status="failed",
                 error_code="BAD_REQUEST",
             ),
@@ -430,18 +458,23 @@ class RegisterPushDeviceToServer(BouncerTestCase):
         )
         with (
             self.assertLogs(level="ERROR") as m,
-            self.capture_send_event_calls(expected_num_events=1) as events,
+            self.capture_send_event_calls(expected_num_events=2) as events,
         ):
             result = self.client_post("/json/mobile_push/register", liveness_timed_out_payload)
         self.assert_json_success(result)
         push_devices = PushDevice.objects.all()
         self.assert_length(push_devices, 1)
+        self.assertEqual(push_devices[0].status, "failed")
         self.assertEqual(push_devices[0].error_code, RequestExpiredError.code.name)
         self.assertEqual(
             events[0]["event"],
+            dict(type="push_device", push_account_id=2408, status="pending"),
+        )
+        self.assertEqual(
+            events[1]["event"],
             dict(
                 type="push_device",
-                push_account_id="2408",
+                push_account_id=2408,
                 status="failed",
                 error_code="REQUEST_EXPIRED",
             ),
@@ -473,7 +506,7 @@ class RegisterPushDeviceToServer(BouncerTestCase):
 
         with (
             self.assertLogs(level="ERROR") as m,
-            self.capture_send_event_calls(expected_num_events=0),
+            self.capture_send_event_calls(expected_num_events=1) as events,
         ):
             result = self.client_post("/json/mobile_push/register", payload)
         self.assert_json_success(result)
@@ -481,6 +514,10 @@ class RegisterPushDeviceToServer(BouncerTestCase):
         self.assert_length(push_devices, 1)
         # We keep retrying until `RequestExpiredError` is raised.
         self.assertEqual(push_devices[0].status, "pending")
+        self.assertEqual(
+            events[0]["event"],
+            dict(type="push_device", push_account_id=2408, status="pending"),
+        )
         self.assertEqual(
             m.output[0],
             f"ERROR:root:Push device registration request for user_id={hamlet.id}, push_account_id=2408 failed.",

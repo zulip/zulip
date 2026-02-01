@@ -218,17 +218,41 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 11);
 
-    add_topic_message("After Brooklyn", 1008);
-    add_topic_message("Delhi", 1009);
+    add_topic_message("Backend Developer", 1008);
+    add_topic_message("Developer Backend", 1009);
 
     // When topic search input is not empty, we show topics
     // based on the search term.
-    let search_term = "b,d";
+    let search_term = "b d";
     list_info = get_list_info(zoomed, search_term);
     assert.equal(list_info.items.length, 2);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 2);
+
+    add_topic_message("Work (Project A)", 1010);
+    search_term = "Work (";
+    list_info = get_list_info(zoomed, search_term);
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "Work (Project A)");
+
+    search_term = "BACKEND";
+    list_info = get_list_info(zoomed, search_term);
+    assert.equal(list_info.items.length, 2);
+    assert.equal(list_info.items[0].topic_name, "Developer Backend");
+    assert.equal(list_info.items[1].topic_name, "Backend Developer");
+
+    add_topic_message("authentication flow", 1011);
+    list_info = get_list_info(zoomed, "auth");
+    assert.equal(list_info.items.length, 1);
+    list_info = get_list_info(zoomed, "thent");
+    assert.equal(list_info.items.length, 0);
+
+    add_topic_message("backend deployment guide", 1012);
+    list_info = get_list_info(zoomed, "ba de gu");
+    assert.equal(list_info.items.length, 1);
+    list_info = get_list_info(zoomed, "gu ba de");
+    assert.equal(list_info.items.length, 1);
 
     // Verify empty string topic shows up for "general" search term.
     search_term = "general";

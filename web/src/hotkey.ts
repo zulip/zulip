@@ -23,11 +23,12 @@ import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import * as gear_menu from "./gear_menu.ts";
-import * as giphy from "./giphy.ts";
+import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as lightbox from "./lightbox.ts";
 import * as list_util from "./list_util.ts";
 import * as message_actions_popover from "./message_actions_popover.ts";
@@ -62,7 +63,6 @@ import {realm} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
-import * as tenor from "./tenor.ts";
 import * as topic_list from "./topic_list.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as user_card_popover from "./user_card_popover.ts";
@@ -425,19 +425,17 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         return true;
     }
 
-    if (giphy.is_popped_from_edit_message()) {
-        giphy.focus_current_edit_message();
+    if (gif_picker_ui.is_popped_from_edit_message()) {
+        gif_picker_ui.focus_current_edit_message();
         // Hide after setting focus so that `edit_message_id` is
-        // still set in giphy.
-        giphy.hide_giphy_popover();
+        // still set in picker.
+        gif_picker_ui.hide_picker_popover();
         return true;
     }
 
-    if (tenor.is_popped_from_edit_message()) {
-        tenor.focus_current_edit_message();
-        // Hide after setting focus so that `edit_message_id` is
-        // still set in giphy.
-        tenor.hide_picker_popover();
+    // Hide the GIF picker if it was open and focus the compose textarea.
+    if (!gif_picker_ui.is_popped_from_edit_message() && gif_picker_ui.hide_picker_popover()) {
+        $("textarea#compose-textarea").trigger("focus");
         return true;
     }
 
@@ -492,9 +490,12 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         }
 
         if (compose_state.composing()) {
-            // Check if the giphy popover was open using compose box.
-            // Hide GIPHY popover if it's open.
-            if (!giphy.is_popped_from_edit_message() && giphy.hide_giphy_popover()) {
+            // Check if the GIF picker popover was open using compose box.
+            // Hide GIF picker popover if it's open.
+            if (
+                !gif_picker_ui.is_popped_from_edit_message() &&
+                gif_picker_ui.hide_picker_popover()
+            ) {
                 $("textarea#compose-textarea").trigger("focus");
                 return true;
             }
@@ -1208,6 +1209,11 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             browser_history.go_to_location("#recent");
             return true;
         case "open_inbox":
+            // Focus search if already in (non-channel) inbox view.
+            if (!inbox_util.is_channel_view() && !inbox_ui.is_search_focused()) {
+                inbox_ui.focus_inbox_search();
+                return true;
+            }
             browser_history.go_to_location("#inbox");
             return true;
         case "open_starred_message_view":
@@ -1242,6 +1248,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
                 }
             }
             if (inbox_ui.is_in_focus()) {
+                // Focus search if already in channel view.
+                if (inbox_util.is_channel_view()) {
+                    inbox_ui.focus_inbox_search();
+                    return true;
+                }
+
                 const msg = inbox_ui.get_focused_row_message();
                 if (msg?.msg_type === "stream") {
                     list_of_channel_topics_channel_id = msg.stream_id;

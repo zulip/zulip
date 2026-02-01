@@ -167,6 +167,7 @@ class Integration:
         display_name: str | None = None,
         doc: str | None = None,
         legacy: bool = False,
+        legacy_names: list[str] | None = None,
         config_options: Sequence[WebhookConfigOption] = [],
         url_options: Sequence[WebhookUrlOption] = [],
     ) -> None:
@@ -215,7 +216,7 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return True
+        return self.name != "intercom"
 
     def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
         paths_to_check = [
@@ -337,6 +338,7 @@ class IncomingWebhookIntegration(Integration):
         display_name: str | None = None,
         doc: str | None = None,
         legacy: bool = False,
+        legacy_names: list[str] | None = None,
         config_options: Sequence[WebhookConfigOption] = [],
         url_options: Sequence[WebhookUrlOption] = [],
         dir_name: str | None = None,
@@ -368,6 +370,12 @@ class IncomingWebhookIntegration(Integration):
             url = self.DEFAULT_URL.format(name=name)
         self.url = url
 
+        self.legacy_names = legacy_names or []
+        self.urls = [url]
+        if legacy_names is not None:
+            for legacy_name in legacy_names:
+                self.urls.append(self.DEFAULT_URL.format(name=legacy_name))
+
         if doc is None:
             doc = self.DEFAULT_DOC_PATH.format(name=name)
         self.doc = doc
@@ -383,8 +391,8 @@ class IncomingWebhookIntegration(Integration):
         return function(request)
 
     @property
-    def url_object(self) -> URLPattern:
-        return path(self.url, self.view)
+    def url_objects(self) -> list[URLPattern]:
+        return [path(url, self.view) for url in self.urls]
 
 
 def split_fixture_path(path: str) -> tuple[str, str]:
@@ -542,20 +550,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="Beeminder",
     ),
     IncomingWebhookIntegration(
-        "bitbucket2",
+        "bitbucket",
         ["version-control"],
-        [
-            WebhookScreenshotConfig(
-                "push.json",
-                "003.png",
-                "bitbucket",
-                bot_name="Bitbucket Bot",
-                channel="commits",
-            )
-        ],
-        logo="images/integrations/logos/bitbucket.svg",
-        display_name="Bitbucket",
+        [WebhookScreenshotConfig("issue_created.json", channel="commits")],
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
+        legacy_names=["bitbucket2"],
     ),
     IncomingWebhookIntegration(
         "buildbot", ["continuous-integration"], [WebhookScreenshotConfig("started.json")]
@@ -571,9 +570,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         ["continuous-integration"],
         [WebhookScreenshotConfig("github_job_completed.json")],
         display_name="CircleCI",
-    ),
-    IncomingWebhookIntegration(
-        "clubhouse", ["project-management"], [WebhookScreenshotConfig("story_create.json")]
     ),
     IncomingWebhookIntegration(
         "codeship",
@@ -604,6 +600,19 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     ),
     IncomingWebhookIntegration(
         "dropbox", ["productivity"], [WebhookScreenshotConfig("file_updated.json")]
+    ),
+    IncomingWebhookIntegration(
+        "dropboxsign",
+        ["productivity", "hr"],
+        [
+            WebhookScreenshotConfig(
+                "signatures_signed_by_one_signatory.json",
+                payload_as_query_param=True,
+                payload_param_name="json",
+            )
+        ],
+        display_name="Dropbox Sign",
+        legacy_names=["hellosign"],
     ),
     IncomingWebhookIntegration(
         "errbit", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]
@@ -703,18 +712,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         [WebhookScreenshotConfig("scanning_completed.json")],
     ),
     IncomingWebhookIntegration(
-        "hellosign",
-        ["productivity", "hr"],
-        [
-            WebhookScreenshotConfig(
-                "signatures_signed_by_one_signatory.json",
-                payload_as_query_param=True,
-                payload_param_name="json",
-            )
-        ],
-        display_name="HelloSign",
-    ),
-    IncomingWebhookIntegration(
         "helloworld", ["misc"], [WebhookScreenshotConfig("hello.json")], display_name="Hello World"
     ),
     IncomingWebhookIntegration("heroku", ["deployment"], [WebhookScreenshotConfig("deploy.txt")]),
@@ -725,14 +722,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="Home Assistant",
     ),
     IncomingWebhookIntegration("ifttt", ["meta-integration"], display_name="IFTTT"),
-    IncomingWebhookIntegration(
-        "insping", ["monitoring"], [WebhookScreenshotConfig("website_state_available.json")]
-    ),
-    IncomingWebhookIntegration(
-        "intercom",
-        ["customer-support"],
-        [WebhookScreenshotConfig("conversation_admin_replied.json")],
-    ),
+    IncomingWebhookIntegration("intercom", ["customer-support"]),
     IncomingWebhookIntegration(
         "jira",
         ["project-management"],
@@ -820,12 +810,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "pingdom", ["monitoring"], [WebhookScreenshotConfig("http_up_to_down.json")]
     ),
     IncomingWebhookIntegration(
-        "pivotal",
-        ["project-management"],
-        [WebhookScreenshotConfig("v5_type_changed.json")],
-        display_name="Pivotal Tracker",
-    ),
-    IncomingWebhookIntegration(
         "radarr", ["entertainment"], [WebhookScreenshotConfig("radarr_movie_grabbed.json")]
     ),
     IncomingWebhookIntegration(
@@ -855,6 +839,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     ),
     IncomingWebhookIntegration(
         "sentry", ["monitoring"], [WebhookScreenshotConfig("event_for_exception_python.json")]
+    ),
+    IncomingWebhookIntegration(
+        "shortcut",
+        ["project-management"],
+        [WebhookScreenshotConfig("story_create.json")],
+        legacy_names=["clubhouse"],
     ),
     IncomingWebhookIntegration(
         "slack",
@@ -1120,6 +1110,8 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # The fixture's goal.losedate needs to be modified dynamically,
     # so the screenshot config is commented out.
     {"beeminder"}
+    # Disabled integrations that are in the process of being added or rewritten.
+    | {"intercom"}
     # Integrations that call external API endpoints.
     | {"slack"}
     # Integrations that require screenshots of message threads - support is yet to be added

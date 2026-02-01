@@ -721,7 +721,7 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
 
     users = UserProfile.objects.filter(realm=realm)
     for user in users:
-        do_delete_messages_by_sender(user)
+        do_delete_messages_by_sender(user, skip_notify=True)
         do_scrub_avatar_images(user, acting_user=acting_user)
         user.full_name = f"Scrubbed {generate_key()[:15]}"
         scrubbed_email = Address(
@@ -759,7 +759,11 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
             realm=realm,
         ).values_list("id", flat=True)
     )
-    move_messages_to_archive(cross_realm_bot_message_ids, realm=realm)
+    move_messages_to_archive(cross_realm_bot_message_ids, realm=realm, skip_notify=True)
+
+    # Since we delete messages with skip_notify=True, we must take care of updating the first_message_id
+    # of channels in the realm.
+    Stream.objects.filter(realm=realm).update(first_message_id=None)
 
     do_remove_realm_custom_profile_fields(realm)
     do_delete_all_realm_attachments(realm)

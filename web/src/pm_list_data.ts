@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as hash_util from "./hash_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -20,17 +21,18 @@ export function get_active_user_ids_string(): string | undefined {
         return undefined;
     }
 
-    const emails = filter.terms_with_operator("dm")[0]?.operand;
+    const user_ids = filter.terms_with_operator("dm")[0]?.operand;
 
-    if (!emails) {
+    if (!user_ids || user_ids.length === 0) {
         return undefined;
     }
 
-    const users_ids_array = people.emails_strings_to_user_ids_array(emails);
-    if (!users_ids_array || users_ids_array.length === 0) {
+    if (!people.is_valid_user_ids(user_ids)) {
+        blueslip.warn("Invalid user_ids", {user_ids});
         return undefined;
     }
-    return people.sorted_other_user_ids(users_ids_array).join(",");
+
+    return people.sorted_other_user_ids(user_ids).join(",");
 }
 
 export type DisplayObject = {
@@ -84,7 +86,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
         const is_group = user_ids_string.includes(",");
         const is_active = user_ids_string === active_user_ids_string;
         const includes_deactivated_user = user_ids.some(
-            (id) => !people.is_active_user_for_popover(id),
+            (id) => !people.is_active_user_or_system_bot(id),
         );
 
         let user_circle_class: string | undefined;

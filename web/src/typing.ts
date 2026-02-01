@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
@@ -81,6 +82,11 @@ function send_stream_typing_notification(
     operation: "start" | "stop",
 ): void {
     const stream = stream_data.get_sub_by_id(stream_id)!;
+    // If the user lost access to the stream while typing, stream might
+    // be undefined for us, in which case, we need to to return early.
+    if (stream === undefined) {
+        return;
+    }
     if (!stream_data.can_post_messages_in_stream(stream)) {
         return;
     }
@@ -229,17 +235,21 @@ export function initialize(): void {
         notify_server_editing_stop,
     };
 
-    $(document).on("input", "#compose-textarea", () => {
-        // If our previous state was no typing notification, send a
-        // start-typing notice immediately.
-        const new_recipient = is_valid_conversation() ? get_recipient() : null;
-        typing_status.update(
-            worker,
-            new_recipient,
-            realm.server_typing_started_wait_period_milliseconds,
-            realm.server_typing_stopped_wait_period_milliseconds,
-        );
-    });
+    $(document).on(
+        "input",
+        "#compose-textarea",
+        _.throttle(() => {
+            // If our previous state was no typing notification, send a
+            // start-typing notice immediately.
+            const new_recipient = is_valid_conversation() ? get_recipient() : null;
+            typing_status.update(
+                worker,
+                new_recipient,
+                realm.server_typing_started_wait_period_milliseconds,
+                realm.server_typing_stopped_wait_period_milliseconds,
+            );
+        }, 25),
+    );
 
     $("body").on("input", ".message_edit_content", function (this: HTMLElement) {
         const $message_row = $(this).closest(".message_row");

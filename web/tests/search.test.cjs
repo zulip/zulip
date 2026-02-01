@@ -42,6 +42,13 @@ const verona = {
 };
 stream_data.add_sub_for_tests(verona);
 
+const zoe = {
+    email: "user7@zulipdev.com",
+    user_id: 3,
+    full_name: "Zoe",
+};
+people.add_active_user(zoe, "server_events");
+
 run_test("initialize", ({override, override_rewire, mock_template}) => {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
@@ -174,21 +181,21 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                         "dm-including:zo",
                         {
                             description_html: "group direct messages including",
-                            search_string: "dm-including:user7@zulipdev.com",
+                            search_string: "dm-including:" + zoe.user_id,
                         },
                     ],
                     [
                         "dm:zo",
                         {
                             description_html: "direct messages with",
-                            search_string: "dm:user7@zulipdev.com",
+                            search_string: `dm:${zoe.user_id}`,
                         },
                     ],
                     [
                         "sender:zo",
                         {
                             description_html: "sent by",
-                            search_string: "sender:user7@zulipdev.com",
+                            search_string: `sender:${zoe.user_id}`,
                         },
                     ],
                     [
@@ -213,11 +220,14 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             let expected_value = `<div class="search_list_item">\n            <div class="description">${description_html}</div>\n    \n</div>\n`;
             assert.equal(opts.item_html(source[0], "zo"), expected_value);
 
-            people.add_active_user({
-                email: "user7@zulipdev.com",
-                user_id: 3,
-                full_name: "Zoe",
-            });
+            people.add_active_user(
+                {
+                    email: "user7@zulipdev.com",
+                    user_id: 3,
+                    full_name: "Zoe",
+                },
+                "server_events",
+            );
             override(realm, "realm_enable_guest_user_indicator", true);
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">sender:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
             assert.equal(opts.item_html(source[1], "zo"), expected_value);

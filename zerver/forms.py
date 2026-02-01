@@ -228,7 +228,6 @@ class RegistrationForm(HowFoundZulipFormMixin, RealmDetailsForm):
 
 class DemoRegistrationForm(HowFoundZulipFormMixin, forms.Form):
     terms = forms.BooleanField(required=False)
-    realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
     realm_type = forms.TypedChoiceField(
         coerce=int, choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()]
     )
@@ -482,16 +481,6 @@ class LoggingSetPasswordForm(SetPasswordForm[UserProfile]):
         max_length=RegistrationForm.MAX_PASSWORD_LENGTH,
     )
     enable_marketing_emails = forms.BooleanField(required=False)
-
-    def __init__(self, user: UserProfile, *args: Any, **kwargs: Any) -> None:
-        super().__init__(user, *args, **kwargs)
-        self.show_enable_marketing_emails = False
-        if (
-            settings.CORPORATE_ENABLED
-            and user.realm.demo_organization_scheduled_deletion_date is not None
-            and not user.enable_marketing_emails
-        ):
-            self.show_enable_marketing_emails = user.realm.get_first_human_user() == user
 
     def clean_new_password1(self) -> str:
         new_password = self.cleaned_data["new_password1"]

@@ -17,6 +17,7 @@ Pull requests <pull-requests>
 Collaborate <collaborate>
 Fixing commits <fixing-commits>
 Reviewing changes <reviewing>
+Reading history <reading-history>
 Get and stay out of trouble <troubleshooting>
 Git cheat sheet <cheat-sheet>
 ```

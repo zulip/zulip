@@ -67,6 +67,13 @@
                 }
             }
 
+            .typeahead-content {
+                display: flex;
+                align-items: center;
+                overflow: hidden;
+                gap: 0.3571em;
+            }
+
             .typeahead-text-container {
                 display: flex;
                 align-self: center;

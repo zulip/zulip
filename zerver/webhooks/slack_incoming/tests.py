@@ -382,3 +382,6 @@ Sample footer.
 
     def test_attachment_pieces_all_null(self) -> None:
         self.check_webhook("attachment_pieces_all_null", expect_noop=True)
+
+    def test_broken_image(self) -> None:
+        self.check_webhook("broken_image", "", "Some image here")

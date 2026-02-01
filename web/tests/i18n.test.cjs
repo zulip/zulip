@@ -64,7 +64,7 @@ run_test("t_tag", ({mock_template}) => {
     const args = {
         message_id: "99",
         should_display_quote_message: true,
-        editability_menu_item: true,
+        editability_menu_item: "Edit message",
         conversation_time_url:
             "http://zulip.zulipdev.com/#narrow/channel/101-devel/topic/testing/near/99",
     };
@@ -79,8 +79,18 @@ run_test("t_tag", ({mock_template}) => {
 
 run_test("{{#tr}} to tag for translation", ({mock_template}) => {
     const args = {
-        notification_settings: {},
-        settings_object: {},
+        general_settings: [],
+        notification_settings: {
+            desktop_notification_settings: [],
+            mobile_notification_settings: [],
+            email_message_notification_settings: [],
+            other_email_settings: [],
+        },
+        custom_stream_specific_notification_settings: [],
+        email_notifications_batching_period_values: [],
+        settings_object: {
+            available_notification_sounds: [],
+        },
         settings_label: {
             desktop_icon_count_display:
                 "Unread count badge (appears in desktop sidebar and browser tab)",
@@ -90,6 +100,11 @@ run_test("{{#tr}} to tag for translation", ({mock_template}) => {
             automatically_unmute_topics_in_muted_streams_policy:
                 "Automatically unmute topics in muted channels",
         },
+        automatically_follow_topics_policy_values: {},
+        automatically_unmute_topics_in_muted_streams_policy_values: {},
+        resolved_topic_notice_auto_read_policy_values: {},
+        desktop_icon_count_display_values: {},
+        realm_name_in_email_notifications_policy_values: {},
     };
 
     // We're actually testing `notification_settings.hbs` here which

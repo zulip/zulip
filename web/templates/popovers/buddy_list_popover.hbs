@@ -7,7 +7,7 @@
                 </span>
             </label>
         </li>
-        {{#each display_style_options}}
+        {{#each (object_values display_style_options)}}
             <li role="none" class="display-style-selector link-item" value="{{this.code}}">
                 <label class="popover-menu-link" role="menuitem" tabindex="0">
                     <input type="radio" class="user_list_style_choice" name="user_list_style" value="{{this.code}}"/>

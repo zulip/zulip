@@ -19,7 +19,7 @@ const hamlet = {
     full_name: "Hamlet",
 };
 
-people.add_active_user(hamlet);
+people.add_active_user(hamlet, "server_events");
 
 const frontend_id = 99;
 const frontend = {
@@ -32,7 +32,7 @@ stream_data.add_sub_for_tests(frontend);
 run_test("hash_util", () => {
     // Test encode_operand and decode_operand
     function encode_decode_operand(operator, operand, expected_val) {
-        const encode_result = hash_util.encode_operand(operator, operand);
+        const encode_result = hash_util.encode_operand({operator, operand});
         assert.equal(encode_result, expected_val);
         const new_operand = encode_result;
         const decode_result = hash_util.decode_operand(operator, new_operand);
@@ -40,7 +40,7 @@ run_test("hash_util", () => {
     }
 
     let operator = "sender";
-    let operand = hamlet.email;
+    let operand = hamlet.user_id;
 
     encode_decode_operand(operator, operand, "15-Hamlet");
 

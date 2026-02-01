@@ -111,7 +111,7 @@ export function rewire_select_top_left_corner_item(
 
 export function handle_narrow_activated(filter: Filter): void {
     let terms: NarrowTerm[];
-    let filter_name: string;
+    let filter_name: NarrowTerm["operand"];
 
     // TODO: handle confused filters like "in:all stream:foo"
     terms = filter.terms_with_operator("in");
@@ -136,7 +136,7 @@ export function handle_narrow_activated(filter: Filter): void {
     const term_types = filter.sorted_term_types();
     if (
         _.isEqual(term_types, ["sender", "has-reaction"]) &&
-        filter.terms_with_operator("sender")[0]!.operand === people.my_current_email()
+        filter.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
     ) {
         select_top_left_corner_item(".top_left_my_reactions");
         return;
@@ -246,7 +246,7 @@ export function get_view_rows_by_view_name(view: string): JQuery {
         return $(".top_left_all_messages");
     }
 
-    if (view === settings_config.web_home_view_values.recent_topics.code) {
+    if (view === settings_config.web_home_view_values.recent.code) {
         return $(".top_left_recent_view");
     }
 

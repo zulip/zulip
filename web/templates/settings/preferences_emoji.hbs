@@ -1,11 +1,16 @@
 <div class="emoji-preferences {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
     <div class="subsection-header">
         <h3 class="light">{{t "Emoji" }}</h3>
-        {{> settings_save_discard_widget section_name="emoji-preferences-settings" show_only_indicator=(not for_realm_settings) }}
+        {{> settings_save_discard_widget section_name="emoji-preferences-settings" show_save_discard_buttons=for_realm_settings show_saving_indicator=true }}
     </div>
 
     <div class="input-group">
-        <label class="settings-field-label">{{t "Emoji theme" }}</label>
+        <label class="settings-field-label">
+            {{t "Emoji theme" }}
+            {{#if for_realm_settings}}
+                {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+            {{/if}}
+        </label>
         <div class="emojiset_choices settings-highlight-box prop-element" id="{{prefix}}emojiset" data-setting-widget-type="radio-group" data-setting-choice-type="string">
             {{#each settings_object.emojiset_choices}}
                 <label class="preferences-radio-choice-label">
@@ -33,11 +38,13 @@
       is_checked=settings_object.translate_emoticons
       label=settings_label.translate_emoticons
       help_link="/help/configure-emoticon-translations"
-      prefix=prefix}}
+      prefix=prefix
+      show_reset_button=for_realm_settings}}
 
     {{> settings_checkbox
       setting_name="display_emoji_reaction_users"
       is_checked=settings_object.display_emoji_reaction_users
       label=settings_label.display_emoji_reaction_users
-      prefix=prefix}}
+      prefix=prefix
+      show_reset_button=for_realm_settings}}
 </div>

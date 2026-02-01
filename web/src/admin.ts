@@ -62,6 +62,7 @@ const admin_settings_label = {
     realm_enable_welcome_message_custom_text: $t({
         defaultMessage: "Send a custom Welcome Bot message to new users",
     }),
+    realm_default_avatar_source: $t({defaultMessage: "Default profile pictures for new users"}),
 
     // Organization permissions
     realm_require_unique_names: $t({defaultMessage: "Require unique names"}),
@@ -151,7 +152,7 @@ export function build_page(): void {
         realm_org_type: realm.realm_org_type,
         realm_available_video_chat_providers: realm.realm_available_video_chat_providers,
         server_jitsi_server_url: realm.server_jitsi_server_url,
-        gif_rating_options: realm.gif_rating_options,
+        gif_rating_policy_options: realm.gif_rating_policy_options,
         gif_api_key_empty: realm.giphy_api_key === "" && realm.tenor_api_key === "",
         realm_description_text: realm.realm_description,
         realm_description_html: postprocess_content(page_params.realm_rendered_description),
@@ -300,6 +301,7 @@ export function build_page(): void {
             information_density.get_string_display_value_for_line_height(
                 realm_user_settings_defaults.web_line_height_percent,
             ),
+        default_avatar_source_values: settings_config.default_avatar_source_values,
     };
 
     const rendered_admin_tab = render_admin_tab(options);

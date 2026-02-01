@@ -9,6 +9,7 @@ const {run_test} = require("./lib/test.cjs");
 
 const emoji = zrequire("emoji");
 const emoji_frequency = zrequire("emoji_frequency");
+const emoji_frequency_data = zrequire("emoji_frequency_data");
 const emoji_picker = zrequire("emoji_picker");
 const typeahead = zrequire("typeahead");
 
@@ -87,7 +88,7 @@ run_test("initialize", () => {
         non_popular_emojis_usage.push(make_emoji(non_popular_emoji_code, i + 10));
     }
     for (const emoji of [...popular_emojis, ...non_popular_emojis_usage]) {
-        emoji_frequency.reaction_data.set(emoji.emoji_code, emoji);
+        emoji_frequency_data.reaction_data.set(emoji.emoji_code, emoji);
     }
     emoji_frequency.update_frequently_used_emojis_list();
     non_popular_emoji_codes.reverse();

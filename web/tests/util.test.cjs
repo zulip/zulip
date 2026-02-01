@@ -635,3 +635,25 @@ run_test("unique_array_insert", () => {
         {c: "beep", d: "boop"},
     ]);
 });
+
+run_test("parse_youtube_start_time", () => {
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=120"), 120);
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID&t=150"),
+        150,
+    );
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID"),
+        undefined,
+    );
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1h"), 3600);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1h1m1s"), 3661);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1m1s"), 61);
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID&start=100"),
+        100,
+    );
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=1m"), 60);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=1h30m"), 5400);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=invalid"), undefined);
+});

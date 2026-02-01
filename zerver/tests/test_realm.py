@@ -73,6 +73,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
+from zerver.models.scheduled_jobs import ScheduledMessage
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 
@@ -282,7 +283,7 @@ class RealmTest(ZulipTestCase):
         realm.refresh_from_db()
         self.assertFalse(realm.invite_required)
 
-    def test_realm_convert_demo_realm(self) -> None:
+    def test_realm_convert_demo_organization_errors(self) -> None:
         data = dict(string_id="coolrealm")
 
         self.login("iago")
@@ -293,30 +294,59 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", data)
         self.assert_json_error(result, "Must be a demo organization.")
 
-        realm = get_realm("zulip")
-        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
-        realm.save()
+    def test_realm_convert_demo_organization_success(self) -> None:
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].startswith(
+                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
+            )
+        )
+        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
+
+        result = self.client_get(result["Location"], subdomain=realm.string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
+
+        demo_string_id = realm.string_id
+        demo_owner_account = realm.get_first_human_user()
+        assert demo_owner_account is not None
+        self.assert_logged_in_user_id(demo_owner_account.id)
+        self.assertEqual(demo_owner_account.delivery_email, "")
+
+        # Confirm there is a scheduled message reminder about automated
+        # demo organization deletion.
+        demo_deletion_reminder = ScheduledMessage.objects.filter(
+            realm_id=realm.id,
+            sender__email="notification-bot@zulip.com",
+        ).latest("id")
+        self.assertTrue(
+            demo_deletion_reminder.content.startswith("As a reminder, this [demo organization]")
+        )
+        self.assertIn("will be automatically deleted on <time", demo_deletion_reminder.content)
+        demo_deletion_reminder_id = demo_deletion_reminder.id
 
         # Demo organization owner must have added an email before converting.
-        desdemona = self.example_user("desdemona")
-        desdemona.delivery_email = ""
-        desdemona.save()
-        result = self.client_patch("/json/realm", data)
+        data = dict(string_id="coolrealm")
+        result = self.client_patch("/json/realm", data, subdomain=realm.subdomain)
         self.assert_json_error(result, "Configure owner account email address.")
 
-        desdemona.delivery_email = "desdemona@zulip.com"
-        desdemona.save()
+        demo_owner_account.delivery_email = "demo-owner-test@zulip.com"
+        demo_owner_account.save()
 
         # Subdomain must be available to convert demo organization.
         data = dict(string_id="lear")
-        result = self.client_patch("/json/realm", data)
+        result = self.client_patch("/json/realm", data, subdomain=realm.subdomain)
         self.assert_json_error(
             result, "Subdomain is already in use. Please choose a different one."
         )
 
         # Now try to change the string_id to something available.
         data = dict(string_id="coolrealm")
-        result = self.client_patch("/json/realm", data)
+        result = self.client_patch("/json/realm", data, subdomain=realm.subdomain)
         self.assert_json_success(result)
         json = orjson.loads(result.content)
         self.assertEqual(json["realm_uri"], "http://coolrealm.testserver")
@@ -326,16 +356,25 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.string_id, data["string_id"])
 
         realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED, acting_user=desdemona
+            event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED, acting_user=demo_owner_account
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {
-            RealmAuditLog.OLD_VALUE: "zulip",
+            RealmAuditLog.OLD_VALUE: demo_string_id,
             RealmAuditLog.NEW_VALUE: "coolrealm",
             "was_demo_organization": True,
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-        self.assertEqual(realm_audit_log.acting_user, desdemona)
+        self.assertEqual(realm_audit_log.acting_user, demo_owner_account)
+
+        placeholder_realm = get_realm(demo_string_id)
+        self.assertTrue(placeholder_realm.deactivated)
+        self.assertEqual(placeholder_realm.deactivated_redirect, realm.url)
+
+        # Check that scheduled reminder about demo organization automated
+        # deletion has been deleted.
+        with self.assertRaises(ScheduledMessage.DoesNotExist):
+            ScheduledMessage.objects.get(id=demo_deletion_reminder_id)
 
     def test_realm_name_length(self) -> None:
         new_name = "A" * (Realm.MAX_REALM_NAME_LENGTH + 1)
@@ -570,16 +609,21 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(confirmation.realm, realm)
 
     def test_realm_deactivation_demo_organization_owner_email_not_configured(self) -> None:
-        demo_name = "demo deactivate no email"
-        result = self.submit_demo_creation_form(demo_name)
-        realm = Realm.objects.filter(name=demo_name).latest("date_created")
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].startswith(
                 f"http://{realm.string_id}.testserver/accounts/login/subdomain"
             )
         )
-        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
 
         result = self.client_get(result["Location"], subdomain=realm.string_id)
         self.assertEqual(result.status_code, 302)
@@ -611,16 +655,21 @@ class RealmTest(ZulipTestCase):
         self.assert_logged_in_user_id(None)
 
     def test_realm_deactivation_demo_organization_owner_email_configured(self) -> None:
-        demo_name = "demo deactivate with email"
-        result = self.submit_demo_creation_form(demo_name)
-        realm = Realm.objects.filter(name=demo_name).latest("date_created")
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].startswith(
                 f"http://{realm.string_id}.testserver/accounts/login/subdomain"
             )
         )
-        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
 
         result = self.client_get(result["Location"], subdomain=realm.string_id)
         self.assertEqual(result.status_code, 302)
@@ -653,10 +702,10 @@ class RealmTest(ZulipTestCase):
         self.assert_length(mail.outbox, 1)
         self.assert_length(mail.outbox, 1)
         self.assertIn(
-            f"Your Zulip organization {demo_name} has been deactivated", mail.outbox[0].subject
+            f"Your Zulip organization {realm.name} has been deactivated", mail.outbox[0].subject
         )
         self.assertIn(
-            f"You have deactivated your Zulip demo organization, {demo_name},", mail.outbox[0].body
+            f"You have deactivated your Zulip demo organization, {realm.name},", mail.outbox[0].body
         )
         self.assert_logged_in_user_id(None)
 
@@ -1136,7 +1185,7 @@ class RealmTest(ZulipTestCase):
         invalid_values = dict(
             message_retention_days=10,
             video_chat_provider=10,
-            giphy_rating=10,
+            gif_rating_policy=10,
             waiting_period_threshold=-10,
             digest_weekday=10,
             message_content_delete_limit_seconds=-10,
@@ -2203,15 +2252,16 @@ class RealmAPITest(ZulipTestCase):
                 Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
             ],
             jitsi_server_url=["https://example.jit.si"],
-            giphy_rating=[
-                Realm.GIF_RATING_OPTIONS["g"]["id"],
-                Realm.GIF_RATING_OPTIONS["r"]["id"],
+            gif_rating_policy=[
+                Realm.GIF_RATING_POLICY_OPTIONS["g"]["id"],
+                Realm.GIF_RATING_POLICY_OPTIONS["r"]["id"],
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             message_content_edit_limit_seconds=[1000, 1100, 1200],
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
             topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
+            default_avatar_source=["G", "J"],
         )
 
         vals = test_values.get(name)
@@ -2622,7 +2672,7 @@ class RealmAPITest(ZulipTestCase):
             web_font_size_px=[UserProfile.WEB_FONT_SIZE_PX_COMPACT],
             web_line_height_percent=[UserProfile.WEB_LINE_HEIGHT_PERCENT_COMPACT],
             color_scheme=UserProfile.COLOR_SCHEME_CHOICES,
-            web_home_view=["recent_topics", "inbox", "all_messages"],
+            web_home_view=["recent", "inbox", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,

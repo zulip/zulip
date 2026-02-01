@@ -138,10 +138,10 @@ def deactivate_remote_server(
     request: HttpRequest,
     remote_server: RemoteZulipServer,
 ) -> HttpResponse:
-    from corporate.lib.stripe import RemoteServerBillingSession, do_deactivate_remote_server
+    from corporate.lib.stripe import RemoteServerBillingSession
 
     billing_session = RemoteServerBillingSession(remote_server)
-    do_deactivate_remote_server(remote_server, billing_session)
+    billing_session.do_deactivate_remote_server()
     return json_success(request)
 
 
@@ -587,7 +587,6 @@ def do_register_remote_push_device(
 ) -> int:
     assert (realm is None) ^ (remote_realm is None)
 
-    assert settings.PUSH_REGISTRATION_ENCRYPTION_KEYS
     if bouncer_public_key not in settings.PUSH_REGISTRATION_ENCRYPTION_KEYS:
         raise InvalidBouncerPublicKeyError
 

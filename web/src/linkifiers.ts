@@ -1,4 +1,4 @@
-import * as url_template_lib from "url-template";
+import Template from "uri-template-lite";
 import type * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
@@ -6,7 +6,7 @@ import type {realm_linkifier_schema} from "./state_data.ts";
 
 type LinkifierMap = Map<
     RegExp,
-    {url_template: url_template_lib.Template; group_number_to_name: Record<number, string>}
+    {url_template: Template; group_number_to_name: Record<number, string>}
 >;
 const linkifier_map: LinkifierMap = new Map();
 
@@ -19,7 +19,7 @@ export function get_linkifier_map(): LinkifierMap {
 export function python_to_js_linkifier(
     pattern: string,
     url: string,
-): [RegExp | null, url_template_lib.Template, Record<number, string>] {
+): [RegExp | null, Template, Record<number, string>] {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
     const named_group_re = /\(?P<([^>]+?)>/g;
@@ -81,7 +81,7 @@ export function python_to_js_linkifier(
             throw error;
         }
     }
-    const url_template = url_template_lib.parseTemplate(url);
+    const url_template = new Template(url);
     return [final_regex, url_template, group_number_to_name];
 }
 

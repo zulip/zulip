@@ -229,6 +229,20 @@ the message to fail to send.
 
 Set to the port number for the KaTeX server; defaults to port 9700.
 
+#### `custom_ca_path`
+
+If you use a custom certificate authority for your authentication
+provider, you will need to provide the certificate of the signing CA
+so Zulip can successfully make requests to it.
+
+Set this to the fully-qualified path to the `.crt` file containing the
+PEM-encoded CA certificate to trust; we suggest storing this in
+`/etc/zulip/`.
+
+Setting this path also means that Zulip will use the operating
+system's CA certificate store, and not its built-in one. There may be
+minor differences in trusted root CA sets.
+
 ### `[postgresql]`
 
 #### `effective_io_concurrency`

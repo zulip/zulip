@@ -233,7 +233,7 @@ def fetch_initial_state_data(
             id=0,
             default_language=spectator_requested_language,
             # Set home view to recent conversations for spectators regardless of default.
-            web_home_view="recent_topics",
+            web_home_view="recent",
         )
 
     # We fetch early some collections of group that we need to
@@ -400,7 +400,7 @@ def fetch_initial_state_data(
         #
         # Other settings, which are just server-level settings or data
         # about the version of Zulip, can be named without prefixes,
-        # e.g. gif_rating_options or development_environment.
+        # e.g. gif_rating_policy_options or development_environment.
 
         # If we no longer have a translation for the organization's language,
         # correct the organization to have one; this block is a workaround for
@@ -546,7 +546,7 @@ def fetch_initial_state_data(
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
-        state["gif_rating_options"] = realm.get_gif_rating_options()
+        state["gif_rating_policy_options"] = realm.get_gif_rating_policy_options()
 
         state["server_emoji_data_url"] = emoji.data_url()
 
@@ -2005,8 +2005,8 @@ def apply_event(
         # The Tornado process restarted.  This has no effect; we ignore it.
         pass
     elif event["type"] == "push_device":
-        state["push_devices"][event["push_account_id"]]["status"] = event["status"]
-        state["push_devices"][event["push_account_id"]]["error_code"] = event.get("error_code")
+        state["push_devices"][str(event["push_account_id"])]["status"] = event["status"]
+        state["push_devices"][str(event["push_account_id"])]["error_code"] = event.get("error_code")
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 

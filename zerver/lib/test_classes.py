@@ -979,14 +979,12 @@ Output:
 
     def submit_demo_creation_form(
         self,
-        demo_name: str,
         *,
         org_type: int = Realm.ORG_TYPES["business"]["id"],
         language: str = "en",
         captcha: str | None = None,
     ) -> "TestHttpResponse":
         payload = {
-            "realm_name": demo_name,
             "realm_type": org_type,
             "realm_default_language": language,
             "how_realm_creator_found_zulip": "ai_chatbot",
@@ -2674,12 +2672,14 @@ one or more new messages.
 
         return msg
 
-    def build_webhook_url(self, *args: str, **kwargs: str) -> str:
+    def build_webhook_url(self, *args: str, legacy_name: str | None = None, **kwargs: str) -> str:
         url = self.url_template
         assert url.find("api_key") >= 0
         api_key = self.test_user.api_key
         url = self.url_template.format(
-            webhook_dir_name=self.webhook_dir_name, api_key=api_key, stream=self.channel_name
+            webhook_dir_name=self.webhook_dir_name if legacy_name is None else legacy_name,
+            api_key=api_key,
+            stream=self.channel_name,
         )
 
         has_arguments = kwargs or args

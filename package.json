@@ -10,8 +10,6 @@
     "@fontsource-variable/open-sans": "^5.0.9",
     "@formatjs/intl": "^4.0.7",
     "@gfx/zopfli": "^1.0.15",
-    "@giphy/js-components": "^5.13.0",
-    "@giphy/js-fetch-api": "^5.6.0",
     "@koa/bodyparser": "^6.0.0",
     "@sentry/browser": "^10.5.0",
     "@sentry/core": "^10.5.0",
@@ -86,8 +84,8 @@
     "textarea-caret": "^3.1.0",
     "tippy.js": "^6.3.7",
     "turndown": "^7.0.0",
+    "uri-template-lite": "^23.4.0",
     "url-loader": "^4.1.1",
-    "url-template": "^3.1.1",
     "webfonts-loader": "^8.0.0",
     "webpack": "^5.61.0",
     "webpack-bundle-tracker": "^3.0.1",
@@ -101,7 +99,6 @@
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.15.0",
     "@formatjs/cli": "^6.0.0",
-    "@giphy/js-types": "^5.1.0",
     "@types/autosize": "^4.0.1",
     "@types/babel__core": "^7.20.5",
     "@types/babel__preset-env": "^7.10.0",
@@ -126,6 +123,7 @@
     "@types/throttle-debounce": "^5.0.2",
     "@types/tinycolor2": "^1.4.5",
     "@types/turndown": "^5.0.1",
+    "@types/uri-template-lite": "^19.12.4",
     "@typescript-eslint/eslint-plugin": "^8.2.0",
     "@typescript-eslint/parser": "^8.2.0",
     "@typescript-eslint/utils": "^8.25.0",
@@ -185,7 +183,8 @@
       "stylelint-high-performance-animation": "patches/stylelint-high-performance-animation.patch",
       "svgicons2svgfont": "patches/svgicons2svgfont.patch",
       "textarea-caret@3.1.0": "patches/textarea-caret@3.1.0.patch",
-      "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch"
+      "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch",
+      "autosize": "patches/autosize.patch"
     }
   },
   "nyc": {

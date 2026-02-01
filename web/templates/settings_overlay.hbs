@@ -61,12 +61,12 @@
                         <div class="text">{{t "Organization profile" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
                     </li>
-                    <li class="sidebar-item" class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-settings">
+                    <li class="sidebar-item collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-settings">
                         <i class="sidebar-item-icon fa fa-sliders" aria-hidden="true"></i>
                         <div class="text">{{t "Organization settings" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings' }}"></i>
                     </li>
-                    <li class="sidebar-item" class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-permissions">
+                    <li class="sidebar-item collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-permissions">
                         <i class="sidebar-item-icon fa fa-lock" aria-hidden="true"></i>
                         <div class="text">{{t "Organization permissions" }}</div>
                         <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if is_admin}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>

@@ -1,6 +1,6 @@
 from typing import Any
 
-from django.db import migrations, transaction
+from django.db import connection, migrations, transaction
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Exists, OuterRef
@@ -39,26 +39,44 @@ def recreate_missing_realmemoji(apps: StateApps, schema_editor: BaseDatabaseSche
         .iterator()
     ):
         with transaction.atomic():
-            emoji_add_records = RealmAuditLog.objects.filter(
-                realm=realm,
-                event_type=REALM_EMOJI_ADDED,
-            ).order_by("-id")
-            first_owner = get_first_human_owner_user(realm)
-            for emoji_add in emoji_add_records.iterator():
-                emoji = list(emoji_add.extra_data["realm_emoji"].values())
-                for e in emoji:
-                    if RealmEmoji.objects.filter(id=int(e["id"])).exists():
-                        continue
-                    file_name = e["source_url"][1 + e["source_url"].rfind("/") :]
-                    print(f"Creating missing emoji {e['name']}")
+            first_owner = None
+            sql = """
+                WITH distinct_emoji AS (
+                    SELECT DISTINCT emoji.value AS e
+                    FROM zerver_realmauditlog
+                    CROSS JOIN LATERAL jsonb_each(
+                        zerver_realmauditlog.extra_data->'realm_emoji'
+                    ) AS emoji(key, value)
+                    WHERE zerver_realmauditlog.realm_id = %s
+                    AND zerver_realmauditlog.event_type = %s
+                )
+                SELECT * FROM distinct_emoji
+                LEFT JOIN zerver_realmemoji
+                    ON zerver_realmemoji.id = (e->>'id')::integer
+                    OR (zerver_realmemoji.name = e->>'name'
+                        AND zerver_realmemoji.realm_id = %s)
+                WHERE zerver_realmemoji.id IS NULL
+            """
+            with connection.cursor() as cursor:
+                cursor.execute(sql, [realm.id, REALM_EMOJI_ADDED, realm.id])
+                for (orphaned_emoji,) in cursor.fetchall():
+                    print(
+                        f"Creating missing emoji {orphaned_emoji['id']} = {realm.string_id} / {orphaned_emoji['name']}"
+                    )
+                    file_name = orphaned_emoji["source_url"][
+                        1 + orphaned_emoji["source_url"].rfind("/") :
+                    ]
+                    if first_owner is None:
+                        first_owner = get_first_human_owner_user(realm)
+
                     RealmEmoji.objects.create(
-                        id=int(e["id"]),
+                        id=int(orphaned_emoji["id"]),
                         realm_id=realm.id,
-                        name=e["name"],
+                        name=orphaned_emoji["name"],
                         author_id=first_owner.id,
                         file_name=file_name,
-                        deactivated=e["deactivated"],
-                        is_animated=e["still_url"] is not None,
+                        deactivated=orphaned_emoji["deactivated"],
+                        is_animated=orphaned_emoji["still_url"] is not None,
                     )
 
 

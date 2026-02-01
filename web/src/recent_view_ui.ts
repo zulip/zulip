@@ -735,7 +735,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         let user_circle_class;
         if (!is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
-            const is_deactivated = !people.is_active_user_for_popover(user_id);
+            const is_deactivated = !people.is_active_user_or_system_bot(user_id);
             const user = people.get_by_user_id(user_id);
             if (user.is_bot) {
                 // We display the bot icon rather than a user circle for bots.
@@ -1443,7 +1443,7 @@ export function show(): void {
         const html_body = render_introduce_zulip_view_modal({
             zulip_view: "recent_conversations",
             current_home_view_and_escape_navigation_enabled:
-                user_settings.web_home_view === "recent_topics" &&
+                user_settings.web_home_view === "recent" &&
                 user_settings.web_escape_navigates_to_home_view,
         });
         dialog_widget.launch({
@@ -1973,6 +1973,8 @@ export function initialize({
         "input",
         "#recent_view_search",
         _.debounce(() => {
+            // Reset focus to first row on new search.
+            row_focus = 0;
             update_filters_view();
             // Wait for user to go idle before initiating search.
         }, 300),

@@ -442,11 +442,9 @@ to keep in mind.
 - Submitting carefully tested code. See our [detailed guide on how to review
   code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code)
   (yours or someone else's).
-- Posting
-  [screenshots or GIFs](https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
-  for frontend changes.
 - Working to [make your pull requests easy to
-  review](https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html).
+  review](https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html),
+  including following our [guide on how to present visual changes][presenting-visual-changes].
 - Clearly describing what you have implemented and why. For example, if your
   implementation differs from the issue description in some way or is a partial
   step towards the requirements described in the issue, be sure to call
@@ -457,6 +455,7 @@ to keep in mind.
 - Being helpful and friendly on the [Zulip community
   server](https://zulip.com/development-community/).
 
+[presenting-visual-changes]: https://zulip.readthedocs.io/en/latest/contributing/presenting-visual-changes.html
 [great-questions]: https://zulip.readthedocs.io/en/latest/contributing/asking-great-questions.html
 
 ## Submitting a pull request
@@ -544,11 +543,16 @@ labels.
   features just because you're looking for something to work on. It wastes
   maintainer time, and distracts the community from work that will truly help
   Zulip's users.
+- **What should I do while waiting for the first round of feedback on my PR**?
+  Take this time to learn about Zulip's code base and practices, which will help
+  you become a more effective contributor. There are so many resources to read
+  and learn from: documentation on this site, merged pull requests, discussions
+  in the [development community](https://zulip.com/development-community/), etc.
 - **I'm waiting for the next round of review on my PR. Can I pick up
   another issue in the meantime?** Someone's first Zulip PR often
   requires quite a bit of iteration, so please [make sure your pull
-  request is reviewable][reviewable-pull-requests] and go through at
-  least one round of feedback from others before picking up a second
+  request is reviewable][reviewable-pull-requests] and **go through at
+  least one round of feedback** from maintainers before picking up a second
   issue. After that, sure! If
   [Zulipbot](https://github.com/zulip/zulipbot) does not allow you to
   claim an issue, you can post a comment describing the status of your

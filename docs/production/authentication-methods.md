@@ -1201,6 +1201,10 @@ assumes the name is correct, and new users will not be presented with
 a registration form unless they need to accept Terms of Service for
 the server (i.e. `TERMS_OF_SERVICE_VERSION` is set).
 
+If your OIDC server's HTTPS server is signed by a custom certificate
+authority, you will need to [configure Zulip to trust
+it](system-configuration.md#custom_ca_path).
+
 ## JSON Web Tokens (JWT)
 
 Zulip supports using JSON Web Tokens (JWT) authentication in two ways:

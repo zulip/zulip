@@ -56,5 +56,11 @@
           is_checked=true
           label=(t "Users can edit this field for their own account")
           }}
+        {{> settings_checkbox
+          prefix="profile_field_"
+          setting_name="use_for_user_matching"
+          is_checked=false
+          label=(t "Use in @-mention suggestions")
+          }}
     </div>
 </form>

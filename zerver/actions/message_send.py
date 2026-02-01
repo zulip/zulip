@@ -84,6 +84,7 @@ from zerver.lib.topic_link_util import get_stream_link_syntax
 from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
+    UserGroupMembershipDetails,
     check_any_user_has_permission_by_role,
     check_user_has_permission_by_role,
     is_any_user_in_group,
@@ -119,8 +120,8 @@ from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import (
     StreamTopicsPolicyEnum,
-    get_stream_by_id_for_sending_message,
-    get_stream_by_name_for_sending_message,
+    get_realm_stream,
+    get_stream_by_id_in_realm,
 )
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
@@ -1574,7 +1575,7 @@ def validate_stream_name_with_pm_notification(
     check_stream_name(stream_name)
 
     try:
-        stream = get_stream_by_name_for_sending_message(stream_name, realm)
+        stream = get_realm_stream(stream_name, realm.id)
         send_pm_if_empty_stream(stream, realm, sender)
     except Stream.DoesNotExist:
         send_pm_if_empty_stream(None, realm, sender, stream_name=stream_name)
@@ -1587,7 +1588,7 @@ def validate_stream_id_with_pm_notification(
     stream_id: int, realm: Realm, sender: UserProfile
 ) -> Stream:
     try:
-        stream = get_stream_by_id_for_sending_message(stream_id, realm)
+        stream = get_stream_by_id_in_realm(stream_id, realm)
         send_pm_if_empty_stream(stream, realm, sender)
     except Stream.DoesNotExist:
         send_pm_if_empty_stream(None, realm, sender, stream_id=stream_id)
@@ -1787,12 +1788,16 @@ def check_message(
             type=Recipient.STREAM,
         )
 
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        system_groups_name_dict = get_realm_system_groups_name_dict(stream.realm_id)
         if not skip_stream_access_check:
             access_stream_for_send_message(
                 sender=sender,
                 stream=stream,
                 forwarder_user_profile=forwarder_user_profile,
                 archived_channel_notice=archived_channel_notice,
+                user_group_membership_details=user_group_membership_details,
+                system_groups_name_dict=system_groups_name_dict,
             )
         else:
             # Defensive assertion - the only currently supported use case
@@ -1802,7 +1807,11 @@ def check_message(
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
         check_for_can_create_topic_group_violation(
-            user_profile=sender, stream=stream, topic_name=topic_name
+            user_profile=sender,
+            stream=stream,
+            topic_name=topic_name,
+            user_group_membership_details=user_group_membership_details,
+            system_groups_name_dict=system_groups_name_dict,
         )
 
         topics_policy = get_stream_topics_policy(realm, stream)
@@ -2217,7 +2226,10 @@ def send_user_profile_update_notification(
     acting_user: UserProfile | None,
     changes: list[UserProfileChangeDict],
 ) -> None:
-    if (acting_user is not None and acting_user.id == user_profile.id) or user_profile.is_bot:
+    if not user_profile.is_active or user_profile.is_bot:
+        return
+
+    if acting_user is not None and acting_user.id == user_profile.id:
         return
 
     notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -euo pipefail
 symlink_with_backup() {
     if [ -e "$2" ]; then
         # If the user is setting up our automatic certbot-management on a

@@ -3545,7 +3545,9 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post("/devtools/register_demo_realm/")
         self.assertEqual(result.status_code, 302)
 
-        realm = Realm.objects.latest("date_created")
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
         self.assertTrue(
             result["Location"].startswith(
                 f"http://{realm.string_id}.testserver/accounts/login/subdomain"
@@ -3573,7 +3575,6 @@ class UserSignUpTest(ZulipTestCase):
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
-        self.assertIn("Demo organization", realm.name)
 
         # Make sure the correct Welcome Bot direct message is sent.
         welcome_msg = Message.objects.filter(

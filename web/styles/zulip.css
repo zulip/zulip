@@ -6,7 +6,7 @@ html {
 
 body,
 html {
-    height: 100%;
+    height: var(--full-height-dynamic-viewport);
     touch-action: manipulation;
 }
 
@@ -241,7 +241,6 @@ p.n-margin {
     display: none;
 }
 
-.alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
     width: 1.7143em; /* 24px at 14px/em */
@@ -384,7 +383,7 @@ p.n-margin {
 
 .app {
     min-width: 100%;
-    min-height: 100%;
+    min-height: var(--full-height-dynamic-viewport);
     z-index: 99;
 }
 
@@ -596,7 +595,7 @@ body.has-overlay-scrollbar {
 
 .app-main {
     height: 100%;
-    min-height: 100%;
+    min-height: var(--full-height-dynamic-viewport);
 
     &::after {
         /* We use `content` values to determine
@@ -624,7 +623,7 @@ body.has-overlay-scrollbar {
     }
 
     .column-middle {
-        min-height: 100%;
+        min-height: var(--full-height-dynamic-viewport);
         /* We need `overflow-y: visible` for sticky headers to work. */
     }
 }

@@ -180,6 +180,9 @@ export function get_custom_profile_property_value(
     if (property_name === "display_in_profile_summary" && value === undefined) {
         return false;
     }
+    if (property_name === "use_for_user_matching" && value === undefined) {
+        return false;
+    }
     return value;
 }
 
@@ -908,6 +911,9 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_jitsi_server_url":
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_jitsi_server_url_setting_value($(elem), false);
+            break;
+        case "realm_default_avatar_source":
+            proposed_val = get_input_element_value(elem, "radio-group");
             break;
         default:
             if (current_val !== undefined) {

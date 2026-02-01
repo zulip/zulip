@@ -64,6 +64,9 @@ def access_invite_by_id(user_profile: UserProfile, invite_id: int) -> Preregistr
     if prereg_user.referred_by is None or prereg_user.referred_by.realm != user_profile.realm:
         raise JsonableError(_("No such invitation"))
 
+    if prereg_user.status != 0:
+        raise JsonableError(_("Invitation already used or deactivated."))
+
     if prereg_user.referred_by_id != user_profile.id:
         check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
     return prereg_user
@@ -225,7 +228,7 @@ def revoke_user_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
     prereg_user = access_invite_by_id(user_profile, invite_id)
-    do_revoke_user_invite(prereg_user)
+    do_revoke_user_invite(prereg_user, acting_user=user_profile)
     return json_success(request)
 
 
@@ -235,7 +238,7 @@ def revoke_multiuse_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
     invite = access_multiuse_invite_by_id(user_profile, invite_id)
-    do_revoke_multi_use_invite(invite)
+    do_revoke_multi_use_invite(invite, acting_user=user_profile)
     return json_success(request)
 
 

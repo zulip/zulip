@@ -611,7 +611,7 @@ exports.fixtures = {
                 deleted_timestamp: null,
                 failed_timestamp: null,
                 pending: true,
-                export_type: 1,
+                export_type: "public",
             },
         ],
     },
@@ -1267,7 +1267,7 @@ exports.fixtures = {
         type: "user_settings",
         op: "update",
         property: "web_home_view",
-        value: "recent_topics",
+        value: "recent",
     },
 
     user_settings__web_inbox_show_channel_folders: {

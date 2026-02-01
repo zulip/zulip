@@ -1,5 +1,6 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
 
+import base64
 import logging
 import os
 import re
@@ -309,22 +310,29 @@ def build_message_list(
         assert stream_id_map is not None
         assert stream_id in stream_id_map
         stream = stream_id_map[stream_id]
+        topic_name = message.topic_name()
+        topic_display_name = get_topic_display_name(topic_name, user.default_language)
         narrow_link = topic_narrow_url(
             realm=user.realm,
             stream=stream,
-            topic_name=message.topic_name(),
+            topic_name=topic_name,
         )
         channel_privacy_icon = get_channel_privacy_icon(stream)
-        header = f"{channel_privacy_icon}{stream.name} > {message.topic_name()}"
+        header = f"{channel_privacy_icon}{stream.name} > {topic_display_name}"
+        topic_html: Markup = Markup.escape(topic_display_name)
+        if topic_name == "":
+            topic_html = Markup("<span class='empty-topic-display'>{topic_html}</span>").format(
+                topic_html=topic_html,
+            )
         stream_link = stream_narrow_url(user.realm, stream)
         header_html = Markup(
-            "<a href='{stream_link}'>{channel_privacy_icon}{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_name}</a>"
+            "<a href='{stream_link}'>{channel_privacy_icon}{stream_name}</a> &gt; <a href='{narrow_link}'>{topic_html}</a>"
         ).format(
             stream_link=stream_link,
             channel_privacy_icon=channel_privacy_icon,
             stream_name=stream.name,
             narrow_link=narrow_link,
-            topic_name=message.topic_name(),
+            topic_html=topic_html,
         )
         return {
             "plain": header,
@@ -398,11 +406,44 @@ def include_realm_name_in_missedmessage_emails_subject(user_profile: UserProfile
     )
 
 
+def prepare_synthetic_root_message_id(
+    recipient_type: int,
+    recipient_id: int,
+    *,
+    dm_sender_id: int | None = None,
+    topic_name: str | None = None,
+) -> str:
+    """
+    To help email clients thread messages from the same conversation together,
+    we treat all messages as replies to a synthetic root message. This root
+    message's `Message-ID` header is derived from the recipient_id (and sender_id or topic),
+    ensuring consistency across all emails in the thread.
+    """
+    if recipient_type == Recipient.PERSONAL:
+        assert dm_sender_id is not None
+        id_left = f"{recipient_id}.{dm_sender_id}"
+    elif recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
+        id_left = f"{recipient_id}"
+    else:
+        assert topic_name is not None
+        # Base64-encode the topic name b/c as per RFC 5322, <id_left> needs to be a dot-atom-text.
+        # dot-atom-text = 1*atext *("." 1*atext)
+        # atext = ALPHA / DIGIT / "!" / "#" / "$" / "%" /  "&" / "'" / "*" / "+" / "-" / "/" /
+        #         "=" / "?" / "^" / "_" / "`" / "{" / "|" / "}" / "~"
+        # ref:
+        # - https://datatracker.ietf.org/doc/html/rfc5322#section-3.6.4
+        # - https://datatracker.ietf.org/doc/html/rfc5322#section-3.2.3
+        topic_name_base64 = base64.b64encode(topic_name.encode("utf-8")).decode("utf-8")
+        id_left = f"{recipient_id}.{topic_name_base64}"
+
+    return f"<{id_left}@{settings.EXTERNAL_HOST_WITHOUT_PORT}>"
+
+
 def do_send_missedmessage_events_reply_in_zulip(
     user_profile: UserProfile, missed_messages: list[dict[str, Any]], message_count: int
 ) -> None:
     """
-    Send a reminder email to a user if she's missed some direct messages
+    Send a reminder email to a user if she's missed some messages
     by being offline.
 
     The email will have its reply to address set to a limited used email
@@ -416,10 +457,13 @@ def do_send_missedmessage_events_reply_in_zulip(
     """
     from zerver.context_processors import common_context
 
-    recipients = {
-        (msg["message"].recipient_id, msg["message"].topic_name().lower())
-        for msg in missed_messages
-    }
+    recipients = set()
+    for missed_message in missed_messages:
+        message = missed_message["message"]
+        if message.recipient.type == Recipient.PERSONAL:
+            recipients.add((message.recipient_id, message.sender_id))
+        else:
+            recipients.add((message.recipient_id, message.topic_name().lower()))
     assert len(recipients) == 1, f"Unexpectedly multiple recipients: {recipients!r}"
 
     # This link is no longer a part of the email, but keeping the code in case
@@ -518,6 +562,9 @@ def do_send_missedmessage_events_reply_in_zulip(
                 ", ".join(other_recipients[:2]), len(other_recipients) - 2
             )
             context.update(group_pm=True, direct_message_group_display_name=group_display_name)
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.DIRECT_MESSAGE_GROUP, message.recipient_id
+        )
     elif message.recipient.type == Recipient.PERSONAL:
         narrow_url = personal_narrow_url(
             realm=user_profile.realm,
@@ -525,6 +572,9 @@ def do_send_missedmessage_events_reply_in_zulip(
             sender_full_name=message.sender.full_name,
         )
         context.update(narrow_url=narrow_url, private_message=True)
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.PERSONAL, message.recipient_id, dm_sender_id=message.sender.id
+        )
     elif (
         context["mention"]
         or context["stream_email_notify"]
@@ -558,6 +608,9 @@ def do_send_missedmessage_events_reply_in_zulip(
             channel_name=stream.name,
             topic_name=display_topic_name,
             topic_resolved=topic_resolved,
+        )
+        synthetic_root_message_id = prepare_synthetic_root_message_id(
+            Recipient.STREAM, message.recipient_id, topic_name=display_topic_name.lower()
         )
     else:
         raise AssertionError("Invalid messages!")
@@ -607,6 +660,8 @@ def do_send_missedmessage_events_reply_in_zulip(
         "reply_to_email": str(Address(display_name=reply_to_name, addr_spec=reply_to_address)),
         "context": context,
         "date": email_format_datetime(local_time),
+        "in_reply_to": synthetic_root_message_id,
+        "references": synthetic_root_message_id,
     }
     queue_event_on_commit("email_senders", email_dict)
 

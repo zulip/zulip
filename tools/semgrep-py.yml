@@ -240,7 +240,7 @@ rules:
     languages: [python]
     patterns:
       - pattern-either:
-          - pattern: Confirmation.objects.get(...)
+          - pattern: Confirmation.objects.get(..., confirmation_key=..., ...)
           - pattern: Confirmation.objects.filter(..., confirmation_key=..., ...)
       - pattern-not-inside: |
           def get_object_from_key(...):

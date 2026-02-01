@@ -7,7 +7,7 @@
                 <h3>{{t "Organization profile" }}
                     {{> ../help_link_widget link="/help/create-your-organization-profile" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="org-profile" }}
+                {{> settings_save_discard_widget section_name="org-profile" show_save_discard_buttons=true }}
             </div>
 
             <div class="organization-settings-parent">
@@ -22,7 +22,7 @@
                         {{> ../help_link_widget link="/help/organization-type" }}
                     </label>
                     <select name="realm_org_type" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_org_type" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=realm_org_type_values}}
+                        {{> dropdown_options_widget option_values=(object_values realm_org_type_values)}}
                     </select>
                 </div>
                 {{> settings_checkbox

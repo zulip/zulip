@@ -53,14 +53,13 @@ from zerver.models import (
     UserGroupMembership,
     UserProfile,
 )
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import (
     StreamTopicsPolicyEnum,
     bulk_get_streams,
     get_realm_stream,
     get_stream,
-    get_stream_by_id_for_sending_message,
     get_stream_by_id_in_realm,
 )
 from zerver.models.users import active_non_guest_user_ids, active_user_ids, is_cross_realm_bot_email
@@ -594,26 +593,36 @@ def is_user_in_can_remove_subscribers_group(
 
 
 def check_stream_access_based_on_can_send_message_group(
-    sender: UserProfile, stream: Stream
+    sender: UserProfile,
+    stream: Stream,
+    user_group_membership_details: UserGroupMembershipDetails,
+    system_groups_name_dict: dict[int, str],
 ) -> None:
     if is_cross_realm_bot_email(sender.delivery_email):
         return
 
-    can_send_message_group = stream.can_send_message_group
-    if hasattr(can_send_message_group, "named_user_group"):
-        if can_send_message_group.named_user_group.name == SystemGroups.EVERYONE:
+    if (
+        stream.can_send_message_group_id in system_groups_name_dict
+        and system_groups_name_dict[stream.can_send_message_group_id] == SystemGroups.EVERYONE
+    ):
+        return
+
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(sender).values_list("id", flat=True)
+        )
+
+    if stream.can_send_message_group_id in user_group_membership_details.user_recursive_group_ids:
+        return
+
+    if sender.is_bot and sender.bot_owner is not None:
+        bot_owner_recursive_group_ids = set(
+            get_recursive_membership_groups(sender.bot_owner).values_list("id", flat=True)
+        )
+        if stream.can_send_message_group_id in bot_owner_recursive_group_ids:
             return
 
-        if can_send_message_group.named_user_group.name == SystemGroups.NOBODY:
-            raise JsonableError(_("You do not have permission to post in this channel."))
-
-    if not user_has_permission_for_group_setting(
-        stream.can_send_message_group_id,
-        sender,
-        Stream.stream_permission_group_settings["can_send_message_group"],
-        direct_member_only=False,
-    ):
-        raise JsonableError(_("You do not have permission to post in this channel."))
+    raise JsonableError(_("You do not have permission to post in this channel."))
 
 
 def access_stream_for_send_message(
@@ -621,16 +630,20 @@ def access_stream_for_send_message(
     stream: Stream,
     forwarder_user_profile: UserProfile | None,
     archived_channel_notice: bool = False,
+    user_group_membership_details: UserGroupMembershipDetails | None = None,
+    system_groups_name_dict: dict[int, str] | None = None,
 ) -> None:
     # Our caller is responsible for making sure that `stream` actually
     # matches the realm of the sender.
-    try:
-        check_stream_access_based_on_can_send_message_group(sender, stream)
-    except JsonableError as e:
-        if sender.is_bot and sender.bot_owner is not None:
-            check_stream_access_based_on_can_send_message_group(sender.bot_owner, stream)
-        else:
-            raise JsonableError(e.msg)
+    if system_groups_name_dict is None:
+        system_groups_name_dict = get_realm_system_groups_name_dict(stream.realm_id)
+
+    if user_group_membership_details is None:
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+
+    check_stream_access_based_on_can_send_message_group(
+        sender, stream, user_group_membership_details, system_groups_name_dict
+    )
 
     # forwarder_user_profile cases should be analyzed first, as incorrect
     # message forging is cause for denying access regardless of any other factors.
@@ -682,16 +695,16 @@ def access_stream_for_send_message(
         # Bots can send to any stream their owner can.
         return
 
-    user_recursive_group_ids = set(
-        get_recursive_membership_groups(sender).values_list("id", flat=True)
-    )
+    if stream.history_public_to_subscribers and not sender.is_guest:
+        if user_group_membership_details.user_recursive_group_ids is None:
+            user_group_membership_details.user_recursive_group_ids = set(
+                get_recursive_membership_groups(sender).values_list("id", flat=True)
+            )
 
-    if (
-        stream.history_public_to_subscribers
-        and is_user_in_groups_granting_content_access(stream, user_recursive_group_ids)
-        and not sender.is_guest
-    ):
-        return
+        if is_user_in_groups_granting_content_access(
+            stream, user_group_membership_details.user_recursive_group_ids
+        ):
+            return
 
     # All other cases are an error.
     raise JsonableError(
@@ -699,34 +712,28 @@ def access_stream_for_send_message(
     )
 
 
-def check_user_can_create_new_topics(user_profile: UserProfile, stream: Stream) -> None:
-    can_create_topic_group = stream.can_create_topic_group
-    if (
-        hasattr(can_create_topic_group, "named_user_group")
-        and can_create_topic_group.named_user_group.name == SystemGroups.NOBODY
-    ):
-        raise JsonableError(_("You do not have permission to create new topics in this channel."))
-
-    if not user_has_permission_for_group_setting(
-        stream.can_create_topic_group_id,
-        user_profile,
-        Stream.stream_permission_group_settings["can_create_topic_group"],
-        direct_member_only=False,
-    ):
-        raise JsonableError(_("You do not have permission to create new topics in this channel."))
-
-
 def check_for_can_create_topic_group_violation(
-    user_profile: UserProfile, stream: Stream, topic_name: str
+    user_profile: UserProfile,
+    stream: Stream,
+    topic_name: str,
+    user_group_membership_details: UserGroupMembershipDetails,
+    system_groups_name_dict: dict[int, str],
 ) -> None:
     if is_cross_realm_bot_email(user_profile.delivery_email):
         return
 
-    can_create_topic_group = stream.can_create_topic_group
     if (
-        hasattr(can_create_topic_group, "named_user_group")
-        and can_create_topic_group.named_user_group.name == SystemGroups.EVERYONE
+        stream.can_create_topic_group_id in system_groups_name_dict
+        and system_groups_name_dict[stream.can_create_topic_group_id] == SystemGroups.EVERYONE
     ):
+        return
+
+    if user_group_membership_details.user_recursive_group_ids is None:
+        user_group_membership_details.user_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile).values_list("id", flat=True)
+        )
+
+    if stream.can_create_topic_group_id in user_group_membership_details.user_recursive_group_ids:
         return
 
     assert stream.recipient_id is not None
@@ -734,14 +741,17 @@ def check_for_can_create_topic_group_violation(
         realm_id=stream.realm_id, stream_recipient_id=stream.recipient_id, topic_name=topic_name
     ).exists()
 
-    if not topic_exists:
-        try:
-            check_user_can_create_new_topics(user_profile, stream)
-        except JsonableError as e:
-            if user_profile.is_bot and user_profile.bot_owner is not None:
-                check_user_can_create_new_topics(user_profile.bot_owner, stream)
-            else:
-                raise JsonableError(e.msg)
+    if topic_exists:
+        return
+
+    if user_profile.is_bot and user_profile.bot_owner is not None:
+        bot_owner_recursive_group_ids = set(
+            get_recursive_membership_groups(user_profile.bot_owner).values_list("id", flat=True)
+        )
+        if stream.can_create_topic_group_id in bot_owner_recursive_group_ids:
+            return
+
+    raise JsonableError(_("You do not have permission to create new topics in this channel."))
 
 
 def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) -> None:
@@ -999,33 +1009,6 @@ def access_stream_by_id(
     error = _("Invalid channel ID")
     try:
         stream = get_stream_by_id_in_realm(stream_id, user_profile.realm)
-    except Stream.DoesNotExist:
-        raise JsonableError(error)
-
-    sub = access_stream_common(
-        user_profile,
-        stream,
-        error,
-        require_active_channel=require_active_channel,
-        require_content_access=require_content_access,
-    )
-    return (stream, sub)
-
-
-def access_stream_by_id_for_message(
-    user_profile: UserProfile,
-    stream_id: int,
-    *,
-    require_active_channel: bool = True,
-    require_content_access: bool = True,
-) -> tuple[Stream, Subscription | None]:
-    """
-    Variant of access_stream_by_id that uses get_stream_by_id_for_sending_message
-    to ensure we do a select_related("can_send_message_group", "can_create_topic_group").
-    """
-    error = _("Invalid channel ID")
-    try:
-        stream = get_stream_by_id_for_sending_message(stream_id, user_profile.realm)
     except Stream.DoesNotExist:
         raise JsonableError(error)
 

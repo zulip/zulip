@@ -362,7 +362,7 @@ run_test("basics", ({override}) => {
 
     const active_user_ids = people.get_active_user_ids().toSorted();
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
-    assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(isaac.user_id), true);
     assert.ok(people.is_valid_email_for_compose(isaac.email));
     assert.ok(people.is_valid_user_id_for_compose(isaac.user_id));
 
@@ -374,12 +374,12 @@ run_test("basics", ({override}) => {
     assert.equal(people.get_non_active_human_ids().length, 1);
     assert.equal(people.get_non_active_user_ids_count([isaac.user_id]), 1);
     assert.equal(people.get_active_human_count(), 1);
-    assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
+    assert.equal(people.is_active_user_or_system_bot(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), true);
     assert.equal(people.is_valid_user_id_for_compose(isaac.user_id), true);
 
     people.add_active_user(bot_botson);
-    assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(bot_botson.user_id), true);
     bot_user_ids = people.get_bot_ids();
     assert.deepEqual(bot_user_ids, [bot_botson.user_id]);
 
@@ -427,10 +427,10 @@ run_test("basics", ({override}) => {
 
     // Invalid user ID returns true and warns.
     blueslip.expect("warn", "Unexpectedly invalid user_id in user popover query");
-    assert.equal(people.is_active_user_for_popover(123412), true);
+    assert.equal(people.is_active_user_or_system_bot(123412), true);
 
     unknown_user.is_inaccessible_user = true;
-    assert.equal(people.is_active_user_for_popover(unknown_user.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(unknown_user.user_id), true);
     unknown_user.is_inaccessible_user = false;
 
     // We can still get their info for non-realm needs.
@@ -899,6 +899,10 @@ run_test("dm_matches_search_string", () => {
     result = people.dm_matches_search_string([linus], "ltorv");
     assert.ok(result);
 
+    // Match with user id.
+    result = people.dm_matches_search_string([linus], "304");
+    assert.ok(result);
+
     // Test filtering of names with diacritics. This should match
     // Nöôáàh by ignoring diacritics, and also match Nooaah.
     result = people.dm_matches_search_string([noah], "noOa");
@@ -956,8 +960,10 @@ run_test("user_ids_to_full_names_array", () => {
 
 run_test("multi_user_methods", () => {
     initialize();
-    people.add_active_user(emp401);
-    people.add_active_user(emp402);
+    // Add users to valid_user_ids.
+    const source = "server_events";
+    people.add_active_user(emp401, source);
+    people.add_active_user(emp402, source);
 
     // The order of user_ids is relevant here.
     assert.equal(emp401.user_id, 401);
@@ -966,11 +972,11 @@ run_test("multi_user_methods", () => {
     let emails_string = people.user_ids_string_to_emails_string("402,401");
     assert.equal(emails_string, "emp401@example.com,emp402@example.com");
 
-    emails_string = people.slug_to_emails("402,401");
-    assert.equal(emails_string, "emp401@example.com,emp402@example.com");
+    let user_ids = people.slug_to_user_ids("402,401");
+    assert.deepEqual(user_ids, [402, 401]);
 
-    emails_string = people.slug_to_emails("402,401-group");
-    assert.equal(emails_string, "emp401@example.com,emp402@example.com");
+    user_ids = people.slug_to_user_ids("402,401-group");
+    assert.deepEqual(user_ids, [402, 401]);
 
     emails_string = "emp402@example.com,EMP401@EXAMPLE.COM";
     let user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
@@ -978,9 +984,6 @@ run_test("multi_user_methods", () => {
 
     user_ids_string = people.reply_to_to_user_ids_string(emails_string);
     assert.equal(user_ids_string, "401,402");
-
-    const slug = people.emails_to_slug(emails_string);
-    assert.equal(slug, "401,402-group");
 
     assert.equal(people.reply_to_to_user_ids_string("invalid@example.com"), undefined);
 
@@ -1244,20 +1247,6 @@ run_test("maybe_incr_recipient_count", () => {
     assert.equal(people.get_recipient_count(maria), 1);
 });
 
-run_test("slugs", () => {
-    initialize();
-    people.add_active_user(debbie);
-
-    const slug = people.emails_to_slug(debbie.email);
-    assert.equal(slug, "501-Debra-Henton");
-
-    const email = people.slug_to_emails(slug);
-    assert.equal(email, "debbie71@example.com");
-
-    // Test undefined slug
-    assert.equal(people.emails_to_slug("does@not.exist"), undefined);
-});
-
 run_test("get_people_for_search_bar", ({override}) => {
     initialize();
     let user_ids;
@@ -1449,7 +1438,7 @@ run_test("initialize", () => {
 
     people.initialize(current_user.user_id, params, user_group_params);
 
-    assert.equal(people.is_active_user_for_popover(17), true);
+    assert.equal(people.is_active_user_or_system_bot(17), true);
     assert.ok(people.is_cross_realm_email("bot@example.com"));
     assert.ok(people.is_valid_email_for_compose("bot@example.com"));
     assert.ok(people.is_valid_user_id_for_compose(test_bot.user_id));
@@ -1465,7 +1454,8 @@ run_test("initialize", () => {
     assert.ok(people.is_valid_bulk_user_ids_for_compose([17, 16, 15]));
     blueslip.reset();
     blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
-    assert.ok(!people.is_valid_bulk_user_ids_for_compose([17, 9999, 15]));
+    assert.ok(!people.is_valid_bulk_user_ids_for_compose([17, 9999, 15], false));
+    blueslip.reset();
     assert.ok(people.is_my_user_id(42));
 
     const fetched_retiree = people.get_by_user_id(15);
@@ -1922,6 +1912,8 @@ run_test("fetch_users", async ({override}) => {
     assert.ok(people.is_valid_user_id(16));
     assert.ok(people.is_valid_user_id(42));
     assert.ok(people.is_valid_user_id(17));
+    assert.ok(people.is_valid_user_ids([15, 16, 42, 17]));
+    assert.ok(!people.is_valid_user_ids([15, 16, 42, 9999]));
     assert.equal(people.get_by_email("alice@example.com").user_id, 16);
     assert.equal(people.get_by_email("retiree@example.com").user_id, 15);
 

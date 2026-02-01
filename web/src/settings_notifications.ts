@@ -333,8 +333,6 @@ function reset_stream_notifications(elem: HTMLElement): void {
 export function set_up(settings_panel: SettingsPanel): void {
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
-    assert(settings_panel.notification_sound_elem !== null);
-    const $notification_sound_elem = $<HTMLAudioElement>(settings_panel.notification_sound_elem);
     const for_realm_settings = settings_panel.for_realm_settings;
     const $notification_sound_dropdown = $container.find<HTMLSelectElement & {type: "select-one"}>(
         "select:not([multiple]).setting_notification_sound",
@@ -342,7 +340,10 @@ export function set_up(settings_panel: SettingsPanel): void {
 
     $container.find(".play_notification_sound").on("click", () => {
         if ($notification_sound_dropdown.val()!.toLowerCase() !== "none") {
-            void ui_util.play_audio(util.the($notification_sound_elem));
+            assert(settings_panel.notification_sound_elem !== null);
+            void ui_util.play_audio(
+                util.the($<HTMLAudioElement>(settings_panel.notification_sound_elem)),
+            );
         }
     });
 

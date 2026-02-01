@@ -23,6 +23,9 @@ html {
     position: relative;
     padding: 30px;
     min-width: 0;
+    /* Sensibly and correctly wrap email addresses
+       over multiple lines, when necessary. */
+    overflow-wrap: break-word;
 
     background-color: hsl(0deg 0% 100%);
     box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
@@ -969,6 +972,7 @@ button#register_auth_button_gitlab {
     }
 }
 
+#password-reset-confirm,
 #realm-import-post-process,
 #realm-creation-form-slack-import,
 #account-deactivated-success-page-details,
@@ -1217,18 +1221,39 @@ button#register_auth_button_gitlab {
     }
 }
 
-#password_reset .input-group {
-    & label {
-        font-size: 1rem;
+#password-reset-confirm {
+    .white-box {
+        display: inline-block;
+        text-align: left;
+        width: 328px;
+    }
 
-        &.inline-block {
-            margin-top: -1px;
-        }
+    #pw_strength {
+        width: 328px;
+    }
 
-        &.marketing_emails_checkbox {
-            text-indent: -24px;
-            margin-left: 24px;
+    .password-reset-button {
+        margin-top: 10px;
+        width: 328px;
+    }
+
+    #password_reset .input-group {
+        & label {
+            font-size: 1rem;
+
+            &.inline-block {
+                margin-top: -1px;
+            }
+
+            &.marketing_emails_checkbox {
+                text-indent: -24px;
+                margin-left: 24px;
+            }
         }
+    }
+
+    .password-reset-invalid {
+        margin: 0;
     }
 }
 
@@ -1534,10 +1559,6 @@ button#register_auth_button_gitlab {
     }
 }
 
-.account-creation .white-box .user_email {
-    word-break: break-all;
-}
-
 @media (width >= 800px) {
     .account-creation .white-box {
         max-width: 800px;
@@ -1747,4 +1768,8 @@ button#register_auth_button_gitlab {
     .bottom-text {
         text-align: left;
     }
+}
+
+#slack-import-unexpected-failure .text-error {
+    font-size: 1em;
 }

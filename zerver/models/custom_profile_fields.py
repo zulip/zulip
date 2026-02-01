@@ -82,6 +82,10 @@ class CustomProfileField(models.Model):
     display_in_profile_summary = models.BooleanField(default=False)
     required = models.BooleanField(default=False)
 
+    # Whether this field should be used in @-mention typeahead suggestions.
+    # Only applicable for EXTERNAL_ACCOUNT and SHORT_TEXT field types.
+    use_for_user_matching = models.BooleanField(default=False, db_default=False)
+
     # Whether regular users can edit this field on their own account.
     editable_by_user = models.BooleanField(default=True, db_default=True)
 
@@ -177,6 +181,8 @@ class CustomProfileField(models.Model):
         }
         if self.display_in_profile_summary:
             data_as_dict["display_in_profile_summary"] = True
+        if self.use_for_user_matching:
+            data_as_dict["use_for_user_matching"] = True
 
         return data_as_dict
 

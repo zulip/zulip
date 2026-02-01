@@ -11,6 +11,7 @@ from typing_extensions import override
 from corporate.lib.stripe import (
     RealmBillingSession,
     RemoteRealmBillingSession,
+    RemoteServerBillingSession,
     add_months,
     get_configured_fixed_price_plan_offer,
     start_of_next_billing_cycle,
@@ -137,8 +138,11 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
 
         # Add a deactivated server, which should be excluded from search results.
         server = RemoteZulipServer.objects.get(hostname="zulip-0.example.com")
-        server.deactivated = True
-        server.save(update_fields=["deactivated"])
+        billing_user = RemoteServerBillingUser.objects.create(
+            remote_server=server, email="server-admin-deactivated@example.com"
+        )
+        billing_session = RemoteServerBillingSession(server, billing_user)
+        billing_session.do_deactivate_remote_server()
 
         # Add example sponsorship request data
         add_sponsorship_request(
@@ -232,6 +236,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                     "<b>Zulip version</b>:",
                     "📶 Push notification status:",
                     "💸 Discounts and sponsorship information:",
+                    "♻️ Reactivate server:",
                 ],
                 result,
             )
@@ -695,6 +700,17 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
         ).last()
         assert audit_log is not None
         self.assertEqual(audit_log.server, remote_server_no_upgrade)
+        self.assertEqual(audit_log.acting_support_user, iago)
+
+        result = self.client_get("/activity/remote/support", {"q": "zulip-5.example.com"})
+        self.assert_in_success_response(
+            [
+                '<span class="remote-label">Remote server: deactivated</span>',
+                "♻️ Reactivate server:",
+                "<b>Acting user</b>: iago@zulip.com",
+            ],
+            result,
+        )
 
     def test_support_reactivate_remote_server(self) -> None:
         iago = self.example_user("iago")

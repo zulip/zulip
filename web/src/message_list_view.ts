@@ -788,7 +788,7 @@ export class MessageListView {
         for (const message of messages) {
             const message_reactions = reactions.get_message_reactions(message);
             message.message_reactions = message_reactions;
-            message.reminders = message_reminder.get_reminders(message.id);
+            message.reminders = message_reminder.get_reminders(message.id) ?? [];
 
             // These will be used to build the message container
             let include_recipient = false;
@@ -1083,7 +1083,8 @@ export class MessageListView {
     _get_message_template(message_container: MessageContainer): string {
         const msg_reactions = reactions.get_message_reactions(message_container.msg);
         message_container.msg.message_reactions = msg_reactions;
-        message_container.msg.reminders = message_reminder.get_reminders(message_container.msg.id);
+        message_container.msg.reminders =
+            message_reminder.get_reminders(message_container.msg.id) ?? [];
         let invite_only;
         let is_web_public;
         let is_archived;
@@ -1933,6 +1934,7 @@ export class MessageListView {
         is_spectator: boolean,
         invite_only: boolean,
         is_web_public: boolean,
+        can_subscribe: boolean | undefined,
     ): void {
         // This is not the only place we render bookends; see also the
         // partial in message_group.hbs, which do not set is_trailing_bookend.
@@ -1947,6 +1949,7 @@ export class MessageListView {
                 is_trailing_bookend: true,
                 invite_only,
                 is_web_public,
+                can_subscribe,
             }),
         );
         this.$list.append($rendered_trailing_bookend);

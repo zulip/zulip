@@ -159,8 +159,8 @@ export const web_home_view_values = {
         code: "inbox",
         description: $t({defaultMessage: "Inbox"}),
     },
-    recent_topics: {
-        code: "recent_topics",
+    recent: {
+        code: "recent",
         description: $t({defaultMessage: "Recent conversations"}),
     },
     all_messages: {
@@ -1331,24 +1331,29 @@ export const stream_privacy_policy_values = {
     },
 };
 
+export type ExportTypeSlug = "public" | "full_with_consent" | "full_without_consent";
+
 export type ExportTypeOption = {
-    value: number;
+    slug: ExportTypeSlug;
     description: string;
     default: boolean;
 };
 
-export type ExportTypeSlug = "public" | "full_with_consent";
-
 export const export_type_values: Record<ExportTypeSlug, ExportTypeOption> = {
     public: {
-        value: 1,
+        slug: "public",
         description: $t({defaultMessage: "Public data"}),
         default: false,
     },
     full_with_consent: {
-        value: 2,
-        description: $t({defaultMessage: "Standard"}),
+        slug: "full_with_consent",
+        description: $t({defaultMessage: "Public and private data (with consent)"}),
         default: true,
+    },
+    full_without_consent: {
+        slug: "full_without_consent",
+        description: $t({defaultMessage: "All public and private data"}),
+        default: false,
     },
 };
 
@@ -1380,3 +1385,14 @@ export const realm_plan_types = {
 };
 
 export const no_folder_selected = -1;
+
+export const default_avatar_source_values = {
+    jdenticon: {
+        code: "J",
+        description: $t({defaultMessage: "Default"}),
+    },
+    gravatar: {
+        code: "G",
+        description: $t({defaultMessage: "Gravatar"}),
+    },
+};

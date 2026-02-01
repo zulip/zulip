@@ -20,6 +20,85 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 458**
+
+* [`GET users/{user_id}/channels`](/api/get-user-channels): Fixed
+  missing support for querying subscriptions of bot users.
+* [`GET /users/{user_id}/subscriptions/{stream_id}`](/api/get-subscription-status):
+  Fixed missing support for querying subscriptions of bot users.
+* [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member):
+  Fixed missing support for querying group membership of bot users.
+
+**Feature level 457**
+
+[`GET /events`](/api/get-events): `delete_message` events are now
+  sent to the user who deletes the message only if they have content
+  access to the messages' recipient, and the `message_ids` list only
+  includes IDs of the messages that they can access.
+
+**Feature level 456**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added a new
+  `default_avatar_source` realm setting.
+
+**Feature level 455**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), [`POST
+  /realm/profile_fields`](/api/create-custom-profile-field), [`GET
+  /realm/profile_fields`](/api/get-custom-profile-fields) Added a new
+  parameter `use_for_user_matching` to custom profile field objects,
+  which indicates whether this custom profile field should be used to
+  match users in typeahead.
+
+**Feature level 454**
+
+- [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`PATCH /settings`](/api/update-settings): Changed the `web_home_view`
+  value for the recent view to "recent".
+
+**Feature level 453**
+
+* [`POST /register`](/api/register-queue): `gif_rating_options`
+  was renamed to `gif_rating_policy_options`.
+* [`POST /register`](/api/register-queue): `realm_giphy_rating` was
+  renamed to `realm_gif_rating_policy` to reflect that it's shared
+  between all GIF picker integrations.
+* [`GET /events`](/api/get-events), `PATCH /realm`: `giphy_rating`
+  was renamed to `gif_rating_policy` to reflect that it's shared
+  between all GIF picker integrations.
+
+**Feature level 452**
+
+* [`GET /events`](/api/get-events): Messages deleted via a message
+  retention policy now correctly generate `delete_message` events.
+
+**Feature level 451**
+
+* [Message formatting](/api/message-formatting): Changed the
+rendering of invalid timestamps from a `<span class="timestamp-error">`
+element to plain escaped text.
+
+**Feature level 450**
+
+* [`GET /events`](/api/get-events): The `push_device` events now
+  encode `push_account_id` as an integer, not a string.
+
+**Feature level 449**
+
+* [`POST /export/realm`](/api/export-realm): The `export_type` parameter now
+  takes string values (`public`, `full_with_consent`, `full_without_consent`)
+  instead of integers. The new `full_without_consent` option requests a full
+  export that includes private data for all users and requires the organization
+  to have the `owner_full_content_access` flag set to True.
+* [`GET /export/realm`](/api/get-realm-exports), [`GET /events`](/api/get-events):
+  `export_type` fields now contain the new string values, matching the
+  `POST /export/realm` parameter format. These endpoints now report
+  `export_type=full_without_consent` for a full export that includes private data
+  for all users.
+
 **Feature level 448**
 
 * [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):

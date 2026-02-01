@@ -148,6 +148,8 @@ async function fetch_stream_subscribers_from_server(
                 } else {
                     blueslip.error("Failure fetching channel subscribers", {
                         stream_id,
+                        error_json: xhr.responseJSON,
+                        xhr_ready_state: xhr.readyState,
                     });
                     resolve(null);
                 }

@@ -4,7 +4,7 @@
         <div id="org-notifications" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Automated messages and emails" }}</h3>
-                {{> settings_save_discard_widget section_name="notifications" }}
+                {{> settings_save_discard_widget section_name="notifications" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 {{> ../dropdown_widget_with_label
@@ -74,9 +74,41 @@
         <div id="org-onboarding" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Onboarding" }}</h3>
-                {{> settings_save_discard_widget section_name="onboarding" }}
+                {{> settings_save_discard_widget section_name="onboarding" show_save_discard_buttons=true }}
             </div>
             <div class="organization-settings-parent">
+                {{#if development}}
+                <div class="input-group">
+                    <label class="settings-field-label">
+                        {{admin_settings_label.realm_default_avatar_source}}
+                        {{> ../help_link_widget link="/help/configure-default-new-user-settings" }}
+                    </label>
+                    <div class="default_avatar_source_values settings-highlight-box prop-element" id="id_realm_default_avatar_source" data-setting-widget-type="radio-group" data-setting-choice-type="string">
+                        {{#each (object_values default_avatar_source_values)}}
+                            <label class="preferences-radio-choice-label">
+                                <span class="radio-choice-controls">
+                                    <input type="radio" name="default_avatar_source" value="{{this.code}}"/>
+                                    <span class="preferences-radio-choice-text">{{this.description}}</span>
+                                </span>
+                                <span class="right">
+                                    {{#if (eq this.code "J") }}
+                                    <img class="avatar" src="/static/images/jdenticon-1.png" />
+                                    <img class="avatar" src="/static/images/jdenticon-2.png" />
+                                    <img class="avatar" src="/static/images/jdenticon-3.png" />
+                                    <img class="avatar" src="/static/images/jdenticon-4.png" />
+                                    {{else}}
+                                    <img class="avatar" src="/static/images/gravatar-1.png" />
+                                    <img class="avatar" src="/static/images/gravatar-2.png" />
+                                    <img class="avatar" src="/static/images/gravatar-3.png" />
+                                    <img class="avatar" src="/static/images/gravatar-4.png" />
+                                    {{/if}}
+                                </span>
+                            </label>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/if}}
+
                 {{> settings_checkbox
                   setting_name="realm_enable_welcome_message_custom_text"
                   prefix="id_"
@@ -106,7 +138,7 @@
         <div class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Notifications security" }}</h3>
-                {{> settings_save_discard_widget section_name="notifications-security" }}
+                {{> settings_save_discard_widget section_name="notifications-security" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 {{> settings_checkbox
@@ -127,7 +159,7 @@
         <div id="org-compose-settings" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Compose settings"}}</h3>
-                {{> settings_save_discard_widget section_name="compose-settings"}}
+                {{> settings_save_discard_widget section_name="compose-settings" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
@@ -136,7 +168,7 @@
                         {{> ../help_link_widget link="/help/configure-call-provider" }}
                     </label>
                     <select name="realm_video_chat_provider" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_video_chat_provider" data-setting-widget-type="number">
-                        {{#each realm_available_video_chat_providers}}
+                        {{#each (object_values realm_available_video_chat_providers)}}
                             <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
                     </select>
@@ -169,12 +201,12 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="id_realm_giphy_rating" class="settings-field-label">
+                    <label for="id_realm_gif_rating_policy" class="settings-field-label">
                         {{t 'GIF integration' }}
                         {{> ../help_link_widget link=gif_help_link }}
                     </label>
-                    <select name="realm_giphy_rating" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_giphy_rating" data-setting-widget-type="number" {{#if gif_api_key_empty}}disabled{{/if}}>
-                        {{#each gif_rating_options}}
+                    <select name="realm_gif_rating_policy" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_gif_rating_policy" data-setting-widget-type="number" {{#if gif_api_key_empty}}disabled{{/if}}>
+                        {{#each (object_values gif_rating_policy_options)}}
                             <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
                     </select>
@@ -183,7 +215,7 @@
                 <div class="input-group">
                     <label for="id_realm_topics_policy" class="settings-field-label">{{> realm_topics_policy_label .}}</label>
                     <select name="realm_topics_policy" id="id_realm_topics_policy" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
-                        {{> dropdown_options_widget option_values=realm_topics_policy_values}}
+                        {{> dropdown_options_widget option_values=(object_values realm_topics_policy_values)}}
                     </select>
                 </div>
             </div>
@@ -192,7 +224,7 @@
         <div id="org-msg-feed-settings" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message feed settings"}}</h3>
-                {{> settings_save_discard_widget section_name="msg-feed-settings"}}
+                {{> settings_save_discard_widget section_name="msg-feed-settings" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 {{> ../dropdown_widget_with_label
@@ -232,7 +264,7 @@
                 <h3>{{t "Message retention period" }}
                     {{> ../help_link_widget link="/help/message-retention-policy" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="message-retention" }}
+                {{> settings_save_discard_widget section_name="message-retention" show_save_discard_buttons=true }}
             </div>
 
             {{> upgrade_tip_widget . }}

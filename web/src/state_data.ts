@@ -125,17 +125,17 @@ export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
     }),
     z.object({
         operator: z.literal("sender"),
-        operand: z.string(),
+        operand: z.number(),
         negated: z.optional(z.boolean()),
     }),
     z.object({
         operator: z.literal("dm-including"),
-        operand: z.string(),
+        operand: z.array(z.number()),
         negated: z.optional(z.boolean()),
     }),
     z.object({
         operator: z.literal("dm"),
-        operand: z.string(),
+        operand: z.array(z.number()),
         negated: z.optional(z.boolean()),
     }),
 ]);
@@ -161,6 +161,7 @@ export const custom_profile_field_schema = z.object({
     order: z.number(),
     required: z.boolean(),
     type: z.number(),
+    use_for_user_matching: z.optional(z.boolean()),
 });
 
 export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
@@ -420,7 +421,7 @@ export const realm_schema = z.object({
     custom_profile_field_types: custom_profile_field_types_schema,
     demo_organization_scheduled_deletion_date: z.optional(z.number()),
     giphy_api_key: z.string(),
-    gif_rating_options: z.intersection(
+    gif_rating_policy_options: z.intersection(
         z.record(z.string(), z.object({id: z.number(), name: z.string()})),
         z.object({disabled: z.object({id: z.number(), name: z.string()})}),
     ),
@@ -480,6 +481,7 @@ export const realm_schema = z.object({
     realm_can_summarize_topics_group: group_setting_value_schema,
     realm_create_multiuse_invite_group: group_setting_value_schema,
     realm_date_created: z.number(),
+    realm_default_avatar_source: z.enum(["G", "J"]),
     realm_default_code_block_language: z.string(),
     realm_default_external_accounts: z.record(
         z.string(),
@@ -512,7 +514,7 @@ export const realm_schema = z.object({
     realm_enable_guest_user_indicator: z.boolean(),
     realm_enable_read_receipts: z.boolean(),
     realm_enable_spectator_access: z.boolean(),
-    realm_giphy_rating: z.number(),
+    realm_gif_rating_policy: z.number(),
     realm_icon_source: z.string(),
     realm_icon_url: z.string(),
     realm_incoming_webhook_bots: z.array(

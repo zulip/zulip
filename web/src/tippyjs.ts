@@ -991,7 +991,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#compose_recipient_box, #move-topic-new-topic-input-wrapper",
+        target: "#compose-channel-recipient, #move-topic-new-topic-input-wrapper",
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
             const $elem = $(instance.reference);
@@ -1007,6 +1007,17 @@ export function initialize(): void {
             }
             return false;
         },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".reset-user-setting-to-default",
+        // Disable trigger on focus, to avoid displaying the tooltip
+        // after the confirmation modal closes.
+        trigger: "mouseenter",
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();

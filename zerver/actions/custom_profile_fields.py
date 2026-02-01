@@ -30,6 +30,7 @@ def try_add_realm_default_custom_profile_field(
     display_in_profile_summary: bool = False,
     required: bool = False,
     editable_by_user: bool = True,
+    use_for_user_matching: bool = False,
 ) -> CustomProfileField:
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
     custom_profile_field = CustomProfileField(
@@ -41,6 +42,7 @@ def try_add_realm_default_custom_profile_field(
         display_in_profile_summary=display_in_profile_summary,
         required=required,
         editable_by_user=editable_by_user,
+        use_for_user_matching=use_for_user_matching,
     )
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
@@ -59,6 +61,7 @@ def try_add_realm_custom_profile_field(
     display_in_profile_summary: bool = False,
     required: bool = False,
     editable_by_user: bool = True,
+    use_for_user_matching: bool = False,
 ) -> CustomProfileField:
     custom_profile_field = CustomProfileField(
         realm=realm,
@@ -67,6 +70,7 @@ def try_add_realm_custom_profile_field(
         display_in_profile_summary=display_in_profile_summary,
         required=required,
         editable_by_user=editable_by_user,
+        use_for_user_matching=use_for_user_matching,
     )
     custom_profile_field.hint = hint
     if custom_profile_field.field_type in (
@@ -117,6 +121,7 @@ def try_update_realm_custom_profile_field(
     display_in_profile_summary: bool | None = None,
     required: bool | None = None,
     editable_by_user: bool | None = None,
+    use_for_user_matching: bool | None = None,
 ) -> None:
     if name is not None:
         field.name = name
@@ -128,6 +133,8 @@ def try_update_realm_custom_profile_field(
         field.editable_by_user = editable_by_user
     if display_in_profile_summary is not None:
         field.display_in_profile_summary = display_in_profile_summary
+    if use_for_user_matching is not None:
+        field.use_for_user_matching = use_for_user_matching
 
     if field.field_type in (
         CustomProfileField.SELECT,

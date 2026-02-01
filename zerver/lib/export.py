@@ -92,7 +92,7 @@ from zerver.models import (
 from zerver.models.messages import SubMessage
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import get_fake_email_domain, get_realm
+from zerver.models.realms import DEFAULT_REALM_EXPORT_TYPE_SLUG, get_fake_email_domain, get_realm
 from zerver.models.saved_snippets import SavedSnippet
 from zerver.models.users import ExternalAuthID, get_system_bot, is_cross_realm_bot_email
 
@@ -2209,9 +2209,7 @@ def _save_s3_key_to_file(key_name: str) -> None:
     # data into the filesystem sink, because we've already prevented directory
     # traversal with our assertion above.
     dirname = mark_sanitized(os.path.dirname(filename))
-
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
+    os.makedirs(dirname, exist_ok=True)
 
     context.bucket.Object(key_name).download_file(Filename=filename)
 
@@ -3116,6 +3114,15 @@ def export_realm_wrapper(
         raise
 
 
+def get_export_type_slug(export_type: int) -> str:
+    result = DEFAULT_REALM_EXPORT_TYPE_SLUG
+    for export_type_slug, export_type_value in RealmExport.EXPORT_TYPES.items():
+        if export_type == export_type_value:
+            result = export_type_slug
+
+    return result
+
+
 def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
     # Exclude exports made via shell. 'acting_user=None', since they
     # aren't supported in the current API format.
@@ -3148,7 +3155,7 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
             deleted_timestamp=deleted_timestamp,
             failed_timestamp=failed_timestamp,
             pending=pending,
-            export_type=export.type,
+            export_type=get_export_type_slug(export.type),
         )
     return sorted(exports_dict.values(), key=lambda export_dict: export_dict["id"])
 

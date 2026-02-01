@@ -240,9 +240,17 @@ function set_video_chat_provider_dropdown(): void {
     set_jitsi_server_url_dropdown();
 }
 
-function set_gif_rating_dropdown(): void {
-    const rating_id = realm.realm_giphy_rating;
-    $("#id_realm_giphy_rating").val(rating_id);
+function set_gif_rating_policy_dropdown(): void {
+    const rating_id = realm.realm_gif_rating_policy;
+    $("#id_realm_gif_rating_policy").val(rating_id);
+}
+
+function set_default_avatar_source_setting(): void {
+    const setting_value = realm.realm_default_avatar_source;
+    $(`#id_realm_default_avatar_source input[value='${CSS.escape(setting_value)}']`).prop(
+        "checked",
+        true,
+    );
 }
 
 function update_message_edit_sub_settings(is_checked: boolean): void {
@@ -669,6 +677,9 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_waiting_period_threshold":
             set_realm_waiting_period_setting();
             break;
+        case "realm_default_avatar_source":
+            set_default_avatar_source_setting();
+            break;
         case "realm_welcome_message_custom_text":
             unsaved_welcome_message_custom_text = "";
             set_welcome_message_custom_text_visibility();
@@ -775,7 +786,7 @@ export function discard_realm_default_property_element_changes(elem: HTMLElement
         case "notification_sound":
             assert(typeof property_value === "string");
             audible_notifications.update_notification_sound_source(
-                $("audio#realm-default-notification-sound-audio"),
+                "realm-default-notification-sound-audio",
                 {
                     notification_sound: property_value,
                 },
@@ -929,6 +940,8 @@ export function deactivate_organization(e: JQuery.Event): void {
     }
 
     function delete_data_in_text(): string {
+        const $custom_deletion_time_input = $<HTMLInputElement>("input#custom-deletion-time-input");
+        $custom_deletion_time_input.removeClass("invalid-input");
         const $delete_in = $<HTMLSelectOneElement>("select:not([multiple])#delete-realm-data-in");
         const delete_data_value = $delete_in.val()!;
 
@@ -939,14 +952,16 @@ export function deactivate_organization(e: JQuery.Event): void {
         let time_in_minutes: number;
         if (delete_data_value === "custom") {
             if (!util.validate_custom_time_input(custom_deletion_time_input)) {
-                return $t({defaultMessage: "Invalid custom time"});
+                $custom_deletion_time_input.addClass("invalid-input");
+                return "";
             }
             time_in_minutes = util.get_custom_time_in_minutes(
                 custom_deletion_time_unit,
                 custom_deletion_time_input,
             );
             if (!is_valid_time_period(time_in_minutes)) {
-                return $t({defaultMessage: "Invalid custom time"});
+                $custom_deletion_time_input.addClass("invalid-input");
+                return "";
             }
         } else {
             // These options were already filtered for is_valid_time_period.
@@ -1531,7 +1546,7 @@ export function build_page(): void {
 
     set_realm_waiting_period_setting();
     set_video_chat_provider_dropdown();
-    set_gif_rating_dropdown();
+    set_gif_rating_policy_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_move_limit_setting("realm_move_messages_within_stream_limit_seconds");
     set_msg_move_limit_setting("realm_move_messages_between_streams_limit_seconds");
@@ -1543,6 +1558,7 @@ export function build_page(): void {
     set_create_web_public_stream_dropdown_visibility();
     disable_create_user_groups_if_on_limited_plan();
     set_welcome_message_custom_text_visibility();
+    set_default_avatar_source_setting();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
     maybe_restore_unsaved_welcome_message_custom_text();
