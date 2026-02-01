@@ -262,7 +262,7 @@ run_test("activate another person poll", ({mock_template}) => {
     set_widget_find_result("button.poll-question-remove");
     set_widget_find_result("input.poll-question");
 
-    const handle_events = poll_widget.activate(opts);
+    const {inbound_events_handler} = poll_widget.activate(opts);
 
     assert.ok($poll_option_container.visible());
     assert.ok($poll_question_header.visible());
@@ -308,7 +308,7 @@ run_test("activate another person poll", ({mock_template}) => {
         },
     ];
 
-    handle_events(vote_events);
+    inbound_events_handler(vote_events);
 
     {
         /* Testing data sent to server on voting */
@@ -328,7 +328,7 @@ run_test("activate another person poll", ({mock_template}) => {
         },
     ];
 
-    handle_events(add_question_event);
+    inbound_events_handler(add_question_event);
 });
 
 run_test("activate own poll", ({mock_template}) => {

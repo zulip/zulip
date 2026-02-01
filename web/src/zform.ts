@@ -7,21 +7,27 @@ import * as blueslip from "./blueslip.ts";
 import type {Message} from "./message_store.ts";
 import * as transmit from "./transmit.ts";
 import type {Event} from "./widget_data.ts";
-import type {AnyWidgetData} from "./widget_schema.ts";
+import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
 import type {ZFormExtraData} from "./zform_data.ts";
 
 export const widget_type = "zform";
 
-export function activate(opts: {
-    $elem: JQuery;
-    any_data: AnyWidgetData;
-    message: Message;
-}): (events: Event[]) => void {
+export function activate(opts: {$elem: JQuery; any_data: AnyWidgetData; message: Message}): {
+    inbound_events_handler: (events: Event[]) => void;
+    widget_data: WidgetData;
+} {
     assert(opts.any_data.widget_type === "zform");
     if (opts.any_data.extra_data === null) {
         blueslip.error("invalid zform extra data");
-        return (_events: Event[]): void => {
-            /* noop */
+        const widget_data = {
+            widget_type: opts.any_data.widget_type,
+            data: undefined,
+        };
+        return {
+            inbound_events_handler(_events: Event[]): void {
+                /* noop */
+            },
+            widget_data,
         };
     }
     const data = opts.any_data.extra_data;
@@ -32,8 +38,12 @@ export function activate(opts: {
         ...data,
         choices: data.choices.map((choice, idx) => ({...choice, idx})),
     };
+    const widget_data = {
+        widget_type: opts.any_data.widget_type,
+        data: data_with_choices_with_idx,
+    };
 
-    return render({...opts, data_with_choices_with_idx});
+    return {inbound_events_handler: render({...opts, data_with_choices_with_idx}), widget_data};
 }
 
 export function render(opts: {

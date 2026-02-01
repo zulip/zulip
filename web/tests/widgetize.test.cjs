@@ -49,8 +49,12 @@ const fake_poll_widget = {
             is_event_handled = true;
             assert.deepStrictEqual(e, events);
         };
+        const widget_data = {
+            widget_type: "poll",
+            extra_data: data.any_data.extra_data,
+        };
         data.callback("test_data");
-        return handle_events;
+        return {inbound_events_handler: handle_events, widget_data};
     },
 };
 
@@ -166,7 +170,10 @@ test("activate", ({override}) => {
         is_event_handled = true;
         assert.deepEqual(e, [post_activate_event]);
     };
-    widgetize.set_widget_for_tests(2001, new GenericWidget(handle_events));
+    const widget_data = {widget_type: "poll", extra_data: "test_data"};
+    const generic_widget = new GenericWidget(handle_events, widget_data);
+    assert.equal(generic_widget.get_widget_data().widget_type, widget_data.widget_type);
+    widgetize.set_widget_for_tests(2001, generic_widget);
     override(message_lists.current, "get_row", (idx) => {
         assert.equal(idx, 2001);
         return $row;

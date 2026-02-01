@@ -3,7 +3,7 @@ import type {Message} from "./message_store.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
 import type {TodoWidgetOutboundData} from "./todo_data.ts";
 import type {Event} from "./widget_data.ts";
-import type {AnyWidgetData} from "./widget_schema.ts";
+import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
 
 type HandleInboundEventsFunction = (events: Event[]) => void;
 
@@ -20,7 +20,7 @@ type WidgetImplementation = {
         callback: (data: WidgetOutboundData) => void;
         message: Message;
         any_data: AnyWidgetData;
-    }) => HandleInboundEventsFunction;
+    }) => {inbound_events_handler: HandleInboundEventsFunction; widget_data: WidgetData};
 };
 
 export const widgets = new Map<string, WidgetImplementation>();
@@ -43,13 +43,19 @@ export class GenericWidget {
     // TodoWidget, and ZformWidget, but for now we need this
     // wrapper class.
     inbound_events_handler: HandleInboundEventsFunction;
+    widget_data: WidgetData;
 
-    constructor(inbound_events_handler: HandleInboundEventsFunction) {
+    constructor(inbound_events_handler: HandleInboundEventsFunction, widget_data: WidgetData) {
         this.inbound_events_handler = inbound_events_handler;
+        this.widget_data = widget_data;
     }
 
     handle_inbound_events(events: Event[]): void {
         this.inbound_events_handler(events);
+    }
+
+    get_widget_data(): WidgetData {
+        return this.widget_data;
     }
 }
 
@@ -77,12 +83,12 @@ export function create_widget_instance(info: {
         });
     }
 
-    const inbound_events_handler = widget_implementation.activate({
+    const {inbound_events_handler, widget_data} = widget_implementation.activate({
         $elem: $widget_elem,
         callback: post_to_server_callback,
         message,
         any_data,
     });
 
-    return new GenericWidget(inbound_events_handler);
+    return new GenericWidget(inbound_events_handler, widget_data);
 }

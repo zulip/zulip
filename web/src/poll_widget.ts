@@ -14,7 +14,7 @@ import type {PollWidgetOutboundData} from "./poll_data.ts";
 import {PollData, new_option_schema, question_schema, vote_schema} from "./poll_data.ts";
 import {ZulipWidgetContext} from "./widget_context.ts";
 import type {Event} from "./widget_data.ts";
-import type {AnyWidgetData} from "./widget_schema.ts";
+import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
 
 export function activate({
     $elem,
@@ -26,7 +26,7 @@ export function activate({
     callback: (data: PollWidgetOutboundData) => void;
     any_data: AnyWidgetData;
     message: Message;
-}): (events: Event[]) => void {
+}): {inbound_events_handler: (events: Event[]) => void, widget_data: WidgetData} {
     assert(any_data.widget_type === "poll");
     const {extra_data} = any_data;
     const widget_context = new ZulipWidgetContext(message);
@@ -43,7 +43,12 @@ export function activate({
         report_error_function: blueslip.warn,
     });
 
-    return render({$elem, callback, poll_data, widget_context});
+    const widget_data = {
+        widget_type: any_data.widget_type,
+        data: poll_data,
+    }
+
+    return {inbound_events_handler: render({$elem, callback, poll_data, widget_context,}), widget_data};
 }
 
 export function render({

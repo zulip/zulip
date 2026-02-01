@@ -1,10 +1,10 @@
 import * as z from "zod/mini";
 
 import {poll_widget_extra_data_schema} from "./poll_data.ts";
-import type {PollWidgetOutboundData} from "./poll_data.ts";
+import type {PollData, PollWidgetOutboundData} from "./poll_data.ts";
 import {todo_widget_extra_data_schema} from "./todo_data.ts";
-import type {TodoWidgetOutboundData} from "./todo_data.ts";
-import {zform_widget_extra_data_schema} from "./zform_data.ts";
+import type {TaskData, TodoWidgetOutboundData} from "./todo_data.ts";
+import {type ZFormExtraData, zform_widget_extra_data_schema} from "./zform_data.ts";
 
 /*
     We can eventually unify this module with widget_data.ts,
@@ -28,3 +28,10 @@ export const any_widget_data_schema = z.discriminatedUnion("widget_type", [
     }),
 ]);
 export type AnyWidgetData = z.infer<typeof any_widget_data_schema>;
+export type WidgetData =
+    | {
+          widget_type: "todo";
+          data: TaskData;
+      }
+    | {widget_type: "poll"; data: PollData}
+    | {widget_type: "zform"; data: ZFormExtraData | undefined};

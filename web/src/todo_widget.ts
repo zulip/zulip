@@ -14,7 +14,7 @@ import {page_params} from "./page_params.ts";
 import type {TodoWidgetOutboundData} from "./todo_data.ts";
 import {TaskData} from "./todo_data.ts";
 import type {Event} from "./widget_data.ts";
-import type {AnyWidgetData} from "./widget_schema.ts";
+import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
 
 export function activate({
     $elem,
@@ -26,7 +26,7 @@ export function activate({
     callback: (data: TodoWidgetOutboundData) => void;
     any_data: AnyWidgetData;
     message: Message;
-}): (events: Event[]) => void {
+}): {inbound_events_handler: (events: Event[]) => void, widget_data: WidgetData} {
     assert(any_data.widget_type === "todo");
     const {task_list_title = "", tasks = []} = any_data.extra_data ?? {};
     const task_data = new TaskData({
@@ -35,8 +35,12 @@ export function activate({
         tasks,
         report_error_function: blueslip.warn,
     });
+    const widget_data = {
+        widget_type: any_data.widget_type,
+        data: task_data,
+    }
 
-    return render({$elem, callback, message, task_data});
+    return {inbound_events_handler: render({$elem, callback, message, task_data}), widget_data};
 }
 
 export function render({
