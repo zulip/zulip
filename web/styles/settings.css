@@ -1384,6 +1384,11 @@ label.preferences-radio-choice-label {
     margin-right: 1px;
 }
 
+.emoji-native-preview {
+    font-family: var(--font-family-native-emoji);
+    font-size: 1.2em;
+}
+
 .download_bot_zuliprc,
 .copy_zuliprc,
 .open_bots_subscribed_streams,

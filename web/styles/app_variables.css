@@ -417,6 +417,10 @@
     /* Box shadow for overlays across the web app */
     --box-shadow-overlay: none;
 
+    /* Font family for rendering native Unicode emoji. */
+    --font-family-native-emoji:
+        "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+
     /* Shared sidebar typography and effects values. */
     --font-weight-sidebar-heading: 600;
     --font-weight-sidebar-action-heading: 370;

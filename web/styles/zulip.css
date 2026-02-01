@@ -1450,6 +1450,16 @@ div.topic_edit_spinner .loading_indicator_spinner {
     align-self: center;
 }
 
+/* Native emoji rendering: override sprite sheet properties
+   so that the Unicode character is shown directly. */
+.emoji-native {
+    background: none !important;
+    text-indent: 0 !important;
+    overflow: visible !important;
+    font-family: var(--font-family-native-emoji);
+    text-align: center;
+}
+
 .status-emoji {
     /* 16px at 14px/1em */
     height: 1.1429em;

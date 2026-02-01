@@ -13,7 +13,10 @@ import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 
 let selected_emoji_info: Partial<UserStatusEmojiInfo> = {};
-let default_status_messages_and_emoji_info: {status_text: string; emoji: EmojiRenderingDetails}[];
+let default_status_messages_and_emoji_info: {
+    status_text: string;
+    emoji: EmojiRenderingDetails & {unicode_emoji?: string};
+}[];
 
 export function set_selected_emoji_info(emoji_info: Partial<UserStatusEmojiInfo>): void {
     selected_emoji_info = {...emoji_info};
@@ -185,35 +188,42 @@ function user_status_post_render(): void {
     });
 }
 
+function get_emoji_with_native_info(
+    emoji_name: string,
+): EmojiRenderingDetails & {unicode_emoji?: string} {
+    const details = emoji.get_emoji_details_by_name(emoji_name);
+    return {...details, ...emoji.get_native_emoji_info(details)};
+}
+
 export function initialize(): void {
     default_status_messages_and_emoji_info = [
         {
             status_text: $t({defaultMessage: "Busy"}),
-            emoji: emoji.get_emoji_details_by_name("working_on_it"),
+            emoji: get_emoji_with_native_info("working_on_it"),
         },
         {
             status_text: $t({defaultMessage: "In a meeting"}),
-            emoji: emoji.get_emoji_details_by_name("calendar"),
+            emoji: get_emoji_with_native_info("calendar"),
         },
         {
             status_text: $t({defaultMessage: "Commuting"}),
-            emoji: emoji.get_emoji_details_by_name("bus"),
+            emoji: get_emoji_with_native_info("bus"),
         },
         {
             status_text: $t({defaultMessage: "Out sick"}),
-            emoji: emoji.get_emoji_details_by_name("hurt"),
+            emoji: get_emoji_with_native_info("hurt"),
         },
         {
             status_text: $t({defaultMessage: "Vacationing"}),
-            emoji: emoji.get_emoji_details_by_name("palm_tree"),
+            emoji: get_emoji_with_native_info("palm_tree"),
         },
         {
             status_text: $t({defaultMessage: "Working remotely"}),
-            emoji: emoji.get_emoji_details_by_name("house"),
+            emoji: get_emoji_with_native_info("house"),
         },
         {
             status_text: $t({defaultMessage: "At the office"}),
-            emoji: emoji.get_emoji_details_by_name("office"),
+            emoji: get_emoji_with_native_info("office"),
         },
     ];
 }

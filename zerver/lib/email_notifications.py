@@ -99,6 +99,9 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
 
 
 def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
+    def emoji_code_to_unicode(emoji_code: str) -> str:
+        return "".join(chr(int(hex_part, 16)) for hex_part in emoji_code.split("-"))
+
     def make_emoji_img_elem(emoji_span_elem: lxml.html.HtmlElement) -> dict[str, Any]:
         # Convert the emoji spans to img tags.
         classes = emoji_span_elem.get("class")
@@ -130,10 +133,25 @@ def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
         img_elem.tail = emoji_span_elem.tail
         return img_elem
 
+    use_unicode = emojiset in ("native", "text")
+
     for elem in fragment.cssselect("span.emoji"):
         parent = elem.getparent()
-        img_elem = make_emoji_img_elem(elem)
-        parent.replace(elem, img_elem)
+        if use_unicode:
+            # For "native" and "text" emojisets, replace the emoji span
+            # with the Unicode character directly. Email clients render
+            # native Unicode emoji well, and this avoids broken image
+            # URLs for the "text" emojiset (which has no sprite images).
+            classes = elem.get("class")
+            match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
+            assert match is not None
+            unicode_char = emoji_code_to_unicode(match.group("emoji_code"))
+            text_elem = e.SPAN(unicode_char)
+            text_elem.tail = elem.tail
+            parent.replace(elem, text_elem)
+        else:
+            img_elem = make_emoji_img_elem(elem)
+            parent.replace(elem, img_elem)
 
     for realm_emoji in fragment.cssselect("img.emoji"):
         del realm_emoji.attrib["class"]

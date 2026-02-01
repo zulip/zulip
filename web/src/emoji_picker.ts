@@ -135,7 +135,12 @@ class UserStatusSession {
             emoji_alt_code: user_settings.emojiset === "text",
         };
         if (!emoji_info.emoji_alt_code) {
-            emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
+            const details = emoji.get_emoji_details_by_name(emoji_name);
+            emoji_info = {
+                ...emoji_info,
+                ...details,
+                ...emoji.get_native_emoji_info(details),
+            };
         }
         user_status_ui.set_selected_emoji_info(emoji_info);
         user_status_ui.update_button();

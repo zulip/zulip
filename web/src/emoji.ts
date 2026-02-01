@@ -1,8 +1,11 @@
+import {isEmojiSupported} from "is-emoji-supported";
 import _ from "lodash";
 import type * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import type {StateData, realm_emoji_map_schema, server_emoji_schema} from "./state_data.ts";
+import {parse_unicode_emoji_code} from "./typeahead.ts";
+import {user_settings} from "./user_settings.ts";
 
 // This is the data structure that we get from the server on initialization.
 export type ServerEmoji = z.infer<typeof server_emoji_schema>;
@@ -332,6 +335,22 @@ export function get_emoji_details_for_rendering(opts: {
         emoji_code: opts.emoji_code,
         reaction_type: opts.reaction_type,
     };
+}
+
+// Returns {unicode_emoji: char} if the emojiset is "native" and the
+// emoji is a supported Unicode emoji, or {} otherwise. Designed to
+// be spread into an object literal so that the property is only
+// present when applicable (for exactOptionalPropertyTypes).
+export function get_native_emoji_info(
+    emoji_details: EmojiRenderingDetails,
+): {unicode_emoji: string} | Record<string, never> {
+    if (user_settings.emojiset === "native" && emoji_details.reaction_type === "unicode_emoji") {
+        const char = parse_unicode_emoji_code(emoji_details.emoji_code);
+        if (isEmojiSupported(char)) {
+            return {unicode_emoji: char};
+        }
+    }
+    return {};
 }
 
 function build_default_emoji_aliases({
