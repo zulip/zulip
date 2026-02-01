@@ -610,6 +610,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_default_code_block_language":
         case "realm_default_language":
         case "realm_can_access_all_users_group":
+        case "realm_can_change_name_group":
         case "realm_can_create_web_public_channel_group":
             assert(typeof property_value === "string" || typeof property_value === "number");
             settings_components.set_dropdown_list_widget_setting_value(
@@ -1234,6 +1235,8 @@ function set_up_dropdown_widget(
     if (setting_type === "language") {
         unique_id_type = "string";
     }
+
+    settings_components.init_dropdown_widget(setting_name);
 
     const setting_dropdown_widget = new dropdown_widget.DropdownWidget({
         widget_name: setting_name,

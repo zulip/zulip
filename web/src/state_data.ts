@@ -557,7 +557,7 @@ export const realm_schema = z.object({
     realm_moderation_request_channel_id: z.number(),
     realm_move_messages_between_streams_limit_seconds: z.nullable(z.number()),
     realm_move_messages_within_stream_limit_seconds: z.nullable(z.number()),
-    realm_name_changes_disabled: z.boolean(),
+    realm_can_change_name_group: group_setting_value_schema,
     realm_name: z.string(),
     realm_new_stream_announcements_stream_id: z.number(),
     realm_night_logo_source: z.string(),

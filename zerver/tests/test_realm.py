@@ -401,7 +401,19 @@ class RealmTest(ZulipTestCase):
         data = {"full_name": "Sir Hamlet"}
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
-        do_set_realm_property(user_profile.realm, "name_changes_disabled", True, acting_user=None)
+
+        administrators_group = NamedUserGroup.objects.get(
+            name="role:administrators",
+            realm=user_profile.realm,
+            is_system_group=True,
+        )
+        do_change_realm_permission_group_setting(
+            user_profile.realm,
+            "can_change_name_group",
+            administrators_group,
+            acting_user=None,
+        )
+
         url = "/json/settings"
         result = self.client_patch(url, data)
         self.assertEqual(result.status_code, 200)

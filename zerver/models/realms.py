@@ -326,6 +326,11 @@ class Realm(models.Model):
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # UserGroup whose members are allowed to change their own name.
+    can_change_name_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # UserGroup whose members are allowed to invite other users to organization.
     can_invite_users_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
@@ -750,7 +755,6 @@ class Realm(models.Model):
         move_messages_within_stream_limit_seconds=int | None,
         message_retention_days=int,
         name=str,
-        name_changes_disabled=bool,
         push_notifications_enabled=bool,
         require_e2ee_push_notifications=bool,
         require_unique_names=bool,
@@ -777,6 +781,16 @@ class Realm(models.Model):
             # Note that user_can_access_all_other_users in the web
             # app is relying on members always have access.
             allowed_system_groups=[SystemGroups.EVERYONE, SystemGroups.MEMBERS],
+        ),
+        can_change_name_group=GroupPermissionSetting(
+            require_system_group=True,
+            allow_nobody_group=False,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+            allowed_system_groups=[
+                SystemGroups.EVERYONE,
+                SystemGroups.ADMINISTRATORS,
+            ],
         ),
         can_add_subscribers_group=GroupPermissionSetting(
             allow_nobody_group=True,

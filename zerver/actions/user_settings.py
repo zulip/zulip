@@ -225,7 +225,7 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool = 
 
 @transaction.atomic(savepoint=False)
 def do_change_full_name(
-    user_profile: UserProfile, full_name: str, acting_user: UserProfile | None, notify: bool
+    user_profile: UserProfile, full_name: str, acting_user: UserProfile | None, notify: bool = True
 ) -> None:
     old_name = user_profile.full_name
     if old_name == full_name:
@@ -270,10 +270,10 @@ def do_change_full_name(
 def check_change_full_name(
     user_profile: UserProfile, full_name_raw: str, acting_user: UserProfile | None
 ) -> str:
-    """Verifies that the user's proposed full name is valid.  The caller
-    is responsible for checking check permissions.  Returns the new
-    full name, which may differ from what was passed in (because this
-    function strips whitespace)."""
+    """Verifies that the user's proposed full name is valid and that the user
+    has permission to change their name. Returns the new full name, which may
+    differ from what was passed in (because this function strips whitespace)."""
+
     new_full_name = check_full_name(
         full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
     )

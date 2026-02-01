@@ -66,7 +66,6 @@ const admin_settings_label = {
 
     // Organization permissions
     realm_require_unique_names: $t({defaultMessage: "Require unique names"}),
-    realm_name_changes_disabled: $t({defaultMessage: "Prevent users from changing their name"}),
     realm_email_changes_disabled: $t({
         defaultMessage: "Prevent users from changing their email address",
     }),
@@ -161,7 +160,6 @@ export function build_page(): void {
         realm_inline_url_embed_preview: realm.realm_inline_url_embed_preview,
         server_inline_url_embed_preview: realm.server_inline_url_embed_preview,
         realm_authentication_methods: realm.realm_authentication_methods,
-        realm_name_changes_disabled: realm.realm_name_changes_disabled,
         server_name_changes_disabled: realm.server_name_changes_disabled,
         realm_require_unique_names: realm.realm_require_unique_names,
         realm_email_changes_disabled: realm.realm_email_changes_disabled,
