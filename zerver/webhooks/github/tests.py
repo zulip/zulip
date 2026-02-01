@@ -303,19 +303,17 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__synchronized", TOPIC_PR, expected_message)
 
     def test_pull_request_closed_msg(self) -> None:
-        expected_message = "baxterthehacker closed without merge [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        expected_message = ":no_entry: baxterthehacker closed without merge [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__closed", TOPIC_PR, expected_message)
 
     def test_pull_request_closed_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "baxterthehacker closed without merge [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
+        expected_message = ":no_entry: baxterthehacker closed without merge [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__closed", expected_topic_name, expected_message)
 
     def test_pull_request_merged_msg(self) -> None:
-        expected_message = (
-            "baxterthehacker merged [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
-        )
+        expected_message = ":check: baxterthehacker merged [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__merged", TOPIC_PR, expected_message)
 
     def test_pull_request_merged_msg_private_repository_skipped(self) -> None:
@@ -397,28 +395,28 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("status__with_target_url", TOPIC_REPO, expected_message)
 
     def test_pull_request_review_msg(self) -> None:
-        expected_message = "baxterthehacker submitted [PR review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
+        expected_message = ":thumbs_up: baxterthehacker submitted [PR review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
         self.check_webhook("pull_request_review", TOPIC_PR, expected_message)
 
     def test_pull_request_review_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "baxterthehacker submitted [PR review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
+        expected_message = ":thumbs_up: baxterthehacker submitted [PR review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
         self.check_webhook("pull_request_review", expected_topic_name, expected_message)
 
     def test_pull_request_review_msg_with_empty_body(self) -> None:
         expected_topic_name = "groonga / PR #1581 grn_db_value_lock: unlock GRN_TYPE obj..."
-        expected_message = "kou submitted [PR review](https://github.com/groonga/groonga/pull/1581#pullrequestreview-1483047907)."
+        expected_message = ":speech_balloon: kou submitted [PR review](https://github.com/groonga/groonga/pull/1581#pullrequestreview-1483047907)."
         self.check_webhook("pull_request_review__empty_body", expected_topic_name, expected_message)
 
     def test_pull_request_review_comment_msg(self) -> None:
-        expected_message = "baxterthehacker created [PR review comment](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
+        expected_message = ":speech_balloon: baxterthehacker created [PR review comment](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
         self.check_webhook("pull_request_review_comment", TOPIC_PR, expected_message)
 
     def test_pull_request_review_comment_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "baxterthehacker created [PR review comment on #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
+        expected_message = ":speech_balloon: baxterthehacker created [PR review comment on #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
         self.check_webhook("pull_request_review_comment", expected_topic_name, expected_message)
 
     def test_pull_request_locked(self) -> None:
