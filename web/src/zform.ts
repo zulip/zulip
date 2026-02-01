@@ -18,7 +18,6 @@ export function activate(opts: {
     message: Message;
 }): (events: Event[]) => void {
     assert(opts.any_data.widget_type === "zform");
-    const $outer_elem = opts.$elem;
     if (opts.any_data.extra_data === null) {
         blueslip.error("invalid zform extra data");
         return (_events: Event[]): void => {
@@ -26,16 +25,26 @@ export function activate(opts: {
         };
     }
     const data = opts.any_data.extra_data;
+    // Assign idx values to each of our choices so that
+    // our template can create data-idx values for our
+    // JS code to use later.
+    const data_with_choices_with_idx = {
+        ...data,
+        choices: data.choices.map((choice, idx) => ({...choice, idx})),
+    };
 
-    function make_choices(data: ZFormExtraData): JQuery {
-        // Assign idx values to each of our choices so that
-        // our template can create data-idx values for our
-        // JS code to use later.
-        const data_with_choices_with_idx = {
-            ...data,
-            choices: data.choices.map((choice, idx) => ({...choice, idx})),
-        };
+    return render({...opts, data_with_choices_with_idx});
+}
 
+export function render(opts: {
+    $elem: JQuery;
+    message: Message;
+    data_with_choices_with_idx: ZFormExtraData;
+}): (events: Event[]) => void {
+    const $outer_elem = opts.$elem;
+    const data_with_choices_with_idx = opts.data_with_choices_with_idx;
+
+    function make_choices(): JQuery {
         const html = render_widgets_zform_choices(data_with_choices_with_idx);
         const $elem = $(html);
 
@@ -47,7 +56,7 @@ export function activate(opts: {
 
             // Use the index from the markup to dereference our
             // data structure.
-            const reply_content = data.choices[idx]!.reply;
+            const reply_content = data_with_choices_with_idx.choices[idx]!.reply;
 
             transmit.reply_message(opts.message, reply_content);
         });
@@ -56,8 +65,8 @@ export function activate(opts: {
     }
 
     function render_html(): void {
-        if (data.type === "choices") {
-            $outer_elem.html(make_choices(data).html());
+        if (data_with_choices_with_idx.type === "choices") {
+            $outer_elem.html(make_choices().html());
         }
     }
 
