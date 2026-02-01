@@ -208,6 +208,7 @@ def get_pull_request_event_message(
     title: str | None = None,
     suffix: str | None = None,
     include_topic_reference: bool = True,
+    emoji: str | None = None,
 ) -> str:
     action_messages = {
         "approval": "added their approval for",
@@ -271,6 +272,9 @@ def get_pull_request_event_message(
         or title[-1] not in string.punctuation
     ):
         main_message = f"{main_message}{punctuation}"
+
+    if emoji:
+        main_message = f"{emoji} {main_message}"
 
     if message:
         main_message += "\n" + CONTENT_MESSAGE_TEMPLATE.format(message=message)
