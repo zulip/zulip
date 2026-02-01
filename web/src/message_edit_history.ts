@@ -47,6 +47,15 @@ type EditHistoryEntry = {
     new_stream: string | undefined;
 };
 
+function is_poll_edited_only(message: Message): boolean {
+    return (
+        message.poll_edited === true &&
+        message.last_edit_timestamp === undefined &&
+        message.local_edit_timestamp === undefined &&
+        message.last_moved_timestamp === undefined
+    );
+}
+
 const server_message_history_schema = z.object({
     message_history: z.array(
         z.object({
@@ -357,7 +366,8 @@ export function initialize(): void {
             realm.realm_message_edit_history_visibility_policy !==
             message_edit_history_visibility_policy_values.never.code
         ) {
-            $(e.currentTarget).addClass("message_edit_notice_hover");
+            const $row = $(e.currentTarget).closest(".message_row");
+            $row.find(".message_edit_notice").addClass("message_edit_notice_hover");
         }
     });
 
@@ -366,7 +376,8 @@ export function initialize(): void {
             realm.realm_message_edit_history_visibility_policy !==
             message_edit_history_visibility_policy_values.never.code
         ) {
-            $(e.currentTarget).removeClass("message_edit_notice_hover");
+            const $row = $(e.currentTarget).closest(".message_row");
+            $row.find(".message_edit_notice").removeClass("message_edit_notice_hover");
         }
     });
 
@@ -390,11 +401,12 @@ export function initialize(): void {
             }
 
             if (
-                realm.realm_message_edit_history_visibility_policy ===
-                    message_edit_history_visibility_policy_values.always.code ||
+                !is_poll_edited_only(message) &&
                 (realm.realm_message_edit_history_visibility_policy ===
-                    message_edit_history_visibility_policy_values.moves_only.code &&
-                    message.last_moved_timestamp !== undefined)
+                    message_edit_history_visibility_policy_values.always.code ||
+                    (realm.realm_message_edit_history_visibility_policy ===
+                        message_edit_history_visibility_policy_values.moves_only.code &&
+                        message.last_moved_timestamp !== undefined))
             ) {
                 fetch_and_render_message_history(message);
                 $("#message-history-overlay .exit-sign").trigger("focus");

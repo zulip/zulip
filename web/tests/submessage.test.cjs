@@ -19,7 +19,11 @@ run_test("get_message_events", () => {
     assert.equal(submessage.get_message_events(msg), undefined);
 
     const submessages = [
-        {id: 222, sender_id: 99, content: '{"type":"new_option","idx":1,"option":"bar"}'},
+        {
+            id: 222,
+            sender_id: 99,
+            content: '{"type":"new_option","idx":1,"option":"bar","timestamp":1700000000}',
+        },
         {
             id: 9,
             sender_id: 33,
@@ -53,6 +57,7 @@ run_test("get_message_events", () => {
                 type: "new_option",
                 idx: 1,
                 option: "bar",
+                timestamp: 1700000000,
             },
         },
     ]);

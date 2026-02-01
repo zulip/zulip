@@ -42,25 +42,30 @@ export type WidgetData = {
     It's actually that simple.
 */
 
+const poll_event_timestamp_schema = z.optional(z.int().check(z.nonnegative()));
+
 export const new_option_schema = z.object({
     type: z.literal("new_option"),
     idx: z.number(),
     option: z.string(),
+    timestamp: poll_event_timestamp_schema,
 });
-type NewOption = {type: string; idx: number; option: string};
+type NewOption = z.infer<typeof new_option_schema>;
 
 export const question_schema = z.object({
     type: z.literal("question"),
     question: z.string(),
+    timestamp: poll_event_timestamp_schema,
 });
-type Question = {type: string; question: string};
+type Question = z.infer<typeof question_schema>;
 
 export const vote_schema = z.object({
     type: z.literal("vote"),
     key: z.string(),
     vote: z.number(),
+    timestamp: poll_event_timestamp_schema,
 });
-type Vote = {type: string; key: string; vote: number};
+type Vote = z.infer<typeof vote_schema>;
 
 /* ---------------------- */
 
@@ -124,10 +129,11 @@ export class PollData {
     }
 
     new_option_event(option: string): NewOption {
-        const event = {
+        const event: NewOption = {
             type: "new_option",
             idx: this.my_idx,
             option,
+            timestamp: Math.floor(Date.now() / 1000),
         };
 
         this.my_idx += 1;
@@ -135,7 +141,7 @@ export class PollData {
         return event;
     }
 
-    handle_new_option_event(sender_id: string | number, data: NewOption): void {
+    handle_new_option_event(sender_id: string | number, data: NewOption): boolean {
         // All message readers may add a new option to the poll.
         const {idx, option} = data;
         const options = this.get_widget_data().options;
@@ -144,12 +150,12 @@ export class PollData {
         // to an existing poll, the /poll command syntax to create
         // them does not prevent duplicates, so we suppress them here.
         if (this.is_option_present(options, option)) {
-            return;
+            return false;
         }
 
         if (idx < 0 || idx > MAX_IDX) {
             this.report_error_function("poll widget: idx out of bound");
-            return;
+            return false;
         }
 
         const key = `${sender_id},${idx}`;
@@ -165,12 +171,15 @@ export class PollData {
         if (sender_id === this.me && this.my_idx <= idx) {
             this.my_idx = idx + 1;
         }
+
+        return true;
     }
 
     question_event(question: string): Question | undefined {
-        const event = {
+        const event: Question = {
             type: "question",
             question,
+            timestamp: Math.floor(Date.now() / 1000),
         };
         if (this.is_my_poll) {
             return event;
@@ -178,14 +187,19 @@ export class PollData {
         return undefined;
     }
 
-    handle_question_event(sender_id: number, data: Question): void {
+    handle_question_event(sender_id: number, data: Question): boolean {
         // Only the message author can edit questions.
         if (sender_id !== this.message_sender_id) {
             this.report_error_function(`user ${sender_id} is not allowed to edit the question`);
-            return;
+            return false;
+        }
+
+        if (data.question === this.poll_question) {
+            return false;
         }
 
         this.set_question(data.question);
+        return true;
     }
 
     vote_event(key: string): Vote {
@@ -197,7 +211,7 @@ export class PollData {
             vote = -1;
         }
 
-        const event = {
+        const event: Vote = {
             type: "vote",
             key,
             vote,

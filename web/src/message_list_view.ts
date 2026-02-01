@@ -563,13 +563,17 @@ export class MessageListView {
             last_edit_timestamp = message.last_edit_timestamp;
         }
         const last_moved_timestamp = message.last_moved_timestamp;
+        const poll_edited = message.poll_edited ?? false;
 
         return {
             last_edit_timestamp,
             last_moved_timestamp,
-            edited: last_edit_timestamp !== undefined,
+            edited: last_edit_timestamp !== undefined || poll_edited,
             moved: last_moved_timestamp !== undefined,
-            modified: last_edit_timestamp !== undefined || last_moved_timestamp !== undefined,
+            modified:
+                last_edit_timestamp !== undefined ||
+                last_moved_timestamp !== undefined ||
+                poll_edited,
         };
     }
 

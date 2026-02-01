@@ -14,7 +14,11 @@
     {{/if}}
     {{#if edited}}
         <div class="tooltip-inner-content italic">
-            {{t 'Last edited {edited_time_string}.'}}
+            {{#if edited_time_unavailable}}
+                {{t 'Last edited time not available.'}}
+            {{else}}
+                {{t 'Last edited {edited_time_string}.'}}
+            {{/if}}
         </div>
     {{/if}}
     {{#if moved}}

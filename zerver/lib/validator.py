@@ -74,6 +74,13 @@ def check_string_in(possible_values: Container[str]) -> Validator[str]:
     return validator
 
 
+def check_non_negative_int(var_name: str, val: object) -> int:
+    n = check_int(var_name, val)
+    if n < 0:
+        raise ValidationError(_("{var_name} is too small").format(var_name=var_name))
+    return n
+
+
 def check_short_string(var_name: str, val: object) -> str:
     return check_capped_string(50)(var_name, val)
 
@@ -486,7 +493,8 @@ def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
                 ("type", check_string),
                 ("key", check_string),
                 ("vote", check_int_in([1, -1])),
-            ]
+            ],
+            [("timestamp", check_non_negative_int)],
         )
         checker("poll data", poll_data)
         return
@@ -499,7 +507,8 @@ def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
             [
                 ("type", check_string),
                 ("question", check_string),
-            ]
+            ],
+            [("timestamp", check_non_negative_int)],
         )
         checker("poll data", poll_data)
         return
@@ -510,7 +519,8 @@ def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
                 ("type", check_string),
                 ("option", check_string),
                 ("idx", check_int_range(0, MAX_IDX)),
-            ]
+            ],
+            [("timestamp", check_non_negative_int)],
         )
         checker("poll data", poll_data)
         return

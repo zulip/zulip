@@ -455,6 +455,7 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_error('{"type": "bogus"}', "Unknown type for poll data: bogus")
         assert_error('{"type": "vote"}', "key is missing")
         assert_error('{"type": "vote", "key": "1,1,", "vote": 99}', "Invalid poll data")
+        assert_error('{"type": "vote", "key": "1,1", "vote": 1, "timestamp": -1}', "too small")
 
         assert_error('{"type": "question"}', "key is missing")
         assert_error('{"type": "question", "question": 7}', "not a string")
@@ -475,8 +476,11 @@ class WidgetContentTestCase(ZulipTestCase):
         # on the clients to ignore those.
 
         assert_success(dict(type="vote", key="1,1", vote=1))
+        assert_success(dict(type="vote", key="1,1", vote=1, timestamp=1700000000))
         assert_success(dict(type="new_option", idx=7, option="maybe"))
+        assert_success(dict(type="new_option", idx=7, option="maybe", timestamp=1700000000))
         assert_success(dict(type="question", question="what's for dinner?"))
+        assert_success(dict(type="question", question="what's for dinner?", timestamp=1700000000))
 
     def test_todo_type_validation(self) -> None:
         sender = self.example_user("cordelia")
