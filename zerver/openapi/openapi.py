@@ -5,6 +5,8 @@
 # definitions and validate that Zulip's implementation matches what is
 # described in our documentation.
 
+import contextlib
+import hashlib
 import json
 import os
 import re
@@ -21,6 +23,30 @@ from pydantic import BaseModel
 OPENAPI_SPEC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../openapi/zulip.yaml")
 )
+
+OPENAPI_CACHE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "../../static/generated/openapi")
+)
+
+
+def _resolve_cache(filename: str) -> str:
+    """Return the best available path for a cache file.
+
+    In production the file will have been collected into STATIC_ROOT
+    by collectstatic; try that first via static_path().  Fall back to
+    the source-tree path for development and for build-time contexts
+    where Django is not configured.
+    """
+    try:
+        from zerver.lib.storage import static_path
+
+        path = static_path(f"generated/openapi/{filename}")
+        if os.path.exists(path):
+            return path
+    except Exception:  # nocoverage
+        pass
+    return os.path.join(OPENAPI_CACHE_DIR, filename)
+
 
 # A list of endpoint-methods such that the endpoint
 # has documentation but not with this particular method.
@@ -80,6 +106,86 @@ class OpenAPISpec:
         self._openapi: dict[str, Any] = {}
         self._endpoints_dict: dict[str, str] = {}
         self._spec: OpenAPI | None = None
+        self._yaml_hash: str = ""
+
+    @staticmethod
+    def _atomic_write(path: str, data: bytes) -> None:
+        """Write data to path atomically via a temp file + os.replace."""
+        tmp_path = path + f".tmp.{os.getpid()}"
+        try:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(tmp_path, "wb") as fb:
+                fb.write(data)
+            os.replace(tmp_path, path)
+        except OSError:  # nocoverage
+            with contextlib.suppress(OSError):
+                os.unlink(tmp_path)
+
+    def _load_openapi_dict(self) -> dict[str, Any]:
+        """Load the raw OpenAPI dict, using a JSON cache when possible.
+
+        After the first YAML parse, a JSON cache file is written into
+        static/generated/openapi/.  On subsequent loads the much-faster
+        orjson reader is used instead of yaml.load, as long as the
+        embedded content hash still matches.  Writes are atomic
+        (write-to-tmp + os.replace) so parallel test workers never
+        read a half-written file.
+        """
+        cache_filename = os.path.basename(self.openapi_path) + ".json"
+
+        # Read the YAML source as bytes so we can hash it cheaply
+        # without a full yaml.load parse.
+        with open(self.openapi_path, "rb") as fb:
+            yaml_bytes = fb.read()
+        self._yaml_hash = hashlib.sha256(yaml_bytes).hexdigest()
+
+        # Try the JSON cache: it stores {"yaml_hash": ..., "data": ...}.
+        try:
+            with open(_resolve_cache(cache_filename), "rb") as fb:
+                cached = orjson.loads(fb.read())
+            if cached.get("yaml_hash") == self._yaml_hash:
+                return cached["data"]
+        except (FileNotFoundError, orjson.JSONDecodeError, KeyError):
+            pass
+
+        import yaml
+
+        openapi: dict[str, Any] = yaml.load(yaml_bytes, Loader=yaml.CSafeLoader)
+
+        self._atomic_write(
+            os.path.join(OPENAPI_CACHE_DIR, cache_filename),
+            orjson.dumps({"yaml_hash": self._yaml_hash, "data": openapi}),
+        )
+        return openapi
+
+    def _load_merged_dict(self, openapi: dict[str, Any]) -> dict[str, Any]:
+        """Load the merged (refs resolved, allOf merged) dict, using a
+        JSON cache when possible.
+
+        After the first merge pass, a JSON cache file is written into
+        static/generated/openapi/.  On subsequent loads the cache is
+        used directly, as long as its embedded hash matches the current
+        YAML source.
+        """
+        cache_filename = os.path.basename(self.openapi_path) + ".merged.json"
+
+        try:
+            with open(_resolve_cache(cache_filename), "rb") as fb:
+                cached = orjson.loads(fb.read())
+            if cached.get("yaml_hash") == self._yaml_hash:
+                return cached["data"]
+        except (FileNotFoundError, orjson.JSONDecodeError, KeyError):
+            pass
+
+        from jsonref import JsonRef
+
+        merged: dict[str, Any] = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
+
+        self._atomic_write(
+            os.path.join(OPENAPI_CACHE_DIR, cache_filename),
+            orjson.dumps({"yaml_hash": self._yaml_hash, "data": merged}),
+        )
+        return merged
 
     def check_reload(self) -> None:
         # Because importing yaml takes significant time, and we only
@@ -92,21 +198,17 @@ class OpenAPISpec:
         # only cause some extra processing at startup and not data
         # corruption.
 
-        import yaml
-        from jsonref import JsonRef
+        mtime = os.stat(self.openapi_path).st_mtime
+        # Using == rather than >= to cover the corner case of users placing an
+        # earlier version than the current one
+        if self.mtime == mtime:
+            return
 
-        with open(self.openapi_path) as f:
-            mtime = os.fstat(f.fileno()).st_mtime
-            # Using == rather than >= to cover the corner case of users placing an
-            # earlier version than the current one
-            if self.mtime == mtime:
-                return
+        openapi = self._load_openapi_dict()
 
-            openapi = yaml.load(f, Loader=yaml.CSafeLoader)
+        self._spec = OpenAPI.from_dict(openapi)  # type: ignore[arg-type]  # dict is a Mapping
 
-        spec = OpenAPI.from_dict(openapi)
-        self._spec = spec
-        self._openapi = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
+        self._openapi = self._load_merged_dict(openapi)
         self.create_endpoints_dict()
         self.mtime = mtime
 
