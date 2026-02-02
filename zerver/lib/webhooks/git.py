@@ -430,6 +430,25 @@ def get_release_event_message(
     return content
 
 
+def get_emoji_event_message(
+    user_name: str,
+    emoji_name: str,
+    awardable_type: str,
+    url: str,
+    id: int,
+    title: str | None = None,
+) -> str:
+    content = EMOJI_AWARD_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        emoji_name=emoji_name,
+        awardable_type=awardable_type,
+        id=id,
+        url=url,
+        title=title if title else "",
+    )
+    return content.strip()
+
+
 def get_short_sha(sha: str) -> str:
     return sha[:11]
 

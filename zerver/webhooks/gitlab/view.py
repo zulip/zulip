@@ -18,12 +18,12 @@ from zerver.lib.webhooks.common import (
 )
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
-    EMOJI_AWARD_MESSAGE_TEMPLATE,
     EMPTY_SHA,
     RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME,
     RELEASE_MESSAGE_TEMPLATE_WITHOUT_USER_NAME_WITHOUT_URL,
     TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE,
     get_commits_comment_action_message,
+    get_emoji_event_message,
     get_issue_event_message,
     get_pull_request_event_message,
     get_push_commits_event_message,
@@ -470,7 +470,7 @@ def get_emoji_event_body(payload: WildValue, include_title: bool) -> str:
             title = payload["merge_request"]["title"].tame(check_string)
             awardable_type = "MR Note"
 
-    return EMOJI_AWARD_MESSAGE_TEMPLATE.format(
+    return get_emoji_event_message(
         user_name=get_issue_user_name(payload),
         emoji_name=emoji_name,
         awardable_type=awardable_type,
