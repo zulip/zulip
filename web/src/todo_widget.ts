@@ -16,17 +16,10 @@ import {TaskData} from "./todo_data.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
 
-export function activate({
-    $elem,
-    callback,
-    any_data,
-    message,
-}: {
-    $elem: JQuery;
-    callback: (data: TodoWidgetOutboundData) => void;
-    any_data: AnyWidgetData;
-    message: Message;
-}): {inbound_events_handler: (events: Event[]) => void, widget_data: WidgetData} {
+export function activate({any_data, message}: {any_data: AnyWidgetData; message: Message}): {
+    inbound_events_handler: (events: Event[]) => void;
+    widget_data: WidgetData;
+} {
     assert(any_data.widget_type === "todo");
     const {task_list_title = "", tasks = []} = any_data.extra_data ?? {};
     const task_data = new TaskData({
@@ -38,22 +31,32 @@ export function activate({
     const widget_data = {
         widget_type: any_data.widget_type,
         data: task_data,
-    }
+    };
 
-    return {inbound_events_handler: render({$elem, callback, message, task_data}), widget_data};
+    const handle_events = function (events: Event[]): void {
+        for (const event of events) {
+            task_data.handle_event(event.sender_id, event.data);
+        }
+    };
+
+    return {inbound_events_handler: handle_events, widget_data};
 }
 
 export function render({
     $elem,
     callback,
     message,
-    task_data,
+    widget_data,
+    rerender,
 }: {
     $elem: JQuery;
     callback: (data: TodoWidgetOutboundData) => void;
     message: Message;
-    task_data: TaskData;
-}): (events: Event[]) => void {
+    widget_data: WidgetData;
+    rerender: boolean;
+}): void {
+    assert(widget_data.widget_type === "todo");
+    const task_data = widget_data.data;
     const is_my_task_list = task_data.is_my_task_list();
     const message_container = message_lists.current?.view.message_containers.get(message.id);
 
@@ -255,29 +258,20 @@ export function render({
         update_add_task_button();
     }
 
-    const handle_events = function (events: Event[]): void {
-        // We don't have to handle events now since we go through
-        // handle_event loop again when we unmute the message.
-        if (message_container?.is_hidden) {
-            return;
-        }
-
-        for (const event of events) {
-            task_data.handle_event(event.sender_id, event.data);
-        }
-
-        render_task_list_title();
-        render_results();
-    };
-
     if (message_container?.is_hidden) {
-        const html = render_message_hidden_dialog();
-        $elem.html(html);
-    } else {
-        build_widget();
-        render_task_list_title();
-        render_results();
+        if (!rerender) {
+            const html = render_message_hidden_dialog();
+            $elem.html(html);
+        }
+        return;
     }
 
-    return handle_events;
+    if (!rerender) {
+        build_widget();
+    }
+
+    render_task_list_title();
+    render_results();
+
+    return;
 }

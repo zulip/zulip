@@ -12,7 +12,7 @@ import type {ZFormExtraData} from "./zform_data.ts";
 
 export const widget_type = "zform";
 
-export function activate(opts: {$elem: JQuery; any_data: AnyWidgetData; message: Message}): {
+export function activate(opts: {any_data: AnyWidgetData; message: Message}): {
     inbound_events_handler: (events: Event[]) => void;
     widget_data: WidgetData;
 } {
@@ -43,18 +43,24 @@ export function activate(opts: {$elem: JQuery; any_data: AnyWidgetData; message:
         data: data_with_choices_with_idx,
     };
 
-    return {inbound_events_handler: render({...opts, data_with_choices_with_idx}), widget_data};
+    const handle_events = function (events: Event[]): void {
+        if (events) {
+            blueslip.info("unexpected");
+        }
+    };
+
+    return {inbound_events_handler: handle_events, widget_data};
 }
 
-export function render(opts: {
-    $elem: JQuery;
-    message: Message;
-    data_with_choices_with_idx: ZFormExtraData;
-}): (events: Event[]) => void {
+export function render(opts: {$elem: JQuery; message: Message; widget_data: WidgetData}): void {
+    assert(opts.widget_data.widget_type === "zform");
     const $outer_elem = opts.$elem;
-    const data_with_choices_with_idx = opts.data_with_choices_with_idx;
+    const data_with_choices_with_idx = opts.widget_data.data;
+    if (!data_with_choices_with_idx) {
+        return;
+    }
 
-    function make_choices(): JQuery {
+    function make_choices(data: ZFormExtraData): JQuery {
         const html = render_widgets_zform_choices(data_with_choices_with_idx);
         const $elem = $(html);
 
@@ -66,7 +72,7 @@ export function render(opts: {
 
             // Use the index from the markup to dereference our
             // data structure.
-            const reply_content = data_with_choices_with_idx.choices[idx]!.reply;
+            const reply_content = data.choices[idx]!.reply;
 
             transmit.reply_message(opts.message, reply_content);
         });
@@ -74,20 +80,13 @@ export function render(opts: {
         return $elem;
     }
 
-    function render_html(): void {
-        if (data_with_choices_with_idx.type === "choices") {
-            $outer_elem.html(make_choices().html());
+    function render_html(data: ZFormExtraData): void {
+        if (data.type === "choices") {
+            $outer_elem.html(make_choices(data).html());
         }
     }
 
-    const handle_events = function (events: Event[]): void {
-        if (events) {
-            blueslip.info("unexpected");
-        }
-        render_html();
-    };
+    render_html(data_with_choices_with_idx);
 
-    render_html();
-
-    return handle_events;
+    return;
 }
