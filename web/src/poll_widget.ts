@@ -16,17 +16,10 @@ import {ZulipWidgetContext} from "./widget_context.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
 
-export function activate({
-    $elem,
-    callback,
-    any_data,
-    message,
-}: {
-    $elem: JQuery;
-    callback: (data: PollWidgetOutboundData) => void;
-    any_data: AnyWidgetData;
-    message: Message;
-}): {inbound_events_handler: (events: Event[]) => void, widget_data: WidgetData} {
+export function activate({any_data, message}: {any_data: AnyWidgetData; message: Message}): {
+    inbound_events_handler: (events: Event[]) => void;
+    widget_data: WidgetData;
+} {
     assert(any_data.widget_type === "poll");
     const {extra_data} = any_data;
     const widget_context = new ZulipWidgetContext(message);
@@ -46,22 +39,63 @@ export function activate({
     const widget_data = {
         widget_type: any_data.widget_type,
         data: poll_data,
+    };
+
+    function update_state_from_event(sender_id: number, data: unknown): void {
+        assert(
+            typeof data === "object" &&
+                data !== null &&
+                "type" in data &&
+                typeof data.type === "string",
+        );
+        const type = data.type;
+        switch (type) {
+            case "new_option": {
+                poll_data.handle_new_option_event(sender_id, new_option_schema.parse(data));
+                break;
+            }
+            case "question": {
+                poll_data.handle_question_event(sender_id, question_schema.parse(data));
+                break;
+            }
+            case "vote": {
+                poll_data.handle_vote_event(sender_id, vote_schema.parse(data));
+                break;
+            }
+            default: {
+                blueslip.warn(`poll widget: unknown inbound type: ${type}`);
+            }
+        }
     }
 
-    return {inbound_events_handler: render({$elem, callback, poll_data, widget_context,}), widget_data};
+    function handle_events(events: Event[]): void {
+        for (const event of events) {
+            update_state_from_event(event.sender_id, event.data);
+        }
+    }
+
+    return {
+        inbound_events_handler: handle_events,
+        widget_data,
+    };
 }
 
 export function render({
     $elem,
     callback,
-    poll_data,
-    widget_context,
+    message,
+    widget_data,
+    rerender,
 }: {
     $elem: JQuery;
     callback: (data: PollWidgetOutboundData) => void;
-    poll_data: PollData;
-    widget_context: ZulipWidgetContext;
-}): (events: Event[]) => void {
+    message: Message;
+    widget_data: WidgetData;
+    rerender: boolean;
+}): void {
+    assert(widget_data.widget_type === "poll");
+    const poll_data = widget_data.data;
+    const widget_context = new ZulipWidgetContext(message);
     const container_is_hidden = widget_context.is_container_hidden();
     const is_my_poll = widget_context.is_my_poll();
 
@@ -246,56 +280,20 @@ export function render({
             });
     }
 
-    function update_state_from_event(sender_id: number, data: unknown): void {
-        assert(
-            typeof data === "object" &&
-                data !== null &&
-                "type" in data &&
-                typeof data.type === "string",
-        );
-        const type = data.type;
-        switch (type) {
-            case "new_option": {
-                poll_data.handle_new_option_event(sender_id, new_option_schema.parse(data));
-                break;
-            }
-            case "question": {
-                poll_data.handle_question_event(sender_id, question_schema.parse(data));
-                break;
-            }
-            case "vote": {
-                poll_data.handle_vote_event(sender_id, vote_schema.parse(data));
-                break;
-            }
-            default: {
-                blueslip.warn(`poll widget: unknown inbound type: ${type}`);
-            }
-        }
-    }
-
-    function handle_events(events: Event[]): void {
-        // We don't have to handle events now since we go through
-        // handle_event loop again when we unmute the message.
-        if (container_is_hidden) {
-            return;
-        }
-
-        for (const event of events) {
-            update_state_from_event(event.sender_id, event.data);
-        }
-
-        render_question();
-        render_results();
-    }
-
     if (container_is_hidden) {
-        const html = render_message_hidden_dialog();
-        $elem.html(html);
-    } else {
-        build_widget();
-        render_question();
-        render_results();
+        if (!rerender) {
+            const html = render_message_hidden_dialog();
+            $elem.html(html);
+        }
+        return;
     }
 
-    return handle_events;
+    if (!rerender) {
+        build_widget();
+    }
+
+    render_question();
+    render_results();
+
+    return;
 }

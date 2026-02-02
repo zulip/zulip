@@ -125,8 +125,10 @@ run_test("handle_event", () => {
     };
 
     let args;
+    let post_to_server;
     widgetize.handle_event = (opts) => {
         args = opts;
+        post_to_server = opts.post_to_server;
     };
 
     message_store.get = (msg_id) => {
@@ -136,9 +138,14 @@ run_test("handle_event", () => {
 
     submessage.handle_event(event);
 
+    assert.ok(post_to_server);
     assert.deepEqual(args, {
         sender_id: 99,
-        message_id: 42,
+        message: {
+            id: message.id,
+            submessages: [event],
+        },
+        post_to_server,
         data: "some_data",
     });
 

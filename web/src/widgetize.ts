@@ -1,7 +1,11 @@
 import $ from "jquery";
 
 import type {GenericWidget, PostToServerFunction} from "./generic_widget.ts";
-import {create_widget_instance, is_supported_widget_type} from "./generic_widget.ts";
+import {
+    create_widget_instance,
+    is_supported_widget_type,
+    render_widget_instance,
+} from "./generic_widget.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import type {Event} from "./widget_data.ts";
@@ -66,8 +70,6 @@ export function activate(in_opts: ActivateArguments): void {
     const $widget_elem = $("<div>").addClass("widget-content");
 
     const generic_widget = create_widget_instance({
-        post_to_server,
-        $widget_elem,
         message,
         any_data,
     });
@@ -91,12 +93,26 @@ export function activate(in_opts: ActivateArguments): void {
     if (events.length > 0) {
         generic_widget.handle_inbound_events(events);
     }
+
+    // The widget_data is now up to date. Render the ui for the
+    // widget.
+    render_widget_instance({
+        post_to_server,
+        $widget_elem,
+        message,
+        widget_data: generic_widget.get_widget_data(),
+        rerender: false,
+    });
 }
 
-export function handle_event(widget_event: Event & {message_id: number}): void {
-    const generic_widget = generic_widget_map.get(widget_event.message_id);
-    const $message_row = message_lists.current?.get_row(widget_event.message_id);
-
+export function handle_event(
+    widget_event: Event & {
+        post_to_server: PostToServerFunction;
+        message: Message;
+    },
+): void {
+    const generic_widget = generic_widget_map.get(widget_event.message.id);
+    const $message_row = message_lists.current?.get_row(widget_event.message.id);
     if (!generic_widget || !$message_row || $message_row.length === 0) {
         // It is common for submessage events to arrive on
         // messages that we don't yet have in view. We
@@ -105,6 +121,13 @@ export function handle_event(widget_event: Event & {message_id: number}): void {
     }
 
     const events = [widget_event];
-
+    const $widget_elem = $message_row.find(".widget-content");
     generic_widget.handle_inbound_events(events);
+    render_widget_instance({
+        post_to_server: widget_event.post_to_server,
+        $widget_elem: $widget_elem!,
+        message: widget_event.message,
+        widget_data: generic_widget.get_widget_data(),
+        rerender: true,
+    });
 }

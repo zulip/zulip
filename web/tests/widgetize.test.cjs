@@ -36,16 +36,13 @@ const sample_events = [
 
 let events;
 let $widget_elem;
-let handle_events;
 let is_event_handled;
 let is_widget_activated;
 
 const fake_poll_widget = {
     activate(data) {
         is_widget_activated = true;
-        $widget_elem = data.$elem;
-        assert.ok($widget_elem.hasClass("widget-content"));
-        handle_events = (e) => {
+        const inbound_events_handler = (e) => {
             is_event_handled = true;
             assert.deepStrictEqual(e, events);
         };
@@ -53,8 +50,12 @@ const fake_poll_widget = {
             widget_type: "poll",
             extra_data: data.any_data.extra_data,
         };
+        return {inbound_events_handler, widget_data};
+    },
+    render(data) {
+        $widget_elem = data.$elem;
+        assert.ok($widget_elem.hasClass("widget-content"));
         data.callback("test_data");
-        return {inbound_events_handler: handle_events, widget_data};
     },
 };
 
@@ -73,7 +74,6 @@ function test(label, f) {
     run_test(label, ({override}) => {
         events = [...sample_events];
         $widget_elem = undefined;
-        handle_events = undefined;
         is_event_handled = false;
         is_widget_activated = false;
         widgetize.clear_for_testing();
@@ -89,6 +89,10 @@ test("activate", ({override}) => {
     $row.attr("id", `message-row-${message_lists.current.id}-2909`);
     const $message_content = $.create(`#message-row-${message_lists.current.id}-2909`);
     $row.set_find_results(".message_content", $message_content);
+
+    const $widget_content = $.create(".widget-content");
+    $widget_content.addClass("widget-content");
+    $row.set_find_results(".widget-content", $widget_content);
 
     const opts = {
         events: [...events],
@@ -110,7 +114,6 @@ test("activate", ({override}) => {
 
     $message_content.append = ($elem) => {
         is_widget_elem_inserted = true;
-        assert.equal($elem, $widget_elem);
         assert.ok($elem.hasClass("widget-content"));
     };
 
@@ -163,7 +166,13 @@ test("activate", ({override}) => {
             idx: 1,
             type: "new_option",
         },
-        message_id: 2001,
+        message: {
+            id: 2001,
+        },
+        post_to_server(data) {
+            assert.equal(data.msg_type, "widget");
+            assert.equal(data.data, "test_data");
+        },
         sender_id: 102,
     };
     const handle_events = (e) => {
@@ -171,10 +180,13 @@ test("activate", ({override}) => {
         assert.deepEqual(e, [post_activate_event]);
     };
     const widget_data = {widget_type: "poll", extra_data: "test_data"};
-    const generic_widget = new GenericWidget(handle_events, widget_data);
-    assert.equal(generic_widget.get_widget_data().widget_type, widget_data.widget_type);
-    widgetize.set_widget_for_tests(2001, generic_widget);
+    widgetize.set_widget_for_tests(2001, new GenericWidget(handle_events, widget_data));
     override(message_lists.current, "get_row", (idx) => {
+        if (idx === 1000) {
+            const $empty_row = $.create("<empty row>");
+            $empty_row.length = 0;
+            return $empty_row;
+        }
         assert.equal(idx, 2001);
         return $row;
     });
@@ -183,7 +195,7 @@ test("activate", ({override}) => {
     assert.ok(is_event_handled);
 
     is_event_handled = false;
-    post_activate_event.message_id = 1000;
+    post_activate_event.message.id = 1000;
     widgetize.handle_event(post_activate_event);
     assert.ok(!is_event_handled);
 });
