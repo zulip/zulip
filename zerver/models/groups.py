@@ -85,6 +85,8 @@ class NamedUserGroup(UserGroup):
 
     realm_for_sharding = models.ForeignKey("zerver.Realm", on_delete=CASCADE, db_column="realm_id")
     deactivated = models.BooleanField(default=False, db_default=False)
+    color = models.CharField(max_length=10, default="", db_default="")
+    color_priority = models.PositiveIntegerField(null=True, default=None)
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full

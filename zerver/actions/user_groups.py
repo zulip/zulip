@@ -209,6 +209,8 @@ def do_send_create_user_group_event(
             direct_subgroup_ids=direct_subgroup_ids,
             **setting_values,
             deactivated=False,
+            color=user_group.color,
+            color_priority=user_group.color_priority,
         ),
         for_reactivation=for_reactivation,
     )
@@ -254,7 +256,7 @@ def check_add_user_group(
 
 
 def do_send_user_group_update_event(
-    user_group: NamedUserGroup, data: dict[str, str | int | UserGroupMembersDict]
+    user_group: NamedUserGroup, data: dict[str, str | int | bool | UserGroupMembersDict | None]
 ) -> None:
     event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
     if "name" in data:
@@ -309,6 +311,97 @@ def do_update_user_group_description(
         },
     )
     do_send_user_group_update_event(user_group, dict(description=description))
+
+
+@transaction.atomic(savepoint=False)
+def do_update_user_group_color(
+    user_group: NamedUserGroup,
+    color: str,
+    *,
+    acting_user: UserProfile | None,
+) -> None:
+    old_color = user_group.color
+    old_color_priority = user_group.color_priority
+
+    if color == "":
+        color_priority: int | None = None
+    elif user_group.color_priority is not None:
+        # Keep existing priority when changing between colors.
+        color_priority = user_group.color_priority
+    else:
+        # Auto-assign priority: max existing in realm + 1
+        max_priority = (
+            NamedUserGroup.objects.filter(
+                realm_for_sharding=user_group.realm,
+                color_priority__isnull=False,
+            )
+            .order_by("-color_priority")
+            .values_list("color_priority", flat=True)
+            .first()
+        )
+        color_priority = (max_priority or 0) + 1
+
+    user_group.color = color
+    user_group.color_priority = color_priority
+    user_group.save(update_fields=["color", "color_priority"])
+
+    extra_data: dict[str, str | int | None] = {}
+    if color != old_color:
+        extra_data["old_color"] = old_color
+        extra_data["new_color"] = color
+    if color_priority != old_color_priority:
+        extra_data["old_color_priority"] = old_color_priority
+        extra_data["new_color_priority"] = color_priority
+    RealmAuditLog.objects.create(
+        realm=user_group.realm,
+        modified_user_group=user_group,
+        event_type=AuditLogEventType.USER_GROUP_COLOR_CHANGED,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data=extra_data,
+    )
+
+    do_send_user_group_update_event(user_group, dict(color=color, color_priority=color_priority))
+
+
+@transaction.atomic(durable=True)
+def check_reorder_user_group_colors(
+    realm: Realm,
+    order: list[int],
+    *,
+    acting_user: UserProfile | None,
+) -> None:
+    colored_groups = NamedUserGroup.objects.filter(
+        realm_for_sharding=realm,
+        color_priority__isnull=False,
+    ).exclude(color="")
+    colored_group_ids = set(colored_groups.values_list("id", flat=True))
+
+    if set(order) != colored_group_ids:
+        raise JsonableError(_("Invalid order mapping."))
+
+    order_mapping = {group_id: priority for priority, group_id in enumerate(order, start=1)}
+
+    for group in colored_groups:
+        new_priority = order_mapping[group.id]
+        if new_priority != group.color_priority:
+            old_priority = group.color_priority
+            group.color_priority = new_priority
+            group.save(update_fields=["color_priority"])
+
+            RealmAuditLog.objects.create(
+                realm=realm,
+                modified_user_group=group,
+                event_type=AuditLogEventType.USER_GROUP_COLOR_CHANGED,
+                event_time=timezone_now(),
+                acting_user=acting_user,
+                extra_data={
+                    "old_color_priority": old_priority,
+                    "new_color_priority": new_priority,
+                },
+            )
+
+            do_send_user_group_update_event(group, dict(color_priority=new_priority))
 
 
 def do_send_user_group_members_update_event(
@@ -689,7 +782,7 @@ def do_change_user_group_permission_setting(
         },
     )
 
-    event_data_dict: dict[str, str | int | UserGroupMembersDict] = {
+    event_data_dict: dict[str, str | int | bool | UserGroupMembersDict | None] = {
         setting_name: convert_to_user_group_members_dict(new_setting_api_value)
     }
     do_send_user_group_update_event(user_group, event_data_dict)

@@ -3631,6 +3631,30 @@ paths:
                                         any other purpose.
 
                                         **Changes**: New in Zulip 10.0 (feature level 290).
+                                    color:
+                                      type: string
+                                      description: |
+                                        The color assigned to this user group, as a hex color
+                                        code (e.g., "#ff0000"). An empty string means no color
+                                        is assigned.
+
+                                        Clients should use this field along with
+                                        `color_priority` to determine a user's display name
+                                        color. When a user belongs to multiple groups with
+                                        colors, the group with the lowest `color_priority`
+                                        value determines their display name color.
+
+                                        **Changes**: New in Zulip 11.0 (feature level ZF-941785).
+                                    color_priority:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        The priority of this group's color when determining
+                                        a user's display name color. Lower numbers take
+                                        priority (1 is highest). `null` when the group has
+                                        no color assigned.
+
+                                        **Changes**: New in Zulip 11.0 (feature level ZF-941785).
                               example:
                                 {
                                   "type": "user_group",
@@ -24246,6 +24270,22 @@ paths:
                           "old": 11,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                color:
+                  description: |
+                    The color to assign to this user group, as a hex color code
+                    (e.g., "#ff0000"). An empty string clears the color (and
+                    resets `color_priority` to `null`).
+
+                    When setting a color for the first time, the server
+                    auto-assigns the next available `color_priority`. Use
+                    [`PATCH /user_groups/colors`](/api/reorder-user-group-colors)
+                    to reorder priorities.
+
+                    Cannot be set on system user groups.
+
+                    **Changes**: New in Zulip 11.0 (feature level ZF-941785).
+                  type: string
+                  example: "#ff0000"
                 deactivated:
                   description: |
                     A deactivated user group can be reactivated by passing this
@@ -24508,6 +24548,30 @@ paths:
                                 any other purpose.
 
                                 **Changes**: New in Zulip 10.0 (feature level 290).
+                            color:
+                              type: string
+                              description: |
+                                The color assigned to this user group, as a hex color
+                                code (e.g., "#ff0000"). An empty string means no color
+                                is assigned.
+
+                                Clients should use this field along with
+                                `color_priority` to determine a user's display name
+                                color. When a user belongs to multiple groups with
+                                colors, the group with the lowest `color_priority`
+                                value determines their display name color.
+
+                                **Changes**: New in Zulip 11.0 (feature level ZF-941785).
+                            color_priority:
+                              type: integer
+                              nullable: true
+                              description: |
+                                The priority of this group's color when determining
+                                a user's display name color. Lower numbers take
+                                priority (1 is highest). `null` when the group has
+                                no color assigned.
+
+                                **Changes**: New in Zulip 11.0 (feature level ZF-941785).
                         description: |
                           A list of `user_group` objects.
                     example:
@@ -24699,6 +24763,48 @@ paths:
                         "result": "success",
                         "is_user_group_member": false,
                       }
+  /user_groups/colors:
+    patch:
+      operationId: reorder-user-group-colors
+      summary: Reorder user group color priorities
+      tags: ["users"]
+      description: |
+        Reorder the color priorities of user groups in the organization.
+
+        Clients should use this endpoint to change the relative priority
+        of colored user groups. The `order` parameter must contain the IDs
+        of all user groups that currently have a color assigned, in the
+        desired priority order (first = highest priority).
+
+        When a user belongs to multiple groups with colors, the group
+        with the lowest `color_priority` value (i.e., first in the order)
+        determines their display name color.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-941785).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                order:
+                  description: |
+                    A list of the IDs of all user groups that have a color
+                    assigned, in the desired priority order. The first group
+                    in the list gets the highest priority (priority 1).
+                  type: array
+                  items:
+                    type: integer
+                  example: [5, 3, 7]
+              required:
+                - order
+            encoding:
+              order:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /user_groups/{user_group_id}/deactivate:
     post:
       operationId: deactivate-user-group
@@ -26367,6 +26473,27 @@ components:
             any other purpose.
 
             **Changes**: New in Zulip 10.0 (feature level 290).
+        color:
+          type: string
+          description: |
+            The color assigned to this user group, as a hex color code
+            (e.g., "#ff0000"). An empty string means no color is assigned.
+
+            Clients should use this field along with `color_priority` to
+            determine a user's display name color. When a user belongs to
+            multiple groups with colors, the group with the lowest
+            `color_priority` value determines their display name color.
+
+            **Changes**: New in Zulip 11.0 (feature level ZF-941785).
+        color_priority:
+          type: integer
+          nullable: true
+          description: |
+            The priority of this group's color when determining a user's
+            display name color. Lower numbers take priority (1 is highest).
+            `null` when the group has no color assigned.
+
+            **Changes**: New in Zulip 11.0 (feature level ZF-941785).
     GroupSettingValue:
       oneOf:
         - type: integer

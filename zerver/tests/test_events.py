@@ -144,6 +144,7 @@ from zerver.actions.user_groups import (
     do_change_user_group_permission_setting,
     do_deactivate_user_group,
     do_reactivate_user_group,
+    do_update_user_group_color,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_subgroups_from_user_group,
@@ -2280,6 +2281,20 @@ class NormalActionsTest(BaseAction):
         with self.verify_action() as events:
             do_update_user_group_description(backend, description, acting_user=None)
         check_user_group_update("events[0]", events[0], {"description"})
+
+        # Test color update
+        with self.verify_action() as events:
+            do_update_user_group_color(backend, "#ff0000", acting_user=None)
+        check_user_group_update("events[0]", events[0], {"color", "color_priority"})
+        self.assertEqual(events[0]["data"]["color"], "#ff0000")
+        self.assertEqual(events[0]["data"]["color_priority"], 1)
+
+        # Test clearing color
+        with self.verify_action() as events:
+            do_update_user_group_color(backend, "", acting_user=None)
+        check_user_group_update("events[0]", events[0], {"color", "color_priority"})
+        self.assertEqual(events[0]["data"]["color"], "")
+        self.assertIsNone(events[0]["data"]["color_priority"])
 
         # Test can_mention_group setting update
         with self.verify_action() as events:

@@ -11,9 +11,11 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
     check_add_user_group,
+    check_reorder_user_group_colors,
     do_change_user_group_permission_setting,
     do_deactivate_user_group,
     do_reactivate_user_group,
+    do_update_user_group_color,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_subgroups_from_user_group,
@@ -23,6 +25,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint_validators import check_color
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import (
     GroupSettingChangeRequest,
@@ -139,6 +142,7 @@ def edit_user_group(
     can_manage_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_members_group: Json[GroupSettingChangeRequest] | None = None,
+    color: str | None = None,
     deactivated: Json[bool] | None = None,
     description: str | None = None,
     name: str | None = None,
@@ -147,6 +151,7 @@ def edit_user_group(
     if (
         name is None
         and description is None
+        and color is None
         and can_add_members_group is None
         and can_join_group is None
         and can_leave_group is None
@@ -167,6 +172,16 @@ def edit_user_group(
 
     if description is not None and description != user_group.description:
         do_update_user_group_description(user_group, description, acting_user=user_profile)
+
+    if color is not None and color != user_group.color:
+        if user_group.is_system_group:
+            raise JsonableError(_("Cannot set color for system user groups."))
+        if color != "":
+            try:
+                color = check_color("color", color)
+            except ValueError as e:
+                raise JsonableError(str(e))
+        do_update_user_group_color(user_group, color, acting_user=user_profile)
 
     if deactivated is not None and not deactivated and user_group.deactivated:
         do_reactivate_user_group(user_group, acting_user=user_profile)
@@ -209,6 +224,18 @@ def edit_user_group(
                 acting_user=user_profile,
             )
 
+    return json_success(request)
+
+
+@require_member_or_admin
+@typed_endpoint
+def reorder_user_group_colors(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    order: Json[list[int]],
+) -> HttpResponse:
+    check_reorder_user_group_colors(user_profile.realm, order, acting_user=user_profile)
     return json_success(request)
 
 

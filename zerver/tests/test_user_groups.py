@@ -124,6 +124,8 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[0]["can_manage_group"], user_group.id)
         self.assertEqual(user_groups[0]["can_mention_group"], user_group.id)
         self.assertFalse(user_groups[0]["deactivated"])
+        self.assertEqual(user_groups[0]["color"], "")
+        self.assertIsNone(user_groups[0]["color_priority"])
 
         owners_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm_for_sharding=realm
@@ -1211,6 +1213,129 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_success(result)
         user_group = NamedUserGroup.objects.get(id=user_group.id)
         self.assertEqual(user_group.name, "Support team")
+
+    def test_user_group_color(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        params = {
+            "name": "engineering",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Engineering team",
+        }
+        self.client_post("/json/user_groups/create", info=params)
+        eng_group = NamedUserGroup.objects.get(name="engineering")
+
+        # Test setting a valid color; priority is auto-assigned
+        params = {"color": "#ff0000"}
+        result = self.client_patch(f"/json/user_groups/{eng_group.id}", info=params)
+        self.assert_json_success(result)
+        eng_group = NamedUserGroup.objects.get(id=eng_group.id)
+        self.assertEqual(eng_group.color, "#ff0000")
+        self.assertEqual(eng_group.color_priority, 1)
+
+        # Test auto-incrementing priority for a second group
+        params = {
+            "name": "design",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Design team",
+        }
+        self.client_post("/json/user_groups/create", info=params)
+        design_group = NamedUserGroup.objects.get(name="design")
+        params = {"color": "#00ff00"}
+        result = self.client_patch(f"/json/user_groups/{design_group.id}", info=params)
+        self.assert_json_success(result)
+        design_group = NamedUserGroup.objects.get(id=design_group.id)
+        self.assertEqual(design_group.color, "#00ff00")
+        self.assertEqual(design_group.color_priority, 2)
+
+        # Test changing color preserves existing priority
+        params = {"color": "#0000ff"}
+        result = self.client_patch(f"/json/user_groups/{eng_group.id}", info=params)
+        self.assert_json_success(result)
+        eng_group = NamedUserGroup.objects.get(id=eng_group.id)
+        self.assertEqual(eng_group.color, "#0000ff")
+        self.assertEqual(eng_group.color_priority, 1)
+
+        # Test clearing color resets priority
+        params = {"color": ""}
+        result = self.client_patch(f"/json/user_groups/{eng_group.id}", info=params)
+        self.assert_json_success(result)
+        eng_group = NamedUserGroup.objects.get(id=eng_group.id)
+        self.assertEqual(eng_group.color, "")
+        self.assertIsNone(eng_group.color_priority)
+
+        # Test short-form hex color is accepted
+        params = {"color": "#fff"}
+        result = self.client_patch(f"/json/user_groups/{eng_group.id}", info=params)
+        self.assert_json_success(result)
+        eng_group = NamedUserGroup.objects.get(id=eng_group.id)
+        self.assertEqual(eng_group.color, "#fff")
+
+        # Test invalid color format
+        params = {"color": "red"}
+        result = self.client_patch(f"/json/user_groups/{eng_group.id}", info=params)
+        self.assert_json_error(result, "color is not a valid hex color code")
+
+        params = {"color": "#0g0g0g"}
+        result = self.client_patch(f"/json/user_groups/{eng_group.id}", info=params)
+        self.assert_json_error(result, "color is not a valid hex color code")
+
+        # Test system groups cannot have colors
+        system_group = NamedUserGroup.objects.get(
+            name="role:administrators",
+            realm_for_sharding=hamlet.realm,
+            is_system_group=True,
+        )
+        params = {"color": "#ff0000"}
+        result = self.client_patch(f"/json/user_groups/{system_group.id}", info=params)
+        self.assert_json_error(result, "Insufficient permission")
+
+        # Test setting same color is a no-op (no error, no change)
+        params = {"color": "#fff"}
+        result = self.client_patch(f"/json/user_groups/{eng_group.id}", info=params)
+        self.assert_json_success(result)
+
+        # Re-set engineering to a full hex color for reorder testing.
+        # At this point: eng=#fff (priority 3), design=#00ff00 (priority 2).
+        params = {"color": "#ff0000"}
+        result = self.client_patch(f"/json/user_groups/{eng_group.id}", info=params)
+        self.assert_json_success(result)
+        eng_group = NamedUserGroup.objects.get(id=eng_group.id)
+        self.assertEqual(eng_group.color_priority, 3)
+
+        # Test reordering color priorities
+        params = {"order": orjson.dumps([design_group.id, eng_group.id]).decode()}
+        result = self.client_patch("/json/user_groups/colors", info=params)
+        self.assert_json_success(result)
+        eng_group = NamedUserGroup.objects.get(id=eng_group.id)
+        design_group = NamedUserGroup.objects.get(id=design_group.id)
+        self.assertEqual(design_group.color_priority, 1)
+        self.assertEqual(eng_group.color_priority, 2)
+
+        # Error: missing a colored group from the order
+        params = {"order": orjson.dumps([design_group.id]).decode()}
+        result = self.client_patch("/json/user_groups/colors", info=params)
+        self.assert_json_error(result, "Invalid order mapping.")
+
+        # Error: including a group without a color
+        params = {
+            "name": "sales",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Sales team",
+        }
+        self.client_post("/json/user_groups/create", info=params)
+        sales_group = NamedUserGroup.objects.get(name="sales")
+        params = {"order": orjson.dumps([design_group.id, eng_group.id, sales_group.id]).decode()}
+        result = self.client_patch("/json/user_groups/colors", info=params)
+        self.assert_json_error(result, "Invalid order mapping.")
+
+        # Verify final state unchanged after reorder errors
+        eng_group = NamedUserGroup.objects.get(id=eng_group.id)
+        design_group = NamedUserGroup.objects.get(id=design_group.id)
+        self.assertEqual(design_group.color_priority, 1)
+        self.assertEqual(eng_group.color_priority, 2)
+        self.assertEqual(design_group.color, "#00ff00")
+        self.assertEqual(eng_group.color, "#ff0000")
 
     def do_test_update_user_group_permission_settings(self, setting_name: str) -> None:
         hamlet = self.example_user("hamlet")
