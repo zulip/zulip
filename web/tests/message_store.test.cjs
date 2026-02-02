@@ -117,6 +117,7 @@ test("process_new_message", () => {
         id: 2067,
         reactions: [],
         avatar_url: `/avatar/${me.user_id}`,
+        submessages: [],
     };
     message = message_helper.process_new_message({
         type: "server_message",
@@ -169,6 +170,7 @@ test("process_new_message", () => {
         id: 2068,
         reactions: [],
         avatar_url: `/avatar/${denise.user_id}`,
+        submessages: [],
     };
 
     message = message_helper.process_new_message({

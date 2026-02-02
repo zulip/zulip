@@ -38,6 +38,7 @@ let events;
 let $widget_elem;
 let is_event_handled;
 let is_widget_activated;
+let is_widget_rendered;
 
 const fake_poll_widget = {
     activate(data) {
@@ -53,6 +54,7 @@ const fake_poll_widget = {
         return {inbound_events_handler, widget_data};
     },
     render(data) {
+        is_widget_rendered = true;
         $widget_elem = data.$elem;
         assert.ok($widget_elem.hasClass("widget-content"));
         data.callback("test_data");
@@ -76,14 +78,15 @@ function test(label, f) {
         $widget_elem = undefined;
         is_event_handled = false;
         is_widget_activated = false;
+        is_widget_rendered = false;
         widgetize.clear_for_testing();
         f({override});
     });
 }
 
 test("activate", ({override}) => {
-    // Both widgetize.activate and widgetize.handle_event are tested
-    // here to use the "caching" of widget event handlers.
+    // Both widgetize.render and widgetize.handle_event are tested
+    // here to use the "caching" of widgets.
     const $row = $.create("<stub message row>");
     $row.length = 1;
     $row.attr("id", `message-row-${message_lists.current.id}-2909`);
@@ -94,7 +97,16 @@ test("activate", ({override}) => {
     $widget_content.addClass("widget-content");
     $row.set_find_results(".widget-content", $widget_content);
 
-    const opts = {
+    let is_widget_elem_inserted = false;
+    let $inserted_elem;
+
+    $message_content.append = ($elem) => {
+        is_widget_elem_inserted = true;
+        $inserted_elem = $elem;
+        assert.ok($elem.hasClass("widget-content"));
+    };
+
+    const activate_opts = {
         events: [...events],
         any_data: {
             widget_type: "poll",
@@ -103,64 +115,94 @@ test("activate", ({override}) => {
         message: {
             id: 2001,
         },
+    };
+
+    // Test widget initialization
+
+    is_widget_elem_inserted = false;
+    is_widget_activated = false;
+    is_widget_rendered = false;
+    assert.deepEqual(widgetize.get_message_ids(), []);
+
+    widgetize.activate(activate_opts);
+
+    // activate() should create widget and handle events, but NOT render
+    assert.ok(is_widget_activated);
+    assert.ok(!is_widget_rendered);
+    assert.ok(!is_widget_elem_inserted);
+    assert.deepEqual(widgetize.get_message_ids(), [activate_opts.message.id]);
+
+    // Activate with invalid widget type
+    blueslip.expect("warn", "unknown widget_type");
+    is_widget_activated = false;
+    activate_opts.any_data.widget_type = "invalid_widget";
+    activate_opts.message.id = 2002;
+
+    widgetize.activate(activate_opts);
+
+    assert.ok(!is_widget_activated);
+    assert.deepEqual(blueslip.get_test_logs("warn")[0].more_info, {widget_type: "invalid_widget"});
+
+    // Activate with tictactoe (legacy widget) should silently fail
+    is_widget_activated = false;
+    activate_opts.any_data.widget_type = "tictactoe";
+    activate_opts.message.id = 2003;
+
+    widgetize.activate(activate_opts);
+
+    assert.ok(!is_widget_activated);
+
+    // Test widget UI rendering
+
+    widgetize.clear_for_testing();
+    is_widget_elem_inserted = false;
+    is_widget_activated = false;
+    is_widget_rendered = false;
+    events = [...sample_events];
+    activate_opts.any_data.widget_type = "poll";
+    activate_opts.events = [...events];
+    activate_opts.message.id = 2005;
+
+    widgetize.activate(activate_opts);
+
+    assert.ok(is_widget_activated);
+    assert.ok(!is_widget_rendered);
+    assert.ok(!is_widget_elem_inserted);
+
+    const render_opts = {
         post_to_server(data) {
             assert.equal(data.msg_type, "widget");
             assert.equal(data.data, "test_data");
         },
         $row,
+        message: {
+            id: 2005,
+        },
     };
 
-    let is_widget_elem_inserted;
+    widgetize.render(render_opts);
 
-    $message_content.append = ($elem) => {
-        is_widget_elem_inserted = true;
-        assert.ok($elem.hasClass("widget-content"));
-    };
-
-    is_widget_elem_inserted = false;
-    is_widget_activated = false;
-    is_event_handled = false;
-    assert.deepEqual(widgetize.get_message_ids(), []);
-
-    widgetize.activate(opts);
-
+    assert.ok(is_widget_rendered);
     assert.ok(is_widget_elem_inserted);
-    assert.ok(is_widget_activated);
-    assert.ok(is_event_handled);
-    assert.deepEqual(widgetize.get_message_ids(), [opts.message.id]);
+    assert.equal($inserted_elem, $widget_elem);
 
-    message_lists.current = undefined;
+    // Test render without a widget should return early
+    is_widget_rendered = false;
     is_widget_elem_inserted = false;
-    is_widget_activated = false;
-    is_event_handled = false;
+    render_opts.message.id = 9999;
 
-    widgetize.activate(opts);
+    widgetize.render(render_opts);
 
+    assert.ok(!is_widget_rendered);
     assert.ok(!is_widget_elem_inserted);
-    assert.ok(!is_widget_activated);
-    assert.ok(!is_event_handled);
 
-    blueslip.expect("warn", "unknown widget_type");
-    is_widget_elem_inserted = false;
-    is_widget_activated = false;
-    is_event_handled = false;
-    opts.any_data.widget_type = "invalid_widget";
+    // Test incoming widget events
 
-    widgetize.activate(opts);
-    assert.ok(!is_widget_elem_inserted);
-    assert.ok(!is_widget_activated);
-    assert.ok(!is_event_handled);
-    assert.deepEqual(blueslip.get_test_logs("warn")[0].more_info, {widget_type: "invalid_widget"});
+    const $empty_row = $.create("<empty row>");
+    $empty_row.length = 0;
 
-    opts.any_data.widget_type = "tictactoe";
+    let expected_message_id;
 
-    widgetize.activate(opts);
-    assert.ok(!is_widget_elem_inserted);
-    assert.ok(!is_widget_activated);
-    assert.ok(!is_event_handled);
-
-    /* Testing GenericWidget */
-    message_lists.current = {id: 2};
     const post_activate_event = {
         data: {
             idx: 1,
@@ -179,23 +221,64 @@ test("activate", ({override}) => {
         is_event_handled = true;
         assert.deepEqual(e, [post_activate_event]);
     };
-    const widget_data = {widget_type: "poll", extra_data: "test_data"};
-    widgetize.set_widget_for_tests(2001, new GenericWidget(handle_events, widget_data));
-    override(message_lists.current, "get_row", (idx) => {
-        if (idx === 1000) {
-            const $empty_row = $.create("<empty row>");
-            $empty_row.length = 0;
-            return $empty_row;
-        }
-        assert.equal(idx, 2001);
-        return $row;
-    });
-    is_event_handled = false;
-    widgetize.handle_event(post_activate_event);
-    assert.ok(is_event_handled);
+
+    // handle_event on message not in view should only update the state
+    message_lists.current = undefined;
 
     is_event_handled = false;
-    post_activate_event.message.id = 1000;
+    is_widget_rendered = false;
+    expected_message_id = 2001;
+
+    const widget_data = {widget_type: "poll", extra_data: ""};
+    widgetize.set_widget_for_tests(2001, new GenericWidget(handle_events, widget_data));
+
     widgetize.handle_event(post_activate_event);
+
+    assert.ok(is_event_handled);
+    assert.ok(!is_widget_rendered);
+
+    message_lists.current = {id: 2};
+
+    override(message_lists.current, "get_row", (idx) => {
+        assert.equal(idx, expected_message_id);
+        if (idx === 2001) {
+            return $row;
+        }
+
+        return $empty_row;
+    });
+
+    // Test handle_event for ui update
+    widgetize.set_widget_for_tests(2001, new GenericWidget(handle_events, widget_data));
+
+    is_event_handled = false;
+    is_widget_rendered = false;
+    expected_message_id = 2001;
+
+    widgetize.handle_event(post_activate_event);
+
+    assert.ok(is_event_handled);
+    assert.ok(is_widget_rendered);
+
+    // Test handle_event for nonexistent widget
+    is_event_handled = false;
+    is_widget_rendered = false;
+    expected_message_id = 1000;
+
+    const nonexistent_event = {
+        data: {
+            idx: 1,
+            type: "new_option",
+        },
+        sender_id: 102,
+        post_to_server() {},
+        message: {
+            id: 1000,
+        },
+    };
+
+    widgetize.handle_event(nonexistent_event);
+
     assert.ok(!is_event_handled);
+    assert.ok(!is_widget_rendered);
 });
