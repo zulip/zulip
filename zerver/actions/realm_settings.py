@@ -719,7 +719,7 @@ def do_delete_all_realm_attachments(realm: Realm) -> None:
             to_delete = (
                 obj_class._default_manager.filter(realm_id=realm.id)
                 .order_by("pk")
-                .select_for_update()
+                .select_for_update(no_key=False)
                 .values_list("path_id", flat=True)
             )
             for path_id in to_delete.iterator():

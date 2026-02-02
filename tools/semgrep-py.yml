@@ -402,3 +402,13 @@ rules:
           $BODY
     languages: [python]
     severity: ERROR
+
+  - id: select-for-update-require-no-key
+    message: |
+      Call select_for_update() with an explicit no_key= (True/False) kwarg. We should be purposeful about which lock we need.
+      See https://zulip.readthedocs.io/en/latest/subsystems/database-concurrency.html#select-for-update for guidance.
+    patterns:
+      - pattern: $Q.select_for_update(...)
+      - pattern-not: $Q.select_for_update(..., no_key=..., ...)
+    languages: [python]
+    severity: ERROR

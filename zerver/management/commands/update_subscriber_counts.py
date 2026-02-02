@@ -98,7 +98,7 @@ accurate; this command is run as a daily cron job to ensure the number is accura
 
         for stream_id in stream_ids.iterator():
             with transaction.atomic(durable=True):
-                stream = Stream.objects.select_for_update().get(id=stream_id)
+                stream = Stream.objects.select_for_update(no_key=True).get(id=stream_id)
                 actual_subscriber_count = Subscription.objects.filter(
                     active=True,
                     recipient__type=2,

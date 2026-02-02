@@ -554,7 +554,10 @@ def clear_scheduled_emails(user_ids: list[int], email_type: int | None = None) -
     # We need to obtain a FOR UPDATE lock on the selected rows to keep a concurrent
     # execution of this function (or something else) from deleting them before we access
     # the .users attribute.
-    items = ScheduledEmail.objects.filter(users__in=user_ids).select_for_update()
+    items = ScheduledEmail.objects.filter(users__in=user_ids).select_for_update(
+        # We might end up deleting rows.
+        no_key=False
+    )
     if email_type is not None:
         items = items.filter(type=email_type)
     item_ids = list(items.values_list("id", flat=True))
