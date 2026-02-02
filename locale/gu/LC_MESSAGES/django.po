@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-22 02:09+0000\n"
+"POT-Creation-Date: 2026-02-02 21:47+0000\n"
 "PO-Revision-Date: 2025-08-07 23:52+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Gujarati <https://hosted.weblate.org/projects/zulip/django/gu/"
@@ -398,7 +398,7 @@ msgid "Method not allowed (405)"
 msgstr "પદ્ધતિ મંજૂર નથી (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:414
+#: zerver/actions/scheduled_messages.py:460 zerver/middleware.py:417
 msgid "Internal server error"
 msgstr "આંતરિક સર્વર ત્રુટિ"
 
@@ -4438,7 +4438,7 @@ msgstr "વિજેટ્સ સંપાદિત નથી."
 msgid "Your organization has turned off message editing"
 msgstr "તમારી સંસ્થાને સંદેશ સંપાદન બંધ કરી દીધું છે"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1594
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1593
 msgid "You don't have permission to edit this message"
 msgstr "તમારી આ સંદેશને સંપાદિત કરવાની પરવાનગી નથી"
 
@@ -4456,17 +4456,17 @@ msgstr "{user} ને આ વિષયને સ્થિર તરીકે ચ
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} ને આ વિષયને અસ્થિર તરીકે ચિહ્નિત કર્યો છે."
 
-#: zerver/actions/message_edit.py:1274
+#: zerver/actions/message_edit.py:1273
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "આ વિષય {user} દ્વારા {new_location} માં ખસેડાયો હતો."
 
-#: zerver/actions/message_edit.py:1278
+#: zerver/actions/message_edit.py:1277
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "આ વિષયમાંથી એક સંદેશ {user} દ્વારા {new_location} માં ખસેડાયો હતો."
 
-#: zerver/actions/message_edit.py:1282
+#: zerver/actions/message_edit.py:1281
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4475,18 +4475,18 @@ msgstr ""
 "{changed_messages_count} સંદેશો આ વિષયમાંથી {user} દ્વારા {new_location} માં "
 "ખસેડાયા હતા."
 
-#: zerver/actions/message_edit.py:1321
+#: zerver/actions/message_edit.py:1320
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "આ વિષય {user} દ્વારા {old_location} માંથી આવ્યો હતો."
 
-#: zerver/actions/message_edit.py:1326
+#: zerver/actions/message_edit.py:1325
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
 msgstr "[એક સંદેશ]({message_link}) {user} દ્વારા {old_location} માંથી આવ્યો હતો."
 
-#: zerver/actions/message_edit.py:1330
+#: zerver/actions/message_edit.py:1329
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4495,21 +4495,21 @@ msgstr ""
 "{changed_messages_count} સંદેશો {old_location} થી {user} દ્વારા અહીં ખસેડવામાં "
 "આવ્યા છે."
 
-#: zerver/actions/message_edit.py:1588
+#: zerver/actions/message_edit.py:1587
 #, fuzzy
 #| msgid "You don't have permission to delete this message"
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "તમારી પાસે આ સંદેશ માટે મિટાવવાની મંજૂરી નથી"
 
-#: zerver/actions/message_edit.py:1608
+#: zerver/actions/message_edit.py:1607
 msgid "The time limit for editing this message's topic has passed."
 msgstr "આ સંદેશનું વિષય એડિટ કરવાનો સમય સમાપ્ત થયો છે."
 
-#: zerver/actions/message_edit.py:1658
+#: zerver/actions/message_edit.py:1657
 msgid "You don't have permission to move this message"
 msgstr "આ સંદેશને ખસેડવાની પરવાનગી નથી"
 
-#: zerver/actions/message_edit.py:1674
+#: zerver/actions/message_edit.py:1673
 msgid "The time limit for editing this message's channel has passed"
 msgstr ""
 
@@ -4590,13 +4590,13 @@ msgstr "વિજેટ્સ: API પ્રોગ્રામર અમાન�
 msgid "Widgets: {error_msg}"
 msgstr "વિજેટ્સ: {error_msg}"
 
-#: zerver/actions/realm_emoji.py:39 zerver/views/realm_emoji.py:40
+#: zerver/actions/realm_emoji.py:40 zerver/views/realm_emoji.py:40
 msgid "A custom emoji with this name already exists."
 msgstr "આ નામવાળો ખાસ ઇમોજી પહેલેથી અસ્તિત્વમાં છે."
 
-#: zerver/actions/realm_emoji.py:45 zerver/lib/upload/__init__.py:336
-#: zerver/lib/upload/__init__.py:399 zerver/lib/upload/__init__.py:407
-#: zerver/lib/upload/__init__.py:430
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
+#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
+#: zerver/lib/upload/__init__.py:447
 msgid "Invalid image format"
 msgstr ""
 
@@ -4635,15 +4635,15 @@ msgstr ""
 msgid "Saved snippet does not exist."
 msgstr ""
 
-#: zerver/actions/scheduled_messages.py:184
+#: zerver/actions/scheduled_messages.py:182
 msgid "Scheduled message was already sent"
 msgstr "શેડ્યુલ્ડ સંદેશ પહેલેથી મોકલાયો હતો"
 
-#: zerver/actions/scheduled_messages.py:350
+#: zerver/actions/scheduled_messages.py:349
 msgid "Message could not be sent at the scheduled time."
 msgstr "સંદેશ શેડ્યુલ્ડ સમયમાં મોકવું નથી."
 
-#: zerver/actions/scheduled_messages.py:401
+#: zerver/actions/scheduled_messages.py:400
 #, python-brace-format
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
@@ -4651,7 +4651,7 @@ msgid ""
 msgstr ""
 "{delivery_datetime} માટે તમે શેડ્યુલ્ડ કર્યો સંદેશ નીચેની ભૂલ માટે મોકવામાં આવ્યો નથી:"
 
-#: zerver/actions/scheduled_messages.py:406
+#: zerver/actions/scheduled_messages.py:405
 msgid "[View scheduled messages](#scheduled)"
 msgstr "[શેડ્યુલ્ડ સંદેશો જુઓ](#scheduled)"
 
@@ -6307,7 +6307,7 @@ msgstr "અમાન્ય {setting_name}"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "અપલોડ તમારી સંગઠનની અપલોડ કોટા પાર થઈ જશે."
 
-#: zerver/lib/upload/__init__.py:444 zerver/lib/upload/__init__.py:446
+#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
 msgid "Image size exceeds limit"
 msgstr ""
 
@@ -6560,12 +6560,12 @@ msgstr "આવા કમાન્ડ નથી: {command}"
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
-#: zerver/middleware.py:471
+#: zerver/middleware.py:474
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "CSRF ત્રુટિ: {reason}"
 
-#: zerver/middleware.py:645
+#: zerver/middleware.py:648
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr "રિવર્સ પ્રૉક્સી ગલત રૂપરેખાંકન: {proxy_reason}"
@@ -7418,21 +7418,21 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr "સબમેસેજ માટે અમાન્ય json"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:474
+#: zerver/views/tusd.py:109 zerver/views/upload.py:467
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
 "organization's plan."
 msgstr ""
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:482
+#: zerver/views/tusd.py:118 zerver/views/upload.py:475
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
 "MiB)."
 msgstr ""
 
-#: zerver/views/tusd.py:268
+#: zerver/views/tusd.py:271
 #, python-brace-format
 msgid ""
 "Uploaded file exceeds the maximum file size for imports ({max_file_size} "
@@ -7455,27 +7455,27 @@ msgstr "'તો' ની ખાલી યાદી"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "વપરાશકર્તા સિધ્ધા સંદેશો માટે ટાઈપિંગ સૂચનાઓ અક્રિય કર્યા છે"
 
-#: zerver/views/upload.py:282
+#: zerver/views/upload.py:275
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>આ ફાઇલ અસ્તિત્વમાં નથી અથવા તે ડિલીટ કરવામાં આવી છે.</p>"
 
-#: zerver/views/upload.py:292
+#: zerver/views/upload.py:285
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>આ ફાઇલ જોવા માટે તમારી પરવાહકર્તાની પુનરુત્સર્ગ નથી.</p>"
 
-#: zerver/views/upload.py:411 zerver/views/upload.py:417
+#: zerver/views/upload.py:404 zerver/views/upload.py:410
 msgid "Invalid token"
 msgstr "અમાન્ય ટોકન"
 
-#: zerver/views/upload.py:413
+#: zerver/views/upload.py:406
 msgid "Invalid filename"
 msgstr "અમાન્ય ફાઈલ નામ"
 
-#: zerver/views/upload.py:461
+#: zerver/views/upload.py:454
 msgid "You must specify a file to upload"
 msgstr "અપલોડ કરવા માટે તમે ફાઈલ નિર્દિષ્ટ કરવી જોઈએ"
 
-#: zerver/views/upload.py:463 zerver/views/users.py:523
+#: zerver/views/upload.py:456 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "તમે ફક્ત એક ફાઈલ અપલોડ કરી શકો છો"
@@ -7889,11 +7889,11 @@ msgstr "તમારે તમારો પાસવર્ડ રીસેટ �
 msgid "Missing id_token parameter"
 msgstr "ગુમ થયેલ id_token પેરામીટર"
 
-#: zproject/backends.py:3551
+#: zproject/backends.py:3558
 msgid "Invalid OTP"
 msgstr "અમાન્ય OTP"
 
-#: zproject/backends.py:3554
+#: zproject/backends.py:3561
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "મોબાઇલ_flow_otp અને ડેસ્કટોપ_flow_otp ને એકસાથે ઉપયોગ કરી શકાય નહિં."
 

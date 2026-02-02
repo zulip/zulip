@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-22 02:09+0000\n"
+"POT-Creation-Date: 2026-02-02 21:47+0000\n"
 "PO-Revision-Date: 2026-01-30 19:01+0000\n"
 "Last-Translator: r mhs <rmhs81vmon@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/zulip/django-11-"
@@ -387,7 +387,7 @@ msgid "Method not allowed (405)"
 msgstr "メソッドは許可されていません (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:414
+#: zerver/actions/scheduled_messages.py:460 zerver/middleware.py:417
 msgid "Internal server error"
 msgstr "内部のサーバーエラー"
 
@@ -3626,7 +3626,8 @@ msgstr ""
 msgid ""
 "Administrators of this Zulip organization will be able to see this email "
 "address."
-msgstr "このZulip組織の管理者は、このメールアドレスを表示できるようになります。"
+msgstr ""
+"このZulip組織の管理者は、このメールアドレスを表示できるようになります。"
 
 #: templates/zerver/new_user_email_address_visibility.html:8
 msgid ""
@@ -4319,7 +4320,7 @@ msgstr "ウィジェットを編集できません。"
 msgid "Your organization has turned off message editing"
 msgstr "組織のメッセージ編集を禁止しました"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1594
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1593
 msgid "You don't have permission to edit this message"
 msgstr "このメッセージを編集する権限がありません"
 
@@ -4337,18 +4338,18 @@ msgstr "{user}がこのトピックを解決済みにしました。"
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user}がこのトピックを未解決にしました。"
 
-#: zerver/actions/message_edit.py:1274
+#: zerver/actions/message_edit.py:1273
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "{user}がこのトピックを {new_location} に移動しました。"
 
-#: zerver/actions/message_edit.py:1278
+#: zerver/actions/message_edit.py:1277
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr ""
 "{user}が1件のメッセージをこのトピックから {new_location} に移動しました。"
 
-#: zerver/actions/message_edit.py:1282
+#: zerver/actions/message_edit.py:1281
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4357,12 +4358,12 @@ msgstr ""
 "{user}が{changed_messages_count}件のメッセージをこのトピックから "
 "{new_location} に移動しました。"
 
-#: zerver/actions/message_edit.py:1321
+#: zerver/actions/message_edit.py:1320
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "{user}がこのトピックを {old_location} からここに移動しました。"
 
-#: zerver/actions/message_edit.py:1326
+#: zerver/actions/message_edit.py:1325
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
@@ -4370,7 +4371,7 @@ msgstr ""
 "{user}が[1件のメッセージ]({message_link})を {old_location} からここに移動しま"
 "した。"
 
-#: zerver/actions/message_edit.py:1330
+#: zerver/actions/message_edit.py:1329
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4379,21 +4380,21 @@ msgstr ""
 "{user}が{changed_messages_count}件のメッセージを {old_location} からここに移"
 "動しました。"
 
-#: zerver/actions/message_edit.py:1588
+#: zerver/actions/message_edit.py:1587
 #, fuzzy
 #| msgid "You do not have permission to post in this channel."
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "このチャンネルに送信する権限がありません。"
 
-#: zerver/actions/message_edit.py:1608
+#: zerver/actions/message_edit.py:1607
 msgid "The time limit for editing this message's topic has passed."
 msgstr "このメッセージのトピックを編集可能な制限時間が過ぎました。"
 
-#: zerver/actions/message_edit.py:1658
+#: zerver/actions/message_edit.py:1657
 msgid "You don't have permission to move this message"
 msgstr "このメッセージを移動する権限がありません"
 
-#: zerver/actions/message_edit.py:1674
+#: zerver/actions/message_edit.py:1673
 msgid "The time limit for editing this message's channel has passed"
 msgstr "このメッセージのチャンネルを編集可能な制限時間が過ぎました"
 
@@ -4458,8 +4459,8 @@ msgid ""
 "it."
 msgstr ""
 "あなたのボット {bot_identity} がチャンネル {channel_name} にメッセージを送信"
-"しようとしましたが、そのチャンネルは存在しません。[こちら]("
-"{new_channel_link})をクリックしてチャンネルを作成してください。"
+"しようとしましたが、そのチャンネルは存在しません。[こちら]"
+"({new_channel_link})をクリックしてチャンネルを作成してください。"
 
 #: zerver/actions/message_send.py:1549
 #, python-brace-format
@@ -4483,13 +4484,13 @@ msgstr "ウィジェット：APIプログラマは不正なJSONを送信しま�
 msgid "Widgets: {error_msg}"
 msgstr "ウィジェット：{error_msg}"
 
-#: zerver/actions/realm_emoji.py:39 zerver/views/realm_emoji.py:40
+#: zerver/actions/realm_emoji.py:40 zerver/views/realm_emoji.py:40
 msgid "A custom emoji with this name already exists."
 msgstr "この名前のカスタム絵文字はすでに存在します。"
 
-#: zerver/actions/realm_emoji.py:45 zerver/lib/upload/__init__.py:336
-#: zerver/lib/upload/__init__.py:399 zerver/lib/upload/__init__.py:407
-#: zerver/lib/upload/__init__.py:430
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
+#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
+#: zerver/lib/upload/__init__.py:447
 msgid "Invalid image format"
 msgstr "無効な画像形式"
 
@@ -4509,8 +4510,8 @@ msgid ""
 "You need to upgrade to the {required_upgrade_plan_name} plan to use this "
 "authentication method."
 msgstr ""
-"この認証方法を使用するには、{required_upgrade_plan_name}プランに"
-"アップグレードする必要があります。"
+"この認証方法を使用するには、{required_upgrade_plan_name}プランにアップグレー"
+"ドする必要があります。"
 
 #: zerver/actions/realm_settings.py:335
 #, python-brace-format
@@ -4530,15 +4531,15 @@ msgstr ""
 msgid "Saved snippet does not exist."
 msgstr ""
 
-#: zerver/actions/scheduled_messages.py:184
+#: zerver/actions/scheduled_messages.py:182
 msgid "Scheduled message was already sent"
 msgstr "予約メッセージが送信されました"
 
-#: zerver/actions/scheduled_messages.py:350
+#: zerver/actions/scheduled_messages.py:349
 msgid "Message could not be sent at the scheduled time."
 msgstr "メッセージを予定した時刻に送信できませんでした。"
 
-#: zerver/actions/scheduled_messages.py:401
+#: zerver/actions/scheduled_messages.py:400
 #, python-brace-format
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
@@ -4547,7 +4548,7 @@ msgstr ""
 "{delivery_datetime} に予定されていたメッセージは、以下のエラーのため送信され"
 "ませんでした："
 
-#: zerver/actions/scheduled_messages.py:406
+#: zerver/actions/scheduled_messages.py:405
 msgid "[View scheduled messages](#scheduled)"
 msgstr "[予定されたメッセージを表示](#scheduled)"
 
@@ -6196,7 +6197,7 @@ msgstr "不正な{setting_name}"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "アップロードが組織の上限アップロード容量を超えています。"
 
-#: zerver/lib/upload/__init__.py:444 zerver/lib/upload/__init__.py:446
+#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
 msgid "Image size exceeds limit"
 msgstr ""
 
@@ -6449,12 +6450,12 @@ msgstr ""
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
-#: zerver/middleware.py:471
+#: zerver/middleware.py:474
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "CSRFエラー：{reason}"
 
-#: zerver/middleware.py:645
+#: zerver/middleware.py:648
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr ""
@@ -7304,21 +7305,21 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr "不正なサブメッセージのJSON"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:474
+#: zerver/views/tusd.py:109 zerver/views/upload.py:467
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
 "organization's plan."
 msgstr ""
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:482
+#: zerver/views/tusd.py:118 zerver/views/upload.py:475
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
 "MiB)."
 msgstr ""
 
-#: zerver/views/tusd.py:268
+#: zerver/views/tusd.py:271
 #, python-brace-format
 msgid ""
 "Uploaded file exceeds the maximum file size for imports ({max_file_size} "
@@ -7341,27 +7342,27 @@ msgstr "'to'リストが空白です"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "ユーザーがダイレクトメッセージでの「入力中」表示を無効化しています"
 
-#: zerver/views/upload.py:282
+#: zerver/views/upload.py:275
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr ""
 
-#: zerver/views/upload.py:292
+#: zerver/views/upload.py:285
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>このファイルの表示を許可されていません。</p>"
 
-#: zerver/views/upload.py:411 zerver/views/upload.py:417
+#: zerver/views/upload.py:404 zerver/views/upload.py:410
 msgid "Invalid token"
 msgstr "不正なトークン"
 
-#: zerver/views/upload.py:413
+#: zerver/views/upload.py:406
 msgid "Invalid filename"
 msgstr "不正なファイル名"
 
-#: zerver/views/upload.py:461
+#: zerver/views/upload.py:454
 msgid "You must specify a file to upload"
 msgstr "ファイルを指定してアップロードしてください。"
 
-#: zerver/views/upload.py:463 zerver/views/users.py:523
+#: zerver/views/upload.py:456 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "一度に1つのファイルだけアップロードできます"
@@ -7774,11 +7775,11 @@ msgstr "パスワードをリセットする必要があります"
 msgid "Missing id_token parameter"
 msgstr "id_token パラメータがありません"
 
-#: zproject/backends.py:3551
+#: zproject/backends.py:3558
 msgid "Invalid OTP"
 msgstr "不正なOTP"
 
-#: zproject/backends.py:3554
+#: zproject/backends.py:3561
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "mobile_flow_otp とdesktop_flow_otp を同時に使用できません。"
 

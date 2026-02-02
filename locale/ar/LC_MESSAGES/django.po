@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-22 02:09+0000\n"
+"POT-Creation-Date: 2026-02-02 21:47+0000\n"
 "PO-Revision-Date: 2025-08-08 21:29+0000\n"
 "Last-Translator: Anders Kaseorg <andersk@mit.edu>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/zulip/django/ar/"
@@ -390,7 +390,7 @@ msgid "Method not allowed (405)"
 msgstr "الطريقة غير مسموح بها (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:414
+#: zerver/actions/scheduled_messages.py:460 zerver/middleware.py:417
 msgid "Internal server error"
 msgstr "خطأ في الخادم الداخلي"
 
@@ -4490,7 +4490,7 @@ msgstr "لا يمكن تعديل الأدوات."
 msgid "Your organization has turned off message editing"
 msgstr "لقد أوقفت منظمتك تعديل الرسائل"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1594
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1593
 msgid "You don't have permission to edit this message"
 msgstr "ليس لديك إذن لتعديل هذه الرسالة"
 
@@ -4508,17 +4508,17 @@ msgstr "قام {user} بوضع علامة تم الحل على هذا الموض
 msgid "{user} has marked this topic as unresolved."
 msgstr "قام {user} بوضع علامة على هذا الموضوع على أنه لم يتم حله."
 
-#: zerver/actions/message_edit.py:1274
+#: zerver/actions/message_edit.py:1273
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "تم نقل هذا الموضوع إلى {new_location} بواسطة {user}."
 
-#: zerver/actions/message_edit.py:1278
+#: zerver/actions/message_edit.py:1277
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "رسالة نُقلت من هذا الموضوع إلى {new_location} بواسطة {user}."
 
-#: zerver/actions/message_edit.py:1282
+#: zerver/actions/message_edit.py:1281
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4527,18 +4527,18 @@ msgstr ""
 "{changed_messages_count} تم نقل رسائل من هذا الموضوع إلى {new_location} "
 "بواسطة {user}."
 
-#: zerver/actions/message_edit.py:1321
+#: zerver/actions/message_edit.py:1320
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "تم نقل هذا الموضوع هنا من {old_location} بواسطة {user}."
 
-#: zerver/actions/message_edit.py:1326
+#: zerver/actions/message_edit.py:1325
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:1330
+#: zerver/actions/message_edit.py:1329
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4546,21 +4546,21 @@ msgid ""
 msgstr ""
 "{changed_messages_count} تم نقل رسائل هنا من {old_location} بواسطة {user}."
 
-#: zerver/actions/message_edit.py:1588
+#: zerver/actions/message_edit.py:1587
 #, fuzzy
 #| msgid "You do not have permission to post in this channel."
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "ليس لديك الإذن للإرسال في هذه القناة"
 
-#: zerver/actions/message_edit.py:1608
+#: zerver/actions/message_edit.py:1607
 msgid "The time limit for editing this message's topic has passed."
 msgstr ""
 
-#: zerver/actions/message_edit.py:1658
+#: zerver/actions/message_edit.py:1657
 msgid "You don't have permission to move this message"
 msgstr "ليس لديك إذن بنقل هذه الرسالة"
 
-#: zerver/actions/message_edit.py:1674
+#: zerver/actions/message_edit.py:1673
 msgid "The time limit for editing this message's channel has passed"
 msgstr ""
 
@@ -4647,13 +4647,13 @@ msgstr "الأدوات: أرسل مبرمج الـ API محتوى JSON غير ص
 msgid "Widgets: {error_msg}"
 msgstr "الأدوات: {error_msg}"
 
-#: zerver/actions/realm_emoji.py:39 zerver/views/realm_emoji.py:40
+#: zerver/actions/realm_emoji.py:40 zerver/views/realm_emoji.py:40
 msgid "A custom emoji with this name already exists."
 msgstr "يوجد بالفعل رمز تعبيري مخصص بهذا الاسم."
 
-#: zerver/actions/realm_emoji.py:45 zerver/lib/upload/__init__.py:336
-#: zerver/lib/upload/__init__.py:399 zerver/lib/upload/__init__.py:407
-#: zerver/lib/upload/__init__.py:430
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
+#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
+#: zerver/lib/upload/__init__.py:447
 msgid "Invalid image format"
 msgstr "صيغة الصورة غير صالحة"
 
@@ -4690,15 +4690,15 @@ msgstr ""
 msgid "Saved snippet does not exist."
 msgstr ""
 
-#: zerver/actions/scheduled_messages.py:184
+#: zerver/actions/scheduled_messages.py:182
 msgid "Scheduled message was already sent"
 msgstr "الرسالة المجدولة بالفعل تم ارسالها"
 
-#: zerver/actions/scheduled_messages.py:350
+#: zerver/actions/scheduled_messages.py:349
 msgid "Message could not be sent at the scheduled time."
 msgstr "لا يمكن ارسال الرسالة في الوقت المجدول."
 
-#: zerver/actions/scheduled_messages.py:401
+#: zerver/actions/scheduled_messages.py:400
 #, python-brace-format
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
@@ -4706,7 +4706,7 @@ msgid ""
 msgstr ""
 "الرسالة المجدولة لتصل في {delivery_datetime} لم يتم ارسالها بسبب هذا الخطأ:"
 
-#: zerver/actions/scheduled_messages.py:406
+#: zerver/actions/scheduled_messages.py:405
 msgid "[View scheduled messages](#scheduled)"
 msgstr "[عرض الرسائل المجدولة](#scheduled)"
 
@@ -6364,7 +6364,7 @@ msgstr "{var_name} غير صالح"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "قد يتجاوز التحميل حصة التحميل الخاصة بمنظمتك."
 
-#: zerver/lib/upload/__init__.py:444 zerver/lib/upload/__init__.py:446
+#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
 msgid "Image size exceeds limit"
 msgstr "حجم الصورة يتخطى المسموح"
 
@@ -6616,12 +6616,12 @@ msgstr "أمر غير موجود: {command}"
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
-#: zerver/middleware.py:471
+#: zerver/middleware.py:474
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "خطأ CSRF : {reason}"
 
-#: zerver/middleware.py:645
+#: zerver/middleware.py:648
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr ""
@@ -7469,21 +7469,21 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr "json غير صالح للرسالة الفرعية"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:474
+#: zerver/views/tusd.py:109 zerver/views/upload.py:467
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
 "organization's plan."
 msgstr ""
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:482
+#: zerver/views/tusd.py:118 zerver/views/upload.py:475
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
 "MiB)."
 msgstr ""
 
-#: zerver/views/tusd.py:268
+#: zerver/views/tusd.py:271
 #, python-brace-format
 msgid ""
 "Uploaded file exceeds the maximum file size for imports ({max_file_size} "
@@ -7506,27 +7506,27 @@ msgstr "فارغ 'to' القائمة"
 msgid "User has disabled typing notifications for direct messages"
 msgstr ""
 
-#: zerver/views/upload.py:282
+#: zerver/views/upload.py:275
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>هذا الملف غير موجود أو تم حذفه</p>"
 
-#: zerver/views/upload.py:292
+#: zerver/views/upload.py:285
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>أنت غير مصرح لك لعرض هذا الملف.</p>"
 
-#: zerver/views/upload.py:411 zerver/views/upload.py:417
+#: zerver/views/upload.py:404 zerver/views/upload.py:410
 msgid "Invalid token"
 msgstr "رمز غير صالح"
 
-#: zerver/views/upload.py:413
+#: zerver/views/upload.py:406
 msgid "Invalid filename"
 msgstr "اسم الملف غير صالح"
 
-#: zerver/views/upload.py:461
+#: zerver/views/upload.py:454
 msgid "You must specify a file to upload"
 msgstr "يجب عليك تحديد ملف للتحميل"
 
-#: zerver/views/upload.py:463 zerver/views/users.py:523
+#: zerver/views/upload.py:456 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "يمكنك فقط تحميل ملف واحد في كل مرة"
@@ -7937,11 +7937,11 @@ msgstr "تحتاج إلى إعادة تعيين كلمة المرور الخاص
 msgid "Missing id_token parameter"
 msgstr "إعداد id_token مفقود"
 
-#: zproject/backends.py:3551
+#: zproject/backends.py:3558
 msgid "Invalid OTP"
 msgstr "OTP غير صحيح"
 
-#: zproject/backends.py:3554
+#: zproject/backends.py:3561
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "لا يمكن استخدام كل من mobile_flow_otp و desktop_flow_otp معًا."
 

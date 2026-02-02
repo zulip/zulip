@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-22 02:09+0000\n"
+"POT-Creation-Date: 2026-02-02 21:47+0000\n"
 "PO-Revision-Date: 2026-01-29 08:01+0000\n"
 "Last-Translator: Eddie Su <eddiesu.sheico@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
@@ -388,7 +388,7 @@ msgid "Method not allowed (405)"
 msgstr "不允許的方法 (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:414
+#: zerver/actions/scheduled_messages.py:460 zerver/middleware.py:417
 msgid "Internal server error"
 msgstr "伺服器內部錯誤"
 
@@ -4439,7 +4439,7 @@ msgstr "小工具無法編輯。"
 msgid "Your organization has turned off message editing"
 msgstr "您的組織關閉了訊息編輯"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1594
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1593
 msgid "You don't have permission to edit this message"
 msgstr "您沒有權限編輯此訊息"
 
@@ -4457,17 +4457,17 @@ msgstr "{user} 已將此議題標記為 解決。"
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} 已將此議題標記為 未解決。"
 
-#: zerver/actions/message_edit.py:1274
+#: zerver/actions/message_edit.py:1273
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "此議題已被 {user} 移動到 {new_location}。"
 
-#: zerver/actions/message_edit.py:1278
+#: zerver/actions/message_edit.py:1277
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "一則訊息已被 {user} 從此議題移動到 {new_location}。"
 
-#: zerver/actions/message_edit.py:1282
+#: zerver/actions/message_edit.py:1281
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4475,18 +4475,18 @@ msgid ""
 msgstr ""
 "{changed_messages_count} 則訊息已被 {user} 從此議題移動到 {new_location}。"
 
-#: zerver/actions/message_edit.py:1321
+#: zerver/actions/message_edit.py:1320
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "此議題已被 {user} 從 {old_location} 移動到這裡。"
 
-#: zerver/actions/message_edit.py:1326
+#: zerver/actions/message_edit.py:1325
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
 msgstr "[一則訊息]({message_link}) 已被 {user} 從 {old_location} 移動到這裡。"
 
-#: zerver/actions/message_edit.py:1330
+#: zerver/actions/message_edit.py:1329
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4494,19 +4494,19 @@ msgid ""
 msgstr ""
 "{changed_messages_count} 則訊息已被 {user} 從 {old_location} 移動到這裡。"
 
-#: zerver/actions/message_edit.py:1588
+#: zerver/actions/message_edit.py:1587
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "您沒有權限在此頻道中解決議題。"
 
-#: zerver/actions/message_edit.py:1608
+#: zerver/actions/message_edit.py:1607
 msgid "The time limit for editing this message's topic has passed."
 msgstr "編輯此訊息議題的時間限制已過。"
 
-#: zerver/actions/message_edit.py:1658
+#: zerver/actions/message_edit.py:1657
 msgid "You don't have permission to move this message"
 msgstr "您沒有權限移動此訊息"
 
-#: zerver/actions/message_edit.py:1674
+#: zerver/actions/message_edit.py:1673
 msgid "The time limit for editing this message's channel has passed"
 msgstr "編輯此訊息頻道的時間限制已過"
 
@@ -4593,13 +4593,13 @@ msgstr "小工具：API 程式設計師發送了無效的 JSON 內容"
 msgid "Widgets: {error_msg}"
 msgstr "小工具：{error_msg}"
 
-#: zerver/actions/realm_emoji.py:39 zerver/views/realm_emoji.py:40
+#: zerver/actions/realm_emoji.py:40 zerver/views/realm_emoji.py:40
 msgid "A custom emoji with this name already exists."
 msgstr "自定義表情符號名稱已存在。"
 
-#: zerver/actions/realm_emoji.py:45 zerver/lib/upload/__init__.py:336
-#: zerver/lib/upload/__init__.py:399 zerver/lib/upload/__init__.py:407
-#: zerver/lib/upload/__init__.py:430
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
+#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
+#: zerver/lib/upload/__init__.py:447
 msgid "Invalid image format"
 msgstr "無效的圖片格式"
 
@@ -4636,22 +4636,22 @@ msgstr "審核請求頻道必須是私人的。"
 msgid "Saved snippet does not exist."
 msgstr "儲存的文字片段不存在。"
 
-#: zerver/actions/scheduled_messages.py:184
+#: zerver/actions/scheduled_messages.py:182
 msgid "Scheduled message was already sent"
 msgstr "已排程訊息已經發送"
 
-#: zerver/actions/scheduled_messages.py:350
+#: zerver/actions/scheduled_messages.py:349
 msgid "Message could not be sent at the scheduled time."
 msgstr "訊息無法在排定的時間發送。"
 
-#: zerver/actions/scheduled_messages.py:401
+#: zerver/actions/scheduled_messages.py:400
 #, python-brace-format
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
 "the following error:"
 msgstr "您排定於 {delivery_datetime} 發送的訊息因為以下錯誤而未發送："
 
-#: zerver/actions/scheduled_messages.py:406
+#: zerver/actions/scheduled_messages.py:405
 msgid "[View scheduled messages](#scheduled)"
 msgstr "[查看已排定的訊息](#scheduled)"
 
@@ -6424,7 +6424,7 @@ msgstr "無效的 {setting_name}"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "上傳將超過您組織的上傳配額。"
 
-#: zerver/lib/upload/__init__.py:444 zerver/lib/upload/__init__.py:446
+#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
 msgid "Image size exceeds limit"
 msgstr "圖片大小超過限制"
 
@@ -6677,12 +6677,12 @@ msgstr "無此指令：{command}"
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr "`zulip_update_announcements_stream` 意外地被停用。"
 
-#: zerver/middleware.py:471
+#: zerver/middleware.py:474
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "CSRF 錯誤：{reason}"
 
-#: zerver/middleware.py:645
+#: zerver/middleware.py:648
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr "反向代理配置錯誤：{proxy_reason}"
@@ -7523,21 +7523,21 @@ msgstr "未訂閱頻道 ID {channel_id}"
 msgid "Invalid json for submessage"
 msgstr "無效的子訊息 json"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:474
+#: zerver/views/tusd.py:109 zerver/views/upload.py:467
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
 "organization's plan."
 msgstr "檔案超過您組織方案允許的最大上傳大小上限（{max_size} MiB）。"
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:482
+#: zerver/views/tusd.py:118 zerver/views/upload.py:475
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
 "MiB)."
 msgstr "檔案大於此伺服器設定的最大上傳大小 ({max_size} MiB)。"
 
-#: zerver/views/tusd.py:268
+#: zerver/views/tusd.py:271
 #, python-brace-format
 msgid ""
 "Uploaded file exceeds the maximum file size for imports ({max_file_size} "
@@ -7560,27 +7560,27 @@ msgstr "'to' 清單為空"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "使用者已停用直接訊息的輸入通知"
 
-#: zerver/views/upload.py:282
+#: zerver/views/upload.py:275
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>此檔案不存在或已被刪除。</p>"
 
-#: zerver/views/upload.py:292
+#: zerver/views/upload.py:285
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>您無權查看此檔案。</p>"
 
-#: zerver/views/upload.py:411 zerver/views/upload.py:417
+#: zerver/views/upload.py:404 zerver/views/upload.py:410
 msgid "Invalid token"
 msgstr "無效的憑證"
 
-#: zerver/views/upload.py:413
+#: zerver/views/upload.py:406
 msgid "Invalid filename"
 msgstr "無效的檔案名稱"
 
-#: zerver/views/upload.py:461
+#: zerver/views/upload.py:454
 msgid "You must specify a file to upload"
 msgstr "您必須指定要上傳的檔案"
 
-#: zerver/views/upload.py:463 zerver/views/users.py:523
+#: zerver/views/upload.py:456 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "您一次只能上傳一個檔案"
@@ -7995,11 +7995,11 @@ msgstr "您需要重設密碼。"
 msgid "Missing id_token parameter"
 msgstr "缺少 id_token 參數"
 
-#: zproject/backends.py:3551
+#: zproject/backends.py:3558
 msgid "Invalid OTP"
 msgstr "無效的 OTP"
 
-#: zproject/backends.py:3554
+#: zproject/backends.py:3561
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "無法同時使用 mobile_flow_otp 和 desktop_flow_otp。"
 

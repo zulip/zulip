@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-22 02:09+0000\n"
+"POT-Creation-Date: 2026-02-02 21:47+0000\n"
 "PO-Revision-Date: 2026-02-02 21:42+0000\n"
 "Last-Translator: Flammie A Pirinen <flammie@iki.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django-11-"
@@ -420,7 +420,7 @@ msgid "Method not allowed (405)"
 msgstr "Menetelmä ei sallittu (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:414
+#: zerver/actions/scheduled_messages.py:460 zerver/middleware.py:417
 msgid "Internal server error"
 msgstr "Palvelimen sisäinen virhe"
 
@@ -2299,8 +2299,8 @@ msgid ""
 "class=\"content_disabled_help_link\" href=\"%(help_url)s\">hide message "
 "content</a> in email notifications."
 msgstr ""
-"Tämä sähköposti ei sisällä viestin sisältöä, koska olet estänyt <a class="
-"\"content_disabled_help_link\" href=\"%(help_url)s\">viestien sisällön "
+"Tämä sähköposti ei sisällä viestin sisältöä, koska olet estänyt <a "
+"class=\"content_disabled_help_link\" href=\"%(help_url)s\">viestien sisällön "
 "näyttämisen sähköposti-ilmoituksissa</a>."
 
 #: templates/zerver/emails/digest.html:50
@@ -4089,8 +4089,8 @@ msgid ""
 "mattermost\">Mattermost</a> or <a href=\"/help/import-from-"
 "rocketchat\">Rocket.Chat</a>."
 msgstr ""
-"Tuo sisältöjä muista järjestelmistä: <a href=\"/help/import-from-mattermost\""
-">Mattermost</a>,\n"
+"Tuo sisältöjä muista järjestelmistä: <a href=\"/help/import-from-"
+"mattermost\">Mattermost</a>,\n"
 "tai <a href=\"/help/import-from-rocketchat\">RocketChat</a>."
 
 #: templates/zerver/realm_creation_form.html:104
@@ -4611,7 +4611,7 @@ msgstr "Widgettiä ei voi editoida."
 msgid "Your organization has turned off message editing"
 msgstr "Organisaatiosi on ottanut viestien muokkauksen pois päältä"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1594
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1593
 msgid "You don't have permission to edit this message"
 msgstr "Sinulla ei ole oikeuksia muokata tätä viestiä"
 
@@ -4629,20 +4629,20 @@ msgstr "{user} on merkinnyt tämän aiheen ratkaistuksi."
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} on merkinnyt tämän aiheen ratkaisemattomaksi."
 
-#: zerver/actions/message_edit.py:1274
+#: zerver/actions/message_edit.py:1273
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr ""
 "Tämä aihe on siirretty paikkaan {new_location} käyttäjän {user} toimesta."
 
-#: zerver/actions/message_edit.py:1278
+#: zerver/actions/message_edit.py:1277
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr ""
 "Viesti tästä aiheesta on siirretty paikkaan {new_location} käyttäjän {user} "
 "toimesta."
 
-#: zerver/actions/message_edit.py:1282
+#: zerver/actions/message_edit.py:1281
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4651,13 +4651,13 @@ msgstr ""
 "{changed_messages_count} viestiä tästä aiheesta on siirretty paikkaan "
 "{new_location} käyttäjän {user} toimesta."
 
-#: zerver/actions/message_edit.py:1321
+#: zerver/actions/message_edit.py:1320
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr ""
 "Tämä aihe on siirretty paikasta {old_location} käyttäjän {user} toimesta."
 
-#: zerver/actions/message_edit.py:1326
+#: zerver/actions/message_edit.py:1325
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
@@ -4665,7 +4665,7 @@ msgstr ""
 "[Viesti]({message_link}) siirrettiin tänne paikasta {old_location} käyttäjän "
 "{user} toimesta."
 
-#: zerver/actions/message_edit.py:1330
+#: zerver/actions/message_edit.py:1329
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4674,19 +4674,19 @@ msgstr ""
 "{changed_messages_count} viestiä on siirretty tänne paikasta {old_location} "
 "käyttäjän {user} toimesta."
 
-#: zerver/actions/message_edit.py:1588
+#: zerver/actions/message_edit.py:1587
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "Sinulla ei ole oikeuksia ratkaista viestiä tällä kanavalla."
 
-#: zerver/actions/message_edit.py:1608
+#: zerver/actions/message_edit.py:1607
 msgid "The time limit for editing this message's topic has passed."
 msgstr "Tämän viestin aiheen muokkaamisen aikaraja on ohitettu."
 
-#: zerver/actions/message_edit.py:1658
+#: zerver/actions/message_edit.py:1657
 msgid "You don't have permission to move this message"
 msgstr "Sinulla ei ole oikeuksia siirtää tätä viestiä"
 
-#: zerver/actions/message_edit.py:1674
+#: zerver/actions/message_edit.py:1673
 msgid "The time limit for editing this message's channel has passed"
 msgstr "Tämän viestin kanavan muokkaamisen aikaraja on ohitettu"
 
@@ -4776,13 +4776,13 @@ msgstr "Widgetit: API-ohjelmoija lähetti virheellisen JSON-sisällön"
 msgid "Widgets: {error_msg}"
 msgstr "Widgetit: {error_msg}"
 
-#: zerver/actions/realm_emoji.py:39 zerver/views/realm_emoji.py:40
+#: zerver/actions/realm_emoji.py:40 zerver/views/realm_emoji.py:40
 msgid "A custom emoji with this name already exists."
 msgstr "Samanniminen mukautettu emoji on jo olemassa."
 
-#: zerver/actions/realm_emoji.py:45 zerver/lib/upload/__init__.py:336
-#: zerver/lib/upload/__init__.py:399 zerver/lib/upload/__init__.py:407
-#: zerver/lib/upload/__init__.py:430
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
+#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
+#: zerver/lib/upload/__init__.py:447
 msgid "Invalid image format"
 msgstr "Viallinen kuvamuoto"
 
@@ -4821,22 +4821,22 @@ msgstr "Moderointipyyntökanavan on oltava yksityinen."
 msgid "Saved snippet does not exist."
 msgstr "Tallennettu leike ei ole olemassa."
 
-#: zerver/actions/scheduled_messages.py:184
+#: zerver/actions/scheduled_messages.py:182
 msgid "Scheduled message was already sent"
 msgstr "Ajastettu viesti oli jo lähetetty"
 
-#: zerver/actions/scheduled_messages.py:350
+#: zerver/actions/scheduled_messages.py:349
 msgid "Message could not be sent at the scheduled time."
 msgstr "Viestiä ei voitu lähettää ajastettuun aikaan."
 
-#: zerver/actions/scheduled_messages.py:401
+#: zerver/actions/scheduled_messages.py:400
 #, python-brace-format
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
 "the following error:"
 msgstr "Viestiä jonka ajastit {delivery_datetime} ei lähetetty koska:"
 
-#: zerver/actions/scheduled_messages.py:406
+#: zerver/actions/scheduled_messages.py:405
 msgid "[View scheduled messages](#scheduled)"
 msgstr "[Näytä ajastetut viestit](#scheduled)"
 
@@ -5861,8 +5861,8 @@ msgid ""
 "a permanent organization]({convert_demo_organization_help_url}).\n"
 msgstr ""
 "\n"
-"Huomaathan että tämä on [demo-organisaatio]({demo_organization_help_url}) ja "
-"\n"
+"Huomaathan että tämä on [demo-organisaatio]({demo_organization_help_url}) "
+"ja \n"
 "**poistetaan  automaattisesti** 30 päivässä, jolle sitä [muunneta\n"
 "pysyväksi]({convert_demo_organization_help_url}).\n"
 
@@ -6651,7 +6651,7 @@ msgstr "Virheellinen {setting_name}"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "Lähetys ylittäisi organisaatiosi lähetyskiintiön."
 
-#: zerver/lib/upload/__init__.py:444 zerver/lib/upload/__init__.py:446
+#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
 msgid "Image size exceeds limit"
 msgstr "Liian iso kuva"
 
@@ -6905,12 +6905,12 @@ msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 "`zulip_update_announcements_stream` on odotuksenvastaisesti deaktivoitu."
 
-#: zerver/middleware.py:471
+#: zerver/middleware.py:474
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "CSRF virhe: {reason}"
 
-#: zerver/middleware.py:645
+#: zerver/middleware.py:648
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr "Käänteisvälipalvelimen asetusvirhe: {proxy_reason}"
@@ -7767,7 +7767,7 @@ msgstr "Ei tilattu kanavaa {channel_id}"
 msgid "Invalid json for submessage"
 msgstr "Virheellinen json aliviestille"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:474
+#: zerver/views/tusd.py:109 zerver/views/upload.py:467
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
@@ -7776,7 +7776,7 @@ msgstr ""
 "Tiedosto on enimmäiskokoa suurempi ({max_size} MiB), joka sallitaan tälle "
 "organisaatiolle."
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:482
+#: zerver/views/tusd.py:118 zerver/views/upload.py:475
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7784,7 +7784,7 @@ msgid ""
 msgstr ""
 "Tiedosto on palvelimen asetusten enimmäiskokoa suurempi ({max_size} MiB)."
 
-#: zerver/views/tusd.py:268
+#: zerver/views/tusd.py:271
 #, python-brace-format
 msgid ""
 "Uploaded file exceeds the maximum file size for imports ({max_file_size} "
@@ -7807,27 +7807,27 @@ msgstr "Tyhjä 'to' lista"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "Käyttäjä on poistanut käytöstä kirjoittamisilmoitukste suoraviesteistä"
 
-#: zerver/views/upload.py:282
+#: zerver/views/upload.py:275
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Tiedostoa ei ole tai se on poistettu.</p>"
 
-#: zerver/views/upload.py:292
+#: zerver/views/upload.py:285
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>Et ole valtuutettu katsomaan tätä tiedostoa.</p>"
 
-#: zerver/views/upload.py:411 zerver/views/upload.py:417
+#: zerver/views/upload.py:404 zerver/views/upload.py:410
 msgid "Invalid token"
 msgstr "Virheellinen token"
 
-#: zerver/views/upload.py:413
+#: zerver/views/upload.py:406
 msgid "Invalid filename"
 msgstr "Virheellinen tiedostonimi"
 
-#: zerver/views/upload.py:461
+#: zerver/views/upload.py:454
 msgid "You must specify a file to upload"
 msgstr "Sinun pitää määritellä lähetettävä tiedosto"
 
-#: zerver/views/upload.py:463 zerver/views/users.py:523
+#: zerver/views/upload.py:456 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "Voit lähettää ainoastaan yhden tiedoston kerrallaan"
@@ -8251,11 +8251,11 @@ msgstr "Salasanasi on vaihdettava."
 msgid "Missing id_token parameter"
 msgstr "id_token parametri puuttuu"
 
-#: zproject/backends.py:3551
+#: zproject/backends.py:3558
 msgid "Invalid OTP"
 msgstr "Virheellinen OTP"
 
-#: zproject/backends.py:3554
+#: zproject/backends.py:3561
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Ei voi käyttää yhtäaikaisesti mobile_flow_otp ja desktop_flow_otp."
 

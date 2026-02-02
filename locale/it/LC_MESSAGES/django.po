@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-22 02:09+0000\n"
+"POT-Creation-Date: 2026-02-02 21:47+0000\n"
 "PO-Revision-Date: 2026-01-21 16:35+0000\n"
 "Last-Translator: Andrea <andrea.soccal@elmospa.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/zulip/django-11-"
@@ -28,8 +28,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 "
-": 2;\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
+"1 : 2;\n"
 "X-Generator: Weblate 5.16-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
@@ -433,7 +433,7 @@ msgid "Method not allowed (405)"
 msgstr "Metodo non consentito (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:414
+#: zerver/actions/scheduled_messages.py:460 zerver/middleware.py:417
 msgid "Internal server error"
 msgstr "Internal server error"
 
@@ -4747,7 +4747,7 @@ msgstr "I widget non possono essere modificati."
 msgid "Your organization has turned off message editing"
 msgstr "La tua organizzazione ha disattivato la modifica dei messaggi"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1594
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1593
 msgid "You don't have permission to edit this message"
 msgstr "Non hai il permesso di modificare questo messaggio"
 
@@ -4765,18 +4765,18 @@ msgstr "{user} ha contrassegnato questo argomento come risolto."
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} ha contrassegnato questo argomento come non risolto."
 
-#: zerver/actions/message_edit.py:1274
+#: zerver/actions/message_edit.py:1273
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "Questo argomento è stato spostato in {new_location} da {user}."
 
-#: zerver/actions/message_edit.py:1278
+#: zerver/actions/message_edit.py:1277
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr ""
 "Un messaggio è stato spostato da questo argomento a {new_location} da {user}."
 
-#: zerver/actions/message_edit.py:1282
+#: zerver/actions/message_edit.py:1281
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4785,12 +4785,12 @@ msgstr ""
 "{changed_messages_count} messaggi sono stati spostati da questo argomento a "
 "{new_location} da {user}."
 
-#: zerver/actions/message_edit.py:1321
+#: zerver/actions/message_edit.py:1320
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "Questo argomento è stato spostato qui da {old_location} da {user}."
 
-#: zerver/actions/message_edit.py:1326
+#: zerver/actions/message_edit.py:1325
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
@@ -4798,7 +4798,7 @@ msgstr ""
 "[Un messaggio]({message_link}) è stato spostato qui da {old_location} da "
 "{user}."
 
-#: zerver/actions/message_edit.py:1330
+#: zerver/actions/message_edit.py:1329
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4807,22 +4807,22 @@ msgstr ""
 "{changed_messages_count} messaggi sono stati spostati qui da {old_location} "
 "da {user}."
 
-#: zerver/actions/message_edit.py:1588
+#: zerver/actions/message_edit.py:1587
 #, fuzzy
 #| msgid "You do not have permission to post in this channel."
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "Non hai l'autorizzazione per postare su questo canale."
 
-#: zerver/actions/message_edit.py:1608
+#: zerver/actions/message_edit.py:1607
 msgid "The time limit for editing this message's topic has passed."
 msgstr ""
 "Il limite di tempo per modificare l'argomento di questo messaggio è scaduto."
 
-#: zerver/actions/message_edit.py:1658
+#: zerver/actions/message_edit.py:1657
 msgid "You don't have permission to move this message"
 msgstr "Non hai il permesso di spostare questo messaggio"
 
-#: zerver/actions/message_edit.py:1674
+#: zerver/actions/message_edit.py:1673
 msgid "The time limit for editing this message's channel has passed"
 msgstr ""
 "Il limite di tempo per la modifica del canale di questo messaggio è scaduto"
@@ -4912,13 +4912,13 @@ msgstr "Widget: il programmatore API ha inviato contenuto JSON non valido"
 msgid "Widgets: {error_msg}"
 msgstr "Widgets: {error_msg}"
 
-#: zerver/actions/realm_emoji.py:39 zerver/views/realm_emoji.py:40
+#: zerver/actions/realm_emoji.py:40 zerver/views/realm_emoji.py:40
 msgid "A custom emoji with this name already exists."
 msgstr "Esiste già un'emoji personalizzata con questo nome."
 
-#: zerver/actions/realm_emoji.py:45 zerver/lib/upload/__init__.py:336
-#: zerver/lib/upload/__init__.py:399 zerver/lib/upload/__init__.py:407
-#: zerver/lib/upload/__init__.py:430
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
+#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
+#: zerver/lib/upload/__init__.py:447
 msgid "Invalid image format"
 msgstr "Formato immagine non valido"
 
@@ -4961,15 +4961,15 @@ msgstr "Il canale della richiesta di moderazione deve essere privato."
 msgid "Saved snippet does not exist."
 msgstr "Il frammento salvato non esiste."
 
-#: zerver/actions/scheduled_messages.py:184
+#: zerver/actions/scheduled_messages.py:182
 msgid "Scheduled message was already sent"
 msgstr "Il messaggio programmato è già stato inviato"
 
-#: zerver/actions/scheduled_messages.py:350
+#: zerver/actions/scheduled_messages.py:349
 msgid "Message could not be sent at the scheduled time."
 msgstr "Non è stato possibile inviare il messaggio all'orario pianificato."
 
-#: zerver/actions/scheduled_messages.py:401
+#: zerver/actions/scheduled_messages.py:400
 #, python-brace-format
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
@@ -4978,7 +4978,7 @@ msgstr ""
 "Il messaggio pianificato per le ore {delivery_datetime} non è stato inviato "
 "a causa del seguente errore:"
 
-#: zerver/actions/scheduled_messages.py:406
+#: zerver/actions/scheduled_messages.py:405
 msgid "[View scheduled messages](#scheduled)"
 msgstr "[Vedi messaggi pianificati](#scheduled)"
 
@@ -6829,7 +6829,7 @@ msgid "Upload would exceed your organization's upload quota."
 msgstr ""
 "Il caricamento supererebbe la quota di caricamento dell'organizzazione."
 
-#: zerver/lib/upload/__init__.py:444 zerver/lib/upload/__init__.py:446
+#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
 msgid "Image size exceeds limit"
 msgstr "La dimensione dell'immagine supera il limite"
 
@@ -7092,12 +7092,12 @@ msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 "`zulip_update_announcements_stream` è stato disattivato inaspettatamente."
 
-#: zerver/middleware.py:471
+#: zerver/middleware.py:474
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "Errore CSRF: {reason}"
 
-#: zerver/middleware.py:645
+#: zerver/middleware.py:648
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr "Reverse proxy configurazione errata: {proxy_reason}"
@@ -7979,7 +7979,7 @@ msgstr "Non iscritto al canale ID {channel_id}"
 msgid "Invalid json for submessage"
 msgstr "JSON invalido per sottomissione"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:474
+#: zerver/views/tusd.py:109 zerver/views/upload.py:467
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
@@ -7988,7 +7988,7 @@ msgstr ""
 "Il file è più grande della dimensione massima di caricamento ({max_size} MB) "
 "consentita dal piano della tua organizzazione."
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:482
+#: zerver/views/tusd.py:118 zerver/views/upload.py:475
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7997,7 +7997,7 @@ msgstr ""
 "Il file è più grande della dimensione massima di caricamento configurata su "
 "questo server ({max_size} MB)."
 
-#: zerver/views/tusd.py:268
+#: zerver/views/tusd.py:271
 #, fuzzy, python-brace-format
 #| msgid ""
 #| "Uploaded file is larger than the allowed limit of {max_file_size} MiB"
@@ -8026,27 +8026,27 @@ msgid "User has disabled typing notifications for direct messages"
 msgstr ""
 "L'utente ha disattivato le notifiche di digitazione per i messaggi privati"
 
-#: zerver/views/upload.py:282
+#: zerver/views/upload.py:275
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Questo file non esiste o è stato eliminato.</p>"
 
-#: zerver/views/upload.py:292
+#: zerver/views/upload.py:285
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>Non sei autorizzato a visualizzare questo file.</p>"
 
-#: zerver/views/upload.py:411 zerver/views/upload.py:417
+#: zerver/views/upload.py:404 zerver/views/upload.py:410
 msgid "Invalid token"
 msgstr "Tipo di token non valido"
 
-#: zerver/views/upload.py:413
+#: zerver/views/upload.py:406
 msgid "Invalid filename"
 msgstr "Nome del file non valido"
 
-#: zerver/views/upload.py:461
+#: zerver/views/upload.py:454
 msgid "You must specify a file to upload"
 msgstr "Devi specificare un file da caricare"
 
-#: zerver/views/upload.py:463 zerver/views/users.py:523
+#: zerver/views/upload.py:456 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "Puoi caricare solo un file alla volta"
@@ -8477,11 +8477,11 @@ msgstr "È necessario reimpostare la password."
 msgid "Missing id_token parameter"
 msgstr "Parametri id_token mancanti"
 
-#: zproject/backends.py:3551
+#: zproject/backends.py:3558
 msgid "Invalid OTP"
 msgstr "OTP non valido"
 
-#: zproject/backends.py:3554
+#: zproject/backends.py:3561
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Non puoi usare entrambi mobile_flow_otp e desktop_flow_otp insieme."
 
