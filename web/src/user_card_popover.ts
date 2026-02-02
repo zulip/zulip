@@ -43,6 +43,7 @@ import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
+import * as user_groups from "./user_groups.ts";
 import type {CustomProfileFieldData} from "./user_profile.ts";
 import * as user_profile from "./user_profile.ts";
 import {user_settings} from "./user_settings.ts";
@@ -229,6 +230,7 @@ type UserCardPopoverData = {
     date_joined: string | undefined;
     spectator_view: boolean;
     should_add_guest_user_indicator: boolean;
+    name_color: string;
     user_avatar: string;
     user_is_guest: boolean;
     show_manage_section: boolean;
@@ -375,6 +377,7 @@ function get_user_card_popover_data(
         date_joined,
         spectator_view,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+        name_color: user_groups.get_user_name_color(user_groups.get_color_for_user(user.user_id)),
         user_avatar: people.small_avatar_url_for_person(user),
         user_is_guest: user.is_guest,
         show_manage_section,

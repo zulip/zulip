@@ -47,6 +47,7 @@ import type {TopicLink} from "./types.ts";
 import * as typing_data from "./typing_data.ts";
 import * as typing_events from "./typing_events.ts";
 import * as ui_util from "./ui_util.ts";
+import * as user_groups from "./user_groups.ts";
 import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -71,6 +72,7 @@ export type MessageContainer = {
     sender_is_bot: boolean;
     sender_is_guest: boolean;
     sender_is_deactivated: boolean;
+    sender_name_color: string;
     should_add_guest_indicator_for_sender: boolean;
     small_avatar_url: string;
     status_message: string | false;
@@ -588,6 +590,7 @@ export class MessageListView {
         sender_is_bot: boolean;
         sender_is_guest: boolean;
         sender_is_deactivated: boolean;
+        sender_name_color: string;
         should_add_guest_indicator_for_sender: boolean;
         is_hidden: boolean;
         mention_classname: string | undefined;
@@ -669,6 +672,8 @@ export class MessageListView {
         const sender_is_bot = people.sender_is_bot(message);
         const sender_is_guest = people.sender_is_guest(message);
         const sender_is_deactivated = people.sender_is_deactivated(message);
+        const raw_name_color = user_groups.get_color_for_user(message.sender_id);
+        const sender_name_color = user_groups.get_user_name_color(raw_name_color);
         const should_add_guest_indicator_for_sender = people.should_add_guest_user_indicator(
             message.sender_id,
         );
@@ -689,6 +694,7 @@ export class MessageListView {
             sender_is_bot,
             sender_is_guest,
             sender_is_deactivated,
+            sender_name_color,
             should_add_guest_indicator_for_sender,
             is_hidden,
             mention_classname,
