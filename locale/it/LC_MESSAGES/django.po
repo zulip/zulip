@@ -20,17 +20,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 02:09+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Italian <https://hosted.weblate.org/projects/zulip/django/it/"
-">\n"
+"PO-Revision-Date: 2026-01-21 16:35+0000\n"
+"Last-Translator: Andrea <andrea.soccal@elmospa.com>\n"
+"Language-Team: Italian <https://hosted.weblate.org/projects/zulip/django-11-"
+"x/it/>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
-"1 : 2;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 "
+": 2;\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -3689,7 +3689,7 @@ msgstr "Community chat"
 
 #: templates/zerver/footer.html:46
 msgid "Partners"
-msgstr ""
+msgstr "Partners"
 
 #: templates/zerver/footer.html:47
 msgid "Zulip Cloud status"
@@ -5100,7 +5100,7 @@ msgstr ""
 
 #: zerver/actions/streams.py:1755
 msgid "Automatic"
-msgstr ""
+msgstr "Automatico"
 
 #: zerver/actions/streams.py:1757
 #, python-brace-format
@@ -7230,11 +7230,11 @@ msgstr "eventi del canale"
 
 #: zerver/models/realms.py:445
 msgid "Spam"
-msgstr ""
+msgstr "Spam"
 
 #: zerver/models/realms.py:446
 msgid "Harassment"
-msgstr ""
+msgstr "Molestie"
 
 #: zerver/models/realms.py:447
 msgid "Inappropriate content"
@@ -7847,7 +7847,7 @@ msgstr ""
 
 #: zerver/views/registration.py:1122
 msgid "Done!"
-msgstr ""
+msgstr "Fatto!"
 
 #: zerver/views/registration.py:1150
 msgid "No users matching provided email."

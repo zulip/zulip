@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 02:09+0000\n"
-"PO-Revision-Date: 2025-10-11 04:07+0000\n"
+"PO-Revision-Date: 2026-01-29 08:01+0000\n"
 "Last-Translator: Eddie Su <eddiesu.sheico@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/zulip/django-11-x/zh_Hant/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -1393,7 +1393,7 @@ msgstr "訊息"
 #: templates/corporate/support/support_request.html:35
 #: templates/zerver/slack_import.html:59
 msgid "Submit"
-msgstr "提交"
+msgstr "送出"
 
 #: templates/corporate/support/support_request_thanks.html:4
 msgid "Thanks for contacting us"
@@ -3357,7 +3357,7 @@ msgstr ""
 
 #: templates/zerver/find_account.html:54
 msgid "Email address"
-msgstr "Email 地址"
+msgstr "電子郵件地址"
 
 #: templates/zerver/find_account.html:56 templates/zerver/footer.html:18
 msgid "Find accounts"
@@ -5809,13 +5809,7 @@ msgstr ""
 "隱藏內容、全域時間等功能。\n"
 
 #: zerver/lib/onboarding.py:262
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "Here are a few messages I understand: {bot_commands}\n"
-#| "\n"
-#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-#| "or browse the [Help center](/help/) to learn more!\n"
+#, python-brace-format
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
@@ -5824,10 +5818,10 @@ msgid ""
 "or browse the [help center](/help/) to learn more!\n"
 msgstr ""
 "\n"
-"以下是我能理解的一些訊息：{bot_commands}\n"
+"以下是我能理解的一些訊息： {bot_commands}\n"
 "\n"
-"查看我們的[入門指南](/help/getting-started-with-zulip)，\n"
-"或瀏覽[說明中心](/help/)來了解更多！\n"
+"查看我們的 [新手上路指南](/help/getting-started-with-zulip)，\n"
+"或瀏覽 [說明中心](/help/) 以了解更多資訊！\n"
 
 #: zerver/lib/onboarding.py:269
 #, python-brace-format
@@ -7642,7 +7636,7 @@ msgstr "使用者群組 {group_id} 不是此群組的子群組。"
 
 #: zerver/views/user_settings.py:64
 msgid "Avatar changes are disabled in this organization."
-msgstr "此組織已禁用頭像更改。"
+msgstr "此組織已停用頭像變更功能。"
 
 #: zerver/views/user_settings.py:72
 msgid "Email address changes are disabled in this organization."
@@ -7915,11 +7909,11 @@ msgstr "{hostname} 尚未註冊"
 #: zilencer/views.py:204
 #, python-brace-format
 msgid "Invalid server administrator email address: {email_reason}"
-msgstr ""
+msgstr "伺服器管理員電子郵件地址無效：{email_reason}"
 
 #: zilencer/views.py:248
 msgid "example.com is not a valid email domain."
-msgstr ""
+msgstr "example.com 不是有效的電子郵件網域。"
 
 #: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format

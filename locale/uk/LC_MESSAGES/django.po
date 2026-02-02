@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 02:09+0000\n"
-"PO-Revision-Date: 2025-09-08 22:26+0000\n"
+"PO-Revision-Date: 2025-10-23 05:02+0000\n"
 "Last-Translator: Максим Горпиніч <gorpinicmaksim0@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/zulip/"
 "django-11-x/uk/>\n"
@@ -22,10 +22,11 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
-"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
-"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
-"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 "
+"? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && "
+"(n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && "
+"(n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 ))"
+" ? 2: 3);\n"
 "X-Generator: Weblate 5.14-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
@@ -6137,13 +6138,7 @@ msgstr ""
 "час тощо.\n"
 
 #: zerver/lib/onboarding.py:262
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "Here are a few messages I understand: {bot_commands}\n"
-#| "\n"
-#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-#| "or browse the [Help center](/help/) to learn more!\n"
+#, python-brace-format
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
@@ -6154,9 +6149,9 @@ msgstr ""
 "\n"
 "Ось кілька повідомлень, які я розумію: {bot_commands}\n"
 "\n"
-"Перегляньте наш [Посібник із початку роботи](/help/getting-started-with-"
-"zulip),\n"
-"або перегляньте [Центр допомоги](/help/), щоб дізнатися більше!\n"
+"Перегляньте наш [посібник із початку роботи]"
+"(/help/getting-started-with-zulip),\n"
+"або перегляньте [центр довідки](/help/), щоб дізнатися більше!\n"
 
 #: zerver/lib/onboarding.py:269
 #, python-brace-format
@@ -8307,10 +8302,11 @@ msgstr "{hostname} ще не зареєстровано"
 #, python-brace-format
 msgid "Invalid server administrator email address: {email_reason}"
 msgstr ""
+"Недійсна адреса електронної пошти адміністратора сервера: {email_reason}"
 
 #: zilencer/views.py:248
 msgid "example.com is not a valid email domain."
-msgstr ""
+msgstr "example.com не є дійсним доменом електронної пошти."
 
 #: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format

@@ -21,7 +21,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 02:09+0000\n"
-"PO-Revision-Date: 2025-08-28 14:02+0000\n"
+"PO-Revision-Date: 2026-01-30 19:01+0000\n"
 "Last-Translator: r mhs <rmhs81vmon@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/zulip/django-11-"
 "x/ja/>\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13.1-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -3626,7 +3626,7 @@ msgstr ""
 msgid ""
 "Administrators of this Zulip organization will be able to see this email "
 "address."
-msgstr ""
+msgstr "このZulip組織の管理者は、このメールアドレスを表示できるようになります。"
 
 #: templates/zerver/new_user_email_address_visibility.html:8
 msgid ""
@@ -4400,17 +4400,17 @@ msgstr "このメッセージのチャンネルを編集可能な制限時間が
 #: zerver/actions/message_flags.py:265
 #, python-brace-format
 msgid "Invalid flag: '{flag}'"
-msgstr ""
+msgstr "無効なフラグ: '{flag}'"
 
 #: zerver/actions/message_flags.py:267
 #, python-brace-format
 msgid "Flag not editable: '{flag}'"
-msgstr ""
+msgstr "フラグは編集できません: '{flag}'"
 
 #: zerver/actions/message_flags.py:270
 #, python-brace-format
 msgid "Invalid message flag operation: '{operation}'"
-msgstr ""
+msgstr "無効なメッセージフラグ操作: '{operation}'"
 
 #: zerver/actions/message_flags.py:355 zerver/lib/message.py:397
 #: zerver/lib/message.py:412 zerver/lib/message.py:431
@@ -4424,7 +4424,7 @@ msgstr "メッセージをレンダリングできません"
 
 #: zerver/actions/message_send.py:1317
 msgid "Expected exactly one channel"
-msgstr ""
+msgstr "チャンネルが1つだけ指定されている必要があります"
 
 #: zerver/actions/message_send.py:1328
 msgid "Invalid data type for channel"
@@ -4447,6 +4447,8 @@ msgid ""
 "Your bot {bot_identity} tried to send a message to channel ID {channel_id}, "
 "but there is no channel with that ID."
 msgstr ""
+"あなたのボット {bot_identity} がチャンネルID {channel_id} にメッセージを送信"
+"しようとしましたが、そのIDのチャンネルは存在しません。"
 
 #: zerver/actions/message_send.py:1537
 #, python-brace-format
@@ -4455,6 +4457,9 @@ msgid ""
 "but that channel does not exist. Click [here]({new_channel_link}) to create "
 "it."
 msgstr ""
+"あなたのボット {bot_identity} がチャンネル {channel_name} にメッセージを送信"
+"しようとしましたが、そのチャンネルは存在しません。[こちら]("
+"{new_channel_link})をクリックしてチャンネルを作成してください。"
 
 #: zerver/actions/message_send.py:1549
 #, python-brace-format
@@ -4462,10 +4467,12 @@ msgid ""
 "Your bot {bot_identity} tried to send a message to channel {channel_name}. "
 "The channel exists but does not have any subscribers."
 msgstr ""
+"あなたのボット {bot_identity} がチャンネル {channel_name} にメッセージを送信"
+"しようとしました。チャンネルは存在しますが、購読者が一人もいません。"
 
 #: zerver/actions/message_send.py:1654
 msgid "You do not have permission to access some of the recipients."
-msgstr ""
+msgstr "一部の宛先にアクセスする権限がありません。"
 
 #: zerver/actions/message_send.py:1864
 msgid "Widgets: API programmer sent invalid JSON content"
@@ -4484,15 +4491,17 @@ msgstr "この名前のカスタム絵文字はすでに存在します。"
 #: zerver/lib/upload/__init__.py:399 zerver/lib/upload/__init__.py:407
 #: zerver/lib/upload/__init__.py:430
 msgid "Invalid image format"
-msgstr ""
+msgstr "無効な画像形式"
 
 #: zerver/actions/realm_linkifiers.py:149
 msgid "The ordered list must not contain duplicated linkifiers"
 msgstr ""
+"並べ替えられたリストに重複したリンク化機能（linkifiers）を含めることはできま"
+"せん"
 
 #: zerver/actions/realm_linkifiers.py:154
 msgid "The ordered list must enumerate all existing linkifiers exactly once"
-msgstr ""
+msgstr "並べ替えられたリストに重複したリンク化機能を含めることはできません"
 
 #: zerver/actions/realm_settings.py:320
 #, python-brace-format
@@ -4500,11 +4509,13 @@ msgid ""
 "You need to upgrade to the {required_upgrade_plan_name} plan to use this "
 "authentication method."
 msgstr ""
+"この認証方法を使用するには、{required_upgrade_plan_name}プランに"
+"アップグレードする必要があります。"
 
 #: zerver/actions/realm_settings.py:335
 #, python-brace-format
 msgid "Invalid authentication method: {name}. Valid methods are: {methods}"
-msgstr ""
+msgstr "無効な認証方法です: {name}。有効な方法は次の通りです: {methods}"
 
 #: zerver/actions/realm_settings.py:361
 #, python-brace-format
@@ -4525,7 +4536,7 @@ msgstr "予約メッセージが送信されました"
 
 #: zerver/actions/scheduled_messages.py:350
 msgid "Message could not be sent at the scheduled time."
-msgstr ""
+msgstr "メッセージを予定した時刻に送信できませんでした。"
 
 #: zerver/actions/scheduled_messages.py:401
 #, python-brace-format
@@ -4533,37 +4544,39 @@ msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
 "the following error:"
 msgstr ""
+"{delivery_datetime} に予定されていたメッセージは、以下のエラーのため送信され"
+"ませんでした："
 
 #: zerver/actions/scheduled_messages.py:406
 msgid "[View scheduled messages](#scheduled)"
-msgstr ""
+msgstr "[予定されたメッセージを表示](#scheduled)"
 
 #: zerver/actions/streams.py:125
 msgid "Channel is already deactivated"
-msgstr ""
+msgstr "チャンネルは既に無効化されています"
 
 #: zerver/actions/streams.py:195
 #, python-brace-format
 msgid "Channel #**{channel_name}** has been archived."
-msgstr ""
+msgstr "チャンネル #{channel_name} がアーカイブされました。"
 
 #: zerver/actions/streams.py:236
 msgid "Channel is not currently deactivated"
-msgstr ""
+msgstr "チャンネルは現在無効化されていません"
 
 #: zerver/actions/streams.py:239
 #, python-brace-format
 msgid "Channel named {channel_name} already exists"
-msgstr ""
+msgstr "{channel_name} という名前のチャンネルは既に存在します"
 
 #: zerver/actions/streams.py:242
 msgid "Channel is private and have no subscribers"
-msgstr ""
+msgstr "チャンネルはプライベートで、購読者がいません"
 
 #: zerver/actions/streams.py:319
 #, python-brace-format
 msgid "Channel #**{channel_name}** has been unarchived."
-msgstr ""
+msgstr "チャンネル #{channel_name} アーカイブが解除されました。"
 
 #: zerver/actions/streams.py:1241
 #, python-brace-format
@@ -4571,6 +4584,8 @@ msgid ""
 "{user} changed the [access permissions]({help_link}) for this channel from "
 "**{old_policy}** to **{new_policy}**."
 msgstr ""
+"{user} がこのチャンネルの[アクセス権限]({help_link})を **{old_policy}** から "
+"**{new_policy}** に変更しました。"
 
 #: zerver/actions/streams.py:1473
 #, python-brace-format
@@ -4580,6 +4595,10 @@ msgid ""
 "* **Old**: {old_setting_description}\n"
 "* **New**: {new_setting_description}\n"
 msgstr ""
+"{user} がこのチャンネルの[投稿権限]({help_link})を変更しました。\n"
+"\n"
+"* **変更前**: {old_setting_description}\n"
+"* **変更後**: {new_setting_description}\n"
 
 #: zerver/actions/streams.py:1543
 #, python-brace-format
@@ -4614,7 +4633,7 @@ msgstr "永久に"
 #: zerver/actions/streams.py:1652 zerver/actions/streams.py:1653
 #, python-brace-format
 msgid "{number_of_days} days"
-msgstr ""
+msgstr "{number_of_days} 日"
 
 #: zerver/actions/streams.py:1645 zerver/actions/streams.py:1655
 #, python-brace-format
@@ -4622,10 +4641,12 @@ msgid ""
 "Messages in this channel will now be automatically deleted {number_of_days} "
 "days after they are sent."
 msgstr ""
+"このチャンネルのメッセージは、送信から {number_of_days} 日後に自動的に削除さ"
+"れるようになります。"
 
 #: zerver/actions/streams.py:1650
 msgid "Messages in this channel will now be retained forever."
-msgstr ""
+msgstr "このチャンネルのメッセージは、今後、永久に保持されます。"
 
 #: zerver/actions/streams.py:1658
 #, python-brace-format
@@ -4637,10 +4658,15 @@ msgid ""
 "\n"
 "{summary_line}"
 msgstr ""
+"{user} がこのチャンネルの[メッセージ保持期間]({help_link})を変更しました：\n"
+"* **変更前の保持期間**: {old_retention_period}\n"
+"* **変更後の保持期間**: {new_retention_period}\n"
+"\n"
+"{summary_line}"
 
 #: zerver/actions/streams.py:1755
 msgid "Automatic"
-msgstr ""
+msgstr "自動"
 
 #: zerver/actions/streams.py:1757
 #, python-brace-format
@@ -5210,7 +5236,7 @@ msgstr "この組織では、ダイレクトメッセージが無効化されて
 
 #: zerver/lib/exceptions.py:605
 msgid "This conversation does not include any users who can authorize it."
-msgstr ""
+msgstr "この会話には、承認権限を持つユーザーが含まれていません。"
 
 #: zerver/lib/exceptions.py:618
 msgid "Access denied"
@@ -6490,7 +6516,7 @@ msgstr "メンバー"
 
 #: zerver/models/groups.py:29
 msgid "Everyone on the internet"
-msgstr ""
+msgstr "インターネット上の全員"
 
 #: zerver/models/linkifiers.py:30 zerver/models/linkifiers.py:33
 #, python-brace-format

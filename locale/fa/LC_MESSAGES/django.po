@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 02:09+0000\n"
-"PO-Revision-Date: 2025-09-29 09:02+0000\n"
+"PO-Revision-Date: 2026-01-31 20:01+0000\n"
 "Last-Translator: Goudarz Jafari <me@goudarzjafari.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/zulip/django-11-"
 "x/fa/>\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -144,7 +144,7 @@ msgstr "سازمان شما مجوزهای زولیپ کافی برای تغیی
 #: corporate/lib/remote_billing_util.py:133
 #: corporate/lib/remote_billing_util.py:169
 msgid "Registration is deactivated"
-msgstr "ثبت‌نام غیرفعال شده‌است"
+msgstr "نام‌نویسی غیرفعال است"
 
 #: corporate/lib/remote_billing_util.py:166
 msgid "Invalid remote server."
@@ -359,7 +359,7 @@ msgstr "کلید zulip_org_key برای این zulip_org_id نامعتبر اس�
 
 #: corporate/views/remote_billing_page.py:550
 msgid "Your server registration has been deactivated."
-msgstr "ثبت نام سرور شما غیرفعال شده است."
+msgstr "نام‌نویسی کارساز شما غیرفعال شده است."
 
 #: templates/404.html:4 templates/4xx.html:4
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html:4
@@ -417,6 +417,8 @@ msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
+"چیزی اشتباه پیش رفت، بابت اون متاسفیم! ما از مشکل آگاهیم و در حال کار برای "
+"رفع آن هستیم. پس از کار دوباره زولیپ به طور خودکار بارگیری می شود."
 
 #: templates/500.html:27
 #, fuzzy, python-format
@@ -726,7 +728,7 @@ msgstr "وضعیت قبض‌ها"
 
 #: templates/corporate/billing/remote_billing_server_deactivate.html:5
 msgid "Deactivate server registration?"
-msgstr "غیرفعال کردن ثبت سرور؟"
+msgstr "نام‌نویسی کارساز غیرفعال شود؟"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:4
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:11
@@ -1699,7 +1701,7 @@ msgstr "با یک حساب کاربری دیگر وارد شوید"
 
 #: templates/zerver/confirm_continue_registration.html:37
 msgid "Continue to registration"
-msgstr "به ثبت نام ادامه دهید."
+msgstr "به نام‌نویسی ادامه دهید"
 
 #: templates/zerver/create_realm.html:5
 msgid "Create a new organization"
@@ -2191,13 +2193,13 @@ msgstr ""
 
 #: templates/zerver/emails/confirm_registration.html:23
 msgid "Click the button below to complete registration."
-msgstr "بر روی دکمه زیر کلیک کنید تا ثبت نام کامل شود."
+msgstr "برای تکمیل نام‌نویسی روی دکمه زیر کلیک کنید."
 
 #: templates/zerver/emails/confirm_registration.html:25
 #: templates/zerver/emails/invitation.html:16
 #: templates/zerver/emails/invitation_reminder.html:14
 msgid "Complete registration"
-msgstr "تکمیل ثبت نام"
+msgstr "تکمیل نام‌نویسی"
 
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
@@ -2209,7 +2211,7 @@ msgstr "فعال‌سازی حساب کاربری زولیپ شما"
 
 #: templates/zerver/emails/confirm_registration.txt:14
 msgid "Click the link below to complete registration."
-msgstr "بر روی لینک زیر کلیک کنید تا ثبت نام شما تکمیل شود."
+msgstr "برای تکمیل نام‌نویسی روی پیوند زیر کلیک کنید."
 
 #: templates/zerver/emails/confirm_registration.txt:19
 #: templates/zerver/emails/invitation.txt:9
@@ -2254,7 +2256,7 @@ msgstr "ادمین‌ها نظر زیر را ارائه کرده‌اند:"
 #: templates/zerver/emails/deactivate.subject.txt:1
 #, python-format
 msgid "Notification of account deactivation on %(realm_name)s"
-msgstr "اطلاعیه غیرفعال شدن حساب کاربری در %(realm_name)s"
+msgstr "آگاه‌سازی غیرفعال شدن حساب کاربری در %(realm_name)s"
 
 #: templates/zerver/emails/deactivate.txt:1
 #, python-format
@@ -4045,7 +4047,7 @@ msgstr ""
 
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html:11
 msgid "Unexpected Zulip server registration"
-msgstr "ثبت نام غیرمنتظره سرور زولیپ"
+msgstr "نام‌نویسی غیرمنتظره کارساز زولیپ"
 
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html:13
 #, python-format
@@ -4224,7 +4226,7 @@ msgstr ""
 
 #: templates/zerver/register.html:5
 msgid "Registration"
-msgstr "ثبت‌نام"
+msgstr "نام‌نویسی"
 
 #: templates/zerver/register.html:21
 msgid "Create your organization"
@@ -4236,7 +4238,7 @@ msgstr "حساب خود را بسازید"
 
 #: templates/zerver/register.html:26
 msgid "<p>Enter your account details to complete registration.</p>"
-msgstr "<p>جزییات حساب کاربری خود را وارد کنید تا ثبت نام کامل شود.</p>"
+msgstr "<p>جزییات حساب کاربری خود را وارد کنید تا نام‌نویسی کامل شود.</p>"
 
 #: templates/zerver/register.html:36
 msgid "Your organization"
@@ -5682,7 +5684,7 @@ msgstr ""
 
 #: zerver/lib/exceptions.py:885
 msgid "Invalid encrypted_push_registration"
-msgstr ""
+msgstr "encrypted_push_registration نامعتبر است"
 
 #: zerver/lib/exceptions.py:897
 #, fuzzy
@@ -8275,7 +8277,7 @@ msgstr ""
 
 #: zilencer/views.py:386
 msgid "Registration not found for this hostname"
-msgstr "ثبت نام برای این نام میزبان یافت نشد"
+msgstr "نام‌نویسی برای این نام میزبان یافت نشد"
 
 #: zilencer/views.py:398
 msgid "The host reported it has no verification secret."
@@ -8322,7 +8324,7 @@ msgstr "داده خارج از ترتیب است."
 
 #: zilencer/views.py:1254
 msgid "Duplicate registration detected."
-msgstr "ثبت نام تکراری تشخیص داده شد."
+msgstr "نام‌نویسی تکراری تشخیص داده شد."
 
 #: zilencer/views.py:1672
 msgid "Malformed audit log data"

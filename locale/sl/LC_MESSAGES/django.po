@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 02:09+0000\n"
-"PO-Revision-Date: 2025-09-10 06:03+0000\n"
+"PO-Revision-Date: 2025-10-27 19:44+0000\n"
 "Last-Translator: BobTB <jf@kfm.si>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/zulip/"
 "django-11-x/sl/>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
 "n%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -6052,13 +6052,7 @@ msgstr ""
 "časih in drugih možnostih..\n"
 
 #: zerver/lib/onboarding.py:262
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "Here are a few messages I understand: {bot_commands}\n"
-#| "\n"
-#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-#| "or browse the [Help center](/help/) to learn more!\n"
+#, python-brace-format
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
@@ -6070,7 +6064,7 @@ msgstr ""
 "Tukaj je nekaj sporočil, ki jih razumem: {bot_commands}\n"
 "\n"
 "Oglejte si naš [Uvodni vodnik](/help/getting-started-with-zulip),\n"
-"ali brskajte po [Centru za pomoč](/help/), da izveste več!\n"
+"ali brskajte po [centru za pomoč](/help/), da izveste več!\n"
 
 #: zerver/lib/onboarding.py:269
 #, python-brace-format
@@ -8210,11 +8204,11 @@ msgstr "{hostname} še ni registriran"
 #: zilencer/views.py:204
 #, python-brace-format
 msgid "Invalid server administrator email address: {email_reason}"
-msgstr ""
+msgstr "Napačen e-mail naslov administratorja serverja: {email_reason}"
 
 #: zilencer/views.py:248
 msgid "example.com is not a valid email domain."
-msgstr ""
+msgstr "example.com ni veljavna email domena."
 
 #: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format

@@ -46,7 +46,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 02:09+0000\n"
-"PO-Revision-Date: 2025-08-26 06:02+0000\n"
+"PO-Revision-Date: 2026-01-16 23:02+0000\n"
 "Last-Translator: Roman Bannack <apxwn@yandex.ru>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/zulip/django-11-x/"
 "de/>\n"
@@ -55,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.15.2\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -123,8 +123,8 @@ msgid ""
 msgstr ""
 "Deine Organisation hat nur noch eine Zulip-Lizenz übrig. Du kannst [die "
 "Anzahl der Zulip-Lizenzen erhöhen]({billing_page_link}) oder [inaktive "
-"Nutzer:innen deaktivieren]({deactivate_user_help_page_link}), damit mehr als "
-"nur noch ein:e Nutzer:in beitreten kann."
+"Nutzer deaktivieren]({deactivate_user_help_page_link}), damit mehr als nur "
+"noch ein Nutzer beitreten kann."
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
@@ -558,15 +558,15 @@ msgstr "Aktive Nutzer"
 
 #: templates/analytics/stats.html:40
 msgid "Daily actives"
-msgstr "Täglich aktive Nutzer:innen"
+msgstr "Täglich aktive Nutzer"
 
 #: templates/analytics/stats.html:41
 msgid "15 day actives"
-msgstr "15-tägig aktive Nutzer:innen"
+msgstr "15-tägig aktive Nutzer"
 
 #: templates/analytics/stats.html:42
 msgid "Total users"
-msgstr "Gesamtzahl der aktiven Nutzer:innen"
+msgstr "Gesamtzahl der aktiven Nutzer"
 
 #: templates/analytics/stats.html:50 zerver/models/custom_profile_fields.py:104
 msgid "Users"
@@ -697,8 +697,8 @@ msgstr "Na sowas. Der Bestätigungslink ist abgelaufen oder wurde deaktiviert."
 #: templates/confirmation/link_expired.html:12
 msgid "Please contact your organization administrator for a new link."
 msgstr ""
-"Bitte setze dich mit dem:der Administrator:in deiner Organisation in "
-"Verbindung, um einen neuen Link zu erhalten."
+"Bitte setze dich mit dem Administrator deiner Organisation in Verbindung, um "
+"einen neuen Link zu erhalten."
 
 #: templates/confirmation/link_malformed.html:4
 msgid "Confirmation link malformed"
@@ -854,7 +854,7 @@ msgstr "Du kannst es in %(retry_after)s Sekunden erneut versuchen."
 
 #: templates/corporate/billing/upgrade.html:5
 msgid "Upgrade"
-msgstr "Upgrade"
+msgstr "Aktualisieren"
 
 #: templates/corporate/billing/upgrade.html:350
 msgid "Send invoice and start free trial"
@@ -1850,9 +1850,9 @@ msgid ""
 "If you are an owner of this organization, you can <a href=\"mailto:"
 "%(support_email)s\">contact Zulip support</a> to reactivate it."
 msgstr ""
-"Wenn du ein:e Besitzer:in dieser Organisation bist, kannst du <a "
-"href=\"mailto:%(support_email)s\">den Zulip-Support kontaktieren</a>, um sie "
-"zu reaktivieren."
+"Wenn du Besitzer dieser Organisation bist, kannst du <a href=\"mailto:%"
+"(support_email)s\">den Zulip-Support kontaktieren</a>, um sie zu "
+"reaktivieren."
 
 #: templates/zerver/deactivated.html:55
 #, python-format
@@ -1861,9 +1861,9 @@ msgid ""
 "%(support_email)s\">contact this Zulip server's administrators</a> to "
 "reactivate it."
 msgstr ""
-"Wenn du ein:e Besitzer:in dieser Organisation bist, kannst du <a "
-"href=\"mailto:%(support_email)s\">die Administrator:innen dieses Zulip-"
-"Servers kontaktieren</a>, um sie zu reaktivieren."
+"Wenn du Besitzer dieser Organisation bist, kannst du <a href=\"mailto:%"
+"(support_email)s\">die Administrator:innen dieses Zulip-Servers "
+"kontaktieren</a>, um sie zu reaktivieren."
 
 #: templates/zerver/desktop_login.html:5
 msgid "Finish desktop app login"
@@ -2143,7 +2143,7 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators "
 "at %(support_email)s."
 msgstr ""
-"Bei Fragen wende dich bitte an die Administrator:innen dieses Zulip-Servers "
+"Bei Fragen wende dich bitte an die Administratoren dieses Zulip-Servers "
 "unter %(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:8
@@ -2303,7 +2303,7 @@ msgstr ""
 #: templates/zerver/emails/deactivate.html:15
 #: templates/zerver/emails/deactivate.txt:6
 msgid "The administrators provided the following comment:"
-msgstr "Die Administrator:innen haben dazu folgenden Kommentar abgegeben:"
+msgstr "Die Administratoren haben dazu folgenden Kommentar abgegeben:"
 
 #: templates/zerver/emails/deactivate.subject.txt:1
 #, python-format
@@ -2649,7 +2649,7 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators "
 "at <a href=\"mailto:%(email)s\">%(email)s</a>."
 msgstr ""
-"Bei Fragen wende dich bitte an die Administrator:innen dieses Zulip-Servers "
+"Bei Fragen wende dich bitte an die Administratoren dieses Zulip-Servers "
 "unter <a href=\"mailto:%(email)s\">%(email)s</a>."
 
 #: templates/zerver/emails/macros.html:18
@@ -2684,8 +2684,8 @@ msgid ""
 "You are receiving this because all topic participants were mentioned in "
 "#%(channel_name)s > %(topic_name)s."
 msgstr ""
-"Du erhältst diese Nachricht, weil alle Themen-Teilnehmer:innen in "
-"#%(channel_name)s > %(topic_name)s erwähnt wurden."
+"Du erhältst diese Nachricht, weil alle Themen-Teilnehmer in #%(channel_name)"
+"s > %(topic_name)s erwähnt wurden."
 
 #: templates/zerver/emails/missed_message.html:35
 #: templates/zerver/emails/missed_message.txt:29
@@ -2955,8 +2955,8 @@ msgid ""
 "Otherwise, here is some advice we often hear from customers for evaluating "
 "<i>any</i> team chat product:"
 msgstr ""
-"Ansonsten sind hier einige Tipps, die wir oft von Kund:innen hören, um "
-"<i>verschiedene</i> Team-Chat-Produkte zu bewerten:"
+"Ansonsten sind hier einige Tipps, die wir oft von Kunden hören, um <i>"
+"verschiedene</i> Team-Chat-Produkte zu bewerten:"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:15
 #, python-format
@@ -3023,7 +3023,7 @@ msgid ""
 "Otherwise, here is some advice we often hear from customers for evaluating "
 "any team chat product:"
 msgstr ""
-"Ansonsten sind hier einige Tipps, die wir oft von Kund:innen hören, um "
+"Ansonsten sind hier einige Tipps, die wir oft von Kunden hören, um "
 "verschiedene Team-Chat-Produkte zu bewerten:"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:6
@@ -3248,8 +3248,8 @@ msgid ""
 "href=\"%(help_link)s\">reactivate your account</a>."
 msgstr ""
 "Du hattest einmal einen Account auf %(organization_url)s, aber er wurde "
-"deaktiviert. Du kannst eine:n Organisations-Administrator:in kontaktieren, "
-"um <a href=\"%(help_link)s\">deinen Account zu reaktivieren</a>."
+"deaktiviert. Du kannst einen Organisations-Administrator kontaktieren, um <a "
+"href=\"%(help_link)s\">deinen Account zu reaktivieren</a>."
 
 #: templates/zerver/emails/password_reset.html:21
 #: templates/zerver/emails/password_reset.txt:11
@@ -3294,8 +3294,8 @@ msgid ""
 "You can contact an organization administrator to reactivate your account."
 msgstr ""
 "Du hattest einmal einen Account auf %(realm_url)s, aber er wurde "
-"deaktiviert. Du kannst eine:n Organisations-Administrator:in kontaktieren, "
-"um deinen Account zu reaktivieren."
+"deaktiviert. Du kannst einen Organisations-Administrator kontaktieren, um "
+"deinen Account zu reaktivieren."
 
 #: templates/zerver/emails/realm_auto_downgraded.html:8
 #, python-format
@@ -3391,7 +3391,7 @@ msgstr "Deine Zulip-Organisation %(realm_name)s wurde deaktiviert"
 #: templates/zerver/emails/realm_reactivation.txt:1
 #, python-format
 msgid "Dear former administrators of %(realm_name)s,"
-msgstr "Liebe ehemalige Administrator:innen von %(realm_name)s,"
+msgstr "Liebe ehemalige Administratoren von %(realm_name)s,"
 
 #: templates/zerver/emails/realm_reactivation.html:10
 #: templates/zerver/emails/realm_reactivation.txt:4
@@ -3637,7 +3637,7 @@ msgstr "Integrationen"
 
 #: templates/zerver/footer.html:15
 msgid "Desktop & mobile apps"
-msgstr "Desktop & mobile Apps"
+msgstr "Desktop- & Mobil-Apps"
 
 #: templates/zerver/footer.html:16 templates/zerver/portico-header.html:56
 msgid "New organization"
@@ -3911,7 +3911,7 @@ msgid ""
 msgstr ""
 "Bitte versuche eine andere URL, <a href=\"%(root_domain_url)s/accounts/find/"
 "\">erhalte eine Liste deiner Zulip-Accounts auf diesem Server</a> oder <a "
-"href=\"mailto:%(support_email)s\">kontaktiere die Administrator:innen dieses "
+"href=\"mailto:%(support_email)s\">kontaktiere die Administratoren dieses "
 "Servers</a>."
 
 #: templates/zerver/invalid_realm.html:28
@@ -3983,16 +3983,15 @@ msgid ""
 "Administrators of this Zulip organization will be able to see this email "
 "address."
 msgstr ""
-"Administrator:innen dieser Zulip-Organisation können diese E-Mail-Adresse "
-"sehen."
+"Administratoren dieser Zulip-Organisation können diese E-Mail-Adresse sehen."
 
 #: templates/zerver/new_user_email_address_visibility.html:8
 msgid ""
 "Administrators and moderators of this Zulip organization will be able to see "
 "this email address."
 msgstr ""
-"Administrator:innen und Moderator:innen dieser Zulip-Organisation können "
-"diese E-Mail-Adresse sehen."
+"Administratoren und Moderatoren dieser Zulip-Organisation können diese E-"
+"Mail-Adresse sehen."
 
 #: templates/zerver/new_user_email_address_visibility.html:11
 msgid ""
@@ -4004,8 +4003,7 @@ msgid ""
 "Other users in this Zulip organization will be able to see this email "
 "address."
 msgstr ""
-"Andere Nutzer:innen in dieser Zulip-Organisation können diese E-Mail-Adresse "
-"sehen."
+"Andere Nutzer in dieser Zulip-Organisation können diese E-Mail-Adresse sehen."
 
 #: templates/zerver/new_user_email_address_visibility.html:18
 msgid "Change"
@@ -4092,8 +4090,8 @@ msgstr "Lade die neuste Version herunter."
 msgid ""
 "You have exceeded the limit for how often a user can perform this action."
 msgstr ""
-"Du hast das Limit überschritten, wie oft ein:e Nutzer:in diese Aktion "
-"durchführen kann."
+"Du hast das Limit überschritten, wie oft ein Nutzer diese Aktion durchführen "
+"kann."
 
 #: templates/zerver/portico_error_pages/realm_creation_disabled.html:4
 #: templates/zerver/portico_error_pages/realm_creation_disabled.html:11
@@ -4615,7 +4613,7 @@ msgstr "{user} hat deine Einladung zum Beitritt zu Zulip angenommen!"
 msgid ""
 "Cannot activate a placeholder account; ask the user to sign up, instead."
 msgstr ""
-"Ein Platzhalterkonto kann nicht aktiviert werden; fordere den:die Nutzer:in "
+"Ein Platzhalterkonto kann nicht aktiviert werden; fordere den Nutzer "
 "stattdessen auf, sich zu registrieren."
 
 #: zerver/actions/custom_profile_fields.py:222 zerver/lib/users.py:542
@@ -4623,8 +4621,8 @@ msgid ""
 "You are not allowed to change this field. Contact an administrator to update "
 "it."
 msgstr ""
-"Du darfst dieses Feld nicht ändern. Kontaktiere eine:n Administrator:in um "
-"es zu aktualisieren."
+"Du darfst dieses Feld nicht ändern. Kontaktiere einen Administrator, um es "
+"zu aktualisieren."
 
 #: zerver/actions/custom_profile_fields.py:240 zerver/lib/users.py:537
 #: zerver/views/custom_profile_fields.py:225
@@ -4695,9 +4693,9 @@ msgid ""
 "To protect users, Zulip limits the number of invitations you can send in one "
 "day. Because you have reached the limit, no invitations were sent."
 msgstr ""
-"Um Nutzer:innen zu schützen, beschränkt Zulip die Anzahl der Einladungen, "
-"die du pro Tag versenden kannst. Da du dieses Limit bereits erreicht hast, "
-"wurden keine Einladungen versandt."
+"Um Nutzer zu schützen, beschränkt Zulip die Anzahl der Einladungen, die du "
+"pro Tag versenden kannst. Da du dieses Limit bereits erreicht hast, wurden "
+"keine Einladungen versandt."
 
 #: zerver/actions/invites.py:227
 msgid ""
@@ -4866,7 +4864,7 @@ msgstr "Ungültiger Datentyp für Kanal"
 #: zerver/actions/message_send.py:1344 zerver/actions/message_send.py:1354
 #: zerver/lib/recipient_parsing.py:15
 msgid "Invalid data type for recipients"
-msgstr "Ungültiger Datentyp für Empfänger:innen"
+msgstr "Ungültiger Datentyp für Empfänger"
 
 #: zerver/actions/message_send.py:1362 zerver/actions/message_send.py:1370
 msgid "Recipient lists may contain emails or user IDs, but not both."
@@ -4901,11 +4899,11 @@ msgid ""
 "The channel exists but does not have any subscribers."
 msgstr ""
 "Dein Bot {bot_identity} hat versucht, eine Nachricht an den Kanal "
-"{channel_name} zu senden. Der Kanal existiert, hat aber keine Abonnent:innen."
+"{channel_name} zu senden. Der Kanal existiert, hat aber keine Abonnenten."
 
 #: zerver/actions/message_send.py:1654
 msgid "You do not have permission to access some of the recipients."
-msgstr "Du bist nicht berechtigt, auf einige der Empfänger:innen zuzugreifen."
+msgstr "Du bist nicht berechtigt, auf einige der Empfänger zuzugreifen."
 
 #: zerver/actions/message_send.py:1864
 msgid "Widgets: API programmer sent invalid JSON content"
@@ -5155,7 +5153,7 @@ msgstr "Dieser Endpunkt akzeptiert keine Bot-Anfragen."
 
 #: zerver/decorator.py:664
 msgid "Must be an server administrator"
-msgstr "Muss ein:e Server-Administrator:in sein"
+msgstr "Muss ein Server-Administrator sein"
 
 #: zerver/decorator.py:765
 msgid "This endpoint requires HTTP basic authentication."
@@ -5183,8 +5181,8 @@ msgid ""
 "Your account {username} has been deactivated. Please contact your "
 "organization administrator to reactivate it."
 msgstr ""
-"Dein Account {username} wurde deaktiviert. Bitte setze dich mit dem:der "
-"Administrator:in deiner Organisation in Verbindung, um ihn zu reaktivieren."
+"Dein Account {username} wurde deaktiviert. Bitte setze dich mit dem "
+"Administrator deiner Organisation in Verbindung, um ihn zu reaktivieren."
 
 #: zerver/forms.py:71
 msgid "The password is too weak."
@@ -5227,8 +5225,7 @@ msgstr ""
 msgid ""
 "Please request an invite for {email} from the organization administrator."
 msgstr ""
-"Bitte frage den:die Organisations-Administrator:in nach einer Einladung für "
-"{email}."
+"Bitte frage den Organisations-Administrator nach einer Einladung für {email}."
 
 #: zerver/forms.py:291
 msgid "Can't join the organization: password authentication is not enabled."
@@ -5293,8 +5290,8 @@ msgid ""
 "or contact your organization administrator for help."
 msgstr ""
 "Du versuchst zu oft, dich anzumelden. Versuche es in {seconds} Sekunden "
-"erneut oder wende dich an deine:n Organisations-Administrator:in, um Hilfe "
-"zu erhalten."
+"erneut oder wende dich an deinen Organisations-Administrator, um Hilfe zu "
+"erhalten."
 
 #: zerver/forms.py:598
 msgid ""
@@ -5340,7 +5337,7 @@ msgstr "Fehlender Kanal"
 
 #: zerver/lib/addressee.py:146
 msgid "Message must have recipients"
-msgstr "Nachricht muss Empfänger:innen haben"
+msgstr "Nachricht muss Empfänger haben"
 
 #: zerver/lib/addressee.py:155 zerver/lib/outgoing_webhook.py:217
 msgid "Invalid message type"
@@ -5359,7 +5356,7 @@ msgstr ""
 
 #: zerver/lib/bot_lib.py:107
 msgid "Message must have recipients!"
-msgstr "Nachricht muss Empfänger:innen haben!"
+msgstr "Nachricht muss Empfänger haben!"
 
 #: zerver/lib/channel_folders.py:26
 msgid "Channel folder name can't be empty."
@@ -5429,7 +5426,7 @@ msgstr "Muss genau 1 Kanal-ID für Kanal-Nachrichten angeben"
 
 #: zerver/lib/drafts.py:95
 msgid "User has disabled synchronizing drafts."
-msgstr "Nutzer:in hat die Synchronisierung der Entwürfe deaktiviert."
+msgstr "Nutzer hat die Synchronisierung der Entwürfe deaktiviert."
 
 #: zerver/lib/drafts.py:139 zerver/lib/drafts.py:159
 msgid "Draft does not exist"
@@ -5519,7 +5516,7 @@ msgstr "Ungültiger Emoji-Typ."
 
 #: zerver/lib/emoji.py:133
 msgid "Must be an organization administrator or emoji author"
-msgstr "Muss ein:e Organisations-Administrator:in oder Emoji-Autor:in sein"
+msgstr "Muss ein Organisations-Administrator oder Emoji-Autor sein"
 
 #: zerver/lib/emoji.py:141
 msgid "Emoji names must end with either a letter or digit."
@@ -5548,10 +5545,9 @@ msgid "Not logged in: API authentication or user session required"
 msgstr "Nicht angemeldet: API-Authentifizierung oder Nutzer-Session benötigt"
 
 #: zerver/lib/exceptions.py:193
-#, fuzzy, python-brace-format
-#| msgid "Channel named {channel_name} already exists"
+#, python-brace-format
 msgid "Channel '{channel_name}' already exists"
-msgstr "Kanal mit dem Namen {channel_name} existiert bereits"
+msgstr "Ein Kanal mit dem Namen '{channel_name}' existiert bereits"
 
 #: zerver/lib/exceptions.py:206
 #, python-brace-format
@@ -5570,7 +5566,7 @@ msgstr "Nicht unterstützte Parameterkombination: {parameters}"
 
 #: zerver/lib/exceptions.py:240
 msgid "organization owner"
-msgstr "Organisations-Besitzer:in"
+msgstr "Organisations-Besitzer"
 
 #: zerver/lib/exceptions.py:240
 msgid "user"
@@ -5975,7 +5971,7 @@ msgstr "Navigationsansicht existiert nicht."
 #: zerver/lib/onboarding.py:60
 #, python-brace-format
 msgid "A note from {admin_group_syntax}:"
-msgstr ""
+msgstr "Eine Anmerkung von {admin_group_syntax}:"
 
 #: zerver/lib/onboarding.py:91
 #, python-brace-format
@@ -6208,13 +6204,7 @@ msgstr ""
 "Zeiten und mehr zu lernen.\n"
 
 #: zerver/lib/onboarding.py:262
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "Here are a few messages I understand: {bot_commands}\n"
-#| "\n"
-#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-#| "or browse the [Help center](/help/) to learn more!\n"
+#, python-brace-format
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
@@ -6227,7 +6217,7 @@ msgstr ""
 "\n"
 "Sieh dir unseren [Leitfaden für den Start](/help/getting-started-with-zulip) "
 "an,\n"
-"oder durchsuche das [Hilfe-Center](/help/) um mehr zu lernen!\n"
+"oder durchsuche das [Hilfe-Center](/help/), um mehr zu erfahren!\n"
 
 #: zerver/lib/onboarding.py:269
 #, python-brace-format
@@ -6502,27 +6492,28 @@ msgstr "Gerät vom Push-Bouncer nicht erkannt"
 
 #: zerver/lib/push_notifications.py:1928
 msgid "No active registered push device"
-msgstr ""
+msgstr "Kein aktives registriertes Push-Gerät"
 
 #: zerver/lib/push_notifications.py:1941
-#, fuzzy
-#| msgid "Server is not configured to use push notification service."
 msgid "Network error while connecting to Zulip push notification service."
 msgstr ""
-"Server ist nicht zur Verwendung des Push-Benachrichtungsdienstes "
-"konfiguriert."
+"Netzwerkfehler beim Verbindungsaufbau mit dem Zulip Push-Benachrichtigungs-"
+"Dienst."
 
 #: zerver/lib/push_notifications.py:1954
-#, fuzzy
-#| msgid "Server doesn't use the push notification service"
 msgid "Internal server error on Zulip push notification service, retry later."
-msgstr "Server verwendet den Dienst für Push-Benachrichtungen nicht"
+msgstr ""
+"Server verwendet den Dienst für Push-Benachrichtungen nicht, versuche es "
+"später wieder."
 
 #: zerver/lib/push_notifications.py:1968
 msgid ""
 "Push notification configuration issue on server, contact the server "
 "administrator or retry later."
 msgstr ""
+"Es gibt ein Problem mit der Konfiguration der Push-Benachrichtigungen auf "
+"dem Server, bitte wende dich an den Server-Administrator oder versuche es "
+"später wieder."
 
 #: zerver/lib/recipient_parsing.py:9
 msgid "Invalid data type for channel ID"
@@ -6546,18 +6537,18 @@ msgstr ""
 "Du kannst keine Direktnachrichten außerhalb deiner Organisation senden."
 
 #: zerver/lib/reminders.py:21
-#, fuzzy, python-brace-format
-#| msgid "Channel name too long (limit: {max_length} characters)."
+#, python-brace-format
 msgid "Maximum reminder note length: {max_length} characters"
-msgstr "Kanalname zu lang (Limit: {max_length} Zeichen)."
+msgstr "Maximale Länger der Notiz für die Erinnerung: ({max_length} Zeichen)"
 
 #: zerver/lib/reminders.py:50
-#, fuzzy, python-brace-format
-#| msgid "You requested a reminder for {message_pretty_link}."
+#, python-brace-format
 msgid ""
 "You requested a reminder for {message_pretty_link}. Note:\n"
 " > {note}"
-msgstr "Du hast eine Erinnerung für {message_pretty_link} angefordert."
+msgstr ""
+"Du hast eine Erinnerung für {message_pretty_link} angefordert. Notiz;\n"
+" > {note}"
 
 #: zerver/lib/reminders.py:56
 #, python-brace-format
@@ -6565,12 +6556,14 @@ msgid "You requested a reminder for {message_pretty_link}."
 msgstr "Du hast eine Erinnerung für {message_pretty_link} angefordert."
 
 #: zerver/lib/reminders.py:62
-#, fuzzy, python-brace-format
-#| msgid "You requested a reminder for the following direct message."
+#, python-brace-format
 msgid ""
 "You requested a reminder for the following direct message. Note:\n"
 " > {note}"
-msgstr "Du hast eine Erinnerung für die folgende Direktnachricht angefordert."
+msgstr ""
+"Du hast eine Erinnerung für die folgende Direktnachricht angefordert. Notiz:"
+"\n"
+" > {note}"
 
 #: zerver/lib/reminders.py:67
 msgid "You requested a reminder for the following direct message."
@@ -7073,7 +7066,7 @@ msgstr "{var_name} fehlt"
 #: zerver/lib/webhooks/common.py:107
 #, python-brace-format
 msgid "Unknown 'PresetUrlOption': {config}"
-msgstr ""
+msgstr "Unbekannte 'PresetUrlOption': {config}"
 
 #: zerver/lib/webhooks/common.py:138
 #, python-brace-format
@@ -7334,19 +7327,19 @@ msgstr "Öffentlich, geschützter Verlauf"
 
 #: zerver/models/users.py:312
 msgid "Admins, moderators, members and guests"
-msgstr "Administrator:innen, Moderator:innen, Mitglieder und Gäste"
+msgstr "Administratoren, Moderatoren, Mitglieder und Gäste"
 
 #: zerver/models/users.py:313
 msgid "Admins, moderators and members"
-msgstr "Administrator:innen, Moderator:innen und Mitglieder"
+msgstr "Administratoren, Moderatoren und Mitglieder"
 
 #: zerver/models/users.py:314
 msgid "Admins and moderators"
-msgstr "Administrator:innen und Moderator:innen"
+msgstr "Administratoren und Moderatoren"
 
 #: zerver/models/users.py:315
 msgid "Admins only"
-msgstr "nur Administrator:innen"
+msgstr "Nur Administratoren"
 
 #: zerver/models/users.py:517
 msgid "Unknown user"
@@ -8409,11 +8402,11 @@ msgstr "{hostname} noch nicht registriert"
 #: zilencer/views.py:204
 #, python-brace-format
 msgid "Invalid server administrator email address: {email_reason}"
-msgstr ""
+msgstr "Ungültige E-Mail-Adresse des Server-Administrators: {email_reason}"
 
 #: zilencer/views.py:248
 msgid "example.com is not a valid email domain."
-msgstr ""
+msgstr "example.com ist keine gültige E-Mail-Domain."
 
 #: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format
