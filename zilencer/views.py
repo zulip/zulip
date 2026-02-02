@@ -1569,7 +1569,7 @@ def remote_server_post_analytics(
 
     # Lock the server, preventing this from racing with other
     # duplicate submissions of the data
-    server = RemoteZulipServer.objects.select_for_update().get(id=server.id)
+    server = RemoteZulipServer.objects.select_for_update(no_key=True).get(id=server.id)
 
     remote_server_version_updated = False
     if version is not None:

@@ -39,7 +39,12 @@ class ThumbnailWorker(QueueProcessingWorker):
                 # directly to a thumbnail URL we have not made yet.
                 # This may mean that we may generate 0 thumbnail
                 # images once we get the lock.
-                row = ImageAttachment.objects.select_for_update(of=("self",)).get(id=event["id"])
+                # If the image data is bad and thumbnailing fails, the
+                # ImageAttachment row might be deleted; so we need a FOR UPDATE
+                # lock.
+                row = ImageAttachment.objects.select_for_update(of=("self",), no_key=False).get(
+                    id=event["id"]
+                )
             except ImageAttachment.DoesNotExist:  # nocoverage
                 logger.info(
                     "ImageAttachment row %d missing [%dms]",
@@ -226,7 +231,7 @@ def update_message_rendered_content(
     for message_class in (Message, ArchivedMessage):
         messages_with_image = (
             message_class.objects.filter(realm_id=realm_id, attachment__path_id=path_id)
-            .select_for_update(of=("self",))
+            .select_for_update(of=("self",), no_key=True)
             .order_by("id")
         )
         for message in messages_with_image:
