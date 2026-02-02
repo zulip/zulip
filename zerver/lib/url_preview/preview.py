@@ -4,7 +4,6 @@ from re import Match
 from typing import Any
 from urllib.parse import urljoin
 
-import magic
 import requests
 from django.conf import settings
 from django.utils.encoding import smart_str
@@ -47,6 +46,9 @@ def is_link(url: str) -> Match[str] | None:
 
 
 def guess_mimetype_from_content(response: requests.Response) -> str:
+    # Lazily imported to avoid ~9ms import time at startup.
+    import magic
+
     mime_magic = magic.Magic(mime=True)
     try:
         content = next(response.iter_content(1000))

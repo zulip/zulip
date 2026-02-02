@@ -22,7 +22,6 @@ from dataclasses import dataclass
 from email.headerregistry import Address
 from typing import Any, TypedDict, TypeVar, cast
 
-import magic
 import orjson
 from decorator import decorator
 from django.conf import settings
@@ -890,6 +889,9 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         # Structurally, to make the S3 backend happy, we need to
         # provide a Content-Type; since that isn't specified in
         # any metadata, we auto-detect it.
+        # Lazily imported to avoid ~9ms import time at startup.
+        import magic
+
         content_type = magic.from_buffer(ldap_avatar[:1024], mime=True)
         if content_type.startswith("image/"):
             upload_avatar_image(BytesIO(ldap_avatar), user, content_type=content_type)
