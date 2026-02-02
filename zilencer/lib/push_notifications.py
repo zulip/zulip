@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
+from typing import TYPE_CHECKING
 
 from aioapns import NotificationRequest
 from django.utils.timezone import now as timezone_now
-from firebase_admin import exceptions as firebase_exceptions
-from firebase_admin import messaging as firebase_messaging
-from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
+
+if TYPE_CHECKING:
+    from firebase_admin import messaging as firebase_messaging
 
 from zerver.lib.push_notifications import (
     APNsPushRequest,
@@ -85,6 +88,12 @@ def send_e2ee_push_notification_android(
     fcm_requests: list[firebase_messaging.Message],
     fcm_remote_push_devices: list[RemotePushDevice],
 ) -> SentPushNotificationResult:
+    # We lazily do this import as part of optimizing Zulip's base
+    # import time.
+    from firebase_admin import exceptions as firebase_exceptions
+    from firebase_admin import messaging as firebase_messaging
+    from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
+
     successfully_sent_count = 0
     delete_device_ids: list[int] = []
 
@@ -152,6 +161,7 @@ def send_e2ee_push_notifications(
     assert (realm is None) ^ (remote_realm is None)
 
     import aioapns
+    from firebase_admin import messaging as firebase_messaging
 
     device_ids = {push_request.device_id for push_request in push_requests}
     remote_push_devices = RemotePushDevice.objects.filter(

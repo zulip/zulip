@@ -2384,7 +2384,7 @@ class GCMParseOptionsTest(ZulipTestCase):
 
 
 @mock.patch("zerver.lib.push_notifications.fcm_app")
-@mock.patch("zerver.lib.push_notifications.firebase_messaging")
+@mock.patch("firebase_admin.messaging")
 class FCMSendTest(PushNotificationTestCase):
     @override
     def setUp(self) -> None:
