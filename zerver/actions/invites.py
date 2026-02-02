@@ -10,7 +10,6 @@ from django.db import transaction
 from django.db.models import Q, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from zxcvbn import zxcvbn
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from analytics.models import RealmCount
@@ -82,6 +81,9 @@ def too_many_recent_realm_invites(realm: Realm, num_invitees: int) -> bool:
     # unlikely to hit these limits.  If a real realm hits them,
     # the resulting message suggests that they contact support if
     # they have a real use case.
+    # Lazily imported to avoid ~30ms import time at startup.
+    from zxcvbn import zxcvbn
+
     warning_flags = []
     if zxcvbn(realm.string_id)["score"] == 4:
         # Very high entropy realm names are suspicious

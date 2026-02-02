@@ -70,7 +70,6 @@ from social_core.storage import UserProtocol
 from social_core.strategy import HttpResponseProtocol
 from social_django.utils import load_backend, load_strategy
 from typing_extensions import override
-from zxcvbn import zxcvbn
 
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
@@ -490,6 +489,9 @@ def check_password_strength(password: str) -> bool:
     Returns True if the password is strong enough,
     False otherwise.
     """
+    # Lazily imported to avoid ~30ms import time at startup.
+    from zxcvbn import zxcvbn
+
     if len(password) < settings.PASSWORD_MIN_LENGTH:
         return False
 
