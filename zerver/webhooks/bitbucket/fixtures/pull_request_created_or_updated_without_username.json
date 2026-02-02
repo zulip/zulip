@@ -65,16 +65,17 @@
          {
             "links":{
                "self":{
-                  "href":"https://api.bitbucket.org/2.0/users/tkolek"
+                  "href":"https://api.bitbucket.org/2.0/users/557058:bf830c24-bde2-41f1-a790-2c9372a2e789"
                },
                "html":{
-                  "href":"https://bitbucket.org/tkolek/"
+                  "href":"https://bitbucket.org/557058:bf830c24-bde2-41f1-a790-2c9372a2e789/"
                },
                "avatar":{
-                  "href":"https://bitbucket.org/account/tkolek/avatar/32/"
+                  "href":"https://bitbucket.org/account/557058:bf830c24-bde2-41f1-a790-2c9372a2e789/avatar/32/"
                } },
             "type":"user",
             "uuid":"{bf830c24-bde2-41f1-a790-2c9372a2e789}",
+            "account_id":"557058:bf830c24-bde2-41f1-a790-2c9372a2e789",
             "display_name":"Tomasz Kolek"
          }
       ],
@@ -82,15 +83,16 @@
       "author":{
          "type":"user",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
+         "account_id":"557058:678ab31f-9f88-4d7a-b343-1bdf9f024917",
          "links":{
             "self":{
-               "href":"https://api.bitbucket.org/2.0/users/kolaszek"
+               "href":"https://api.bitbucket.org/2.0/users/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917"
             },
             "avatar":{
-               "href":"https://bitbucket.org/account/kolaszek/avatar/32/"
+               "href":"https://bitbucket.org/account/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/avatar/32/"
             },
             "html":{
-               "href":"https://bitbucket.org/kolaszek/"
+               "href":"https://bitbucket.org/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/"
             }
          },
          "display_name":"Tomasz",
@@ -122,15 +124,16 @@
    "actor":{
       "type":"user",
       "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
+      "account_id":"557058:678ab31f-9f88-4d7a-b343-1bdf9f024917",
       "links":{
          "self":{
-            "href":"https://api.bitbucket.org/2.0/users/kolaszek"
+            "href":"https://api.bitbucket.org/2.0/users/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917"
          },
          "avatar":{
-            "href":"https://bitbucket.org/account/kolaszek/avatar/32/"
+            "href":"https://bitbucket.org/account/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/avatar/32/"
          },
          "html":{
-            "href":"https://bitbucket.org/kolaszek/"
+            "href":"https://bitbucket.org/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/"
          }
       },
       "display_name":"Tomasz",
@@ -158,15 +161,16 @@
       "owner":{
          "type":"user",
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
+         "account_id":"557058:678ab31f-9f88-4d7a-b343-1bdf9f024917",
          "links":{
             "self":{
-               "href":"https://api.bitbucket.org/2.0/users/kolaszek"
+               "href":"https://api.bitbucket.org/2.0/users/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917"
             },
             "avatar":{
-               "href":"https://bitbucket.org/account/kolaszek/avatar/32/"
+               "href":"https://bitbucket.org/account/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/avatar/32/"
             },
             "html":{
-               "href":"https://bitbucket.org/kolaszek/"
+               "href":"https://bitbucket.org/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/"
             }
          },
          "display_name":"Tomasz",
