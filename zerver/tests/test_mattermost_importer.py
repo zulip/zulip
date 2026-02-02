@@ -1416,16 +1416,8 @@ class MatterMostImporter(ZulipTestCase):
                 self.assertEqual(imported_channel.description, channel_data["purpose"])
                 invite_only = channel_data["type"] == "P"
                 self.assertEqual(imported_channel.invite_only, invite_only)
-                # TODO: We convert guest users but don't properly subscribe them to the
-                # channels they follow.
-                guest_email = "guest@sample.mattermost.com"
-                exported_channel_subscriber_data = exported_channel_subscriber_dict[
-                    mattermost_channel_id
-                ]
-                if guest_email in exported_channel_subscriber_dict[mattermost_channel_id]:
-                    exported_channel_subscriber_data.remove(guest_email)
                 self.assertSetEqual(
-                    exported_channel_subscriber_data,
+                    exported_channel_subscriber_dict[mattermost_channel_id],
                     get_channel_subscriber_emails(imported_realm, imported_channel),
                 )
 
