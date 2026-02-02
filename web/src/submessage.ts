@@ -49,20 +49,20 @@ export function get_message_events(message: Message): SubmessageEvents | undefin
     return clean_events;
 }
 
-export function process_widget_rows_in_list(list: MessageList | undefined): void {
+export function render_widget_rows_in_list(list: MessageList | undefined): void {
     for (const message_id of widgetize.get_message_ids()) {
         const $row = list?.get_row(message_id);
         if ($row && $row.length > 0) {
-            process_submessages({message_id, $row});
+            render_submessage({message_id, $row});
         }
     }
 }
 
-export function process_submessages(in_opts: {$row: JQuery; message_id: number}): void {
+export function process_submessages(message: Message): void {
     // This happens in our rendering path, so we try to limit any
     // damage that may be triggered by one rogue message.
     try {
-        do_process_submessages(in_opts);
+        do_process_submessages(message);
         return;
     } catch (error) {
         blueslip.error("Failed to do_process_submessages", undefined, error);
@@ -70,14 +70,7 @@ export function process_submessages(in_opts: {$row: JQuery; message_id: number})
     }
 }
 
-export function do_process_submessages(in_opts: {$row: JQuery; message_id: number}): void {
-    const message_id = in_opts.message_id;
-    const message = message_store.get(message_id);
-
-    if (!message) {
-        return;
-    }
-
+export function do_process_submessages(message: Message): void {
     const events = get_message_events(message);
 
     if (!events) {
@@ -90,17 +83,29 @@ export function do_process_submessages(in_opts: {$row: JQuery; message_id: numbe
         return;
     }
 
-    const $row = in_opts.$row;
-
     // Right now, our only use of submessages is widgets.
 
     const any_data = widget_event.data;
 
-    const post_to_server = make_server_callback(message_id);
-
     widgetize.activate({
         any_data,
         events: inbound_events,
+        message,
+    });
+}
+
+export function render_submessage(in_opts: {$row: JQuery; message_id: number}): void {
+    const message_id = in_opts.message_id;
+    const message = message_store.get(message_id);
+    if (!message) {
+        return;
+    }
+
+    const $row = in_opts.$row;
+
+    const post_to_server = make_server_callback(message_id);
+
+    widgetize.render({
         $row,
         message,
         post_to_server,

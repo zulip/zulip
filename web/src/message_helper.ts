@@ -13,6 +13,7 @@ import * as reactions from "./reactions.ts";
 import * as recent_senders from "./recent_senders.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
+import * as submessage from "./submessage.ts";
 import * as user_status from "./user_status.ts";
 import * as util from "./util.ts";
 
@@ -244,5 +245,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
 
     alert_words.process_message(processed_message.message);
     message_store.update_message_cache(processed_message);
+    submessage.process_submessages(processed_message.message);
     return processed_message;
 }

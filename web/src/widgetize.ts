@@ -22,9 +22,7 @@ import type {AnyWidgetData} from "./widget_schema.ts";
 type ActivateArguments = {
     any_data: AnyWidgetData;
     events: Event[];
-    $row: JQuery;
     message: Message;
-    post_to_server: PostToServerFunction;
 };
 
 const generic_widget_map = new Map<number, GenericWidget>();
@@ -47,40 +45,19 @@ function set_widget_in_message($row: JQuery, $widget_elem: JQuery): void {
 }
 
 export function activate(in_opts: ActivateArguments): void {
-    const {any_data, events, $row, message, post_to_server} = in_opts;
+    const {any_data, events, message} = in_opts;
 
     // the callee will log any appropriate warnings here
     if (!is_supported_widget_type(any_data.widget_type)) {
         return;
     }
 
-    const is_message_preview = $row.parent()?.attr("id") === "report-message-preview-container";
-
-    if (
-        !$row.attr("id")!.startsWith(`message-row-${message_lists.current?.id}-`) &&
-        !is_message_preview
-    ) {
-        // Don't activate widgets for messages that are not in the current view or
-        // in message report modal.
-        return;
-    }
-
-    // We depend on our widget implementations to build the
-    // DOM and event handlers that eventually go in this div.
-    const $widget_elem = $("<div>").addClass("widget-content");
-
     const generic_widget = create_widget_instance({
         message,
         any_data,
     });
 
-    if (!is_message_preview) {
-        // Don't re-register the original message's widget event
-        // handler.
-        generic_widget_map.set(message.id, generic_widget);
-    }
-
-    set_widget_in_message($row, $widget_elem);
+    generic_widget_map.set(message.id, generic_widget);
 
     // Replay any events that already happened.  (This is common
     // when the user opens a conversation with a poll that
@@ -93,9 +70,26 @@ export function activate(in_opts: ActivateArguments): void {
     if (events.length > 0) {
         generic_widget.handle_inbound_events(events);
     }
+}
 
-    // The widget_data is now up to date. Render the ui for the
-    // widget.
+export function render(in_opts: {
+    post_to_server: PostToServerFunction;
+    $row: JQuery;
+    message: Message;
+}): void {
+    const {$row, message, post_to_server} = in_opts;
+    const generic_widget = generic_widget_map.get(message.id);
+
+    if (!generic_widget) {
+        return;
+    }
+
+    // We depend on our widget implementations to build the
+    // DOM and event handlers that eventually go in this div.
+    const $widget_elem = $("<div>").addClass("widget-content");
+
+    set_widget_in_message($row, $widget_elem);
+
     render_widget_instance({
         post_to_server,
         $widget_elem,
@@ -113,21 +107,25 @@ export function handle_event(
 ): void {
     const generic_widget = generic_widget_map.get(widget_event.message.id);
     const $message_row = message_lists.current?.get_row(widget_event.message.id);
-    if (!generic_widget || !$message_row || $message_row.length === 0) {
-        // It is common for submessage events to arrive on
-        // messages that we don't yet have in view. We
-        // just ignore them completely here.
+    if (!generic_widget) {
         return;
     }
 
     const events = [widget_event];
-    const $widget_elem = $message_row.find(".widget-content");
+
     generic_widget.handle_inbound_events(events);
-    render_widget_instance({
-        post_to_server: widget_event.post_to_server,
-        $widget_elem: $widget_elem!,
-        message: widget_event.message,
-        widget_data: generic_widget.get_widget_data(),
-        rerender: true,
-    });
+
+    // It is common for submessage events to arrive on
+    // messages that we don't yet have in view. We
+    // just ignore them completely here.
+    if ($message_row && $message_row.length > 0) {
+        const $widget_elem = $message_row.find(".widget-content");
+        render_widget_instance({
+            post_to_server: widget_event.post_to_server,
+            $widget_elem,
+            message: widget_event.message,
+            widget_data: generic_widget.get_widget_data(),
+            rerender: true,
+        });
+    }
 }

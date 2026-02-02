@@ -83,7 +83,7 @@ run_test("make_server_callback", () => {
     assert.ok(was_posted);
 });
 
-run_test("check sender", ({override}) => {
+run_test("check sender", () => {
     const message_id = 101;
 
     const message = {
@@ -98,16 +98,9 @@ run_test("check sender", ({override}) => {
         ],
     };
 
-    override(message_store, "get", (arg) => {
-        assert.equal(arg, message_id);
-        return message;
-    });
-
     blueslip.expect("warn", "User 2 tried to hijack message 101");
 
-    submessage.process_submessages({
-        message_id,
-    });
+    submessage.process_submessages(message);
 });
 
 run_test("handle_event", () => {

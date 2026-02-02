@@ -107,6 +107,7 @@ run_test("insert_server_message", ({override}) => {
         reactions: [],
         avatar_url: `/avatar/${isaac.user_id}`,
         display_recipient: "Bar",
+        submessages: [],
     };
 
     assert.equal(message_store.get(new_message.id), undefined);
