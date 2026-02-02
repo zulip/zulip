@@ -9,16 +9,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 02:09+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Swedish <https://hosted.weblate.org/projects/zulip/django/sv/"
-">\n"
+"PO-Revision-Date: 2025-11-13 01:51+0000\n"
+"Last-Translator: Signar Kamparås <bolengejosiane@gmail.com>\n"
+"Language-Team: Swedish <https://hosted.weblate.org/projects/zulip/"
+"django-11-x/sv/>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -30,11 +30,11 @@ msgstr "ogiltig organisation"
 
 #: analytics/views/stats.py:391
 msgid "Public channels"
-msgstr ""
+msgstr "Publika kanaler"
 
 #: analytics/views/stats.py:392
 msgid "Private channels"
-msgstr ""
+msgstr "Privata kanaler"
 
 #: analytics/views/stats.py:393
 msgid "Direct messages"
@@ -57,7 +57,7 @@ msgstr ""
 #: analytics/views/stats.py:435
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr ""
+msgstr "Starttiden är senare än sluttiden. Start: {start}, Slut: {end}"
 
 #: analytics/views/stats.py:457 analytics/views/stats.py:494
 msgid "No analytics data available. Please contact your server administrator."

@@ -1815,7 +1815,7 @@
   "Who can administer this group": "Хто може адмініструвати цю групу",
   "Who can allow users to delete messages in channels they administer": "Хто може дозволити користувачам видаляти повідомлення в каналах, якими вони керують",
   "Who can authorize a direct message conversation": "Хто може авторизувати розмову в прямих повідомленнях",
-  "Who can configure the per-channel <i>general chat</i> topic configuration <i>(also requires being a channel administrator)</i>": "",
+  "Who can configure the per-channel <i>general chat</i> topic configuration <i>(also requires being a channel administrator)</i>": "Хто може налаштовувати конфігурацію тем <i>загального чату</i> для кожного каналу <i>(також потрібно бути адміністратором каналу)</i>",
   "Who can create any bot": "Хто може створити будь-якого бота",
   "Who can create bots that send messages into Zulip": "Хто може створювати ботів, які надсилають повідомлення в Zulip",
   "Who can create private channels": "Хто може створювати приватні канали",

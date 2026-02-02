@@ -27,8 +27,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-22 02:09+0000\n"
-"PO-Revision-Date: 2025-10-21 17:38+0000\n"
-"Last-Translator: Вадим <idgart@yandex.ru>\n"
+"PO-Revision-Date: 2026-01-30 19:01+0000\n"
+"Last-Translator: Lev Shereshevsky <Lev.Shereshevsky@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django-11-"
 "x/ru/>\n"
 "Language: ru\n"
@@ -38,7 +38,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -92,9 +92,9 @@ msgid ""
 "users to join."
 msgstr ""
 "В вашей организации не осталось лицензий Zulip, и она больше не может "
-"подключать новых пользователей. Пожалуйста, [увеличьте количество лицензий]"
-"({billing_page_link}) или [отключите неактивных пользователей]"
-"({deactivate_user_help_page_link}), чтобы дать новым пользователям "
+"подключать новых пользователей. Пожалуйста, [увеличьте количество лицензий]("
+"{billing_page_link}) или [отключите неактивных пользователей]("
+"{deactivate_user_help_page_link}), чтобы дать новым пользователям "
 "возможность присоединиться."
 
 #: corporate/lib/registration.py:42
@@ -207,7 +207,7 @@ msgstr "Неизвестный способ оплаты. Пожалуйста, 
 #: corporate/lib/stripe.py:403
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
-msgstr "Что-то пошло не так. Пожалуйста, обратитесь к {email}."
+msgstr "Что-то пошло не так. Пожалуйста, свяжитесь с {email}."
 
 #: corporate/lib/stripe.py:404
 msgid "Something went wrong. Please reload the page."
@@ -227,14 +227,13 @@ msgstr ""
 
 #: corporate/lib/stripe.py:1907
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
-"Пожалуйста, укажите данные платежной карты для планирования обновления."
+msgstr "Пожалуйста, укажите данные платежной карты для планирования обновления."
 
 #: corporate/lib/stripe.py:2978
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new "
 "plan."
-msgstr "Нет возможности обновить тариф. Тарифный план истёк и заменен новым."
+msgstr "Нет возможности обновить тариф. Тарифный план истёк и заменён новым."
 
 #: corporate/lib/stripe.py:2983
 msgid "Unable to update the plan. The plan has ended."
@@ -259,13 +258,11 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
-msgstr ""
-"Ваш тариф уже включает {licenses} лицензий в текущем расчётном периоде."
+msgstr "Ваш тариф уже включает {licenses} лицензий в текущем расчётном периоде."
 
 #: corporate/lib/stripe.py:3067
 msgid "You cannot decrease the licenses in the current billing period."
-msgstr ""
-"Вы не можете уменьшить количество лицензий в текущем расчётном периоде."
+msgstr "Вы не можете уменьшить количество лицензий в текущем расчётном периоде."
 
 #: corporate/lib/stripe.py:3093
 msgid ""
@@ -295,7 +292,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py:3145
 msgid "Nothing to change."
-msgstr "Ничего не изменилось."
+msgstr "Нечего менять."
 
 #: corporate/lib/stripe.py:3430
 msgid "No customer for this organization!"
@@ -3293,8 +3290,8 @@ msgid ""
 "Your Zulip organization, %(realm_name)s, was deactivated by "
 "%(deactivating_owner)s on %(localized_date)s."
 msgstr ""
-"Ваша организация Zulip %(realm_name)sбыла отключена %(deactivating_owner)s "
-"%(localized_date)s."
+"Ваша организация Zulip %(realm_name)s была отключена %(deactivating_owner)s %"
+"(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html:18
 #: templates/zerver/emails/realm_deactivated.txt:10
@@ -3353,7 +3350,7 @@ msgstr ""
 
 #: templates/zerver/emails/realm_reactivation.html:13
 msgid "Click the button below to reactivate your organization."
-msgstr "Нажмите кнопку ниже, чтобы реактивировать вашу организацию."
+msgstr "Нажмите кнопку ниже, чтобы восстановить вашу организацию."
 
 #: templates/zerver/emails/realm_reactivation.html:14
 msgid "Reactivate organization"
@@ -3370,11 +3367,11 @@ msgstr ""
 
 #: templates/zerver/emails/realm_reactivation.subject.txt:1
 msgid "Reactivate your Zulip organization"
-msgstr "Реактивировать свою организацию Zulip"
+msgstr "Восстановить свою организацию Zulip"
 
 #: templates/zerver/emails/realm_reactivation.txt:7
 msgid "Click the link below to reactivate your organization."
-msgstr "Нажмите кнопку ниже, чтобы реактивировать вашу организацию."
+msgstr "Нажмите ссылку ниже, чтобы восстановить вашу организацию."
 
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:9
 #, python-format
@@ -3633,7 +3630,7 @@ msgstr "Русурсы"
 
 #: templates/zerver/footer.html:41
 msgid "Getting started"
-msgstr "Начать"
+msgstr "Приступаем"
 
 #: templates/zerver/footer.html:42 templates/zerver/footer.html:117
 msgid "Help center"
@@ -4192,11 +4189,11 @@ msgstr "Выберите учетную запись"
 
 #: templates/zerver/realm_reactivation.html:4
 msgid "Organization successfully reactivated"
-msgstr "Организация успешно реактивирована"
+msgstr "Организация успешно восстановлена"
 
 #: templates/zerver/realm_reactivation.html:13
 msgid "Your organization has been successfully reactivated."
-msgstr "Ваша организация успешно реактивирована."
+msgstr "Ваша организация успешно восстановлена."
 
 #: templates/zerver/realm_reactivation_link_error.html:4
 msgid "Organization reactivation link expired or invalid"
@@ -5131,7 +5128,7 @@ msgid ""
 "organization administrator to reactivate it."
 msgstr ""
 "Ваша учетная запись {username} была отключена. Пожалуйста, свяжитесь с "
-"администратором вашей организации чтобы снова её активировать."
+"администратором вашей организации чтобы восстановить ее."
 
 #: zerver/forms.py:71
 msgid "The password is too weak."
@@ -5888,7 +5885,7 @@ msgstr "Неверный оператор 'with'"
 
 #: zerver/lib/narrow.py:1290
 msgid "Missing 'anchor' argument."
-msgstr "Отсутствует параметр 'anchor'."
+msgstr "Отсутствует аргумент 'anchor'."
 
 #: zerver/lib/narrow.py:1310
 msgid "Invalid anchor"
@@ -6135,13 +6132,7 @@ msgstr ""
 "глобальном времени и других возможностях.\n"
 
 #: zerver/lib/onboarding.py:262
-#, fuzzy, python-brace-format
-#| msgid ""
-#| "\n"
-#| "Here are a few messages I understand: {bot_commands}\n"
-#| "\n"
-#| "Check out our [Getting started guide](/help/getting-started-with-zulip),\n"
-#| "or browse the [Help center](/help/) to learn more!\n"
+#, python-brace-format
 msgid ""
 "\n"
 "Here are a few messages I understand: {bot_commands}\n"
@@ -6152,9 +6143,9 @@ msgstr ""
 "\n"
 "Вот некоторые сообщения, которые я понимаю: {bot_commands}\n"
 "\n"
-"Посмотрите наше [Руководство по началу работы](/help/getting-started-with-"
-"zulip),\n"
-"или перейдите в [Центр помощи](/help/), чтобы узнать больше!\n"
+"Посмотрите наше [Руководство по началу работы]"
+"(/help/getting-started-with-zulip),\n"
+"или перейдите в [центр помощи](/help/), чтобы узнать больше!\n"
 
 #: zerver/lib/onboarding.py:269
 #, python-brace-format
@@ -6522,12 +6513,12 @@ msgstr "Ошибка отражателя push-уведомлений: {error}"
 #, python-brace-format
 msgid "Can't decide between '{var_name1}' and '{var_name2}' arguments"
 msgstr ""
-"Невозможно сделать выбор между параметрами '{var_name1}' и '{var_name2}'"
+"Невозможно сделать выбор между аргументами '{var_name1}' и '{var_name2}'"
 
 #: zerver/lib/request.py:83 zerver/lib/streams.py:682 zerver/views/typing.py:47
 #, python-brace-format
 msgid "Missing '{var_name}' argument"
-msgstr "Отсутствует параметр '{var_name}'"
+msgstr "Отсутствует аргумент '{var_name}'"
 
 #: zerver/lib/request.py:97
 #, python-brace-format
@@ -6661,7 +6652,7 @@ msgstr "Недопустимая {var_name}"
 #: zerver/lib/typed_endpoint.py:324 zerver/lib/typed_endpoint.py:339
 #, python-brace-format
 msgid "Argument \"{argument}\" at {var_name} is unexpected"
-msgstr "Непредвиденный параметр \"{argument}\" в {var_name}"
+msgstr "Непредвиденный аргумент \"{argument}\" в {var_name}"
 
 #: zerver/lib/typed_endpoint.py:325 zerver/lib/typed_endpoint.py:326
 #: zerver/lib/validator.py:166
@@ -6924,7 +6915,7 @@ msgstr "ключ {key_name} отсутствует в {var_name}"
 #: zerver/lib/validator.py:269
 #, python-brace-format
 msgid "Unexpected arguments: {keys}"
-msgstr "Непредвиденные параметры: {keys}"
+msgstr "Непредвиденные аргументы: {keys}"
 
 #: zerver/lib/validator.py:302 zerver/views/realm.py:88
 #, python-brace-format
@@ -7195,7 +7186,7 @@ msgstr "Доступно в тарифе Zulip Cloud Plus. Повысьте та
 
 #: zerver/models/realms.py:661
 msgid "GIPHY integration disabled"
-msgstr "Интеграция с GIPHY отключена"
+msgstr "Интеграция GIPHY отключена"
 
 #: zerver/models/realms.py:666
 msgid "Allow GIFs rated Y (Very young audience)"
@@ -7292,11 +7283,11 @@ msgstr "Неизвестный браузер"
 
 #: zerver/tornado/event_queue.py:749
 msgid "Missing 'queue_id' argument"
-msgstr "Отсутствует параметр 'queue_id'"
+msgstr "Отсутствует аргумент 'queue_id'"
 
 #: zerver/tornado/event_queue.py:752
 msgid "Missing 'last_event_id' argument"
-msgstr "Отсутствует параметр 'last_event_id'"
+msgstr "Отсутствует аргумент 'last_event_id'"
 
 #: zerver/tornado/event_queue.py:759
 #, python-brace-format
@@ -7603,7 +7594,7 @@ msgid ""
 "At least one of the following arguments must be present: emoji_name, "
 "emoji_code"
 msgstr ""
-"Как минимум один из следующих параметров должен присутствовать: emoji_name, "
+"Как минимум один из следующих аргументов должен присутствовать: emoji_name, "
 "emoji_code"
 
 #: zerver/views/read_receipts.py:23
@@ -7927,7 +7918,7 @@ msgstr "Пользователь отключил оповещения о наб
 
 #: zerver/views/typing.py:64
 msgid "Missing 'to' argument"
-msgstr "Отсутствует параметр 'to'"
+msgstr "Отсутствует аргумент 'to'"
 
 #: zerver/views/typing.py:69
 msgid "Empty 'to' list"
@@ -8299,11 +8290,11 @@ msgstr "{hostname} еще не зарегистрирован"
 #: zilencer/views.py:204
 #, python-brace-format
 msgid "Invalid server administrator email address: {email_reason}"
-msgstr ""
+msgstr "Неверный адрес электронной почты администратора сервера: {email_reason}"
 
 #: zilencer/views.py:248
 msgid "example.com is not a valid email domain."
-msgstr ""
+msgstr "example.com не является допустимым доменом электронной почты."
 
 #: zilencer/views.py:264 zilencer/views.py:272
 #, python-brace-format
