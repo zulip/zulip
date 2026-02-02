@@ -266,7 +266,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             # We intentionally provide the _wrong_ charset on this, so
             # that we verify that the charset detection code is not
             # overriding the value that the user claims.
-            uploaded_file.content_type = "text/plain; test-key=test_value; charset=big5"  # type: ignore[attr-defined]
+            uploaded_file.content_type = "text/plain; test-key=test_value; charset=big5"  # type: ignore[attr-defined]  # NamedTemporaryFile stub lacks content_type attr
 
             result = self.api_post(
                 self.example_user("hamlet"), "/api/v1/user_uploads", {"file": uploaded_file}
