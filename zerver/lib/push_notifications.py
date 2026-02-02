@@ -1597,7 +1597,7 @@ def send_push_notifications(
         )
         # Uses 'zerver_device_user_push_token_id_idx' index.
         with transaction.atomic(durable=True):
-            push_devices = Device.objects.select_for_update().filter(
+            push_devices = Device.objects.select_for_update(no_key=True).filter(
                 user=user_profile, push_token_id__in=delete_token_ids_int
             )
             for push_device in push_devices:
