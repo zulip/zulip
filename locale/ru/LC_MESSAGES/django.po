@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-22 02:09+0000\n"
+"POT-Creation-Date: 2026-02-02 21:47+0000\n"
 "PO-Revision-Date: 2026-01-30 19:01+0000\n"
 "Last-Translator: Lev Shereshevsky <Lev.Shereshevsky@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/zulip/django-11-"
@@ -92,9 +92,9 @@ msgid ""
 "users to join."
 msgstr ""
 "В вашей организации не осталось лицензий Zulip, и она больше не может "
-"подключать новых пользователей. Пожалуйста, [увеличьте количество лицензий]("
-"{billing_page_link}) или [отключите неактивных пользователей]("
-"{deactivate_user_help_page_link}), чтобы дать новым пользователям "
+"подключать новых пользователей. Пожалуйста, [увеличьте количество лицензий]"
+"({billing_page_link}) или [отключите неактивных пользователей]"
+"({deactivate_user_help_page_link}), чтобы дать новым пользователям "
 "возможность присоединиться."
 
 #: corporate/lib/registration.py:42
@@ -227,7 +227,8 @@ msgstr ""
 
 #: corporate/lib/stripe.py:1907
 msgid "Please add a credit card to schedule upgrade."
-msgstr "Пожалуйста, укажите данные платежной карты для планирования обновления."
+msgstr ""
+"Пожалуйста, укажите данные платежной карты для планирования обновления."
 
 #: corporate/lib/stripe.py:2978
 msgid ""
@@ -258,11 +259,13 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
-msgstr "Ваш тариф уже включает {licenses} лицензий в текущем расчётном периоде."
+msgstr ""
+"Ваш тариф уже включает {licenses} лицензий в текущем расчётном периоде."
 
 #: corporate/lib/stripe.py:3067
 msgid "You cannot decrease the licenses in the current billing period."
-msgstr "Вы не можете уменьшить количество лицензий в текущем расчётном периоде."
+msgstr ""
+"Вы не можете уменьшить количество лицензий в текущем расчётном периоде."
 
 #: corporate/lib/stripe.py:3093
 msgid ""
@@ -433,7 +436,7 @@ msgid "Method not allowed (405)"
 msgstr "Метод не разрешен (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:414
+#: zerver/actions/scheduled_messages.py:460 zerver/middleware.py:417
 msgid "Internal server error"
 msgstr "Внутренняя ошибка сервера"
 
@@ -3290,8 +3293,8 @@ msgid ""
 "Your Zulip organization, %(realm_name)s, was deactivated by "
 "%(deactivating_owner)s on %(localized_date)s."
 msgstr ""
-"Ваша организация Zulip %(realm_name)s была отключена %(deactivating_owner)s %"
-"(localized_date)s."
+"Ваша организация Zulip %(realm_name)s была отключена %(deactivating_owner)s "
+"%(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html:18
 #: templates/zerver/emails/realm_deactivated.txt:10
@@ -4698,7 +4701,7 @@ msgstr "Виджеты нельзя редактировать."
 msgid "Your organization has turned off message editing"
 msgstr "В вашей организации выключено редактирование сообщений"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1594
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1593
 msgid "You don't have permission to edit this message"
 msgstr "У вас нет прав для редактирования этого сообщения"
 
@@ -4716,18 +4719,18 @@ msgstr "{user} пометил эту тему как решенную."
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} пометил/а эту тему как нерешенную."
 
-#: zerver/actions/message_edit.py:1274
+#: zerver/actions/message_edit.py:1273
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "Эта тема была перенесена в {new_location} пользователем {user}."
 
-#: zerver/actions/message_edit.py:1278
+#: zerver/actions/message_edit.py:1277
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr ""
 "Сообщение было перенесено из этой темы в {new_location} пользователем {user}."
 
-#: zerver/actions/message_edit.py:1282
+#: zerver/actions/message_edit.py:1281
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4736,12 +4739,12 @@ msgstr ""
 "{changed_messages_count} сообщений было перенесено из этой темы в "
 "{new_location} пользователем {user}."
 
-#: zerver/actions/message_edit.py:1321
+#: zerver/actions/message_edit.py:1320
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "Эта тема была перенесена сюда из {old_location} пользователем {user}."
 
-#: zerver/actions/message_edit.py:1326
+#: zerver/actions/message_edit.py:1325
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
@@ -4749,7 +4752,7 @@ msgstr ""
 "[Сообщение]({message_link}) было перенесено сюда из {old_location} "
 "пользователем {user}."
 
-#: zerver/actions/message_edit.py:1330
+#: zerver/actions/message_edit.py:1329
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4758,19 +4761,19 @@ msgstr ""
 "{changed_messages_count} сообщений было перенесено сюда из {old_location} "
 "пользователем {user}."
 
-#: zerver/actions/message_edit.py:1588
+#: zerver/actions/message_edit.py:1587
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "У вас нет права отмечать темы в этом канале как решенные."
 
-#: zerver/actions/message_edit.py:1608
+#: zerver/actions/message_edit.py:1607
 msgid "The time limit for editing this message's topic has passed."
 msgstr "Разрешенное время редактирования темы сообщения истекло."
 
-#: zerver/actions/message_edit.py:1658
+#: zerver/actions/message_edit.py:1657
 msgid "You don't have permission to move this message"
 msgstr "У вас нет прав для переноса этого сообщения"
 
-#: zerver/actions/message_edit.py:1674
+#: zerver/actions/message_edit.py:1673
 msgid "The time limit for editing this message's channel has passed"
 msgstr "Разрешенное время для редактирования канала этого сообщения истекло"
 
@@ -4860,13 +4863,13 @@ msgstr "Виджеты: программист API послал неверное
 msgid "Widgets: {error_msg}"
 msgstr "Виджеты: {error_msg}"
 
-#: zerver/actions/realm_emoji.py:39 zerver/views/realm_emoji.py:40
+#: zerver/actions/realm_emoji.py:40 zerver/views/realm_emoji.py:40
 msgid "A custom emoji with this name already exists."
 msgstr "Пользовательский эмодзи с таким именем уже есть."
 
-#: zerver/actions/realm_emoji.py:45 zerver/lib/upload/__init__.py:336
-#: zerver/lib/upload/__init__.py:399 zerver/lib/upload/__init__.py:407
-#: zerver/lib/upload/__init__.py:430
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
+#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
+#: zerver/lib/upload/__init__.py:447
 msgid "Invalid image format"
 msgstr "Неверный формат изображения"
 
@@ -4908,15 +4911,15 @@ msgstr "Модерируемый канал должен быть закрыты
 msgid "Saved snippet does not exist."
 msgstr "Сохраненный сниппет отсутствует."
 
-#: zerver/actions/scheduled_messages.py:184
+#: zerver/actions/scheduled_messages.py:182
 msgid "Scheduled message was already sent"
 msgstr "Отложенное сообщение уже отправлено"
 
-#: zerver/actions/scheduled_messages.py:350
+#: zerver/actions/scheduled_messages.py:349
 msgid "Message could not be sent at the scheduled time."
 msgstr "Сообщение не удалось отправить в запланированное время."
 
-#: zerver/actions/scheduled_messages.py:401
+#: zerver/actions/scheduled_messages.py:400
 #, python-brace-format
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
@@ -4925,7 +4928,7 @@ msgstr ""
 "Сообщение, которое вы запланировали на {delivery_datetime}, не было "
 "отправлено из-за следующей ошибки:"
 
-#: zerver/actions/scheduled_messages.py:406
+#: zerver/actions/scheduled_messages.py:405
 msgid "[View scheduled messages](#scheduled)"
 msgstr "[Показать отложенные сообщения](#scheduled)"
 
@@ -6143,8 +6146,8 @@ msgstr ""
 "\n"
 "Вот некоторые сообщения, которые я понимаю: {bot_commands}\n"
 "\n"
-"Посмотрите наше [Руководство по началу работы]"
-"(/help/getting-started-with-zulip),\n"
+"Посмотрите наше [Руководство по началу работы](/help/getting-started-with-"
+"zulip),\n"
 "или перейдите в [центр помощи](/help/), чтобы узнать больше!\n"
 
 #: zerver/lib/onboarding.py:269
@@ -6761,7 +6764,7 @@ msgstr "Недопустимая {setting_name}"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "Загрузка превысит квоту вашей организации."
 
-#: zerver/lib/upload/__init__.py:444 zerver/lib/upload/__init__.py:446
+#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
 msgid "Image size exceeds limit"
 msgstr "Размер изображения превышает ограничения"
 
@@ -7016,12 +7019,12 @@ msgstr "Нет такой команды: {command}"
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr "`zulip_update_announcements_stream` неожиданно отключен."
 
-#: zerver/middleware.py:471
+#: zerver/middleware.py:474
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "Ошибка CSRF: {reason}"
 
-#: zerver/middleware.py:645
+#: zerver/middleware.py:648
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr "Неправильная настройка обратного прокси-сервера: {proxy_reason}"
@@ -7885,7 +7888,7 @@ msgstr "Нет подписки на канал с ID {channel_id}"
 msgid "Invalid json for submessage"
 msgstr "Неверный json для субсообщения"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:474
+#: zerver/views/tusd.py:109 zerver/views/upload.py:467
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
@@ -7894,7 +7897,7 @@ msgstr ""
 "Размер файла превышает предел ({max_size} МиБ), предусмотренный тарифом "
 "вашей организации."
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:482
+#: zerver/views/tusd.py:118 zerver/views/upload.py:475
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7903,7 +7906,7 @@ msgstr ""
 "Размер файла превышает предел, установленный для закачек этого сервера "
 "({max_size} МиБ)."
 
-#: zerver/views/tusd.py:268
+#: zerver/views/tusd.py:271
 #, python-brace-format
 msgid ""
 "Uploaded file exceeds the maximum file size for imports ({max_file_size} "
@@ -7928,27 +7931,27 @@ msgstr "Пустой список 'to'"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "Пользователь отключил оповещения о наборе текста для личных сообщений"
 
-#: zerver/views/upload.py:282
+#: zerver/views/upload.py:275
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Этот файл отсутствует или был удален.</p>"
 
-#: zerver/views/upload.py:292
+#: zerver/views/upload.py:285
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>Вы не уполномочены просматривать этот файл.</p>"
 
-#: zerver/views/upload.py:411 zerver/views/upload.py:417
+#: zerver/views/upload.py:404 zerver/views/upload.py:410
 msgid "Invalid token"
 msgstr "Неверный токен"
 
-#: zerver/views/upload.py:413
+#: zerver/views/upload.py:406
 msgid "Invalid filename"
 msgstr "Неверное имя файла"
 
-#: zerver/views/upload.py:461
+#: zerver/views/upload.py:454
 msgid "You must specify a file to upload"
 msgstr "Выберите файл для загрузки"
 
-#: zerver/views/upload.py:463 zerver/views/users.py:523
+#: zerver/views/upload.py:456 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "За раз можно загрузить только один файл"
@@ -8290,7 +8293,8 @@ msgstr "{hostname} еще не зарегистрирован"
 #: zilencer/views.py:204
 #, python-brace-format
 msgid "Invalid server administrator email address: {email_reason}"
-msgstr "Неверный адрес электронной почты администратора сервера: {email_reason}"
+msgstr ""
+"Неверный адрес электронной почты администратора сервера: {email_reason}"
 
 #: zilencer/views.py:248
 msgid "example.com is not a valid email domain."
@@ -8379,11 +8383,11 @@ msgstr "Вам необходимо сбросить пароль."
 msgid "Missing id_token parameter"
 msgstr "Отсутствует параметр id_token"
 
-#: zproject/backends.py:3551
+#: zproject/backends.py:3558
 msgid "Invalid OTP"
 msgstr "Неверный OTP"
 
-#: zproject/backends.py:3554
+#: zproject/backends.py:3561
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Нельзя одновременно использовать mobile_flow_otp и desktop_flow_otp."
 

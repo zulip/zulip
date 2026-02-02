@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-22 02:09+0000\n"
+"POT-Creation-Date: 2026-02-02 21:47+0000\n"
 "PO-Revision-Date: 2025-12-21 13:00+0000\n"
 "Last-Translator: Manuela Silva <mmsrs@sky.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
@@ -426,7 +426,7 @@ msgid "Method not allowed (405)"
 msgstr "Método não permitido (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:414
+#: zerver/actions/scheduled_messages.py:460 zerver/middleware.py:417
 msgid "Internal server error"
 msgstr "Erro interno do servidor"
 
@@ -465,9 +465,9 @@ msgid ""
 "If you administer this server, you may want to check out the <a "
 "href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>."
 msgstr ""
-"Se administrar este servidor, poderá querer ver o <a href=\"%"
-"(troubleshooting_url)s\">guia da resolução de problemas do servidor do "
-"Zulip</a>."
+"Se administrar este servidor, poderá querer ver o <a "
+"href=\"%(troubleshooting_url)s\">guia da resolução de problemas do servidor "
+"do Zulip</a>."
 
 #: templates/analytics/stats.html:6
 #, python-format
@@ -2373,8 +2373,8 @@ msgid ""
 "message content in email notifications. See %(help_url)s for more details."
 msgstr ""
 "Esta mensagem não inclui o conteúdo da mensagem porque você decidiu ocultar "
-"o conteúdo da mensagem nas notificações por correio eletrónico. Consulte %"
-"(help_url)s para mais detalhes."
+"o conteúdo da mensagem nas notificações por correio eletrónico. Consulte "
+"%(help_url)s para mais detalhes."
 
 #: templates/zerver/emails/digest.txt:32
 #, python-format
@@ -2427,8 +2427,8 @@ msgid ""
 "If you have trouble logging in, you can <a "
 "href=\"%(help_reset_password_link)s\">reset your password</a>."
 msgstr ""
-"Ser estiver com dificuldades para iniciar a sessão, pode <a href=\"%"
-"(help_reset_password_link)s\">redefinir a sua palavra-passe</a>."
+"Ser estiver com dificuldades para iniciar a sessão, pode <a "
+"href=\"%(help_reset_password_link)s\">redefinir a sua palavra-passe</a>."
 
 #: templates/zerver/emails/find_team.html:28
 #: templates/zerver/emails/find_team.txt:21
@@ -2461,8 +2461,9 @@ msgid ""
 "to find your account."
 msgstr ""
 "Pode <a href = \"%(find_accounts_link)s\" >verificar a existência de contas</"
-"a> com outro endereço de correio eletrónico, ou <a href =\"%"
-"(help_logging_in_link)s\">tentar outro método</a> para encontrar a sua conta."
+"a> com outro endereço de correio eletrónico, ou <a href "
+"=\"%(help_logging_in_link)s\">tentar outro método</a> para encontrar a sua "
+"conta."
 
 #: templates/zerver/emails/find_team.html:38
 #: templates/zerver/emails/find_team.txt:26
@@ -2595,8 +2596,8 @@ msgid ""
 "Do you have questions or feedback to share? <a href=\"mailto:"
 "%(email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
-"Tem questões ou sugestões que gostaria de partilhar? <a href=\"mailto:%"
-"(email)s\">Contacte-nos</a> — nós gostaríamos de o(a) ajudar!"
+"Tem questões ou sugestões que gostaria de partilhar? <a href=\"mailto:"
+"%(email)s\">Contacte-nos</a> — nós gostaríamos de o(a) ajudar!"
 
 #: templates/zerver/emails/missed_message.html:29
 #: templates/zerver/emails/missed_message.txt:23
@@ -2669,8 +2670,8 @@ msgid ""
 "%(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email "
 "preferences</a>."
 msgstr ""
-"Responda a esta mensagem diretamente, <a href=\"%(narrow_url)s\">veja-a em %"
-"(realm_name)s </a>, ou<a href=\"%(notif_url)s\">gira as preferências do "
+"Responda a esta mensagem diretamente, <a href=\"%(narrow_url)s\">veja-a em "
+"%(realm_name)s </a>, ou<a href=\"%(notif_url)s\">gira as preferências do "
 "correio eletrónico</a>."
 
 #: templates/zerver/emails/missed_message.html:48
@@ -2688,8 +2689,8 @@ msgid ""
 "<a href=\"%(narrow_url)s\">Reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
 msgstr ""
-"<a href=\"%(narrow_url)s\">Responda em %(realm_name)s </a>, ou<a href=\"%"
-"(notif_url)s\">gira as preferências do correio eletrónico</a>."
+"<a href=\"%(narrow_url)s\">Responda em %(realm_name)s </a>, ou<a "
+"href=\"%(notif_url)s\">gira as preferências do correio eletrónico</a>."
 
 #: templates/zerver/emails/missed_message.html:52
 #, python-format
@@ -2784,8 +2785,8 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: %(user_email)s"
 msgstr ""
-"Organização: %(organization_url)s Data/hora: %(login_time)s E-mail: %"
-"(user_email)s"
+"Organização: %(organization_url)s Data/hora: %(login_time)s E-mail: "
+"%(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -4659,7 +4660,7 @@ msgstr "Os widgets não podem ser editados."
 msgid "Your organization has turned off message editing"
 msgstr "A sua organização desativou a edição de mensagens"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1594
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1593
 msgid "You don't have permission to edit this message"
 msgstr "Não tem permissão para editar esta mensagem"
 
@@ -4677,17 +4678,17 @@ msgstr "{user} marcou este tópico como resolvido."
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} marcou este tópico como não resolvido."
 
-#: zerver/actions/message_edit.py:1274
+#: zerver/actions/message_edit.py:1273
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "Este tópico foi movido para {new_location} por {user}."
 
-#: zerver/actions/message_edit.py:1278
+#: zerver/actions/message_edit.py:1277
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "A mensagem foi movida deste tópico para {new_location} por {user}."
 
-#: zerver/actions/message_edit.py:1282
+#: zerver/actions/message_edit.py:1281
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4696,12 +4697,12 @@ msgstr ""
 "{changed_messages_count} mensagens foram movidas deste tópico para "
 "{new_location} por {user}."
 
-#: zerver/actions/message_edit.py:1321
+#: zerver/actions/message_edit.py:1320
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "Este tópico foi movido para aqui de {old_location} por {user}."
 
-#: zerver/actions/message_edit.py:1326
+#: zerver/actions/message_edit.py:1325
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
@@ -4709,7 +4710,7 @@ msgstr ""
 "[A mensagem]({message_link}) foi movida para aqui de {old_location} por "
 "{user}."
 
-#: zerver/actions/message_edit.py:1330
+#: zerver/actions/message_edit.py:1329
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4718,21 +4719,21 @@ msgstr ""
 "{changed_messages_count} mensagens foram movidas para aqui de {old_location} "
 "por {user}."
 
-#: zerver/actions/message_edit.py:1588
+#: zerver/actions/message_edit.py:1587
 #, fuzzy
 #| msgid "You do not have permission to post in this channel."
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "Não tem permissão para publicar neste canal."
 
-#: zerver/actions/message_edit.py:1608
+#: zerver/actions/message_edit.py:1607
 msgid "The time limit for editing this message's topic has passed."
 msgstr "O tempo limite para edição do tópico desta mensagem foi ultrapassado."
 
-#: zerver/actions/message_edit.py:1658
+#: zerver/actions/message_edit.py:1657
 msgid "You don't have permission to move this message"
 msgstr "Não tem permissão para mover esta mensagem"
 
-#: zerver/actions/message_edit.py:1674
+#: zerver/actions/message_edit.py:1673
 msgid "The time limit for editing this message's channel has passed"
 msgstr "O tempo limite para edição do canal desta mensagem foi ultrapassado"
 
@@ -4822,13 +4823,13 @@ msgstr "Widgets: o programador API enviou conteúdo JSON inválido"
 msgid "Widgets: {error_msg}"
 msgstr "Widgets: {error_msg}"
 
-#: zerver/actions/realm_emoji.py:39 zerver/views/realm_emoji.py:40
+#: zerver/actions/realm_emoji.py:40 zerver/views/realm_emoji.py:40
 msgid "A custom emoji with this name already exists."
 msgstr "Um emoji personalizado com este nome já existe."
 
-#: zerver/actions/realm_emoji.py:45 zerver/lib/upload/__init__.py:336
-#: zerver/lib/upload/__init__.py:399 zerver/lib/upload/__init__.py:407
-#: zerver/lib/upload/__init__.py:430
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
+#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
+#: zerver/lib/upload/__init__.py:447
 msgid "Invalid image format"
 msgstr "Formato de imagem inválido"
 
@@ -4871,15 +4872,15 @@ msgstr ""
 msgid "Saved snippet does not exist."
 msgstr ""
 
-#: zerver/actions/scheduled_messages.py:184
+#: zerver/actions/scheduled_messages.py:182
 msgid "Scheduled message was already sent"
 msgstr "Mensagem agendada já foi enviada"
 
-#: zerver/actions/scheduled_messages.py:350
+#: zerver/actions/scheduled_messages.py:349
 msgid "Message could not be sent at the scheduled time."
 msgstr "A mensagem não pôde ser enviada à hora agendada."
 
-#: zerver/actions/scheduled_messages.py:401
+#: zerver/actions/scheduled_messages.py:400
 #, python-brace-format
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
@@ -4888,7 +4889,7 @@ msgstr ""
 "A mensagem que agendou para entrega a {delivery_datetime} não foi enviada "
 "devido ao seguinte erro:"
 
-#: zerver/actions/scheduled_messages.py:406
+#: zerver/actions/scheduled_messages.py:405
 msgid "[View scheduled messages](#scheduled)"
 msgstr "[Ver mensagens agendadas](#scheduled)"
 
@@ -6700,7 +6701,7 @@ msgstr "{setting_name} inválido"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "Carregamento iria exceder a quota de carregamentos da sua organização."
 
-#: zerver/lib/upload/__init__.py:444 zerver/lib/upload/__init__.py:446
+#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
 msgid "Image size exceeds limit"
 msgstr "Tamanho de imagem excede o limite"
 
@@ -6959,12 +6960,12 @@ msgstr "Comando inexistente: {command}"
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr ""
 
-#: zerver/middleware.py:471
+#: zerver/middleware.py:474
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "Erro CSRF: {reason}"
 
-#: zerver/middleware.py:645
+#: zerver/middleware.py:648
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr "Configuração incorreta do proxy reverso: {proxy_reason}"
@@ -7832,21 +7833,21 @@ msgstr "Não está subscrito/a ao canal ID {channel_id}"
 msgid "Invalid json for submessage"
 msgstr "JSON inválido para submensagem"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:474
+#: zerver/views/tusd.py:109 zerver/views/upload.py:467
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
 "organization's plan."
 msgstr ""
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:482
+#: zerver/views/tusd.py:118 zerver/views/upload.py:475
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
 "MiB)."
 msgstr ""
 
-#: zerver/views/tusd.py:268
+#: zerver/views/tusd.py:271
 #, python-brace-format
 msgid ""
 "Uploaded file exceeds the maximum file size for imports ({max_file_size} "
@@ -7870,27 +7871,27 @@ msgstr "Lista 'para' em branco"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "Utilizador desativou notificações de escrita para mensagens privadas"
 
-#: zerver/views/upload.py:282
+#: zerver/views/upload.py:275
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Este ficheiro não existe ou foi apagado.</p>"
 
-#: zerver/views/upload.py:292
+#: zerver/views/upload.py:285
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>Não está autorizado a ver este ficheiro.</p>"
 
-#: zerver/views/upload.py:411 zerver/views/upload.py:417
+#: zerver/views/upload.py:404 zerver/views/upload.py:410
 msgid "Invalid token"
 msgstr "Código inválido"
 
-#: zerver/views/upload.py:413
+#: zerver/views/upload.py:406
 msgid "Invalid filename"
 msgstr "Nome de ficheiro inválido"
 
-#: zerver/views/upload.py:461
+#: zerver/views/upload.py:454
 msgid "You must specify a file to upload"
 msgstr "Tem de especificar um ficheiro para carregar"
 
-#: zerver/views/upload.py:463 zerver/views/users.py:523
+#: zerver/views/upload.py:456 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "Só pode carregar um ficheiro simultaneamente"
@@ -8316,11 +8317,11 @@ msgstr "É necessário repor a palavra-passe."
 msgid "Missing id_token parameter"
 msgstr "Parâmetro id_token em falta"
 
-#: zproject/backends.py:3551
+#: zproject/backends.py:3558
 msgid "Invalid OTP"
 msgstr "OTP inválido"
 
-#: zproject/backends.py:3554
+#: zproject/backends.py:3561
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Não pode usar mobile_flow_otp e desktop_flow_otp em simultâneo."
 

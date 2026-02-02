@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-22 02:09+0000\n"
+"POT-Creation-Date: 2026-02-02 21:47+0000\n"
 "PO-Revision-Date: 2025-10-27 19:44+0000\n"
 "Last-Translator: BobTB <jf@kfm.si>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/zulip/"
@@ -410,7 +410,7 @@ msgid "Method not allowed (405)"
 msgstr "Metoda ni dovoljena (405)"
 
 #: templates/500.html:4 templates/500.html:16
-#: zerver/actions/scheduled_messages.py:461 zerver/middleware.py:414
+#: zerver/actions/scheduled_messages.py:460 zerver/middleware.py:417
 msgid "Internal server error"
 msgstr "Notranja napaka strežnika"
 
@@ -4632,7 +4632,7 @@ msgstr "Pripomočkov ni mogoče urejati."
 msgid "Your organization has turned off message editing"
 msgstr "Vaša organizacija je izklopila urejanje sporočil"
 
-#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1594
+#: zerver/actions/message_edit.py:174 zerver/actions/message_edit.py:1593
 msgid "You don't have permission to edit this message"
 msgstr "Nimate dovoljenja za urejanje tega sporočila"
 
@@ -4650,17 +4650,17 @@ msgstr "{user} je to temo označil kot rešeno."
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} je to temo označil kot nerešeno."
 
-#: zerver/actions/message_edit.py:1274
+#: zerver/actions/message_edit.py:1273
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "To temo je {user} premaknil v {new_location}."
 
-#: zerver/actions/message_edit.py:1278
+#: zerver/actions/message_edit.py:1277
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "Sporočilo je {user} premaknil iz te teme v {new_location}."
 
-#: zerver/actions/message_edit.py:1282
+#: zerver/actions/message_edit.py:1281
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
@@ -4669,18 +4669,18 @@ msgstr ""
 "{changed_messages_count} sporočil je {user} premaknil iz te teme v "
 "{new_location}."
 
-#: zerver/actions/message_edit.py:1321
+#: zerver/actions/message_edit.py:1320
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "To temo je {user} premaknil sem iz {old_location}."
 
-#: zerver/actions/message_edit.py:1326
+#: zerver/actions/message_edit.py:1325
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
 msgstr "[Sporočilo]({message_link}) je {user} premaknil sem iz {old_location}."
 
-#: zerver/actions/message_edit.py:1330
+#: zerver/actions/message_edit.py:1329
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
@@ -4688,19 +4688,19 @@ msgid ""
 msgstr ""
 "{changed_messages_count} sporočil je {user} premaknil sem iz {old_location}."
 
-#: zerver/actions/message_edit.py:1588
+#: zerver/actions/message_edit.py:1587
 msgid "You don't have permission to resolve topics in this channel."
 msgstr "Nimate dovoljenja za razreševanje tem v tem kanalu."
 
-#: zerver/actions/message_edit.py:1608
+#: zerver/actions/message_edit.py:1607
 msgid "The time limit for editing this message's topic has passed."
 msgstr "Časovna omejitev za urejanje teme tega sporočila je potekla."
 
-#: zerver/actions/message_edit.py:1658
+#: zerver/actions/message_edit.py:1657
 msgid "You don't have permission to move this message"
 msgstr "Nimate dovoljenja za premikanje tega sporočila"
 
-#: zerver/actions/message_edit.py:1674
+#: zerver/actions/message_edit.py:1673
 msgid "The time limit for editing this message's channel has passed"
 msgstr "Časovna omejitev za urejanje kanala tega sporočila je potekla"
 
@@ -4790,13 +4790,13 @@ msgstr "Pripomočki: programer API je poslal neveljavno vsebino JSON"
 msgid "Widgets: {error_msg}"
 msgstr "Pripomočki: {error_msg}"
 
-#: zerver/actions/realm_emoji.py:39 zerver/views/realm_emoji.py:40
+#: zerver/actions/realm_emoji.py:40 zerver/views/realm_emoji.py:40
 msgid "A custom emoji with this name already exists."
 msgstr "Emoji po meri s tem imenom že obstaja."
 
-#: zerver/actions/realm_emoji.py:45 zerver/lib/upload/__init__.py:336
-#: zerver/lib/upload/__init__.py:399 zerver/lib/upload/__init__.py:407
-#: zerver/lib/upload/__init__.py:430
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
+#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
+#: zerver/lib/upload/__init__.py:447
 msgid "Invalid image format"
 msgstr "Neveljavna oblika slike"
 
@@ -4838,15 +4838,15 @@ msgstr "Kanal za zahteve moderiranja mora biti zaseben."
 msgid "Saved snippet does not exist."
 msgstr "Shranjeni odrezek ne obstaja."
 
-#: zerver/actions/scheduled_messages.py:184
+#: zerver/actions/scheduled_messages.py:182
 msgid "Scheduled message was already sent"
 msgstr "Načrtovano sporočilo je bilo že poslano"
 
-#: zerver/actions/scheduled_messages.py:350
+#: zerver/actions/scheduled_messages.py:349
 msgid "Message could not be sent at the scheduled time."
 msgstr "Sporočila ni bilo mogoče poslati ob načrtovanem času."
 
-#: zerver/actions/scheduled_messages.py:401
+#: zerver/actions/scheduled_messages.py:400
 #, python-brace-format
 msgid ""
 "The message you scheduled for {delivery_datetime} was not sent because of "
@@ -4855,7 +4855,7 @@ msgstr ""
 "Sporočilo, ki ste ga načrtovali za {delivery_datetime}, ni bilo poslano "
 "zaradi naslednje napake:"
 
-#: zerver/actions/scheduled_messages.py:406
+#: zerver/actions/scheduled_messages.py:405
 msgid "[View scheduled messages](#scheduled)"
 msgstr "[Ogled načrtovanih sporočil](#scheduled)"
 
@@ -6683,7 +6683,7 @@ msgstr "Neveljaven {setting_name}"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "Nalaganje bi preseglo kvoto nalaganja vaše organizacije."
 
-#: zerver/lib/upload/__init__.py:444 zerver/lib/upload/__init__.py:446
+#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
 msgid "Image size exceeds limit"
 msgstr "Velikost slike presega omejitev"
 
@@ -6942,12 +6942,12 @@ msgstr "Takšnega ukaza ni: {command}"
 msgid "`zulip_update_announcements_stream` is unexpectedly deactivated."
 msgstr "`zulip_update_announcements_stream` je nepričakovano deaktiviran."
 
-#: zerver/middleware.py:471
+#: zerver/middleware.py:474
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "Napaka CSRF: {reason}"
 
-#: zerver/middleware.py:645
+#: zerver/middleware.py:648
 #, python-brace-format
 msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr "Napačna konfiguracija povratnega posrednika: {proxy_reason}"
@@ -7802,7 +7802,7 @@ msgstr "Ni naročen na ID kanala {channel_id}"
 msgid "Invalid json for submessage"
 msgstr "Neveljaven json za podsporočilo"
 
-#: zerver/views/tusd.py:108 zerver/views/upload.py:474
+#: zerver/views/tusd.py:109 zerver/views/upload.py:467
 #, python-brace-format
 msgid ""
 "File is larger than the maximum upload size ({max_size} MiB) allowed by your "
@@ -7811,7 +7811,7 @@ msgstr ""
 "Datoteka je večja od največje velikosti nalaganja ({max_size} MiB), ki jo "
 "dovoljuje načrt vaše organizacije."
 
-#: zerver/views/tusd.py:117 zerver/views/upload.py:482
+#: zerver/views/tusd.py:118 zerver/views/upload.py:475
 #, python-brace-format
 msgid ""
 "File is larger than this server's configured maximum upload size ({max_size} "
@@ -7820,7 +7820,7 @@ msgstr ""
 "Datoteka je večja od konfigurirane največje velikosti nalaganja tega "
 "strežnika ({max_size} MiB)."
 
-#: zerver/views/tusd.py:268
+#: zerver/views/tusd.py:271
 #, python-brace-format
 msgid ""
 "Uploaded file exceeds the maximum file size for imports ({max_file_size} "
@@ -7844,27 +7844,27 @@ msgstr "Prazen seznam 'to'"
 msgid "User has disabled typing notifications for direct messages"
 msgstr "Uporabnik je onemogočil obvestila o tipkanju za neposredna sporočila"
 
-#: zerver/views/upload.py:282
+#: zerver/views/upload.py:275
 msgid "<p>This file does not exist or has been deleted.</p>"
 msgstr "<p>Ta datoteka ne obstaja ali je bila izbrisana.</p>"
 
-#: zerver/views/upload.py:292
+#: zerver/views/upload.py:285
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>Niste pooblaščeni za ogled te datoteke.</p>"
 
-#: zerver/views/upload.py:411 zerver/views/upload.py:417
+#: zerver/views/upload.py:404 zerver/views/upload.py:410
 msgid "Invalid token"
 msgstr "Neveljaven žeton"
 
-#: zerver/views/upload.py:413
+#: zerver/views/upload.py:406
 msgid "Invalid filename"
 msgstr "Neveljavno ime datoteke"
 
-#: zerver/views/upload.py:461
+#: zerver/views/upload.py:454
 msgid "You must specify a file to upload"
 msgstr "Navesti morate datoteko za nalaganje"
 
-#: zerver/views/upload.py:463 zerver/views/users.py:523
+#: zerver/views/upload.py:456 zerver/views/users.py:523
 #: zerver/views/users.py:631
 msgid "You may only upload one file at a time"
 msgstr "Naenkrat lahko naložite samo eno datoteko"
@@ -8292,11 +8292,11 @@ msgstr "Ponastaviti morate geslo."
 msgid "Missing id_token parameter"
 msgstr "Manjkajoč parameter id_token"
 
-#: zproject/backends.py:3551
+#: zproject/backends.py:3558
 msgid "Invalid OTP"
 msgstr "Neveljaven OTP"
 
-#: zproject/backends.py:3554
+#: zproject/backends.py:3561
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Ni mogoče hkrati uporabljati mobile_flow_otp in desktop_flow_otp."
 
