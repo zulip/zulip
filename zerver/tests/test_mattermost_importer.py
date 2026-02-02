@@ -192,7 +192,6 @@ class MattermostImportTestBase(ZulipTestCase):
         mattermost_data: dict[str, Any],
         imported_realm: Any,
         exported_channel_subscriber_dict: dict[str, set[str]],
-        excluded_user_emails: set[str],
     ) -> None:
         for channel_data in mattermost_data["channel"]:
             channel_name = channel_data["display_name"]
@@ -202,11 +201,7 @@ class MattermostImportTestBase(ZulipTestCase):
             self.assertEqual(imported_channel.description, channel_data["purpose"])
             self.assertEqual(imported_channel.invite_only, channel_data["type"] == "P")
 
-            # TODO: We convert guest users but don't properly subscribe them to the
-            # channels they follow.
-            expected_subscribers = set(
-                exported_channel_subscriber_dict[mattermost_channel_id]
-            ).difference(excluded_user_emails)
+            expected_subscribers = set(exported_channel_subscriber_dict[mattermost_channel_id])
 
             self.assertSetEqual(
                 expected_subscribers,
@@ -1583,7 +1578,6 @@ class MattermostV1110ImportTest(MattermostImportTestBase):
                 mattermost_data=mattermost_data,
                 imported_realm=imported_realm,
                 exported_channel_subscriber_dict=user_map_data.exported_channel_subscriber_dict,
-                excluded_user_emails=self.GUEST_EMAILS,
             )
 
         with self.subTest("test channel message conversion"):
