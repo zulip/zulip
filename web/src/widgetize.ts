@@ -95,8 +95,9 @@ export function activate(in_opts: ActivateArguments): void {
 
 export function handle_event(widget_event: Event & {message_id: number}): void {
     const generic_widget = generic_widget_map.get(widget_event.message_id);
+    const $message_row = message_lists.current?.get_row(widget_event.message_id);
 
-    if (!generic_widget || message_lists.current?.get_row(widget_event.message_id).length === 0) {
+    if (!generic_widget || !$message_row || $message_row.length === 0) {
         // It is common for submessage events to arrive on
         // messages that we don't yet have in view. We
         // just ignore them completely here.
