@@ -741,6 +741,88 @@ class ZulipLDAPSettings(LDAPSettings):
         }
 
 
+def get_and_sync_user_profile_by_external_auth_id(
+    *,
+    external_auth_method_name: str,
+    external_auth_id: str,
+    email: str,
+    realm: Realm,
+    return_data: dict[str, Any],
+    logger: logging.Logger,
+) -> UserProfile | None:
+    """Look up a user by their external auth ID, with email syncing.
+
+    If we're using External Auth ID based auth, then the lookup by
+    external_auth_id takes precedence over lookup by email. If the
+    user is found by external_auth_id but has a different email, we
+    sync the email (unless there's a conflict).
+
+    On first login (no ExternalAuthID record yet), we fall back to
+    email lookup and create the ExternalAuthID record.
+    """
+    try:
+        user_profile: UserProfile | None = ExternalAuthID.objects.get(
+            external_auth_method_name=external_auth_method_name,
+            external_auth_id=external_auth_id,
+            realm=realm,
+        ).user
+    except ExternalAuthID.DoesNotExist:
+        user_profile = common_get_active_user(email, realm, return_data)
+        if user_profile is not None:
+            # If we found an account with the matching email, but no ExternalAuthID, then this account hasn't
+            # yet had its external_auth_id stored - we need to do this now.
+            ExternalAuthID.objects.create(
+                external_auth_method_name=external_auth_method_name,
+                external_auth_id=external_auth_id,
+                realm=realm,
+                user=user_profile,
+            )
+        return user_profile
+
+    assert user_profile is not None
+    # We found a user with the matching external_auth_id. Now we need to do a seemingly redundant
+    # re-fetching via common_get_active_user - as that's the core function for securely fetching
+    # a user for login, in authentication contexts. It's responsible for the relevant security
+    # checks (such as the account being active) - we don't attempt to duplicate these checks
+    # here independently.
+    user_profile = common_get_active_user(user_profile.delivery_email, realm, return_data)
+    if user_profile is None:
+        return None
+
+    # We need to ensure the email address of the Zulip account remains synced with what's
+    # in the external auth directory. That's the point of external_auth_id-based authentication.
+    if user_profile.delivery_email != email:
+        # We intentionally do a case-sensitive comparison, despite emails in Zulip being
+        # case-insensitive in auth contexts. We want to support the case of sync tweaking just
+        # capitalization of the email address.
+        logger.info(
+            "User %s, logged in via ExternalAuthId %s, has mismatched email. Syncing: %s => %s",
+            user_profile.id,
+            external_auth_id,
+            user_profile.delivery_email,
+            email,
+        )
+        if (
+            UserProfile.objects.filter(realm=realm, delivery_email__iexact=email)
+            # The EXISTS query has a somewhat strange shape because we need
+            # to again consider the edge case where we might be simply
+            # updating capitalization of the email for the user. In such a
+            # situation, a "conflict" on (realm, delivery_email__iexact) is
+            # not an actual conflict.
+            .exclude(id=user_profile.id)
+            .exists()
+        ):
+            logger.warning(
+                "Can't sync email for user %s: another user exists with target email %s",
+                user_profile.id,
+                email,
+            )
+        else:
+            do_change_user_delivery_email(user_profile, email, acting_user=None)
+
+    return user_profile
+
+
 class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     """Common code between LDAP authentication (ZulipLDAPAuthBackend) and
     using LDAP just to sync user data (ZulipLDAPUserPopulator).
@@ -1098,73 +1180,6 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         return user
 
-    def get_and_sync_user_profile_by_external_auth_id(
-        self, external_auth_id: str, email: str, return_data: dict[str, Any]
-    ) -> UserProfile | None:
-        # If we're using External Auth ID based auth, then the lookup by
-        # external_auth_id takes precedence over lookup by email.
-        try:
-            user_profile: UserProfile | None = ExternalAuthID.objects.get(
-                external_auth_method_name=self.name,
-                external_auth_id=external_auth_id,
-                realm=self._realm,
-            ).user
-        except ExternalAuthID.DoesNotExist:
-            user_profile = common_get_active_user(email, self._realm, return_data)
-            if user_profile is not None:
-                # If we found an account with the matching email, but no ExternalAuthID, then this account hasn't
-                # yet had its external_auth_id stored - we need to do this now.
-                ExternalAuthID.objects.create(
-                    external_auth_method_name=self.name,
-                    external_auth_id=external_auth_id,
-                    realm=self._realm,
-                    user=user_profile,
-                )
-            return user_profile
-
-        assert user_profile is not None
-        # We found a user with the matching external_auth_id. Now we need to do a seemingly redundant
-        # re-fetching via common_get_active_user - as that's the core function for securely fetching
-        # a user for login, in authentication contexts. It's responsible for the relevant security
-        # checks (such as the account being active) - we don't attempt to duplicate these checks
-        # here independently.
-        user_profile = common_get_active_user(user_profile.delivery_email, self._realm, return_data)
-        if user_profile is None:
-            return None
-
-        # We need to ensure the email address of the Zulip account remains synced with what's in the ldap
-        # directory. That's the point of external_auth_id-based authentication.
-        if user_profile.delivery_email != email:
-            # We intentionally do a case-sensitive comparison, despite emails in Zulip being
-            # case-insensitive in auth contexts. We want to support the case of sync tweaking just
-            # capitalization of the email address.
-            self.logger.info(
-                "User %s, logged in via ExternalAuthId %s, has mismatched email. Syncing: %s => %s",
-                user_profile.id,
-                external_auth_id,
-                user_profile.delivery_email,
-                email,
-            )
-            if (
-                UserProfile.objects.filter(realm=self._realm, delivery_email__iexact=email)
-                # The EXISTS query has a somewhat strange shape because we need
-                # to again consider the edge case where we might be simply
-                # updating capitalization of the email for the user. In such a
-                # situation, a "conflict" on (realm, delivery_email__iexact) is
-                # not an actual conflict.
-                .exclude(id=user_profile.id)
-                .exists()
-            ):
-                self.logger.warning(
-                    "Can't sync email for user %s: another user exists with target email %s",
-                    user_profile.id,
-                    email,
-                )
-            else:
-                do_change_user_delivery_email(user_profile, email, acting_user=None)
-
-        return user_profile
-
     def get_or_build_user(
         self, username: str, ldap_user: "ZulipLDAPUser"
     ) -> tuple[UserProfile, bool]:
@@ -1201,8 +1216,13 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 raise ZulipLDAPError("User has been deactivated")
 
         if ldap_external_auth_id_sync_enabled() and external_auth_id:
-            user_profile = self.get_and_sync_user_profile_by_external_auth_id(
-                external_auth_id, email, return_data
+            user_profile = get_and_sync_user_profile_by_external_auth_id(
+                external_auth_method_name=self.name,
+                external_auth_id=external_auth_id,
+                email=email,
+                realm=self._realm,
+                return_data=return_data,
+                logger=self.logger,
             )
         else:
             user_profile = common_get_active_user(email, self._realm, return_data)
