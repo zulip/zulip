@@ -718,7 +718,7 @@ h4.user_group_setting_subsection_title {
 
 .stream_name_search_section,
 .group_name_search_section {
-    padding: 8px 10px;
+    padding: 0.5em 0.625em; /* 8px 10px at 16px font size */
     display: grid;
     border-bottom: 1px solid var(--color-border-modal-bar);
 }
