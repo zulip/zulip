@@ -216,6 +216,8 @@ def convert_channel_data(
                         channel_admins_map[mattermost_channel_id].append(username)
                     elif "channel_user" in channel_roles:
                         channel_members_map[mattermost_channel_id].append(username)
+                    elif "channel_guest" in channel_roles:
+                        channel_members_map[mattermost_channel_id].append(username)
 
     def get_invite_only_value_from_channel_type(channel_type: str) -> bool:
         # Channel can have two types in Mattermost
