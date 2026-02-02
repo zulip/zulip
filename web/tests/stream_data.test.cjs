@@ -239,30 +239,30 @@ test("basics", () => {
     assert.ok(!stream_data.is_default_stream_id(999999));
 
     // "new" correct url formats
-    assert.equal(stream_data.slug_to_stream_id("2-social"), 2);
+    assert.equal(stream_data.slug_to_stream_id("2-social"), 2n);
     assert.equal(hash_util.decode_operand("channel", "2-social"), "2");
 
-    assert.equal(stream_data.slug_to_stream_id("2"), 2);
+    assert.equal(stream_data.slug_to_stream_id("2"), 2n);
     assert.equal(hash_util.decode_operand("channel", "2"), "2");
 
     // we still get 2 because it's a valid stream id
-    assert.equal(stream_data.slug_to_stream_id("2-whatever"), 2);
+    assert.equal(stream_data.slug_to_stream_id("2-whatever"), 2n);
     assert.equal(stream_data.slug_to_stream_id("2-"), 2);
 
     // legacy, we recognize "social" as a valid channel name
-    assert.equal(stream_data.slug_to_stream_id("social"), 2);
+    assert.equal(stream_data.slug_to_stream_id("social"), 2n);
     assert.equal(hash_util.decode_operand("channel", "social"), "2");
 
     // These aren't prepended with valid ids nor valid channel names. Return
     // the channel ID, since almost all URLs are the modern format and the
     // most likely explanation is an inaccessible channel.
-    assert.equal(stream_data.slug_to_stream_id("999-social"), 999);
+    assert.equal(stream_data.slug_to_stream_id("999-social"), 999n);
     assert.equal(hash_util.decode_operand("channel", "999-social"), "999");
 
-    assert.equal(stream_data.slug_to_stream_id("99-whatever"), 99);
+    assert.equal(stream_data.slug_to_stream_id("99-whatever"), 99n);
     assert.equal(hash_util.decode_operand("channel", "99-whatever"), "99");
 
-    assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), 25);
+    assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), 25n);
     assert.equal(hash_util.decode_operand("channel", "25-or-6-to-4"), "25");
 
     // If this is the name of a stream, its id is returned.
@@ -279,13 +279,13 @@ test("basics", () => {
         is_web_public: false,
     };
     stream_data.add_sub_for_tests(stream_starting_with_25);
-    assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), 400);
+    assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), 400n);
     assert.equal(hash_util.decode_operand("channel", "25-or-6-to-4"), "400");
 
     assert.equal(stream_data.slug_to_stream_id("2something"), undefined);
     assert.equal(hash_util.decode_operand("channel", "2something"), "");
 
-    assert.equal(stream_data.slug_to_stream_id("99"), 99);
+    assert.equal(stream_data.slug_to_stream_id("99"), 99n);
     assert.equal(hash_util.decode_operand("channel", "99"), "99");
     // If this is the name of a stream, its id is returned.
     const stream_99 = {
@@ -296,7 +296,7 @@ test("basics", () => {
         can_subscribe_group: admins_group.id,
     };
     stream_data.add_sub_for_tests(stream_99);
-    assert.equal(stream_data.slug_to_stream_id("99"), 401);
+    assert.equal(stream_data.slug_to_stream_id("99"), 401n);
     assert.equal(hash_util.decode_operand("channel", "99"), "401");
     // But if there's a stream with id 99, it gets priority over
     // a stream with name "99".
@@ -308,7 +308,7 @@ test("basics", () => {
         can_subscribe_group: admins_group.id,
     };
     stream_data.add_sub_for_tests(stream_id_99);
-    assert.equal(stream_data.slug_to_stream_id("99"), 99);
+    assert.equal(stream_data.slug_to_stream_id("99"), 99n);
     assert.equal(hash_util.decode_operand("channel", "99"), "99");
 
     // sub_store

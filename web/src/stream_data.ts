@@ -57,8 +57,8 @@ class BinaryDict<T> {
             - autocomplete stream in compose
     */
 
-    trues = new Map<number, T>();
-    falses = new Map<number, T>();
+    trues = new Map<number | BigInt, T>();
+    falses = new Map<number | BigInt, T>();
     pred: (v: T) => boolean;
 
     constructor(pred: (v: T) => boolean) {
@@ -82,7 +82,7 @@ class BinaryDict<T> {
         yield* this.falses.values();
     }
 
-    get(k: number): T | undefined {
+    get(k: number | BigInt): T | undefined {
         const res = this.trues.get(k);
 
         if (res !== undefined) {
@@ -248,7 +248,7 @@ export function id_to_slug(stream_id: number): string {
     return `${stream_id}-${name}`;
 }
 
-export function slug_to_stream_id(slug: string): number | undefined {
+export function slug_to_stream_id(slug: string): number | BigInt | undefined {
     /*
     Modern stream slugs look like this, where 42
     is a stream id:
@@ -284,7 +284,7 @@ export function slug_to_stream_id(slug: string): number | undefined {
 
     // "New" (2018) format: ${stream_id}-${stream_name} .
     const match = /^(\d+)(?:-.*)?$/.exec(slug);
-    const newFormatStreamId = match ? Number.parseInt(match[1]!, 10) : null;
+    const newFormatStreamId = match ? BigInt(match[1]!) : null;
     if (newFormatStreamId !== null && stream_info.get(newFormatStreamId)) {
         return newFormatStreamId;
     }
