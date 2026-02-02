@@ -393,4 +393,27 @@ export const update_elements = ($content: JQuery): void => {
             .contents()
             .unwrap();
     }
+
+    $content.find(".message_embed_image").each(function (): void {
+        const width_str = $(this).attr("data-image-width");
+        const height_str = $(this).attr("data-image-height");
+
+        if (width_str && height_str) {
+            const width = Number.parseInt(width_str, 10);
+            const height = Number.parseInt(height_str, 10);
+
+            if (width > 0 && height > 0) {
+                // Keep height fixed at 100px, adjust width to preserve aspect ratio
+                const aspect_ratio = width / height;
+                const fixed_height = 100;
+                const calculated_width = Math.round(fixed_height * aspect_ratio);
+
+                // Cap width at reasonable maximum to prevent layout issues
+                const max_width = 250;
+                const final_width = Math.min(calculated_width, max_width);
+
+                $(this).css("width", `${final_width}px`);
+            }
+        }
+    });
 };

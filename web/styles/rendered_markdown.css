@@ -732,7 +732,7 @@
     .message_embed {
         display: grid;
         grid-template-columns:
-            [thumbnail-start] var(--length-message-preview-embeds)
+            [thumbnail-start] auto
             [thumbnail-end fader-start data-container-start] minmax(0, 1fr)
             [data-container-end fader-end];
         grid-template-rows:
@@ -790,7 +790,9 @@
             display: block;
             grid-area: thumbnail;
             /* Keep the embed image square. */
+            height: var(--length-message-preview-embeds);
             max-height: var(--length-message-preview-embeds);
+            max-width: 500px;
             background-size: cover;
             background-position: center;
         }
