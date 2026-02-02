@@ -26,6 +26,8 @@ exports.make_user_group = (opts = {}) => {
         can_mention_group: 0,
         can_remove_members_group: 0,
         deactivated: false,
+        color: "",
+        color_priority: null,
         ...opts,
     };
 };

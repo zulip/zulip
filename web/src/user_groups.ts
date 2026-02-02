@@ -1,3 +1,5 @@
+import {colord, extend} from "colord";
+import lchPlugin from "colord/plugins/lch";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -8,7 +10,10 @@ import * as settings_config from "./settings_config.ts";
 import type {GroupPermissionSetting, GroupSettingValue, StateData} from "./state_data.ts";
 import {current_user, raw_user_group_schema, realm} from "./state_data.ts";
 import type {UserOrMention} from "./typeahead_helper.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
+
+extend([lchPlugin]);
 
 type UserGroupRaw = z.infer<typeof raw_user_group_schema>;
 
@@ -56,6 +61,8 @@ export function add(user_group_raw: UserGroupRaw): UserGroup {
         can_mention_group: user_group_raw.can_mention_group,
         can_remove_members_group: user_group_raw.can_remove_members_group,
         deactivated: user_group_raw.deactivated,
+        color: user_group_raw.color,
+        color_priority: user_group_raw.color_priority,
     };
 
     user_group_name_dict.set(user_group.name, user_group);
@@ -130,6 +137,18 @@ export function update(event: UserGroupUpdateEvent, group: UserGroup): void {
 
     if (event.data.can_remove_members_group !== undefined) {
         group.can_remove_members_group = event.data.can_remove_members_group;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+
+    if (event.data.color !== undefined) {
+        group.color = event.data.color;
+        user_group_name_dict.delete(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+
+    if (event.data.color_priority !== undefined) {
+        group.color_priority = event.data.color_priority;
         user_group_name_dict.delete(group.name);
         user_group_name_dict.set(group.name, group);
     }
@@ -327,6 +346,48 @@ export function get_user_groups_of_user(
     const user_groups_realm = get_realm_user_groups(include_deactivated_groups);
     const groups_of_user = user_groups_realm.filter((group) => is_user_in_group(group.id, user_id));
     return groups_of_user;
+}
+
+export function get_color_for_user(user_id: number): string {
+    const user_groups = get_user_groups_of_user(user_id);
+    let best_color = "";
+    let best_priority: number | null = null;
+    for (const group of user_groups) {
+        if (
+            group.color !== "" &&
+            group.color_priority !== null &&
+            (best_priority === null || group.color_priority < best_priority)
+        ) {
+            best_priority = group.color_priority;
+            best_color = group.color;
+        }
+    }
+    return best_color;
+}
+
+export function get_user_name_color(hex_color: string): string {
+    if (hex_color === "") {
+        return "";
+    }
+    // Use LCH color space to ensure readability in both light and dark themes.
+    // Clamp lightness: max ~45 for light theme, min ~55 for dark theme.
+    const color = colord(hex_color).toLch();
+    const using_dark_theme =
+        user_settings.color_scheme === settings_config.color_scheme_values.dark.code ||
+        (user_settings.color_scheme === settings_config.color_scheme_values.automatic.code &&
+            window.matchMedia?.("(prefers-color-scheme: dark)").matches);
+    if (using_dark_theme) {
+        const min_lightness = 55;
+        if (color.l < min_lightness) {
+            color.l = min_lightness;
+        }
+    } else {
+        const max_lightness = 45;
+        if (color.l > max_lightness) {
+            color.l = max_lightness;
+        }
+    }
+    return colord(color).toHex();
 }
 
 export function get_recursive_subgroups(target_user_group: UserGroup): Set<number> | undefined {
