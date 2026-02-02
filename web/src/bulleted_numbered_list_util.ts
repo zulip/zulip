@@ -26,21 +26,6 @@ export const get_indentation = (line: string): string => {
     return match![1]!;
 };
 
-// Get the bullet or number prefix with indentation
-export const get_list_item_prefix = (line: string): string => {
-    const indentation = get_indentation(line);
-    const trimmed = line.trimStart();
-
-    if (is_bulleted(trimmed)) {
-        return indentation + trimmed.slice(0, 2);
-    }
-    if (is_numbered(trimmed)) {
-        const end_of_number = trimmed.indexOf(" ");
-        return indentation + trimmed.slice(0, end_of_number + 1);
-    }
-    return "";
-};
-
 export const strip_bullet = (line: string): string => line.slice(2);
 
 export const strip_numbering = (line: string): string => line.slice(line.indexOf(" ") + 1);
