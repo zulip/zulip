@@ -1,0 +1,16 @@
+{
+    "state": "success",
+    "target_url": "https://example.com/build/1",
+    "description": "Build successful",
+    "context": "ci/build",
+    "sha": "abc1234",
+    "repository": {
+        "name": "zulip",
+        "full_name": "zulip/zulip",
+        "html_url": "https://github.com/zulip/zulip",
+        "private": false
+    },
+    "sender": {
+        "login": "github-actions"
+    }
+}
