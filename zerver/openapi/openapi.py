@@ -105,7 +105,9 @@ class OpenAPISpec:
         self.mtime: float | None = None
         self._openapi: dict[str, Any] = {}
         self._endpoints_dict: dict[str, str] = {}
-        self._spec: OpenAPI | None = None
+        self._spec_dict: dict[str, Any] = {}
+        self._spec_base: dict[str, Any] = {}
+        self._endpoint_specs: dict[str, OpenAPI] = {}
         self._yaml_hash: str = ""
 
     @staticmethod
@@ -206,11 +208,33 @@ class OpenAPISpec:
 
         openapi = self._load_openapi_dict()
 
-        self._spec = OpenAPI.from_dict(openapi)  # type: ignore[arg-type]  # dict is a Mapping
+        # Store the raw spec dict for building per-endpoint validators
+        # lazily, rather than parsing all 99 endpoints up front.
+        self._spec_dict = openapi
+        self._spec_base = {k: v for k, v in openapi.items() if k != "paths"}
+        self._endpoint_specs = {}
 
         self._openapi = self._load_merged_dict(openapi)
         self.create_endpoints_dict()
         self.mtime = mtime
+
+    def spec_for_endpoint(self, endpoint: str) -> OpenAPI:
+        """Return an OpenAPI validator for a single endpoint.
+
+        Building the validator for one endpoint is much cheaper than
+        building one for the entire spec (~0.14s vs ~0.70s), so this
+        is a significant win when running a small number of tests.
+        """
+        self.check_reload()
+        cached = self._endpoint_specs.get(endpoint)
+        if cached is not None:
+            return cached
+
+        mini_spec: dict[str, Any] = dict(self._spec_base)
+        mini_spec["paths"] = {endpoint: self._spec_dict["paths"][endpoint]}
+        spec = OpenAPI.from_dict(mini_spec)  # type: ignore[arg-type]  # dict is a Mapping
+        self._endpoint_specs[endpoint] = spec
+        return spec
 
     def create_endpoints_dict(self) -> None:
         # Algorithm description:
@@ -264,15 +288,6 @@ class OpenAPISpec:
         self.check_reload()
         assert len(self._endpoints_dict) > 0
         return self._endpoints_dict
-
-    def spec(self) -> OpenAPI:
-        """Reload the OpenAPI file if it has been modified after the last time
-        it was read, and then return the openapi_core validator object. Similar
-        to preceding functions. Used for proper access to OpenAPI objects.
-        """
-        self.check_reload()
-        assert self._spec is not None
-        return self._spec
 
 
 class SchemaError(Exception):
@@ -580,7 +595,7 @@ def validate_test_response(request: Request, response: Response) -> bool:
         return True
 
     try:
-        openapi_spec.spec().validate_response(request, response)
+        openapi_spec.spec_for_endpoint(endpoint).validate_response(request, response)
     except OpenAPIValidationError as error:
         message = f"Response validation error at {method} /api/v1{path} ({status_code}):"
         message += f"\n\n{type(error).__name__}: {error}"
@@ -696,11 +711,21 @@ def validate_test_request(
     if status_code.startswith("2") and intentionally_undocumented:
         return
 
+    # Resolve the OpenAPI endpoint for this URL so that we can build
+    # a per-endpoint validator (much cheaper than the full spec).
+    if url in openapi_spec.openapi()["paths"]:
+        endpoint = url
+    else:
+        resolved = find_openapi_endpoint(url)
+        if resolved is None:
+            raise AssertionError(f"Could not find OpenAPI docs for for {url}")
+        endpoint = resolved
+
     # Now using the openapi_core APIs, validate the request schema
     # against the OpenAPI documentation.
     try:
-        openapi_spec.spec().validate_request(request)
-    except OpenAPIValidationError as error:
+        openapi_spec.spec_for_endpoint(endpoint).validate_request(request)
+    except OpenAPIValidationError as error:  # nocoverage
         # Show a block error message explaining the options for fixing it.
         msg = f"""
 
