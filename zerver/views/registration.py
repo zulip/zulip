@@ -157,7 +157,11 @@ logger = logging.getLogger("zulip.registration")
 
 @typed_endpoint
 def get_prereg_key_and_redirect(
-    request: HttpRequest, *, confirmation_key: PathOnly[str], full_name: str | None = None
+    request: HttpRequest,
+    *,
+    confirmation_key: PathOnly[str],
+    full_name: str | None = None,
+    next: str = "",
 ) -> HttpResponse:
     """
     The purpose of this little endpoint is primarily to take a GET
@@ -194,6 +198,7 @@ def get_prereg_key_and_redirect(
             "key": confirmation_key,
             "full_name": full_name,
             "registration_url": registration_url,
+            "next": next,
         },
     )
 
@@ -284,6 +289,7 @@ def registration_helper(
     form_full_name: Annotated[str | None, ApiParamConfig("full_name")] = None,
     from_confirmation: str | None = None,
     key: str = "",
+    next: str = "",
     slack_access_token: str | None = None,
     source_realm_id: Annotated[NonNegativeInt | None, non_negative_int_or_none_validator()] = None,
     start_slack_import: Json[bool] = False,
@@ -784,7 +790,7 @@ def registration_helper(
                 user_profile = user
                 if not realm_creation:
                     # Since we'll have created a user, we now just log them in.
-                    return login_and_go_to_home(request, user_profile)
+                    return login_and_redirect(request, user_profile, next)
                 # With realm_creation=True, we're going to return further down,
                 # after finishing up the creation process.
 
@@ -886,7 +892,7 @@ def registration_helper(
             return redirect("/")
 
         assert isinstance(auth_result, UserProfile)
-        return login_and_go_to_home(request, auth_result)
+        return login_and_redirect(request, auth_result, next)
 
     default_email_address_visibility = None
     if realm is not None:
@@ -922,6 +928,7 @@ def registration_helper(
         "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
         "how_realm_creator_found_zulip_options": RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
     }
+    context["next"] = next
 
     if realm_creation:
         # Add context for realm creation part of the form.
@@ -930,7 +937,9 @@ def registration_helper(
     return TemplateResponse(request, "zerver/create_user/register.html", context=context)
 
 
-def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+def login_and_redirect(
+    request: HttpRequest, user_profile: UserProfile, next: str = ""
+) -> HttpResponse:
     mobile_flow_otp = get_expirable_session_var(
         request.session, "registration_mobile_flow_otp", delete=True
     )
@@ -953,9 +962,14 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
         )
 
     do_login(request, user_profile)
-    # Using 'mark_sanitized' to work around false positive where Pysa thinks
-    # that 'user_profile' is user-controlled
-    return HttpResponseRedirect(mark_sanitized(user_profile.realm.url) + reverse("home"))
+    if next:
+        redirect_to = get_safe_redirect_to(next, user_profile.realm.url)
+    else:
+        # Using 'mark_sanitized' to work around false positive where Pysa thinks
+        # that 'user_profile' is user-controlled
+        redirect_to = mark_sanitized(user_profile.realm.url) + reverse("home")
+
+    return HttpResponseRedirect(redirect_to)
 
 
 def prepare_activation_url(
@@ -1764,6 +1778,7 @@ def accounts_home(
         current_url=request.get_full_path,
         multiuse_object_key=multiuse_object_key,
         from_multiuse_invite=from_multiuse_invite,
+        next=request.GET.get("next", ""),
     )
     return render(request, "zerver/create_user/accounts_home.html", context=context)
 

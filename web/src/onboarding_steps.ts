@@ -4,6 +4,7 @@ import type * as z from "zod/mini";
 
 import render_navigation_tour_video_modal from "../templates/navigation_tour_video_modal.hbs";
 
+import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -80,6 +81,10 @@ function narrow_to_dm_with_welcome_bot_new_user(
             (onboarding_step) => onboarding_step.name === "narrow_to_dm_with_welcome_bot_new_user",
         )
     ) {
+        if (!browser_history.is_current_hash_home_view()) {
+            post_onboarding_step_as_read("narrow_to_dm_with_welcome_bot_new_user");
+            return;
+        }
         show_message_view(
             [
                 {
