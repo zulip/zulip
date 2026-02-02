@@ -177,6 +177,7 @@ def maybe_send_to_registration(
     mobile_flow_otp: str | None = None,
     multiuse_object_key: str = "",
     params_to_store_in_authenticated_session: dict[str, str] | None = None,
+    redirect_to: str | None = None,
     role: int | None = None,
 ) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
@@ -337,6 +338,10 @@ def maybe_send_to_registration(
         prereg_user.save()
 
         confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
+        if redirect_to:
+            confirmation_link = append_url_query_string(
+                confirmation_link, urlencode({"next": redirect_to})
+            )
         if is_signup:
             return redirect(confirmation_link)
 
@@ -379,6 +384,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
         "multiuse_object_key",
         "full_name_validated",
         "params_to_store_in_authenticated_session",
+        "redirect_to",
     ]
     for key in dict(kwargs):
         if key not in kwargs_to_pass:
