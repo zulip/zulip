@@ -442,7 +442,7 @@ def do_revoke_user_invite(
         event_time=timezone_now(),
         acting_user=acting_user,
         extra_data={
-            "confirmation_key": confirmation.confirmation_key,
+            "confirmation_id": confirmation.id,
             "invitation_type": Confirmation.INVITATION,
             "invitation_object_id": prereg_user.id,
         },
@@ -474,7 +474,7 @@ def do_revoke_multi_use_invite(
         event_time=timezone_now(),
         acting_user=acting_user,
         extra_data={
-            "confirmation_key": confirmation.confirmation_key,
+            "confirmation_id": confirmation.id,
             "invitation_type": Confirmation.MULTIUSE_INVITE,
             "invitation_object_id": multiuse_invite.id,
         },
