@@ -808,10 +808,14 @@ def get_direct_memberships_of_users(user_group: UserGroup, members: list[UserPro
 
 def get_recursive_subgroups_union_for_groups(user_group_ids: list[int]) -> QuerySet[UserGroup]:
     cte = CTE.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
-        .values(group_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+        lambda cte: (
+            UserGroup.objects.filter(id__in=user_group_ids)
+            .values(group_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id")
+                )
+            )
         )
     )
     return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id))
@@ -819,9 +823,11 @@ def get_recursive_subgroups_union_for_groups(user_group_ids: list[int]) -> Query
 
 def get_recursive_supergroups_union_for_groups(user_group_ids: list[int]) -> QuerySet[UserGroup]:
     cte = CTE.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
-        .values(group_id=F("id"))
-        .union(cte.join(UserGroup, direct_subgroups=cte.col.group_id).values(group_id=F("id")))
+        lambda cte: (
+            UserGroup.objects.filter(id__in=user_group_ids)
+            .values(group_id=F("id"))
+            .union(cte.join(UserGroup, direct_subgroups=cte.col.group_id).values(group_id=F("id")))
+        )
     )
     return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id))
 
@@ -835,10 +841,14 @@ def get_recursive_strict_subgroups(user_group: UserGroup) -> QuerySet[NamedUserG
     # user_group passed.
     direct_subgroup_ids = user_group.direct_subgroups.all().values("id")
     cte = CTE.recursive(
-        lambda cte: NamedUserGroup.objects.filter(id__in=direct_subgroup_ids)
-        .values(group_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+        lambda cte: (
+            NamedUserGroup.objects.filter(id__in=direct_subgroup_ids)
+            .values(group_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id")
+                )
+            )
         )
     )
     return with_cte(cte, select=cte.join(NamedUserGroup, id=cte.col.group_id))
@@ -927,10 +937,14 @@ def get_recursive_subgroups_for_groups(
     user_group_ids: Iterable[int], realm: Realm
 ) -> QuerySet[NamedUserGroup]:
     cte = CTE.recursive(
-        lambda cte: NamedUserGroup.objects.filter(id__in=user_group_ids, realm_for_sharding=realm)
-        .values(group_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+        lambda cte: (
+            NamedUserGroup.objects.filter(id__in=user_group_ids, realm_for_sharding=realm)
+            .values(group_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id")
+                )
+            )
         )
     )
     recursive_subgroups = with_cte(cte, select=cte.join(NamedUserGroup, id=cte.col.group_id))
@@ -944,11 +958,13 @@ def get_root_id_annotated_recursive_subgroups_for_groups(
     # each group root_id and annotates it with that group.
 
     cte = CTE.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids, realm=realm_id)
-        .values(group_id=F("id"), root_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
-                group_id=F("id"), root_id=cte.col.root_id
+        lambda cte: (
+            UserGroup.objects.filter(id__in=user_group_ids, realm=realm_id)
+            .values(group_id=F("id"), root_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id"), root_id=cte.col.root_id
+                )
             )
         )
     )
