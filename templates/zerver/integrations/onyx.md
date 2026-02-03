@@ -10,21 +10,22 @@ base!
 1. [Subscribe the bot][subscribe-channels] to the Zulip channels that you
    want to export.
 
-1. Copy the bot's credentials by clicking the **copy**
-   (<i class="zulip-icon zulip-icon-copy"></i>) icon under the bot's name.
+1. [Download the `zuliprc` file](/help/manage-a-bot#download-zuliprc-configuration-file)
+   for the bot you created above.
 
 1. In Onyx, open the **Admin Dashboard** and select the **Zulip Connector**.
 
-1. Under **Provide Credentials**, paste the credentials that you copied
-   above, and click **Update**.
+1. Under **Provide Credentials**, paste the bot's **email address** and
+   **API key** from the `zuliprc` file you downloaded above. Click
+   **Update**.
 
 1. Set **Realm name** to the name of your Zulip organization, set
    **Realm URL** to `{{ zulip_url }}`, and click **Connect**.
 
 {end_tabs}
 
-Congrats, you're done! You should be able to index Zulip from your Onyx
-**Connectors Dashboard**!
+You're done! You should be able to index Zulip from your Onyx **Connectors
+Dashboard**!
 
 ### Related documentation
 
