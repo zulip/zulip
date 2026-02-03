@@ -552,6 +552,39 @@ def update_user(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/{user_id}", "patch", "200")
 
 
+@openapi_test_function("/users/{user_id}/avatar:post")
+def set_user_avatar(client: Client) -> None:
+    ensure_users([10], ["hamlet"])
+    user_id = 10
+    avatar_path = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.png")
+    # {code_example|start}
+    # Upload an avatar for a user.
+    with open(avatar_path, "rb") as fp:
+        result = client.call_endpoint(
+            url=f"/users/{user_id}/avatar",
+            method="POST",
+            files=[fp],
+        )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/users/{user_id}/avatar", "post", "200")
+
+
+@openapi_test_function("/users/{user_id}/avatar:delete")
+def delete_user_avatar(client: Client) -> None:
+    ensure_users([10], ["hamlet"])
+    user_id = 10
+    # {code_example|start}
+    # Delete a user's avatar.
+    result = client.call_endpoint(
+        url=f"/users/{user_id}/avatar",
+        method="DELETE",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/users/{user_id}/avatar", "delete", "200")
+
+
 @openapi_test_function("/users/{user_id}/channels:get")
 def get_user_channels(client: Client) -> None:
     user_id = 7
@@ -2007,6 +2040,8 @@ def test_users(client: Client, owner_client: Client) -> None:
     deactivate_user(client)
     reactivate_user(client)
     update_user(client)
+    set_user_avatar(owner_client)
+    delete_user_avatar(owner_client)
     update_status(client)
     get_user_status(client)
     get_user_by_email(client)

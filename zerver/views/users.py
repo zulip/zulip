@@ -73,7 +73,7 @@ from zerver.lib.typed_endpoint import (
 )
 from zerver.lib.typed_endpoint_validators import check_int_in_validator, check_url
 from zerver.lib.types import ProfileDataElementUpdateDict
-from zerver.lib.upload import upload_avatar_image
+from zerver.lib.upload import get_file_info, upload_avatar_image
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.users import (
@@ -1004,3 +1004,64 @@ def get_user_by_email(
         target_user=target_user,
     )
     return json_success(request, data)
+
+
+@require_member_or_admin
+@typed_endpoint
+def set_user_avatar_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    user_id: PathOnly[int],
+) -> HttpResponse:
+    target_user = access_user_by_id(user_profile, user_id, allow_bots=True, for_admin=True)
+
+    if not user_profile.is_realm_admin:
+        raise OrganizationAdministratorRequiredError
+
+    if len(request.FILES) != 1:
+        raise JsonableError(_("You must upload exactly one avatar."))
+
+    [user_file] = request.FILES.values()
+    assert isinstance(user_file, UploadedFile)
+    assert user_file.size is not None
+    if user_file.size > settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024:
+        raise JsonableError(
+            _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
+                max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
+            )
+        )
+    _filename, content_type = get_file_info(user_file)
+    upload_avatar_image(user_file, target_user, content_type=content_type)
+    do_change_avatar_fields(target_user, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
+    user_avatar_url = avatar_url(target_user)
+
+    json_result = dict(
+        avatar_url=user_avatar_url,
+    )
+    return json_success(request, data=json_result)
+
+
+@require_member_or_admin
+@typed_endpoint
+def delete_user_avatar_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    user_id: PathOnly[int],
+) -> HttpResponse:
+    target_user = access_user_by_id(user_profile, user_id, allow_bots=True, for_admin=True)
+
+    if not user_profile.is_realm_admin:
+        raise OrganizationAdministratorRequiredError
+
+    if target_user.avatar_source == UserProfile.AVATAR_FROM_USER:
+        do_change_avatar_fields(
+            target_user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile
+        )
+
+    gravatar_url = avatar_url(target_user)
+    json_result = dict(
+        avatar_url=gravatar_url,
+    )
+    return json_success(request, data=json_result)
