@@ -274,12 +274,6 @@
             box-shadow: none;
         }
 
-        &.emoji-big {
-            width: 25px;
-            box-shadow: none;
-            border: none;
-        }
-
         &.help-center-icon {
             width: 24px;
             box-shadow: none;
