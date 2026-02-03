@@ -353,7 +353,7 @@ def linkified_id(object_id: str, lower: bool = False) -> str:
         "pyr": ("Refund", "refunds"),  # Pseudo refunds. Not fully tested.
         # Connect, Fraud, Orders, etc not implemented
     }
-    name, url_prefix = names_and_urls[object_id.split("_")[0]]
+    name, url_prefix = names_and_urls[object_id.split("_", 1)[0]]
     if lower:  # nocoverage
         name = name.lower()
     if url_prefix is None:  # nocoverage

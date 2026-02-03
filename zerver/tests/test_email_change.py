@@ -50,7 +50,7 @@ class EmailChangeTestCase(ZulipTestCase):
         return activation_url
 
     def use_email_change_confirmation_link(self, url: str, follow: bool = False) -> Any:
-        key = url.split("/")[-1]
+        key = url.rsplit("/", 1)[-1]
         response = self.client_post("/accounts/confirm_new_email/", {"key": key}, follow=follow)
         return response
 
