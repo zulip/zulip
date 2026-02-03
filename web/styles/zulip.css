@@ -2200,8 +2200,9 @@ body:not(.spectator-view) {
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
-        /* 200px/14px */
-        min-width: max-content;
+        /* Ensure adequate width for content while allowing responsive sizing. */
+        min-width: 14.285em; /* 200px at 14px/em */
+        max-width: min(100vw - 2em, 25em);
 
         .dropdown-list {
             list-style: none;
@@ -2214,7 +2215,20 @@ body:not(.spectator-view) {
     }
 
     &.folder_id-dropdown-list-container {
+        /* Set reasonable width for folder selector. */
         width: calc(var(--modal-input-width) * 0.75);
+
+        .dropdown-list .dropdown-list-item-common-styles {
+            /* Match left padding to right spacing (10px base + 7px scrollbar). */
+            padding-left: 17px;
+
+            /* Ensure consistent 34px row height: 1.75em (28px) + 3px top + 3px bottom = 34px
+               for both rows with buttons and "None" rows. */
+            grid-template-rows: minmax(1.75em, min-content) minmax(
+                    0,
+                    min-content
+                );
+        }
 
         /* Alignment adjustments on channel-folder selector. */
         .dropdown-list-item-name:has(.dropdown-list-buttons) {
@@ -2254,6 +2268,7 @@ body:not(.spectator-view) {
             )
             minmax(0, 1fr);
         color: var(--color-dropdown-item);
+        /* Use symmetric 10px padding; folder selector overrides left to 17px. */
         padding: 3px 10px;
         font-weight: 400;
         white-space: normal;
@@ -2261,7 +2276,7 @@ body:not(.spectator-view) {
            user-set line-height, so that the icon is always
            vertically centered properly. */
         line-height: 1.214;
-        min-height: 2.125em;
+        /* Remove min-height; let grid-template-rows control height consistency. */
         align-content: center;
 
         .channel-privacy-type-icon,
