@@ -330,9 +330,9 @@ class LazyContext(dict[str, str | int]):
             "author": lambda: self.payload["discussion"]["user"]["login"].tame(check_string),
             "url": lambda: self.payload["discussion"]["html_url"].tame(check_string),
             "action": lambda: self.payload["action"].tame(check_string),
-            "configured_title": lambda: f" {self.template_values['title']()}"
-            if self.include_title
-            else "",
+            "configured_title": lambda: (
+                f" {self.template_values['title']()}" if self.include_title else ""
+            ),
             "category": lambda: self.payload["discussion"]["category"]["name"].tame(check_string),
             "title": lambda: self.payload["discussion"]["title"].tame(check_string),
             "body": lambda: self.payload["discussion"]["body"].tame(check_string),
@@ -351,16 +351,20 @@ class LazyContext(dict[str, str | int]):
             # locked_reason includes the " as " as prefix,
             # because locked_reason could be null too, in which case,
             # we drop this entire part from the message.
-            "locked_reason": lambda: f" as {self.payload['discussion']['active_lock_reason'].tame(check_string)}"
-            if self.payload["discussion"]["active_lock_reason"]
-            else "",
+            "locked_reason": lambda: (
+                f" as {self.payload['discussion']['active_lock_reason'].tame(check_string)}"
+                if self.payload["discussion"]["active_lock_reason"]
+                else ""
+            ),
             "closed_reason": lambda: self.payload["discussion"]["state_reason"].tame(check_string),
             # answer_field is used to determine which payload field to use.
             # It is either "answer" (for answered action)
             # or "old_answer" (for unanswered action)
-            "answer_field": lambda: "old_answer"
-            if self.payload["action"].tame(check_string) == "unanswered"
-            else "answer",
+            "answer_field": lambda: (
+                "old_answer"
+                if self.payload["action"].tame(check_string) == "unanswered"
+                else "answer"
+            ),
             "answer_url": lambda: self.payload[self.template_values["answer_field"]()][
                 "html_url"
             ].tame(check_string),
