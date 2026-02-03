@@ -1039,7 +1039,7 @@ function compare_by_user_group_name(group_a: UserGroup, group_b: UserGroup): num
     return util.strcmp(group_a.name, group_b.name);
 }
 
-export let sort_streams = (matches: StreamPillData[], query: string): StreamPillData[] => {
+export let sort_streams = <T extends StreamSubscription>(matches: T[], query: string): T[] => {
     const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
     const desc_results = typeahead.triage(
         query,
