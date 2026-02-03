@@ -156,28 +156,32 @@ export function resize_stream_subscribers_list(): void {
 
     const $subscriptions_info = $("#subscription_overlay .two-pane-settings-container .right");
     const classes_above_subscribers_list = [
-        ".display-type", // = stream_settings_title
-        ".subscriber_list_settings_container .stream_settings_header",
-        ".subscription_settings .stream_setting_subsection_title",
-        ".subscription_settings .subscriber_list_settings",
-        ".subscription_settings .stream_setting_subsection_title",
+        "#stream_settings .stream_settings_header",
+        ".subscriber_list_settings_container .stream_setting_subsection_title",
+        ".subscriber_list_settings_container .subscriber_list_settings",
+        ".subscriber_list_settings_container .send_notification_to_new_subscribers_container",
     ];
+
     const $classes_above_subscribers_list = $subscriptions_info.find(
         classes_above_subscribers_list.join(", "),
     );
     let total_height_of_classes_above_subscribers_list = 0;
+
     $classes_above_subscribers_list.each(function () {
         const outer_height = $(this).outerHeight(true);
         assert(outer_height !== undefined);
         total_height_of_classes_above_subscribers_list += outer_height;
     });
-    const subscribers_list_header_height = 30;
-    const margin_between_tab_switcher_and_add_subscribers_title = 20;
+
+    const right_subheader_height = height_of($(".right .two-pane-settings-subheader"));
+    const subscribers_list_header_height = 32;
+    const margin_between_tab_switcher_and_add_subscribers_title = 18;
     const subscriptions_info_height = $subscriptions_info.height();
     assert(subscriptions_info_height !== undefined);
     const subscribers_list_height =
         subscriptions_info_height -
         total_height_of_classes_above_subscribers_list -
+        right_subheader_height -
         subscribers_list_header_height -
         margin_between_tab_switcher_and_add_subscribers_title;
     $(":root").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);

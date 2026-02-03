@@ -1181,7 +1181,9 @@ export function switch_to_stream_row(stream_id: number): void {
 function show_right_section(): void {
     $(".right").addClass("show");
     $("#subscription_overlay .two-pane-settings-header").addClass("slide-left");
-    resize.resize_stream_subscribers_list();
+    setTimeout(() => {
+        resize.resize_stream_subscribers_list();
+    }, 0);
 }
 
 export function change_state(
