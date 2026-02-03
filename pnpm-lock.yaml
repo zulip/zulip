@@ -15,6 +15,9 @@ patchedDependencies:
   handlebars:
     hash: 53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9
     path: patches/handlebars.patch
+  jquery-caret-plugin:
+    hash: 1afee996e4f991b021b9432ad558cacb8d078cdd828444dbd39836726b3ba6ad
+    path: patches/jquery-caret-plugin.patch
   simplebar:
     hash: b02691a06d37a4991c993e8b03c1860e01f2edef7c18ad0b958d9b222ba9be9b
     path: patches/simplebar.patch
@@ -181,7 +184,7 @@ importers:
         version: 3.7.1
       jquery-caret-plugin:
         specifier: ^1.5.2
-        version: 1.5.3
+        version: 1.5.3(patch_hash=1afee996e4f991b021b9432ad558cacb8d078cdd828444dbd39836726b3ba6ad)
       jquery-validation:
         specifier: ^1.19.0
         version: 1.21.0(jquery@3.7.1)
@@ -16329,7 +16332,7 @@ snapshots:
 
   jiti@2.6.1: {}
 
-  jquery-caret-plugin@1.5.3: {}
+  jquery-caret-plugin@1.5.3(patch_hash=1afee996e4f991b021b9432ad558cacb8d078cdd828444dbd39836726b3ba6ad): {}
 
   jquery-validation@1.21.0(jquery@3.7.1):
     dependencies:

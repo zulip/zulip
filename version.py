@@ -50,4 +50,4 @@ API_FEATURE_LEVEL = 459
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (367, 0)  # bumped 2026-01-30 to patch autosize
+PROVISION_VERSION = (367, 1)  # bumped 2026-02-02 to patch jquery-caret-plugin

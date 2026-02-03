@@ -179,6 +179,7 @@
     },
     "patchedDependencies": {
       "handlebars": "patches/handlebars.patch",
+      "jquery-caret-plugin": "patches/jquery-caret-plugin.patch",
       "simplebar": "patches/simplebar.patch",
       "stylelint-high-performance-animation": "patches/stylelint-high-performance-animation.patch",
       "svgicons2svgfont": "patches/svgicons2svgfont.patch",
