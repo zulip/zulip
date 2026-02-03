@@ -1,7 +1,6 @@
 /// <reference types="webpack-dev-server" />
 
 import path from "node:path";
-import * as url from "node:url";
 
 import type {ZopfliOptions} from "@gfx/zopfli";
 import {gzip} from "@gfx/zopfli";
@@ -92,11 +91,6 @@ const config = (
                     test: path.resolve(import.meta.dirname, "debug-require.cjs"),
                     loader: "expose-loader",
                     options: {exposes: "require"},
-                },
-                {
-                    test: url.fileURLToPath(import.meta.resolve("jquery")),
-                    loader: "expose-loader",
-                    options: {exposes: ["$", "jQuery"]},
                 },
                 // Generate webfont
                 {
