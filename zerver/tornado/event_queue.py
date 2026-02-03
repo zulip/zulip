@@ -1227,7 +1227,7 @@ def process_message_event(
         client = client_data["client"]
         flags = client_data["flags"]
         is_sender: bool = client_data.get("is_sender", False)
-        extra_data: Mapping[str, bool] | None = extra_user_data.get(client.user_profile_id, None)
+        extra_data: Mapping[str, bool] | None = extra_user_data.get(client.user_profile_id)
 
         if not client.accepts_messages():
             # The actual check is the accepts_event() check below;
