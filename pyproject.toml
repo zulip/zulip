@@ -220,11 +220,12 @@ docs = [
   # Needed to build RTD docs
   "sphinx<8.2",  # 8.2.0 requires Python ≥ 3.11
   "sphinx-rtd-theme",
-  "sphinx-design",
+  "sphinx-design<0.7",  # 0.7.0 requires Python ≥ 3.11
   # Needed for copybutton
   "sphinx-copybutton",
   # Needed to build Markdown docs
   "myst-parser",
+  "markdown-it-py<4",  # 4.0.0 requires Python ≥ 3.11
 ]
 
 # This group is for minimal CI / local release tooling; see tools/closed-by-commits
@@ -353,8 +354,8 @@ talon-core = { url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8e
 # version from Git rather than a PyPI release. Keeping everything in one
 # repository simplifies the process of implementing and documenting new bots for
 # new contributors.
-zulip = { url = "https://github.com/zulip/python-zulip-api/archive/eec0ef233dbbaeffe1f5afc9dcc06a45da2bd687.zip", subdirectory = "zulip" }
-zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/eec0ef233dbbaeffe1f5afc9dcc06a45da2bd687.zip", subdirectory = "zulip_bots" }
+zulip = { url = "https://github.com/zulip/python-zulip-api/archive/1ae6dbeab6a0792e35ae1b5c54471076939f1883.zip", subdirectory = "zulip" }
+zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/1ae6dbeab6a0792e35ae1b5c54471076939f1883.zip", subdirectory = "zulip_bots" }
 
 # zulip's linting framework - zulint
 zulint = { url = "https://github.com/zulip/zulint/archive/0b2858f59c72dbe561052878bb2e458d563e6641.zip" }
