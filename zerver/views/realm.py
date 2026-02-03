@@ -150,7 +150,7 @@ def update_realm(
     invite_required: Json[bool] | None = None,
     jitsi_server_url_raw: Annotated[
         Json[str] | None,
-        AfterValidator(lambda val: check_jitsi_url(val)),
+        AfterValidator(check_jitsi_url),
         ApiParamConfig("jitsi_server_url"),
     ] = None,
     message_content_allowed_in_email_notifications: Json[bool] | None = None,
