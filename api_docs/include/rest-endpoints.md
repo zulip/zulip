@@ -88,6 +88,8 @@
 * [Create a user](/api/create-user)
 * [Update a user](/api/update-user)
 * [Update a user by email](/api/update-user-by-email)
+* [Upload a user's avatar](/api/set-user-avatar)
+* [Delete a user's avatar](/api/delete-user-avatar)
 * [Deactivate a user](/api/deactivate-user)
 * [Deactivate own user](/api/deactivate-own-user)
 * [Reactivate a user](/api/reactivate-user)
