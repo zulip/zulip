@@ -43,6 +43,15 @@ export function reset_scrollbar($element: JQuery): void {
     }
 }
 
+export function force_scrollbar($element: JQuery): void {
+    const element = util.the($element);
+    const sb = SimpleBar.instances.get(element);
+
+    if (sb) {
+        sb.recalculate();
+    }
+}
+
 export function scroll_delta(opts: {
     elem_top: number;
     elem_bottom: number;
