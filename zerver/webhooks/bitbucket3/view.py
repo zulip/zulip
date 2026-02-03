@@ -267,7 +267,7 @@ def get_pr_opened_or_modified_body(
         target_branch=target_branch,
         base_branch=base_branch,
         message=description,
-        reviewer=reviewers_string if reviewers_string else None,
+        reviewer=reviewers_string or None,
         title=pr["title"].tame(check_string) if include_title else None,
     )
 

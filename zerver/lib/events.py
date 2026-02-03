@@ -922,7 +922,7 @@ def fetch_initial_state_data(
         # in letting one search for GIFs; GIPHY only requires API keys
         # to exist at all so that they can deactivate them in cases of
         # abuse.
-        state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
+        state["giphy_api_key"] = settings.GIPHY_API_KEY or ""
 
     if want("push_device"):
         state["push_devices"] = {} if user_profile is None else get_push_devices(user_profile)
