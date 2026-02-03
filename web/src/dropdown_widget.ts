@@ -91,6 +91,7 @@ export type DropdownWidgetOptions = {
     // When this is set, pressing tab will move focus to the target element.
     tab_moves_focus_to_target?: string | (() => string);
     search_placeholder_text?: string;
+    sort_list_by_filter_value?: (items: Option[], filter_value: string) => Option[];
 };
 
 export class DropdownWidget {
@@ -139,6 +140,7 @@ export class DropdownWidget {
     // here, so should be generalized or reworked.
     item_clicked = false;
     search_placeholder_text: string;
+    sort_list_by_filter_value: ((items: Option[], filter_value: string) => Option[]) | undefined;
 
     constructor(options: DropdownWidgetOptions) {
         this.widget_name = options.widget_name;
@@ -180,6 +182,7 @@ export class DropdownWidget {
         this.tab_moves_focus_to_target = options.tab_moves_focus_to_target;
         this.current_hover_index = 0;
         this.search_placeholder_text = options.search_placeholder_text ?? "";
+        this.sort_list_by_filter_value = options.sort_list_by_filter_value;
     }
 
     init(): void {
@@ -398,6 +401,7 @@ export class DropdownWidget {
                             },
                         },
                         $simplebar_container: $popper.find(".dropdown-list-wrapper"),
+                        sort_by_filter_value: this.sort_list_by_filter_value,
                     },
                 );
 
