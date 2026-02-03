@@ -341,7 +341,7 @@ def get_subject(message: WildValue) -> str:
     data = message["data"]
 
     subject = data.get("subject").tame(check_none_or(check_string))
-    subject_to_use = subject if subject else data["name"].tame(check_string)
+    subject_to_use = subject or data["name"].tame(check_string)
 
     if "permalink" in data:
         return "[" + subject_to_use + "]" + "(" + data["permalink"].tame(check_string) + ")"
