@@ -181,7 +181,6 @@ ALL_ZULIP_TABLES = {
     "zerver_preregistrationuser_streams",
     "zerver_preregistrationuser_groups",
     "zerver_presencesequence",
-    "zerver_pushdevice",
     "zerver_pushdevicetoken",
     "zerver_reaction",
     "zerver_realm",
@@ -246,7 +245,6 @@ NON_EXPORTED_TABLES = {
     # When switching servers, clients will need to re-log in and
     # reregister for push notifications anyway.
     "zerver_device",
-    "zerver_pushdevice",
     "zerver_pushdevicetoken",
     # We don't use these generated Django tables
     "zerver_userprofile_groups",

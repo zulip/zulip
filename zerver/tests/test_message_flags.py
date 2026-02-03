@@ -30,8 +30,8 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.models import (
+    Device,
     Message,
-    PushDevice,
     Recipient,
     Stream,
     Subscription,
@@ -982,7 +982,7 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
         # Device unregistered. Verify that no event to revoke notifications gets
         # enqueued to `missedmessage_mobile_notifications` and `active_mobile_push_notification`
         # flag is unset.
-        PushDevice.objects.all().delete()
+        Device.objects.filter(push_token_id__isnull=False).delete()
         with (
             mock.patch(
                 "zerver.actions.message_flags.queue_event_on_commit"

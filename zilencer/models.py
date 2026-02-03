@@ -11,13 +11,7 @@ from typing_extensions import override
 
 from analytics.models import BaseCount
 from zerver.lib.rate_limiter import RateLimitedObject
-from zerver.models import (
-    AbstractPushDevice,
-    AbstractPushDeviceToken,
-    AbstractRealmAuditLog,
-    Realm,
-    UserProfile,
-)
+from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog, Realm, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 
 
@@ -630,7 +624,7 @@ def has_stale_audit_log(server: RemoteZulipServer) -> bool:
     return False
 
 
-class RemotePushDevice(AbstractPushDevice):
+class RemotePushDevice(models.Model):
     """Core bouncer server table storing registrations to receive
     mobile push notifications via the bouncer server.
 
@@ -655,6 +649,12 @@ class RemotePushDevice(AbstractPushDevice):
     token = models.CharField(max_length=4096)
     # ID to reference the `token`.
     token_id = models.BigIntegerField()
+
+    class TokenKind(models.TextChoices):
+        APNS = "apns", "APNs"
+        FCM = "fcm", "FCM"
+
+    token_kind = models.CharField(max_length=4, choices=TokenKind.choices)
 
     # If the token is expired, the date when the bouncer learned it
     # was expired via an error from the FCM/APNs server. Used to

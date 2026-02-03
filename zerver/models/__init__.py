@@ -43,9 +43,7 @@ from zerver.models.prereg_users import PreregistrationUser as PreregistrationUse
 from zerver.models.prereg_users import RealmReactivationStatus as RealmReactivationStatus
 from zerver.models.presence import UserPresence as UserPresence
 from zerver.models.presence import UserStatus as UserStatus
-from zerver.models.push_notifications import AbstractPushDevice as AbstractPushDevice
 from zerver.models.push_notifications import AbstractPushDeviceToken as AbstractPushDeviceToken
-from zerver.models.push_notifications import PushDevice as PushDevice
 from zerver.models.push_notifications import PushDeviceToken as PushDeviceToken
 from zerver.models.realm_audit_logs import AbstractRealmAuditLog as AbstractRealmAuditLog
 from zerver.models.realm_audit_logs import RealmAuditLog as RealmAuditLog

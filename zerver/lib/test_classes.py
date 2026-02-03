@@ -97,9 +97,9 @@ from zerver.lib.webhooks.common import (
 )
 from zerver.models import (
     Client,
+    Device,
     Message,
     NamedUserGroup,
-    PushDevice,
     PushDeviceToken,
     Reaction,
     Realm,
@@ -1947,11 +1947,11 @@ Output:
         )
 
     def register_push_device(self, user_profile_id: int) -> None:
-        PushDevice.objects.create(
+        Device.objects.create(
             user_id=user_profile_id,
-            push_account_id=10,
-            bouncer_device_id=1,
-            token_kind=PushDevice.TokenKind.FCM,
+            push_key_id=10,
+            push_token_id=1,
+            push_token_kind=Device.PushTokenKind.FCM,
             push_key=base64.b64decode("MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt"),
         )
 
@@ -2950,18 +2950,18 @@ class E2EEPushNotificationTestCase(BouncerTestCase):
         realm = hamlet.realm
 
         # Hamlet registers both an Android and an Apple device for push notification.
-        PushDevice.objects.create(
+        Device.objects.create(
             user=hamlet,
-            push_account_id=10,
-            bouncer_device_id=1,
-            token_kind=PushDevice.TokenKind.APNS,
+            push_key_id=10,
+            push_token_id=1,
+            push_token_kind=Device.PushTokenKind.APNS,
             push_key=base64.b64decode("MXPC4WK2YfyfCBdK6ElnzSpKJtcpFSZrYiJto4YCETzx"),
         )
-        PushDevice.objects.create(
+        Device.objects.create(
             user=hamlet,
-            push_account_id=20,
-            bouncer_device_id=2,
-            token_kind=PushDevice.TokenKind.FCM,
+            push_key_id=20,
+            push_token_id=2,
+            push_token_kind=Device.PushTokenKind.FCM,
             push_key=base64.b64decode("Mc3u6xraEI79aGk6Nd+boqi/ODfT+JcsEIATzG7C/m+V"),
         )
 
@@ -2974,16 +2974,14 @@ class E2EEPushNotificationTestCase(BouncerTestCase):
             realm_and_remote_realm_fields = {"realm": None, "remote_realm": remote_realm}
 
         registered_device_apple = RemotePushDevice.objects.create(
-            push_account_id=10,
-            device_id=1,
+            token_id=1,
             token_kind=RemotePushDevice.TokenKind.APNS,
             token="push-device-token-1",
             ios_app_id="abc",
             **realm_and_remote_realm_fields,
         )
         registered_device_android = RemotePushDevice.objects.create(
-            push_account_id=20,
-            device_id=2,
+            token_id=2,
             token_kind=RemotePushDevice.TokenKind.FCM,
             token="push-device-token-3",
             **realm_and_remote_realm_fields,

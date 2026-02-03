@@ -16,7 +16,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.cache import cache_delete, get_muting_users_cache_key
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, mock_queue_publish
-from zerver.models import PushDevice, Recipient, Subscription, UserProfile, UserTopic
+from zerver.models import Device, Recipient, Subscription, UserProfile, UserTopic
 from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import (
     ClientDescriptor,
@@ -313,7 +313,7 @@ class MissedMessageHookTest(ZulipTestCase):
         do_change_user_setting(
             self.user_profile, "enable_offline_push_notifications", True, acting_user=None
         )
-        PushDevice.objects.all().delete()
+        Device.objects.filter(push_token_id__isnull=False).delete()
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
