@@ -211,10 +211,11 @@ docs = [
   # Needed to build RTD docs
   "sphinx<8.2",  # 8.2.0 requires Python ≥ 3.11
   "sphinx-rtd-theme",
-  "sphinx-design",
+  "sphinx-design<0.7",  # 0.7.0 requires Python ≥ 3.11
 
   # Needed to build Markdown docs
   "myst-parser",
+  "markdown-it-py<4",  # 4.0.0 requires Python ≥ 3.11
 ]
 
 # This group is for minimal CI / local release tooling; see tools/closed-by-commits
