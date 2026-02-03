@@ -238,6 +238,11 @@ function show_general_settings(group: UserGroup): void {
         });
     }
 
+    const $edit_container = get_edit_container(group.id);
+    if (!settings_data.can_manage_user_group(group.id)) {
+        $edit_container.find(".group-color-settings").hide();
+    }
+
     update_general_panel_ui(group);
 }
 
@@ -559,6 +564,20 @@ export function update_group_details(group: UserGroup): void {
     const $edit_container = get_edit_container(group.id);
     $edit_container.find(".group-name").text(user_groups.get_display_group_name(group.name));
     $edit_container.find(".group-description").text(group.description);
+}
+
+export function update_group_color_ui(group_id: number): void {
+    const group = user_groups.get_user_group_from_id(group_id);
+    const $edit_container = get_edit_container(group.id);
+    const $color_preview = $edit_container.find(".group-settings-color-preview");
+    const $color_label = $edit_container.find(".group-settings-color-selector-label");
+
+    $color_preview.css("background", group.color);
+    if (group.color) {
+        $color_label.text($t({defaultMessage: "Change color"}));
+    } else {
+        $color_label.text($t({defaultMessage: "Choose a color"}));
+    }
 }
 
 function update_toggler_for_group_setting(group: UserGroup): void {
@@ -1551,6 +1570,10 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
             $("#groups_overlay .user-group-info-title")
                 .text(user_groups.get_display_group_name(group.name))
                 .addClass("showing-info-title");
+        }
+
+        if (event.data.color !== undefined) {
+            update_group_color_ui(group.id);
         }
 
         if (changed_group_settings.length > 0) {

@@ -1393,6 +1393,36 @@ h4.user_group_setting_subsection_title {
     margin: -0.375em 0 -0.375em -0.625em;
 }
 
+.group-settings-color-selector {
+    border: 1px solid var(--color-border-zulip-button);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+
+    &.action-button-subtle-neutral {
+        box-shadow: none;
+    }
+}
+
+.group-settings-color-preview {
+    /* 28px at 16px font size */
+    width: 1.75em;
+    height: 1.75em;
+    /* -6px 0 -6px 10px at 16px font size. */
+    margin: -0.375em 0 -0.375em -0.625em;
+}
+
+.group-color-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.group-color-settings {
+    margin-top: 10px;
+}
+
 #subscription_overlay .channel-folder-widget-container {
     display: flex;
     gap: 0.5em;

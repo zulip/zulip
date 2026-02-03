@@ -43,6 +43,31 @@
                   group_id=group.id }}
             </div>
 
+            {{#unless group.is_system_group}}
+            <div class="group-color-settings">
+                <h3 class="user_group_setting_subsection_title">
+                    {{t "Group settings" }}
+                </h3>
+                <div class="input-group">
+                    <label class="settings-field-label group-color-label">
+                        {{t "Group color" }}
+                    </label>
+                    <div class="group-color-controls">
+                        <button class="action-button action-button-subtle-neutral group-settings-color-selector choose_group_color" data-group-id="{{group.id}}">
+                            <span class="group-settings-color-preview" style="background: {{group.color}};"></span>
+                            <span class="group-settings-color-selector-label">
+                                {{#if group.color}}
+                                    {{t "Change color"}}
+                                {{else}}
+                                    {{t "Choose a color"}}
+                                {{/if}}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {{/unless}}
+
             <div class="group-permissions settings-subsection-parent" id="group_permission_settings">
                 <div class="subsection-header">
                     <h3 class="user_group_setting_subsection_title">
