@@ -634,7 +634,7 @@ def get_handlebars_tag(text: str, i: int) -> str:
 
 def get_spaces(text: str, i: int) -> str:
     s = ""
-    while i < len(text) and text[i] in " ":
+    while i < len(text) and text[i] == " ":
         s += text[i]
         i += 1
     return s
@@ -642,7 +642,7 @@ def get_spaces(text: str, i: int) -> str:
 
 def get_code(text: str, i: int) -> str:
     s = ""
-    while i < len(text) and text[i] not in "<":
+    while i < len(text) and text[i] != "<":
         s += text[i]
         i += 1
     return s
