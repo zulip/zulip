@@ -1423,6 +1423,43 @@ h4.user_group_setting_subsection_title {
     margin-top: 10px;
 }
 
+.group-color-priority-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--color-border-zulip-button);
+    border-radius: 4px;
+    margin-bottom: 4px;
+    cursor: grab;
+    background: var(--color-background);
+}
+
+.group-color-priority-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.group-color-priority-drag-handle {
+    cursor: grab;
+    color: var(--color-text-default);
+    display: flex;
+    align-items: center;
+}
+
+.group-color-priority-name {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.group-color-priority-ghost {
+    opacity: 0.4;
+}
+
 #subscription_overlay .channel-folder-widget-container {
     display: flex;
     gap: 0.5em;

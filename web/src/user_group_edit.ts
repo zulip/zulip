@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
+import SortableJS from "sortablejs";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
@@ -10,6 +11,7 @@ import render_settings_checkbox from "../templates/settings/settings_checkbox.hb
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
 import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
 import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
+import render_group_color_priority_modal from "../templates/user_group_settings/group_color_priority_modal.hbs";
 import render_stream_group_permission_settings from "../templates/user_group_settings/stream_group_permission_settings.hbs";
 import render_user_group_membership_status from "../templates/user_group_settings/user_group_membership_status.hbs";
 import render_user_group_permission_settings from "../templates/user_group_settings/user_group_permission_settings.hbs";
@@ -578,6 +580,65 @@ export function update_group_color_ui(group_id: number): void {
     } else {
         $color_label.text($t({defaultMessage: "Choose a color"}));
     }
+
+    const colored_groups = user_groups.get_realm_user_groups().filter((g) => g.color !== "");
+    const $priority_button = $edit_container.find(".change_group_color_priority");
+    if (colored_groups.length >= 2) {
+        $priority_button.show();
+    } else {
+        $priority_button.hide();
+    }
+}
+
+function save_group_color_priorities(): void {
+    const $rows = $("#group-color-priority-form .group-color-priority-row");
+    const ordered_ids: number[] = [];
+    $rows.each(function () {
+        const group_id = Number.parseInt($(this).attr("data-group-id")!, 10);
+        ordered_ids.push(group_id);
+    });
+    dialog_widget.submit_api_request(channel.patch, "/json/user_groups/colors", {
+        order: JSON.stringify(ordered_ids),
+    });
+}
+
+function launch_color_priority_modal(): void {
+    const colored_groups = user_groups
+        .get_realm_user_groups()
+        .filter((g) => g.color !== "")
+        .toSorted((a, b) => {
+            const a_priority = a.color_priority ?? Number.MAX_SAFE_INTEGER;
+            const b_priority = b.color_priority ?? Number.MAX_SAFE_INTEGER;
+            return a_priority - b_priority;
+        })
+        .map((g) => ({
+            id: g.id,
+            color: g.color,
+            display_name: user_groups.get_display_group_name(g.name),
+        }));
+
+    const modal_content_html = render_group_color_priority_modal({colored_groups});
+
+    dialog_widget.launch({
+        modal_title_html: $t_html({defaultMessage: "Group priorities"}),
+        modal_content_html,
+        modal_submit_button_text: $t_html({defaultMessage: "Confirm"}),
+        id: "group_color_priority_modal",
+        loading_spinner: true,
+        on_click: save_group_color_priorities,
+        post_render() {
+            const list_element = util.the(
+                $("#group-color-priority-form .group-color-priority-list .simplebar-content"),
+            );
+            SortableJS.create(list_element, {
+                handle: ".group-color-priority-drag-handle",
+                ghostClass: "group-color-priority-ghost",
+                onUpdate() {
+                    // Order is only processed on submission.
+                },
+            });
+        },
+    });
 }
 
 function update_toggler_for_group_setting(group: UserGroup): void {
@@ -1090,6 +1151,9 @@ export function show_settings_for(group: UserGroup): void {
     const group_assigned_user_group_permissions =
         settings_components.get_group_assigned_user_group_permissions(group);
 
+    const colored_groups = user_groups.get_realm_user_groups().filter((g) => g.color !== "");
+    const show_change_priority_button = colored_groups.length >= 2;
+
     const html = render_user_group_settings({
         group,
         group_name: user_groups.get_display_group_name(group.name),
@@ -1115,6 +1179,7 @@ export function show_settings_for(group: UserGroup): void {
             group_has_no_realm_permissions &&
             group_assigned_stream_permissions.length === 0 &&
             group_assigned_user_group_permissions.length === 0,
+        show_change_priority_button,
     });
 
     scroll_util.get_content_element($("#user_group_settings")).html(html);
@@ -1572,7 +1637,7 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
                 .addClass("showing-info-title");
         }
 
-        if (event.data.color !== undefined) {
+        if (event.data.color !== undefined || event.data.color_priority !== undefined) {
             update_group_color_ui(group.id);
         }
 
@@ -2014,6 +2079,16 @@ export function initialize(): void {
             open_group_edit_panel_for_row(this);
         }
     });
+
+    $("#groups_overlay_container").on(
+        "click",
+        ".change_group_color_priority",
+        (e: JQuery.ClickEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            launch_color_priority_modal();
+        },
+    );
 
     $("#groups_overlay_container").on(
         "click",
