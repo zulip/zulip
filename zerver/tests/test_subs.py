@@ -2921,7 +2921,7 @@ class StreamAdminTest(ZulipTestCase):
             self.assert_length(cache_tries, cache_count)
 
         # If the removal succeeded, assert all target users are no longer subscribed.
-        if result.status_code not in [400]:
+        if result.status_code != 400:
             subbed_users = self.users_subscribed_to_stream(stream_name, user_profile.realm)
             for user in target_users:
                 self.assertNotIn(user, subbed_users)
