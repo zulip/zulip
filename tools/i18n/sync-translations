@@ -26,10 +26,10 @@ if git rev-parse --verify --quiet "origin/$local_branch" >/dev/null; then
 fi
 git checkout -b "$local_branch" "upstream/$branch"
 
-# Clear out local `.mo` files which cause locale/*/LC_MESSAGES/
+# Clear out local any `.mo` files, which cause locale/*/LC_MESSAGES/
 # directories to not be empty when their .po files vanish, so git
 # doesn't remove the directory.
-rm locale/*/LC_MESSAGES/*.mo
+rm locale/*/LC_MESSAGES/*.mo || true
 
 wlc lock "zulip/frontend$suffix"
 wlc lock "zulip/django$suffix"
