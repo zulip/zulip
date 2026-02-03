@@ -84,7 +84,7 @@ def consolidate_client(client: Client) -> Client:
     # to count as web users
 
     # Alias ZulipDesktop to website
-    if client.name in ["ZulipDesktop"]:
+    if client.name == "ZulipDesktop":
         return get_client("website")
     else:
         return client

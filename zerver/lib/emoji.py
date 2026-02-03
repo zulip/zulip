@@ -104,7 +104,7 @@ def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str, emoji_ty
         if realm_emoji["deactivated"]:
             raise JsonableError(_("This custom emoji has been deactivated."))
     elif emoji_type == "zulip_extra_emoji":
-        if emoji_code not in ["zulip"]:
+        if emoji_code != "zulip":
             raise JsonableError(_("Invalid emoji code."))
         if emoji_name != emoji_code:
             raise JsonableError(_("Invalid emoji name."))
