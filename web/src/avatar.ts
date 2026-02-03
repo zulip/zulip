@@ -2,7 +2,9 @@ import $ from "jquery";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
-import {$t_html} from "./i18n.ts";
+import * as feedback_widget from "./feedback_widget.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as people from "./people.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as upload_widget from "./upload_widget.ts";
@@ -120,6 +122,57 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         get_file_input,
         $("#user-avatar-upload-widget-error").expectOne(),
         $("#user-avatar-upload-widget .image_upload_button").expectOne(),
+        upload_function,
+        realm.max_avatar_file_size_mib,
+        "user_avatar",
+    );
+}
+
+export function build_admin_avatar_widget(user_id: number, upload_function: UploadFunction): void {
+    const get_file_input = function (): JQuery<HTMLInputElement> {
+        return $<HTMLInputElement>(
+            "#user-avatar-admin-upload-widget input.image_file_input",
+        ).expectOne();
+    };
+
+    $("#user-avatar-admin-upload-widget .image-delete-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        function delete_user_avatar(): void {
+            void channel.del({
+                url: "/json/users/" + encodeURIComponent(user_id) + "/avatar",
+                error() {
+                    feedback_widget.show({
+                        populate($container) {
+                            $container.text(
+                                $t({defaultMessage: "Failed to delete profile picture."}),
+                            );
+                        },
+                        title_text: $t({defaultMessage: "Error"}),
+                    });
+                },
+            });
+        }
+        const full_name = people.get_by_user_id(user_id).full_name;
+
+        confirm_dialog.launch({
+            modal_title_html: $t_html({defaultMessage: "Delete profile picture"}),
+            modal_content_html: $t_html(
+                {
+                    defaultMessage:
+                        "Are you sure you want to delete the profile picture for {full_name}?",
+                },
+                {full_name},
+            ),
+            is_compact: true,
+            on_click: delete_user_avatar,
+        });
+    });
+
+    upload_widget.build_direct_upload_widget(
+        get_file_input,
+        $("#user-avatar-admin-upload-widget-error").expectOne(),
+        $("#user-avatar-admin-upload-widget .image_upload_button").expectOne(),
         upload_function,
         realm.max_avatar_file_size_mib,
         "user_avatar",
