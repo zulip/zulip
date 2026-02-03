@@ -65,7 +65,7 @@ def delete_local_file(type: Literal["avatars", "files"], path: str) -> bool:
             except OSError:
                 break
         return True
-    file_name = path.split("/")[-1]
+    file_name = path.rsplit("/", 1)[-1]
     logging.warning("%s does not exist. Its entry in the database will be removed.", file_name)
     return False
 

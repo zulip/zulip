@@ -176,7 +176,7 @@ class S3UploadBackend(ZulipUploadBackend):
         try:
             key.load()
         except botocore.exceptions.ClientError:
-            file_name = path_id.split("/")[-1]
+            file_name = path_id.rsplit("/", 1)[-1]
             logging.warning(
                 "%s does not exist. Its entry in the database will be removed.", file_name
             )
