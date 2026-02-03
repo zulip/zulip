@@ -48,7 +48,9 @@ def fixture_to_headers(fixture_name: str) -> dict[str, str]:
 
     # Map "push_hook__push_commits_more_than_limit.json" into GitLab's
     # HTTP event title "Push Hook".
-    return {"HTTP_X_GITLAB_EVENT": fixture_name.split("__")[0].replace("_", " ").title()}
+    return {
+        "HTTP_X_GITLAB_EVENT": fixture_name.split("__", 1)[0].replace("_", " ").title()
+    }
 
 
 def get_push_event_body(payload: WildValue, include_title: bool) -> str:

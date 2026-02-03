@@ -379,7 +379,7 @@ def generate_unauthed_file_access_url(path_id: str) -> str:
     signed_data = TimestampSigner(salt=USER_UPLOADS_ACCESS_TOKEN_SALT).sign(path_id)
     token = base64.b16encode(signed_data.encode()).decode()
 
-    filename = path_id.split("/")[-1]
+    filename = path_id.rsplit("/", 1)[-1]
     return reverse("file_unauthed_from_token", args=[token, filename])
 
 
