@@ -274,13 +274,6 @@
             box-shadow: none;
         }
 
-        &.emoji-small {
-            width: 20px;
-            box-shadow: none;
-            border: none;
-            vertical-align: sub;
-        }
-
         &.emoji-big {
             width: 25px;
             box-shadow: none;
