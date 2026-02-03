@@ -220,6 +220,7 @@
             box-shadow: none;
             border: none;
             vertical-align: text-top;
+            margin-bottom: 0;
         }
     }
 
