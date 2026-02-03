@@ -8,7 +8,7 @@ const formatJsOptions = {
 
 /** @type {import("@babel/preset-env").Options} */
 const presetEnvOptions = {
-    corejs: "3.47",
+    corejs: "3.48",
     shippedProposals: true,
     useBuiltIns: "usage",
 };
