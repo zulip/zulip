@@ -298,7 +298,7 @@ def send_immediate_email(
         in_reply_to=in_reply_to,
         references=references,
     )
-    template = template_prefix.split("/")[-1]
+    template = template_prefix.rsplit("/", 1)[-1]
 
     log_email_config_errors()
 
@@ -446,7 +446,7 @@ def send_future_email(
     context: Mapping[str, Any] = {},
     delay: timedelta = timedelta(0),
 ) -> None:
-    template_name = template_prefix.split("/")[-1]
+    template_name = template_prefix.rsplit("/", 1)[-1]
     email_fields = {
         "template_prefix": template_prefix,
         "from_name": from_name,

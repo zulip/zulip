@@ -282,7 +282,7 @@ def default_fixture_to_headers(http_header_key: str) -> Callable[[str], dict[str
 
     def fixture_to_headers(filename: str) -> dict[str, str]:
         if "__" in filename:
-            event_type = filename.split("__")[0]
+            event_type = filename.split("__", 1)[0]
         else:
             event_type = filename
         return {http_header_key: event_type}
@@ -294,7 +294,7 @@ def parse_multipart_string(body: str) -> dict[str, str]:
     """
     Converts multipart/form-data string (fixture) to dict
     """
-    boundary = body.split("\n")[0][2:]
+    boundary = body.split("\n", 1)[0][2:]
     parts = body.split(f"--{boundary}")
 
     data = {}
