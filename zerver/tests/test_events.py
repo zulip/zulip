@@ -4,7 +4,6 @@
 # This module is closely integrated with zerver/lib/event_schema.py
 # and zerver/lib/data_types.py systems for validating the schemas of
 # events; it also uses the OpenAPI tools to validate our documentation.
-import base64
 import copy
 import time
 from collections.abc import Callable, Iterator
@@ -195,7 +194,6 @@ from zerver.lib.event_schema import (
     check_navigation_view_remove,
     check_navigation_view_update,
     check_onboarding_steps,
-    check_push_device,
     check_reaction_add,
     check_reaction_remove,
     check_realm_bot_add,
@@ -250,14 +248,9 @@ from zerver.lib.event_schema import (
     check_user_topic,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
-from zerver.lib.exceptions import InvalidBouncerPublicKeyError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
-from zerver.lib.push_registration import (
-    RegisterPushDeviceToBouncerQueueItem,
-    handle_register_push_device_to_bouncer,
-)
 from zerver.lib.streams import check_update_all_streams_active_status, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -290,7 +283,6 @@ from zerver.models import (
     MultiuseInvite,
     NamedUserGroup,
     PreregistrationUser,
-    PushDevice,
     Realm,
     RealmAuditLog,
     RealmDomain,
@@ -4273,35 +4265,6 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(audit_log.event_type, AuditLogEventType.REALM_EXPORT_DELETED)
         self.assertEqual(audit_log.acting_user, self.user_profile)
         self.assertEqual(audit_log.extra_data["realm_export_id"], export_row_id)
-
-    def test_push_device_registration_failure(self) -> None:
-        hamlet = self.example_user("hamlet")
-        self.login_user(hamlet)
-
-        push_device = PushDevice.objects.create(
-            user=hamlet,
-            token_kind=PushDevice.TokenKind.FCM,
-            push_account_id=2408,
-            push_key=base64.b64decode("MbZ1JWx6YMHw1cZEgCPRQAgolV3lBRefP5qp/GNisiP+"),
-        )
-
-        queue_item: RegisterPushDeviceToBouncerQueueItem = {
-            "user_profile_id": push_device.user.id,
-            "push_account_id": push_device.push_account_id,
-            "bouncer_public_key": "bouncer-public-key",
-            "encrypted_push_registration": "encrypted-push-registration",
-        }
-        with (
-            mock.patch(
-                "zerver.lib.push_registration.do_register_remote_push_device",
-                side_effect=InvalidBouncerPublicKeyError,
-            ),
-            self.verify_action(state_change_expected=True, num_events=1) as events,
-        ):
-            handle_register_push_device_to_bouncer(queue_item)
-        check_push_device("events[0]", events[0])
-        self.assertEqual(events[0]["status"], "failed")
-        self.assertEqual(events[0]["error_code"], "INVALID_BOUNCER_PUBLIC_KEY")
 
     def test_register_device(self) -> None:
         with self.verify_action() as events:

@@ -68,7 +68,6 @@ from zerver.models import (
     ArchivedMessage,
     Device,
     Message,
-    PushDevice,
     PushDeviceToken,
     Realm,
     Recipient,
@@ -2034,19 +2033,6 @@ class HostnameAlreadyInUseBouncerError(JsonableError):
 class PushDeviceInfoDict(TypedDict):
     status: Literal["active", "pending", "failed"]
     error_code: str | None
-
-
-def get_push_devices(user_profile: UserProfile) -> dict[str, PushDeviceInfoDict]:
-    # We intentionally don't try to save a database query
-    # if `push_notifications_configured()` is False, in order to avoid
-    # risk of clients deleting their Account records if the server
-    # has its mobile notifications configuration temporarily disabled.
-    rows = PushDevice.objects.filter(user=user_profile)
-
-    return {
-        str(row.push_account_id): {"status": row.status, "error_code": row.error_code}
-        for row in rows
-    }
 
 
 class NoActivePushDeviceError(JsonableError):

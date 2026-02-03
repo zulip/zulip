@@ -290,13 +290,6 @@ class EventOnboardingSteps(BaseEvent):
     onboarding_steps: list[OnboardingSteps]
 
 
-class EventPushDevice(BaseEvent):
-    type: Literal["push_device"]
-    push_account_id: int
-    status: Literal["active", "failed", "pending"]
-    error_code: str | None = None
-
-
 class EventDeviceAdd(BaseEvent):
     type: Literal["device"]
     op: Literal["add"]

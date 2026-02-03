@@ -55,7 +55,6 @@ from zerver.lib.narrow_predicate import check_narrow_for_events
 from zerver.lib.navigation_views import get_navigation_views_for_user
 from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
-from zerver.lib.push_notifications import get_push_devices
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.scheduled_messages import (
@@ -946,9 +945,6 @@ def fetch_initial_state_data(
     if want("tenor"):
         # See Giphy comment above; Tenor API keys work similarly.
         state["tenor_api_key"] = settings.TENOR_API_KEY or ""
-
-    if want("push_device"):
-        state["push_devices"] = {} if user_profile is None else get_push_devices(user_profile)
 
     if want("device"):
         state["devices"] = {} if user_profile is None else get_devices(user_profile)
@@ -2008,9 +2004,6 @@ def apply_event(
     elif event["type"] == "restart":
         # The Tornado process restarted.  This has no effect; we ignore it.
         pass
-    elif event["type"] == "push_device":
-        state["push_devices"][str(event["push_account_id"])]["status"] = event["status"]
-        state["push_devices"][str(event["push_account_id"])]["error_code"] = event.get("error_code")
     elif event["type"] == "device":
         if event["op"] == "add":
             state["devices"][str(event["device_id"])] = {

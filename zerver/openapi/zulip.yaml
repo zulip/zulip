@@ -1775,63 +1775,6 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to a user's clients when the metadata in the
-                                `push_devices` dictionary for the user changes.
-
-                                Helps clients to live-update the `push_devices` dictionary
-                                returned in [`POST /register`](/api/register-queue) response.
-
-                                **Changes**: New in Zulip 11.0 (feature level 406).
-                              properties:
-                                id:
-                                  $ref: "#/components/schemas/EventIdSchema"
-                                type:
-                                  allOf:
-                                    - $ref: "#/components/schemas/EventTypeSchema"
-                                    - enum:
-                                        - push_device
-                                push_account_id:
-                                  type: integer
-                                  description: |
-                                    The push account ID for this client registration.
-
-                                    See [`POST /mobile_push/register`](/api/register-push-device)
-                                    for details on push account IDs.
-
-                                    **Changes**: Prior to Zulip 12.0 (feature level 450),
-                                    the integer value was expressed as a string.
-                                status:
-                                  type: string
-                                  enum:
-                                    - active
-                                    - failed
-                                    - pending
-                                  description: |
-                                    The updated registration status. Will be `"active"`, `"failed"`, or
-                                    `"pending"`.
-                                error_code:
-                                  type: string
-                                  nullable: true
-                                  description: |
-                                    If the status is `"failed"`, a [Zulip API error
-                                    code](/api/rest-error-handling) indicating the type of failure that
-                                    occurred.
-
-                                    The following error codes have recommended client behavior:
-
-                                    - `"INVALID_BOUNCER_PUBLIC_KEY"` - Inform the user to update app.
-                                    - `"REQUEST_EXPIRED` - Retry with a fresh payload.
-                                      If the status is "failed", an error code explaining the failure.
-                              example:
-                                {
-                                  "id": 1,
-                                  "type": "push_device",
-                                  "push_account_id": 1234,
-                                  "status": "active",
-                                }
-                            - type: object
-                              additionalProperties: false
-                              description: |
                                 Event sent to a user's clients when they [register a device](/api/register-client-device).
 
                                 Helps clients to live-update the `devices` dictionary
@@ -18638,39 +18581,6 @@ paths:
                           [Tenor API TOS](https://developers.google.com/tenor/guides/api-terms).
 
                           **Changes**: New in Zulip 12.0 (feature level 442).
-                      push_devices:
-                        type: object
-                        description: |
-                          Present if `push_device` is present in `fetch_event_types`.
-
-                          Dictionary where each entry describes the user's push device's
-                          registration status and error code (if registration failed).
-
-                          **Changes**: New in Zulip 11.0 (feature level 406).
-                        additionalProperties:
-                          description: |
-                            `{push_account_id}`: Dictionary containing the details of
-                            a push device with the push account ID as the key.
-                          type: object
-                          additionalProperties: false
-                          properties:
-                            status:
-                              type: string
-                              description: |
-                                The push account's registration status.
-                                Either `"active"`, `"pending"`, or `"failed"`.
-                            error_code:
-                              type: string
-                              nullable: true
-                              description: |
-                                If the status is `"failed"`, a [Zulip API error
-                                code](/api/rest-error-handling) indicating the type of failure that
-                                occurred.
-
-                                The following error codes have recommended client behavior:
-
-                                - `"INVALID_BOUNCER_PUBLIC_KEY"` - Inform the user to update app.
-                                - `"REQUEST_EXPIRED` - Retry with a fresh payload.
                       devices:
                         type: object
                         description: |
