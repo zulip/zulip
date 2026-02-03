@@ -141,6 +141,8 @@ run_test("empty_narrow_html", ({mock_template}) => {
     const search_data_with_stop_word = {
         has_stop_word: true,
         query_words: [
+            {query_word: '"this"', is_stop_word: true},
+            {query_word: "'is'", is_stop_word: true},
             {query_word: "a", is_stop_word: true},
             {query_word: "search", is_stop_word: false},
         ],
@@ -152,6 +154,8 @@ run_test("empty_narrow_html", ({mock_template}) => {
     <h4 class="empty-feed-notice-title"> This is a title </h4>
         <div class="empty-feed-notice-description">
             Common words were excluded from your search: <br/>
+                <del>&quot;this&quot;</del>
+                <del>&#x27;is&#x27;</del>
                 <del>a</del>
                 <span class="search-query-word">search</span>
         </div>
