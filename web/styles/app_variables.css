@@ -639,7 +639,7 @@
        See 1c6bed55e4e800b5bad7150f6bdd274cd7f6504e for more context. */
     --width-dropdown-widget-button: 206px;
     /* User profile modal */
-    --user-profile-modal-body-height: 60vh;
+    --user-profile-modal-height: 75dvh;
     --user-profile-modal-body-margin-bottom: 20px;
 
     /* Height of the button for filter dropdown in stream settings UI.
@@ -852,25 +852,6 @@
     --color-background-non-empty-overlay-indicator: light-dark(
         hsl(0deg 0% 100% / 90%),
         hsl(212deg 28% 8% / 75%)
-    );
-    --color-background-modal: light-dark(#ededed, #242424);
-    --color-background-modal-bar: light-dark(#f5f5f5, #333);
-    --color-border-modal: light-dark(
-        color-mix(in srgb, #8c8c8c 25%, transparent),
-        color-mix(in srgb, #fff 8%, transparent)
-    );
-    --color-border-modal-bar: light-dark(
-        color-mix(in srgb, #c2c2c2 80%, transparent),
-        color-mix(in srgb, #fff 5%, transparent)
-    );
-    --color-border-modal-footer: light-dark(
-        hsl(0deg 0% 87%),
-        hsl(0deg 0% 100% / 20%)
-    );
-    --color-modal-close-button: light-dark(inherit, hsl(236deg 33% 90%));
-    --color-background-modal-close-button-hover: light-dark(
-        hsl(0deg 0% 90%),
-        hsl(0deg 0% 91% / 10%)
     );
     --color-modal-selectable-icon: light-dark(
         hsl(240deg 30% 40%),

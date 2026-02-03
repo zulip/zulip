@@ -318,14 +318,18 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    {% if page_params.free_trial_days %}
-                    Start free trial for {{ plan }}
-                    {% else %}
-                    Send invoice for {{ plan }}
-                    {% endif %}
-                </h1>
-                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        {% if page_params.free_trial_days %}
+                        Start free trial for {{ plan }}
+                        {% else %}
+                        Send invoice for {{ plan }}
+                        {% endif %}
+                    </h1>
+                </div>
+                <button type="button" class="modal__close" aria-label="{{ _('Close modal') }}" tabindex="0" data-micromodal-close>
+                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                </button>
             </header>
             <main class="modal__content">
                 <p>

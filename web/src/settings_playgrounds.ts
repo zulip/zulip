@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import render_confirm_delete_playground from "../templates/confirm_dialog/confirm_delete_playground.hbs";
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
@@ -95,11 +94,11 @@ function build_page(): void {
         const url =
             "/json/realm/playgrounds/" +
             encodeURIComponent($button.closest("tr").attr("data-playground-id")!);
-        const html_body = render_confirm_delete_playground();
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete code playground?"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Delete code playground?"}),
+            modal_content_html: $t_html({defaultMessage: "This action cannot be undone."}),
+            is_compact: true,
             id: "confirm_delete_code_playgrounds_modal",
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});

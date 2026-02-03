@@ -2559,7 +2559,7 @@ class InvitationsTestCase(InviteUserBase):
         self.assertDictEqual(
             extra_data,
             {
-                "confirmation_key": confirmation.confirmation_key,
+                "confirmation_id": confirmation.id,
                 "invitation_type": Confirmation.INVITATION,
                 "invitation_object_id": prereg_user.id,
             },
@@ -2682,6 +2682,7 @@ class InvitationsTestCase(InviteUserBase):
             multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
         )
         confirmation_key = confirmation_link.split("/")[-2]
+        confirmation = Confirmation.objects.get(confirmation_key=confirmation_key)
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
 
         audit_log = RealmAuditLog.objects.latest("id")
@@ -2691,7 +2692,7 @@ class InvitationsTestCase(InviteUserBase):
         self.assertDictEqual(
             extra_data,
             {
-                "confirmation_key": confirmation_key,
+                "confirmation_id": confirmation.id,
                 "invitation_type": Confirmation.MULTIUSE_INVITE,
                 "invitation_object_id": multiuse_invite.id,
             },

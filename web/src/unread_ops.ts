@@ -66,11 +66,11 @@ export function is_window_focused(): boolean {
 }
 
 export function confirm_mark_messages_as_read(): void {
-    const html_body = render_confirm_mark_messages_as_read();
+    const modal_content_html = render_confirm_mark_messages_as_read();
 
     const modal_id = confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Choose messages to mark as read"}),
-        html_body,
+        modal_title_html: $t_html({defaultMessage: "Choose messages to mark as read"}),
+        modal_content_html,
         on_click() {
             handle_mark_messages_as_read(modal_id);
         },
@@ -468,8 +468,9 @@ export function mark_as_unread_from_here(message_id: number): void {
     };
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Mark messages as unread?"}),
-        html_body: render_confirm_mark_as_unread_from_here(context),
+        modal_title_html: $t_html({defaultMessage: "Mark messages as unread?"}),
+        modal_content_html: render_confirm_mark_as_unread_from_here(context),
+        is_compact: true,
         on_click() {
             if (prefer_local_ids) {
                 do_mark_unread(locally_available_matching_message_ids);

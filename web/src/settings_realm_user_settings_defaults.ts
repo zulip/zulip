@@ -7,7 +7,7 @@ import render_confirm_reset_user_configuration from "../templates/settings/confi
 import * as audible_notifications from "./audible_notifications.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
@@ -90,7 +90,7 @@ function confirm_resetting_user_setting_to_default(
     property_list: string[],
     $status_element: JQuery,
 ): void {
-    const html_body = render_confirm_reset_user_configuration();
+    const modal_content_html = render_confirm_reset_user_configuration();
 
     function reset_user_configuration(): void {
         const active_human_user_ids = people.get_realm_active_human_user_ids();
@@ -120,13 +120,13 @@ function confirm_resetting_user_setting_to_default(
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Reset user configurations?"}),
-        html_body,
+        modal_title_html: $t_html({defaultMessage: "Reset user configurations?"}),
+        modal_content_html,
         id: "confirm-reset-user-configuration",
         on_click: reset_user_configuration,
         close_on_submit: false,
         loading_spinner: true,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        modal_submit_button_text: $t({defaultMessage: "Confirm"}),
         post_render() {
             $("#users_to_reset_configuration").val("everyone");
         },
