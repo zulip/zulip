@@ -6,12 +6,43 @@
     --color-exit-button-border: hsl(300deg 2% 11% / 30%);
     --color-exit-button-background: hsl(226deg 1% 42% / 20%);
     --color-exit-button-background-interactive: hsl(226deg 1% 42% / 27%);
+
+    /* Since modals are also present in portico and billing pages, we define
+       the modal related variables directly here in the modal.css — which is
+       a part of the common.ts bundle shared between portico and main app. */
+    --color-background-modal-overlay: color-mix(
+        in oklch,
+        hsl(0deg 0% 0%) 25%,
+        transparent
+    );
+    --color-modal-heading-text: light-dark(
+        hsl(0deg 0% 15%),
+        color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
+    );
+    --color-modal-subtitle-text: color-mix(
+        in oklch,
+        var(--color-modal-heading-text) 75%,
+        transparent
+    );
+    --color-background-modal: light-dark(hsl(0deg 0% 93%), hsl(0deg 0% 14%));
+    --color-background-modal-bar: light-dark(
+        hsl(0deg 0% 96%),
+        hsl(0deg 0% 20%)
+    );
+    --color-border-modal: light-dark(
+        hsl(0deg 0% 55%),
+        color-mix(in oklch, hsl(0deg 0% 100%) 15%, transparent)
+    );
+    --color-border-modal-bar: light-dark(
+        hsl(0deg 0% 76%),
+        color-mix(in oklch, hsl(0deg 0% 100%) 12%, transparent)
+    );
 }
 
 .modal__overlay {
     position: fixed;
     inset: 0;
-    background: hsl(0deg 0% 0% / 60%);
+    background: var(--color-background-modal-overlay);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -25,41 +56,69 @@
     max-width: calc(100% - 32px);
     max-height: 96%;
     width: 37.1428em; /* 520px at 14px em */
-    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--color-border-modal);
+    border-radius: 7px;
     box-sizing: border-box;
 }
 
 .modal__header {
-    /* 16px 16px 16px 24px at 16px/1em */
-    padding: 1em 1em 1em 1.5em;
     display: grid;
-    /* 1.8em is the shortest round value for heading at which none of
-       the letters of the english alphabet get cut by overflow:hidden
-       at em = 20px
-       29px at 16px/1em = 1.8125 */
+    /* The grid structure uses two grid columns to define the
+       area for the modal close button, with the rightmost column
+       being used for the close button and to also serve as the
+       right padding and the column to its left accounts for the
+       space of modal close button icon width - right padding. */
     grid-template:
-        "heading close-button" 1.8em "heading ." auto / minmax(0, 1fr)
-        1.8125em;
-    column-gap: 4px;
+        ". modal-header-content modal-close-button modal-close-button" 2.75em /* 44px at 16px/1em */
+        ". modal-header-content .                  ." minmax(0, auto)
+        ". modal-tab-switcher   modal-tab-switcher ." minmax(0, auto)
+        / 1em minmax(0, 1fr) minmax(0, auto) 1em; /* 16px at 16px/1em */
+    background-color: var(--color-background-modal-bar);
+
+    &:has(+ .modal__content) {
+        border-bottom: 1px solid var(--color-border-modal-bar);
+    }
+}
+
+.modal__header-content {
+    grid-area: modal-header-content;
+    /* 10px at 16px/1em */
+    padding: 0.625em 0;
 }
 
 .modal__footer {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    /* 20px 24px at 16px/1em */
-    padding: 1.25em 1.5em;
+    /* 8px 16px 12px 16px at 16px/1em */
+    padding: 0.5em 1em 0.75em;
+    background-color: var(--color-background-modal-bar);
+}
+
+.modal__content + .modal__footer {
+    /* These styles apply only when the modal content
+       is present in the modal. */
+    padding: 0.75em 1em; /* 12px 16px at 16px/1em */
+    border-top: 1px solid var(--color-border-modal-bar);
 }
 
 .modal__title {
-    grid-area: heading;
     margin: 0;
-    /* 24px at 16px/1em */
-    font-size: 1.5em;
-    font-weight: 600;
-    line-height: 1.25;
+    /* 20px at 16px/1em */
+    font-size: 1.25em;
+    font-weight: 650;
+    line-height: 1.2; /* 24px at 20px/1em */
     overflow: hidden;
     overflow-wrap: break-word;
+    color: var(--color-modal-heading-text);
+
+    .icon-button {
+        /* 16px icon + 4px padding = 24px icon button,
+           which matches with the line height of the
+           modal title. */
+        padding: 0.25em; /* 4px at 16px/1em */
+    }
 
     .channel-privacy-type-icon {
         /* This pushes back on suspect styles
@@ -89,40 +148,37 @@
     }
 }
 
-.modal__close {
-    &::before {
-        content: "\2715";
-        color: var(--color-modal-close-button);
-    }
-    background: transparent;
-    border: 0;
+.modal__subtitle {
+    margin-top: 0.25em; /* 4px at 16px/1em */
+    line-height: 1.25; /* 20px at 16px/1em */
+    color: var(--color-modal-subtitle-text);
+}
 
-    &:hover {
-        background: var(--color-background-modal-close-button-hover);
+.modal__close {
+    grid-area: modal-close-button;
+
+    &:focus-visible {
+        outline-offset: -2px !important;
     }
 }
 
 .modal__content {
     display: flex;
     flex-direction: column;
-    /* 2px 24px at 16px/1em */
-    padding: 0.125em 1.5em;
+    /* 14px 16px at 16px/1em */
+    padding: 0.875em 1em;
     /* Prevent the appearance of a horizontal
        native scrollbar at certain
        info-density/zoom levels. */
     overflow: hidden auto;
-    /* Set a max-width, less the 1.5em of left and right
+    /* Set a max-width, less the 1em of left and right
        padding specified above. */
-    max-width: calc(100% - 3em);
+    max-width: calc(100% - 2em);
 
     > .simplebar-wrapper {
         /* Compensate the 3em reduced in modal_content so it positions
            itself correctly */
         max-width: calc(100% + 3em);
-    }
-
-    &.simplebar-scrollable-y + .modal__footer {
-        border-top: 1px solid var(--color-border-modal-footer);
     }
 
     .channel-privacy-type-icon {
@@ -195,7 +251,207 @@
     color: hsl(0deg 0% 100%) !important;
 }
 
+.modal__tab-switcher-container {
+    grid-area: modal-tab-switcher;
+    font-weight: initial;
+    padding-bottom: 0.5em; /* 8px at 16px/1em */
+}
+
 /* Modal-specific CSS belongs below this point. */
+
+#user-profile-modal {
+    .modal__container {
+        height: var(--user-profile-modal-height);
+    }
+
+    .name {
+        color: var(--color-user-profile-field-name);
+        font-weight: 600;
+        margin-right: 10px;
+        overflow-wrap: break-word;
+    }
+
+    .value {
+        vertical-align: top;
+        overflow-wrap: anywhere;
+    }
+
+    #exit-sign {
+        /* 24px at 14px/1em */
+        font-size: 1.7143em;
+        line-height: 1;
+    }
+
+    #profile-tab {
+        margin: 1px 5px 0;
+
+        & li.custom_user_field {
+            display: block;
+        }
+    }
+
+    .top {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    @media (width < $ml_min) {
+        .top {
+            flex-direction: column-reverse;
+        }
+    }
+
+    #avatar {
+        display: inline-block;
+        height: 180px;
+        width: 180px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 5px;
+        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 20%);
+
+        &.guest-avatar::after {
+            outline: 9px solid hsl(0deg 0% 100%);
+        }
+    }
+
+    .user-profile-header-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    .deactivated-user-icon {
+        vertical-align: middle;
+        font-size: 0.7em;
+    }
+
+    #default-section {
+        vertical-align: top;
+
+        .default-field {
+            margin-bottom: 10px;
+        }
+    }
+
+    & hr {
+        border: 1px solid hsl(0deg 0% 93%);
+        margin: 5px 0;
+    }
+
+    #content {
+        .field-section {
+            margin-bottom: 10px;
+
+            &[data-type="2"] .value {
+                overflow-wrap: break-word;
+            }
+        }
+
+        .rendered_markdown p {
+            margin: 0;
+        }
+    }
+
+    .col-left {
+        padding: 0 10px 0 0;
+    }
+
+    .col-right {
+        width: fit-content;
+    }
+
+    .tab-data {
+        .active {
+            display: block;
+        }
+
+        margin-bottom: var(--user-profile-modal-body-margin-bottom);
+    }
+
+    .group-tab-element-header,
+    .stream-tab-element-header {
+        margin: 0;
+        display: inline-block;
+        font-weight: 600;
+        /* 18px at 16px/1em */
+        font-size: 1.125em;
+    }
+
+    #user-profile-groups-tab,
+    #user-profile-streams-tab {
+        height: calc(
+            var(--user-profile-modal-body-height) -
+                var(--user-profile-modal-body-margin-bottom)
+        );
+        display: grid;
+        grid-template:
+            "alert" auto
+            "top" minmax(0, 1fr)
+            "bottom" auto
+            / minmax(0, 1fr);
+
+        .stream_list_info:has(.banner),
+        .user-profile-group-list-alert:has(.banner) {
+            grid-area: alert;
+            margin-bottom: 8px;
+        }
+
+        .stream-list-loader:not(:empty) {
+            margin: auto; /* center the spinner */
+
+            .loading_indicator_spinner {
+                margin-top: 10px;
+            }
+        }
+
+        .error-message:not(:empty) {
+            color: var(--color-alert-error-red);
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .stream-list-bottom-section,
+        .group-list-bottom-section {
+            grid-area: bottom;
+        }
+
+        .user_profile_subscribe_widget {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding-top: 2px;
+            gap: 10px;
+        }
+
+        .dropdown_widget_value {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .group-list-top-section,
+    .stream-list-top-section {
+        grid-area: top;
+        margin-top: 0.3125em;
+        margin-bottom: 0.75em;
+    }
+
+    @media (width < $md_min) {
+        .group-list-top-section,
+        .stream-list-top-section {
+            display: block;
+
+            .header-section {
+                width: 100%;
+            }
+        }
+    }
+
+    .manage-profile-tab-footer:not(.manage-profile-tab-active) {
+        display: none;
+    }
+}
 
 .folder-channels-list-header {
     margin: 0;
@@ -305,9 +561,9 @@
 }
 
 .user-profile-name-heading {
-    max-width: 80%;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     /* Padding for icon outlines to occupy the space so that they don't get clipped. */
     padding: 0 1px;
@@ -372,20 +628,13 @@
         padding-bottom: 0;
     }
 
-    & hr {
-        margin: 10px 0;
-    }
-
-    .modal__content {
-        padding: 0 24px 8px;
-    }
-
     .loading_indicator {
         margin: auto;
     }
 
     .read_receipts_list {
-        margin-left: 0;
+        /* Override legacy bootstrap ul margins. */
+        margin: 0;
 
         & li {
             .read_receipts_user_avatar {
@@ -423,6 +672,10 @@
             }
         }
     }
+}
+
+.deactivate-actions {
+    margin-top: 0.625em;
 }
 
 .email_field {
@@ -595,7 +848,6 @@
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
-    margin-bottom: 10px;
     /* Subtract (2 * horizontal padding) + (2 * border width) */
     width: calc(
         var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
@@ -836,10 +1088,6 @@
     width: 17.8571em;
 }
 
-#invite_users_option_tabs_container {
-    margin-bottom: 20px;
-}
-
 .dialog-widget-footer-minor-text {
     font-size: smaller;
     font-style: italic;
@@ -960,3 +1208,45 @@ ul.modal-options-list {
 #users_to_reset_configuration {
     width: 100%;
 }
+
+#change_group_info_modal .user-group-info-modal-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625em; /* 10px at 16px/1em */
+}
+
+/* ==============================================================
+ *  MODAL MARGIN OVERRIDES
+ *  Some elements inside the modal content area have default
+ *  margins applied to them from other CSS files.
+ *  While these margins worked well in the previous modal design,
+ *  they create unwanted extra space between the modal content
+ *  and the modal footer in the redesigned modals.
+ *
+ *  TODO: Remove these overrides once we implement a standardized
+ *  flexbox/grid structure for the modal content.
+ *  ============================================================== */
+
+.modal__content p:last-of-type {
+    /* Override default value for <p> tags in bootstrap.app.css */
+    margin-bottom: 0;
+}
+
+.modal__content .input-group:last-of-type {
+    /* Override default value for input-group in settings.css. */
+    margin-bottom: 0;
+}
+
+.modal__content .modal-form {
+    /* Override default value for form in bootstrap.app.css */
+    margin-bottom: 0;
+}
+
+.modal__content .modal-options-list {
+    /* Override default value for <ul> in bootstrap.app.css */
+    margin-bottom: 0;
+}
+
+/* ==============================================================
+ * END MODAL MARGIN OVERRIDES
+ * ============================================================== */

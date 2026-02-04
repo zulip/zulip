@@ -376,16 +376,16 @@ export function show(filter?: Filter): void {
     });
 
     if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_inbox_view_modal")) {
-        const html_body = render_introduce_zulip_view_modal({
+        const modal_content_html = render_introduce_zulip_view_modal({
             zulip_view: "inbox",
             current_home_view_and_escape_navigation_enabled:
                 user_settings.web_home_view === "inbox" &&
                 user_settings.web_escape_navigates_to_home_view,
         });
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Welcome to your inbox!"}),
-            html_body,
-            html_submit_button: $t_html({defaultMessage: "Got it"}),
+            modal_title_html: $t_html({defaultMessage: "Welcome to your inbox!"}),
+            modal_content_html,
+            modal_submit_button_text: $t({defaultMessage: "Got it"}),
             on_click() {
                 // Do nothing
             },

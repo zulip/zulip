@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 459**
+
+* [`DELETE /users/{user_id}`](/api/deactivate-user): Added new
+  parameter `actions` that asks the server to perform additional
+  actions, such as deleting messages the user sent, while deactivating
+  the user.
+
 **Feature level 458**
 
 * [`GET users/{user_id}/channels`](/api/get-user-channels): Fixed

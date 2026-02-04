@@ -919,7 +919,7 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved: boole
         topic_is_resolved,
     );
 
-    const html_body = render_resolve_topic_time_limit_error_modal({
+    const modal_content_html = render_resolve_topic_time_limit_error_modal({
         topic_is_resolved,
         resolve_topic_time_limit_error_string,
     });
@@ -930,9 +930,9 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved: boole
         modal_heading = $t_html({defaultMessage: "Could not resolve topic"});
     }
     dialog_widget.launch({
-        html_heading: modal_heading,
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Close"}),
+        modal_title_html: modal_heading,
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Close"}),
         on_click() {
             /* Nothing extra needs to happen when the dialog is closed. */
         },
@@ -943,12 +943,12 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved: boole
 
 function show_intro_resolve_topic_modal(topic_name: string, cb: () => void): void {
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Mark topic as resolved"}),
-        html_body: render_intro_resolve_topic_modal({topic_name}),
+        modal_title_html: $t_html({defaultMessage: "Mark topic as resolved"}),
+        modal_content_html: render_intro_resolve_topic_modal({topic_name}),
         id: "intro_resolve_topic_modal",
         on_click: cb,
-        html_submit_button: $t({defaultMessage: "Got it — Confirm"}),
-        html_exit_button: $t({defaultMessage: "Got it — Cancel"}),
+        modal_submit_button_text: $t({defaultMessage: "Got it — Confirm"}),
+        modal_exit_button_text: $t({defaultMessage: "Got it — Cancel"}),
     });
 }
 
@@ -1205,8 +1205,8 @@ export function try_save_inline_topic_edit($row: JQuery): void {
     const stream_topics = stream_topic_history.get_recent_topic_names(stream_id);
     if (stream_topics.includes(new_topic)) {
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Merge with another topic?"}),
-            html_body: render_confirm_merge_topics_with_rename({
+            modal_title_html: $t_html({defaultMessage: "Merge with another topic?"}),
+            modal_content_html: render_confirm_merge_topics_with_rename({
                 topic_display_name: util.get_final_topic_display_name(new_topic),
                 is_empty_string_topic: new_topic === "",
             }),
@@ -1500,8 +1500,8 @@ export function maybe_show_edit($row: JQuery, id: number): void {
 
 function warn_user_about_unread_msgs(last_sent_msg_id: number, num_unread: number): void {
     confirm_dialog.launch({
-        html_heading: $t({defaultMessage: "Edit your last message?"}),
-        html_body: render_confirm_edit_messages({
+        modal_title_html: $t({defaultMessage: "Edit your last message?"}),
+        modal_content_html: render_confirm_edit_messages({
             num_unread,
         }),
         on_click() {
@@ -1611,13 +1611,13 @@ function handle_message_move_failure_due_to_time_limit(
         },
     );
 
-    const html_body = render_confirm_moving_messages_modal({
+    const modal_content_html = render_confirm_moving_messages_modal({
         messages_allowed_to_move_text,
         messages_not_allowed_to_move_text,
     });
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Move some messages?"}),
-        html_body,
+        modal_title_html: $t_html({defaultMessage: "Move some messages?"}),
+        modal_content_html,
         on_click: handle_confirm,
         loading_spinner: true,
         ...(on_hide_callback !== undefined && {on_hide: on_hide_callback}),

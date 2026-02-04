@@ -156,6 +156,7 @@ type TopicListInfo = {
 };
 
 export function filter_topics_by_search_term(
+    stream_id: number,
     topic_names: string[],
     search_term: string,
     topics_state = "",
@@ -175,10 +176,23 @@ export function filter_topics_by_search_term(
         return typeahead.query_matches_string_in_any_order(normalized_query, normalized_topic, " ");
     });
 
-    if (topics_state === "is:resolved") {
-        topic_names = topic_names.filter((name) => resolved_topic.is_resolved(name));
-    } else if (topics_state === "-is:resolved") {
-        topic_names = topic_names.filter((name) => !resolved_topic.is_resolved(name));
+    switch (topics_state) {
+        case "is:resolved":
+            topic_names = topic_names.filter((name) => resolved_topic.is_resolved(name));
+            break;
+        case "-is:resolved":
+            topic_names = topic_names.filter((name) => !resolved_topic.is_resolved(name));
+            break;
+        case "is:followed":
+            topic_names = topic_names.filter((name) =>
+                user_topics.is_topic_followed(stream_id, name),
+            );
+            break;
+        case "-is:followed":
+            topic_names = topic_names.filter(
+                (name) => !user_topics.is_topic_followed(stream_id, name),
+            );
+            break;
     }
 
     return topic_names;

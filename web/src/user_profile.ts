@@ -408,7 +408,7 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
                 return item?.name.toLocaleLowerCase().includes(value);
             },
         },
-        $simplebar_container: $("#user-profile-modal .modal__body"),
+        $simplebar_container: $("#user-profile-modal .modal__content"),
     });
 }
 
@@ -453,16 +453,12 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
                 return item?.name.toLocaleLowerCase().includes(value);
             },
         },
-        $simplebar_container: $("#user-profile-modal .modal__body"),
+        $simplebar_container: $("#user-profile-modal .modal__content"),
     });
 }
 
 function render_manage_profile_content(user: User): void {
-    // Since we want the height of the profile modal to remain consistent when switching tabs,
-    // we need to restrict the height of the main body. This will ensure that the footer of
-    // the "Manage User" tab can adjust within the provided height without expanding the modal.
-    $("#user-profile-modal .modal__body").addClass("modal__body__manage_profile_height");
-    $("#user-profile-modal .manage-profile-tab-footer").addClass("modal__footer_wrapper");
+    $("#user-profile-modal .manage-profile-tab-footer").addClass("manage-profile-tab-active");
     const $container = $("#manage-profile-tab");
     $container.empty();
     if (user.is_bot) {
@@ -774,10 +770,8 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         callback(_name: string | undefined, key: string) {
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
-            $("#user-profile-modal .modal__footer").hide();
-            $("#user-profile-modal .modal__body").removeClass("modal__body__manage_profile_height");
             $("#user-profile-modal .manage-profile-tab-footer").removeClass(
-                "modal__footer_wrapper",
+                "manage-profile-tab-active",
             );
             switch (key) {
                 case "profile-tab":
@@ -795,7 +789,6 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
                     break;
                 }
                 case "manage-profile-tab":
-                    $("#user-profile-modal .modal__footer").show();
                     render_manage_profile_content(user);
                     break;
             }
@@ -822,7 +815,8 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     toggler = components.toggle(opts);
     const $elem = toggler.get();
     $elem.addClass("large allow-overflow");
-    $("#tab-toggle").append($elem);
+    const $tab_switcher_container = $("#user-profile-modal .modal__tab-switcher-container");
+    $tab_switcher_container.append($elem);
     setTimeout(() => {
         $(".ind-tab.selected").trigger("focus");
     }, 0);
@@ -862,7 +856,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
     assert(bot.is_bot);
     // Extract short_name from email (format: {short_name}-bot@domain)
     const short_name = bot.email.split("@")[0]!.slice(0, -4);
-    const html_body = render_edit_bot_form({
+    const modal_content_html = render_edit_bot_form({
         user_id,
         is_active,
         is_bot_owner_current_user,
@@ -879,7 +873,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         realm_bot_domain: realm.realm_bot_domain,
         zuliprc: "zuliprc",
     });
-    $container.append($(html_body));
+    $container.append($(modal_content_html));
     let avatar_widget: UploadWidget;
 
     assert(bot.bot_type !== undefined && bot.bot_type !== null);
@@ -1244,7 +1238,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
     const hide_deactivate_button =
         current_user.is_admin && !current_user.is_owner && person.is_owner;
     const user_is_only_organization_owner = person.is_owner && people.is_current_user_only_owner();
-    const html_body = render_admin_human_form({
+    const modal_content_html = render_admin_human_form({
         user_id,
         email: person.delivery_email,
         full_name: person.full_name,
@@ -1255,7 +1249,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
     });
 
-    $container.append($(html_body));
+    $container.append($(modal_content_html));
     // Set role dropdown and fields user pills
     $("#user-role-select").val(person.role);
     if (!current_user.is_owner) {
@@ -1304,6 +1298,15 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
                 };
             }
 
+            const user_deactivation_actions: Record<string, boolean> = {};
+            for (const elem of $(".deactivate-actions input[type='checkbox']:checked")) {
+                user_deactivation_actions[$(elem).attr("data-key")!] = true;
+            }
+
+            data = {
+                ...data,
+                actions: JSON.stringify(user_deactivation_actions),
+            };
             dialog_widget.submit_api_request(channel.del, url, data);
         }
         user_deactivation_ui.confirm_deactivation(user_id, handle_confirm, true);

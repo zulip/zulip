@@ -250,13 +250,13 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
 
 function show_first_stream_created_modal(stream: StreamSubscription): void {
     dialog_widget.launch({
-        html_heading: $t({defaultMessage: "Channel created!"}),
-        html_body: render_first_stream_created_modal({stream}),
+        modal_title_html: $t({defaultMessage: "Channel created!"}),
+        modal_content_html: render_first_stream_created_modal({stream}),
         id: "first_stream_created_modal",
         on_click(): void {
             /* This modal is purely informational and doesn't do anything when closed. */
         },
-        html_submit_button: $t({defaultMessage: "Continue"}),
+        modal_submit_button_text: $t({defaultMessage: "Continue"}),
         close_on_submit: true,
         single_footer_button: true,
     });

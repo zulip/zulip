@@ -50,6 +50,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
     get_test_image_file,
+    get_user_sent_message_ids,
     most_recent_message,
     reset_email_visibility_to_everyone_in_zulip_realm,
     simulated_empty_cache,
@@ -2476,6 +2477,352 @@ class ActivateTest(ZulipTestCase):
                 "'from_address': None, 'language': None, 'context': {}}"
             ],
         )
+
+
+class DeactivateActionsTest(ZulipTestCase):
+    # Helper for setting up various types of messages.
+    def setup_user_with_messages(
+        self, user: UserProfile, admin: UserProfile
+    ) -> tuple[list[int], list[int], list[int]]:
+        msg_id_1 = self.send_personal_message(user, admin, content="private message 1")
+        # Sending dm to a different user.
+        msg_id_2 = self.send_personal_message(
+            user, self.example_user("aaron"), content="private message 2"
+        )
+        # Me message
+        msg_id_3 = self.send_personal_message(user, user, content="private message 3")
+        personal_msg_ids = [msg_id_1, msg_id_2, msg_id_3]
+
+        msg_id_1 = self.send_stream_message(
+            user, "Verona", topic_name="topic1", content="channel message 1"
+        )
+        msg_id_2 = self.send_stream_message(
+            user, "Verona", topic_name="topic1", content="channel message 2"
+        )
+        msg_id_3 = self.send_stream_message(user, "Verona", topic_name="topic2")
+        msg_id_4 = self.send_stream_message(user, "Verona")
+        public_channel_msg_ids = [msg_id_1, msg_id_2, msg_id_3, msg_id_4]
+
+        private_channel = self.make_stream("private_channel", invite_only=True)
+        self.subscribe(user, private_channel.name)
+        msg_id_1 = self.send_stream_message(
+            user, private_channel.name, topic_name="topic1", content="private channel message 1"
+        )
+        msg_id_2 = self.send_stream_message(
+            user, private_channel.name, topic_name="topic2", content="private channel message 2"
+        )
+        private_channel_msg_ids = [msg_id_1, msg_id_2]
+
+        return (personal_msg_ids, public_channel_msg_ids, private_channel_msg_ids)
+
+    def test_permission_to_delete_messages_when_deactivating_user(self) -> None:
+        admin = self.example_user("iago")
+        owner = self.example_user("desdemona")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+
+        owner_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm=admin.realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            admin.realm, "can_delete_any_message_group", owner_group, acting_user=None
+        )
+
+        # Non-owner users do not have permission to delete anyone's messages.
+        result = self.api_delete(
+            admin,
+            f"/api/v1/users/{cordelia.id}",
+            {
+                "actions": orjson.dumps(
+                    {
+                        "delete_public_channel_messages": True,
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_error(result, "User is not allowed to delete other user's messages.")
+
+        # Admin can still delete the deactivated user's profile.
+        result = self.api_delete(
+            admin,
+            f"/api/v1/users/{cordelia.id}",
+            {
+                "actions": orjson.dumps({"delete_profile": True}).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        cordelia.refresh_from_db()
+        self.assertFalse(cordelia.is_active)
+
+        # Owner have permission to delete anyone's messages.
+        result = self.api_delete(
+            owner,
+            f"/api/v1/users/{aaron.id}",
+            {
+                "actions": orjson.dumps(
+                    {
+                        "delete_public_channel_messages": True,
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        aaron.refresh_from_db()
+        self.assertFalse(aaron.is_active)
+
+    def test_deactivation_without_deleting_messages(self) -> None:
+        admin = self.example_user("iago")
+        user = self.example_user("cordelia")
+        self.setup_user_with_messages(user, admin)
+
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 9)
+
+        # Test with all actions explicitly set to False
+        result = self.api_delete(
+            admin,
+            f"/api/v1/users/{user.id}",
+            {
+                "actions": orjson.dumps(
+                    {
+                        "delete_public_channel_messages": False,
+                        "delete_private_channel_messages": False,
+                        "delete_direct_messages": False,
+                    }
+                ).decode(),
+            },
+        )
+
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 9)
+
+        do_reactivate_user(user, acting_user=admin)
+
+        result = self.api_delete(admin, f"/api/v1/users/{user.id}")
+
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 9)
+
+    def test_deactivation_with_deleting_public_channel_messages(self) -> None:
+        admin = self.example_user("iago")
+        user = self.example_user("cordelia")
+        (dm_msg_ids, _, private_channel_msg_ids) = self.setup_user_with_messages(user, admin)
+
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 9)
+
+        result = self.api_delete(
+            admin,
+            f"/api/v1/users/{user.id}",
+            {
+                "actions": orjson.dumps(
+                    {
+                        "delete_public_channel_messages": True,
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        user_message_ids = get_user_sent_message_ids(user)
+        # 4 public channel messages were deleted; 2 private channel messages the 3 DMs remain.
+        self.assert_length(user_message_ids, 5)
+        self.assertCountEqual(user_message_ids, [*dm_msg_ids, *private_channel_msg_ids])
+
+    def test_deactivation_with_deleting_private_channel_messages(self) -> None:
+        admin = self.example_user("iago")
+        user = self.example_user("cordelia")
+        (dm_msg_ids, public_channel_msg_ids, _) = self.setup_user_with_messages(user, admin)
+
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 9)
+
+        result = self.api_delete(
+            admin,
+            f"/api/v1/users/{user.id}",
+            {
+                "actions": orjson.dumps(
+                    {
+                        "delete_private_channel_messages": True,
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        user_message_ids = get_user_sent_message_ids(user)
+        # 2 private channel messages deleted out of 9 messages.
+        self.assert_length(user_message_ids, 7)
+        self.assertCountEqual(user_message_ids, [*public_channel_msg_ids, *dm_msg_ids])
+
+    def test_deactivation_with_deleting_direct_messages(self) -> None:
+        admin = self.example_user("iago")
+        user = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+
+        (_, public_channel_msg_ids, private_channel_msg_ids) = self.setup_user_with_messages(
+            user, admin
+        )
+
+        self.send_group_direct_message(user, [admin, hamlet], content="group dm message 1")
+        self.send_group_direct_message(user, [admin, hamlet], content="group dm message 2")
+
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 11)
+
+        result = self.api_delete(
+            admin,
+            f"/api/v1/users/{user.id}",
+            {
+                "actions": orjson.dumps(
+                    {
+                        "delete_direct_messages": True,
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 6)
+        self.assertCountEqual(user_message_ids, [*public_channel_msg_ids, *private_channel_msg_ids])
+
+    def test_deactivation_with_deleting_all_channel_messages(self) -> None:
+        admin = self.example_user("iago")
+        user = self.example_user("cordelia")
+        (dm_msg_ids, _, _) = self.setup_user_with_messages(user, admin)
+
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 9)
+
+        result = self.api_delete(
+            admin,
+            f"/api/v1/users/{user.id}",
+            {
+                "actions": orjson.dumps(
+                    {
+                        "delete_public_channel_messages": True,
+                        "delete_private_channel_messages": True,
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        user_message_ids = get_user_sent_message_ids(user)
+        # Only 3 direct messages remain out of 9 messages.
+        self.assert_length(user_message_ids, 3)
+        self.assertCountEqual(user_message_ids, dm_msg_ids)
+
+    def test_deactivation_with_deleting_all_messages(self) -> None:
+        admin = self.example_user("iago")
+        user = self.example_user("cordelia")
+        self.setup_user_with_messages(user, admin)
+
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 9)
+
+        result = self.api_delete(
+            admin,
+            f"/api/v1/users/{user.id}",
+            {
+                "actions": orjson.dumps(
+                    {
+                        "delete_public_channel_messages": True,
+                        "delete_private_channel_messages": True,
+                        "delete_direct_messages": True,
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 0)
+
+    def test_deactivation_with_no_messages_to_delete(self) -> None:
+        """Test that deactivation works when there are no messages matching the deletion criteria."""
+        admin = self.example_user("iago")
+        user = self.example_user("cordelia")
+
+        self.send_stream_message(user, "Verona", content="channel message only")
+
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 1)
+
+        result = self.api_delete(
+            admin,
+            f"/api/v1/users/{user.id}",
+            {
+                "actions": orjson.dumps(
+                    {
+                        "delete_direct_messages": True,
+                    }
+                ).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        user_message_ids = get_user_sent_message_ids(user)
+        self.assert_length(user_message_ids, 1)
+
+    def test_name_and_avatar_change_on_deactiation(self) -> None:
+        admin = self.example_user("iago")
+        user = self.example_user("cordelia")
+        self.assertNotEqual(user.full_name, "Deleted user")
+
+        user.avatar_source = UserProfile.AVATAR_FROM_USER
+        user.save(update_fields=["avatar_source"])
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+        bot = do_create_user(
+            email="bot@zulip.com",
+            password="",
+            realm=user.realm,
+            full_name="Bot 1",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=user,
+            acting_user=user,
+        )
+        self.assertNotEqual(bot.full_name, "Deactivated bot")
+
+        bot.avatar_source = UserProfile.AVATAR_FROM_USER
+        bot.save(update_fields=["avatar_source"])
+        self.assertEqual(bot.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+        result = self.api_delete(
+            admin,
+            f"/api/v1/users/{user.id}",
+            {
+                "actions": orjson.dumps({"delete_profile": True}).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        bot.refresh_from_db()
+        self.assertFalse(user.is_active)
+        self.assertFalse(bot.is_active)
+
+        self.assertEqual(user.full_name, "Deleted user")
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertGreater(user.avatar_version, 0)
+
+        self.assertEqual(bot.full_name, "Deactivated bot")
+        self.assertEqual(bot.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertGreater(bot.avatar_version, 0)
 
 
 class RecipientInfoTest(ZulipTestCase):

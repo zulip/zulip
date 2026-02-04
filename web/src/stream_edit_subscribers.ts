@@ -433,7 +433,7 @@ function remove_subscriber({
             stream: sub,
         });
 
-        const html_body = render_unsubscribe_private_stream_modal({
+        const modal_content_html = render_unsubscribe_private_stream_modal({
             unsubscribing_other_user,
             organization_will_lose_content_access:
                 sub_count === 1 &&
@@ -441,9 +441,9 @@ function remove_subscriber({
                 user_groups.is_setting_group_set_to_nobody_group(sub.can_add_subscribers_group),
         });
 
-        let html_heading;
+        let modal_title_html;
         if (unsubscribing_other_user) {
-            html_heading = $t_html(
+            modal_title_html = $t_html(
                 {defaultMessage: "Unsubscribe {full_name} from <z-link></z-link>?"},
                 {
                     full_name: people.get_full_name(target_user_id),
@@ -451,15 +451,15 @@ function remove_subscriber({
                 },
             );
         } else {
-            html_heading = $t_html(
+            modal_title_html = $t_html(
                 {defaultMessage: "Unsubscribe from <z-link></z-link>?"},
                 {"z-link": () => stream_name_with_privacy_symbol_html},
             );
         }
 
         confirm_dialog.launch({
-            html_heading,
-            html_body,
+            modal_title_html,
+            modal_content_html,
             on_click: remove_user_from_private_stream,
         });
         return;

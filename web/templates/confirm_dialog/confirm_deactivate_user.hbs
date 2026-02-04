@@ -6,11 +6,11 @@
 </p>
 <p>{{t "Their password will be cleared from our systems, and any bots they maintain will be disabled." }}</p>
 <p>
-    {{#if number_of_invites_by_user}}
+    {{#unless (eq number_of_invites_by_user 0)}}
         {{#tr}}
             <strong>{username}</strong> has {number_of_invites_by_user, plural, one {# unexpired invitation} other {# unexpired invitations}}.
         {{/tr}}
-    {{/if}}
+    {{/unless}}
 </p>
 {{#unless (eq bots_owned_by_user.length 0)}}
     <p>
@@ -42,5 +42,18 @@
         </p>
         <p>{{t "The administrators provided the following comment:" }}</p>
         <textarea class="email_field_textarea modal-textarea" rows="8" maxlength="2000"></textarea>
+    </div>
+</div>
+<div class="deactivate-actions">
+    <label>{{t "Choose content to delete"}}</label>
+    <div class="input-group">
+        {{#each user_deactivation_actions}}
+            <label class="checkbox">
+                <input type="checkbox" data-key="{{this.key}}"/>
+                <span class="rendered-checkbox"></span>
+                {{this.value}}
+            </label>
+            <br/>
+        {{/each}}
     </div>
 </div>

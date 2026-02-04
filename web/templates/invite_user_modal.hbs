@@ -9,15 +9,12 @@
     <div class="invite-setup-tips-container banner-wrapper"></div>
 </div>
 <form id="invite-user-form">
-    <div class="input-group">
-        <div id="invite_users_option_tabs_container"></div>
-        <div id="invitee_emails_container">
-            <label for="invitee_emails" class="modal-field-label">{{t "Emails (one on each line or comma-separated)" }}
-                {{> help_link_widget link="/help/invite-new-users#send-email-invitations" }}
-            </label>
-            <div class="pill-container {{#unless user_has_email_set}}not-editable-by-user{{/unless}}">
-                <div class="input" {{#if user_has_email_set}}contenteditable="true"{{/if}}></div>
-            </div>
+    <div class="input-group" id="invitee_emails_container">
+        <label for="invitee_emails" class="modal-field-label">{{t "Emails (one on each line or comma-separated)" }}
+            {{> help_link_widget link="/help/invite-new-users#send-email-invitations" }}
+        </label>
+        <div class="pill-container {{#unless user_has_email_set}}not-editable-by-user{{/unless}}">
+            <div class="input" {{#if user_has_email_set}}contenteditable="true"{{/if}}></div>
         </div>
     </div>
     <div class="input-group" id="receive-invite-acceptance-notification-container">
