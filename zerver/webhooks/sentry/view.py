@@ -116,8 +116,11 @@ def convert_lines_to_traceback_string(lines: list[str] | None) -> str:
     return traceback
 
 
-def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
-    """Handle either an exception type event or a logentry type event payload."""
+def handle_exception_or_logentry_payloads(event: dict[str, Any]) -> tuple[str, str]:
+    """
+    Handles the `event_alert` event type which can be triggered by either an
+    exception or a log entry.
+    """
 
     topic_name = event["title"]
     platform_name = event["platform"]
@@ -201,7 +204,6 @@ def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
 def handle_issue_payload(
     action: str, issue: dict[str, Any], actor: dict[str, Any]
 ) -> tuple[str, str]:
-    """Handle either an issue type event."""
     topic_name = issue["title"]
     global_time = get_global_time(issue["lastSeen"])
     severity_emoji = severity_emoji_map.get(issue["level"], "")
@@ -303,7 +305,7 @@ def api_sentry_webhook(
     # We currently support two types of payloads: events and issues.
     if data:
         if "event" in data:
-            topic_name, body = handle_event_payload(data["event"])
+            topic_name, body = handle_exception_or_logentry_payloads(data["event"])
         elif "issue" in data:
             topic_name, body = handle_issue_payload(
                 payload["action"], data["issue"], payload["actor"]
