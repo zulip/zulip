@@ -133,7 +133,7 @@ button {
 input,
 button,
 select {
-    font-family: "Source Sans 3 VF", sans-serif;
+    font-family: inherit;
     /* Disable bootstrap size CSS; we want to use our default font size on
        body for input elements. */
     line-height: normal;
