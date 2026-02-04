@@ -165,7 +165,9 @@ const apps_events = function (): void {
         $download_from_google_play_store.toggle(version === "android");
         $download_from_apple_app_store.toggle(version === "ios");
         $download_from_microsoft_store.toggle(version === "windows");
-        $download_mac_intel.toggle(version === "mac");
+
+        // Show the info section now that all content is populated (prevents flicker)
+        $(".portico-landing.apps .hero .info").removeAttr("hidden");
     };
 
     // init
