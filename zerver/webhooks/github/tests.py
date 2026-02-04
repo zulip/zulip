@@ -339,6 +339,16 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker starred the repository [baxterthehacker/public-repo](https://github.com/baxterthehacker/public-repo)."
         self.check_webhook("watch__repository", TOPIC_REPO, expected_message)
 
+    def test_repository_advisory_reported(self) -> None:
+        expected_topic_name = "test-repo"
+        expected_message = "JohnDoe reported [GHSA-7jw9-r89j-6gg9](https://github.com/Niloth-p/test-repo/security/advisories/GHSA-7jw9-r89j-6gg9) in Niloth-p/test-repo: test report\n\n```quote\n### Summary\r\ntest\r\n\r\n\n```"
+        self.check_webhook("repository_advisory__reported", expected_topic_name, expected_message)
+
+    def test_repository_advisory_published(self) -> None:
+        expected_topic_name = "test-repo"
+        expected_message = "Niloth-p published [GHSA-vw49-7xw6-7ghw](https://github.com/Niloth-p/test-repo/security/advisories/GHSA-vw49-7xw6-7ghw)"
+        self.check_webhook("repository_advisory__published", expected_topic_name, expected_message)
+
     def test_repository_msg(self) -> None:
         expected_message = "baxterthehacker created the repository [baxterandthehackers/public-repo](https://github.com/baxterandthehackers/public-repo)."
         self.check_webhook("repository", TOPIC_REPO, expected_message)
