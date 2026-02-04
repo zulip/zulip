@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
+from zerver.models import Message
 
 
 class GitlabHookTests(WebhookTestCase):
@@ -60,6 +61,70 @@ class GitlabHookTests(WebhookTestCase):
         self.check_webhook(
             "push_hook__push_commits_more_than_limit", expected_topic_name, expected_message
         )
+
+    def test_private_repo_ignored_when_option_enabled(self) -> None:
+        """
+        Events from private repositories are ignored when
+        ignore_private_repositories=true is present in the URL.
+        """
+        self.url = self.build_webhook_url(ignore_private_repositories="true")
+        initial_count = Message.objects.count()
+        body = self.get_body("push_private_repo")
+        result = self.client_post(
+            self.url,
+            body,
+            content_type="application/json",
+            HTTP_X_GITLAB_EVENT="Push Hook",
+        )
+
+        self.assert_json_success(result)
+
+        final_count = Message.objects.count()
+        self.assertEqual(initial_count, final_count)
+
+    def test_private_repo_sends_when_option_disabled(self) -> None:
+        """
+        When ignore_private_repositories is not present, events from
+        private repositories should still be delivered (backwards compatibility).
+        """
+        self.url = self.build_webhook_url()
+
+        initial_count = Message.objects.count()
+
+        body = self.get_body("push_private_repo")
+        result = self.client_post(
+            self.url,
+            body,
+            content_type="application/json",
+            HTTP_X_GITLAB_EVENT="Push Hook",
+        )
+
+        self.assert_json_success(result)
+
+        final_count = Message.objects.count()
+        self.assertEqual(final_count, initial_count + 1)
+
+    def test_public_repo_sends_even_when_ignoring_private(self) -> None:
+        """
+        When ignore_private_repositories=true is used,
+        events from PUBLIC repositories must still be delivered.
+        """
+        self.url = self.build_webhook_url(ignore_private_repositories="true")
+
+        initial_count = Message.objects.count()
+
+        body = self.get_body("push_public_repo")
+        result = self.client_post(
+            self.url,
+            body,
+            content_type="application/json",
+            HTTP_X_GITLAB_EVENT="Push Hook",
+        )
+
+        self.assert_json_success(result)
+
+        final_count = Message.objects.count()
+        self.assertEqual(final_count, initial_count + 1)
 
     def test_remove_branch_event_message(self) -> None:
         expected_topic_name = "my-awesome-project / tomek"

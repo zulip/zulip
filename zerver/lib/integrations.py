@@ -677,7 +677,10 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
             )
         ],
         display_name="GitLab",
-        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
+        url_options=[
+            WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
+            WebhookUrlOption.build_preset_config(PresetUrlOption.IGNORE_PRIVATE_REPOSITORIES),
+        ],
     ),
     IncomingWebhookIntegration(
         "gocd",
