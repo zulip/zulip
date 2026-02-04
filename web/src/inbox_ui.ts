@@ -1999,6 +1999,10 @@ function bulk_insert_channel_folders(channel_folders: Set<number>): void {
 }
 
 export function update(): void {
+    requestAnimationFrame(update_internal);
+}
+
+export function update_internal(): void {
     // Since inbox shows a vast amount of sorted data,
     // doing surgical updates for everything is hard.
     // So, we focus on updating commonly changed data
@@ -2200,7 +2204,7 @@ export function update(): void {
     // the update was triggered by user. This can mean `row_focus` can
     // be out of bounds, so we need to fix that.
     if (update_triggered_by_user) {
-        setTimeout(revive_current_focus, 0);
+        revive_current_focus();
         update_triggered_by_user = false;
     } else {
         if (row_focus >= get_all_rows().length) {
