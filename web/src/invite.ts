@@ -54,6 +54,7 @@ type CommonInvitationData = {
     invite_expires_in_minutes: string;
     invitee_emails: string;
     include_realm_default_subscriptions: string;
+    require_invited_email: string;
     welcome_message_custom_text?: string;
 };
 
@@ -118,6 +119,7 @@ function get_common_invitation_data(): CommonInvitationData {
             .map((item) => item.email)
             .join(","),
         include_realm_default_subscriptions: JSON.stringify(include_realm_default_subscriptions),
+        require_invited_email: JSON.stringify($("#require_invited_email").is(":checked")),
     };
     const current_email = email_pill.get_current_email(email_pill_widget);
     if (current_email) {

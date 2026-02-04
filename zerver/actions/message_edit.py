@@ -37,7 +37,12 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
+from zerver.lib.mention import (
+    ChannelTopicInfo,
+    MentionBackend,
+    MentionData,
+    silent_mention_syntax_for_user,
+)
 from zerver.lib.message import (
     access_message,
     bulk_access_stream_messages_query,
@@ -323,6 +328,7 @@ def send_message_moved_breadcrumbs(
     old_thread_notification_string: StrPromise | None,
     new_thread_notification_string: StrPromise | None,
     changed_messages_count: int,
+    changed_message_ids: list[int],
 ) -> None:
     # Since moving content between streams is highly disruptive,
     # it's worth adding a couple tombstone messages showing what
@@ -344,6 +350,18 @@ def send_message_moved_breadcrumbs(
     }
     moved_message_link = stream_message_url(target_message.realm, message)
 
+    # Build fresh topic cache to optimize rendering of topic links in the notices.
+    # Use the maximum message ID from the moved messages for the new topic.
+    topic_link_message_ids: dict[ChannelTopicInfo, int | None] = {}
+    if changed_message_ids:
+        max_message_id = max(changed_message_ids)
+        # Cache for the new topic location
+        new_topic_info = ChannelTopicInfo(
+            channel_name=new_stream.name,
+            topic_name=new_topic_name,
+        )
+        topic_link_message_ids[new_topic_info] = max_message_id
+
     if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
             internal_send_stream_message(
@@ -358,6 +376,7 @@ def send_message_moved_breadcrumbs(
                 ),
                 mark_as_read_for_acting_user=True,
                 acting_user=user_profile,
+                topic_link_message_ids=topic_link_message_ids,
             )
 
     if old_thread_notification_string is not None:
@@ -374,6 +393,7 @@ def send_message_moved_breadcrumbs(
                 ),
                 mark_as_read_for_acting_user=True,
                 acting_user=user_profile,
+                topic_link_message_ids=topic_link_message_ids,
             )
 
 
@@ -1347,6 +1367,7 @@ def do_update_message(
             old_thread_notification_string,
             new_thread_notification_string,
             changed_messages_count,
+            changed_message_ids,
         )
 
     return UpdateMessageResult(
