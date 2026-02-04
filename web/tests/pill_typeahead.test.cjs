@@ -526,6 +526,12 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 // person query with wrong item.
                 result = config.matcher(jill_item, person_query);
                 assert.ok(!result);
+                // @-prefixed group query
+                result = config.matcher(testers_item, "@" + group_query);
+                assert.ok(result);
+                // @-prefixed person query
+                result = config.matcher(me_item, "@" + person_query);
+                assert.ok(result);
             }
             if (opts.user_group && !opts.user) {
                 result = config.matcher(testers_item, group_query);
