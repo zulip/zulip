@@ -745,7 +745,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             error_callback();
             assert.equal(
                 fake_compose_box.preview_content_html(),
-                "translated HTML: Failed to generate preview",
+                "translated: Failed to generate preview",
             );
         }
 
@@ -782,10 +782,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             stopPropagation: noop,
         });
 
-        assert.equal(
-            fake_compose_box.preview_content_html(),
-            "translated HTML: Nothing to preview",
-        );
+        assert.equal(fake_compose_box.preview_content_html(), "translated: Nothing to preview");
         fake_compose_box.assert_preview_mode_is_on();
 
         let make_indicator_called = false;
