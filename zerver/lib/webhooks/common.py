@@ -10,6 +10,7 @@ from urllib.parse import unquote
 
 from django.conf import settings
 from django.http import HttpRequest
+from django.utils.crypto import constant_time_compare
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext as _
 from pydantic import Json
@@ -341,7 +342,7 @@ def validate_webhook_signature(
         algorithm,
     ).hexdigest()
 
-    if signed_payload != signature:
+    if not constant_time_compare(signed_payload, signature):
         raise JsonableError(_("Webhook signature verification failed."))
 
 
