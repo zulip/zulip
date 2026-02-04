@@ -18,6 +18,12 @@ run_test("test encodeHashComponent", () => {
     encoded = "https.3A.2F.2Fwww.2Ezulipexample.2Ecom.2Ftest-.28spec.21al.29-char.27s";
     result = internal_url.encodeHashComponent(decoded);
     assert.equal(result, encoded);
+
+    // Test hash replacement * character
+    decoded = "https://www.zulipexample.com/test-st*r";
+    encoded = "https.3A.2F.2Fwww.2Ezulipexample.2Ecom.2Ftest-st.2Ar";
+    result = internal_url.encodeHashComponent(decoded);
+    assert.equal(result, encoded);
 });
 
 run_test("test decodeHashComponent", () => {
