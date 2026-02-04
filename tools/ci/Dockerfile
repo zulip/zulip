@@ -19,6 +19,11 @@ RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 ENV LC_ALL C.UTF-8
 
 # Extra packages used by Zulip.
+# Fix sources.list for old/EOL Ubuntu releases
+RUN if grep -q "ubuntu" /etc/os-release 2>/dev/null; then \
+      sed -i 's|http://[a-z.]*ubuntu.com/ubuntu|http://old-releases.ubuntu.com/ubuntu|g' /etc/apt/sources.list || true; \
+    fi
+
 RUN apt-get update \
   && apt-get -y install --no-install-recommends \
     build-essential \
