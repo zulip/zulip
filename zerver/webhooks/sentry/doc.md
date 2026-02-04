@@ -53,6 +53,8 @@ Get Zulip notifications for the issues in your Sentry projects!
 
 ![](/static/images/integrations/sentry/001.png)
 
+{!event-filtering-additional-feature.md!}
+
 ### Related documentation
 
 {!webhooks-url-specification.md!}

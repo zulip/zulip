@@ -292,7 +292,7 @@ def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
 ALL_EVENT_TYPES = ["event_alert", "issue", "error"]
 
 
-@webhook_view("Sentry")
+@webhook_view("Sentry", all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
 def api_sentry_webhook(
     request: HttpRequest,
@@ -308,15 +308,21 @@ def api_sentry_webhook(
     if data is None:
         data = transform_webhook_payload(payload)
 
+    event_type = None
     match data:
         case {"issue": issue_data}:
+            event_type = "issue"
             topic_name, body = handle_issue_payload(payload["action"], issue_data, payload["actor"])
-        case {"event": event_data} | {"error": event_data}:
+        case {"event": event_data}:
+            event_type = "event_alert"
+            topic_name, body = handle_exception_or_logentry_payloads(event_data)
+        case {"error": event_data}:
+            event_type = "error"
             topic_name, body = handle_exception_or_logentry_payloads(event_data)
         case {} | None:
             topic_name, body = handle_deprecated_payload(payload)
         case _:  # nocoverage
             raise UnsupportedWebhookEventTypeError(str(list(data.keys())))
 
-    check_send_webhook_message(request, user_profile, topic_name, body)
+    check_send_webhook_message(request, user_profile, topic_name, body, event_type)
     return json_success(request)
