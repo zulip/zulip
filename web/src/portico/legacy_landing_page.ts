@@ -3,10 +3,62 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import {page_params} from "../base_page_params.ts";
+import {$t} from "../i18n.ts";
 
 import type {UserOS} from "./tabbed-instructions.ts";
 import {detect_user_os} from "./tabbed-instructions.ts";
 import render_tabs from "./team.ts";
+
+// Type definitions for User-Agent Client Hints API
+// Documentation sources:
+// - MDN: NavigatorUAData and getHighEntropyValues()
+//   https://developer.mozilla.org/en-US/docs/Web/API/NavigatorUAData
+// - UA Client Hints specification (architecture field):
+//   https://wicg.github.io/ua-client-hints/
+type UserAgentHints = {
+    platform?: string;
+    architecture?: string;
+};
+
+type NavigatorUAData = {
+    getHighEntropyValues?: (hints: readonly string[]) => Promise<UserAgentHints>;
+};
+
+// Type guard to check if navigator has userAgentData API (not available in Safari)
+function has_user_agent_data(n: unknown): n is {userAgentData: NavigatorUAData} {
+    return typeof n === "object" && n !== null && "userAgentData" in n;
+}
+
+// Detect macOS processor architecture using Navigator UA Client Hints API.
+// Returns "intel" for x86 architecture, "arm" for ARM64 (Apple Silicon), or null if detection fails.
+// This gracefully degrades in Safari and older browsers that don't support the API.
+async function detect_mac_architecture(): Promise<"intel" | "arm" | null> {
+    if (!has_user_agent_data(window.navigator)) {
+        return null;
+    }
+
+    const ua_data = window.navigator.userAgentData;
+    if (!ua_data || typeof ua_data.getHighEntropyValues !== "function") {
+        return null;
+    }
+
+    try {
+        const hints = await ua_data.getHighEntropyValues(["platform", "architecture"]);
+
+        if (hints.platform === "macOS") {
+            if (hints.architecture?.startsWith("x86")) {
+                return "intel";
+            }
+            if (hints.architecture === "arm64") {
+                return "arm";
+            }
+        }
+    } catch {
+        // Silently fail if API is unavailable
+    }
+
+    return null;
+}
 
 type VersionInfo = {
     description: string;
@@ -126,7 +178,7 @@ const apps_events = function (): void {
         return result;
     }
 
-    const update_page: () => void = function () {
+    const update_page: () => Promise<void> = async function () {
         const $download_instructions = $(".download-instructions");
         const $third_party_apps = $("#third-party-apps");
         const $download_android_apk = $("#download-android-apk");
@@ -135,7 +187,6 @@ const apps_events = function (): void {
         const $download_from_google_play_store = $(".download-from-google-play-store");
         const $download_from_apple_app_store = $(".download-from-apple-app-store");
         const $download_from_microsoft_store = $("#download-from-microsoft-store");
-        const $download_mac_intel = $("#download-mac-intel");
         const $desktop_download_link = $(".desktop-download-link");
         const version_info = info[version];
 
@@ -151,7 +202,31 @@ const apps_events = function (): void {
         } else {
             $desktop_download_link.attr("href", version_info.download_link);
             if (version_info.alt === "macOS") {
-                $download_mac_intel.find("a").attr("href", version_info.mac_intel_link);
+                // Detect macOS processor architecture and show/hide alternate download links accordingly.
+                // Disable button temporarily during async detection to prevent UI flickering.
+                $desktop_download_link.prop("disabled", true);
+                const arch = await detect_mac_architecture();
+
+                if (arch === "intel") {
+                    $desktop_download_link.attr("href", version_info.mac_intel_link);
+                    $desktop_download_link
+                        .find("span.button")
+                        .text($t({defaultMessage: "Download Zulip for macOS (Intel)"}));
+                    $("#download-mac-alt").show();
+                    $("#download-mac-alt-apple-silicon").show();
+                    $("#download-mac-alt-intel").hide();
+                } else {
+                    // Default to Apple Silicon experience for unknown or ARM
+                    $desktop_download_link.attr("href", version_info.download_link);
+                    $desktop_download_link
+                        .find("span.button")
+                        .text($t({defaultMessage: "Download Zulip for macOS (Apple Silicon)"}));
+                    $("#download-mac-alt").show();
+                    $("#download-mac-alt-apple-silicon").hide();
+                    $("#download-mac-alt-intel").show();
+                }
+                // Re-enable button after detection is complete
+                $desktop_download_link.prop("disabled", false);
             }
             assert(version_info.download_instructions);
             $download_instructions.html(version_info.download_instructions);
@@ -172,7 +247,7 @@ const apps_events = function (): void {
 
     // init
     version = get_version_from_path();
-    update_page();
+    void update_page();
 };
 
 const events = function (): void {
