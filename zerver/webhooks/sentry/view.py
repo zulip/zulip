@@ -308,19 +308,15 @@ def api_sentry_webhook(
     if data is None:
         data = transform_webhook_payload(payload)
 
-    if data:
-        if "event" in data:
-            topic_name, body = handle_exception_or_logentry_payloads(data["event"])
-        elif "error" in data:
-            topic_name, body = handle_exception_or_logentry_payloads(data["error"])
-        elif "issue" in data:
-            topic_name, body = handle_issue_payload(
-                payload["action"], data["issue"], payload["actor"]
-            )
-        else:
+    match data:
+        case {"issue": issue_data}:
+            topic_name, body = handle_issue_payload(payload["action"], issue_data, payload["actor"])
+        case {"event": event_data} | {"error": event_data}:
+            topic_name, body = handle_exception_or_logentry_payloads(event_data)
+        case {} | None:
+            topic_name, body = handle_deprecated_payload(payload)
+        case _:  # nocoverage
             raise UnsupportedWebhookEventTypeError(str(list(data.keys())))
-    else:
-        topic_name, body = handle_deprecated_payload(payload)
 
     check_send_webhook_message(request, user_profile, topic_name, body)
     return json_success(request)
