@@ -339,6 +339,7 @@ export function set_up_combined(
         matcher(item: TypeaheadItem, query: string): boolean {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
+            const normalized_query = query.startsWith("@") ? query.slice(1) : query;
 
             if (include_streams(query) && item.type === "stream") {
                 query = query.trim().slice(1);
@@ -348,14 +349,22 @@ export function set_up_combined(
             let matches = false;
             if (include_user_groups && item.type === "user_group") {
                 matches = matches || group_matcher(query, item);
+                if (!matches && normalized_query !== query) {
+                    matches = matches || group_matcher(normalized_query, item);
+                }
             }
 
             if (include_users && item.type === "user") {
                 matches = matches || person_matcher(query, item);
+                if (!matches && normalized_query !== query) {
+                    matches = matches || person_matcher(normalized_query, item);
+                }
             }
             return matches;
         },
         sorter(matches: TypeaheadItem[], query: string): TypeaheadItem[] {
+            const clean_query = query.startsWith("@") ? query.slice(1) : query;
+
             if (include_streams(query)) {
                 const stream_matches: StreamPillData[] = [];
                 for (const match of matches) {
@@ -385,7 +394,7 @@ export function set_up_combined(
 
             return typeahead_helper.sort_stream_or_group_members_options({
                 users,
-                query,
+                query: clean_query,
                 groups,
                 for_stream_subscribers: opts.for_stream_subscribers,
             });
