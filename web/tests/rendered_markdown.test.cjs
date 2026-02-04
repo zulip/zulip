@@ -21,6 +21,11 @@ class Clipboard {
 
 mock_cjs("clipboard", Clipboard);
 
+let is_emoji_supported_result = false;
+mock_esm("is-emoji-supported", {
+    isEmojiSupported: () => is_emoji_supported_result,
+});
+
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
 
@@ -148,6 +153,7 @@ const get_content_element = () => {
     $content.set_find_results("time", $array([]));
     $content.set_find_results("span.timestamp-error", $array([]));
     $content.set_find_results(".emoji", $array([]));
+    $content.set_find_results("span.emoji", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
     $content.set_find_results(".message_inline_video video", $array([]));
@@ -666,6 +672,71 @@ run_test("emoji", ({override}) => {
 
     // Set page parameters back so that test run order is independent
     override(user_settings, "emojiset", "apple");
+});
+
+// Shared helper to create a mock emoji element, ensuring identical
+// setup across the native emoji tests below.
+function make_native_emoji_mock(name) {
+    const $emoji = $.create(name);
+    const attrs = {class: "emoji emoji-1f604"};
+    let native_text;
+    $emoji.attr = (key, val) => {
+        if (val !== undefined) {
+            attrs[key] = val;
+            return $emoji;
+        }
+        return attrs[key];
+    };
+    $emoji.text = (val) => {
+        native_text = val;
+        return $emoji;
+    };
+    return {$emoji, attrs, get_text: () => native_text};
+}
+
+run_test("emoji-native", ({override}) => {
+    // With emojiset="native" and supported emoji, the span should be
+    // converted to display the Unicode character with "emoji-native" class.
+    const $content = get_content_element();
+    const {$emoji, attrs, get_text} = make_native_emoji_mock("native-supported");
+    $content.set_find_results("span.emoji", $array([$emoji]));
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = true;
+
+    rm.update_elements($content);
+
+    assert.equal(attrs.class, "emoji emoji-native");
+    assert.equal(get_text(), "\uD83D\uDE04");
+});
+
+run_test("emoji-native-unsupported", ({override}) => {
+    // When isEmojiSupported returns false, the span should be left unchanged
+    // (keeping the Google sprite).
+    const $content = get_content_element();
+    const {$emoji, attrs, get_text} = make_native_emoji_mock("native-unsupported");
+    $content.set_find_results("span.emoji", $array([$emoji]));
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = false;
+
+    rm.update_elements($content);
+
+    assert.equal(attrs.class, "emoji emoji-1f604");
+    assert.equal(get_text(), undefined);
+});
+
+run_test("emoji-native-not-active-for-other-emojisets", ({override}) => {
+    // With emojiset="google", span.emoji elements are NOT modified
+    // by the native emoji logic.
+    const $content = get_content_element();
+    const {$emoji, attrs, get_text} = make_native_emoji_mock("google-emojiset");
+    $content.set_find_results("span.emoji", $array([$emoji]));
+    override(user_settings, "emojiset", "google");
+    is_emoji_supported_result = true;
+
+    rm.update_elements($content);
+
+    assert.equal(attrs.class, "emoji emoji-1f604");
+    assert.equal(get_text(), undefined);
 });
 
 run_test("spoiler-header", () => {

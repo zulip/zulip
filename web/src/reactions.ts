@@ -380,6 +380,7 @@ export let insert_new_reaction = (
         label: new_label,
         local_id: get_local_reaction_id(clean_reaction_object),
         emoji_alt_code: user_settings.emojiset === "text",
+        ...emoji.get_native_emoji_info(emoji_details),
         is_realm_emoji,
         vote_text: "", // Updated below
         class: reaction_class,
@@ -626,6 +627,7 @@ function make_clean_reaction({
         user_ids,
         ...emoji_details,
         emoji_alt_code,
+        ...emoji.get_native_emoji_info(emoji_details),
         is_realm_emoji,
         ...build_reaction_data(user_ids, emoji_name, should_display_reactors),
     };

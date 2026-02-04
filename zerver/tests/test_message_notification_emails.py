@@ -1240,6 +1240,58 @@ class TestMessageNotificationEmails(ZulipTestCase):
             verify_html_body=True,
         )
 
+    def test_native_emojiset_in_missed_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.emojiset = "native"
+        hamlet.save(update_fields=["emojiset"])
+        msg_id = self.send_personal_message(
+            self.example_user("othello"),
+            self.example_user("hamlet"),
+            "Extremely personal message with a hamburger :hamburger:!",
+        )
+        verify_body_include = [
+            "<span>\U0001f354</span>",
+        ]
+        # Verify the native emojiset does NOT produce image tags for
+        # Unicode emoji (it should use the Unicode character instead).
+        verify_body_does_not_include = [
+            "images-native-64",
+        ]
+        email_subject = "DMs with Othello, the Moor of Venice"
+        self._test_cases(
+            msg_id,
+            verify_body_include,
+            email_subject,
+            verify_html_body=True,
+            verify_body_does_not_include=verify_body_does_not_include,
+        )
+
+    def test_text_emojiset_in_missed_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.emojiset = "text"
+        hamlet.save(update_fields=["emojiset"])
+        msg_id = self.send_personal_message(
+            self.example_user("othello"),
+            self.example_user("hamlet"),
+            "Extremely personal message with a hamburger :hamburger:!",
+        )
+        # The "text" emojiset also uses Unicode in emails, since text
+        # has no sprite images that could be served as <img> tags.
+        verify_body_include = [
+            "<span>\U0001f354</span>",
+        ]
+        verify_body_does_not_include = [
+            "images-text-64",
+        ]
+        email_subject = "DMs with Othello, the Moor of Venice"
+        self._test_cases(
+            msg_id,
+            verify_body_include,
+            email_subject,
+            verify_html_body=True,
+            verify_body_does_not_include=verify_body_does_not_include,
+        )
+
     def test_stream_link_in_missed_message(self) -> None:
         msg_id = self.send_personal_message(
             self.example_user("othello"),
@@ -1759,22 +1811,69 @@ class TestMessageNotificationEmails(ZulipTestCase):
             verify_body_does_not_include=verify_body_does_not_include,
         )
 
+    def _assert_fix_emojis(self, input_html: str, emojiset: str, expected_html: str) -> None:
+        fragment = lxml.html.fromstring(input_html)
+        fix_emojis(fragment, emojiset)
+        actual_output = lxml.html.tostring(fragment, encoding="unicode")
+        self.assertEqual(actual_output, expected_html)
+
     def test_fix_emoji(self) -> None:
-        # An emoji.
-        test_data = (
+        # Test that the same emoji input renders correctly for each emojiset,
+        # sharing setup to ensure only the emojiset parameter differs.
+        emoji_html = (
             '<p>See <span aria-label="cloud with lightning and rain" class="emoji emoji-26c8"'
             ' role="img" title="cloud with lightning and'
             ' rain">:cloud_with_lightning_and_rain:</span>.</p>'
         )
-        fragment = lxml.html.fromstring(test_data)
-        fix_emojis(fragment, "google")
-        actual_output = lxml.html.tostring(fragment, encoding="unicode")
-        expected_output = (
+
+        # Google emojiset replaces the span with an img tag.
+        self._assert_fix_emojis(
+            emoji_html,
+            "google",
             '<p>See <img alt=":cloud_with_lightning_and_rain:"'
             ' src="http://testserver/static/generated/emoji/images-google-64/26c8.png"'
-            ' title="cloud with lightning and rain" height="20" width="20">.</p>'
+            ' title="cloud with lightning and rain" height="20" width="20">.</p>',
         )
-        self.assertEqual(actual_output, expected_output)
+
+        # Native emojiset replaces span content with the Unicode character.
+        self._assert_fix_emojis(emoji_html, "native", "<p>See <span>\u26c8</span>.</p>")
+
+        # Text emojiset also uses Unicode characters in emails.
+        self._assert_fix_emojis(emoji_html, "text", "<p>See <span>\u26c8</span>.</p>")
+
+    def test_fix_emoji_multi_codepoint(self) -> None:
+        # Multi-codepoint emoji like flags use dash-separated hex codes
+        # (e.g., "1f1fa-1f1f8" for the US flag).
+        self._assert_fix_emojis(
+            '<p><span aria-label="United States" class="emoji emoji-1f1fa-1f1f8"'
+            ' role="img" title="United States">:united_states:</span></p>',
+            "native",
+            "<p><span>\U0001f1fa\U0001f1f8</span></p>",
+        )
+
+    def test_fix_emoji_realm_emoji_with_native_emojiset(self) -> None:
+        # Realm emoji (img.emoji) should be left as images regardless of
+        # emojiset, since they are custom uploaded images, not Unicode.
+        self._assert_fix_emojis(
+            '<p><img alt=":green_tick:" class="emoji"'
+            ' src="/user_avatars/1/emoji/images/1.png"'
+            ' title="green tick"></p>',
+            "native",
+            '<p><img alt=":green_tick:"'
+            ' src="/user_avatars/1/emoji/images/1.png"'
+            ' title="green tick" height="20" width="20"></p>',
+        )
+
+    def test_fix_emoji_preserves_tail_text(self) -> None:
+        # Verify that text following an emoji span is preserved.
+        self._assert_fix_emojis(
+            '<p>Hello <span aria-label="smile" class="emoji emoji-1f604"'
+            ' role="img" title="smile">:smile:</span> world'
+            ' <span aria-label="tada" class="emoji emoji-1f389"'
+            ' role="img" title="tada">:tada:</span>!</p>',
+            "native",
+            "<p>Hello <span>\U0001f604</span> world <span>\U0001f389</span>!</p>",
+        )
 
     def test_latex_math_formulas_in_email(self) -> None:
         msg_id = self.send_stream_message(

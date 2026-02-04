@@ -26,7 +26,9 @@ export type UserPill = {
     full_name: string;
     img_src?: string;
     deactivated?: boolean;
-    status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
+    status_emoji_info?:
+        | (EmojiRenderingDetails & {emoji_alt_code?: boolean; unicode_emoji?: string})
+        | undefined; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
     is_bot?: boolean;
 };
