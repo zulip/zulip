@@ -118,8 +118,8 @@ def convert_lines_to_traceback_string(lines: list[str] | None) -> str:
 
 def handle_exception_or_logentry_payloads(event: dict[str, Any]) -> tuple[str, str]:
     """
-    Handles the `event_alert` event type which can be triggered by either an
-    exception or a log entry.
+    Handles `event_alert` and `error` event types. They can both be
+    triggered by either an exception or a log entry.
     """
 
     topic_name = event["title"]
@@ -289,7 +289,7 @@ def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
     return payload
 
 
-ALL_EVENT_TYPES = ["event_alert", "issue"]
+ALL_EVENT_TYPES = ["event_alert", "issue", "error"]
 
 
 @webhook_view("Sentry")
@@ -311,6 +311,8 @@ def api_sentry_webhook(
     if data:
         if "event" in data:
             topic_name, body = handle_exception_or_logentry_payloads(data["event"])
+        elif "error" in data:
+            topic_name, body = handle_exception_or_logentry_payloads(data["error"])
         elif "issue" in data:
             topic_name, body = handle_issue_payload(
                 payload["action"], data["issue"], payload["actor"]
