@@ -255,7 +255,7 @@ const RIGHT_NAVIGATION_KEYS = ["right_arrow", "vim_right"];
 let is_waiting_for_revive_current_focus = true;
 // Used to store the last scroll position of the inbox before
 // it is hidden to avoid scroll jumping when it is shown again.
-let last_scroll_offset: number | undefined;
+let last_scroll_offset = 0;
 
 function get_row_from_conversation_key(key: string): JQuery {
     return $(`#${CSS.escape(CONVERSATION_ID_PREFIX + key)}`);
@@ -1281,16 +1281,15 @@ export function complete_rerender(coming_from_other_views = false): void {
         }
 
         if (coming_from_other_views) {
-            if (last_scroll_offset !== undefined) {
-                // It is important to restore the scroll position as soon
-                // as the rendering is complete to avoid scroll jumping.
-                window.scrollTo(0, last_scroll_offset);
-            } else {
-                // If the focus is not on the inbox rows, the inbox view scrolls
-                // down when moving from other views to the inbox view. To avoid
-                // this, we scroll to top before restoring focus via revive_current_focus.
-                window.scrollTo(0, 0);
-            }
+            // Scrolling to last offset here
+            // is important to restore the scroll position as soon
+            // as the rendering is complete to avoid scroll jumping.
+            //
+            // This also avoids the bug where
+            // if the focus is not on the inbox rows, the inbox view scrolls
+            // down when moving from other views to the inbox view. To avoid
+            // this, we scroll to top before restoring focus via revive_current_focus.
+            window.scrollTo(0, last_scroll_offset);
         }
 
         revive_current_focus();
