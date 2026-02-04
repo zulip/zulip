@@ -818,6 +818,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         override(markdown, "render", (raw_content) => {
             assert.equal(raw_content, "default message");
             render_called = true;
+            return {content: "Local: default message"};
         });
 
         fake_compose_box.click_on_markdown_preview_icon({
