@@ -21,7 +21,7 @@ DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE = """
 ```
 """
 
-MESSAGE_EVENT_TEMPLATE = """
+LOGENTRY_MESSAGE_TEMPLATE = """
 {severity_emoji} **New message event:** [{title}]({web_link})
 ```quote
 **level:** {level}
@@ -29,7 +29,7 @@ MESSAGE_EVENT_TEMPLATE = """
 ```
 """
 
-EXCEPTION_EVENT_TEMPLATE = """
+EXCEPTION_MESSAGE_TEMPLATE = """
 {severity_emoji} **New exception:** [{title}]({web_link})
 ```quote
 **level:** {level}
@@ -38,8 +38,8 @@ EXCEPTION_EVENT_TEMPLATE = """
 ```
 """
 
-EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK = (
-    EXCEPTION_EVENT_TEMPLATE
+EXCEPTION_MESSAGE_TEMPLATE_WITH_TRACEBACK = (
+    EXCEPTION_MESSAGE_TEMPLATE
     + """
 Traceback:
 ```{syntax_highlight_as}
@@ -117,7 +117,7 @@ def convert_lines_to_traceback_string(lines: list[str] | None) -> str:
 
 
 def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
-    """Handle either an exception type event or a message type event payload."""
+    """Handle either an exception type event or a logentry type event payload."""
 
     topic_name = event["title"]
     platform_name = event["platform"]
@@ -180,17 +180,17 @@ def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
                     post_context=post_context,
                 )
 
-                body = EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK.format(**context).strip()
+                body = EXCEPTION_MESSAGE_TEMPLATE_WITH_TRACEBACK.format(**context).strip()
                 return (topic_name, body)
 
         context.update(filename=filename)  # nocoverage
-        body = EXCEPTION_EVENT_TEMPLATE.format(**context).strip()  # nocoverage
+        body = EXCEPTION_MESSAGE_TEMPLATE.format(**context).strip()  # nocoverage
         return (topic_name, body)  # nocoverage
 
     elif "logentry" in event:
         # The event was triggered by a sentry.capture_message() call
         # (in the Python Sentry SDK) or something similar.
-        body = MESSAGE_EVENT_TEMPLATE.format(**context).strip()
+        body = LOGENTRY_MESSAGE_TEMPLATE.format(**context).strip()
 
     else:
         raise UnsupportedWebhookEventTypeError("unknown-event type")
