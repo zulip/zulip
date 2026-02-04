@@ -680,10 +680,6 @@ body.has-overlay-scrollbar {
     position: relative;
 }
 
-input {
-    font-family: "Source Sans 3 VF", sans-serif;
-}
-
 /* Override browsers that use
    `cursor: default` */
 label,
