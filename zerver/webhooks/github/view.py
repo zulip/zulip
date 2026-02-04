@@ -467,6 +467,26 @@ def get_watch_body(helper: Helper) -> str:
     )
 
 
+def get_repository_advisory_body(helper: Helper) -> str:
+    payload = helper.payload
+    action = payload["action"].tame(check_string)
+    if action == "reported":
+        return "{} reported [{}]({}) in {}: {}\n\n```quote\n{}\n```".format(
+            get_sender_name(helper),
+            payload["repository_advisory"]["ghsa_id"].tame(check_string),
+            payload["repository_advisory"]["html_url"].tame(check_string),
+            get_repository_full_name(payload),
+            payload["repository_advisory"]["summary"].tame(check_string),
+            payload["repository_advisory"]["description"].tame(check_string),
+        )
+    else:
+        return "{} published [{}]({})".format(
+            get_sender_name(helper),
+            payload["repository_advisory"]["ghsa_id"].tame(check_string),
+            payload["repository_advisory"]["html_url"].tame(check_string),
+        )
+
+
 def get_repository_body(helper: Helper) -> str:
     payload = helper.payload
     return "{} {} the repository [{}]({}).".format(
@@ -1049,6 +1069,7 @@ EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "push_commits": get_push_commits_body,
     "push_tags": get_push_tags_body,
     "release": get_release_body,
+    "repository_advisory": get_repository_advisory_body,
     "repository": get_repository_body,
     "star": get_star_body,
     "status": get_status_body,
