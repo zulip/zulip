@@ -289,6 +289,9 @@ def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
     return payload
 
 
+ALL_EVENT_TYPES = ["event_alert", "issue"]
+
+
 @webhook_view("Sentry")
 @typed_endpoint
 def api_sentry_webhook(
@@ -297,12 +300,14 @@ def api_sentry_webhook(
     *,
     payload: JsonBodyPayload[dict[str, Any]],
 ) -> HttpResponse:
+    # This webhook integration uses the payload structure instead of the
+    # Sentry-Hook-Resource header to determine the type of event.
+    # Not sure if this was a deliberate choice.
     data = payload.get("data", None)
 
     if data is None:
         data = transform_webhook_payload(payload)
 
-    # We currently support two types of payloads: events and issues.
     if data:
         if "event" in data:
             topic_name, body = handle_exception_or_logentry_payloads(data["event"])
