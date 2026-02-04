@@ -173,6 +173,7 @@ exports.mock_esm = (module_path, obj = {}, {callsite = callsites()[1]} = {}) => 
     return exports.mock_cjs(module_path, {...obj, __esModule: true}, {callsite});
 };
 
+/* istanbul ignore next */
 exports.unmock_module = (module_path, {callsite = callsites()[1]} = {}) => {
     const filename = Module._resolveFilename(
         module_path,

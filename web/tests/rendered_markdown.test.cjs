@@ -565,7 +565,7 @@ run_test("audio", ({mock_template}) => {
         '<span class="media-audio-wrapper">\n' +
             '    <audio controls="" preload="metadata" src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" title="inline.mp3" class="media-audio-element"></audio>\n' +
             '    <a class="media-audio-download icon-button icon-button-square icon-button-neutral"\n' +
-            '      aria-label="Download" href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" download>\n' +
+            '      aria-label="translated: Download" href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" download>\n' +
             '        <i class="media-download-icon zulip-icon zulip-icon-download"></i>\n' +
             "    </a>\n" +
             "</span>",

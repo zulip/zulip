@@ -2,10 +2,10 @@
 
 const assert = require("node:assert/strict");
 
+const {$t} = require("./lib/i18n.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-const {$t} = zrequire("i18n");
 const pygments_data = zrequire("pygments_data");
 const realm_playground = zrequire("realm_playground");
 const typeahead_helper = zrequire("typeahead_helper");

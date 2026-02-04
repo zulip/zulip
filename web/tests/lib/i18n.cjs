@@ -1,55 +1,14 @@
 "use strict";
 
-const {createIntl, createIntlCache} = require("@formatjs/intl");
-const _ = require("lodash");
+const {zrequire} = require("./namespace.cjs");
 
-const cache = createIntlCache();
+const i18n = zrequire("i18n");
 
-exports.intl = createIntl(
-    {
-        locale: "en",
-        defaultLocale: "en",
-        defaultRichTextElements: Object.fromEntries(
-            ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
-                tag,
-                /* istanbul ignore next */
-                (content_html) => `<${tag}>${content_html.join("")}</${tag}>`,
-            ]),
-        ),
-    },
-    cache,
-);
+Object.assign(exports, i18n);
 
-exports.$t = (descriptor, values) => {
-    descriptor = {
-        id: `${descriptor.defaultMessage}#${descriptor.description}`,
-        ...descriptor,
-    };
-    return "translated: " + exports.intl.formatMessage(descriptor, values);
-};
+exports.$t = (descriptor, values, opts) =>
+    i18n.$t({id: descriptor.defaultMessage, descriptor}, values, opts);
 
-const default_html_elements = Object.fromEntries(
-    ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
-        tag,
-        (content_html) => `<${tag}>${content_html.join("")}</${tag}>`,
-    ]),
-);
-
-exports.$t_html = (descriptor, values) => {
-    descriptor = {
-        id: `${descriptor.defaultMessage}#${descriptor.description}`,
-        ...descriptor,
-    };
-    return (
-        "translated HTML: " +
-        exports.intl.formatMessage(descriptor, {
-            ...default_html_elements,
-            ...Object.fromEntries(
-                Object.entries(values ?? {}).map(([key, value]) => [
-                    key,
-                    typeof value === "function" ? value : _.escape(value),
-                ]),
-            ),
-        })
-    );
-};
+/* istanbul ignore next */
+exports.$t_html = (descriptor, values, opts) =>
+    i18n.$t_html({id: descriptor.defaultMessage, descriptor}, values, opts);
