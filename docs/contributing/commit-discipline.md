@@ -10,6 +10,9 @@ helps a lot in preventing bugs.
 Use `git rebase -i` as much as you need to shape your commit structure. See the
 [Git guide](../git/overview.md) for useful resources on mastering Git.
 
+**Tip**: Check out how to use [`git log -p` to study the commit
+history](../git/reading-history.md) of the project.
+
 ## Each commit must be coherent
 
 - It should pass tests (so test updates needed by a change should be

@@ -236,7 +236,7 @@ want to take some time to familiarize yourself with the code.
    reading to see how it works and how the codebase is organized.
 
 [graphical Git viewer]: https://zulip.readthedocs.io/en/latest/git/setup.html#get-a-graphical-client
-[git-log-secret]: https://github.com/zulip/zulip-mobile/blob/main/docs/howto/git.md#git-log-secret
+[git-log-secret]: https://zulip.readthedocs.io/en/latest/git/reading-history.html#the-secret-to-using-git-log-p
 
 #### Desktop app
 

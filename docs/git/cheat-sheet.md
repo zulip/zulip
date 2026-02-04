@@ -83,6 +83,7 @@ See also [fixing commits][fix-commit]
 - log
   - `git log`: show commit logs
   - `git log --oneline | head`: To quickly see the latest ten commits on a branch.
+  - `git log -p`: show commit logs with changes; see [the "secret" to reading it's output][git-log-secret]
 - pull
   - `git pull --rebase`: rebase your changes on top of `main`.
   - `git pull` (with no options): Will either create a merge commit
@@ -112,5 +113,6 @@ See also [fixing commits][fix-commit]
   - `git status`: show the working tree status, unstaged and staged files
 
 [fix-commit]: fixing-commits.md
+[git-log-secret]: reading-history.md#the-secret-to-using-git-log--p
 [git-config-clone]: cloning.md#step-1b-clone-to-your-machine
 [git-overview]: overview.md
