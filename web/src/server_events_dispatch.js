@@ -8,7 +8,7 @@ import * as audible_notifications from "./audible_notifications.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
-import {buddy_list} from "./buddy_list.ts";
+import { buddy_list } from "./buddy_list.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as compose_call from "./compose_call.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
@@ -17,7 +17,7 @@ import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
-import {electron_bridge} from "./electron_bridge.ts";
+import { electron_bridge } from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_frequency from "./emoji_frequency.ts";
 import * as emoji_picker from "./emoji_picker.ts";
@@ -47,7 +47,7 @@ import * as reactions from "./reactions.ts";
 import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
-import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
+import { realm_user_settings_defaults } from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload from "./reload.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
@@ -78,7 +78,7 @@ import * as settings_streams from "./settings_streams.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
-import {current_user, realm} from "./state_data.ts";
+import { current_user, realm } from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_events from "./stream_events.ts";
 import * as stream_list from "./stream_list.ts";
@@ -91,17 +91,54 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
 import * as theme from "./theme.ts";
-import {group_setting_value_schema} from "./types.ts";
+import { group_setting_value_schema } from "./types.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as user_events from "./user_events.ts";
 import * as user_group_edit from "./user_group_edit.ts";
 import * as user_groups from "./user_groups.ts";
-import {user_settings} from "./user_settings.ts";
+import { user_settings } from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import * as user_topics from "./user_topics.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
+
+// Batching state for announcement channel updates
+let announcement_channel_batch = {
+    pending: false,
+    properties: new Set(),
+};
+
+// Announcement channel properties that should be batched
+const ANNOUNCEMENT_CHANNEL_PROPERTIES = new Set([
+    "new_stream_announcements_stream_id",
+    "signup_announcements_stream_id",
+    "zulip_update_announcements_stream_id",
+]);
+
+function is_announcement_channel_property(property) {
+    return ANNOUNCEMENT_CHANNEL_PROPERTIES.has(property);
+}
+
+function start_announcement_channel_batch() {
+    announcement_channel_batch.pending = true;
+    announcement_channel_batch.properties.clear();
+}
+
+function add_to_announcement_channel_batch(property) {
+    announcement_channel_batch.properties.add(property);
+}
+
+function flush_announcement_channel_batch() {
+    if (announcement_channel_batch.pending && announcement_channel_batch.properties.size > 0) {
+        // Only update UI once for all batched announcement channel changes
+        stream_ui_updates.update_announce_stream_option();
+    }
+    announcement_channel_batch.pending = false;
+    announcement_channel_batch.properties.clear();
+}
+
+export { start_announcement_channel_batch, flush_announcement_channel_batch };
 
 export function dispatch_normal_event(event) {
     const noop = function () {
@@ -320,7 +357,8 @@ export function dispatch_normal_event(event) {
                 message_retention_days: noop,
                 name: narrow_title.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
-                new_stream_announcements_stream_id: stream_ui_updates.update_announce_stream_option,
+                // Announcement channel updates are batched - use noop here
+                new_stream_announcements_stream_id: noop,
                 org_type: noop,
                 push_notifications_enabled: noop,
                 require_unique_names: noop,
@@ -330,7 +368,9 @@ export function dispatch_normal_event(event) {
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
                 send_channel_events_messages: noop,
+                // Announcement channel updates are batched - use noop here
                 signup_announcements_stream_id: noop,
+                // Announcement channel updates are batched - use noop here
                 zulip_update_announcements_stream_id: noop,
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
@@ -347,7 +387,14 @@ export function dispatch_normal_event(event) {
                 case "update":
                     if (Object.hasOwn(realm_settings, event.property)) {
                         realm["realm_" + event.property] = event.value;
-                        realm_settings[event.property]();
+
+                        // Handle announcement channel batching
+                        if (is_announcement_channel_property(event.property)) {
+                            add_to_announcement_channel_batch(event.property);
+                        } else {
+                            realm_settings[event.property]();
+                        }
+
                         settings_org.sync_realm_settings(event.property);
 
                         if (event.property === "name") {
@@ -372,7 +419,13 @@ export function dispatch_normal_event(event) {
 
                                 if (Object.hasOwn(realm_settings, key)) {
                                     settings_org.sync_realm_settings(key);
-                                    realm_settings[key]();
+
+                                    // Handle announcement channel batching
+                                    if (is_announcement_channel_property(key)) {
+                                        add_to_announcement_channel_batch(key);
+                                    } else {
+                                        realm_settings[key]();
+                                    }
                                 }
 
                                 if (
@@ -630,7 +683,7 @@ export function dispatch_normal_event(event) {
                 case "remove": {
                     const user_id = event.person.user_id;
                     people.remove_inaccessible_user(user_id);
-                    buddy_list.maybe_remove_user_id({user_id});
+                    buddy_list.maybe_remove_user_id({ user_id });
                     message_live_update.update_user_full_name(
                         user_id,
                         people.INACCESSIBLE_USER_NAME,
@@ -803,7 +856,7 @@ export function dispatch_normal_event(event) {
                     const stream_ids = sub_store.validate_stream_ids(event.stream_ids);
                     const user_ids = people.validate_user_ids(event.user_ids);
 
-                    peer_data.bulk_add_subscribers({stream_ids, user_ids});
+                    peer_data.bulk_add_subscribers({ stream_ids, user_ids });
                     stream_events.process_subscriber_update(user_ids, stream_ids);
                     break;
                 }
@@ -811,7 +864,7 @@ export function dispatch_normal_event(event) {
                     const stream_ids = sub_store.validate_stream_ids(event.stream_ids);
                     const user_ids = people.validate_user_ids(event.user_ids);
 
-                    peer_data.bulk_remove_subscribers({stream_ids, user_ids});
+                    peer_data.bulk_remove_subscribers({ stream_ids, user_ids });
                     stream_events.process_subscriber_update(user_ids, stream_ids);
                     break;
                 }

@@ -6,14 +6,14 @@ import * as channel from "./channel.ts";
 import * as echo from "./echo.ts";
 import * as loading from "./loading.ts";
 import * as message_events from "./message_events.ts";
-import {page_params} from "./page_params.ts";
+import { page_params } from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_dispatch from "./server_events_dispatch.js";
-import {queue_id} from "./server_events_state.ts";
-import {server_message_schema} from "./server_message.ts";
+import { queue_id } from "./server_events_state.ts";
+import { server_message_schema } from "./server_message.ts";
 import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
 
@@ -33,6 +33,30 @@ const get_events_params = {};
 
 let event_queue_expired = false;
 
+function has_announcement_channel_updates(events) {
+    const announcement_properties = new Set([
+        "new_stream_announcements_stream_id",
+        "signup_announcements_stream_id",
+        "zulip_update_announcements_stream_id",
+    ]);
+
+    for (const event of events) {
+        if (event.type === "realm" && event.op === "update") {
+            if (announcement_properties.has(event.property)) {
+                return true;
+            }
+        }
+        if (event.type === "realm" && event.op === "update_dict" && event.property === "default") {
+            for (const key of Object.keys(event.data)) {
+                if (announcement_properties.has(key)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 function get_events_success(events) {
     let raw_messages = [];
     const update_message_events = [];
@@ -47,7 +71,7 @@ function get_events_success(events) {
         try {
             get_events_params.last_event_id = Math.max(get_events_params.last_event_id, event.id);
         } catch (error) {
-            blueslip.error("Failed to update last_event_id", {event: clean_event(event)}, error);
+            blueslip.error("Failed to update last_event_id", { event: clean_event(event) }, error);
         }
     }
 
@@ -92,12 +116,23 @@ function get_events_success(events) {
         }
     };
 
+    // Start announcement channel batch if we have such updates
+    const has_announcement_updates = has_announcement_channel_updates(events);
+    if (has_announcement_updates) {
+        server_events_dispatch.start_announcement_channel_batch();
+    }
+
     for (const event of events) {
         try {
             dispatch_event(event);
         } catch (error) {
-            blueslip.error("Failed to process an event", {event: clean_event(event)}, error);
+            blueslip.error("Failed to process an event", { event: clean_event(event) }, error);
         }
+    }
+
+    // Flush announcement channel batch after all events are processed
+    if (has_announcement_updates) {
+        server_events_dispatch.flush_announcement_channel_batch();
     }
 
     if (raw_messages.length > 0) {
@@ -149,7 +184,7 @@ function get_events_success(events) {
     }
 }
 
-function get_events({dont_block = false} = {}) {
+function get_events({ dont_block = false } = {}) {
     if (reload_state.is_in_progress()) {
         return;
     }
@@ -234,7 +269,7 @@ function get_events({dont_block = false} = {}) {
                         caller: "server_events",
                         retry_delay_secs,
                         on_retry_callback() {
-                            restart_get_events({dont_block: true});
+                            restart_get_events({ dont_block: true });
                         },
                     });
                 }
@@ -249,7 +284,7 @@ function get_events({dont_block = false} = {}) {
 
 export function assert_get_events_running(error_message) {
     if (get_events_xhr === undefined && get_events_timeout === undefined) {
-        restart_get_events({dont_block: true});
+        restart_get_events({ dont_block: true });
         blueslip.error(error_message);
     }
 }
@@ -281,7 +316,7 @@ export function initialize(params) {
         // Immediately poll for new events on unsuspend
         blueslip.log("Restarting get_events due to unsuspend");
         get_events_failures = 0;
-        restart_get_events({dont_block: true});
+        restart_get_events({ dont_block: true });
     });
 
     get_events();
@@ -297,7 +332,7 @@ function cleanup_event_queue() {
     event_queue_expired = true;
     channel.del({
         url: "/json/events",
-        data: {queue_id},
+        data: { queue_id },
         ignore_reload: true,
     });
 }
