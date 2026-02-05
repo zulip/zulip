@@ -8752,9 +8752,6 @@ class JWTFetchAPIKeyTest(ZulipTestCase):
     def test_success(self) -> None:
         payload = {"email": self.email}
         with self.settings(JWT_AUTH_KEYS={"zulip": {"key": TEST_JWT_KEY, "algorithms": ["HS256"]}}):
-            key = settings.JWT_AUTH_KEYS["zulip"]["key"]
-            [algorithm] = settings.JWT_AUTH_KEYS["zulip"]["algorithms"]
-        with self.settings(JWT_AUTH_KEYS={"zulip": {"key": TEST_JWT_KEY, "algorithms": ["HS256"]}}):
             key = cast(JwtAuthKey, settings.JWT_AUTH_KEYS["zulip"])["key"]
             [algorithm] = cast(JwtAuthKey, settings.JWT_AUTH_KEYS["zulip"])["algorithms"]
             web_token = jwt.encode(payload, key, algorithm)

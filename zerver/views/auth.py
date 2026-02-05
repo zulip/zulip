@@ -23,6 +23,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
+from jwt.types import Options as JwtDecodeOptions
 from pydantic import Json
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
@@ -610,7 +611,7 @@ def get_email_and_realm_from_jwt_authentication_request(
         algorithms = [cast(jwt.PyJWK, key).algorithm_name]
         if "aud" in jwks_domain_auth_keys:
             aud = jwks_domain_auth_keys["aud"]
-            options = {"verify_signature": True, "verify_aud": True}
+            options: JwtDecodeOptions = {"verify_signature": True, "verify_aud": True}
         else:
             aud = None
             options = {"verify_signature": True, "verify_aud": False}
