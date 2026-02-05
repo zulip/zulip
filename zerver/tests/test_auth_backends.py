@@ -6943,7 +6943,7 @@ class TestJWTLogin(ZulipTestCase):
     def test_login_failure_when_misuconfigured(self) -> None:
         payload = {"email": "nonexisting@zulip.com"}
         with self.settings(JWT_AUTH_KEYS={"zulip": {}}):
-            key = "key"
+            key = TEST_JWT_KEY
             algorithm = "HS256"
             web_token = jwt.encode(payload, key, algorithm)
             data = {"token": web_token}
