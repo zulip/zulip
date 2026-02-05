@@ -218,19 +218,6 @@
 }
 
 button {
-    &.task {
-        height: 20px;
-        width: 20px;
-        background-color: transparent;
-        border-color: hsl(156deg 28% 70%);
-        margin-right: 4px;
-        border-radius: 3px;
-
-        &:hover {
-            border: 1px solid hsl(194deg 60% 40%);
-        }
-    }
-
     &.add-task,
     &.poll-option {
         color: hsl(156deg 41% 40%);
