@@ -763,9 +763,10 @@ export function paste_handler(
                 paste_to_compose_cb() {
                     do_paste_text(paste_html, paste_text, $textarea);
                 },
+                $textarea,
             });
             setTimeout(() => {
-                $("textarea#compose-textarea").one("input", () => {
+                $textarea.one("input", () => {
                     // The banner only displays until the user does
                     // some further input. This is both reasonable UI
                     // and also is required for undo, see above.
