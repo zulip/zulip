@@ -434,15 +434,19 @@ export function mark_as_unread_from_here(message_id: number): void {
         }
 
         display_count = locally_available_message_count.toString();
-    } else if (locally_available_message_count < UNREAD_COUNT_STEP_SIZE) {
-        display_count = locally_available_message_count.toString();
     } else {
-        // Otherwise, we round down to the nearest
-        // UNREAD_COUNT_STEP_SIZE and display as, e.g., `25+`.
-        const rounded_count =
-            Math.floor(locally_available_message_count / UNREAD_COUNT_STEP_SIZE) *
-            UNREAD_COUNT_STEP_SIZE;
-        display_count = `${rounded_count}+`;
+        // We don't have all the newest messages, so there are likely more
+        // available messages that will be marked as unread.
+        if (locally_available_message_count < UNREAD_COUNT_STEP_SIZE) {
+            display_count = `${locally_available_message_count.toString()}+`;
+        } else {
+            // Otherwise, we round down to the nearest
+            // UNREAD_COUNT_STEP_SIZE and display as, e.g., `25+`.
+            const rounded_count =
+                Math.floor(locally_available_message_count / UNREAD_COUNT_STEP_SIZE) *
+                UNREAD_COUNT_STEP_SIZE;
+            display_count = `${rounded_count}+`;
+        }
     }
 
     // If we don't know how many messages will be affected, but
