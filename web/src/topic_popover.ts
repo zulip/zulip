@@ -86,10 +86,21 @@ export function initialize(): void {
         })();
     });
 
+    register_popover_menu("#stream_filters .topic-sidebar-menu-icon", "right");
+    register_popover_menu("#more-topics-modal .topic-sidebar-menu-icon", "right");
+    register_popover_menu(".inbox-row .inbox-topic-menu", "bottom");
+    register_popover_menu(
+        ".recipient-row-topic-menu, .recent_view_focusable .visibility-status-icon",
+        "bottom",
+    );
+}
+
+function register_popover_menu(target: string, placement: tippy.Placement): void {
     popover_menus.register_popover_menu(
-        "#stream_filters .topic-sidebar-menu-icon, #more-topics-modal .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu, .recent_view_focusable .visibility-status-icon",
+        target,
         {
-            ...popover_menus.left_sidebar_tippy_options,
+            theme: "popover-menu",
+            placement,
             onShow(instance) {
                 popover_menus.popover_instances.topics_menu = instance;
                 ui_util.show_left_sidebar_menu_icon(instance.reference);
