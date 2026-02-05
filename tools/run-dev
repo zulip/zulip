@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import asyncio
 import errno
@@ -7,18 +7,8 @@ import os
 import pwd
 import signal
 import subprocess
-import sys
 import time
 from collections.abc import Awaitable, Callable
-
-TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(TOOLS_DIR))
-
-# check for the venv
-from tools.lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
 from urllib.parse import urlsplit
 
 import aiohttp
@@ -201,6 +191,11 @@ def server_processes() -> list[list[str]]:
         [
             "env",
             "PGHOST=127.0.0.1",  # Force password authentication using .pgpass
+            "uv",
+            "run",
+            "--frozen",
+            "--preview-features=target-workspace-discovery",
+            "--script",
             "./puppet/zulip/files/postgresql/process_fts_updates",
             "--quiet",
         ],
