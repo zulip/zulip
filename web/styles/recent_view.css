@@ -496,7 +496,7 @@
         .recent-view-channel-name {
             opacity: 0.8;
             display: inline-block;
-            max-width: 100%;
+            width: min(var(--longest-subscribed-channel-name-width), 33.3%);
             vertical-align: bottom;
             white-space: nowrap;
             overflow: hidden;

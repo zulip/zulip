@@ -636,7 +636,7 @@ test("sent_by_me_suggestions", ({override}) => {
     assert.deepEqual(suggestions, expected);
 });
 
-test("topic_suggestions", ({override}) => {
+test("topic_suggestions", ({override, override_rewire}) => {
     let suggestions;
     let expected;
 
@@ -762,6 +762,7 @@ test("topic_suggestions", ({override}) => {
         });
     }
 
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_data.subscribe_myself(stream_data.get_sub("devel"));
     stream_data.subscribe_myself(stream_data.get_sub("office"));
     suggestions = get_suggestions("topic:");

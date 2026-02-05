@@ -229,7 +229,7 @@ run_test("urls", () => {
     assert.deepEqual(user_ids, [5]);
 });
 
-run_test("show_empty_narrow_message", ({mock_template, override}) => {
+run_test("show_empty_narrow_message", ({mock_template, override, override_rewire}) => {
     settings_data.user_can_access_all_other_users = () => true;
     settings_data.user_has_permission_for_group_setting = () => true;
     override(realm, "stop_words", []);
@@ -589,6 +589,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         stream_id: my_stream_id,
     };
     stream_data.add_sub_for_tests(my_stream);
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_data.subscribe_myself(my_stream);
     current_filter = set_filter([["stream", my_stream_id.toString()]]);
     const list = new MessageList({
