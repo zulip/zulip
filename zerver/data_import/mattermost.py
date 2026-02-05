@@ -5,11 +5,8 @@ https://docs.mattermost.com/administration/bulk-export.html
 
 import logging
 import os
-import random
 import re
-import secrets
 import shutil
-import subprocess
 from collections.abc import Callable
 from typing import Any
 
@@ -20,6 +17,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
     SubscriberHandler,
+    UploadRecordData,
     ZerverFieldsT,
     build_attachment,
     build_direct_message_group,
@@ -33,7 +31,9 @@ from zerver.data_import.import_util import (
     build_stream_subscriptions,
     build_user_profile,
     build_zerver_realm,
+    convert_html_to_text,
     create_converted_data_files,
+    get_attachment_path_and_content,
     make_subscriber_map,
     make_user_messages,
 )
@@ -42,9 +42,10 @@ from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.export import do_common_export_processes
 from zerver.lib.markdown import IMAGE_EXTENSIONS
-from zerver.lib.upload import sanitize_name
+from zerver.lib.message import truncate_content
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
+from zerver.models.streams import Stream
 
 
 def make_realm(realm_id: int, team: dict[str, Any]) -> ZerverFieldsT:
@@ -195,17 +196,34 @@ def convert_channel_data(
 
     streams = []
     initialize_stream_membership_dicts()
-
+    channel_name_count: dict[str, int] = {}
     for channel_dict in channel_data_list:
         now = int(timezone_now().timestamp())
         stream_id = stream_id_mapper.get(channel_dict["name"])
         stream_name = channel_dict["name"]
         invite_only = get_invite_only_value_from_channel_type(channel_dict["type"])
+        channel_display_name = truncate_content(
+            channel_dict["display_name"], Stream.MAX_NAME_LENGTH, "…"
+        )
+
+        if channel_display_name in channel_name_count:
+            channel_name_count[channel_display_name] += 1
+            collision = channel_name_count[channel_display_name]
+            count_string = f" ({collision})"
+
+            channel_display_name = (
+                truncate_content(
+                    channel_display_name, Stream.MAX_NAME_LENGTH - len(count_string), "…"
+                )
+                + count_string
+            )
+        else:
+            channel_name_count[channel_display_name] = 1
 
         stream = build_stream(
             date_created=now,
             realm_id=realm_id,
-            name=channel_dict["display_name"],
+            name=channel_display_name,
             # Purpose describes how the channel should be used. It is similar to
             # stream description and is shown in channel list to help others decide
             # whether to join.
@@ -249,7 +267,7 @@ def convert_direct_message_group_data(
 ) -> list[ZerverFieldsT]:
     zerver_direct_message_group = []
     for direct_message_group in direct_message_group_data:
-        if len(direct_message_group["members"]) > 2:
+        if len(direct_message_group["members"]) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
             direct_message_group_members = frozenset(direct_message_group["members"])
             if direct_message_group_id_mapper.has(direct_message_group_members):
                 logging.info("Duplicate direct message group found in the export data. Skipping.")
@@ -335,9 +353,8 @@ def process_message_attachments(
     realm_id: int,
     message_id: int,
     user_id: int,
-    user_handler: UserHandler,
     zerver_attachment: list[ZerverFieldsT],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
     mattermost_data_dir: str,
     output_dir: str,
 ) -> tuple[str, bool]:
@@ -355,17 +372,11 @@ def process_message_attachments(
         if file_ext.lower() in IMAGE_EXTENSIONS:
             has_image = True
 
-        s3_path = "/".join(
-            [
-                str(realm_id),
-                format(random.randint(0, 255), "x"),
-                secrets.token_urlsafe(18),
-                sanitize_name(file_name),
-            ]
+        attachment_data = get_attachment_path_and_content(
+            link_name=file_name, filename=file_name, realm_id=realm_id
         )
-        content_for_link = f"[{file_name}](/user_uploads/{s3_path})"
 
-        markdown_links.append(content_for_link)
+        markdown_links.append(attachment_data.markdown_link)
 
         fileinfo = {
             "name": file_name,
@@ -373,40 +384,35 @@ def process_message_attachments(
             "created": os.path.getmtime(attachment_full_path),
         }
 
-        upload = dict(
-            path=s3_path,
-            realm_id=realm_id,
-            content_type=None,
-            user_profile_id=user_id,
-            last_modified=fileinfo["created"],
-            user_profile_email=user_handler.get_user(user_id=user_id)["email"],
-            s3_path=s3_path,
-            size=fileinfo["size"],
+        uploads_list.append(
+            UploadRecordData(
+                content_type=None,
+                last_modified=fileinfo["created"],
+                path=attachment_data.path_id,
+                realm_id=realm_id,
+                s3_path=attachment_data.path_id,
+                size=fileinfo["size"],
+                user_profile_id=user_id,
+            )
         )
-        uploads_list.append(upload)
 
         build_attachment(
             realm_id=realm_id,
             message_ids={message_id},
             user_id=user_id,
             fileinfo=fileinfo,
-            s3_path=s3_path,
+            s3_path=attachment_data.path_id,
             zerver_attachment=zerver_attachment,
         )
 
         # Copy the attachment file to output_dir
-        attachment_out_path = os.path.join(output_dir, "uploads", s3_path)
+        attachment_out_path = os.path.join(output_dir, "uploads", attachment_data.path_id)
         os.makedirs(os.path.dirname(attachment_out_path), exist_ok=True)
         shutil.copyfile(attachment_full_path, attachment_out_path)
 
     content = "\n".join(markdown_links)
 
     return content, has_image
-
-
-def convert_html_to_text(content: str) -> str:
-    # html2text is GPL licensed, so run it as a subprocess.
-    return subprocess.check_output(["html2text", "--unicode-snob"], input=content, text=True)
 
 
 def process_raw_message_batch(
@@ -422,7 +428,7 @@ def process_raw_message_batch(
     output_dir: str,
     zerver_realmemoji: list[dict[str, Any]],
     total_reactions: list[dict[str, Any]],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
     zerver_attachment: list[ZerverFieldsT],
     mattermost_data_dir: str,
 ) -> None:
@@ -499,7 +505,6 @@ def process_raw_message_batch(
                 realm_id=realm_id,
                 message_id=message_id,
                 user_id=sender_user_id,
-                user_handler=user_handler,
                 zerver_attachment=zerver_attachment,
                 uploads_list=uploads_list,
                 mattermost_data_dir=mattermost_data_dir,
@@ -568,7 +573,7 @@ def process_posts(
     user_handler: UserHandler,
     zerver_realmemoji: list[dict[str, Any]],
     total_reactions: list[dict[str, Any]],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
     zerver_attachment: list[ZerverFieldsT],
     mattermost_data_dir: str,
 ) -> None:
@@ -612,7 +617,7 @@ def process_posts(
             # groups not channels. Direct messages and direct message groups are known
             # as direct_channels in Slack and hence the name channel_members.
             channel_members = post_dict["channel_members"]
-            if len(channel_members) > 2:
+            if len(channel_members) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
                 message_dict["direct_message_group_members"] = frozenset(channel_members)
             elif len(channel_members) == 2:
                 message_dict["pm_members"] = channel_members
@@ -681,7 +686,7 @@ def write_message_data(
     user_handler: UserHandler,
     zerver_realmemoji: list[dict[str, Any]],
     total_reactions: list[dict[str, Any]],
-    uploads_list: list[ZerverFieldsT],
+    uploads_list: list[UploadRecordData],
     zerver_attachment: list[ZerverFieldsT],
     mattermost_data_dir: str,
 ) -> None:
@@ -1003,7 +1008,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         )
 
         total_reactions: list[dict[str, Any]] = []
-        uploads_list: list[ZerverFieldsT] = []
+        uploads_list: list[UploadRecordData] = []
         zerver_attachment: list[ZerverFieldsT] = []
 
         write_message_data(
@@ -1035,7 +1040,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
 
         # Export message attachments
         attachment: dict[str, list[Any]] = {"zerver_attachment": zerver_attachment}
-        create_converted_data_files(uploads_list, realm_output_dir, "/uploads/records.json")
         create_converted_data_files(attachment, realm_output_dir, "/attachment.json")
+        create_converted_data_files(uploads_list, realm_output_dir, "/uploads/records.json")
 
         do_common_export_processes(realm_output_dir)

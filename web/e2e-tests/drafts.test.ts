@@ -325,4 +325,4 @@ async function drafts_test(page: Page): Promise<void> {
     await test_delete_draft_on_clearing_text(page);
 }
 
-common.run_test(drafts_test);
+await common.run_test(drafts_test);

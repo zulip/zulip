@@ -31,11 +31,11 @@ export class MessageListData {
     // message ID. It's used to efficiently query if a given
     // message is present.
     _hash: Map<number, Message>;
-    // Some views exclude muted topics.
+    // Some views exclude muted topics / users.
     //
-    // TODO: Refactor this to be a property of Filter, rather than
-    // a parameter that needs to be passed into the constructor.
+    // Also, `all_messages_data` never excludes anything by definition.
     excludes_muted_topics: boolean;
+    excludes_muted_users: boolean;
     // Tracks any locally echoed messages, which we know aren't present on the server.
     _local_only: Set<number>;
     // The currently selected message ID. The special value -1
@@ -60,7 +60,15 @@ export class MessageListData {
     // See also MessageList and MessageListView, which are important
     // to actually display a message list.
 
-    constructor({excludes_muted_topics, filter}: {excludes_muted_topics: boolean; filter: Filter}) {
+    constructor({
+        excludes_muted_topics,
+        excludes_muted_users = true,
+        filter,
+    }: {
+        excludes_muted_topics: boolean;
+        excludes_muted_users?: boolean;
+        filter: Filter;
+    }) {
         this.filter = filter;
         this.fetch_status = new FetchStatus();
         this.participants = new ConversationParticipants([]);
@@ -68,6 +76,7 @@ export class MessageListData {
         this._items = [];
         this._hash = new Map();
         this.excludes_muted_topics = excludes_muted_topics;
+        this.excludes_muted_users = excludes_muted_users;
         this._local_only = new Set();
         this._selected_id = -1;
     }
@@ -82,7 +91,7 @@ export class MessageListData {
         this.add_messages_callback = callback;
     }
 
-    all_messages(): Message[] {
+    all_messages_after_mute_filtering(): Message[] {
         return this._items;
     }
 
@@ -237,8 +246,7 @@ export class MessageListData {
     }
 
     messages_filtered_for_user_mutes(messages: Message[]): Message[] {
-        if (this.filter.is_non_group_direct_message()) {
-            // We are in a 1:1 direct message narrow, so do not do any filtering.
+        if (!this.excludes_muted_users) {
             return [...messages];
         }
 
@@ -247,16 +255,9 @@ export class MessageListData {
                 return true;
             }
             const recipients = util.extract_pm_recipients(message.to_user_ids);
-            if (recipients.length > 1) {
-                // Direct message group message
-                return true;
-            }
-
-            const recipient_id = Number.parseInt(util.the(recipients), 10);
-            return (
-                !muted_users.is_user_muted(recipient_id) &&
-                !muted_users.is_user_muted(message.sender_id)
-            );
+            const recipient_ids = recipients.map((recipient) => Number.parseInt(recipient, 10));
+            const unmuted_recipient_ids = muted_users.filter_muted_user_ids(recipient_ids);
+            return unmuted_recipient_ids.length > 0;
         });
     }
 

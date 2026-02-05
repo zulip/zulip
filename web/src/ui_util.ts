@@ -350,9 +350,9 @@ export function disable_left_sidebar_search(): void {
         // update the left sidebar.
         $("#left-sidebar-search .input-close-filter-button").trigger("click");
     }
-    $("#left-sidebar-search").hide();
+    $("#left-sidebar-search").toggleClass("no-display", true);
 }
 
 export function enable_left_sidebar_search(): void {
-    $("#left-sidebar-search").show();
+    $("#left-sidebar-search").toggleClass("no-display", false);
 }

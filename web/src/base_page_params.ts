@@ -11,20 +11,26 @@ const default_params_schema = z.object({
     google_analytics_id: z.optional(z.string()),
     request_language: z.string(),
 });
+// Sync this with zerver.context_processors.login_context.
+const login_page_params_schema = z.object({
+    ...default_params_schema.shape,
+    page_type: z.literal("login"),
+    realm_default_emojiset: z.string(),
+});
 
 // These parameters are sent in #page-params for both users and spectators.
 //
 // Sync this with zerver.lib.home.build_page_params_for_home_page_load.
 //
-// TODO/typescript: Replace z.looseObject with z.object when all consumers have
-// been converted to TypeScript and the schema is complete.
-const home_params_schema = z.looseObject({
+const home_params_schema = z.object({
     ...default_params_schema.shape,
     page_type: z.literal("home"),
     apps_page_url: z.string(),
     corporate_enabled: z.boolean(),
     embedded_bots_enabled: z.boolean(),
     furthest_read_time: z.nullable(z.number()),
+    insecure_desktop_app: z.boolean(),
+    is_node_test: z.optional(z.literal(true)),
     is_spectator: z.boolean(),
     // `language_cookie_name` is only sent for spectators.
     language_cookie_name: z.optional(z.string()),
@@ -40,15 +46,17 @@ const home_params_schema = z.looseObject({
     narrow: z.optional(z.array(narrow_term_schema)),
     narrow_stream: z.optional(z.string()),
     narrow_topic: z.optional(z.string()),
+    no_event_queue: z.boolean(),
     presence_history_limit_days_for_web_app: z.number(),
     promote_sponsoring_zulip: z.boolean(),
-    // `realm_rendered_description` is only sent for spectators, because
-    // it isn't displayed for logged-in users and requires markdown
-    // processor time to compute.
-    realm_rendered_description: z.optional(z.string()),
+    realm_rendered_description: z.string(),
     show_try_zulip_modal: z.boolean(),
     state_data: z.nullable(state_data_schema),
+    test_suite: z.boolean(),
     translation_data: z.record(z.string(), z.string()),
+    two_fa_enabled: z.boolean(),
+    two_fa_enabled_user: z.boolean(),
+    warn_no_email: z.boolean(),
 });
 
 // Sync this with analytics.views.stats.render_stats.
@@ -103,6 +111,7 @@ const upgrade_params_schema = z.object({
 
 const page_params_schema = z.discriminatedUnion("page_type", [
     default_params_schema,
+    login_page_params_schema,
     home_params_schema,
     stats_params_schema,
     team_params_schema,
@@ -114,11 +123,12 @@ function take_params(): string {
     if (page_params_div === null) {
         throw new Error("Missing #page-params");
     }
-    if (page_params_div.dataset.params === undefined) {
+    const params = page_params_div.getAttribute("data-params");
+    if (params === null) {
         throw new Error("Missing #page_params[data-params]");
     }
     page_params_div.remove();
-    return page_params_div.dataset.params;
+    return params;
 }
 
 export const page_params = page_params_schema.parse(JSON.parse(take_params()));

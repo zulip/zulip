@@ -132,6 +132,24 @@ def get_user_group_by_id_in_realm(
         raise JsonableError(_("Invalid user group"))
 
 
+def user_group_ids_to_user_groups(
+    user_group_ids: list[int], realm: Realm, *, allow_deactivated: bool = False
+) -> list[NamedUserGroup]:
+    user_groups = NamedUserGroup.objects.filter(id__in=user_group_ids, realm_for_sharding=realm)
+    if not allow_deactivated:
+        user_groups = user_groups.exclude(deactivated=True)
+
+    found_group_ids = {user_group.id for user_group in user_groups}
+
+    for user_group_id in user_group_ids:
+        if user_group_id not in found_group_ids:
+            raise JsonableError(
+                _("Invalid user group ID: {user_group_id}").format(user_group_id=user_group_id)
+            )
+
+    return list(user_groups)
+
+
 def get_system_user_group_by_name(group_name: str, realm_id: int) -> NamedUserGroup:
     if group_name not in SystemGroups.GROUP_DISPLAY_NAME_MAP:
         raise JsonableError(_("Invalid system group name."))
@@ -437,7 +455,9 @@ def update_or_create_user_group_for_setting(
 
     from zerver.lib.users import user_ids_to_users
 
-    member_users = user_ids_to_users(direct_members, realm, allow_deactivated=False)
+    member_users = user_ids_to_users(
+        direct_members, realm, allow_deactivated=False, allow_bots=True
+    )
     user_group.direct_members.set(member_users)
 
     potential_subgroups = NamedUserGroup.objects.select_for_update().filter(
@@ -788,10 +808,14 @@ def get_direct_memberships_of_users(user_group: UserGroup, members: list[UserPro
 
 def get_recursive_subgroups_union_for_groups(user_group_ids: list[int]) -> QuerySet[UserGroup]:
     cte = CTE.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
-        .values(group_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+        lambda cte: (
+            UserGroup.objects.filter(id__in=user_group_ids)
+            .values(group_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id")
+                )
+            )
         )
     )
     return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id))
@@ -799,9 +823,11 @@ def get_recursive_subgroups_union_for_groups(user_group_ids: list[int]) -> Query
 
 def get_recursive_supergroups_union_for_groups(user_group_ids: list[int]) -> QuerySet[UserGroup]:
     cte = CTE.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
-        .values(group_id=F("id"))
-        .union(cte.join(UserGroup, direct_subgroups=cte.col.group_id).values(group_id=F("id")))
+        lambda cte: (
+            UserGroup.objects.filter(id__in=user_group_ids)
+            .values(group_id=F("id"))
+            .union(cte.join(UserGroup, direct_subgroups=cte.col.group_id).values(group_id=F("id")))
+        )
     )
     return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id))
 
@@ -815,10 +841,14 @@ def get_recursive_strict_subgroups(user_group: UserGroup) -> QuerySet[NamedUserG
     # user_group passed.
     direct_subgroup_ids = user_group.direct_subgroups.all().values("id")
     cte = CTE.recursive(
-        lambda cte: NamedUserGroup.objects.filter(id__in=direct_subgroup_ids)
-        .values(group_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+        lambda cte: (
+            NamedUserGroup.objects.filter(id__in=direct_subgroup_ids)
+            .values(group_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id")
+                )
+            )
         )
     )
     return with_cte(cte, select=cte.join(NamedUserGroup, id=cte.col.group_id))
@@ -907,10 +937,14 @@ def get_recursive_subgroups_for_groups(
     user_group_ids: Iterable[int], realm: Realm
 ) -> QuerySet[NamedUserGroup]:
     cte = CTE.recursive(
-        lambda cte: NamedUserGroup.objects.filter(id__in=user_group_ids, realm_for_sharding=realm)
-        .values(group_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+        lambda cte: (
+            NamedUserGroup.objects.filter(id__in=user_group_ids, realm_for_sharding=realm)
+            .values(group_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id")
+                )
+            )
         )
     )
     recursive_subgroups = with_cte(cte, select=cte.join(NamedUserGroup, id=cte.col.group_id))
@@ -924,11 +958,13 @@ def get_root_id_annotated_recursive_subgroups_for_groups(
     # each group root_id and annotates it with that group.
 
     cte = CTE.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids, realm=realm_id)
-        .values(group_id=F("id"), root_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
-                group_id=F("id"), root_id=cte.col.root_id
+        lambda cte: (
+            UserGroup.objects.filter(id__in=user_group_ids, realm=realm_id)
+            .values(group_id=F("id"), root_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id"), root_id=cte.col.root_id
+                )
             )
         )
     )

@@ -1,6 +1,8 @@
 import * as Sentry from "@sentry/browser";
 import * as z from "zod/mini";
 
+import {is_browser_unsupported_old_version} from "./browser_support.ts";
+
 type UserInfo = {
     id?: string;
     realm: string;
@@ -45,7 +47,11 @@ export function shouldCreateSpanForRequest(url: string): boolean {
     return parsed.pathname !== "/json/events";
 }
 
-if (sentry_params !== undefined) {
+if (
+    sentry_params !== undefined &&
+    !is_browser_unsupported_old_version() &&
+    !window.navigator.userAgent.includes("HeadlessChrome")
+) {
     const sample_rates = new Map([
         // This is controlled by shouldCreateSpanForRequest, above, but also put here for consistency
         ["call GET /json/events", 0],
@@ -99,6 +105,10 @@ if (sentry_params !== undefined) {
             scope.setUser(user_info);
             return scope;
         },
+        ignoreErrors: [
+            // https://github.com/tus/tus-js-client/issues/808
+            "ERR_UPLOAD_TERMINATION_REJECTED",
+        ],
     });
 } else {
     Sentry.init({});

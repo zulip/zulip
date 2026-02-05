@@ -52,17 +52,6 @@
                 outline: 0;
             }
 
-            .user-circle {
-                /* 11px at 16px/1em */
-                font-size: 0.6875em;
-                align-self: center;
-                /* TODO: A grid rewrite of typeahead rows
-                   should help to obviate these kinds of
-                   fiddly spacing hacks. */
-                margin-right: 2px;
-                margin-left: -2px;
-            }
-
             &.topic-typeahead-link {
                 gap: 5px;
             }
@@ -76,6 +65,13 @@
                        original white spaces sequence too. */
                     white-space: pre-wrap;
                 }
+            }
+
+            .typeahead-content {
+                display: flex;
+                align-items: center;
+                overflow: hidden;
+                gap: 0.3571em;
             }
 
             .typeahead-text-container {
@@ -193,29 +189,53 @@
     }
 }
 
+.typeahead-image.zulip-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 /* For FontAwesome icons and zulip icons used in place of images for some users. */
 .typeahead-image {
-    font-size: 1.3571em; /* 19px at 14px em */
-    display: inline-block;
-    height: 1.1052em; /* 21px at 19px/1em */
-    width: 1.1052em; /* 21px at 19px/1em */
+    flex: 0 0 auto;
+    position: relative;
+    height: 1.3125em; /* 21px at 16px/1em */
+    width: 1.3125em; /* 21px at 16px/1em */
     border-radius: 4px;
 
-    text-align: center;
-
-    &.zulip-icon-user-group {
-        font-size: 1.3571em; /* 19px at 14px em */
+    .typeahead-image-avatar {
+        border-radius: 4px;
+        /* Override bootstrap img */
+        vertical-align: baseline;
     }
 
-    &.no-presence-circle {
-        /* 0.6875 * var(--base-font-size) is the width of presence
-        circle, no margin (-2px left margin + 2px right margin = 0px)
-        of the presence circle and 0.3571 * var(--base-font-size-px)
-        is gap between the presence circle and avatar.
-        Cannot directly use 0.6875em or 0.3571em
-        since font-size for user group icon is different from the
-        font size used to calculate presence circle width and gap. */
-        margin-left: calc((0.6875 + 0.3571) * var(--base-font-size-px));
+    .user-circle {
+        position: absolute;
+        /* This is smaller than the sidebar because avatars here are smaller */
+        font-size: 0.4375em; /* 7px at 16px/1em */
+        line-height: 1;
+        bottom: -0.5px;
+        right: -0.5px;
+        background-color: var(--color-background-dropdown-widget);
+        padding: 1px;
+        border-radius: 50%;
+
+        &.user-circle-offline {
+            display: none;
+        }
+    }
+
+    /* Move the background styles onto the :before element so that the 1px padding
+       outline still works. */
+    .user-circle-idle {
+        background: var(--color-background-dropdown-widget);
+    }
+
+    .user-circle-idle::before {
+        background: var(--gradient-user-circle-idle);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        border-radius: 50%;
     }
 }
 

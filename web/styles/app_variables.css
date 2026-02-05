@@ -164,11 +164,21 @@
 
     color-scheme: light;
 
+    /* Variable for setting the viewport to full height.
+       As of late 2025, we still support browsers (e.g.,
+       Chrome 105) that do not support dynamic viewport
+       units. 100% is the legacy full-height value. */
+    --full-height-dynamic-viewport: 100%;
+
+    @supports (height: 100dvh) {
+        --full-height-dynamic-viewport: 100dvh;
+    }
+
     /*
     This is the header, aka the navbar.
     */
     --header-height: 2.5em; /* 40px at 16px em */
-
+    --header-line-height: 40px;
     /*
     At 600px, the header starts taking up more than 5%
     of the screen. We make it shorter to leave more space
@@ -404,6 +414,9 @@
     */
     --message-area-max-width: 57.4125em;
 
+    /* Box shadow for overlays across the web app */
+    --box-shadow-overlay: none;
+
     /* Shared sidebar typography and effects values. */
     --font-weight-sidebar-heading: 600;
     --font-weight-sidebar-action-heading: 370;
@@ -424,6 +437,7 @@
     --opacity-left-sidebar-muted-mentions: 0.3;
     --opacity-right-sidebar-subheading: 0.65;
     --opacity-right-sidebar-subheading-hover: 0.9;
+    --opacity-readonly-modal-input: 0.5;
 
     /*
     Message box elements and values.
@@ -472,6 +486,7 @@
     /* This width is updated with an exact pixel
        width upon UI initialization. */
     --message-box-timestamp-column-width: 0;
+    --last-message-row-border-radius: 0 0 7px 7px;
 
     /* This length is the primary reference for height
        and image width on URL preview embeds. 112px
@@ -586,11 +601,11 @@
     /* Pill dimensions. */
     /* 1.5714em is 22px (border-inclusive) at 14px/1em */
     --height-input-pill: 1.5714em;
-    /* Reduce user pill image lengths by 2px to
-       preserve an apparent border around
-       them, and a square aspect-ratio, even under
-       `box-sizing: border-box` in the area. */
-    --length-search-input-pill-image: calc(var(--height-input-pill) - 2px);
+    /* Reduce user pill height by 2px to preserve an apparent border
+       around them even under `box-sizing: border-box` in the area. */
+    --length-user-pill-height: calc(var(--height-input-pill) - 2px);
+    /* Fills whole pill height. */
+    --length-search-pill-image: var(--length-user-pill-height);
     --length-input-pill-exit: 1.1429em; /* 16px at 14px/em */
     --input-pill-side-padding: 0.3571em; /* 5px at 14px/em */
     --vertical-spacing-input-pill: 2px;
@@ -623,6 +638,17 @@
     /* Dropdown menu width. This is a legacy value that comes from bootstrap.
        See 1c6bed55e4e800b5bad7150f6bdd274cd7f6504e for more context. */
     --width-dropdown-widget-button: 206px;
+    /* User profile modal */
+    --user-profile-modal-height: 75dvh;
+    --user-profile-modal-body-margin-bottom: 20px;
+
+    /* Height of the button for filter dropdown in stream settings UI.
+    It is set equal to the height of the search input, i.e. 1.4em (input
+    height with font size set to 90%) + 8px (top and bottom paddings)
+    + 2px (top and bottom borders). */
+    --folder-filter-dropdown-widget-button-height: calc(
+        1.4 * 0.9 * var(--base-font-size-px) + 8px + 2px
+    );
 
     /*
     Maximum height of the compose box when it is not in maximised state. This
@@ -697,6 +723,11 @@
     --input-button-width: 1.5em; /* 24px at 16px/1em */
     --input-button-ending-offset: 0.125em; /* 2px at 16px/1em */
 
+    /* Input padding and border variables */
+    --input-horizontal-padding: 6px;
+    --input-vertical-padding: 4px;
+    --input-border-width: 1px;
+
     /* Colors used across the app */
     --color-date: light-dark(hsl(0deg 0% 15% / 75%), hsl(0deg 0% 100% / 75%));
     --color-background-private-message-header: light-dark(
@@ -714,6 +745,14 @@
     --color-selected-message-outline: light-dark(
         hsl(217deg 64% 59% / 60%),
         hsl(217deg 64% 59% / 70%)
+    );
+    --color-selected-gif-in-grid-picker: light-dark(
+        hsl(217deg 75% 59%),
+        hsl(217deg 95% 59%)
+    );
+    --color-hovered-gif-in-grid-picker: light-dark(
+        hsl(217deg 75% 59% / 50%),
+        hsl(217deg 95% 59% / 60%)
     );
     --color-message-list-border: light-dark(
         hsl(0deg 0% 0% / 16%),
@@ -773,6 +812,14 @@
         hsl(0deg 0% 0% / 30%),
         hsl(0deg 0% 100% / 30%)
     );
+    --color-sidebar-action: light-dark(
+        hsl(240deg 30% 40%),
+        hsl(240deg 35% 68%)
+    );
+    --color-sidebar-action-hover: light-dark(
+        hsl(240deg 100% 15%),
+        hsl(240deg 100% 90%)
+    );
     --color-background-sidebar-action-hover: light-dark(
         hsl(240deg 100% 93%),
         hsl(240deg 25% 35%)
@@ -806,25 +853,6 @@
         hsl(0deg 0% 100% / 90%),
         hsl(212deg 28% 8% / 75%)
     );
-    --color-background-modal: light-dark(#ededed, #242424);
-    --color-background-modal-bar: light-dark(#f5f5f5, #333);
-    --color-border-modal: light-dark(
-        color-mix(in srgb, #8c8c8c 25%, transparent),
-        color-mix(in srgb, #fff 8%, transparent)
-    );
-    --color-border-modal-bar: light-dark(
-        color-mix(in srgb, #c2c2c2 80%, transparent),
-        color-mix(in srgb, #fff 5%, transparent)
-    );
-    --color-border-modal-footer: light-dark(
-        hsl(0deg 0% 87%),
-        hsl(0deg 0% 100% / 20%)
-    );
-    --color-modal-close-button: light-dark(inherit, hsl(236deg 33% 90%));
-    --color-background-modal-close-button-hover: light-dark(
-        hsl(0deg 0% 90%),
-        hsl(0deg 0% 91% / 10%)
-    );
     --color-modal-selectable-icon: light-dark(
         hsl(240deg 30% 40%),
         hsl(240deg 35% 68%)
@@ -836,6 +864,30 @@
     --background-color-modal-selectable-icon-hover: light-dark(
         hsl(240deg 100% 50% / 7%),
         hsl(240deg 100% 75% / 20%)
+    );
+    --background-color-readonly-modal-input: light-dark(
+        hsl(240deg 7% 93%),
+        hsl(240deg 7% 17%)
+    );
+    --background-color-textarea: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --background-color-disabled-textarea: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --background-color-view-only-textarea: light-dark(
+        hsl(0deg 0% 100% / 60%),
+        hsl(0deg 0% 0% / 30%)
+    );
+    --border-color-textarea: light-dark(
+        hsl(0deg 0% 80%),
+        hsl(0deg 0% 0% / 60%)
+    );
+    --focus-border-color-textarea: light-dark(
+        hsl(206.5deg 80% 62% / 80%),
+        hsl(0deg 0% 0% / 90%)
     );
     --color-background-pill-container-without-placeholder: light-dark(
         hsl(0deg 0% 100%),
@@ -1019,9 +1071,32 @@
         hsl(3deg 57% 33%),
         hsl(3deg 73% 74%)
     );
+    --invalid-input-box-shadow: 0 0 2px var(--color-invalid-input-box-shadow);
     --color-invalid-input-box-shadow: light-dark(
-        0 0 2px hsl(3deg 57% 33%),
-        0 0 2px hsl(3deg 73% 74%)
+        hsl(3deg 57% 33%),
+        hsl(3deg 73% 74%)
+    );
+    --color-background-white-box: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-stream-group-row-checked-icon: hsl(240deg 96% 68%);
+    --color-stream-group-row-checked-icon-hover: hsl(240deg 41% 50%);
+    --color-stream-group-row-checked-icon-disabled: light-dark(
+        hsl(240deg 96% 68% / 100%),
+        hsl(240deg 96% 68% / 50%)
+    );
+    --color-stream-group-row-plus-icon: light-dark(
+        hsl(0deg 0% 72%),
+        hsl(218deg 14% 33%)
+    );
+    --color-stream-group-row-plus-icon-hover: light-dark(
+        hsl(0deg 0% 27%),
+        hsl(230deg 11% 67%)
+    );
+    --color-stream-group-row-plus-icon-disabled: light-dark(
+        hsl(0deg 0% 87% / 100%),
+        hsl(218deg 14% 33% / 50%)
     );
 
     /* Recent view */
@@ -1031,32 +1106,28 @@
         hsl(0deg 0% 0% / 20%)
     );
     --color-border-recent-view-table: light-dark(
-        hsl(0deg 0% 0% / 60%),
-        hsl(0deg 0% 88%)
+        hsl(0deg 0% 0% / 10%),
+        hsl(0deg 0% 0% / 10%)
     );
     --color-background-recent-view-row: light-dark(
-        hsl(100deg 11% 96%),
-        hsl(0deg 0% 11%)
+        hsl(0deg 0% 96%),
+        hsl(0deg 0% 14%)
     );
     --color-background-recent-view-row-hover: light-dark(
-        hsl(210deg 100% 97%),
-        hsl(208deg 26% 11% / 60%)
+        hsl(222deg 70% 12% / 7%),
+        hsl(220deg 18% 95% / 7%)
     );
     --color-background-recent-view-unread-row: light-dark(
         hsl(0deg 0% 100%),
-        hsl(212deg 30% 22% / 40%)
+        color-mix(in srgb, hsl(0deg 0% 100%) 8%, hsl(0deg 0% 11%))
     );
     --color-background-recent-view-unread-row-hover: light-dark(
-        hsl(210deg 100% 97%),
-        hsl(212deg 30% 22% / 60%)
+        hsl(220deg 5% 12% / 3%),
+        color-mix(in srgb, hsl(0deg 0% 100%) 11%, hsl(0deg 0% 11%))
     );
     --color-recent-view-link: light-dark(
-        hsl(205deg 47% 42%),
-        hsl(206deg 89% 74%)
-    );
-    --color-recent-view-link-hover: light-dark(
-        hsl(214deg 40% 58%),
-        hsl(208deg 64% 52%)
+        hsl(0deg 0% 15%),
+        hsl(0deg 0% 100% / 75%)
     );
     --color-background-recent-filters-button-focus: light-dark(
         hsl(0deg 0% 80%),
@@ -1083,12 +1154,24 @@
         hsl(228deg 11% 17%)
     );
     --color-background-recent-view-table-thead-th: light-dark(
-        hsl(0deg 0% 100%),
-        hsl(228deg 11% 17%)
+        var(--grey-50),
+        hsl(0deg 0% 100% / 10%)
     );
     --color-background-recent-view-table-thead-sort-header: light-dark(
-        hsl(0deg 0% 95%),
-        hsl(211deg 29% 14%)
+        hsl(229deg 9% 36% / 7%),
+        hsl(230deg 9% 60% / 14%)
+    );
+    --color-text-recent-view-table-thead-th: light-dark(
+        var(--grey-600),
+        var(--grey-300)
+    );
+    --color-arrow-recent-view-table-thead-th: light-dark(
+        hsl(229deg 9% 36% / 50%),
+        hsl(229deg 10% 70% / 50%)
+    );
+    --color-text-recent-view-last-msg-time: light-dark(
+        hsl(0deg 0% 15% / 75%),
+        hsl(0deg 0% 100% / 50%)
     );
 
     /* Compose box colors */
@@ -1446,6 +1529,22 @@
         hsl(0deg 0% 87%),
         hsl(0deg 0% 100% / 20%)
     );
+    --color-border-user-profile-list-container: light-dark(
+        hsl(0deg 0% 0% / 35%),
+        hsl(0deg 0% 100% / 30%)
+    );
+    --background-color-user-profile-list-container: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 17%)
+    );
+    --color-user-profile-list-item-hover: light-dark(
+        hsl(0deg 0% 97%),
+        hsl(0deg 0% 21%)
+    );
+    --color-outline-user-profile-list-item: light-dark(
+        hsl(0deg 0% 0%),
+        hsl(0deg 0% 100%)
+    );
 
     /* Link colors */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
@@ -1560,7 +1659,18 @@
         hsl(0deg 0% 20%),
         hsl(236deg 33% 90%)
     );
-
+    --color-background-stream-email: light-dark(
+        hsl(0deg 0% 98%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-background-integration-url: light-dark(
+        transparent,
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-background-tbody-th-odd: light-dark(
+        transparent,
+        hsl(0deg 0% 0% / 20%)
+    );
     /* Markdown colors */
     --color-background-rendered-markdown-thead: light-dark(
         hsl(0deg 0% 93%),
@@ -1693,21 +1803,9 @@
         hsl(240deg 30% 40%),
         hsl(240deg 35% 68%)
     );
-    --color-left-sidebar-heads-up-icon: light-dark(
-        hsl(240deg 30% 40%),
-        hsl(240deg 35% 68%)
-    );
-    --color-left-sidebar-heads-up-icon-hover: light-dark(
-        hsl(240deg 100% 15%),
-        hsl(240deg 100% 90%)
-    );
     --color-left-sidebar-dm-partners-icon: light-dark(
         hsl(240deg 30% 60%),
         hsl(240deg 35% 58%)
-    );
-    --background-color-left-sidebar-heads-up-icon-hover: light-dark(
-        hsl(240deg 100% 50% / 7%),
-        hsl(240deg 100% 75% / 20%)
     );
     --color-vdots-hint: light-dark(hsl(240deg 30% 80%), hsl(240deg 35% 38%));
     --color-vdots-visible: light-dark(hsl(240deg 30% 40%), hsl(240deg 35% 68%));
@@ -1980,7 +2078,7 @@
     );
 
     /* Inbox view constants - Values from Figma design */
-    --width-inbox-search: 29.0625em; /* 465px / 16px em */
+    --width-inbox-search: calc(27.4375em); /* 439px / 16px em */
     --width-inbox-filters-dropdown: 10.7142em; /* 150px / 14px em */
     --color-background-inbox-no-unreads-illustration: light-dark(
         hsl(147deg 57% 25%),
@@ -2177,6 +2275,9 @@
     /* Theme-dependent SVGs */
     --svg-url-thumbnail-loader: url("../images/loading/loader-black.svg");
 
+    /* Zulip resizer handle svg */
+    --svg-resize-handle: url("../images/resize-handle-black.svg");
+
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: light-dark(
         hsl(0deg 0% 93%),
@@ -2245,262 +2346,260 @@
         color-mix(in oklch, hsl(0deg 0% 100%) 21%, transparent)
     );
     /* Action buttons -- Neutral Variant */
-    --color-text-neutral-primary-action-button: light-dark(
+    --color-text-neutral-solid-action-button: light-dark(
         hsl(0deg 0% 100%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
-    --color-background-neutral-primary-action-button: light-dark(
+    --color-background-neutral-solid-action-button: light-dark(
         hsl(229deg 7% 50%),
         hsl(229deg 9% 36%)
     );
-    --color-background-neutral-primary-action-button-hover: light-dark(
+    --color-background-neutral-solid-action-button-hover: light-dark(
         hsl(229deg 7% 47%),
         hsl(229deg 8% 42%)
     );
-    --color-background-neutral-primary-action-button-active: light-dark(
+    --color-background-neutral-solid-action-button-active: light-dark(
         hsl(232deg 7% 44%),
         hsl(229deg 9% 36%)
     );
-    --color-text-neutral-quiet-action-button: light-dark(
+    --color-text-neutral-subtle-action-button: light-dark(
         hsl(229deg 12% 25%),
         hsl(231deg 11% 76%)
     );
-    --color-background-neutral-quiet-action-button: light-dark(
+    --color-background-neutral-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(230deg 7% 50%) 12%, transparent),
         color-mix(in oklch, hsl(231deg 11% 76%) 12%, transparent)
     );
-    --color-background-neutral-quiet-action-button-hover: light-dark(
+    --color-background-neutral-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(230deg 7% 50%) 17%, transparent),
         color-mix(in oklch, hsl(231deg 11% 76%) 17%, transparent)
     );
-    --color-background-neutral-quiet-action-button-active: light-dark(
+    --color-background-neutral-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(230deg 7% 50%) 22%, transparent),
         color-mix(in oklch, hsl(231deg 11% 76%) 12%, transparent)
     );
-    --color-text-neutral-borderless-action-button: light-dark(
+    --color-text-neutral-text-action-button: light-dark(
         hsl(229deg 9% 36%),
         hsl(229deg 10% 70%)
     );
-    --color-background-neutral-borderless-action-button-hover: light-dark(
+    --color-background-neutral-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(229deg 9% 36%) 7%, transparent),
         color-mix(in oklch, hsl(230deg 9% 60%) 14%, transparent)
     );
-    --color-background-neutral-borderless-action-button-active: light-dark(
+    --color-background-neutral-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(229deg 9% 36%) 11%, transparent),
         color-mix(in oklch, hsl(230deg 9% 60%) 18%, transparent)
     );
     /* Action buttons -- Brand Variant */
-    --color-text-brand-primary-action-button: light-dark(
+    --color-text-brand-solid-action-button: light-dark(
         hsl(0deg 0% 100%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
-    --color-background-brand-primary-action-button: light-dark(
+    --color-background-brand-solid-action-button: light-dark(
         hsl(254deg 99% 68%),
         hsl(261deg 79% 43%)
     );
-    --color-background-brand-primary-action-button-hover: light-dark(
+    --color-background-brand-solid-action-button-hover: light-dark(
         hsl(255deg 81% 61%),
         hsl(258deg 66% 51%)
     );
-    --color-background-brand-primary-action-button-active: light-dark(
+    --color-background-brand-solid-action-button-active: light-dark(
         hsl(258deg 66% 51%),
         hsl(261deg 79% 43%)
     );
-    --color-text-brand-quiet-action-button: light-dark(
+    --color-text-brand-subtle-action-button: light-dark(
         hsl(264deg 95% 34%),
         hsl(244deg 96% 82%)
     );
-    --color-background-brand-quiet-action-button: light-dark(
+    --color-background-brand-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(254deg 99% 68%) 12%, transparent),
         color-mix(in oklch, hsl(246deg 96% 79%) 12%, transparent)
     );
-    --color-background-brand-quiet-action-button-hover: light-dark(
+    --color-background-brand-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(254deg 99% 68%) 17%, transparent),
         color-mix(in oklch, hsl(246deg 96% 79%) 17%, transparent)
     );
-    --color-background-brand-quiet-action-button-active: light-dark(
+    --color-background-brand-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(254deg 99% 68%) 22%, transparent),
         color-mix(in oklch, hsl(246deg 96% 79%) 12%, transparent)
     );
-    --color-text-brand-borderless-action-button: light-dark(
+    --color-text-brand-text-action-button: light-dark(
         hsl(255deg 54% 50%),
         hsl(246deg 96% 79%)
     );
-    --color-background-brand-borderless-action-button-hover: light-dark(
+    --color-background-brand-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(264deg 100% 22%) 5%, transparent),
         color-mix(in oklch, hsl(251deg 100% 72%) 14%, transparent)
     );
-    --color-background-brand-borderless-action-button-active: light-dark(
+    --color-background-brand-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(264deg 100% 22%) 10%, transparent),
         color-mix(in oklch, hsl(251deg 100% 72%) 18%, transparent)
     );
     /* Action buttons -- Info Variant */
-    --color-text-info-primary-action-button: light-dark(
+    --color-text-info-solid-action-button: light-dark(
         hsl(0deg 0% 100%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
-    --color-background-info-primary-action-button: light-dark(
+    --color-background-info-solid-action-button: light-dark(
         hsl(226deg 100% 62%),
         hsl(228deg 75% 47%)
     );
-    --color-background-info-primary-action-button-hover: hsl(226deg 83% 55%);
-    --color-background-info-primary-action-button-active: hsl(228deg 75% 47%);
-    --color-text-info-quiet-action-button: light-dark(
+    --color-background-info-solid-action-button-hover: hsl(226deg 83% 55%);
+    --color-background-info-solid-action-button-active: hsl(228deg 75% 47%);
+    --color-text-info-subtle-action-button: light-dark(
         hsl(231deg 82% 36%),
         hsl(222deg 98% 79%)
     );
-    --color-background-info-quiet-action-button: light-dark(
+    --color-background-info-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(226deg 100% 62%) 12%, transparent),
         color-mix(in oklch, hsl(222deg 98% 79%) 12%, transparent)
     );
-    --color-background-info-quiet-action-button-hover: light-dark(
+    --color-background-info-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(226deg 100% 62%) 17%, transparent),
         color-mix(in oklch, hsl(222deg 98% 79%) 17%, transparent)
     );
-    --color-background-info-quiet-action-button-active: light-dark(
+    --color-background-info-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(226deg 100% 62%) 22%, transparent),
         color-mix(in oklch, hsl(222deg 98% 79%) 12%, transparent)
     );
-    --color-text-info-borderless-action-button: light-dark(
+    --color-text-info-text-action-button: light-dark(
         hsl(227deg 70% 46%),
         hsl(222deg 97% 75%)
     );
-    --color-background-info-borderless-action-button-hover: light-dark(
+    --color-background-info-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(241deg 95% 25%) 5%, transparent),
         color-mix(in oklch, hsl(224deg 98% 65%) 12%, transparent)
     );
-    --color-background-info-borderless-action-button-active: light-dark(
+    --color-background-info-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(241deg 95% 25%) 9%, transparent),
         color-mix(in oklch, hsl(224deg 98% 65%) 17%, transparent)
     );
     /* Action buttons -- Success Variant */
-    --color-text-success-primary-action-button: light-dark(
+    --color-text-success-solid-action-button: light-dark(
         hsl(0deg 0% 100%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
-    --color-background-success-primary-action-button: light-dark(
+    --color-background-success-solid-action-button: light-dark(
         hsl(146deg 90% 27%),
         hsl(144deg 84% 22%)
     );
-    --color-background-success-primary-action-button-hover: hsl(145deg 87% 25%);
-    --color-background-success-primary-action-button-active: hsl(
-        144deg 84% 22%
-    );
-    --color-text-success-quiet-action-button: light-dark(
+    --color-background-success-solid-action-button-hover: hsl(145deg 87% 25%);
+    --color-background-success-solid-action-button-active: hsl(144deg 84% 22%);
+    --color-text-success-subtle-action-button: light-dark(
         hsl(144deg 88% 16%),
         hsl(135deg 56% 63%)
     );
-    --color-background-success-quiet-action-button: light-dark(
+    --color-background-success-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(146deg 90% 27%) 13%, transparent),
         color-mix(in oklch, hsl(138deg 46% 47%) 12%, transparent)
     );
-    --color-background-success-quiet-action-button-hover: light-dark(
+    --color-background-success-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(146deg 90% 27%) 18%, transparent),
         color-mix(in oklch, hsl(138deg 46% 47%) 17%, transparent)
     );
-    --color-background-success-quiet-action-button-active: light-dark(
+    --color-background-success-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(146deg 90% 27%) 23%, transparent),
         color-mix(in oklch, hsl(138deg 46% 47%) 12%, transparent)
     );
-    --color-text-success-borderless-action-button: light-dark(
+    --color-text-success-text-action-button: light-dark(
         hsl(146deg 90% 27%),
         hsl(136deg 47% 55%)
     );
-    --color-background-success-borderless-action-button-hover: light-dark(
+    --color-background-success-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(144deg 84% 22%) 8%, transparent),
         color-mix(in oklch, hsl(139deg 54% 40%) 12%, transparent)
     );
-    --color-background-success-borderless-action-button-active: light-dark(
+    --color-background-success-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(144deg 84% 22%) 12%, transparent),
         color-mix(in oklch, hsl(139deg 54% 40%) 17%, transparent)
     );
     /* Action buttons -- Warning Variant */
-    --color-text-warning-primary-action-button: light-dark(
+    --color-text-warning-solid-action-button: light-dark(
         color-mix(in oklch, hsl(0deg 0% 0%) 88%, transparent),
         color-mix(in oklch, hsl(0deg 0% 0%) 90%, transparent)
     );
-    --color-background-warning-primary-action-button: light-dark(
+    --color-background-warning-solid-action-button: light-dark(
         hsl(40deg 99% 62%),
         hsl(39deg 89% 45%)
     );
-    --color-background-warning-primary-action-button-hover: light-dark(
+    --color-background-warning-solid-action-button-hover: light-dark(
         hsl(40deg 94% 56%),
         hsl(41deg 98% 46%)
     );
-    --color-background-warning-primary-action-button-active: light-dark(
+    --color-background-warning-solid-action-button-active: light-dark(
         hsl(41deg 98% 46%),
         hsl(39deg 89% 45%)
     );
-    --color-text-warning-quiet-action-button: light-dark(
+    --color-text-warning-subtle-action-button: light-dark(
         hsl(34deg 89% 25%),
         hsl(40deg 94% 56%)
     );
-    --color-background-warning-quiet-action-button: light-dark(
+    --color-background-warning-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(41deg 98% 46%) 18%, transparent),
         color-mix(in oklch, hsl(39deg 89% 45%) 12%, transparent)
     );
-    --color-background-warning-quiet-action-button-hover: light-dark(
+    --color-background-warning-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(41deg 98% 46%) 23%, transparent),
         color-mix(in oklch, hsl(39deg 89% 45%) 17%, transparent)
     );
-    --color-background-warning-quiet-action-button-active: light-dark(
+    --color-background-warning-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(41deg 98% 46%) 28%, transparent),
         color-mix(in oklch, hsl(39deg 89% 45%) 12%, transparent)
     );
-    --color-text-warning-borderless-action-button: light-dark(
+    --color-text-warning-text-action-button: light-dark(
         hsl(37deg 94% 34%),
         hsl(41deg 98% 46%)
     );
-    --color-background-warning-borderless-action-button-hover: light-dark(
+    --color-background-warning-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(37deg 94% 34%) 10%, transparent),
         color-mix(in oklch, hsl(39deg 88% 42%) 12%, transparent)
     );
-    --color-background-warning-borderless-action-button-active: light-dark(
+    --color-background-warning-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(37deg 94% 34%) 14%, transparent),
         color-mix(in oklch, hsl(39deg 88% 42%) 17%, transparent)
     );
     /* Action buttons -- Danger Variant */
-    --color-text-danger-primary-action-button: light-dark(
+    --color-text-danger-solid-action-button: light-dark(
         hsl(0deg 0% 100%),
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
-    --color-background-danger-primary-action-button: light-dark(
+    --color-background-danger-solid-action-button: light-dark(
         hsl(4deg 75% 53%),
         hsl(2deg 74% 47%)
     );
-    --color-background-danger-primary-action-button-hover: light-dark(
+    --color-background-danger-solid-action-button-hover: light-dark(
         hsl(2deg 74% 47%),
         hsl(4deg 75% 53%)
     );
-    --color-background-danger-primary-action-button-active: light-dark(
+    --color-background-danger-solid-action-button-active: light-dark(
         hsl(359deg 93% 39%),
         hsl(2deg 74% 47%)
     );
-    --color-text-danger-quiet-action-button: light-dark(
+    --color-text-danger-subtle-action-button: light-dark(
         hsl(359deg 94% 35%),
         hsl(7deg 100% 74%)
     );
-    --color-background-danger-quiet-action-button: light-dark(
+    --color-background-danger-subtle-action-button: light-dark(
         color-mix(in oklch, hsl(4deg 75% 53%) 13%, transparent),
         color-mix(in oklch, hsl(5deg 98% 65%) 12%, transparent)
     );
-    --color-background-danger-quiet-action-button-hover: light-dark(
+    --color-background-danger-subtle-action-button-hover: light-dark(
         color-mix(in oklch, hsl(4deg 75% 53%) 18%, transparent),
         color-mix(in oklch, hsl(5deg 98% 65%) 17%, transparent)
     );
-    --color-background-danger-quiet-action-button-active: light-dark(
+    --color-background-danger-subtle-action-button-active: light-dark(
         color-mix(in oklch, hsl(4deg 75% 53%) 23%, transparent),
         color-mix(in oklch, hsl(5deg 98% 65%) 12%, transparent)
     );
-    --color-text-danger-borderless-action-button: light-dark(
+    --color-text-danger-text-action-button: light-dark(
         hsl(359deg 93% 39%),
         hsl(7deg 100% 74%)
     );
-    --color-background-danger-borderless-action-button-hover: light-dark(
+    --color-background-danger-text-action-button-hover: light-dark(
         color-mix(in oklch, hsl(359deg 93% 39%) 9%, transparent),
         color-mix(in oklch, hsl(5deg 88% 60%) 12%, transparent)
     );
-    --color-background-danger-borderless-action-button-active: light-dark(
+    --color-background-danger-text-action-button-active: light-dark(
         color-mix(in oklch, hsl(359deg 93% 39%) 13%, transparent),
         color-mix(in oklch, hsl(5deg 88% 60%) 17%, transparent)
     );
@@ -2956,7 +3055,7 @@
         hsl(0deg 0% 0% / 20%),
         hsl(0deg 0% 90% / 20%)
     );
-    --color-info-denisty-button-icon: light-dark(
+    --color-info-density-button-icon: light-dark(
         hsl(229deg 9% 36%),
         hsl(0deg 0% 100% / 80%)
     );
@@ -2971,6 +3070,9 @@
        don't apply negative margin that would otherwise pull
        the unread marker to the left. */
     --unread-marker-left: 0;
+
+    /* Box shadow for overlays across the web app */
+    --box-shadow-overlay: 0 0 30px hsl(212deg 32% 7%);
 
     /* Colors used across the app */
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
@@ -3007,6 +3109,9 @@
 
     /* Theme-dependent SVGs */
     --svg-url-thumbnail-loader: url("../images/loading/loader-white.svg");
+
+    /* Zulip resizer handle svg */
+    --svg-resize-handle: url("../images/resize-handle-white.svg");
 }
 
 @media screen {

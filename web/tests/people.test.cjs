@@ -9,8 +9,8 @@ const MockDate = require("mockdate");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -20,11 +20,20 @@ const settings_data = mock_esm("../src/settings_data", {
 });
 const channel = mock_esm("../src/channel");
 
+let additional_calls_before_set_timeout = noop;
+
+set_global("setTimeout", (func) => {
+    additional_calls_before_set_timeout();
+    func();
+});
+
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
+const settings_config = zrequire("../src/settings_config.ts");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+const util = zrequire("util");
 
 const current_user = {};
 set_current_user(current_user);
@@ -72,6 +81,7 @@ const isaac = {
 const unknown_user = people.make_user(1500, "unknown@example.com", "Unknown user");
 
 function initialize() {
+    additional_calls_before_set_timeout = noop;
     people.init();
     people.add_active_user({...me});
     people.initialize_current_user(me.user_id);
@@ -83,26 +93,19 @@ function initialize() {
 const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([30]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
-
-function test_people(label, f) {
-    run_test(label, (helpers) => {
-        initialize();
-        f(helpers);
-    });
-}
 
 /*
     TEST SETUP NOTES:
@@ -318,7 +321,8 @@ function get_all_persons() {
     return people.filter_all_persons(() => true);
 }
 
-test_people("basics", ({override}) => {
+run_test("basics", ({override}) => {
+    initialize();
     const persons = get_all_persons();
 
     assert.deepEqual(people.get_realm_users(), [me]);
@@ -356,9 +360,9 @@ test_people("basics", ({override}) => {
     realm_persons = people.get_realm_users();
     assert.equal(realm_persons.length, 2);
 
-    const active_user_ids = people.get_active_user_ids().sort();
+    const active_user_ids = people.get_active_user_ids().toSorted();
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
-    assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(isaac.user_id), true);
     assert.ok(people.is_valid_email_for_compose(isaac.email));
     assert.ok(people.is_valid_user_id_for_compose(isaac.user_id));
 
@@ -370,12 +374,12 @@ test_people("basics", ({override}) => {
     assert.equal(people.get_non_active_human_ids().length, 1);
     assert.equal(people.get_non_active_user_ids_count([isaac.user_id]), 1);
     assert.equal(people.get_active_human_count(), 1);
-    assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
+    assert.equal(people.is_active_user_or_system_bot(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), true);
     assert.equal(people.is_valid_user_id_for_compose(isaac.user_id), true);
 
     people.add_active_user(bot_botson);
-    assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(bot_botson.user_id), true);
     bot_user_ids = people.get_bot_ids();
     assert.deepEqual(bot_user_ids, [bot_botson.user_id]);
 
@@ -406,7 +410,7 @@ test_people("basics", ({override}) => {
         people
             .get_realm_users()
             .map((u) => u.user_id)
-            .sort(),
+            .toSorted(),
         [me.user_id, bot_botson.user_id],
     );
 
@@ -423,10 +427,10 @@ test_people("basics", ({override}) => {
 
     // Invalid user ID returns true and warns.
     blueslip.expect("warn", "Unexpectedly invalid user_id in user popover query");
-    assert.equal(people.is_active_user_for_popover(123412), true);
+    assert.equal(people.is_active_user_or_system_bot(123412), true);
 
     unknown_user.is_inaccessible_user = true;
-    assert.equal(people.is_active_user_for_popover(unknown_user.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(unknown_user.user_id), true);
     unknown_user.is_inaccessible_user = false;
 
     // We can still get their info for non-realm needs.
@@ -448,16 +452,14 @@ test_people("basics", ({override}) => {
     people.add_active_user(isaac);
     const active_humans = people.get_realm_active_human_user_ids();
     assert.equal(active_humans.length, 2);
-    assert.deepEqual(
-        active_humans.sort((p) => p.user_id),
-        [me.user_id, isaac.user_id],
-    );
+    assert.deepEqual(active_humans.toSorted(), [me.user_id, isaac.user_id]);
 
     // get_users_from_ids
     assert.deepEqual(people.get_users_from_ids([me.user_id, isaac.user_id]), [me, isaac]);
 });
 
-test_people("sort_but_pin_current_user_on_top with me", () => {
+run_test("sort_but_pin_current_user_on_top with me", () => {
+    initialize();
     people.add_active_user(maria);
     people.add_active_user(steven);
 
@@ -471,7 +473,8 @@ test_people("sort_but_pin_current_user_on_top with me", () => {
     assert.deepEqual(users, [my_user, debbie, maria, steven]);
 });
 
-test_people("sort_but_pin_current_user_on_top without me", () => {
+run_test("sort_but_pin_current_user_on_top without me", () => {
+    initialize();
     people.add_active_user(maria);
     people.add_active_user(steven);
 
@@ -482,7 +485,8 @@ test_people("sort_but_pin_current_user_on_top without me", () => {
     assert.deepEqual(users, [maria, steven]);
 });
 
-test_people("check_active_non_active_users", ({override}) => {
+run_test("check_active_non_active_users", ({override}) => {
+    initialize();
     people.add_active_user(bot_botson);
     people.add_active_user(isaac);
 
@@ -522,13 +526,15 @@ test_people("check_active_non_active_users", ({override}) => {
     assert.equal(people.is_person_active(99), true);
 });
 
-test_people("pm_lookup_key", () => {
+run_test("pm_lookup_key", () => {
+    initialize();
     assert.equal(people.pm_lookup_key("30"), "30");
     assert.equal(people.pm_lookup_key("32,30"), "32");
     assert.equal(people.pm_lookup_key("101,32,30"), "32,101");
 });
 
-test_people("get_recipients", () => {
+run_test("get_recipients", () => {
+    initialize();
     people.add_active_user(isaac);
     people.add_active_user(linus);
     assert.deepEqual(people.get_recipients("30"), ["Me Myself"]);
@@ -538,19 +544,22 @@ test_people("get_recipients", () => {
     assert.deepEqual(people.get_recipients("304,32"), ["Isaac Newton", "translated: Muted user"]);
 });
 
-test_people("get_full_name", () => {
+run_test("get_full_name", () => {
+    initialize();
     people.add_active_user(isaac);
     const names = people.get_full_name(isaac.user_id);
     assert.equal(names, "Isaac Newton");
 });
 
-test_people("get_full_names_for_poll_option", () => {
+run_test("get_full_names_for_poll_option", () => {
+    initialize();
     people.add_active_user(isaac);
     const names = people.get_full_names_for_poll_option([me.user_id, isaac.user_id]);
     assert.equal(names, "Me Myself, Isaac Newton");
 });
 
-test_people("get_display_full_names", ({override}) => {
+run_test("get_display_full_names", ({override}) => {
+    initialize();
     people.initialize_current_user(me.user_id);
     people.add_active_user(steven);
     people.add_active_user(bob);
@@ -609,14 +618,16 @@ test_people("get_display_full_names", ({override}) => {
     assert.deepEqual(names, ["Me Myself", "Steven", "translated: Unknown user"]);
 });
 
-test_people("my_custom_profile_data", () => {
+run_test("my_custom_profile_data", () => {
+    initialize();
     const person = people.get_by_email(me.email);
     person.profile_data = {3: "My address", 4: "My phone number"};
     assert.equal(people.my_custom_profile_data(3), "My address");
     assert.equal(people.my_custom_profile_data(4), "My phone number");
 });
 
-test_people("get_custom_fields_by_type", ({override}) => {
+run_test("get_custom_fields_by_type", ({override}) => {
+    initialize();
     people.add_active_user(stewie);
     const person = people.get_by_user_id(stewie.user_id);
     override(realm, "custom_profile_field_types", {
@@ -655,15 +666,17 @@ test_people("get_custom_fields_by_type", ({override}) => {
     assert.deepEqual(people.get_custom_fields_by_type(person.user_id, 100), []);
 });
 
-test_people("bot_custom_profile_data", () => {
+run_test("bot_custom_profile_data", () => {
+    initialize();
     // If this test fails, then try opening organization settings > bots
-    // http://localhost:9991/#organization/bot-list-admin
+    // http://localhost:9991/#organization/bots/all-bots
     // and then try to edit any of the bots.
     people.add_active_user(bot_botson);
     assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), undefined);
 });
 
-test_people("user_timezone", ({override}) => {
+run_test("user_timezone", ({override}) => {
+    initialize();
     MockDate.set(parseISO("20130208T080910").getTime());
 
     override(user_settings, "twenty_four_hour_time", true);
@@ -673,7 +686,8 @@ test_people("user_timezone", ({override}) => {
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
 });
 
-test_people("utcToZonedTime", ({override}) => {
+run_test("utcToZonedTime", ({override}) => {
+    initialize();
     MockDate.set(parseISO("20130208T080910").getTime());
     override(user_settings, "twenty_four_hour_time", true);
 
@@ -688,7 +702,8 @@ test_people("utcToZonedTime", ({override}) => {
     people.get_user_time(me.user_id);
 });
 
-test_people("user_type", () => {
+run_test("user_type", () => {
+    initialize();
     people.init();
 
     people.add_active_user(me);
@@ -705,7 +720,8 @@ test_people("user_type", () => {
     assert.equal(people.get_user_type(bot_botson.user_id), $t({defaultMessage: "Moderator"}));
 });
 
-test_people("updates", () => {
+run_test("updates", () => {
+    initialize();
     const person = people.get_by_email("me@example.com");
     people.set_full_name(person, "Me the Third");
     assert.equal(people.my_full_name(), "Me the Third");
@@ -713,7 +729,8 @@ test_people("updates", () => {
     assert.equal(people.get_user_id_from_name("Me the Third"), me.user_id);
 });
 
-test_people("get_by_user_id", () => {
+run_test("get_by_user_id", () => {
+    initialize();
     let person = {
         email: "mary@example.com",
         user_id: 42,
@@ -737,7 +754,8 @@ test_people("get_by_user_id", () => {
     assert.equal(person.user_id, 42);
 });
 
-test_people("set_custom_profile_field_data", () => {
+run_test("set_custom_profile_field_data", () => {
+    initialize();
     const person = people.get_by_email(me.email);
     person.profile_data = {};
     const field = {
@@ -753,7 +771,8 @@ test_people("set_custom_profile_field_data", () => {
     assert.ok(!(field.id in person.profile_data));
 });
 
-test_people("is_current_user_only_owner", ({override}) => {
+run_test("is_current_user_only_owner", ({override}) => {
+    initialize();
     const person = people.get_by_email(me.email);
     person.is_owner = false;
     override(current_user, "is_owner", false);
@@ -767,7 +786,40 @@ test_people("is_current_user_only_owner", ({override}) => {
     assert.ok(!people.is_current_user_only_owner());
 });
 
-test_people("recipient_counts", () => {
+run_test("user_can_change_their_own_role", ({override}) => {
+    initialize();
+    const bob = {
+        email: "bob@example.com",
+        user_id: 1,
+        full_name: "Bob",
+        is_owner: false,
+        is_admin: false,
+    };
+    people.add_active_user(bob);
+
+    const person = people.get_by_email(bob.email);
+    assert.ok(person);
+
+    person.is_owner = false;
+    override(current_user, "is_owner", true);
+    assert.ok(!people.user_can_change_their_own_role());
+
+    override(current_user, "is_owner", false);
+    override(current_user, "is_admin", true);
+    assert.ok(people.user_can_change_their_own_role());
+
+    override(current_user, "is_owner", false);
+    override(current_user, "is_admin", false);
+    assert.ok(!people.user_can_change_their_own_role());
+
+    person.is_owner = true;
+    override(current_user, "is_owner", true);
+    override(current_user, "is_admin", true);
+    assert.ok(people.user_can_change_their_own_role());
+});
+
+run_test("recipient_counts", () => {
+    initialize();
     const user_id = 99;
     assert.equal(people.get_recipient_count({user_id}), 0);
     people.incr_recipient_count(user_id);
@@ -777,7 +829,8 @@ test_people("recipient_counts", () => {
     assert.equal(people.get_recipient_count({pm_recipient_count: 5}), 5);
 });
 
-test_people("filtered_users", () => {
+run_test("filtered_users", () => {
+    initialize();
     people.add_active_user(charles);
     people.add_active_user(maria);
     people.add_active_user(ashton);
@@ -818,7 +871,8 @@ test_people("filtered_users", () => {
     assert.ok(filtered_people.has(noah.user_id));
 });
 
-test_people("dm_matches_search_string", () => {
+run_test("dm_matches_search_string", () => {
+    initialize();
     people.add_active_user(charles);
     people.add_active_user(maria);
     people.add_active_user(ashton);
@@ -845,6 +899,10 @@ test_people("dm_matches_search_string", () => {
     result = people.dm_matches_search_string([linus], "ltorv");
     assert.ok(result);
 
+    // Match with user id.
+    result = people.dm_matches_search_string([linus], "304");
+    assert.ok(result);
+
     // Test filtering of names with diacritics. This should match
     // Nöôáàh by ignoring diacritics, and also match Nooaah.
     result = people.dm_matches_search_string([noah], "noOa");
@@ -859,7 +917,8 @@ test_people("dm_matches_search_string", () => {
     assert.ok(!result);
 });
 
-test_people("filter_other_guest_ids", ({override}) => {
+run_test("filter_other_guest_ids", ({override}) => {
+    initialize();
     people.add_active_user(emp401);
     people.add_active_user(emp402);
     people.add_active_user(guest);
@@ -884,7 +943,8 @@ test_people("filter_other_guest_ids", ({override}) => {
     assert.equal(guest_ids.length, 0);
 });
 
-test_people("user_ids_to_full_names_array", () => {
+run_test("user_ids_to_full_names_array", () => {
+    initialize();
     people.add_active_user(emp401);
     people.add_active_user(emp402);
 
@@ -898,9 +958,12 @@ test_people("user_ids_to_full_names_array", () => {
     assert.equal(names[1], emp402.full_name);
 });
 
-test_people("multi_user_methods", () => {
-    people.add_active_user(emp401);
-    people.add_active_user(emp402);
+run_test("multi_user_methods", () => {
+    initialize();
+    // Add users to valid_user_ids.
+    const source = "server_events";
+    people.add_active_user(emp401, source);
+    people.add_active_user(emp402, source);
 
     // The order of user_ids is relevant here.
     assert.equal(emp401.user_id, 401);
@@ -909,11 +972,11 @@ test_people("multi_user_methods", () => {
     let emails_string = people.user_ids_string_to_emails_string("402,401");
     assert.equal(emails_string, "emp401@example.com,emp402@example.com");
 
-    emails_string = people.slug_to_emails("402,401");
-    assert.equal(emails_string, "emp401@example.com,emp402@example.com");
+    let user_ids = people.slug_to_user_ids("402,401");
+    assert.deepEqual(user_ids, [402, 401]);
 
-    emails_string = people.slug_to_emails("402,401-group");
-    assert.equal(emails_string, "emp401@example.com,emp402@example.com");
+    user_ids = people.slug_to_user_ids("402,401-group");
+    assert.deepEqual(user_ids, [402, 401]);
 
     emails_string = "emp402@example.com,EMP401@EXAMPLE.COM";
     let user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
@@ -922,16 +985,17 @@ test_people("multi_user_methods", () => {
     user_ids_string = people.reply_to_to_user_ids_string(emails_string);
     assert.equal(user_ids_string, "401,402");
 
-    const slug = people.emails_to_slug(emails_string);
-    assert.equal(slug, "401,402-group");
-
     assert.equal(people.reply_to_to_user_ids_string("invalid@example.com"), undefined);
 
     assert.equal(people.user_ids_string_to_slug("401,402"), "401,402-group");
     assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
+    assert.equal(people.user_ids_to_slug([401, 402]), "401,402-group");
+    assert.equal(people.user_ids_to_slug([402]), "402-whatever-402");
+    assert.equal(people.user_ids_to_slug([]), undefined);
 });
 
-test_people("user_ids_to_full_names_string", () => {
+run_test("user_ids_to_full_names_string", () => {
+    initialize();
     people.add_active_user(charles);
     people.add_active_user(maria);
     assert.equal(
@@ -946,7 +1010,8 @@ test_people("user_ids_to_full_names_string", () => {
     );
 });
 
-test_people("concat_direct_message_group", () => {
+run_test("concat_direct_message_group", () => {
+    initialize();
     /*
         We assume that user_ids passed in
         to concat_direct_message_group have
@@ -966,13 +1031,15 @@ test_people("concat_direct_message_group", () => {
     assert.equal(people.concat_direct_message_group(user_ids, 99), "99,301,302,303");
 });
 
-test_people("message_methods", () => {
+run_test("message_methods", () => {
+    initialize();
     people.add_active_user(charles);
     people.add_active_user(maria);
     people.add_active_user(cedar);
     people.add_active_user(leo);
     people.add_active_user(ashton);
 
+    assert.equal(people.get_muted_user_avatar_url(), "/static/images/muted-user/muted-sender.png");
     // We don't rely on Maria to have all flags set explicitly--
     // undefined values are just treated as falsy.
     assert.equal(maria.is_guest, undefined);
@@ -1131,7 +1198,8 @@ test_people("message_methods", () => {
     assert.equal(people.sender_is_deactivated(message), false);
 });
 
-test_people("extract_people_from_message", () => {
+run_test("extract_people_from_message", () => {
+    initialize();
     const message = {
         type: "stream",
         sender_full_name: maria.full_name,
@@ -1146,7 +1214,8 @@ test_people("extract_people_from_message", () => {
     blueslip.reset();
 });
 
-test_people("maybe_incr_recipient_count", () => {
+run_test("maybe_incr_recipient_count", () => {
+    initialize();
     const maria_recip = {
         id: maria.user_id,
     };
@@ -1178,20 +1247,8 @@ test_people("maybe_incr_recipient_count", () => {
     assert.equal(people.get_recipient_count(maria), 1);
 });
 
-test_people("slugs", () => {
-    people.add_active_user(debbie);
-
-    const slug = people.emails_to_slug(debbie.email);
-    assert.equal(slug, "501-Debra-Henton");
-
-    const email = people.slug_to_emails(slug);
-    assert.equal(email, "debbie71@example.com");
-
-    // Test undefined slug
-    assert.equal(people.emails_to_slug("does@not.exist"), undefined);
-});
-
-test_people("get_people_for_search_bar", ({override}) => {
+run_test("get_people_for_search_bar", ({override}) => {
+    initialize();
     let user_ids;
 
     override(message_user_ids, "user_ids", () => user_ids);
@@ -1219,7 +1276,8 @@ test_people("get_people_for_search_bar", ({override}) => {
     assert.equal(small_results.length, 6);
 });
 
-test_people("updates", () => {
+run_test("updates", () => {
+    initialize();
     const old_email = "FOO@example.com";
     const new_email = "bar@example.com";
     const user_id = 502;
@@ -1260,7 +1318,8 @@ test_people("updates", () => {
     assert.equal(person.user_id, user_id);
 });
 
-test_people("update_email_in_reply_to", () => {
+run_test("update_email_in_reply_to", () => {
+    initialize();
     people.add_active_user(charles);
     people.add_active_user(maria);
 
@@ -1275,7 +1334,8 @@ test_people("update_email_in_reply_to", () => {
     assert.equal(people.update_email_in_reply_to(reply_to, 9999, "whatever"), reply_to);
 });
 
-test_people("track_duplicate_full_names", () => {
+run_test("track_duplicate_full_names", () => {
+    initialize();
     people.add_active_user(maria);
     people.add_active_user(stephen1);
 
@@ -1302,7 +1362,8 @@ test_people("track_duplicate_full_names", () => {
     assert.ok(!people.is_duplicate_full_name("Stephen King JP"));
 });
 
-test_people("get_mention_syntax", () => {
+run_test("get_mention_syntax", () => {
+    initialize();
     // blueslip warning is not raised for wildcard mentions without a user_id
     assert.equal(people.get_mention_syntax("all"), "@**all**");
     assert.equal(people.get_mention_syntax("everyone", undefined, true), "@_**everyone**");
@@ -1336,7 +1397,8 @@ test_people("get_mention_syntax", () => {
     assert.equal(people.get_mention_syntax("all", 1203, true), "@_**all|1203**");
 });
 
-test_people("initialize", () => {
+run_test("initialize", () => {
+    initialize();
     people.init();
 
     const params = {};
@@ -1376,7 +1438,7 @@ test_people("initialize", () => {
 
     people.initialize(current_user.user_id, params, user_group_params);
 
-    assert.equal(people.is_active_user_for_popover(17), true);
+    assert.equal(people.is_active_user_or_system_bot(17), true);
     assert.ok(people.is_cross_realm_email("bot@example.com"));
     assert.ok(people.is_valid_email_for_compose("bot@example.com"));
     assert.ok(people.is_valid_user_id_for_compose(test_bot.user_id));
@@ -1389,6 +1451,11 @@ test_people("initialize", () => {
     assert.ok(!people.is_valid_user_id_for_compose(9999));
     assert.ok(people.is_valid_bulk_emails_for_compose(["bot@example.com", "alice@example.com"]));
     assert.ok(!people.is_valid_bulk_emails_for_compose(["not@valid.com", "alice@example.com"]));
+    assert.ok(people.is_valid_bulk_user_ids_for_compose([17, 16, 15]));
+    blueslip.reset();
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
+    assert.ok(!people.is_valid_bulk_user_ids_for_compose([17, 9999, 15], false));
+    blueslip.reset();
     assert.ok(people.is_my_user_id(42));
 
     const fetched_retiree = people.get_by_user_id(15);
@@ -1399,7 +1466,8 @@ test_people("initialize", () => {
     assert.equal(page_params.realm_non_active_users, undefined);
 });
 
-test_people("predicate_for_user_settings_filters", ({override}) => {
+run_test("predicate_for_user_settings_filters", ({override}) => {
+    initialize();
     /*
         This function calls matches_user_settings_search,
         so that is where we do more thorough testing.
@@ -1444,7 +1512,8 @@ test_people("predicate_for_user_settings_filters", ({override}) => {
     );
 });
 
-test_people("matches_user_settings_search", ({override}) => {
+run_test("matches_user_settings_search", ({override}) => {
+    initialize();
     const match = people.matches_user_settings_search;
 
     override(current_user, "is_admin", false);
@@ -1486,13 +1555,15 @@ test_people("matches_user_settings_search", ({override}) => {
     assert.equal(match({full_name: "Joe Frederick"}, "re"), true);
 });
 
-test_people("is_valid_full_name_and_user_id", () => {
+run_test("is_valid_full_name_and_user_id", () => {
+    initialize();
     assert.ok(!people.is_valid_full_name_and_user_id("bogus", 99));
     assert.ok(!people.is_valid_full_name_and_user_id(me.full_name, 99));
     assert.ok(people.is_valid_full_name_and_user_id(me.full_name, me.user_id));
 });
 
-test_people("emails_strings_to_user_ids_array", () => {
+run_test("emails_strings_to_user_ids_array", () => {
+    initialize();
     people.add_active_user(steven);
     people.add_active_user(maria);
 
@@ -1504,7 +1575,8 @@ test_people("emails_strings_to_user_ids_array", () => {
     assert.equal(user_ids, undefined);
 });
 
-test_people("get_visible_email", () => {
+run_test("get_visible_email", () => {
+    initialize();
     people.add_active_user(steven);
     people.add_active_user(maria);
 
@@ -1515,7 +1587,8 @@ test_people("get_visible_email", () => {
     assert.equal(email, maria.email);
 });
 
-test_people("get_active_message_people", () => {
+run_test("get_active_message_people", () => {
+    initialize();
     message_user_ids.user_ids = () => [steven.user_id, maria.user_id, alice1.user_id];
 
     people.add_active_user(steven);
@@ -1530,7 +1603,8 @@ test_people("get_active_message_people", () => {
     assert.deepEqual(active_message_people, [steven, maria]);
 });
 
-test_people("direct_message_group_string", () => {
+run_test("direct_message_group_string", () => {
+    initialize();
     assert.equal(people.direct_message_group_string({type: "stream"}), undefined);
 
     function direct_message_group(user_ids) {
@@ -1548,7 +1622,8 @@ test_people("direct_message_group_string", () => {
     assert.equal(direct_message_group([me.user_id, maria.user_id, bob.user_id]), "203,302");
 });
 
-test_people("get_realm_active_human_users", () => {
+run_test("get_realm_active_human_users", () => {
+    initialize();
     let humans = people.get_realm_active_human_users();
     assert.equal(humans.length, 1);
     assert.deepEqual(humans, [me]);
@@ -1565,7 +1640,8 @@ test_people("get_realm_active_human_users", () => {
     assert.deepEqual(humans, [me]);
 });
 
-test_people("should_show_guest_user_indicator", ({override}) => {
+run_test("should_show_guest_user_indicator", ({override}) => {
+    initialize();
     people.add_active_user(charles);
     people.add_active_user(guest);
 
@@ -1578,7 +1654,8 @@ test_people("should_show_guest_user_indicator", ({override}) => {
     assert.equal(people.should_add_guest_user_indicator(guest.user_id), true);
 });
 
-test_people("get_user_by_id_assert_valid", ({override}) => {
+run_test("get_user_by_id_assert_valid", ({override}) => {
+    initialize();
     people.add_active_user(charles);
     const inaccessible_user_id = 99;
     override(realm, "realm_bot_domain", "zulipdev.com");
@@ -1613,7 +1690,8 @@ test_people("get_user_by_id_assert_valid", ({override}) => {
     assert.equal(user.email, charles.email);
 });
 
-test_people("user_can_initiate_direct_message_thread", ({override}) => {
+run_test("user_can_initiate_direct_message_thread", ({override}) => {
+    initialize();
     people.add_active_user(welcome_bot);
     override(realm, "realm_direct_message_initiator_group", nobody.id);
     assert.ok(!people.user_can_initiate_direct_message_thread("32"));
@@ -1624,7 +1702,8 @@ test_people("user_can_initiate_direct_message_thread", ({override}) => {
     assert.ok(people.user_can_initiate_direct_message_thread("32"));
 });
 
-test_people("sort_by_username", () => {
+run_test("sort_by_username", () => {
+    initialize();
     people.add_active_user(maria);
     people.add_active_user(cedar);
     people.add_active_user(leo);
@@ -1641,12 +1720,96 @@ test_people("sort_by_username", () => {
     ]);
 });
 
+run_test("get_users_that_match_role_ids", () => {
+    people.add_active_user(realm_admin);
+    people.add_active_user(realm_owner);
+    people.add_active_user(moderator);
+    people.add_active_user(guest);
+
+    const user_ids = new Set([
+        realm_admin.user_id,
+        realm_owner.user_id,
+        moderator.user_id,
+        guest.user_id,
+    ]);
+    let users = people.get_users_that_match_role_ids(
+        user_ids,
+        new Set([settings_config.user_role_values.admin.code]),
+    );
+    assert.deepEqual(new Set(users), new Set([realm_admin]));
+
+    users = people.get_users_that_match_role_ids(
+        user_ids,
+        new Set([settings_config.user_role_values.moderator.code]),
+    );
+    assert.deepEqual(new Set(users), new Set([moderator]));
+
+    users = people.get_users_that_match_role_ids(
+        user_ids,
+        new Set([
+            settings_config.user_role_values.admin.code,
+            settings_config.user_role_values.owner.code,
+        ]),
+    );
+    assert.deepEqual(new Set(users), new Set([realm_owner, realm_admin]));
+});
+
 // reset to native Date()
 run_test("reset MockDate", () => {
     MockDate.reset();
 });
 
-test_people("fetch_users", async ({override}) => {
+run_test("fetch_users retry", async ({override, override_rewire}) => {
+    initialize();
+    people.add_valid_user_id(1);
+    let retry_count = 1;
+    override(channel, "get", ({url, data, success, error}) => {
+        assert.equal(url, "/json/users");
+        assert.ok(data.user_ids.includes("1"));
+
+        // Simulate failure of the first two attempts.
+        if (retry_count < 3) {
+            retry_count += 1;
+            error({responseJSON: {msg: "test error"}});
+            return;
+        }
+
+        success({
+            members: [
+                {
+                    email: "user1@example.com",
+                    user_id: 1,
+                    full_name: "First user",
+                    delivery_email: "",
+                    date_joined: "",
+                    is_active: true,
+                    is_owner: false,
+                    is_admin: false,
+                    is_guest: false,
+                    role: 1,
+                    avatar_url: "",
+                    avatar_version: 1,
+                    is_bot: false,
+                },
+            ],
+            result: "success",
+            msg: "",
+        });
+    });
+
+    // Math.round will be `0`.
+    override_rewire(util, "get_retry_backoff_seconds", () => retry_count / 1000);
+    // Check that we retry the request after a failed attempt.
+    blueslip.expect(
+        "warn",
+        "Fetch for users failed, retrying after 0 seconds. Error: test error",
+        2,
+    );
+    await people.fetch_users_from_ids_internal([1]);
+});
+
+run_test("fetch_users", async ({override}) => {
+    initialize();
     people.init();
 
     // Valid users missing from params data sent by server.
@@ -1683,22 +1846,23 @@ test_people("fetch_users", async ({override}) => {
         },
     ];
 
-    const params = {};
-    params.realm_users = [
-        {
-            email: "my_email@example.com",
-            user_id: 42,
-            full_name: "Me Myself",
-        },
-    ];
-    params.realm_non_active_users = [];
-    params.cross_realm_bots = [
-        {
-            email: "bot@example.com",
-            user_id: 17,
-            full_name: "Test Bot",
-        },
-    ];
+    const params = {
+        realm_users: [
+            {
+                email: "my_email@example.com",
+                user_id: 42,
+                full_name: "Me Myself",
+            },
+        ],
+        realm_non_active_users: [],
+        cross_realm_bots: [
+            {
+                email: "bot@example.com",
+                user_id: 17,
+                full_name: "Test Bot",
+            },
+        ],
+    };
     const user_group_params = {
         realm_user_groups: [
             make_user_group({
@@ -1709,12 +1873,19 @@ test_people("fetch_users", async ({override}) => {
     };
     const my_user_id = 42;
 
+    let user_GET_request_calls = 0;
+    let promise_for_user_already_in_transit;
     override(channel, "get", ({url, data, success, _error}) => {
+        user_GET_request_calls += 1;
         assert.equal(url, "/json/users");
         assert.ok(data.user_ids.includes("15"));
         assert.ok(data.user_ids.includes("16"));
         assert.ok(!data.user_ids.includes("42"));
         assert.ok(!data.user_ids.includes("17"));
+
+        // While this get request is in-flight, request for the
+        // a subset of the users again and check if it resolved.
+        promise_for_user_already_in_transit = people.get_or_fetch_users_from_ids([15]);
         success({
             members: users_in_response,
             result: "success",
@@ -1722,7 +1893,16 @@ test_people("fetch_users", async ({override}) => {
         });
     });
 
+    additional_calls_before_set_timeout = () => {
+        // This fetch request doesn't result in any new GET request,
+        // since the request for this user is added to pending users
+        // for fetch and returns a promise.
+        const promise = people.fetch_users_from_ids_internal([15]);
+        assert.ok(promise instanceof Promise);
+    };
     await people.initialize(my_user_id, params, user_group_params);
+    await promise_for_user_already_in_transit;
+    assert.equal(user_GET_request_calls, 1);
 
     const retiree = people.get_by_user_id(15);
     const alice = people.get_by_user_id(16);
@@ -1732,6 +1912,8 @@ test_people("fetch_users", async ({override}) => {
     assert.ok(people.is_valid_user_id(16));
     assert.ok(people.is_valid_user_id(42));
     assert.ok(people.is_valid_user_id(17));
+    assert.ok(people.is_valid_user_ids([15, 16, 42, 17]));
+    assert.ok(!people.is_valid_user_ids([15, 16, 42, 9999]));
     assert.equal(people.get_by_email("alice@example.com").user_id, 16);
     assert.equal(people.get_by_email("retiree@example.com").user_id, 15);
 
@@ -1741,8 +1923,6 @@ test_people("fetch_users", async ({override}) => {
         error({responseJSON: {msg: "test error"}});
     });
 
-    // fetch_users should reject with an Error object
-    blueslip.expect("error", "test error");
     await assert.rejects(
         async () => {
             await people.fetch_users(new Set([15, 16]));
@@ -1757,4 +1937,177 @@ test_people("fetch_users", async ({override}) => {
 
     blueslip.expect("error", "Ignored invalid user_ids: 1, 2");
     await people.fetch_users(new Set([1, 2]));
+});
+
+run_test("fetch_users corner case", async ({override, override_rewire}) => {
+    // We test here for the following sequence of fetches:
+    // 1st request for [1, 2].
+    // 2nd request for [1, 2, 3] while the first one is in-flight.
+    // 3rd request for [3] while the first one is in-flight.
+    //
+    // We should end up with two GET requests:
+    // - The first for [1, 2].
+    // - The second for [3].
+    //
+    // If the request for [3] finished first, we should resolve the 3rd
+    // request without waiting for the 1st request to finish.
+    initialize();
+    people.add_valid_user_id(1);
+    people.add_valid_user_id(2);
+    people.add_valid_user_id(3);
+
+    const first_request_response = [
+        {
+            email: "retiree@example.com",
+            user_id: 1,
+            full_name: "Retiree",
+            delivery_email: "",
+            date_joined: "",
+            is_active: true,
+            is_owner: false,
+            is_admin: false,
+            is_guest: false,
+            role: 1,
+            avatar_url: "",
+            avatar_version: 1,
+            is_bot: false,
+        },
+        {
+            email: "alice@example.com",
+            user_id: 2,
+            full_name: "Alice",
+            delivery_email: "",
+            date_joined: "",
+            is_active: false,
+            is_owner: false,
+            is_admin: false,
+            is_guest: false,
+            role: 1,
+            avatar_url: "",
+            avatar_version: 1,
+            is_bot: false,
+        },
+    ];
+    const second_request_response = [
+        {
+            email: "third@example.com",
+            user_id: 3,
+            full_name: "Third user",
+            delivery_email: "",
+            date_joined: "",
+            is_active: true,
+            is_owner: false,
+            is_admin: false,
+            is_guest: false,
+            role: 1,
+            avatar_url: "",
+            avatar_version: 1,
+            is_bot: false,
+        },
+    ];
+
+    let sent_success_response_for_third_user = false;
+
+    override(channel, "get", ({url, data, success, error}) => {
+        assert.equal(url, "/json/users");
+
+        // There shouldn't be a fetch for [1, 2, 3].
+        assert.ok(data.user_ids !== "[1,2,3]");
+
+        if (data.user_ids === "[3]") {
+            sent_success_response_for_third_user = true;
+            success({
+                members: second_request_response,
+                result: "success",
+                msg: "",
+            });
+            return;
+        } else if (data.user_ids === "[1,2]") {
+            if (!sent_success_response_for_third_user) {
+                error({responseJSON: {msg: "Network error"}});
+                return;
+            }
+            success({
+                members: first_request_response,
+                result: "success",
+                msg: "",
+            });
+            return;
+        }
+    });
+
+    override_rewire(util, "get_retry_backoff_seconds", () => 0);
+    // Check that we retry the request after a failed attempt.
+    blueslip.expect(
+        "warn",
+        "Fetch for users failed, retrying after 0 seconds. Error: Network error",
+    );
+    // We need to check that third promise resolves before the first promise.
+    let third_promise_resolved = false;
+    let first_promise_resolved = false;
+
+    await Promise.all([
+        (async () => {
+            await people.get_or_fetch_users_from_ids([1, 2]);
+            first_promise_resolved = true;
+            assert.ok(third_promise_resolved);
+        })(),
+        (async () => {
+            await people.get_or_fetch_users_from_ids([1, 2, 3]);
+            assert.ok(first_promise_resolved);
+            assert.ok(third_promise_resolved);
+        })(),
+        (async () => {
+            await people.get_or_fetch_users_from_ids([3]);
+            third_promise_resolved = true;
+            assert.ok(!first_promise_resolved);
+        })(),
+    ]);
+
+    const user1 = people.get_by_user_id(1);
+    const user2 = people.get_by_user_id(2);
+    const user3 = people.get_by_user_id(3);
+    assert.equal(user1.full_name, "Retiree");
+    assert.equal(user2.full_name, "Alice");
+    assert.equal(user3.full_name, "Third user");
+});
+
+run_test("fetch inaccessible user", async ({override, override_rewire}) => {
+    initialize();
+    override_rewire(people, "fetch_users_from_ids_internal", noop);
+    people.add_valid_user_id(1);
+
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    const [inaccessible_user] = await people.get_or_fetch_users_from_ids([1]);
+    assert.equal(inaccessible_user.user_id, 1);
+    assert.equal(inaccessible_user.is_inaccessible_user, true);
+});
+
+run_test("get_by_user_id", () => {
+    initialize();
+    people.add_active_user(maria);
+
+    const user = people.get_by_user_id(maria.user_id);
+    assert.equal(user.full_name, maria.full_name);
+    assert.throws(
+        () => {
+            people.get_by_user_id(9999);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 9999",
+        },
+    );
+
+    blueslip.expect("error", "User ID: 8888 is valid but not found in people_by_user_id_dict");
+    people.add_valid_user_id(8888);
+    assert.throws(
+        () => {
+            people.get_by_user_id(8888);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 8888",
+        },
+    );
 });

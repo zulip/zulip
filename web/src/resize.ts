@@ -7,10 +7,30 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import * as message_viewport from "./message_viewport.ts";
-import {user_settings} from "./user_settings.ts";
 
 function get_bottom_whitespace_height(): number {
     return message_viewport.height() * 0.4;
+}
+
+export function get_stream_filters_max_height(): number {
+    const viewport_height = message_viewport.height();
+    // Add some gap for bottom element to be properly visible.
+    const GAP = 15;
+
+    const $left_sidebar_search = $("#left-sidebar-search");
+    const is_search_visible = $left_sidebar_search.css("display") !== "none";
+
+    let stream_filters_max_height =
+        viewport_height -
+        Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
+        (is_search_visible ? ($left_sidebar_search.outerHeight(true) ?? 0) : 0) -
+        ($("#left-sidebar-navigation-area").not(".hidden-by-filters").outerHeight(true) ?? 0) -
+        ($("#direct-messages-section-header").not(".hidden-by-filters").outerHeight(true) ?? 0) -
+        GAP;
+
+    // Don't let us crush the stream sidebar completely out of view
+    stream_filters_max_height = Math.max(80, stream_filters_max_height);
+    return stream_filters_max_height;
 }
 
 function get_new_heights(): {
@@ -18,21 +38,6 @@ function get_new_heights(): {
     buddy_list_wrapper_max_height: number;
 } {
     const viewport_height = message_viewport.height();
-    // Add some gap for bottom element to be properly visible.
-    const GAP = 15;
-
-    let stream_filters_max_height =
-        viewport_height -
-        Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
-        ($("#left-sidebar-navigation-area").not(".hidden-by-filters").outerHeight(true) ?? 0) -
-        ($("#direct-messages-section-header").not(".hidden-by-filters").outerHeight(true) ?? 0) -
-        GAP;
-
-    // Don't let us crush the stream sidebar completely out of view
-    stream_filters_max_height = Math.max(80, stream_filters_max_height);
-
-    // RIGHT SIDEBAR
-
     const usable_height =
         viewport_height -
         Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
@@ -41,7 +46,7 @@ function get_new_heights(): {
     const buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
     return {
-        stream_filters_max_height,
+        stream_filters_max_height: get_stream_filters_max_height(),
         buddy_list_wrapper_max_height,
     };
 }
@@ -57,7 +62,10 @@ export function watch_manual_resize(element: string): (() => void)[] | undefined
     return watch_manual_resize_for_element(box);
 }
 
-export function watch_manual_resize_for_element(box: Element): (() => void)[] {
+export function watch_manual_resize_for_element(
+    box: Element,
+    resize_callback?: (height: number) => void,
+): (() => void)[] {
     let height: number;
     let mousedown = false;
 
@@ -76,6 +84,9 @@ export function watch_manual_resize_for_element(box: Element): (() => void)[] {
             if (height !== box.clientHeight) {
                 height = box.clientHeight;
                 autosize.destroy($(box)).height(height + "px");
+                if (resize_callback) {
+                    resize_callback(height);
+                }
             }
         }
     };
@@ -86,10 +97,6 @@ export function watch_manual_resize_for_element(box: Element): (() => void)[] {
 
 function height_of($element: JQuery): number {
     return $element.get(0)!.getBoundingClientRect().height;
-}
-
-function width_of($element: JQuery): number {
-    return $element.get(0)!.getBoundingClientRect().width;
 }
 
 export function reset_compose_message_max_height(bottom_whitespace_height?: number): void {
@@ -178,9 +185,8 @@ export function resize_stream_subscribers_list(): void {
 }
 
 export function resize_stream_filters_container(): void {
-    const h = get_new_heights();
     resize_bottom_whitespace();
-    $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
+    $("#left_sidebar_scroll_container").css("max-height", get_stream_filters_max_height());
 }
 
 export function resize_sidebars(): void {
@@ -201,9 +207,9 @@ export function update_recent_view(): void {
     const num_avatars_narrow_window = 2;
     const num_avatars_max = 4;
     if (recent_view_filters_width < media_breakpoints_num.md) {
-        $(":root").css("--recent-view-max-avatars", num_avatars_narrow_window);
+        $(":root").css("--recent-view-max-avatars", `${num_avatars_narrow_window}`);
     } else {
-        $(":root").css("--recent-view-max-avatars", num_avatars_max);
+        $(":root").css("--recent-view-max-avatars", `${num_avatars_max}`);
     }
 }
 
@@ -221,25 +227,20 @@ function resize_navbar_alerts(): void {
     }
 }
 
-// On narrow screens, the `right` panel is absolutely positioned, so its
-// height doesn't change the height of `left` and vice versa. Here we
-// first let subheaders on both sides attain their natural height as
+// We need to make the height of subheaders on both sides same. This is not
+// easy to achieve using only CSS because we cannot set a fixed height — the
+// right subheader contains the stream name, which can sometimes be long
+// enough to wrap the text into multiple lines. Text wrapping may also be
+// required for smaller window sizes.
+//
+// Here we first let subheaders on both sides attain their natural height as
 // per the content and then make both of them equal by setting the
 // height of subheader which is smaller to the height of subheader that
 // has larger height.
 // This feels a bit hacky and a cleaner solution would be nice to find.
-export function resize_settings_overlay_subheader_for_narrow_screens($container: JQuery): void {
-    const breakpoint_em =
-        (media_breakpoints_num.settings_overlay_sidebar_collapse_breakpoint / 14) *
-        user_settings.web_font_size_px;
-
-    const $left_subheader = $container.find(".two-pane-settings-subheader .left");
-    const $right_subheader = $container.find(".two-pane-settings-subheader .right");
-    if (width_of($container.find(".two-pane-settings-overlay")) > breakpoint_em) {
-        $left_subheader.css("height", "");
-        $right_subheader.css("height", "");
-        return;
-    }
+export function resize_settings_overlay_subheader($container: JQuery): void {
+    const $left_subheader = $container.find(".left .two-pane-settings-subheader");
+    const $right_subheader = $container.find(".right .two-pane-settings-subheader");
 
     $left_subheader.css("height", "");
     $right_subheader.css("height", "");
@@ -247,10 +248,12 @@ export function resize_settings_overlay_subheader_for_narrow_screens($container:
     const left_subheader_height = height_of($left_subheader);
     const right_subheader_height = height_of($right_subheader);
 
+    // Since height_of returns height including border width, we will
+    // subtract 1px, which is the bottom border width.
     if (left_subheader_height < right_subheader_height) {
-        $left_subheader.css("height", right_subheader_height);
+        $left_subheader.css("height", right_subheader_height - 1);
     } else {
-        $right_subheader.css("height", left_subheader_height);
+        $right_subheader.css("height", left_subheader_height - 1);
     }
 }
 
@@ -259,7 +262,7 @@ export function resize_settings_overlay($container: JQuery): void {
         return;
     }
 
-    resize_settings_overlay_subheader_for_narrow_screens($container);
+    resize_settings_overlay_subheader($container);
 
     $container
         .find(".two-pane-settings-left-simplebar-container")

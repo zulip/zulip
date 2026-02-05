@@ -1,3 +1,4 @@
+import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as group_permission_settings from "./group_permission_settings.ts";
@@ -370,35 +371,42 @@ export function get_request_data_for_stream_privacy(selected_val: string): {
     history_public_to_subscribers: boolean;
     is_web_public: boolean;
 } {
+    // When changing a channel from public to private with public history,
+    // "history_public_to_subscribers" value is same and does not change.
+    // So, it will not be included in the data returned by
+    // "populate_data_for_stream_settings_request" as it only includes
+    // the field whose new value has changed from its original value.
+    //
+    // So, we need to include "history_public_to_subscribers" here
+    // itself so that the correct value is passed to the API, otherwise
+    // private streams are set to have private history by default.
+    const history_public_to_subscribers: boolean = $("#id_history_public_to_subscribers").is(
+        ":checked",
+    );
     switch (selected_val) {
         case settings_config.stream_privacy_policy_values.public.code: {
             return {
                 is_private: false,
-                history_public_to_subscribers: true,
+                history_public_to_subscribers,
                 is_web_public: false,
             };
         }
         case settings_config.stream_privacy_policy_values.private.code: {
             return {
                 is_private: true,
-                history_public_to_subscribers: false,
+                history_public_to_subscribers,
                 is_web_public: false,
             };
         }
         case settings_config.stream_privacy_policy_values.web_public.code: {
             return {
                 is_private: false,
-                history_public_to_subscribers: true,
+                history_public_to_subscribers,
                 is_web_public: true,
             };
         }
-        default: {
-            return {
-                is_private: true,
-                history_public_to_subscribers: true,
-                is_web_public: false,
-            };
-        }
+        default:
+            throw new Error("Invalid value for channel privacy: " + selected_val);
     }
 }
 
@@ -407,4 +415,8 @@ export function guests_can_access_all_other_users(): boolean {
         realm.realm_can_access_all_users_group,
     );
     return everyone_group.name === "role:everyone";
+}
+
+export function can_user_manage_folder(): boolean {
+    return current_user.is_admin;
 }

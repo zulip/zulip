@@ -83,6 +83,10 @@ def do_change_bot_owner(
         modified_user=user_profile,
         event_type=AuditLogEventType.USER_BOT_OWNER_CHANGED,
         event_time=event_time,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: None if previous_owner is None else previous_owner.id,
+            RealmAuditLog.NEW_VALUE: bot_owner.id,
+        },
     )
 
     send_bot_owner_update_events(user_profile, bot_owner, previous_owner)

@@ -1,10 +1,12 @@
 class kandra::app_frontend {
+  include zulip::snakeoil
   include zulip::app_frontend_base
   include zulip::profile::memcached
   include zulip::profile::rabbitmq
   include zulip::local_mailserver
   include zulip::hooks::sentry
   include kandra::app_frontend_monitoring
+  include kandra::app_frontend_tmpfs
 
   kandra::firewall_allow{ 'smtp': }
   kandra::firewall_allow{ 'http': }

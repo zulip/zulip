@@ -108,6 +108,14 @@
             }
         }
     }
+
+    #report-message-preview-container & {
+        /* We don't need these effects applied for message preview in the report
+        message modal. */
+        box-shadow: none;
+        border: 0;
+        background: transparent;
+    }
 }
 
 .message_header_private_message {
@@ -173,7 +181,7 @@
         border-radius: 5px;
 
         .message_row:last-of-type {
-            border-radius: 0 0 7px 7px;
+            border-radius: var(--last-message-row-border-radius);
             border-bottom: 1px solid var(--color-message-list-border);
 
             .unread-marker-fill {
@@ -317,5 +325,15 @@
     &:hover {
         opacity: 0.4 !important;
         cursor: pointer;
+    }
+}
+
+.spectator-view .recipient_bar_controls .recipient-bar-control {
+    &.recipient-bar-copy-link-to-topic {
+        display: flex;
+    }
+
+    &.recipient-row-topic-menu {
+        display: none;
     }
 }

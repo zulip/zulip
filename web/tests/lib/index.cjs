@@ -3,13 +3,13 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
 
+require("@date-fns/tz"); // To prevent mockdate from interfering with it
 require("css.escape");
 require("handlebars/runtime.js");
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
 const handlebars = require("./handlebars.cjs");
-const stub_i18n = require("./i18n.cjs");
 const namespace = require("./namespace.cjs");
 const test = require("./test.cjs");
 const blueslip = require("./zblueslip.cjs");
@@ -34,10 +34,7 @@ Object.defineProperty(global, "navigator", {
 
 require("@babel/register")({
     extensions: [".cjs", ".cts", ".js", ".mjs", ".mts", ".ts"],
-    only: [
-        new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../shared/src") + path.sep)),
-        new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../src") + path.sep)),
-    ],
+    only: [new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../src") + path.sep))],
     plugins: [
         ...(process.env.USING_INSTRUMENTED_CODE ? [["istanbul", {exclude: []}]] : []),
         ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
@@ -123,8 +120,6 @@ process.exitCode = 1;
 
         namespace.mock_esm("../../src/blueslip", blueslip);
         require("../../src/blueslip.ts");
-        namespace.mock_esm("../../src/i18n", stub_i18n);
-        require("../../src/i18n.ts");
         namespace.mock_esm("../../src/base_page_params", zpage_params);
         require("../../src/base_page_params.ts");
         namespace.mock_esm("../../src/billing/page_params", zpage_billing_params);

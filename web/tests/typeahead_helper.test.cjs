@@ -148,7 +148,7 @@ const bob_system_group = make_user_group({
     id: 1,
     name: "Bob system group",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
 });
 const bob_system_group_item = user_group_item(bob_system_group);
@@ -157,7 +157,7 @@ const bob_group = make_user_group({
     id: 2,
     name: "Bob group",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: false,
 });
 const bob_group_item = user_group_item(bob_group);
@@ -174,7 +174,7 @@ const admins_group = make_user_group({
     id: 4,
     name: "Admins of zulip",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: false,
 });
 const admins_group_item = user_group_item(admins_group);
@@ -183,7 +183,7 @@ const members_group = make_user_group({
     id: 5,
     name: "role:members",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
 });
 const members_group_item = user_group_item(members_group);
@@ -192,7 +192,7 @@ const everyone_group = make_user_group({
     id: 6,
     name: "role:everyone",
     description: "",
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
 });
 
@@ -1663,4 +1663,147 @@ test("compare_stream_or_group_members_options", () => {
         th.compare_stream_or_group_members_options(b_user_1_item, b_user_1_item, undefined, false),
         0,
     );
+});
+
+test("render_person shows value of custom profile fields in secondary", ({
+    mock_template,
+    override,
+}) => {
+    a_user.profile_data ??= {};
+
+    override(realm, "custom_profile_field_types", {
+        SHORT_TEXT: {id: 1, name: "Short text"},
+        PRONOUNS: {id: 3, name: "Pronouns"},
+    });
+
+    override(realm, "custom_profile_fields", [
+        {
+            id: 1,
+            name: "Alpha field",
+            type: realm.custom_profile_field_types.SHORT_TEXT.id,
+            use_for_user_matching: true,
+        },
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 1,
+        value: "Alpha",
+    });
+
+    let rendered = false;
+
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.equal(args.secondary, "Alpha");
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+
+    assert.equal(th.render_person(a_user_item, "Alpha"), "typeahead-item-stub");
+    assert.ok(rendered);
+});
+
+test("render_person shows both email and custom profile fields as secondary if both matches", ({
+    mock_template,
+    override,
+}) => {
+    override(realm, "custom_profile_field_types", {
+        SHORT_TEXT: {id: 1, name: "Short text"},
+        PRONOUNS: {id: 3, name: "Pronouns"},
+    });
+
+    override(realm, "custom_profile_fields", [
+        {
+            id: 1,
+            name: "Alpha field",
+            type: realm.custom_profile_field_types.SHORT_TEXT.id,
+            use_for_user_matching: true,
+        },
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 1,
+        value: "a_user",
+    });
+
+    let rendered = false;
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.equal(args.secondary, "a_user_delivery@zulip.org, a_user");
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+
+    assert.equal(th.render_person(a_user_item, "a_user"), "typeahead-item-stub");
+    assert.ok(rendered);
+});
+
+test("render_person skips custom profile fields not used for user matching", ({
+    mock_template,
+    override,
+}) => {
+    a_user.profile_data ??= {};
+
+    override(realm, "custom_profile_field_types", {
+        PRONOUNS: {id: 3, name: "Pronouns"},
+    });
+
+    override(realm, "custom_profile_fields", [
+        {
+            id: 1,
+            name: "Alpha field",
+            type: realm.custom_profile_field_types.PRONOUNS.id,
+        },
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 1,
+        value: "Alpha",
+    });
+
+    let rendered = false;
+
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.notEqual(args.secondary, "Alpha");
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+
+    assert.equal(th.render_person(a_user_item, "Alpha"), "typeahead-item-stub");
+    assert.ok(rendered);
+});
+
+test("query_matches_person matches custom profile fields when they are enabled for user matching ", ({
+    override,
+}) => {
+    a_user.profile_data ??= {};
+
+    override(realm, "custom_profile_field_types", {
+        SHORT_TEXT: {id: 1, name: "Short text"},
+        EXTERNAL_ACCOUNT: {id: 2, name: "External account"},
+    });
+
+    override(realm, "custom_profile_fields", [
+        {
+            id: 51,
+            name: "Alpha field",
+            type: realm.custom_profile_field_types.SHORT_TEXT.id,
+            use_for_user_matching: true,
+        },
+        {
+            id: 52,
+            name: "Beta field",
+            type: realm.custom_profile_field_types.EXTERNAL_ACCOUNT.id,
+        },
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 51,
+        value: "Alpha",
+    });
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 52,
+        value: "Beta",
+    });
+
+    assert.equal(th.query_matches_person("alpha", a_user_item, undefined, undefined, true), true);
+    assert.equal(th.query_matches_person("beta", a_user_item, undefined, undefined, true), false);
 });

@@ -6,6 +6,7 @@ import render_first_stream_created_modal from "../templates/stream_settings/firs
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as color_data from "./color_data.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
@@ -122,6 +123,12 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             // rerender the entire message feed.
             message_live_update.rerender_messages_view();
         }
+        if (property === "can_create_topic_group") {
+            stream_ui_updates.update_history_public_to_subscribers_state(
+                $("#stream_settings"),
+                sub,
+            );
+        }
         user_group_edit.update_stream_setting_in_permissions_panel(
             stream_permission_group_settings_schema.parse(property),
             group_setting_value_schema.parse(value),
@@ -227,6 +234,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         },
         folder_id(value) {
             stream_settings_ui.update_channel_folder(sub, value);
+            channel_folders_ui.update_channel_folder_channels_list(stream_id, value);
         },
     };
 
@@ -242,13 +250,13 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
 
 function show_first_stream_created_modal(stream: StreamSubscription): void {
     dialog_widget.launch({
-        html_heading: $t({defaultMessage: "Channel created!"}),
-        html_body: render_first_stream_created_modal({stream}),
+        modal_title_html: $t({defaultMessage: "Channel created!"}),
+        modal_content_html: render_first_stream_created_modal({stream}),
         id: "first_stream_created_modal",
         on_click(): void {
             /* This modal is purely informational and doesn't do anything when closed. */
         },
-        html_submit_button: $t({defaultMessage: "Continue"}),
+        modal_submit_button_text: $t({defaultMessage: "Continue"}),
         close_on_submit: true,
         single_footer_button: true,
     });
@@ -308,19 +316,32 @@ export function mark_subscribed(
         }
     }
 
+    // We may trigger narrow-refreshing UI code paths below (e.g. via
+    // `message_view.show`) that expect the newly subscribed stream to already
+    // exist in the left sidebar.
+    stream_list.add_sidebar_row(sub);
+    stream_list.update_subscribe_to_more_streams_link();
+    user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
+
     if (narrow_state.narrowed_to_stream_id(sub.stream_id)) {
         assert(message_lists.current !== undefined);
         message_lists.current.update_trailing_bookend(true);
+        const then_select_id =
+            typeof message_lists.current.selected_id === "function"
+                ? message_lists.current.selected_id()
+                : undefined;
+        message_view.show(message_lists.current.data.filter.terms(), {
+            then_select_id,
+            then_select_offset: browser_history.current_scroll_offset(),
+            force_rerender: true,
+            trigger: "subscription confirmed refresh",
+        });
         activity_ui.build_user_sidebar();
     }
 
     // The new stream in sidebar might need its unread counts
     // re-calculated.
     unread_ui.update_unread_counts();
-
-    stream_list.add_sidebar_row(sub);
-    stream_list.update_subscribe_to_more_streams_link();
-    user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
 export function mark_unsubscribed(sub: StreamSubscription): void {
@@ -358,15 +379,15 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 }
 
-export function remove_deactivated_user_from_all_streams(user_id: number): void {
+export function report_error_if_user_still_has_subscriptions(user_id: number): void {
     const all_subs = stream_data.get_unsorted_subs();
 
     for (const sub of all_subs) {
-        // If they're not loaded, we don't have to worry about unsubscribing
-        // them since they were never marked as subscribed to begin with.
+        /* istanbul ignore next */
         if (stream_data.is_user_loaded_and_subscribed(sub.stream_id, user_id)) {
-            peer_data.remove_subscriber(sub.stream_id, user_id);
-            stream_settings_ui.update_subscribers_ui(sub);
+            blueslip.error(
+                "The user should have been removed by the `peer_remove` event before reaching this code path. Something went wrong.",
+            );
         }
     }
 }

@@ -1,0 +1,130 @@
+---
+title: Moving from Discord
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedList from "../../components/FlattenedList.astro";
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import CommunicationPoliciesIntro from "../include/_CommunicationPoliciesIntro.mdx";
+import CommunicationPoliciesList from "../include/_CommunicationPoliciesList.mdx";
+import ConfigureYourOrganization from "../include/_ConfigureYourOrganization.mdx";
+import CreateOrgNoImport from "../include/_CreateOrgNoImport.mdx";
+import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
+import MovingToZulipIntro from "../include/_MovingToZulipIntro.mdx";
+import PrepareForTransition1 from "../include/_PrepareForTransition1.mdx"
+import PrepareForTransition2 from "../include/_PrepareForTransition2.mdx"
+import SignUpForAPlan from "../include/_SignUpForAPlan.mdx";
+
+<MovingToZulipIntro />
+
+The following steps are described in more detail below:
+
+<Steps>
+  1. [Create your organization](#create-your-organization).
+  1. [Sign up for a plan](#sign-up-for-a-plan).
+  1. [Configure your organization](#configure-your-organization).
+  1. [Review and update communication
+     policies](#review-and-update-communication-policies).
+  1. [Prepare users for the transition](#prepare-users-for-the-transition).
+  1. [Invite users to join](#invite-users-to-join).
+</Steps>
+
+Each organization is unique, but we hope these common practices will help you
+think through the transition process in your own context.
+
+## Create your organization
+
+<CreateOrgNoImport />
+
+## Sign up for a plan
+
+<SignUpForAPlan />
+
+## Configure your organization
+
+<Steps>
+  1. [Create your organization profile](/help/create-your-organization-profile),
+     which is displayed on your organization's registration and login pages.
+  1. [Create user groups](/help/create-user-groups) corresponding to roles in
+     your Discord.
+  1. Review [organization permissions](/help/manage-permissions), such as who
+     can invite users, create channels, etc. Use groups to recreate role-based
+     permissions.
+  1. If your organization uses an issue tracker (e.g., GitHub, Salesforce,
+     Zendesk, Jira, etc.), configure [linkifiers](/help/add-a-custom-linkifier) to
+     automatically turn issue numbers (e.g., #2468) into links.
+  1. Set up [custom profile fields](/help/custom-profile-fields), which make it
+     easy for users to share information, such as their pronouns, job title, or
+     team.
+  1. Review [default user settings](/help/configure-default-new-user-settings),
+     including language, [default visibility for email
+     addresses](/help/configure-email-visibility), and notification preferences.
+  1. [Create channels](/help/create-channels). Zulip's
+     [topics](/help/introduction-to-topics) give each conversation its own
+     space, so you likely need fewer channels than in Discord.
+  1. To recreate your Discord bots in Zulip, check out Zulip's [native
+     integrations](/integrations), and the [guide](/help/writing-bots) on writing
+     your own interactive bots.
+</Steps>
+
+## Review and update communication policies
+
+<CommunicationPoliciesIntro />
+
+<FlattenedList>
+  <CommunicationPoliciesList />
+
+  * If you've been maintaining a forum in addition to your Discord server, it's
+    common to discontinue it when moving to Zulip. Conversations in Zulip are
+    organized enough to fulfill the role of a forum, and can be
+    [configured](/help/public-access-option) for public access if desired.
+  * Zulip makes it easy to find conversations and follow up, so you may be able to
+    reduce your reliance on @-mentions. [Silent
+    mentions](/help/mention-a-user-or-group#silently-mention-a-user) make it easy
+    to refer to someone without calling for their attention.
+  * Because in Zulip messages are organized by topic, it’ll generally be clear
+    what you’re responding to when you send a message. Consider encouraging users
+    to simply send messages to the appropriate topic, rather than
+    [replying](/help/replying-to-messages) as in Discord.
+  * If moving a community, be sure to check out Zulip's [community moderation
+    toolkit](/help/moderating-open-organizations).
+</FlattenedList>
+
+## Prepare users for the transition
+
+Prepare an introduction to Zulip for your organization. It often works well to
+combine a written announcement with a live presentation. Recommended topics to
+cover include:
+
+<FlattenedSteps>
+  <PrepareForTransition1 />
+
+  1. Pointers to additional resources, such as Zulip's [getting started
+     guide](/help/getting-started-with-zulip).
+
+  <PrepareForTransition2 />
+</FlattenedSteps>
+
+## Invite users to join
+
+<Tabs>
+  <HowToInviteUsersToJoinNoImport />
+</Tabs>
+
+<ZulipTip>
+  Remember to update links and login instructions to point to Zulip.
+</ZulipTip>
+
+Congratulations on making the move! If you have any questions or feedback
+throughout this process, please [reach out](/help/contact-support) to the Zulip
+team.
+
+## Related articles
+
+* [Trying out Zulip](/help/trying-out-zulip)
+* [Zulip Cloud or self-hosting?](/help/zulip-cloud-or-self-hosting)
+* [Moving to Zulip](/help/moving-to-zulip)
+* [Migrating from other chat tools](/help/migrating-from-other-chat-tools)
+* [Getting started with Zulip](/help/getting-started-with-zulip)

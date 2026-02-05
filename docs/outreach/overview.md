@@ -30,7 +30,7 @@ your internship experience with the Zulip project will be highly interactive.
 > and welcoming. You learn a lot just by watching others work and talk.”_ – Sai
 > Rohitth Chiluka, Zulip GSoC 2021 participant
 
-As part of our commitment to mentorship, Zulip has over 160,000 words of
+As part of our commitment to mentorship, Zulip has over 185,000 words of
 [documentation for
 developers](../index.md#zulip-documentation-overview), much of it
 designed to explain not just how Zulip works, but why Zulip works the way that
@@ -64,6 +64,7 @@ maintainers.
 To learn more about the experience of doing an outreach program with Zulip:
 
 - Check out our blog posts about Zulip's
+  [2025](https://blog.zulip.com/2025/12/02/google-summer-of-code-2025/),
   [2024](https://blog.zulip.com/2024/10/09/google-summer-of-code-2024/),
   [2023](https://blog.zulip.com/2024/01/24/google-summer-of-code-2023/),
   [2022](https://blog.zulip.com/2022/11/02/google-summer-of-code-2022/), and

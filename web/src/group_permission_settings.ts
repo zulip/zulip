@@ -83,6 +83,7 @@ export type RealmGroupSettingNameSupportingAnonymousGroups = z.infer<
 export const stream_group_setting_name_schema = z.enum([
     "can_add_subscribers_group",
     "can_administer_channel_group",
+    "can_create_topic_group",
     "can_delete_any_message_group",
     "can_delete_own_message_group",
     "can_move_messages_out_of_channel_group",
@@ -287,7 +288,7 @@ export function check_group_permission_settings_data(): void {
     const all_realm_group_settings = z
         .array(realm_group_setting_name_schema)
         .parse(Object.keys(realm.server_supported_permission_settings.realm));
-    const realm_group_settings_with_subsection_data = new Set<RealmGroupSettingName>([]);
+    const realm_group_settings_with_subsection_data = new Set<RealmGroupSettingName>();
     for (const subsection_obj of settings_config.realm_group_permission_settings) {
         for (const setting_name of subsection_obj.settings) {
             realm_group_settings_with_subsection_data.add(setting_name);

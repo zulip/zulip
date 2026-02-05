@@ -76,6 +76,15 @@ def validate_display_in_profile_summary_field(
         raise JsonableError(_("Field type not supported for display in profile summary."))
 
 
+def validate_use_for_user_matching_field(field_type: int, use_for_user_matching: bool) -> None:
+    if not use_for_user_matching:
+        return
+
+    # Only SHORT_TEXT and EXTERNAL_ACCOUNT field types are supported for user matching.
+    if field_type not in (CustomProfileField.SHORT_TEXT, CustomProfileField.EXTERNAL_ACCOUNT):
+        raise JsonableError(_("Field type not supported for use for user matching."))
+
+
 def is_default_external_field(field_type: int, field_data: ProfileFieldData) -> bool:
     if field_type != CustomProfileField.EXTERNAL_ACCOUNT:
         return False
@@ -90,6 +99,7 @@ def validate_custom_profile_field(
     field_type: int,
     field_data: ProfileFieldData,
     display_in_profile_summary: bool,
+    use_for_user_matching: bool,
 ) -> None:
     # Validate field data
     validate_custom_field_data(field_type, field_data)
@@ -106,6 +116,8 @@ def validate_custom_profile_field(
 
     validate_display_in_profile_summary_field(field_type, display_in_profile_summary)
 
+    validate_use_for_user_matching_field(field_type, use_for_user_matching)
+
 
 def validate_custom_profile_field_update(
     field: CustomProfileField,
@@ -113,6 +125,7 @@ def validate_custom_profile_field_update(
     field_data: ProfileFieldData | None = None,
     name: str | None = None,
     hint: str | None = None,
+    use_for_user_matching: bool | None = None,
 ) -> None:
     if name is None:
         name = field.name
@@ -127,14 +140,12 @@ def validate_custom_profile_field_update(
             field_data = orjson.loads(field.field_data)
     if display_in_profile_summary is None:
         display_in_profile_summary = field.display_in_profile_summary
+    if use_for_user_matching is None:
+        use_for_user_matching = field.use_for_user_matching
 
     assert field_data is not None
     validate_custom_profile_field(
-        name,
-        hint,
-        field.field_type,
-        field_data,
-        display_in_profile_summary,
+        name, hint, field.field_type, field_data, display_in_profile_summary, use_for_user_matching
     )
 
 
@@ -178,6 +189,7 @@ def create_realm_custom_profile_field(
     hint: str = "",
     name: Annotated[str, StringConstraints(strip_whitespace=True)] = "",
     required: Json[bool] = False,
+    use_for_user_matching: Json[bool] = False,
 ) -> HttpResponse:
     if field_data is None:
         field_data = {}
@@ -186,7 +198,9 @@ def create_realm_custom_profile_field(
             _("Only 2 custom profile fields can be displayed in the profile summary.")
         )
 
-    validate_custom_profile_field(name, hint, field_type, field_data, display_in_profile_summary)
+    validate_custom_profile_field(
+        name, hint, field_type, field_data, display_in_profile_summary, use_for_user_matching
+    )
     try:
         if is_default_external_field(field_type, field_data):
             field_subtype = field_data["subtype"]
@@ -197,6 +211,7 @@ def create_realm_custom_profile_field(
                 display_in_profile_summary=display_in_profile_summary,
                 required=required,
                 editable_by_user=editable_by_user,
+                use_for_user_matching=use_for_user_matching,
             )
             return json_success(request, data={"id": field.id})
         else:
@@ -209,6 +224,7 @@ def create_realm_custom_profile_field(
                 display_in_profile_summary=display_in_profile_summary,
                 required=required,
                 editable_by_user=editable_by_user,
+                use_for_user_matching=use_for_user_matching,
             )
             return json_success(request, data={"id": field.id})
     except IntegrityError:
@@ -241,6 +257,7 @@ def update_realm_custom_profile_field(
     hint: str | None = None,
     name: Annotated[str, StringConstraints(strip_whitespace=True)] | None = None,
     required: Json[bool] | None = None,
+    use_for_user_matching: Json[bool] | None = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     try:
@@ -270,7 +287,9 @@ def update_realm_custom_profile_field(
     ):
         raise JsonableError(_("Default custom field cannot be updated."))
 
-    validate_custom_profile_field_update(field, display_in_profile_summary, field_data, name, hint)
+    validate_custom_profile_field_update(
+        field, display_in_profile_summary, field_data, name, hint, use_for_user_matching
+    )
     try:
         try_update_realm_custom_profile_field(
             realm=realm,
@@ -281,6 +300,7 @@ def update_realm_custom_profile_field(
             display_in_profile_summary=display_in_profile_summary,
             required=required,
             editable_by_user=editable_by_user,
+            use_for_user_matching=use_for_user_matching,
         )
     except IntegrityError:
         raise JsonableError(_("A field with that label already exists."))
@@ -310,7 +330,7 @@ def remove_user_custom_profile_data(
     with transaction.atomic(durable=True):
         for field_id in data:
             check_remove_custom_profile_field_value(
-                user_profile, field_id, acting_user=user_profile
+                user_profile, field_id, acting_user=user_profile, notify=False
             )
     return json_success(request)
 
@@ -325,6 +345,6 @@ def update_user_custom_profile_data(
 ) -> HttpResponse:
     validate_user_custom_profile_data(user_profile.realm.id, data, acting_user=user_profile)
     with transaction.atomic(durable=True):
-        do_update_user_custom_profile_data_if_changed(user_profile, data)
+        do_update_user_custom_profile_data_if_changed(user_profile, data, user_profile, notify=True)
     # We need to call this explicitly otherwise constraints are not check
     return json_success(request)

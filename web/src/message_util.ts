@@ -1,5 +1,3 @@
-import assert from "minimalistic-assert";
-
 import {all_messages_data} from "./all_messages_data.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -35,7 +33,7 @@ export function get_count_of_messages_in_topic_sent_after_current_message(
 
 export function get_loaded_messages_in_topic(stream_id: number, topic: string): Message[] {
     return all_messages_data
-        .all_messages()
+        .all_messages_after_mute_filtering()
         .filter(
             (x) =>
                 x.type === "stream" &&
@@ -46,13 +44,13 @@ export function get_loaded_messages_in_topic(stream_id: number, topic: string): 
 
 export function get_messages_in_dm_conversations(user_ids_strings: Set<string>): Message[] {
     return all_messages_data
-        .all_messages()
+        .all_messages_after_mute_filtering()
         .filter((x) => x.type === "private" && user_ids_strings.has(x.to_user_ids));
 }
 
 export function get_max_message_id_in_stream(stream_id: number): number {
     let max_message_id = 0;
-    for (const msg of all_messages_data.all_messages()) {
+    for (const msg of all_messages_data.all_messages_after_mute_filtering()) {
         if (msg.type === "stream" && msg.stream_id === stream_id && msg.id > max_message_id) {
             max_message_id = msg.id;
         }
@@ -91,10 +89,10 @@ export function get_direct_message_permission_hints(
 
     // If not, we need to check if the current filter matches the DM view we
     // are composing to.
-    const dm_conversation = message_lists.current?.data?.filter.operands("dm")[0];
+    const dm_conversation =
+        message_lists.current?.data?.filter.terms_with_operator("dm")[0]?.operand;
     if (dm_conversation) {
-        const current_user_ids_string = people.emails_strings_to_user_ids_string(dm_conversation);
-        assert(current_user_ids_string !== undefined);
+        const current_user_ids_string = String(dm_conversation);
         // If it matches and the messages for the current filter are fetched,
         // then there are certainly no messages in the conversation.
         if (

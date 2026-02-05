@@ -31,13 +31,17 @@ from zerver.actions.custom_profile_fields import (
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_linkifiers import do_add_linkifier
-from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
+from zerver.actions.realm_settings import (
+    do_set_realm_moderation_request_channel,
+    do_set_realm_property,
+)
 from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
+from zerver.lib.digest import DIGEST_CUTOFF
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
@@ -157,6 +161,10 @@ def clear_database() -> None:
 def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) -> None:
     subscriptions_to_add = []
     event_time = timezone_now()
+    # Backdate few channel subscriptions to support digest previews in dev.
+    # This ensures sample data appears in `/digest` by making subscriptions
+    # appear old enough to pass the cutoff check in `get_user_stream_map`.
+    event_time_for_digest = event_time - timedelta(days=DIGEST_CUTOFF)
     all_subscription_logs = []
     subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
     profiles = UserProfile.objects.select_related("realm").filter(realm=realm)
@@ -181,7 +189,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
                 modified_stream=stream,
                 event_last_message_id=0,
                 event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
-                event_time=event_time,
+                event_time=event_time_for_digest if i < 4 else event_time,
             )
             all_subscription_logs.append(log)
     bulk_create_stream_subscriptions(subs=subscriptions_to_add, streams=subscriber_count_changes)
@@ -553,7 +561,9 @@ class Command(ZulipBaseCommand):
             assign_time_zone_by_delivery_email("cordelia@zulip.com", "UTC")
 
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
-            do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+            do_change_user_role(
+                iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None, notify=False
+            )
             iago.is_staff = True
             iago.save(update_fields=["is_staff"])
 
@@ -575,13 +585,15 @@ class Command(ZulipBaseCommand):
             )
 
             desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
-            do_change_user_role(desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+            do_change_user_role(
+                desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None, notify=False
+            )
 
             shiva = get_user_by_delivery_email("shiva@zulip.com", zulip_realm)
-            do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None)
+            do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None, notify=False)
 
             polonius = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
-            do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None)
+            do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None, notify=False)
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
@@ -824,6 +836,8 @@ class Command(ZulipBaseCommand):
                     {"id": github_profile.id, "value": "zulip"},
                     {"id": pronouns.id, "value": "he/him"},
                 ],
+                None,
+                notify=False,
             )
             do_update_user_custom_profile_data_if_changed(
                 hamlet,
@@ -841,6 +855,8 @@ class Command(ZulipBaseCommand):
                     {"id": github_profile.id, "value": "zulipbot"},
                     {"id": pronouns.id, "value": "he/him"},
                 ],
+                None,
+                notify=False,
             )
             # We need to create at least one scheduled message for Iago for the api-test
             # cURL example to delete an existing scheduled message.
@@ -926,6 +942,12 @@ class Command(ZulipBaseCommand):
                     acting_user=None,
                 )
 
+            # Channel event messages are disabled by default, but we want them
+            # enabled in the development environment (so that we naturally test
+            # them when doing manual testing) and unit tests (to preserve the old behaviour).
+            do_set_realm_property(
+                zulip_realm, "send_channel_events_messages", True, acting_user=None
+            )
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
         with open(IMAGE_FILE_PATH, "rb") as fp:

@@ -1,4 +1,4 @@
-import type {Meta} from "@uppy/core";
+import type {Meta, UppyFile} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import Tus, {type TusBody} from "@uppy/tus";
 import {getSafeFileId} from "@uppy/utils";
@@ -11,6 +11,7 @@ import render_upload_banner from "../templates/compose_banner/upload_banner.hbs"
 import * as blueslip from "./blueslip.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
+import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
@@ -40,6 +41,42 @@ export function feature_check(): XMLHttpRequestUpload {
 export function get_translated_status(filename: string): string {
     const status = $t({defaultMessage: "Uploading {filename}…"}, {filename});
     return "[" + status + "]()";
+}
+
+function contains_folder(data_transfer: DataTransfer): boolean {
+    if (!data_transfer.items) {
+        return false;
+    }
+
+    for (const item of data_transfer.items) {
+        if (item.kind !== "file") {
+            continue;
+        }
+
+        // https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/webkitGetAsEntry
+        // Note: This function is implemented as webkitGetAsEntry() in non-WebKit
+        // browsers including Firefox at this time; it may be renamed to getAsEntry()
+        // in the future, so you should code defensively, looking for both.
+        // @ts-expect-error -- getAsEntry/webkitGetAsEntry not in lib.dom.d.ts yet
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+        const entry = item.getAsEntry?.() ?? item.webkitGetAsEntry?.();
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (entry?.isDirectory) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function show_folder_upload_error(config: Config): void {
+    show_error_message(
+        config,
+        $t({
+            defaultMessage: "Folders can't be uploaded. Instead, please upload the files you need.",
+        }),
+    );
 }
 
 type Config = ({mode: "compose"} | {mode: "edit"; row: number}) & {
@@ -351,6 +388,12 @@ const zulip_upload_response_schema = z.object({
     filename: z.string(),
 });
 
+// Wrapped to work around https://github.com/transloadit/uppy/issues/6033
+const get_safe_file_id: <M extends Meta>(
+    file: UppyFile<M, TusBody>,
+    instance_id: string,
+) => string = getSafeFileId;
+
 export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
     const uppy = new Uppy<ZulipMeta, TusBody>({
         debug: false,
@@ -372,7 +415,7 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
             pluralize: (_n) => 0,
         },
         onBeforeFileAdded(file, files) {
-            const file_id = getSafeFileId(file, uppy.getID());
+            const file_id = get_safe_file_id(file, uppy.getID());
 
             if (files[file_id]) {
                 // We have a duplicate file upload on our hands.
@@ -450,6 +493,17 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
         event.stopPropagation();
         assert(event.originalEvent !== undefined);
         assert(event.originalEvent.dataTransfer !== null);
+
+        if (contains_folder(event.originalEvent.dataTransfer)) {
+            setTimeout(() => {
+                if ($("#compose_select_recipient_widget").hasClass("widget-open")) {
+                    compose_recipient.toggle_compose_recipient_dropdown();
+                }
+            }, 0);
+            show_folder_upload_error(config);
+            return;
+        }
+
         const files = event.originalEvent.dataTransfer.files;
         if (config.mode === "compose" && !compose_state.composing()) {
             compose_reply.respond_to_message({
@@ -532,7 +586,7 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
             }
         }
 
-        const filtered_filename = file.name!.replaceAll("[", "").replaceAll("]", "");
+        const filtered_filename = file.name.replaceAll("[", "").replaceAll("]", "");
         const syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
         const $text_area = config.textarea();
         const replacement_successful = compose_ui.replace_syntax(
@@ -601,13 +655,13 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
         // Hide the upload status banner on error so only the error banner shows
         hide_upload_banner(uppy, config, file.id);
         show_error_message(config, message, file.id);
-        compose_ui.replace_syntax(get_translated_status(file.name!), "", config.textarea());
+        compose_ui.replace_syntax(get_translated_status(file.name), "", config.textarea());
         compose_ui.autosize_textarea(config.textarea());
     });
 
     uppy.on("restriction-failed", (file) => {
         assert(file !== undefined);
-        compose_ui.replace_syntax(get_translated_status(file.name!), "", config.textarea());
+        compose_ui.replace_syntax(get_translated_status(file.name), "", config.textarea());
         compose_ui.autosize_textarea(config.textarea());
     });
 
@@ -686,6 +740,37 @@ export function initialize(): void {
         const $drag_drop_edit_containers = $(".message_edit_form form");
         assert(event.originalEvent !== undefined);
         assert(event.originalEvent.dataTransfer !== null);
+
+        if (contains_folder(event.originalEvent.dataTransfer)) {
+            const was_dropdown_open = $("#compose_select_recipient_widget").hasClass("widget-open");
+
+            if (!compose_state.composing()) {
+                if (message_lists.current?.selected_message()) {
+                    compose_reply.respond_to_message({
+                        trigger: "drag_drop_file",
+                        keep_composebox_empty: true,
+                    });
+                } else {
+                    compose_actions.start({
+                        message_type: "stream",
+                        trigger: "drag_drop_file",
+                        keep_composebox_empty: true,
+                    });
+                }
+            }
+
+            if (was_dropdown_open) {
+                setTimeout(() => {
+                    if ($("#compose_select_recipient_widget").hasClass("widget-open")) {
+                        compose_recipient.toggle_compose_recipient_dropdown();
+                    }
+                }, 0);
+            }
+
+            show_folder_upload_error(compose_config);
+            return;
+        }
+
         const files = event.originalEvent.dataTransfer.files;
         const $last_drag_drop_edit_container = $drag_drop_edit_containers.last();
 

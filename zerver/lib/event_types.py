@@ -5,6 +5,7 @@ from django.core.validators import URLValidator
 from pydantic import AfterValidator, BaseModel
 
 from zerver.lib.types import UserGroupMembersDict
+from zerver.models.realms import RealmExportSlug
 
 
 def check_url(val: str) -> str:
@@ -291,7 +292,7 @@ class EventOnboardingSteps(BaseEvent):
 
 class EventPushDevice(BaseEvent):
     type: Literal["push_device"]
-    push_account_id: str
+    push_account_id: int
     status: Literal["active", "failed", "pending"]
     error_code: str | None = None
 
@@ -509,7 +510,7 @@ class Export(BaseModel):
     deleted_timestamp: float | int | None
     failed_timestamp: float | int | None
     pending: bool
-    export_type: int
+    export_type: RealmExportSlug
 
 
 class EventRealmExport(BaseEvent):
@@ -752,6 +753,11 @@ class PersonIsActive(BaseModel):
     is_active: bool
 
 
+class PersonIsImportedStub(BaseModel):
+    user_id: int
+    is_imported_stub: bool
+
+
 class EventRealmUserUpdate(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["update"]
@@ -765,6 +771,7 @@ class EventRealmUserUpdate(BaseEvent):
         | PersonRole
         | PersonTimezone
         | PersonIsActive
+        | PersonIsImportedStub
     )
 
 
@@ -860,6 +867,7 @@ class EventRemindersRemove(BaseEvent):
 class BasicStreamFields(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
@@ -927,6 +935,7 @@ class EventSubmessage(BaseEvent):
 class SingleSubscription(BaseModel):
     is_archived: bool
     can_administer_channel_group: int | UserGroupMembersDict
+    can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
@@ -1058,25 +1067,6 @@ class EventTypingEditMessageStop(BaseEvent):
     sender_id: int
     message_id: int
     recipient: RecipientFieldForTypingEditChannelMessage | RecipientFieldForTypingEditDirectMessage
-
-
-class EventUpdateDisplaySettingsCore(BaseEvent):
-    type: Literal["update_display_settings"]
-    setting_name: str
-    setting: bool | int | str
-    user: str
-
-
-class EventUpdateDisplaySettings(EventUpdateDisplaySettingsCore):
-    # TODO: fix types to avoid optional fields
-    language_name: str | None = None
-
-
-class EventUpdateGlobalNotifications(BaseEvent):
-    type: Literal["update_global_notifications"]
-    notification_name: str
-    setting: bool | int | str
-    user: str
 
 
 class EventUpdateMessageCore(BaseEvent):

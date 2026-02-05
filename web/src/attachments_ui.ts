@@ -91,7 +91,7 @@ function set_upload_space_stats(): void {
             {
                 label: $t({defaultMessage: "Upgrade"}),
                 custom_classes: "request-upgrade",
-                attention: "quiet",
+                variant: "subtle",
             },
         ];
     }
@@ -116,12 +116,12 @@ function set_upload_space_stats(): void {
 }
 
 function delete_attachments(attachment: string, file_name: string): void {
-    const html_body = render_confirm_delete_attachment({file_name});
+    const modal_content_html = render_confirm_delete_attachment({file_name});
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Delete file?"}),
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Delete"}),
+        modal_title_html: $t_html({defaultMessage: "Delete file?"}),
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Delete"}),
         focus_submit_on_open: true,
         on_click() {
             dialog_widget.submit_api_request(channel.del, "/json/attachments/" + attachment, {});
@@ -190,7 +190,7 @@ function render_attachments_ui(): void {
 function format_attachment_data(attachment: ServerAttachment): Attachment {
     return {
         ...attachment,
-        create_time_str: timerender.render_now(new Date(attachment.create_time)).time_str,
+        create_time_str: timerender.render_now(new Date(attachment.create_time * 1000)).time_str,
         size_str: bytes_to_size(attachment.size),
     };
 }
@@ -249,7 +249,7 @@ export function set_up_attachments(): void {
 }
 
 export function suggest_delete_detached_attachments(attachments_list: ServerAttachment[]): void {
-    const html_body = render_confirm_delete_detached_attachments_modal({
+    const modal_content_html = render_confirm_delete_detached_attachments_modal({
         attachments_list,
         realm_message_edit_history_is_visible:
             realm.realm_message_edit_history_visibility_policy !==
@@ -295,10 +295,10 @@ export function suggest_delete_detached_attachments(attachments_list: ServerAtta
 
     dialog_widget.launch({
         id: "confirm_delete_attachments_modal",
-        html_heading: $t_html({defaultMessage: "Delete uploaded files?"}),
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Delete"}),
-        html_exit_button: $t_html({defaultMessage: "Don't delete"}),
+        modal_title_html: $t_html({defaultMessage: "Delete uploaded files?"}),
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Delete"}),
+        modal_exit_button_text: $t({defaultMessage: "Don't delete"}),
         loading_spinner: true,
         on_click: do_delete_attachments,
     });

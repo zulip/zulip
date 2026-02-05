@@ -22,7 +22,7 @@ const get_test_subgroup = (id) =>
         id,
         members: new Set([4]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_join_group: 1,
         can_leave_group: 1,
         can_manage_group: 1,
@@ -49,13 +49,14 @@ run_test("user_groups", () => {
         deactivated: false,
     });
 
-    const params = {};
-    params.realm_user_groups = [
-        students,
-        get_test_subgroup(4),
-        get_test_subgroup(5),
-        get_test_subgroup(6),
-    ];
+    const params = {
+        realm_user_groups: [
+            students,
+            get_test_subgroup(4),
+            get_test_subgroup(5),
+            get_test_subgroup(6),
+        ],
+    };
     const user_id_not_in_any_group = 0;
     const user_id_part_of_a_group = 2;
     const user_id_associated_via_subgroup = 4;
@@ -71,7 +72,7 @@ run_test("user_groups", () => {
         id: 1,
         members: new Set([3]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 1,
         can_join_group: 1,
         can_leave_group: 1,
@@ -164,7 +165,10 @@ run_test("user_groups", () => {
     const groups_of_users_via_subgroup = user_groups.get_user_groups_of_user(
         user_id_associated_via_subgroup,
     );
-    assert.deepEqual(groups_of_users_via_subgroup.map((group) => group.id).sort(), [2, 4, 5, 6]);
+    assert.deepEqual(
+        groups_of_users_via_subgroup.map((group) => group.id).toSorted(),
+        [2, 4, 5, 6],
+    );
     assert.equal(groups_of_users_via_subgroup.length, 4);
 
     const groups_of_users_nomatch = user_groups.get_user_groups_of_user(user_id_not_in_any_group);
@@ -246,7 +250,7 @@ run_test("get_recursive_subgroups", () => {
         id: 4,
         members: new Set([6, 7]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
 
     user_groups.add(admins);
@@ -263,7 +267,7 @@ run_test("get_recursive_subgroups", () => {
     assert.deepEqual(user_groups.get_recursive_subgroups(admins), new Set([4]));
     assert.deepEqual(user_groups.get_recursive_subgroups(all), new Set([4, 1, 2, 3]));
     assert.deepEqual(user_groups.get_recursive_subgroups(test), new Set([2, 4, 1, 3]));
-    assert.deepEqual(user_groups.get_recursive_subgroups(foo), new Set([]));
+    assert.deepEqual(user_groups.get_recursive_subgroups(foo), new Set());
 
     user_groups.add_subgroups(foo.id, [9999]);
     const foo_group = user_groups.get_user_group_from_id(foo.id);
@@ -300,7 +304,7 @@ run_test("get_recursive_group_members", () => {
         id: 4,
         members: new Set([6, 7]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
 
     user_groups.add(admins);
@@ -314,22 +318,22 @@ run_test("get_recursive_group_members", () => {
     // when determining recursive subgroups.
     // A test case that can occur in practice and would be problematic without this
     // optimization is a tree where each layer connects to every node in the next layer.
-    assert.deepEqual([...user_groups.get_recursive_group_members(admins)].sort(), [1, 6, 7]);
+    assert.deepEqual([...user_groups.get_recursive_group_members(admins)].toSorted(), [1, 6, 7]);
     assert.deepEqual(
-        [...user_groups.get_recursive_group_members(all)].sort(),
+        [...user_groups.get_recursive_group_members(all)].toSorted(),
         [1, 2, 3, 4, 5, 6, 7],
     );
     assert.deepEqual(
-        [...user_groups.get_recursive_group_members(test)].sort(),
+        [...user_groups.get_recursive_group_members(test)].toSorted(),
         [1, 2, 3, 4, 5, 6, 7],
     );
-    assert.deepEqual([...user_groups.get_recursive_group_members(foo)].sort(), [6, 7]);
+    assert.deepEqual([...user_groups.get_recursive_group_members(foo)].toSorted(), [6, 7]);
 
     user_groups.add_subgroups(foo.id, [9999]);
     const foo_group = user_groups.get_user_group_from_id(foo.id);
     blueslip.expect("error", "Could not find subgroup", 2);
-    assert.deepEqual([...user_groups.get_recursive_group_members(foo_group)].sort(), [6, 7]);
-    assert.deepEqual([...user_groups.get_recursive_group_members(test)].sort(), [3, 4, 5]);
+    assert.deepEqual([...user_groups.get_recursive_group_members(foo_group)].toSorted(), [6, 7]);
+    assert.deepEqual([...user_groups.get_recursive_group_members(test)].toSorted(), [3, 4, 5]);
 });
 
 run_test("get_associated_subgroups", () => {
@@ -360,7 +364,7 @@ run_test("get_associated_subgroups", () => {
         id: 4,
         members: new Set([6, 7]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
 
     const admins_group = user_groups.add(admins);
@@ -380,7 +384,7 @@ run_test("get_associated_subgroups", () => {
 
     associated_subgroups = user_groups.get_associated_subgroups(all_group, 1);
     assert.deepEqual(associated_subgroups.length, 2);
-    assert.deepEqual(associated_subgroups.map((group) => group.id).sort(), [1, 3]);
+    assert.deepEqual(associated_subgroups.map((group) => group.id).toSorted(), [1, 3]);
 
     associated_subgroups = user_groups.get_associated_subgroups(admins, 2);
     assert.deepEqual(associated_subgroups.length, 0);
@@ -413,7 +417,7 @@ run_test("is_user_in_group", () => {
         id: 4,
         members: new Set([6, 7]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
     user_groups.add(admins);
     user_groups.add(all);
@@ -480,9 +484,9 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
         name: "role:nobody",
         description: "foo",
         id: 1,
-        members: new Set([]),
+        members: new Set(),
         is_system_group: true,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
     const owners = make_user_group({
         name: "role:owners",
@@ -490,7 +494,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
         id: 2,
         members: new Set([1]),
         is_system_group: true,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
     const admins = make_user_group({
         name: "role:administrators",
@@ -520,7 +524,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
         name: "role:everyone",
         description: "foo",
         id: 6,
-        members: new Set([]),
+        members: new Set(),
         is_system_group: true,
         direct_subgroup_ids: new Set([4]),
     });
@@ -535,7 +539,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
     const internet = make_user_group({
         name: "role:internet",
         id: 8,
-        members: new Set([]),
+        members: new Set(),
         is_system_group: true,
         direct_subgroup_ids: new Set([5]),
     });
@@ -561,6 +565,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
         {name: "translated: Admins and moderators", unique_id: 4},
         {name: "translated: Admins", unique_id: 3},
         {name: "translated: Owners", unique_id: 2},
+        {name: "Students", unique_id: 9},
     ];
 
     user_groups.initialize({
@@ -632,7 +637,7 @@ run_test("get_display_group_name", () => {
         id: 3,
         members: new Set([1, 3]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
 
     user_groups.initialize({
@@ -670,21 +675,21 @@ run_test("get_potential_subgroups", () => {
         id: 3,
         members: new Set([4, 5]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
     const teachers = make_user_group({
         name: "Teachers",
         id: 4,
         members: new Set([6, 7, 8]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
     const science = make_user_group({
         name: "Science",
         id: 5,
         members: new Set([9]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
 
     user_groups.initialize({
@@ -695,7 +700,7 @@ run_test("get_potential_subgroups", () => {
         return user_groups
             .get_potential_subgroups(group_id)
             .map((subgroup) => subgroup.id)
-            .sort();
+            .toSorted();
     }
 
     assert.deepEqual(get_potential_subgroup_ids(all.id), [teachers.id, science.id]);
@@ -724,7 +729,7 @@ run_test("is_subgroup_of_target_group", () => {
         id: 1,
         members: new Set([1]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
     const moderators = make_user_group({
         name: "Moderators",
@@ -745,7 +750,7 @@ run_test("is_subgroup_of_target_group", () => {
         id: 4,
         members: new Set([5]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
 
     user_groups.initialize({
@@ -768,7 +773,7 @@ run_test("group_has_permission", () => {
         id: 1,
         members: new Set([1]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
     const moderators = make_user_group({
         name: "Moderators",
@@ -789,7 +794,7 @@ run_test("group_has_permission", () => {
         id: 4,
         members: new Set([5]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
 
     user_groups.initialize({
@@ -859,7 +864,7 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         id: 1,
         members: new Set([1]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
     const moderators = make_user_group({
         name: "Moderators",
@@ -880,7 +885,7 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         id: 4,
         members: new Set([5]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
     });
 
     user_groups.initialize({

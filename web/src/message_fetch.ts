@@ -5,9 +5,11 @@ import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
-import * as compose_recipient from "./compose_recipient.ts";
+import * as compose_validate from "./compose_validate.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
-import {Filter} from "./filter.ts";
+import * as emoji_frequency from "./emoji_frequency.ts";
+import type {Filter} from "./filter.ts";
+import * as filter_util from "./filter_util.ts";
 import * as message_feed_loading from "./message_feed_loading.ts";
 import * as message_feed_top_notices from "./message_feed_top_notices.ts";
 import * as message_helper from "./message_helper.ts";
@@ -20,11 +22,10 @@ import * as message_util from "./message_util.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import {page_params} from "./page_params.ts";
-import * as people from "./people.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
-import {narrow_term_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as util from "./util.ts";
@@ -129,7 +130,7 @@ export function fetch_more_if_required_for_current_msg_list(
         narrow_banner.show_empty_narrow_message(message_lists.current.data.filter);
         message_lists.current.update_trailing_bookend();
         compose_closed_ui.maybe_update_buttons_for_dm_recipient();
-        compose_recipient.check_posting_policy_for_compose_box();
+        compose_validate.validate_and_update_send_button_status();
     }
 
     if (looking_for_old_msgs && !has_found_oldest) {
@@ -252,16 +253,16 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
 }
 
 // This function modifies the narrow data to use integer IDs instead of
-// strings if it is supported for that operator. We currently don't set
-// or convert user emails to IDs directly in the Filter code because
-// doing so breaks the app in various modules that expect a string of
-// user emails.
+// strings if it is supported for that operator.
 function handle_operators_supporting_id_based_api(narrow_parameter: string): string {
-    // We use the canonical operator when checking these sets, so legacy
-    // operators, such as "pm-with" and "stream", are not included here.
-    const operators_supporting_ids = new Set(["dm"]);
-    const operators_supporting_id = new Set(["id", "channel", "sender", "dm-including"]);
-    const parsed_narrow_data = z.array(narrow_term_schema).parse(JSON.parse(narrow_parameter));
+    const raw_narrow_term_array_schema = z.array(
+        z.object({
+            negated: z.optional(z.boolean()),
+            operator: z.string(),
+            operand: z.union([z.number(), z.string(), z.array(z.number())]),
+        }),
+    );
+    const parsed_narrow_data = raw_narrow_term_array_schema.parse(JSON.parse(narrow_parameter));
 
     const narrow_terms: {
         operator: string;
@@ -269,47 +270,30 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
         negated?: boolean | undefined;
     }[] = [];
     for (const raw_term of parsed_narrow_data) {
+        // NOTE: `narrow_term` should be of type `NarrowTerm` but
+        // before we enforce that we need to add type support for
+        // different `operand` types in `NarrowTerm` which will eventually
+        // lead to most of the type conversion below becoming unnecessary.
         const narrow_term: {
             operator: string;
             operand: number[] | number | string;
             negated?: boolean | undefined;
         } = raw_term;
 
-        const canonical_operator = Filter.canonicalize_operator(raw_term.operator);
-
-        if (operators_supporting_ids.has(canonical_operator)) {
-            const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
-            assert(user_ids_array !== undefined);
-            narrow_term.operand = user_ids_array;
-        }
-
-        if (operators_supporting_id.has(canonical_operator)) {
-            if (canonical_operator === "id") {
-                // The message ID may not exist locally,
-                // so send the term to the server as is.
-                narrow_terms.push(narrow_term);
-                continue;
-            }
-
-            if (canonical_operator === "channel") {
-                // An unknown channel will have an empty string set for
-                // the operand. And the page_params.narrow may have a
-                // channel name as the operand. But all other cases
-                // should have the channel ID set as the string value
-                // for the operand.
-                const stream = stream_data.get_sub_by_id_string(raw_term.operand);
-                if (stream !== undefined) {
-                    narrow_term.operand = stream.stream_id;
-                }
-                narrow_terms.push(narrow_term);
-                continue;
-            }
-
-            // The other operands supporting integer IDs all work with
-            // a single user object.
-            const person = people.get_by_email(raw_term.operand);
-            if (person !== undefined) {
-                narrow_term.operand = person.user_id;
+        const parsed_narrow_operator = narrow_operator_schema.parse(
+            raw_term.operator.toLowerCase(),
+        );
+        const canonical_operator = filter_util.canonicalize_operator(parsed_narrow_operator);
+        // TODO: Migrate `channel` to use `number` operand so that we can avoid this conversion.
+        if (canonical_operator === "channel" && typeof raw_term.operand === "string") {
+            // An unknown channel will have an empty string set for
+            // the operand. And the page_params.narrow may have a
+            // channel name as the operand. But all other cases
+            // should have the channel ID set as the string value
+            // for the operand.
+            const stream = stream_data.get_sub_by_id_string(raw_term.operand);
+            if (stream !== undefined) {
+                narrow_term.operand = stream.stream_id;
             }
         }
         narrow_terms.push(narrow_term);
@@ -319,7 +303,26 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
 }
 
 export function get_narrow_for_message_fetch(filter: Filter): string {
-    let narrow_data = filter.public_terms();
+    // narrow_data is different from `NarrowTerm[]` because we
+    // expand `dm-including` operators into multiple terms here.
+    let narrow_data: {
+        operator: NarrowTerm["operator"];
+        operand: NarrowTerm["operand"];
+        negated?: boolean | undefined;
+    }[] = [];
+    for (const term of filter.public_terms()) {
+        if (term.operator === "dm-including") {
+            for (const operand of term.operand) {
+                narrow_data.push({
+                    ...term,
+                    operand,
+                });
+            }
+        } else {
+            narrow_data.push(term);
+        }
+    }
+
     if (page_params.narrow !== undefined) {
         narrow_data = [...narrow_data, ...page_params.narrow];
     }
@@ -686,6 +689,7 @@ export function initialize(finished_initial_fetch: () => void): void {
 
         if (data.found_oldest) {
             initial_backfill_for_all_messages_done = true;
+            emoji_frequency.initialize_frequently_used_emojis();
             return;
         }
 
@@ -699,11 +703,13 @@ export function initialize(finished_initial_fetch: () => void): void {
             latest_message.timestamp < fetch_target_day_timestamp
         ) {
             initial_backfill_for_all_messages_done = true;
+            emoji_frequency.initialize_frequently_used_emojis();
             return;
         }
 
         if (all_messages_data.num_items() >= consts.maximum_initial_backfill_size) {
             initial_backfill_for_all_messages_done = true;
+            emoji_frequency.initialize_frequently_used_emojis();
             return;
         }
 

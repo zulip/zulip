@@ -87,4 +87,4 @@ async function realm_creation_tests(page: Page): Promise<void> {
     common.set_realm_url(page.url());
 }
 
-common.run_test(realm_creation_tests);
+await common.run_test(realm_creation_tests);

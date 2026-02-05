@@ -7,7 +7,7 @@
                 <h3>{{t "Organization profile" }}
                     {{> ../help_link_widget link="/help/create-your-organization-profile" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="org-profile" }}
+                {{> settings_save_discard_widget section_name="org-profile" show_save_discard_buttons=true }}
             </div>
 
             <div class="organization-settings-parent">
@@ -22,7 +22,7 @@
                         {{> ../help_link_widget link="/help/organization-type" }}
                     </label>
                     <select name="realm_org_type" class="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_org_type" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=realm_org_type_values}}
+                        {{> dropdown_options_widget option_values=(object_values realm_org_type_values)}}
                     </select>
                 </div>
                 {{> settings_checkbox
@@ -32,11 +32,7 @@
                   is_disabled=disable_want_advertise_in_communities_directory
                   label=admin_settings_label.realm_want_advertise_in_communities_directory
                   help_link="/help/communities-directory"}}
-                <div class="input-group admin-realm">
-                    <label for="id_realm_description" class="settings-field-label">{{t "Organization description" }}</label>
-                    <textarea id="id_realm_description" name="realm_description" class="admin-realm-description setting-widget prop-element settings_textarea"
-                      maxlength="1000" data-setting-widget-type="string">{{ realm_description }}</textarea>
-                </div>
+                {{> realm_description . }}
             </div>
         </div>
 
@@ -54,7 +50,7 @@
           custom_classes="block"
           id="id_org_profile_preview"
           icon="external-link"
-          attention="quiet"
+          variant="subtle"
           intent="brand"
           }}
         <div class="subsection-header">
@@ -85,16 +81,16 @@
                   image = realm_night_logo_url }}
             </div>
         </div>
-        <h3 class="light">
-            {{t "Deactivate organization" }}
-            {{> ../help_link_widget link="/help/deactivate-your-organization" }}
-        </h3>
         <div class="deactivate-realm-section">
+            <h3 class="light">
+                {{t "Deactivate organization" }}
+                {{> ../help_link_widget link="/help/deactivate-your-organization" }}
+            </h3>
             <div class="input-group">
-                <div id="deactivate_realm_button_container" class="inline-block {{#unless is_owner}}disabled_setting_tooltip{{/unless}}">
+                <div id="deactivate_realm_button_container" class="inline-block">
                     {{> ../components/action_button
                       label=(t "Deactivate organization")
-                      attention="quiet"
+                      variant="subtle"
                       intent="danger"
                       custom_classes="deactivate_realm_button"
                       }}

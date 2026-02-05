@@ -159,8 +159,6 @@ Set up authentication with Microsoft Entra ID (AzureAD) by modifying the
 `AzureADAuthBackend` configuration in `settings.py`, as well as a secret in
 `zulip-secrets.conf`. Details are documented in your `settings.py`.
 
-(ldap)=
-
 ## LDAP (including Active Directory)
 
 Zulip supports retrieving information about users via LDAP, and
@@ -386,6 +384,10 @@ groups. To configure this feature:
    `subdomain1`, user membership in the Zulip groups named `group1`
    and `group2` will match their membership in LDAP groups with those
    names.
+
+   If a group listed here does not already exist in Zulip, it will be
+   created automatically when syncing a user who should be a member of
+   that group.
 
 1. Test your configuration and restart the server into the new
    configuration as [documented above](#synchronizing-data).
@@ -853,14 +855,19 @@ Your SAML IdP will need to provide the list of SAML group names in the
 `zulip_groups` attribute of the `SAMLResponse`. When a user logs in
 using SAML, groups are synced as follows:
 
-1. If a Zulip group name does not occur in the
-   `SOCIAL_AUTH_SYNC_ATTRS_DICT` groups list, that group's membership
-   is managed entirely in Zulip.
-1. Otherwise, if the group appears in `zulip_groups` in the
+1. Zulip checks `SOCIAL_AUTH_SYNC_ATTRS_DICT` for whether the group is
+   a "SAML synced group": one whose membership should be synced from
+   SAML. The special `"groups": "*",` wildcard syntax means all Zulip
+   groups are SAML synced groups. Otherwise, all groups not explicitly
+   listed in the `groups` list for the organization will have their
+   membership managed entirely in Zulip and will never be synced.
+1. If a SAML synced group appears in `zulip_groups` in the
    `SAMLResponse`, the user is added to that group (if not already a
-   member).
-1. Otherwise, the user is removed from that group (if currently a
-   member).
+   member). If the SAML synced group doesn't yet exist in Zulip, it
+   will be created automatically, with a default configuration where
+   only organization owners can manage the group.
+1. Otherwise, the user is removed from the SAML synced group (if
+   currently a member).
 
 Only direct membership of groups is synced through this protocol;
 subgroups of Zulip groups are managed entirely [inside
@@ -938,7 +945,7 @@ integration](../production/scim.md).
 
 ### Using Authentik as a SAML IdP
 
-1. Make sure you reviewed [this article](https://goauthentik.io/integrations/services/zulip/), which
+1. Make sure you reviewed [this article](https://integrations.goauthentik.io/chat-communication-collaboration/zulip/), which
    details how to integrate Zulip with Authentik.
 1. Verify that `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['entity_id']` and
    `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['url']` are correct in your Zulip
@@ -1176,8 +1183,6 @@ If your server was originally installed from a release in the
 file. You can find instructions on how to do that in a
 [separate doc][update-inline-comments].
 
-Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single IdP currently.
-
 The Return URL to authorize with the provider is
 `https://yourzulipdomain.example.com/complete/oidc/`.
 
@@ -1195,6 +1200,10 @@ user the opportunity to edit it before submitting. When `True`, Zulip
 assumes the name is correct, and new users will not be presented with
 a registration form unless they need to accept Terms of Service for
 the server (i.e. `TERMS_OF_SERVICE_VERSION` is set).
+
+If your OIDC server's HTTPS server is signed by a custom certificate
+authority, you will need to [configure Zulip to trust
+it](system-configuration.md#custom_ca_path).
 
 ## JSON Web Tokens (JWT)
 

@@ -12,7 +12,7 @@ mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
 
-const {PollData} = zrequire("../shared/src/poll_data");
+const {PollData} = zrequire("poll_data");
 
 const poll_widget = zrequire("poll_widget");
 
@@ -61,7 +61,7 @@ run_test("PollData my question", () => {
         question: "best plan?",
     };
 
-    data_holder.handle_event(me.user_id, question_event);
+    data_holder.handle_question_event(me.user_id, question_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
@@ -75,7 +75,7 @@ run_test("PollData my question", () => {
         option: "release now",
     };
 
-    data_holder.handle_event(me.user_id, option_event);
+    data_holder.handle_new_option_event(me.user_id, option_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
@@ -97,7 +97,7 @@ run_test("PollData my question", () => {
         vote: 1,
     };
 
-    data_holder.handle_event(me.user_id, vote_event);
+    data_holder.handle_vote_event(me.user_id, vote_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
@@ -119,7 +119,7 @@ run_test("PollData my question", () => {
         vote: 1,
     };
 
-    data_holder.handle_event(alice.user_id, vote_event);
+    data_holder.handle_vote_event(alice.user_id, vote_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
@@ -142,10 +142,10 @@ run_test("PollData my question", () => {
     };
 
     blueslip.expect("warn", `unknown key for poll: ${invalid_vote_event.key}`);
-    data_holder.handle_event(me.user_id, invalid_vote_event);
+    data_holder.handle_vote_event(me.user_id, invalid_vote_event);
     data = data_holder.get_widget_data();
 
-    const option_outbound_event = data_holder.handle.new_option.outbound("new option");
+    const option_outbound_event = data_holder.new_option_event("new option");
     assert.deepEqual(option_outbound_event, {
         type: "new_option",
         idx: 2,
@@ -153,13 +153,13 @@ run_test("PollData my question", () => {
     });
 
     const new_question = "Any new plan?";
-    const question_outbound_event = data_holder.handle.question.outbound(new_question);
+    const question_outbound_event = data_holder.question_event(new_question);
     assert.deepEqual(question_outbound_event, {
         type: "question",
         question: new_question,
     });
 
-    const vote_outbound_event = data_holder.handle.vote.outbound("99,1");
+    const vote_outbound_event = data_holder.vote_event("99,1");
     assert.deepEqual(vote_outbound_event, {type: "vote", key: "99,1", vote: -1});
 
     vote_event = {
@@ -168,7 +168,7 @@ run_test("PollData my question", () => {
         vote: -1,
     };
 
-    data_holder.handle_event(me.user_id, vote_event);
+    data_holder.handle_vote_event(me.user_id, vote_event);
     data = data_holder.get_widget_data();
 
     assert.deepEqual(data, {
@@ -206,7 +206,7 @@ run_test("wrong person editing question", () => {
 
     blueslip.expect("warn", "user 100 is not allowed to edit the question");
 
-    data_holder.handle_event(alice.user_id, question_event);
+    data_holder.handle_question_event(alice.user_id, question_event);
 
     assert.deepEqual(data_holder.get_widget_data(), {
         options: [],
@@ -231,8 +231,11 @@ run_test("activate another person poll", ({mock_template}) => {
         message: {
             sender_id: alice.user_id,
         },
-        extra_data: {
-            question: "What do you want?",
+        any_data: {
+            widget_type: "poll",
+            extra_data: {
+                question: "What do you want?",
+            },
         },
     };
 
@@ -342,8 +345,11 @@ run_test("activate own poll", ({mock_template}) => {
         message: {
             sender_id: me.user_id,
         },
-        extra_data: {
-            question: "Where to go?",
+        any_data: {
+            widget_type: "poll",
+            extra_data: {
+                question: "Where to go?",
+            },
         },
     };
 

@@ -3,7 +3,6 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import * as fenced_code from "../shared/src/fenced_code.ts";
 import render_compose from "../templates/compose.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
@@ -20,6 +19,7 @@ import * as audible_notifications from "./audible_notifications.ts";
 import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
+import {is_browser_unsupported_old_version} from "./browser_support.ts";
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_popover from "./channel_folders_popover.ts";
@@ -50,12 +50,13 @@ import * as echo from "./echo.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
+import * as fenced_code from "./fenced_code.ts";
 import * as gear_menu from "./gear_menu.ts";
-import * as giphy from "./giphy.ts";
-import * as giphy_state from "./giphy_state.ts";
+import * as gif_picker_ui from "./gif_picker_ui.ts";
+import * as gif_state from "./gif_state.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
-import * as hotkey from "./hotkey.js";
+import * as hotkey from "./hotkey.ts";
 import * as i18n from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
@@ -106,7 +107,7 @@ import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
-import * as reload_setup from "./reload_setup.js";
+import * as reload_setup from "./reload_setup.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as resize_handler from "./resize_handler.ts";
 import * as saved_snippets from "./saved_snippets.ts";
@@ -174,7 +175,20 @@ import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topic_popover from "./user_topic_popover.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
-import * as widgets from "./widgets.js";
+import * as watchdog from "./watchdog.ts";
+import * as widgets from "./widgets.ts";
+
+function update_page_loading_indicator_notice() {
+    const $unsupported_desktop_app_notice = $("#app-loading-unsupported-desktop-app");
+    if ($unsupported_desktop_app_notice.length > 0 && page_params.insecure_desktop_app) {
+        $unsupported_desktop_app_notice.removeAttr("hidden");
+        return;
+    }
+    const $unsupported_browser_notice = $("#app-loading-unsupported-browser");
+    if ($unsupported_browser_notice.length > 0 && is_browser_unsupported_old_version()) {
+        $unsupported_browser_notice.removeAttr("hidden");
+    }
+}
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -208,8 +222,9 @@ function initialize_compose_box() {
             render_compose({
                 embedded: $("#compose").attr("data-embedded") === "",
                 file_upload_enabled: realm.max_file_upload_size_mib > 0 && upload.feature_check(),
-                giphy_enabled: giphy_state.is_giphy_enabled(),
+                giphy_enabled: gif_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
+                tenor_enabled: gif_state.is_tenor_enabled(),
                 max_topic_length: realm.max_topic_length,
                 empty_string_topic_display_name: util.get_final_topic_display_name(""),
             }),
@@ -355,7 +370,7 @@ export function initialize_kitchen_sink_stuff() {
                         message_lists.current
                             .all_messages()
                             .map((message) => message.id)
-                            .sort(),
+                            .toSorted(),
                     ),
                     found_in_dom: $row_from_dom.length,
                 });
@@ -396,8 +411,8 @@ function initialize_unread_ui() {
     unread_ui.register_update_unread_counts_hook((counts) =>
         stream_list.update_dom_with_unread_counts(counts),
     );
-    unread_ui.register_update_unread_counts_hook((counts) =>
-        pm_list.update_dom_with_unread_counts(counts),
+    unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
+        pm_list.update_dom_with_unread_counts(counts, skip_animations),
     );
     unread_ui.register_update_unread_counts_hook(() => topic_list.update());
     unread_ui.register_update_unread_counts_hook((counts) =>
@@ -477,6 +492,16 @@ export async function initialize_everything(state_data) {
     compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
+
+    // The user_group must be initialized before right sidebar
+    // module, so that we can tell whether user is member of
+    // user_group whose members are allowed to create multiuse
+    // invite. The user_group module must also be initialized
+    // before people module, so that can_access_all_users_group
+    // setting group can be used to check whether the user
+    // has permission to access all other users.
+    user_groups.initialize(state_data.user_groups);
+
     await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
 
@@ -486,11 +511,6 @@ export async function initialize_everything(state_data) {
         ...state_data.emoji,
         emoji_codes: generated_emoji_codes,
     });
-
-    // The user_group must be initialized before right sidebar
-    // module, so that we can tell whether user is member of
-    // user_group whose members are allowed to create multiuse invite.
-    user_groups.initialize(state_data.user_groups);
 
     // Channel folders data must be initialized before left sidebar.
     channel_folders.initialize(state_data.channel_folders);
@@ -543,7 +563,7 @@ export async function initialize_everything(state_data) {
     });
     alert_words.initialize(state_data.alert_words);
     saved_snippets.initialize(state_data.saved_snippets);
-    emojisets.initialize();
+    emojisets.initialize(user_settings.emojiset);
     scroll_bar.initialize();
     message_viewport.initialize();
     banners.initialize();
@@ -609,12 +629,13 @@ export async function initialize_everything(state_data) {
         restart_get_events: server_events.restart_get_events,
     });
     server_events.initialize(state_data.server_events);
+    watchdog.initialize();
     user_status.initialize(state_data.user_status);
     compose_recipient.initialize();
     compose_pm_pill.initialize({
         on_pill_create_or_remove() {
             compose_recipient.update_compose_area_placeholder_text();
-            compose_recipient.check_posting_policy_for_compose_box();
+            compose_validate.validate_and_update_send_button_status();
         },
     });
     compose_closed_ui.initialize();
@@ -658,7 +679,7 @@ export async function initialize_everything(state_data) {
     unread_ops.initialize();
     gear_menu.initialize();
     navbar_help_menu.initialize();
-    giphy.initialize();
+    gif_picker_ui.initialize();
     presence.initialize(state_data.presence);
     settings_preferences.initialize();
     settings_notifications.initialize();
@@ -681,12 +702,12 @@ export async function initialize_everything(state_data) {
         }
     });
     activity_ui.initialize({
-        narrow_by_email(email) {
+        narrow_by_user_id(user_id) {
             message_view.show(
                 [
                     {
                         operator: "dm",
-                        operand: email,
+                        operand: [user_id],
                     },
                 ],
                 {trigger: "sidebar"},
@@ -748,16 +769,17 @@ export async function initialize_everything(state_data) {
     desktop_integration.initialize();
 
     group_permission_settings.initialize();
+    overlays.trap_focus_for_settings_overlay();
 
     $("#app-loading").addClass("loaded");
 }
 
 function show_try_zulip_modal() {
-    const html_body = render_try_zulip_modal();
+    const modal_content_html = render_try_zulip_modal();
     dialog_widget.launch({
-        text_heading: i18n.$t({defaultMessage: "Welcome to the Zulip development community!"}),
-        html_body,
-        html_submit_button: i18n.$t({defaultMessage: "Let's go!"}),
+        modal_title_text: i18n.$t({defaultMessage: "Welcome to the Zulip development community!"}),
+        modal_content_html,
+        modal_submit_button_text: i18n.$t({defaultMessage: "Let's go!"}),
         on_click() {
             // Do nothing
         },
@@ -768,6 +790,8 @@ function show_try_zulip_modal() {
 }
 
 $(() => {
+    update_page_loading_indicator_notice();
+
     // Remove '?show_try_zulip_modal', if present.
     const url = new URL(window.location.href);
     if (url.searchParams.has("show_try_zulip_modal")) {

@@ -1,10 +1,11 @@
+import re
 import uuid
 from collections.abc import Iterable
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import timedelta
 from operator import attrgetter
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, get_args
 from urllib.parse import urlsplit
 
 from django import forms
@@ -30,6 +31,7 @@ from corporate.lib.billing_types import BillingModality
 from corporate.models.plans import CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
+    RealmDeactivationReasonType,
     do_change_realm_max_invites,
     do_change_realm_org_type,
     do_change_realm_plan_type,
@@ -417,7 +419,9 @@ def support(
     minimum_licenses: Json[NonNegativeInt] | None = None,
     required_plan_tier: Json[NonNegativeInt] | None = None,
     new_subdomain: str | None = None,
+    add_redirect_url: str | None = None,
     status: RemoteServerStatus | None = None,
+    deactivation_reason: RealmDeactivationReasonType | None = None,
     billing_modality: BillingModality | None = None,
     sponsorship_pending: Json[bool] | None = None,
     approve_sponsorship: Json[bool] = False,
@@ -450,11 +454,6 @@ def support(
     acting_user = request.user
     assert isinstance(acting_user, UserProfile)
     if settings.BILLING_ENABLED and request.method == "POST":
-        # We check that request.POST only has two keys in it: The
-        # realm_id and a field to change.
-        keys = set(request.POST.keys())
-        keys.discard("csrfmiddlewaretoken")
-
         assert realm_id is not None
         realm = Realm.objects.get(id=realm_id)
 
@@ -540,13 +539,23 @@ def support(
                     f"Cannot update maximum number of daily invitations for {realm.string_id}, because {update_text}."
                 )
         elif new_subdomain is not None:
+            add_deactivated_redirect = True
+            if add_redirect_url is None:
+                add_deactivated_redirect = False
+            else:
+                assert add_redirect_url == "true"
             old_subdomain = realm.string_id
             try:
                 check_subdomain_available(new_subdomain)
             except ValidationError as error:
                 context["error_message"] = error.message
             else:
-                do_change_realm_subdomain(realm, new_subdomain, acting_user=acting_user)
+                do_change_realm_subdomain(
+                    realm,
+                    new_subdomain,
+                    acting_user=acting_user,
+                    add_deactivated_redirect=add_deactivated_redirect,
+                )
                 request.session["success_message"] = (
                     f"Subdomain changed from {old_subdomain} to {new_subdomain}"
                 )
@@ -558,12 +567,11 @@ def support(
                     f"Realm reactivation email sent to admins of {realm.string_id}."
                 )
             elif status == "deactivated":
-                # TODO: Add support for deactivation reason in the support UI that'll be passed
-                # here.
+                assert deactivation_reason is not None
                 do_deactivate_realm(
                     realm,
                     acting_user=acting_user,
-                    deactivation_reason="owner_request",
+                    deactivation_reason=deactivation_reason,
                     email_owners=True,
                 )
                 context["success_message"] = f"{realm.string_id} deactivated."
@@ -574,7 +582,7 @@ def support(
             user_profile_for_deletion = get_user_profile_by_id(delete_user_by_id)
             user_email = user_profile_for_deletion.delivery_email
             assert user_profile_for_deletion.realm == realm
-            do_delete_user_preserving_messages(user_profile_for_deletion)
+            do_delete_user_preserving_messages(user_profile_for_deletion, acting_user=acting_user)
             context["success_message"] = f"{user_email} in {realm.subdomain} deleted."
 
         if support_view_request is not None:
@@ -588,13 +596,17 @@ def support(
                 context["error_message"] = error.msg
 
     if query:
-        key_words = get_invitee_emails_set(query)
-
+        possible_emails = get_invitee_emails_set(query)
         case_insensitive_users_q = Q()
-        for key_word in key_words:
-            case_insensitive_users_q |= Q(delivery_email__iexact=key_word)
+        for email_address in possible_emails:
+            case_insensitive_users_q |= Q(delivery_email__iexact=email_address)
         users = set(UserProfile.objects.filter(case_insensitive_users_q))
-        realms = set(Realm.objects.filter(string_id__in=key_words))
+
+        key_words = re.split(r"\s*[,;]\s*", query.strip())
+        possible_string_ids = [
+            key_word for key_word in key_words if re.match(r"^[a-z0-9-]+$", key_word)
+        ]
+        realms = set(Realm.objects.filter(string_id__in=possible_string_ids))
 
         for key_word in key_words:
             try:
@@ -693,7 +705,9 @@ def support(
     context["ORGANIZATION_TYPES"] = sorted(
         Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
     )
+    context["DEACTIVATION_REASONS"] = get_args(RealmDeactivationReasonType)
     context["remote_support_view"] = False
+    context["format_optional_datetime"] = format_optional_datetime
 
     return render(request, "corporate/support/support.html", context=context)
 
@@ -782,8 +796,6 @@ def remote_servers_support(
         SupportRequestError,
         SupportType,
         SupportViewRequest,
-        do_deactivate_remote_server,
-        do_reactivate_remote_server,
     )
     from corporate.lib.support import RemoteSupportData, get_data_for_remote_support_view
 
@@ -871,14 +883,14 @@ def remote_servers_support(
                 support_staff=acting_user, remote_server=remote_server
             )
             if remote_server_status == "active":
-                do_reactivate_remote_server(remote_server)
+                remote_server_status_billing_session.do_reactivate_remote_server()
                 context["success_message"] = (
                     f"Remote server ({remote_server.hostname}) reactivated."
                 )
             else:
                 assert remote_server_status == "deactivated"
                 try:
-                    do_deactivate_remote_server(remote_server, remote_server_status_billing_session)
+                    remote_server_status_billing_session.do_deactivate_remote_server()
                     context["success_message"] = (
                         f"Remote server ({remote_server.hostname}) deactivated."
                     )

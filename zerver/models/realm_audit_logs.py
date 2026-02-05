@@ -37,6 +37,7 @@ class AuditLogEventType(IntEnum):
     USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED = 131
     USER_SETTING_CHANGED = 132
     USER_DIGEST_EMAIL_CREATED = 133
+    USER_IS_IMPORTED_STUB_CHANGED = 134
 
     REALM_DEACTIVATED = 201
     REALM_REACTIVATED = 202
@@ -119,6 +120,8 @@ class AuditLogEventType(IntEnum):
 
     SAVED_SNIPPET_CREATED = 800
 
+    CUSTOM_EMAIL_SENT = 810
+
     NAVIGATION_VIEW_CREATED = 850
     NAVIGATION_VIEW_UPDATED = 851
     NAVIGATION_VIEW_DELETED = 852
@@ -128,6 +131,8 @@ class AuditLogEventType(IntEnum):
     CHANNEL_FOLDER_DESCRIPTION_CHANGED = 903
     CHANNEL_FOLDER_ARCHIVED = 904
     CHANNEL_FOLDER_UNARCHIVED = 905
+
+    INVITATION_REVOKED = 1001
 
     # The following values are only for remote server/realm logs.
     # Values should be exactly 10000 greater than the corresponding
@@ -256,6 +261,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
         on_delete=CASCADE,
     )
     event_last_message_id = models.IntegerField(null=True)
+    scrubbed = models.BooleanField(db_default=False, default=False)
 
     class Meta:
         ordering = ["id"]

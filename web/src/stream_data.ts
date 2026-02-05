@@ -391,10 +391,19 @@ export function muted_stream_ids(): number[] {
         .map((sub) => sub.stream_id);
 }
 
-export function get_streams_for_user(user_id: number): {
+export async function get_streams_for_user(user_id: number): Promise<{
+    subscribed: StreamSubscription[];
+    can_subscribe: StreamSubscription[];
+}> {
+    await peer_data.fetch_subscriptions_for_user(user_id);
+    return get_fetched_streams_for_user(user_id);
+}
+
+export function get_fetched_streams_for_user(user_id: number): {
     subscribed: StreamSubscription[];
     can_subscribe: StreamSubscription[];
 } {
+    assert(peer_data.subscriber_data_loaded_for_user(user_id));
     // Note that we only have access to subscribers of some streams
     // depending on our role.
     const all_subs = get_unsorted_subs();
@@ -407,8 +416,6 @@ export function get_streams_for_user(user_id: number): {
             // subscribers (which would trigger a warning).
             continue;
         }
-        // TODO: Before calling this, we should get this user's subscriptions
-        // and add them to the peer_data's stream_subscribers. #35341
         if (is_user_loaded_and_subscribed(sub.stream_id, user_id)) {
             subscribed_subs.push(sub);
         } else if (can_subscribe_user(sub, user_id)) {
@@ -725,7 +732,40 @@ export function get_current_user_and_their_bots_with_post_messages_permission(
 }
 
 export function can_access_stream_email(sub: StreamSubscription): boolean {
-    return get_current_user_and_their_bots_with_post_messages_permission(sub).length > 0;
+    // User can access stream email if they can send messages to that
+    // stream.
+
+    // Users without post permissions should not have email access
+    if (!can_post_messages_in_stream(sub, current_user.user_id)) {
+        return false;
+    }
+
+    // All users with posting permissions can access email of
+    // web-public streams.
+    if (sub.is_web_public) {
+        return true;
+    }
+
+    // All non-guest users with posting permissions can access
+    // email of public streams.
+    if (!sub.invite_only && !current_user.is_guest) {
+        return true;
+    }
+
+    // Subscribed users (including guests) have access to stream
+    // email for all types of streams.
+    if (sub.subscribed) {
+        return true;
+    }
+
+    // For private streams with public history, non subscribed
+    // users can access email if they have content access to
+    // streams via group permissions.
+    if (sub.invite_only && sub.history_public_to_subscribers && !current_user.is_guest) {
+        return has_content_access_via_group_permissions(sub);
+    }
+
+    return false;
 }
 
 export function can_access_topic_history(sub: StreamSubscription): boolean {
@@ -880,6 +920,32 @@ export function rewire_can_post_messages_in_stream(
     can_post_messages_in_stream = value;
 }
 
+export let can_create_new_topics_in_stream = function (stream_id: number): boolean {
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    const stream = get_sub_by_id(stream_id);
+    assert(stream !== undefined);
+
+    if (stream.is_archived) {
+        return false;
+    }
+
+    const can_create_topic_group = stream.can_create_topic_group;
+    return settings_data.user_has_permission_for_group_setting(
+        can_create_topic_group,
+        "can_create_topic_group",
+        "stream",
+    );
+};
+
+export function rewire_can_create_new_topics_in_stream(
+    value: typeof can_create_new_topics_in_stream,
+): void {
+    can_create_new_topics_in_stream = value;
+}
+
 export function user_can_move_messages_out_of_channel(stream: StreamSubscription): boolean {
     if (page_params.is_spectator) {
         return false;
@@ -952,10 +1018,7 @@ export function get_stream_privacy_policy(stream_id: number): string {
     if (!sub.invite_only) {
         return settings_config.stream_privacy_policy_values.public.code;
     }
-    if (sub.invite_only && !sub.history_public_to_subscribers) {
-        return settings_config.stream_privacy_policy_values.private.code;
-    }
-    return settings_config.stream_privacy_policy_values.private_with_public_history.code;
+    return settings_config.stream_privacy_policy_values.private.code;
 }
 
 export function is_stream_archived_by_id(stream_id: number): boolean {
@@ -1249,7 +1312,7 @@ export function get_options_for_dropdown_widget(): (dropdown_widget.Option & {
             unique_id: stream.stream_id,
             stream,
         }))
-        .sort((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
+        .toSorted((a, b) => util.strcmp(a.name.toLowerCase(), b.name.toLowerCase()));
 }
 
 export function get_streams_for_move_messages_widget(): (dropdown_widget.Option & {
@@ -1257,7 +1320,7 @@ export function get_streams_for_move_messages_widget(): (dropdown_widget.Option 
 })[] {
     return get_unsorted_subs_with_content_access()
         .filter((stream) => !stream.is_archived)
-        .sort((a, b) => {
+        .toSorted((a, b) => {
             if (a.subscribed !== b.subscribed) {
                 return a.subscribed ? -1 : 1;
             }

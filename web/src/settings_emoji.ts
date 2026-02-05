@@ -12,7 +12,7 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as emoji from "./emoji.ts";
 import type {ServerEmoji} from "./emoji.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as people from "./people.ts";
@@ -125,6 +125,7 @@ export function populate_emoji(): void {
                     source_url: item.source_url,
                     author,
                     can_delete_emoji: can_delete_emoji(item),
+                    is_overriding_default: is_default_emoji(item.name),
                 },
             });
         },
@@ -204,7 +205,7 @@ export function add_custom_emoji_post_render(): void {
 }
 
 function show_modal(): void {
-    const html_body = render_add_emoji({});
+    const modal_content_html = render_add_emoji({});
 
     function add_custom_emoji(): void {
         dialog_widget.show_dialog_spinner();
@@ -213,9 +214,9 @@ function show_modal(): void {
         const emoji: Record<string, string> = {};
 
         function submit_custom_emoji_request(formData: FormData): void {
-            assert(emoji.name !== undefined);
+            assert(emoji["name"] !== undefined);
             void channel.post({
-                url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
+                url: "/json/realm/emoji/" + encodeURIComponent(emoji["name"]),
                 data: formData,
                 cache: false,
                 processData: false,
@@ -234,9 +235,9 @@ function show_modal(): void {
         for (const obj of $("#add-custom-emoji-form").serializeArray()) {
             emoji[obj.name] = obj.value;
         }
-        assert(emoji.name !== undefined);
+        assert(emoji["name"] !== undefined);
 
-        if (emoji.name.trim() === "") {
+        if (emoji["name"].trim() === "") {
             ui_report.client_error(
                 $t_html({defaultMessage: "Failed: Emoji name is required."}),
                 $emoji_status,
@@ -245,7 +246,7 @@ function show_modal(): void {
             return;
         }
 
-        if (is_custom_emoji(emoji.name)) {
+        if (is_custom_emoji(emoji["name"])) {
             ui_report.client_error(
                 $t_html({
                     defaultMessage: "Failed: A custom emoji with this name already exists.",
@@ -263,7 +264,7 @@ function show_modal(): void {
             formData.append("file-" + i, file);
         }
 
-        if (is_default_emoji(emoji.name)) {
+        if (is_default_emoji(emoji["name"])) {
             if (!current_user.is_admin) {
                 ui_report.client_error(
                     $t_html({
@@ -277,12 +278,12 @@ function show_modal(): void {
             }
 
             dialog_widget.close(() => {
-                const html_body = emoji_settings_warning_modal({
-                    emoji_name: emoji.name,
+                const modal_content_html = emoji_settings_warning_modal({
+                    emoji_name: emoji["name"],
                 });
                 confirm_dialog.launch({
-                    html_heading: $t_html({defaultMessage: "Override default emoji?"}),
-                    html_body,
+                    modal_title_html: $t_html({defaultMessage: "Override default emoji?"}),
+                    modal_content_html,
                     on_click() {
                         submit_custom_emoji_request(formData);
                     },
@@ -293,9 +294,9 @@ function show_modal(): void {
         }
     }
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Add a new emoji"}),
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        modal_title_html: $t_html({defaultMessage: "Add a new emoji"}),
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Confirm"}),
         id: "add-custom-emoji-modal",
         form_id: "add-custom-emoji-form",
         loading_spinner: true,
@@ -324,7 +325,7 @@ export function set_up(): void {
         const url =
             "/json/realm/emoji/" +
             encodeURIComponent($button.closest("tr").attr("data-emoji-name")!);
-        const html_body = render_confirm_deactivate_custom_emoji({});
+        const modal_content_html = render_confirm_deactivate_custom_emoji({});
 
         const opts = {
             success_continuation() {
@@ -334,8 +335,8 @@ export function set_up(): void {
         };
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Deactivate custom emoji?"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Deactivate custom emoji?"}),
+            modal_content_html,
             id: "confirm_deactivate_custom_emoji_modal",
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {}, opts);

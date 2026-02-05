@@ -25,6 +25,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import {user_can_send_direct_message} from "./message_util.ts";
 import * as message_view from "./message_view.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as muted_users from "./muted_users.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
@@ -56,14 +57,15 @@ export function confirm_mute_user(user_id: number): void {
         muted_users.mute_user(user_id);
     }
 
-    const html_body = render_confirm_mute_user({
+    const modal_content_html = render_confirm_mute_user({
         user_name: people.get_full_name(user_id),
     });
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Mute user"}),
+        modal_title_html: $t_html({defaultMessage: "Mute user"}),
         help_link: "/help/mute-a-user",
-        html_body,
+        modal_content_html,
+        is_compact: true,
         on_click,
     });
 }
@@ -242,7 +244,7 @@ export let fetch_presence_for_popover = (user_id: number): void => {
         return;
     }
 
-    if (!people.is_active_user_for_popover(user_id) || people.get_by_user_id(user_id).is_bot) {
+    if (!people.is_active_user_or_system_bot(user_id) || people.get_by_user_id(user_id).is_bot) {
         return;
     }
 
@@ -310,7 +312,7 @@ function get_user_card_popover_data(
         invisible_mode = !user_settings.presence_enabled;
     }
 
-    const is_active = people.is_active_user_for_popover(user.user_id);
+    const is_active = people.is_active_user_or_system_bot(user.user_id);
     const is_system_bot = user.is_system_bot;
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
@@ -358,7 +360,7 @@ function get_user_card_popover_data(
         pm_with_url: hash_util.pm_with_url(user.user_id.toString()),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
-        sent_by_url: hash_util.by_sender_url(user.email),
+        sent_by_url: hash_util.by_sender_url(user.user_id),
         user_email: user.delivery_email,
         user_full_name: user.full_name,
         user_id: user.user_id,
@@ -408,7 +410,7 @@ function show_user_card_popover(
     let popover_html;
     let args;
     if (user.is_inaccessible_user) {
-        const sent_by_url = hash_util.by_sender_url(user.email);
+        const sent_by_url = hash_util.by_sender_url(user.user_id);
         const user_avatar = people.small_avatar_url_for_person(user);
         args = {
             user_id: user.user_id,
@@ -529,7 +531,7 @@ function load_medium_avatar(user: User, $elt: JQuery): void {
 // user is the user whose profile to show.
 // sender_id is the user id of the sender for the message we are
 // showing the popover from.
-function toggle_user_card_popover_for_message(
+export function toggle_user_card_popover_for_message(
     element: HTMLElement,
     user: User,
     sender_id: number,
@@ -556,11 +558,14 @@ export function unsaved_message_user_mention_event_handler(
     this: HTMLElement,
     e: JQuery.ClickEvent,
 ): void {
-    if (document.getSelection()?.type === "Range") {
+    // We stop propagation because, if this event was fired from drafts,
+    // it would otherwise trigger this handler twice: once from the
+    // `.user-mention` listener for drafts and again from the
+    // `.messagebox .user-mention` listener.
+    e.stopPropagation();
+    if (mouse_drag.is_drag(e)) {
         return;
     }
-
-    e.stopPropagation();
 
     const id_string = $(this).attr("data-user-id")!;
     // Do not open popover for @all mention
@@ -676,8 +681,11 @@ function register_click_handlers(): void {
         "click",
         ".sender_name, .inline-profile-picture-wrapper",
         function (this: HTMLElement, e) {
-            const $row = $(this).closest(".message_row");
             e.stopPropagation();
+            if (mouse_drag.is_drag(e)) {
+                return;
+            }
+            const $row = $(this).closest(".message_row");
             assert(message_lists.current !== undefined);
             const message = message_lists.current.get(rows.id($row));
             assert(message !== undefined);
@@ -687,6 +695,10 @@ function register_click_handlers(): void {
     );
 
     $("#main_div").on("click", ".user-mention", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        if (mouse_drag.is_drag(e)) {
+            return;
+        }
         const id_string = $(this).attr("data-user-id");
         // We fallback to email to handle legacy Markdown that was rendered
         // before we cut over to using data-user-id
@@ -695,7 +707,6 @@ function register_click_handlers(): void {
             return;
         }
         const $row = $(this).closest(".message_row");
-        e.stopPropagation();
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         assert(message !== undefined);
@@ -724,12 +735,11 @@ function register_click_handlers(): void {
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const email = people.get_by_user_id(user_id).email;
         message_view.show(
             [
                 {
                     operator: "dm",
-                    operand: email,
+                    operand: [user_id],
                 },
             ],
             {trigger: "user sidebar popover"},
@@ -744,12 +754,11 @@ function register_click_handlers(): void {
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_messages_sent", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const email = people.get_by_user_id(user_id).email;
         message_view.show(
             [
                 {
                     operator: "sender",
-                    operand: email,
+                    operand: user_id,
                 },
             ],
             {trigger: "user sidebar popover"},
@@ -836,7 +845,7 @@ function register_click_handlers(): void {
         }
         const user_id = elem_to_user_id($(this).parents("ul"));
         const name = people.get_by_user_id(user_id).full_name;
-        const is_active = people.is_active_user_for_popover(user_id);
+        const is_active = people.is_active_user_or_system_bot(user_id);
         const mention = people.get_mention_syntax(name, user_id, !is_active);
         compose_ui.insert_syntax_and_focus(mention);
         message_user_card.hide();

@@ -1,6 +1,6 @@
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
-import type {StateData} from "./state_data.ts";
+import type {NavigationView, StateData} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
 
 export type BuiltInViewBasicMetadata = {
@@ -50,7 +50,7 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         hidden_for_spectators: false,
         menu_icon_class: "recent-view-sidebar-menu-icon",
         menu_aria_label: $t({defaultMessage: "Recent conversations options"}),
-        home_view_code: "recent_topics",
+        home_view_code: "recent",
         prioritize_in_condensed_view: true,
     },
     all_messages: {
@@ -165,12 +165,6 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         home_view_code: "",
         prioritize_in_condensed_view: false,
     },
-};
-
-export type NavigationView = {
-    fragment: string;
-    is_pinned: boolean;
-    name: string | null;
 };
 
 let navigation_views_dict: Map<string, NavigationView>;

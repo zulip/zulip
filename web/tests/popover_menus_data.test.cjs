@@ -103,7 +103,7 @@ const everyone = make_user_group({
     id: 2,
     members: new Set([999, 1000, 2000]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 user_groups.initialize({realm_user_groups: [everyone]});
 
@@ -225,7 +225,6 @@ test("my_message_all_actions", ({override}) => {
     assert.equal(response.should_display_collapse, true);
     assert.equal(response.should_display_uncollapse, false);
     assert.equal(response.should_display_add_reaction_option, true);
-    assert.equal(response.should_display_hide_option, false);
     assert.equal(response.conversation_time_url, "conversation_and_time_url");
     assert.equal(response.should_display_delete_option, true);
     assert.equal(response.should_display_read_receipts_option, true);

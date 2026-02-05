@@ -19,7 +19,7 @@ from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
 from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
-from zerver.models import Message, Recipient, UserMessage, UserProfile
+from zerver.models import Message, PushDevice, PushDeviceToken, Recipient, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit, send_event_rollback_unsafe
 
 
@@ -220,31 +220,83 @@ def do_update_mobile_push_notification(
 
 
 def do_clear_mobile_push_notifications_for_ids(
-    user_profile_ids: list[int], message_ids: list[int]
+    user_profile_ids: list[int] | None, message_ids: list[int]
 ) -> None:
     if len(message_ids) == 0:
         return
 
-    # This function supports clearing notifications for several users
-    # only for the message-edit use case where we'll have a single message_id.
-    assert len(user_profile_ids) == 1 or len(message_ids) == 1
+    if user_profile_ids is not None:
+        # This block gets executed in the following cases:
+        # * Message(s) marked as read by a user
+        # * A message edited to remove mention(s)
+        if len(user_profile_ids) == 0:
+            return
+
+        # This supports clearing notifications for several users only for
+        # the message-edit use case where we'll have a single message_id.
+        assert len(user_profile_ids) == 1 or len(message_ids) == 1
+
+        notifications_to_update = (
+            UserMessage.objects.filter(
+                message_id__in=message_ids,
+                user_profile_id__in=user_profile_ids,
+            )
+            .extra(  # noqa: S610
+                where=[UserMessage.where_active_push_notification()],
+            )
+            .values_list("id", "user_profile_id", "message_id")
+        )
+    else:
+        # This block handles clearing notifications when message(s) get deleted.
+        notifications_to_update = (
+            # Uses index: zerver_usermessage_message_active_mobile_push_notification_idx
+            UserMessage.objects.filter(
+                message_id__in=message_ids,
+            )
+            .extra(  # noqa: S610
+                where=[UserMessage.where_active_push_notification()],
+            )
+            .values_list("id", "user_profile_id", "message_id")
+        )
 
     messages_by_user = defaultdict(list)
-    notifications_to_update = (
-        UserMessage.objects.filter(
-            message_id__in=message_ids,
-            user_profile_id__in=user_profile_ids,
-        )
-        .extra(  # noqa: S610
-            where=[UserMessage.where_active_push_notification()],
-        )
-        .values_list("user_profile_id", "message_id")
-    )
-
-    for user_id, message_id in notifications_to_update:
+    for unused, user_id, message_id in notifications_to_update:
         messages_by_user[user_id].append(message_id)
 
+    clear_notifications_user_ids = set(messages_by_user.keys())
+    push_device_registered_user_ids = set(
+        PushDeviceToken.objects.filter(user_id__in=clear_notifications_user_ids)
+        .values_list("user_id", flat=True)
+        .union(
+            # Uses index "zerver_pushdevice_user_bouncer_device_id_idx".
+            PushDevice.objects.filter(
+                user_id__in=clear_notifications_user_ids, bouncer_device_id__isnull=False
+            ).values_list("user_id", flat=True)
+        )
+    )
+    push_device_not_registered_user_ids = (
+        clear_notifications_user_ids - push_device_registered_user_ids
+    )
+
+    usermessages_to_update_ids = []
+    for um_id, user_id, unused in notifications_to_update:
+        if user_id in push_device_not_registered_user_ids:
+            usermessages_to_update_ids.append(um_id)
+
+    if usermessages_to_update_ids:
+        BATCH_SIZE = 1000
+        for i in range(0, len(usermessages_to_update_ids), BATCH_SIZE):
+            with transaction.atomic(savepoint=False):
+                UserMessage.select_for_update_query().filter(
+                    id__in=usermessages_to_update_ids[i : i + BATCH_SIZE]
+                ).update(
+                    flags=F("flags").bitand(~UserMessage.flags.active_mobile_push_notification)
+                )
+
     for user_profile_id, event_message_ids in messages_by_user.items():
+        if user_profile_id in push_device_not_registered_user_ids:
+            continue
+
         notice = {
             "type": "remove",
             "user_profile_id": user_profile_id,

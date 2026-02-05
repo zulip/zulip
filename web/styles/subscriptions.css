@@ -27,7 +27,7 @@
     font-family: "Source Code Pro", monospace;
     padding: 10px;
     font-size: 0.85em; /* 13.6px at 16px/em (previously 0.85rem) */
-    background-color: hsl(0deg 0% 98%);
+    background-color: var(--color-background-stream-email);
     border: 1px solid hsl(0deg 0% 87%);
     border-radius: 4px;
 }
@@ -116,6 +116,23 @@
     color: hsl(0deg 100% 50%);
 }
 
+.stream_creation_error a,
+#change_stream_name_error a {
+    text-decoration: underline;
+}
+
+#change_stream_name {
+    margin-bottom: 0;
+}
+
+#change_stream_name_error {
+    color: hsl(0deg 100% 50%);
+}
+
+.change-stream-name-container {
+    margin-bottom: 20px;
+}
+
 /* TODO: Unify with settings.css definition */
 h3.stream_setting_subsection_title,
 h3.user_group_setting_subsection_title {
@@ -146,7 +163,10 @@ h4.user_group_setting_subsection_title {
     display: flex;
     align-items: center;
     margin: auto;
-    margin-top: 100px;
+
+    &:not(:empty) {
+        margin-top: 100px;
+    }
 }
 
 #people_to_add_in_group,
@@ -169,8 +189,8 @@ h4.user_group_setting_subsection_title {
 .member-list-box,
 .subscriber-list-box {
     text-align: center;
-    border-left: 1px solid hsl(0deg 0% 87%);
-    border-right: 1px solid hsl(0deg 0% 87%);
+    border-left: 1px solid var(--color-border-table-subscriber-list);
+    border-right: 1px solid var(--color-border-table-subscriber-list);
     border-radius: 4px;
 
     .member_list_container,
@@ -373,14 +393,6 @@ h4.user_group_setting_subsection_title {
 
     .subsection-settings {
         margin-top: 10px;
-
-        .input-group {
-            margin-bottom: 1.25em; /* 20px at 16px/em */
-
-            &.control-label-disabled {
-                width: fit-content;
-            }
-        }
     }
 
     .no-permissions-for-group-text {
@@ -397,16 +409,7 @@ h4.user_group_setting_subsection_title {
     align-items: center;
     border-bottom: 1px solid var(--color-border-modal-bar);
     grid-area: settings-overlay-subheader;
-
-    .left {
-        align-self: start;
-    }
-
-    .left,
-    .right {
-        display: flex;
-        justify-content: center;
-    }
+    justify-content: center;
 
     .list-toggler-container {
         flex-wrap: wrap;
@@ -415,6 +418,7 @@ h4.user_group_setting_subsection_title {
         justify-content: end;
         flex-grow: 1;
         gap: 5px;
+        align-self: start;
     }
 
     .tab-switcher.stream_sorter_toggle {
@@ -492,11 +496,7 @@ h4.user_group_setting_subsection_title {
     display: grid;
     grid-template:
         "settings-overlay-header   " var(--settings-overlay-header-height)
-        "settings-overlay-subheader" minmax(
-            var(--settings-overlay-subheader-height),
-            max-content
-        )
-        "settings-overlay-body     " minmax(0, 1fr) / 100%;
+        "settings-overlay-content     " minmax(0, 1fr) / 100%;
     height: 95%;
     border-radius: 4px;
     padding: 0;
@@ -505,6 +505,10 @@ h4.user_group_setting_subsection_title {
     overflow: hidden;
     max-width: 1200px;
     max-height: var(--overlay-container-max-height);
+
+    /* This variable allows JavaScript to detect whether we are showing both
+    the left sidebar and settings content for the current screen width or not. */
+    --column-count: 2;
 
     .list-toggler-container .tab-switcher .ind-tab {
         width: auto;
@@ -533,15 +537,27 @@ h4.user_group_setting_subsection_title {
         }
     }
 
+    .two-pane-settings-content {
+        grid-area: settings-overlay-content;
+        display: flex;
+
+        .left,
+        .right {
+            display: grid;
+            grid-template:
+                "settings-overlay-subheader" minmax(
+                    var(--settings-overlay-subheader-height),
+                    max-content
+                )
+                "settings-overlay-body     " minmax(0, 1fr) / 100%;
+        }
+    }
+
     .exit-sign {
         font-size: 1.5em;
         margin-right: 0.7142em; /* 10px at 14px em */
         font-weight: 600;
         cursor: pointer;
-    }
-
-    .two-pane-settings-body {
-        display: flex;
     }
 
     .left .no-streams-to-show,
@@ -581,13 +597,6 @@ h4.user_group_setting_subsection_title {
 
             .settings-empty-option-text {
                 color: var(--color-text-item);
-            }
-
-            .upgrade-or-sponsorship-tip,
-            .upgrade-tip {
-                /* Center tip in parent container */
-                margin-left: auto;
-                margin-right: auto;
             }
         }
     }
@@ -646,16 +655,53 @@ h4.user_group_setting_subsection_title {
 .group_name_search_section {
     padding: 8px 10px;
     display: grid;
+    border-bottom: 1px solid var(--color-border-modal-bar);
+}
+
+.stream_name_search_section {
+    grid-template:
+        "folder-filter search-input clear-search dropdown-widget" auto / auto minmax(
+            0,
+            1fr
+        )
+        30px;
+}
+
+.group_name_search_section {
     grid-template:
         "search-input clear-search dropdown-widget" auto / minmax(0, 1fr)
         30px;
-    border-bottom: 1px solid var(--color-border-modal-bar);
 }
 
 #stream_settings_filter_widget {
     margin-left: 10px;
     gap: 3px;
     width: auto;
+}
+
+#clear_search_stream_name,
+#clear_search_group_name {
+    grid-area: clear-search;
+}
+
+#folder_filter_container {
+    grid-area: folder-filter;
+    display: flex;
+}
+
+#folder_filter_button {
+    font-size: calc(
+        1.5625 * var(--base-font-size-px)
+    ); /* 25px at 16px font size */
+    padding: 0;
+    height: var(--folder-filter-dropdown-widget-button-height);
+    /* To align the search input with privacy icon box in the stream row,
+    margin is set by subtracting the button width (which is equal to
+    its height) from total width of the checkbox container in stream row. */
+    margin-right: calc(
+        2.3125 * var(--base-font-size-px) -
+            var(--folder-filter-dropdown-widget-button-height)
+    );
 }
 
 .stream_settings_filter_container.hide_filter {
@@ -756,7 +802,7 @@ h4.user_group_setting_subsection_title {
             /* This color is used in .subscriber-check-icon of the help
                center to make the icon color same as the web app. Do change
                the color there when changing the color here */
-            color: hsl(0deg 0% 72%);
+            color: var(--color-stream-group-row-plus-icon);
             font-size: 1.0938em; /* 70% of 1.5625em */
 
             &.hide {
@@ -765,7 +811,7 @@ h4.user_group_setting_subsection_title {
         }
 
         &.checked:hover .sub-unsub-icon {
-            color: hsl(240deg 41% 50%);
+            color: var(--color-stream-group-row-checked-icon-hover);
         }
 
         &.not-direct-member {
@@ -776,10 +822,12 @@ h4.user_group_setting_subsection_title {
 
         &.disabled {
             &:not(.checked) .sub-unsub-icon {
-                color: hsl(0deg 0% 87%);
+                /* Change opacity to 50% in dark mode */
+                color: var(--color-stream-group-row-plus-icon-disabled);
             }
 
             .sub-unsub-icon {
+                color: var(--color-stream-group-row-checked-icon-disabled);
                 cursor: not-allowed;
             }
         }
@@ -806,7 +854,12 @@ h4.user_group_setting_subsection_title {
         /* This color is used in .subscriber-check-icon of the help
            center to make the icon color same as the web app. Do change
            the color there when changing the color here */
-        color: hsl(240deg 96% 68%);
+        color: var(--color-stream-group-row-checked-icon);
+    }
+
+    .check:not(.checked, .disabled):hover .sub-unsub-icon,
+    &.active .check:not(.checked, .disabled):hover .sub-unsub-icon {
+        color: var(--color-stream-group-row-plus-icon-hover);
     }
 
     .icon {
@@ -894,11 +947,6 @@ h4.user_group_setting_subsection_title {
         background-color: var(--color-active-row-modal);
     }
 
-    .check:not(.checked, .disabled):hover .sub-unsub-icon,
-    &.active .check:not(.checked, .disabled):hover .sub-unsub-icon {
-        color: hsl(0deg 0% 27%);
-    }
-
     &::selection,
     .icon .hashtag::selection {
         background-color: transparent;
@@ -931,7 +979,8 @@ h4.user_group_setting_subsection_title {
 
 .org-permissions-form,
 .group-permissions,
-.advanced-configurations-container {
+.advanced-configurations-container,
+.channel-permissions {
     .group_setting_disabled {
         cursor: not-allowed;
         /* This ensures that we do not see the not allowed cursor in the
@@ -1050,7 +1099,7 @@ h4.user_group_setting_subsection_title {
 
     .group_settings_header,
     .stream_settings_header {
-        white-space: nowrap;
+        flex-wrap: wrap;
         display: flex;
         margin-left: 18px;
 
@@ -1158,7 +1207,7 @@ h4.user_group_setting_subsection_title {
     .group-description-wrapper,
     .stream-description {
         hyphens: auto;
-        margin-bottom: 5px;
+        margin-bottom: 10px;
 
         .no-description {
             font-style: italic;
@@ -1214,15 +1263,7 @@ h4.user_group_setting_subsection_title {
 
     .stream_details_box,
     .group_detail_box {
-        > .stream_details_subsection,
-        > .group_details_box_subsection {
-            margin: 0 0 10px; /* mimic paragraph spacing */
-        }
-
-        .stream_email_address_error {
-            vertical-align: top;
-            margin-left: 15px;
-        }
+        margin: 0 0 10px; /* mimic paragraph spacing */
     }
 
     .loading_indicator_text {
@@ -1253,56 +1294,11 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-div.settings-radio-input-parent {
-    border-bottom: 1px solid hsl(0deg 0% 87%);
-    margin: 2px 0 2px 5px;
-    padding: 2px 0;
-
-    &:last-of-type {
-        border-bottom: none;
-    }
-
-    & label.radio {
-        display: inline;
-        margin: 5px;
-    }
-
-    & input {
-        float: left;
-        width: auto;
-        cursor: pointer;
-        /* Scale the height with font-size, 14px at 1em */
-        height: 1em;
-        /* This value came from fiddling to find what looked
-           vertically centered at 12px-20px font sizes. */
-        margin-top: 0.15em;
-
-        &:focus {
-            outline: 1px dotted hsl(0deg 0% 20%);
-            outline: 5px auto -webkit-focus-ring-color;
-            outline-offset: -2px;
-        }
-
-        &:disabled {
-            cursor: not-allowed;
-        }
-    }
-
-    &.default_stream_private_tooltip {
-        cursor: not-allowed;
-
-        & label {
-            pointer-events: none;
-        }
-    }
-}
-
-.stream-permissions,
-.advanced-configurations-container,
-.group-permissions {
+.new-stream-configuration,
+.channel-permissions,
+.group-permissions,
+.stream_details_box {
     .input-group {
-        margin-bottom: 0.625em; /* 10px at 16px/em */
-
         &.message-retention-setting-group {
             & input {
                 width: 5ch;
@@ -1321,34 +1317,31 @@ div.settings-radio-input-parent {
         padding-bottom: 4px;
         height: 1.4em;
     }
+}
 
-    .default-stream {
-        margin: 20px 0;
-        width: fit-content;
+#subscription_overlay .default-stream,
+#subscription_overlay .history-public-to-subscribers {
+    width: fit-content;
 
-        .inline {
-            display: inline;
-        }
+    .inline {
+        display: inline;
     }
+}
+
+#stream_creation_form .default-stream {
+    margin: 20px 0;
 }
 
 .group-permissions .pill-container,
-.advanced-configurations-container .pill-container {
+.advanced-configurations-container .pill-container,
+.channel-permissions .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
 
-    .input {
-        flex-grow: 1;
-
-        &:first-child:empty::before {
-            opacity: 0.5;
-            content: attr(data-placeholder);
-        }
+    .input:first-child:empty::before {
+        opacity: 0.5;
+        content: attr(data-placeholder);
     }
-}
-
-.advanced-configurations-container .pill-container {
-    margin-bottom: 10px;
 }
 
 .group-permissions .dropdown_widget_with_label_wrapper {
@@ -1361,19 +1354,18 @@ div.settings-radio-input-parent {
 #change_stream_description,
 #new_channel_folder_description,
 #edit_channel_folder_description {
-    width: 100%;
     height: 80px;
     margin-bottom: 4px;
-    box-sizing: border-box;
 }
 
-.advanced-configurations-container
-    .stream-message-retention-days-input
-    input[type="text"] {
-    border-radius: 5px;
-    box-shadow: none;
-    margin: 0;
-    height: inherit;
+.advanced-configurations-container,
+.channel-permissions {
+    .stream-message-retention-days-input input[type="text"] {
+        border-radius: 5px;
+        box-shadow: none;
+        margin: 0;
+        height: inherit;
+    }
 }
 
 .group-setting-label {
@@ -1388,7 +1380,7 @@ div.settings-radio-input-parent {
     gap: 10px;
     overflow: hidden;
 
-    &.action-button-quiet-neutral {
+    &.action-button-subtle-neutral {
         box-shadow: none;
     }
 }
@@ -1446,11 +1438,6 @@ div.settings-radio-input-parent {
     .two-pane-settings-container {
         max-width: 95%;
     }
-
-    #groups_overlay .group_settings_header,
-    #subscription_overlay .stream_settings_header {
-        flex-wrap: wrap;
-    }
 }
 
 /* This ensures the left-border is tall enough. We can't keep this style for
@@ -1467,6 +1454,10 @@ div.settings-radio-input-parent {
     .two-pane-settings-container {
         position: relative;
         overflow: hidden;
+
+        /* This variable allows JavaScript to detect whether we are showing both
+        the left sidebar and settings content for the current screen width or not. */
+        --column-count: 1;
 
         .two-pane-settings-header .fa-chevron-left {
             visibility: visible;

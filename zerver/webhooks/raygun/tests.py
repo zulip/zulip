@@ -2,15 +2,11 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class RaygunHookTests(WebhookTestCase):
-    CHANNEL_NAME = "raygun"
-    URL_TEMPLATE = "/api/v1/external/raygun?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "raygun"
-
     def test_status_changed_message(self) -> None:
         expected_topic_name = "test"
         expected_message = """
 [Error](https://app.raygun.com/error-url) status changed to **Ignored** by Emma Cat:
-* **Timestamp**: Wed Jan 28 01:49:36 1970
+* **Timestamp**: <time:1970-01-28T01:49:36+00:00>
 * **Application details**: [Best App](http://app.raygun.io/application-url)
 """.strip()
 
@@ -29,7 +25,7 @@ Anita Peacock commented on [Error](https://app.raygun.com/error-url):
 ``` quote
 Ignoring these errors
 ```
-* **Timestamp**: Wed Jan 28 01:49:36 1970
+* **Timestamp**: <time:1970-01-28T01:49:36+00:00>
 * **Application details**: [application name](http://app.raygun.io/application-url)
 """.strip()
 
@@ -44,7 +40,7 @@ Ignoring these errors
         expected_topic_name = "test"
         expected_message = """
 Amy Loondon assigned [Error](https://app.raygun.com/error-url) to Kyle Kenny:
-* **Timestamp**: Wed Jan 28 01:49:36 1970
+* **Timestamp**: <time:1970-01-28T01:49:36+00:00>
 * **Application details**: [application name](http://app.raygun.io/application-url)
 """.strip()
 
@@ -59,8 +55,8 @@ Amy Loondon assigned [Error](https://app.raygun.com/error-url) to Kyle Kenny:
         expected_topic_name = "test"
         expected_message = """
 One minute [follow-up error](http://app.raygun.io/error-url):
-* **First occurred**: Wed Jan 28 01:49:36 1970
-* **Last occurred**: Wed Jan 28 01:49:36 1970
+* **First occurred**: <time:1970-01-28T01:49:36+00:00>
+* **Last occurred**: <time:1970-01-28T01:49:36+00:00>
 * 1 users affected with 1 total occurrences
 * **Application details**: [application name](http://app.raygun.io/application-url)
 """.strip()
@@ -76,8 +72,8 @@ One minute [follow-up error](http://app.raygun.io/error-url):
         expected_topic_name = "test"
         expected_message = """
 Hourly [follow-up error](http://app.raygun.io/error-url):
-* **First occurred**: Wed Jan 28 01:49:36 1970
-* **Last occurred**: Wed Jan 28 01:49:36 1970
+* **First occurred**: <time:1970-01-28T01:49:36+00:00>
+* **Last occurred**: <time:1970-01-28T01:49:36+00:00>
 * 1 users affected with 1 total occurrences
 * **Application details**: [application name](http://app.raygun.io/application-url)
 """.strip()
@@ -93,8 +89,8 @@ Hourly [follow-up error](http://app.raygun.io/error-url):
         expected_topic_name = "test"
         expected_message = """
 New [Error](http://app.raygun.io/error-url) occurred:
-* **First occurred**: Wed Jan 28 01:49:36 1970
-* **Last occurred**: Wed Jan 28 01:49:36 1970
+* **First occurred**: <time:1970-01-28T01:49:36+00:00>
+* **Last occurred**: <time:1970-01-28T01:49:36+00:00>
 * 1 users affected with 1 total occurrences
 * **Tags**: test, error-page, v1.0.1, env:staging
 * **Affected user**: a9b7d8...33846
@@ -114,8 +110,8 @@ New [Error](http://app.raygun.io/error-url) occurred:
         expected_topic_name = "test"
         expected_message = """
 [Error](http://app.raygun.io/error-url) reoccurred:
-* **First occurred**: Wed Jan 28 01:49:36 1970
-* **Last occurred**: Wed Jan 28 01:49:36 1970
+* **First occurred**: <time:1970-01-28T01:49:36+00:00>
+* **Last occurred**: <time:1970-01-28T01:49:36+00:00>
 * 1 users affected with 1 total occurrences
 * **Tags**: test, error-page, v1.0.1, env:staging
 * **Affected user**: a9b7d8...33846

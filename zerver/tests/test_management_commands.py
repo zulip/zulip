@@ -1,3 +1,4 @@
+import hashlib
 import os
 import re
 from datetime import timedelta
@@ -10,32 +11,25 @@ from django.apps import apps
 from django.conf import settings
 from django.core.management import call_command, find_commands
 from django.core.management.base import CommandError
+from django.db.models import Q
+from django.db.models.functions import Lower
 from django.test import override_settings
 from typing_extensions import override
 
 from confirmation.models import Confirmation, generate_realm_creation_url
 from zerver.actions.create_user import do_create_user
 from zerver.actions.user_settings import do_change_user_setting
-from zerver.lib.management import ZulipBaseCommand, check_config
+from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
-from zerver.models import Realm, Recipient, UserProfile
+from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_profile_by_email
 
 
-class TestCheckConfig(ZulipTestCase):
-    def test_check_config(self) -> None:
-        check_config()
-        with (
-            self.settings(REQUIRED_SETTINGS=[("asdf", "not asdf")]),
-            self.assertRaisesRegex(
-                CommandError, "Error: You must set asdf in /etc/zulip/settings.py."
-            ),
-        ):
-            check_config()
-
+class TestWarnNoEmail(ZulipTestCase):
     @override_settings(WARN_NO_EMAIL=True)
     def test_check_send_email(self) -> None:
         with self.assertRaisesRegex(CommandError, "Outgoing email not yet configured, see"):
@@ -533,7 +527,7 @@ class TestExport(ZulipTestCase):
             call_command(self.COMMAND_NAME, "-r=zulip", "--export-full-with-consent")
             m.assert_called_once_with(
                 export_row=mock.ANY,
-                threads=mock.ANY,
+                processes=mock.ANY,
                 output_dir=mock.ANY,
                 percent_callback=mock.ANY,
                 upload=False,
@@ -593,6 +587,210 @@ class TestSendCustomEmail(ZulipTestCase):
                 ],
             )
 
+        # Verify log entries not created in dry-run
+        audit_logs = RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOM_EMAIL_SENT)
+        self.assert_length(audit_logs, 0)
+
+    def test_custom_email_duplicate_prevention_by_user(self) -> None:
+        path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
+
+        # Generate email hash
+        with open(path) as f:
+            text = f.read()
+            email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
+
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+        othello = self.example_user("othello")
+
+        call_command(
+            self.COMMAND_NAME,
+            f"--path={path}",
+            f"-u={iago.delivery_email},{prospero.delivery_email}",
+        )
+
+        # Verify RealmAuditLog entries were created
+        audit_logs = RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOM_EMAIL_SENT)
+        self.assert_length(audit_logs, 2)
+        self.assertEqual(email_template_hash, audit_logs[0].extra_data["email_id"])
+        self.assertEqual("Test subject", audit_logs[0].extra_data["email_subject"])
+
+        # Second send attempt - should send one email and exclude the two users that already received the email
+
+        with patch("builtins.print") as mock_print:
+            call_command(
+                self.COMMAND_NAME,
+                f"--path={path}",
+                f"-u={iago.delivery_email},{prospero.delivery_email},{othello.delivery_email}",
+            )
+
+            self.assertEqual(
+                mock_print.mock_calls[0:],
+                [
+                    call("Excluded 2 users who already received this email"),
+                ],
+            )
+        new_audit_logs = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT
+        )
+        self.assert_length(new_audit_logs, 3)
+        self.assertEqual(email_template_hash, new_audit_logs[0].extra_data["email_id"])
+        self.assertEqual("Test subject", audit_logs[0].extra_data["email_subject"])
+
+        othello_audit_log = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT, modified_user=othello
+        )
+        self.assert_length(othello_audit_log, 1)
+
+    def test_custom_marketing_email_duplicate_prevention_by_email(self) -> None:
+        path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
+
+        # Ensure that marketing includes two users with two different realms and different roles
+        realm1 = get_realm("lear")
+        realm2 = get_realm("zephyr")
+
+        shared_email = "DUPLICATE@example.com"
+
+        admin_user = do_create_user(
+            email=shared_email,
+            password="password",
+            realm=realm1,
+            full_name="Admin User",
+            role=UserProfile.ROLE_REALM_ADMINISTRATOR,
+            acting_user=None,
+            tos_version=settings.TERMS_OF_SERVICE_VERSION,
+        )
+        admin_user.save()
+
+        owner_user = do_create_user(
+            email=shared_email.lower(),
+            password="password",
+            realm=realm2,
+            full_name="Owner User",
+            role=UserProfile.ROLE_REALM_OWNER,
+            acting_user=None,
+            tos_version=settings.TERMS_OF_SERVICE_VERSION,
+        )
+
+        owner_user.save()
+
+        # Get the total number of marketing emails to be sent
+        users = UserProfile.objects.filter(
+            is_active=True,
+            is_bot=False,
+            is_mirror_dummy=False,
+            realm__deactivated=False,
+            enable_marketing_emails=True,
+        ).filter(
+            Q(long_term_idle=False)
+            | Q(
+                role__in=[
+                    UserProfile.ROLE_REALM_OWNER,
+                    UserProfile.ROLE_REALM_ADMINISTRATOR,
+                ]
+            )
+        )
+
+        users = users.annotate(lower_email=Lower("delivery_email")).distinct("lower_email")
+
+        users_count = users.count()
+        users_emails = users.values_list("lower_email", flat=True)
+
+        # Get the email hash
+        with open(path) as f:
+            text = f.read()
+            email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
+
+        call_command(
+            self.COMMAND_NAME,
+            f"--path={path}",
+            "--marketing",
+        )
+
+        # Verify RealmAuditLog entries were created
+        audit_logs = RealmAuditLog.objects.filter(event_type=AuditLogEventType.CUSTOM_EMAIL_SENT)
+        self.assert_length(audit_logs, users_count)
+
+        # Verify the email_id
+        self.assertEqual(email_template_hash, audit_logs[0].extra_data["email_id"])
+
+        # Verify modified_user email
+        modified_users_email = audit_logs.annotate(
+            lower_email=Lower("modified_user__delivery_email")
+        ).values_list("lower_email", flat=True)
+        self.assertEqual(set(users_emails), set(modified_users_email))
+
+        # Verify only one email was sent (to one of the two users created before)
+        audit_logs_duplicate = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT,
+            modified_user__in=[admin_user, owner_user],
+        )
+        self.assert_length(audit_logs_duplicate, 1)
+
+        # Verify the email addresses match (case-insensitive)
+        assert audit_logs_duplicate[0].modified_user is not None
+        self.assertEqual(
+            audit_logs_duplicate[0].modified_user.delivery_email.lower(),
+            shared_email.lower(),
+        )
+
+        # Verify the second call prevents sending duplication emails
+        with patch("builtins.print") as mock_print:
+            call_command(
+                self.COMMAND_NAME,
+                f"--path={path}",
+                "--marketing",
+            )
+
+            self.assertEqual(
+                mock_print.mock_calls[0:],
+                [
+                    call(f"Excluded {users_count} users who already received this email"),
+                ],
+            )
+
+        # Verify no additional audit logs were created for these users
+        audit_logs_after_second_send = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT,
+            modified_user__in=[admin_user, owner_user],
+        )
+        self.assert_length(audit_logs_after_second_send, 1)  # Still only 1
+
+    def test_email_sending_failure_does_not_create_audit_log(self) -> None:
+        """Test that audit log entries are not created when email sending fails"""
+        path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_custom_test.md"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        # Verify no audit logs exist initially
+        initial_audit_count = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT
+        ).count()
+
+        # Mock email sending to raise an exception
+        with patch("zerver.lib.send_email.send_immediate_email") as mock_send:
+            # Configure mock to raise EmailNotDeliveredError
+            from zerver.lib.send_email import EmailNotDeliveredError
+
+            mock_send.side_effect = EmailNotDeliveredError("SMTP connection failed")
+
+            # Attempt to send emails (should fail silently due to suppress() in send_one_email)
+            call_command(
+                self.COMMAND_NAME,
+                f"--path={path}",
+                "-r=zulip",
+                f"-u={hamlet.delivery_email},{cordelia.delivery_email}",
+            )
+
+            # Verify that email sending was attempted
+            self.assertEqual(mock_send.call_count, 2)  # Once for each user
+
+        # Verify no audit log entries were created
+        final_audit_count = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT
+        ).count()
+        self.assertEqual(final_audit_count, initial_audit_count)
+
 
 class TestSendZulipUpdateAnnouncements(ZulipTestCase):
     COMMAND_NAME = "send_zulip_update_announcements"
@@ -606,3 +804,102 @@ class TestSendZulipUpdateAnnouncements(ZulipTestCase):
 
         realm.refresh_from_db()
         self.assertEqual(realm.zulip_update_announcements_level, 5)
+
+
+class TestUserChangeNotifications(ZulipTestCase):
+    def test_bulk_change_user_name_sends_notifications(self) -> None:
+        hamlet = self.example_user("hamlet")
+        bot = self.example_user("default_bot")
+        realm = hamlet.realm
+
+        # Count bot messages before changes
+        from zerver.models import Message
+
+        bot_messages_before = Message.objects.filter(
+            realm_id=realm.id, recipient__type_id=bot.id
+        ).count()
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".csv") as f:
+            f.write(f"{hamlet.delivery_email},New Hamlet Name\n")
+            f.write(f"{bot.delivery_email},New Bot Name\n")
+            data_file = f.name
+
+        try:
+            # Run the bulk_change_user_name command
+            with stdout_suppressed():
+                call_command("bulk_change_user_name", data_file, f"--realm={realm.string_id}")
+
+            # Verify the name was changed
+            hamlet.refresh_from_db()
+            self.assertEqual(hamlet.full_name, "New Hamlet Name")
+
+            # Verify a notification was sent (acting_user=None means system change)
+            message = most_recent_message(hamlet)
+            self.assertIn(
+                "The following changes have been made to your account.",
+                message.content,
+            )
+            self.assertIn("**Old full name:** King Hamlet", message.content)
+            self.assertIn("**New full name:** New Hamlet Name", message.content)
+
+            # Verify bot's name was changed
+            bot.refresh_from_db()
+            self.assertEqual(bot.full_name, "New Bot Name")
+
+            # Verify bot did NOT receive a notification
+            bot_messages_after = Message.objects.filter(
+                realm_id=realm.id, recipient__type_id=bot.id
+            ).count()
+            self.assertEqual(bot_messages_before, bot_messages_after)
+        finally:
+            os.unlink(data_file)
+
+    def test_change_user_role_sends_notifications(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        # Hamlet starts as a member
+        self.assertEqual(hamlet.role, UserProfile.ROLE_MEMBER)
+
+        # Change hamlet's role to moderator via management command
+        with stdout_suppressed():
+            call_command(
+                "change_user_role", hamlet.delivery_email, "moderator", f"--realm={realm.string_id}"
+            )
+
+        # Verify the role was changed
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.role, UserProfile.ROLE_MODERATOR)
+
+        # Verify a notification was sent (acting_user=None means system change)
+        message = most_recent_message(hamlet)
+        self.assertIn("The following changes have been made to your account", message.content)
+        self.assertIn("**Old role:** Member", message.content)
+        self.assertIn("**New role:** Moderator", message.content)
+
+        # Change bot's role to moderator via management command
+        bot = self.example_user("default_bot")
+
+        # Count bot messages before changes
+        from zerver.models import Message
+
+        bot_messages_before = Message.objects.filter(
+            realm_id=realm.id, recipient__type_id=bot.id
+        ).count()
+
+        with stdout_suppressed():
+            call_command(
+                "change_user_role", bot.delivery_email, "moderator", f"--realm={realm.string_id}"
+            )
+
+        # Verify bot's role was changed
+        bot.refresh_from_db()
+        self.assertEqual(bot.role, UserProfile.ROLE_MODERATOR)
+
+        # Verify bot did NOT receive a notification
+        bot_messages_after = Message.objects.filter(
+            realm_id=realm.id, recipient__type_id=bot.id
+        ).count()
+        self.assertEqual(bot_messages_before, bot_messages_after)

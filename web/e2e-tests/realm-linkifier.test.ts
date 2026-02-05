@@ -148,4 +148,4 @@ async function linkifier_test(page: Page): Promise<void> {
     await test_delete_linkifier(page);
 }
 
-common.run_test(linkifier_test);
+await common.run_test(linkifier_test);

@@ -14,6 +14,7 @@ import {pick_empty_narrow_banner} from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import {
     EXTRA_LONG_HOVER_DELAY,
     INSTANT_HOVER_DELAY,
@@ -96,7 +97,7 @@ export function initialize_compose_tooltips(context: SingletonContext, selector:
 export function initialize(): void {
     tippy.delegate("body", {
         target: [
-            // Ideally this would be `#compose_buttons .button`, but the
+            // Ideally this would be `#legacy-closed-compose-box .button`, but the
             // reply button's actual area is its containing span.
             "#left_bar_compose_mobile_button_big",
             "#new_direct_message_button",
@@ -112,7 +113,7 @@ export function initialize(): void {
         },
     });
     tippy.delegate("body", {
-        target: "#compose_buttons .compose-reply-button-wrapper",
+        target: "#legacy-closed-compose-box .compose-reply-button-wrapper",
         delay: EXTRA_LONG_HOVER_DELAY,
         // Only show on mouseenter since for spectators, clicking on these
         // buttons opens login modal, and Micromodal returns focus to the
@@ -171,7 +172,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#compose_buttons .compose_new_conversation_button",
+        target: "#legacy-closed-compose-box .compose_new_conversation_button",
         delay: EXTRA_LONG_HOVER_DELAY,
         // Only show on mouseenter since for spectators, clicking on these
         // buttons opens login modal, and Micromodal returns focus to the
@@ -189,9 +190,16 @@ export function initialize(): void {
                         ),
                     );
                 } else {
-                    instance.setContent(
-                        parse_html($("#new_topic_message_button_tooltip_template").html()),
-                    );
+                    const stream_id = narrow_state.stream_id()!;
+                    if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
+                        instance.setContent(
+                            parse_html($("#new_message_button_tooltip_template").html()),
+                        );
+                    } else {
+                        instance.setContent(
+                            parse_html($("#new_topic_message_button_tooltip_template").html()),
+                        );
+                    }
                 }
                 return undefined;
             }
@@ -313,7 +321,8 @@ export function initialize(): void {
                 } else if (
                     _.isEqual(narrow_filter.sorted_term_types(), ["channel"]) &&
                     compose_state.get_message_type() === "stream" &&
-                    narrow_filter.operands("channel")[0] === compose_state.stream_name()
+                    narrow_filter.terms_with_operator("channel")[0]!.operand ===
+                        compose_state.stream_name()
                 ) {
                     display_current_view = $t({
                         defaultMessage: "Currently viewing the entire channel.",

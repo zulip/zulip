@@ -58,9 +58,16 @@ class PushNotificationsWorker(QueueProcessingWorker):
         except PushNotificationBouncerRetryLaterError:
 
             def failure_processor(event: dict[str, Any]) -> None:
-                logger.warning(
-                    "Maximum retries exceeded for trigger:%s event:push_notification",
-                    event["user_profile_id"],
-                )
+                if event_type == "register_push_device_to_bouncer":
+                    logger.warning(
+                        "Maximum retries exceeded for trigger:(user_id=%s, push_account_id=%s) event:register_push_device_to_bouncer",
+                        event["payload"]["user_profile_id"],
+                        event["payload"]["push_account_id"],
+                    )
+                else:
+                    logger.warning(
+                        "Maximum retries exceeded for trigger:%s event:push_notification",
+                        event["user_profile_id"],
+                    )
 
             retry_event(self.queue_name, event, failure_processor)

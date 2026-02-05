@@ -77,5 +77,5 @@ When the Zulip server has configured multiple rate limits that apply
 to a given request, the values returned will be for the strictest
 limit.
 
-[rate-limiting-rules]: https://zulip.readthedocs.io/en/latest/production/security-model.html#rate-limiting
+[rate-limiting-rules]: https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html#rate-limiting
 [integrations-channel]: https://chat.zulip.org/#narrow/channel/127-integrations/

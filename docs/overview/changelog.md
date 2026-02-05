@@ -15,9 +15,52 @@ _Unreleased_
 
 ### Upgrade notes for 12.0
 
-- None yet.
+- The `LDAP_SYNCHRONIZED_GROUPS_BY_REALM` setting for LDAP group
+  synchronization no longer ignores groups that are configured to be
+  synced but don't exist in the Zulip organization. Starting in 12.0,
+  such groups will be created automatically when syncing the groups
+  for a user who should be a member of that group.
 
 ## Zulip Server 11.x series
+
+### Zulip Server 11.4
+
+_Released 2025-10-23_
+
+- Fixed a bug that could cause the incoming email server to crash on
+  startup.
+
+### Zulip Server 11.3
+
+_Released 2025-10-22_
+
+- Removed the Google blobs emoji set (deprecated since 2017); any
+  users who had this preference will have it updated to the standard
+  Google emoji set.
+- Updated incoming email server to automatically drop auto-replies,
+  including out-of-office messages, if they are marked as such in
+  their headers.
+- Fixed a permissions issue with logfiles of the incoming email
+  server.
+- Fixed an unread count bug involving unreads in muted topics.
+- Fixed some compose box transitions.
+- Fixed several minor bugs in the inbox view.
+- Fixed Gitea integration displaying the wrong actor for pull request
+  events.
+- Fixed a minor data corruption bug involving group-based permissions.
+- Removed a misleading emoji alias from CLDR for 🔯.
+- Clarified validation of email addresses when registering for push
+  notifications service.
+- Improved handling of imported Slack threads and bot email addresses.
+- Improved documentation for reverse proxies.
+- Improved documentation about recovering from database-only backups.
+- Improved API documentation for deleting messages.
+- Improved documentation for GitLab integration.
+- Added `rel="canonical"` links in headers of documentation pages,
+  pointing to zulip.com documentation, to help search engines not
+  index potentially stale self-hosted duplicates of pages.
+- Updated and reorganized security documentation.
+- Updated Python dependencies.
 
 ### Zulip Server 11.2
 
@@ -842,7 +885,7 @@ _Released 2024-11-22_
 - Fixed emoji appearing huge when viewing email notifications in
   Microsoft Outlook.
 - Fixed the [slack-compatible incoming
-  webhook](https://zulip.com/integrations/doc/slack_incoming) to
+  webhook](https://zulip.com/integrations/slack_incoming) to
   return success/failure HTTP responses in the correct format.
 - Fixed several bugs with the data import tools, primarily around
   thumbnailing of images and input validation.
@@ -1230,7 +1273,7 @@ _Released 2024-05-09_
 - The ‘default' topic visibility icon is no longer displayed in the inbox view,
   for a cleaner look.
 - Fixed confusing wording in the [Alertmanager
-  integration](https://zulip.com/integrations/doc/alertmanager).
+  integration](https://zulip.com/integrations/alertmanager).
 - Started allowing DMs to bots and to oneself, regardless if [DMs are in general
   restricted](https://zulip.com/help/restrict-direct-messages).
 - Notices indicating that “push notifications are not working” are now
@@ -1620,7 +1663,7 @@ _Released 2023-08-25_
   reverse order.
 - Upgraded Python requirements.
 - Updated puppet dependencies.
-- Improved the [Sentry integration](https://zulip.com/integrations/doc/sentry),
+- Improved the [Sentry integration](https://zulip.com/integrations/sentry),
   including making the “Test plugin” button in Sentry work properly.
 - Reduced memory usage by replacing a custom error reporting handler with the
   default Django implementation. This will result in a slight change in the
@@ -1645,7 +1688,7 @@ _Released 2023-08-25_
   [host multiple Zulip](../production/multiple-organizations.md)
   organizations on one server.
 - Fixed missing images in documentation for the
-  [“XKCD” bot](https://zulip.com/integrations/doc/xkcd).
+  [“XKCD” bot](https://zulip.com/integrations/xkcd).
 - Fixed “Back to login page” button alignment in the desktop app.
 - Added a reference to
   [PostgreSQL upgrades](../production/upgrade.md#upgrading-postgresql)
@@ -2248,7 +2291,7 @@ _Released 2022-07-21_
 _Released 2022-07-11_
 
 - CVE-2022-31134: Exclude private file uploads from [exports of public
-  data](https://zulip.com/help/export-your-organization#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server).
+  data](https://zulip.com/help/export-your-organization#export-data-in-an-importable-format).
   We would like to thank Antoine Benoist for bringing this issue to our attention.
 - Upgraded python requirements.
 - Improved documentation for load balancers to mention CIDR address
@@ -3642,7 +3685,7 @@ _Released 2019-12-12_
 - Extended buttons to visit links in topics to all URLs, not just
   URLs added by a linkifier.
 - Extended several integrations to cover more events and fix bugs, and
-  rewrote formatting for dozens of integraitons for cleaner punctuation.
+  rewrote formatting for dozens of integrations for cleaner punctuation.
 - The beta "weekly digest emails" feature is again available as an
   organization-level configuration option, after several improvements.
 - The administrative UI for managing bots now nicely links to the

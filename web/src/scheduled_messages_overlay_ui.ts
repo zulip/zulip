@@ -5,7 +5,9 @@ import render_scheduled_message from "../templates/scheduled_message.hbs";
 import render_scheduled_messages_overlay from "../templates/scheduled_messages_overlay.hbs";
 
 import * as browser_history from "./browser_history.ts";
+import * as lightbox from "./lightbox.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
@@ -75,10 +77,9 @@ export const keyboard_handling_context = {
 };
 
 function sort_scheduled_messages(scheduled_messages: ScheduledMessage[]): ScheduledMessage[] {
-    const sorted_scheduled_messages = scheduled_messages.sort(
+    return scheduled_messages.toSorted(
         (msg1, msg2) => msg1.scheduled_delivery_timestamp - msg2.scheduled_delivery_timestamp,
     );
-    return sorted_scheduled_messages;
 }
 
 export function handle_keyboard_events(event_key: string): void {
@@ -173,7 +174,24 @@ export function remove_scheduled_message_id(scheduled_msg_id: number): void {
 
 export function initialize(): void {
     $("body").on("click", ".scheduled-message-row .restore-overlay-message", (e) => {
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
+            return;
+        }
+        const $img = $(e.target).closest("img");
+        if ($img.length > 0) {
+            e.stopPropagation();
+            e.preventDefault();
+            overlays.close_overlay("scheduled");
+            lightbox.handle_inline_media_element_click($img, true);
+            return;
+        }
+
+        const $video = $(e.target).closest("video");
+        if ($video.length > 0) {
+            e.stopPropagation();
+            e.preventDefault();
+            overlays.close_overlay("scheduled");
+            lightbox.handle_inline_media_element_click($video, true);
             return;
         }
 

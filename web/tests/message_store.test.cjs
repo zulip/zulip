@@ -118,7 +118,11 @@ test("process_new_message", () => {
         raw_message: message,
     }).message;
 
-    assert.deepEqual(message_user_ids.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
+    assert.deepEqual(message_user_ids.user_ids().toSorted(), [
+        me.user_id,
+        bob.user_id,
+        cindy.user_id,
+    ]);
 
     assert.equal(message.is_private, true);
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
@@ -170,7 +174,7 @@ test("process_new_message", () => {
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
 
-    assert.deepEqual(message_user_ids.user_ids().sort(), [
+    assert.deepEqual(message_user_ids.user_ids().toSorted(), [
         me.user_id,
         bob.user_id,
         cindy.user_id,
@@ -271,10 +275,10 @@ test("errors", ({disallow_rewire}) => {
 });
 
 test("reify_message_id", () => {
-    const message = {type: "private", id: 500};
+    const message = {type: "private", id: 500, topic: "", queue_id: 5, draft_id: 6};
 
     message_store.update_message_cache({
-        type: "server_message",
+        type: "local_message",
         message,
     });
     assert.equal(message_store.get_cached_message(500).message, message);
@@ -282,17 +286,22 @@ test("reify_message_id", () => {
     message_store.reify_message_id({old_id: 500, new_id: 501});
     assert.equal(message_store.get_cached_message(500), undefined);
     assert.equal(message_store.get_cached_message(501).message, message);
+    assert.deepEqual(message_store.get_cached_message(501).message, {
+        type: "private",
+        id: 501,
+        locally_echoed: false,
+    });
 });
 
 test("update_booleans", () => {
-    const message = {};
-
     // First, test fields that we do actually want to update.
-    message.mentioned = false;
-    message.mentioned_me_directly = false;
-    message.stream_wildcard_mentioned = false;
-    message.topic_wildcard_mentioned = false;
-    message.alerted = false;
+    const message = {
+        mentioned: false,
+        mentioned_me_directly: false,
+        stream_wildcard_mentioned: false,
+        topic_wildcard_mentioned: false,
+        alerted: false,
+    };
 
     let flags = ["mentioned", "has_alert_word", "read"];
     message_store.update_booleans(message, flags);

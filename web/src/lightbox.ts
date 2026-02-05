@@ -32,6 +32,8 @@ type Media = {
 };
 
 let is_open = false;
+let open_image: ($media: JQuery<HTMLImageElement>) => void;
+let open_video: ($media: JQuery<HTMLMediaElement>) => void;
 
 // The asset map is a map of all retrieved images and YouTube videos that are memoized instead of
 // being looked up multiple times. It is keyed by the message id with each value being the
@@ -241,7 +243,7 @@ export function canonical_url_of_media(media: HTMLMediaElement | HTMLImageElemen
 export function render_lightbox_media_list(): void {
     if (!is_open) {
         const message_media_list = $<HTMLMediaElement | HTMLImageElement>(
-            ".focused-message-list .message-media-preview-image img, .focused-message-list .message_inline_video video",
+            ".focused-message-list .message-media-inline-image img, .focused-message-list .message-media-preview-image img, .focused-message-list .message_inline_video video",
         ).toArray();
         const $lightbox_media_list = $("#lightbox_overlay .image-list").empty();
         for (const media of message_media_list) {
@@ -414,7 +416,7 @@ export function show_from_selected_message(): void {
     let $message = $message_selected;
     // This is a function to satisfy eslint unicorn/no-array-callback-reference
     const media_classes = (): string =>
-        ".message-media-preview-image img, .message-media-preview-video video";
+        ".message-media-inline-image img, .message-media-preview-image img, .message-media-preview-video video";
     let $media = $message.find<HTMLMediaElement | HTMLImageElement>(media_classes());
     let $prev_traverse = false;
 
@@ -555,6 +557,14 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     } else if (is_youtube_video) {
         type = "youtube-video";
         source = "https://www.youtube.com/embed/" + $parent.attr("data-id");
+        // YouTube URLs support a `start` parameter that can be either
+        // an integer or a string-encoded time offset like
+        // "1h20m12s". The embed API only supports the integer format,
+        // so we may need to convert the format.
+        const start_time = util.parse_youtube_start_time(url);
+        if (start_time !== undefined) {
+            source += "?start=" + start_time;
+        }
     } else if (is_vimeo_video) {
         type = "vimeo-video";
         source = "https://player.vimeo.com/video/" + $parent.attr("data-id");
@@ -619,6 +629,23 @@ function remove_video_players(): void {
     $("#lightbox_overlay .video-player").html("");
 }
 
+export function handle_inline_media_element_click(
+    $media: JQuery<HTMLMediaElement> | JQuery<HTMLImageElement>,
+    hide_navigation_arrows = false,
+): void {
+    set_selected_media_element($media);
+
+    const media_element = $media[0];
+    assert(media_element !== undefined);
+
+    if (media_element instanceof HTMLImageElement) {
+        open_image($(media_element));
+    } else {
+        open_video($(media_element));
+    }
+    $("#lightbox_overlay .center").toggleClass("invisible", hide_navigation_arrows);
+}
+
 // this is a block of events that are required for the lightbox to work.
 export function initialize(): void {
     // Renders the DOM for the lightbox.
@@ -640,20 +667,19 @@ export function initialize(): void {
         }
     };
 
-    const open_image = build_open_media_function(reset_lightbox_state);
-    const open_video = build_open_media_function(undefined);
+    open_image = build_open_media_function(reset_lightbox_state);
+    open_video = build_open_media_function(undefined);
 
     $("#main_div, #compose .preview_content").on(
         "click",
-        ".message-media-preview-image:not(.message_inline_video) a, .message_inline_animated_image_still",
+        ".message-media-inline-image a, .message-media-preview-image:not(.message_inline_video) a, .message_inline_animated_image_still",
         function (e) {
             // prevent the link from opening in a new page.
             e.preventDefault();
             // prevent the message compose dialog from happening.
             e.stopPropagation();
             const $img = $(this).find<HTMLImageElement>("img");
-            set_selected_media_element($img);
-            open_image($img);
+            handle_inline_media_element_click($img);
         },
     );
 
@@ -662,8 +688,7 @@ export function initialize(): void {
         e.stopPropagation();
 
         const $video = $(e.currentTarget).find<HTMLMediaElement>("video");
-        set_selected_media_element($video);
-        open_video($video);
+        handle_inline_media_element_click($video);
     });
 
     $("#lightbox_overlay .download").on("click", function () {
@@ -707,7 +732,10 @@ export function initialize(): void {
         // element returned. The logic below for removing and adding the
         // "selected" class ensures that the correct thumbnail will
         // still be highlighted.
-        open_image($original_media_element);
+        const media_element = $original_media_element[0];
+        if (media_element instanceof HTMLImageElement) {
+            open_image($(media_element));
+        }
 
         if (!$(".image-list .image.selected").hasClass("lightbox_video") || !is_video) {
             pan_zoom_control.reset();

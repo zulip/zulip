@@ -2,7 +2,10 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import DependsOnPermissions from "../include/_DependsOnPermissions.mdx";
 import RightSidebarViewProfile from "../include/_RightSidebarViewProfile.mdx";
+
+<DependsOnPermissions />
 
 <Tabs>
   <TabItem label="Via group settings">
@@ -22,10 +25,10 @@ import RightSidebarViewProfile from "../include/_RightSidebarViewProfile.mdx";
       <RightSidebarViewProfile />
 
       1. Select the **User groups** tab.
-      1. Under **Add to groups**, enter the groups you want to add the user to. You
-         can start typing to filter suggestions.
-      1. Click the **Add** button. Zulip will notify the user about the groups they've
-         been added to.
+      1. Under **Add user to groups**, enter the groups you want to add the
+         user to. You can start typing to filter suggestions.
+      1. Click the **Add** button. Zulip will notify the user about the groups
+         they've been added to.
     </FlattenedSteps>
   </TabItem>
 </Tabs>

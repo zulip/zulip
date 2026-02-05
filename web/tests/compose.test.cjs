@@ -135,16 +135,16 @@ stream_data.add_sub_for_tests(social);
 const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([30, 101]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
@@ -283,10 +283,11 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     // This is the common setup stuff for all of the four tests.
     let stub_state;
     function initialize_state_stub_dict() {
-        stub_state = {};
-        stub_state.send_msg_called = 0;
-        stub_state.get_events_running_called = 0;
-        stub_state.reify_message_id_checked = 0;
+        stub_state = {
+            send_msg_called: 0,
+            get_events_running_called: 0,
+            reify_message_id_checked: 0,
+        };
         return stub_state;
     }
 
@@ -434,6 +435,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     override_rewire(compose_banner, "clear_message_sent_banners", noop);
+    window.addEventListener = noop;
 
     disable_document_triggers(override);
 
@@ -743,7 +745,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             error_callback();
             assert.equal(
                 fake_compose_box.preview_content_html(),
-                "translated HTML: Failed to generate preview",
+                "translated: Failed to generate preview",
             );
         }
 
@@ -780,10 +782,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             stopPropagation: noop,
         });
 
-        assert.equal(
-            fake_compose_box.preview_content_html(),
-            "translated HTML: Nothing to preview",
-        );
+        assert.equal(fake_compose_box.preview_content_html(), "translated: Nothing to preview");
         fake_compose_box.assert_preview_mode_is_on();
 
         let make_indicator_called = false;
@@ -819,6 +818,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         override(markdown, "render", (raw_content) => {
             assert.equal(raw_content, "default message");
             render_called = true;
+            return {content: "Local: default message"};
         });
 
         fake_compose_box.click_on_markdown_preview_icon({

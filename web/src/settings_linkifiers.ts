@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
 import * as z from "zod/mini";
 
-import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm_delete_linkifier.hbs";
 import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
 import render_admin_linkifier_list from "../templates/settings/admin_linkifier_list.hbs";
 
@@ -40,7 +39,7 @@ function open_linkifier_edit_form(linkifier_id: number): void {
     const linkifiers_list = realm.realm_linkifiers;
     const linkifier = linkifiers_list.find((linkifier) => linkifier.id === linkifier_id);
     assert(linkifier !== undefined);
-    const html_body = render_admin_linkifier_edit_form({
+    const modal_content_html = render_admin_linkifier_edit_form({
         linkifier_id,
         pattern: linkifier.pattern,
         url_template: linkifier.url_template,
@@ -100,8 +99,8 @@ function open_linkifier_edit_form(linkifier_id: number): void {
     }
 
     const dialog_widget_id = dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Edit linkfiers"}),
-        html_body,
+        modal_title_html: $t_html({defaultMessage: "Edit linkfiers"}),
+        modal_content_html,
         on_click() {
             submit_linkifier_form(dialog_widget_id);
         },
@@ -133,23 +132,23 @@ function handle_linkifier_api_error(
     // The endpoint uses the Django ValidationError system for error
     // handling, which returns somewhat complicated error
     // dictionaries. This logic parses them.
-    if (errors.pattern !== undefined) {
+    if (errors["pattern"] !== undefined) {
         ui_report.error(
-            $t_html({defaultMessage: "Failed: {error}"}, {error: errors.pattern[0]}),
+            $t_html({defaultMessage: "Failed: {error}"}, {error: errors["pattern"][0]}),
             undefined,
             pattern_status,
         );
     }
-    if (errors.url_template !== undefined) {
+    if (errors["url_template"] !== undefined) {
         ui_report.error(
-            $t_html({defaultMessage: "Failed: {error}"}, {error: errors.url_template[0]}),
+            $t_html({defaultMessage: "Failed: {error}"}, {error: errors["url_template"][0]}),
             undefined,
             template_status,
         );
     }
-    if (errors.__all__ !== undefined) {
+    if (errors["__all__"] !== undefined) {
         ui_report.error(
-            $t_html({defaultMessage: "Failed: {error}"}, {error: errors.__all__[0]}),
+            $t_html({defaultMessage: "Failed: {error}"}, {error: errors["__all__"][0]}),
             undefined,
             linkifier_status,
         );
@@ -219,14 +218,13 @@ export function build_page(): void {
         e.preventDefault();
         e.stopPropagation();
         const $button = $(this);
-        const html_body = render_confirm_delete_linkifier();
         const url =
             "/json/realm/filters/" +
             encodeURIComponent($button.closest("tr").attr("data-linkifier-id")!);
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete linkifier?"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Delete linkifier?"}),
+            modal_content_html: $t_html({defaultMessage: "This action cannot be undone."}),
             id: "confirm_delete_linkifiers_modal",
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});

@@ -808,7 +808,12 @@ class TestCurlExampleGeneration(ZulipTestCase):
         generated_curl_example = self.curl_example(
             "/messages",
             "GET",
-            exclude=["use_first_unread_anchor", "message_ids", "allow_empty_topic_name"],
+            exclude=[
+                "use_first_unread_anchor",
+                "message_ids",
+                "allow_empty_topic_name",
+                "anchor_date",
+            ],
         )
         expected_curl_example = [
             "```curl",
@@ -890,6 +895,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
                 "use_first_unread_anchor",
                 "message_ids",
                 "allow_empty_topic_name",
+                "anchor_date",
             ],
         )
         expected_curl_example = [

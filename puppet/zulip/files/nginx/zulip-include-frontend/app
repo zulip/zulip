@@ -7,6 +7,9 @@ include /etc/nginx/zulip-include/headers;
 error_page 502 503 504 /static/webpack-bundles/5xx.html;
 
 # Serve static files directly
+location /local-static {
+    alias /home/zulip/local-static;
+}
 location /static/ {
     alias /home/zulip/prod-static/;
     gzip_static on;
@@ -27,8 +30,13 @@ location /static/ {
     }
 }
 
-# Redirect to links without the trailing slash.
-location ~ ^(/help(?:/[^/]+)*)/+$ {
+# Canonical URL for the root is /help/.
+location = /help {
+    return 301 /help/;
+}
+
+# Redirect to links without the trailing slash except for root /help/.
+location ~ ^(/help(?:/[^/]+)+)/+$ {
     return 301 $1$is_args$args;
 }
 

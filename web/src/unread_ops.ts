@@ -5,7 +5,6 @@ import * as z from "zod/mini";
 
 import render_confirm_mark_messages_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
 import render_confirm_mark_as_unread_from_here from "../templates/confirm_dialog/confirm_mark_as_unread_from_here.hbs";
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_skipped_marking_unread from "../templates/skipped_marking_unread.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -16,7 +15,6 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import {Filter} from "./filter.ts";
 import {$t, $t_html} from "./i18n.ts";
-import * as loading from "./loading.ts";
 import * as message_flags from "./message_flags.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -25,17 +23,16 @@ import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
+import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import type {MessageDetails} from "./server_event_types.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as sub_store from "./sub_store.ts";
-import * as ui_report from "./ui_report.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
-import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
 
-let loading_indicator_displayed = false;
+let update_read_flag_banner_displayed = false;
 let unsubscribed_ignored_channels: number[] = [];
 
 // We might want to use a slightly smaller batch for the first
@@ -60,18 +57,20 @@ let window_focused = document.hasFocus();
 
 // Since there's a database index on is:unread, it's a fast
 // search query and thus worth including here as an optimization.),
-const all_unread_messages_narrow = [{operator: "is", operand: "unread", negated: false}];
+const all_unread_messages_narrow: NarrowTerm[] = [
+    {operator: "is", operand: "unread", negated: false},
+];
 
 export function is_window_focused(): boolean {
     return window_focused;
 }
 
 export function confirm_mark_messages_as_read(): void {
-    const html_body = render_confirm_mark_messages_as_read();
+    const modal_content_html = render_confirm_mark_messages_as_read();
 
     const modal_id = confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Choose messages to mark as read"}),
-        html_body,
+        modal_title_html: $t_html({defaultMessage: "Choose messages to mark as read"}),
+        modal_content_html,
         on_click() {
             handle_mark_messages_as_read(modal_id);
         },
@@ -120,24 +119,12 @@ function handle_skipped_unsubscribed_streams(
         // Zulip has an invariant that all unread messages must be in streams
         // the user is subscribed to. Notify the user if messages from
         // unsubscribed streams are ignored by the server.
-        const stream_names_with_privacy_symbol_html = ignored_because_not_subscribed_channels.map(
-            (stream_id) => {
-                const stream = sub_store.get(stream_id);
-                const decorated_channel_name = render_inline_decorated_channel_name({stream});
-                return `<span class="white-space-nowrap">${decorated_channel_name}</span>`;
-            },
+        const streams = ignored_because_not_subscribed_channels.map((stream_id) =>
+            sub_store.get(stream_id),
         );
 
         const populate: (element: JQuery) => void = ($container) => {
-            const formatted_stream_list_text = util.format_array_as_list(
-                stream_names_with_privacy_symbol_html,
-                "long",
-                "conjunction",
-            );
-            const rendered_html = render_skipped_marking_unread({
-                streams_html: formatted_stream_list_text,
-            });
-            $container.html(rendered_html);
+            $container.html(render_skipped_marking_unread({streams}));
         };
 
         const title_text = $t({defaultMessage: "Skipped unsubscribed channels"});
@@ -167,6 +154,32 @@ export function get_message_count_text(count: number): string {
     );
 }
 
+function show_read_flag_update_progress_banner(
+    operation: "read" | "unread",
+    messages_updated: number,
+): void {
+    // We show the read flag update progress banner only
+    // when the operation requires multiple batches. Otherwise,
+    // we don't bother distracting the user with the banner
+    // since the success is obvious through the updating UI.
+    popup_banners.open_update_read_flags_for_narrow_banner(operation, messages_updated);
+    update_read_flag_banner_displayed = true;
+}
+
+function show_read_flag_update_success_banner(
+    operation: "read" | "unread",
+    messages_updated: number,
+): void {
+    if (!update_read_flag_banner_displayed) {
+        // If the operation completed in a single batch,
+        // and we never showed the progress banner,
+        // we skip showing the success banner as well.
+        return;
+    }
+    popup_banners.open_update_read_flags_for_narrow_banner(operation, messages_updated, true);
+    update_read_flag_banner_displayed = false;
+}
+
 function bulk_update_read_flags_for_narrow(
     narrow: NarrowTerm[],
     op: "add" | "remove",
@@ -185,7 +198,6 @@ function bulk_update_read_flags_for_narrow(
     } = {},
     caller_modal_id?: string,
 ): void {
-    let response_html;
     const terms_with_integer_channel_id = narrow.map((term) => {
         if (term.operator === "channel") {
             return {
@@ -214,36 +226,11 @@ function bulk_update_read_flags_for_narrow(
         success(raw_data) {
             const data = update_flags_for_narrow_response_schema.parse(raw_data);
             messages_read_till_now += data.updated_count;
+            const operation = op === "add" ? "read" : "unread";
 
             if (!data.found_newest) {
                 assert(data.last_processed_id !== null);
-                // If we weren't able to make everything as read in a
-                // single API request, then show a loading indicator.
-                if (op === "add") {
-                    response_html = $t_html(
-                        {
-                            defaultMessage:
-                                "{N, plural, one {Working… {N} message marked as read so far.} other {Working… {N} messages marked as read so far.}}",
-                        },
-                        {N: messages_read_till_now},
-                    );
-                } else {
-                    response_html = $t_html(
-                        {
-                            defaultMessage:
-                                "{N, plural, one {Working… {N} message marked as unread so far.} other {Working… {N} messages marked as unread so far.}}",
-                        },
-                        {N: messages_read_till_now},
-                    );
-                }
-                ui_report.loading(response_html, $("#request-progress-status-banner"));
-                if (!loading_indicator_displayed) {
-                    loading.make_indicator(
-                        $("#request-progress-status-banner .loading-indicator"),
-                        {abs_positioned: true},
-                    );
-                    loading_indicator_displayed = true;
-                }
+                show_read_flag_update_progress_banner(operation, messages_read_till_now);
 
                 bulk_update_read_flags_for_narrow(
                     narrow,
@@ -256,28 +243,7 @@ function bulk_update_read_flags_for_narrow(
                     caller_modal_id,
                 );
             } else {
-                if (loading_indicator_displayed) {
-                    // Only show the success message if a progress banner was displayed.
-                    if (op === "add") {
-                        response_html = $t_html(
-                            {
-                                defaultMessage:
-                                    "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}",
-                            },
-                            {N: messages_read_till_now},
-                        );
-                    } else {
-                        response_html = $t_html(
-                            {
-                                defaultMessage:
-                                    "{N, plural, one {Done! {N} message marked as unread.} other {Done! {N} messages marked as unread.}}",
-                            },
-                            {N: messages_read_till_now},
-                        );
-                    }
-                    ui_report.loading(response_html, $("#request-progress-status-banner"), true);
-                    loading_indicator_displayed = false;
-                }
+                show_read_flag_update_success_banner(operation, messages_read_till_now);
 
                 if (_.isEqual(narrow, all_unread_messages_narrow) && unread.old_unreads_missing) {
                     // In the rare case that the user had more than
@@ -502,8 +468,9 @@ export function mark_as_unread_from_here(message_id: number): void {
     };
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Mark messages as unread?"}),
-        html_body: render_confirm_mark_as_unread_from_here(context),
+        modal_title_html: $t_html({defaultMessage: "Mark messages as unread?"}),
+        modal_content_html: render_confirm_mark_as_unread_from_here(context),
+        is_compact: true,
         on_click() {
             if (prefer_local_ids) {
                 do_mark_unread(locally_available_matching_message_ids);
@@ -544,25 +511,8 @@ function do_mark_unread_by_narrow(
             ];
             if (!data.found_newest) {
                 assert(data.last_processed_id !== null);
-                // If we weren't able to complete the request fully in
-                // the current batch, show a progress indicator.
-                ui_report.loading(
-                    $t_html(
-                        {
-                            defaultMessage:
-                                "{N, plural, one {Working… {N} message marked as unread so far.} other {Working… {N} messages marked as unread so far.}}",
-                        },
-                        {N: messages_marked_unread_till_now},
-                    ),
-                    $("#request-progress-status-banner"),
-                );
-                if (!loading_indicator_displayed) {
-                    loading.make_indicator(
-                        $("#request-progress-status-banner .loading-indicator"),
-                        {abs_positioned: true},
-                    );
-                    loading_indicator_displayed = true;
-                }
+                show_read_flag_update_progress_banner("unread", messages_marked_unread_till_now);
+
                 do_mark_unread_by_narrow(
                     data.last_processed_id,
                     false,
@@ -571,9 +521,7 @@ function do_mark_unread_by_narrow(
                     narrow,
                 );
             } else {
-                if (loading_indicator_displayed) {
-                    finish_loading(messages_marked_unread_till_now);
-                }
+                show_read_flag_update_success_banner("unread", messages_marked_unread_till_now);
                 if (unsubscribed_ignored_channels.length > 0) {
                     handle_skipped_unsubscribed_streams(unsubscribed_ignored_channels);
                     unsubscribed_ignored_channels = [];
@@ -602,9 +550,8 @@ function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
         url: "/json/messages/flags",
         data: {messages: JSON.stringify(message_ids_to_update), op: "remove", flag: "read"},
         success(raw_data) {
-            if (loading_indicator_displayed) {
-                finish_loading(message_ids_to_update.length);
-            }
+            show_read_flag_update_success_banner("unread", message_ids_to_update.length);
+
             const data = update_flags_for_response_schema.parse(raw_data);
             const ignored_because_not_subscribed_channels =
                 data.ignored_because_not_subscribed_channels;
@@ -620,26 +567,6 @@ function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
             });
         },
     });
-}
-
-function finish_loading(messages_marked_unread_till_now: number): void {
-    // If we were showing a loading indicator, then
-    // display that we finished. For the common case where
-    // the operation succeeds in a single batch, we don't
-    // bother distracting the user with the indication;
-    // the success will be obvious from the UI updating.
-    loading_indicator_displayed = false;
-    ui_report.loading(
-        $t_html(
-            {
-                defaultMessage:
-                    "{N, plural, one {Done! {N} message marked as unread.} other {Done! {N} messages marked as unread.}}",
-            },
-            {N: messages_marked_unread_till_now},
-        ),
-        $("#request-progress-status-banner"),
-        true,
-    );
 }
 
 function handle_mark_unread_from_here_error(
@@ -786,7 +713,7 @@ export function process_unread_messages_event({
         unread_ui.notify_messages_remain_unread();
     }
 
-    unread_ui.update_unread_counts();
+    unread_ui.update_unread_counts(true);
 }
 
 // Takes a list of messages and marks them as read.

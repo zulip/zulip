@@ -46,6 +46,24 @@ const isaac_item = {
     should_add_guest_user_indicator: false,
 };
 
+const deactivated_user = {
+    email: "deactivated@example.com",
+    user_id: 104,
+    full_name: "Deactivated User",
+};
+
+const deactivated_user_item = {
+    email: "deactivated@example.com",
+    full_name: "Deactivated User",
+    type: "user",
+    user_id: deactivated_user.user_id,
+    deactivated: true,
+    img_src: `/avatar/${deactivated_user.user_id}`,
+    is_bot: undefined,
+    status_emoji_info: undefined,
+    should_add_guest_user_indicator: false,
+};
+
 const inaccessible_user_id = 103;
 
 const inaccessible_user_item = {
@@ -103,16 +121,19 @@ test("get_unique_full_name_from_item", () => {
     );
 });
 
-test("append", () => {
+test("append", ({override}) => {
     let appended;
     let cleared;
 
+    let expected_item = isaac_item;
+
     function fake_append(opts) {
         appended = true;
-        assert.equal(opts.email, isaac.email);
-        assert.equal(opts.full_name, isaac.full_name);
-        assert.equal(opts.user_id, isaac.user_id);
-        assert.equal(opts.img_src, isaac_item.img_src);
+        assert.equal(opts.email, expected_item.email);
+        assert.equal(opts.full_name, expected_item.full_name);
+        assert.equal(opts.user_id, expected_item.user_id);
+        assert.equal(opts.img_src, expected_item.img_src);
+        assert.equal(opts.deactivated, expected_item.deactivated);
     }
 
     function fake_clear() {
@@ -124,6 +145,45 @@ test("append", () => {
 
     user_pill.append_person({
         person: isaac,
+        pill_widget,
+    });
+
+    assert.ok(appended);
+    assert.ok(cleared);
+
+    // Test appending a deactivated user
+    appended = false;
+    cleared = false;
+
+    people.add_active_user(deactivated_user);
+    people.deactivate(deactivated_user);
+
+    expected_item = deactivated_user_item;
+
+    user_pill.append_person({
+        person: deactivated_user,
+        pill_widget,
+    });
+
+    assert.ok(appended);
+    assert.ok(cleared);
+
+    // Test appending an inaccessible user
+    // We consider inaccessible users as active to avoid falsely showing them as deactivated,
+    // since we don't have information about their activity status.
+    appended = false;
+    cleared = false;
+
+    override(realm, "realm_bot_domain", "example.com");
+    people.add_inaccessible_user(inaccessible_user_id);
+    const inaccessible_user = people.get_by_user_id(inaccessible_user_id);
+    // Deactivate the inaccessible user to verify they're still shown as active
+    people.deactivate(inaccessible_user);
+
+    expected_item = inaccessible_user_item;
+
+    user_pill.append_person({
+        person: inaccessible_user,
         pill_widget,
     });
 

@@ -15,9 +15,9 @@ from django.utils.module_loading import import_string
 from django.views.generic import RedirectView
 
 from zerver.forms import LoggingSetPasswordForm
-from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
-from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS
+from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS, get_integration_category_redirects
 from zerver.tornado.views import (
     cleanup_event_queue,
     get_events,
@@ -62,7 +62,7 @@ from zerver.views.custom_profile_fields import (
     update_user_custom_profile_data,
 )
 from zerver.views.digest import digest_page
-from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, integration_doc
+from zerver.views.documentation import MarkdownDirectoryView, integrations_catalog, integrations_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
@@ -158,6 +158,7 @@ from zerver.views.registration import (
     accounts_home,
     accounts_home_from_multiuse_invite,
     accounts_register,
+    create_demo_organization,
     create_realm,
     find_account,
     get_prereg_key_and_redirect,
@@ -256,6 +257,7 @@ from zerver.views.users import (
     get_member_backend,
     get_members_backend,
     get_profile_backend,
+    get_subscribed_channels_backend,
     get_subscription_backend,
     get_user_by_email,
     patch_bot_backend,
@@ -278,6 +280,14 @@ from zproject import dev_urls
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
     from two_factor.urls import urlpatterns as tf_urls
+
+INTEGRATION_CATEGORY_REDIRECT_PATHS = [
+    path(
+        redirect.old_url.lstrip("/"),
+        RedirectView.as_view(url=redirect.new_url, permanent=True, query_string=True),
+    )
+    for redirect in get_integration_category_redirects()
+]
 
 # NB: There are several other pieces of code which route requests by URL:
 #
@@ -353,6 +363,7 @@ v1_api_and_json_patterns = [
         PATCH=update_user_by_id_api,
         DELETE=deactivate_user_backend,
     ),
+    rest_path("users/<int:user_id>/channels", GET=get_subscribed_channels_backend),
     rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),
     rest_path("users/<email>", GET=get_user_by_email, PATCH=update_user_by_email_api),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
@@ -593,8 +604,6 @@ v1_api_and_json_patterns = [
     rest_path("export/realm/consents", GET=get_users_export_consents),
 ]
 
-integrations_view = IntegrationView.as_view()
-
 # These views serve pages (HTML). As such, their internationalization
 # must depend on the URL.
 #
@@ -704,6 +713,7 @@ i18n_urls = [
     # Realm creation
     path("json/antispam_challenge", get_challenge),
     path("new/", create_realm),
+    path("new/demo/", create_demo_organization),
     path("new/<confirmation_key>", create_realm, name="create_realm"),
     # Realm reactivation
     path("reactivate/", realm_reactivation, name="realm_reactivation"),
@@ -718,10 +728,32 @@ i18n_urls = [
     path("calls/zoom/deauthorize", deauthorize_zoom_user),
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
-    # API and integrations documentation
-    path("integrations/doc-html/<integration_name>", integration_doc),
-    path("integrations/", integrations_view),
-    path("integrations/<path:path>", integrations_view),
+    # Integrations documentation
+    path(
+        "integrations/",
+        integrations_catalog,
+        {"category_slug": "all"},
+        name="integrations_home",
+    ),
+    path(
+        "integrations/category/<str:category_slug>",
+        integrations_catalog,
+        name="integrations_category",
+    ),
+    *INTEGRATION_CATEGORY_REDIRECT_PATHS,
+    path(
+        "integrations/doc/<str:integration_name>",
+        RedirectView.as_view(pattern_name="integration_doc", permanent=True, query_string=True),
+    ),
+    path(
+        "integrations/doc/<str:integration_name>/",
+        RedirectView.as_view(pattern_name="integration_doc", permanent=True, query_string=True),
+    ),
+    path(
+        "integrations/<str:integration_name>",
+        integrations_doc,
+        name="integration_doc",
+    ),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -805,7 +837,13 @@ urls += [
 # Incoming webhook URLs
 # We don't create URLs for particular Git integrations here
 # because of generic one below
-urls.extend(incoming_webhook.url_object for incoming_webhook in WEBHOOK_INTEGRATIONS)
+urls.extend(
+    [
+        url_object
+        for incoming_webhook in INCOMING_WEBHOOK_INTEGRATIONS
+        for url_object in incoming_webhook.url_objects
+    ]
+)
 
 # Desktop-specific authentication URLs
 urls += [

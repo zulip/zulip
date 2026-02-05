@@ -8,6 +8,7 @@ export type TopicFilterPill = {
     type: "topic_filter";
     label: string;
     syntax: string;
+    match_prefix_required?: string;
 };
 
 export type TopicFilterPillWidget = InputPillContainer<TopicFilterPill>;
@@ -22,6 +23,17 @@ export const filter_options: TopicFilterPill[] = [
         type: "topic_filter",
         label: $t({defaultMessage: "resolved"}),
         syntax: "is:resolved",
+    },
+    {
+        type: "topic_filter",
+        label: $t({defaultMessage: "followed"}),
+        syntax: "is:followed",
+    },
+    {
+        type: "topic_filter",
+        label: $t({defaultMessage: "unfollowed"}),
+        syntax: "-is:followed",
+        match_prefix_required: "-is",
     },
 ];
 

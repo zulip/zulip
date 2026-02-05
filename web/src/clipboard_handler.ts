@@ -1,6 +1,5 @@
 import assert from "minimalistic-assert";
 
-import * as blueslip from "./blueslip.ts";
 import * as hash_util from "./hash_util.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as stream_data from "./stream_data.ts";
@@ -39,11 +38,11 @@ export async function copy_link_to_clipboard(link: string): Promise<void> {
             } else {
                 const stream = stream_data.get_sub_by_id(stream_topic_details.stream_id);
                 assert(stream !== undefined);
-                const {text} = topic_link_util.get_topic_link_content(
-                    stream.name,
-                    stream_topic_details.topic_name,
-                    stream_topic_details.message_id,
-                );
+                const {text} = topic_link_util.get_topic_link_content_with_stream_name({
+                    stream_name: stream.name,
+                    topic_name: stream_topic_details.topic_name,
+                    message_id: stream_topic_details.message_id,
+                });
 
                 const copy_in_html_syntax = topic_link_util.as_html_link_syntax_unsafe(text, link);
                 const copy_in_markdown_syntax = topic_link_util.as_markdown_link_syntax(text, link);
@@ -60,22 +59,13 @@ export async function copy_link_to_clipboard(link: string): Promise<void> {
 }
 
 /* istanbul ignore next */
-export function popover_copy_link_to_clipboard(
+export async function popover_copy_link_to_clipboard(
     instance: typeof popover_menus.popover_instances.message_actions,
     $element: JQuery,
-    success_callback?: () => void,
-): void {
+): Promise<void> {
     // Wrapper for copy_link_to_clipboard handling closing a popover
     // and error handling.
     const clipboard_text = String($element.attr("data-clipboard-text"));
-    void copy_link_to_clipboard(clipboard_text)
-        .then(() => {
-            popover_menus.hide_current_popover_if_visible(instance);
-            if (success_callback !== undefined) {
-                success_callback();
-            }
-        })
-        .catch((error: unknown) => {
-            blueslip.error("Failed to copy to clipboard: ", {error: String(error)});
-        });
+    await copy_link_to_clipboard(clipboard_text);
+    popover_menus.hide_current_popover_if_visible(instance);
 }

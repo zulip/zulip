@@ -17,20 +17,17 @@ PUSH_PUSHED_TEXT_WITH_URL = "[{push_type}]({compare_url}) {number_of_commits} {c
 PUSH_PUSHED_TEXT_WITHOUT_URL = "{push_type} {number_of_commits} {commit_or_commits}"
 
 PUSH_COMMITS_BASE = "{user_name} {pushed_text} to branch {branch_name}."
-PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = (
-    PUSH_COMMITS_BASE
-    + """ {committers_details}.
+PUSH_COMMITS_BASE_WITH_REPOSITORY_NAME = (
+    "{user_name} {pushed_text} to branch {branch_name} of [{repository_name}]({repository_url})."
+)
+PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = """{base_message} {committers_details}.
 
 {commits_data}
 """
-)
-PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = (
-    PUSH_COMMITS_BASE
-    + """
+PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = """{base_message}
 
 {commits_data}
 """
-)
 PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE = (
     "{user_name} [deleted]({compare_url}) the branch {branch_name}."
 )
@@ -47,7 +44,6 @@ FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = (
     "{user_name} [force pushed]({url}) to branch {branch_name}. Head is now {head}."
 )
 CREATE_BRANCH_MESSAGE_TEMPLATE = "{user_name} created [{branch_name}]({url}) branch."
-CREATE_BRANCH_WITHOUT_URL_MESSAGE_TEMPLATE = "{user_name} created {branch_name} branch."
 REMOVE_BRANCH_MESSAGE_TEMPLATE = "{user_name} deleted branch {branch_name}."
 
 ISSUE_LABELED_OR_UNLABELED_MESSAGE_TEMPLATE = (
@@ -59,8 +55,8 @@ ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE = "[{user_name}]({user_url}) {
 ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE_WITH_TITLE = "[{user_name}]({user_url}) {action} milestone [{milestone_name}]({milestone_url}) {preposition} [issue #{id} {title}]({url})."
 
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action}{assignee} [{type}{id}{title}]({url})"
+PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITHOUT_REFERENCE = "{user_name} {action}"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
-PULL_REQUEST_REVIEWER_INFO_TEMPLATE = "(assigned reviewers: {reviewer})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
 
 CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~"
@@ -99,6 +95,8 @@ def get_push_commits_event_message(
     is_truncated: bool = False,
     deleted: bool = False,
     force_push: bool | None = False,
+    repository_name: str | None = None,
+    repository_url: str | None = None,
 ) -> str:
     if not commits_data and deleted:
         return PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE.format(
@@ -133,12 +131,23 @@ def get_push_commits_event_message(
         commit_or_commits=COMMIT_OR_COMMITS.format("s" if len(commits_data) > 1 else ""),
     )
 
+    base_message_template = (
+        PUSH_COMMITS_BASE_WITH_REPOSITORY_NAME
+        if repository_name and repository_url
+        else PUSH_COMMITS_BASE
+    )
+    base_message = base_message_template.format(
+        user_name=user_name,
+        pushed_text=pushed_text_message,
+        branch_name=branch_name,
+        repository_name=repository_name,
+        repository_url=repository_url,
+    )
+
     committers_items: list[tuple[str, int]] = get_all_committers(commits_data)
     if len(committers_items) == 1 and user_name == committers_items[0][0]:
         return PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS.format(
-            user_name=user_name,
-            pushed_text=pushed_text_message,
-            branch_name=branch_name,
+            base_message=base_message,
             commits_data=get_commits_content(commits_data, is_truncated),
         ).rstrip()
     else:
@@ -151,9 +160,7 @@ def get_push_commits_event_message(
             committers_details = "{} and {} ({})".format(committers_details, *committers_items[-1])
 
         return PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS.format(
-            user_name=user_name,
-            pushed_text=pushed_text_message,
-            branch_name=branch_name,
+            base_message=base_message,
             committers_details=PUSH_COMMITS_MESSAGE_EXTENSION.format(committers_details),
             commits_data=get_commits_content(commits_data, is_truncated),
         ).rstrip()
@@ -171,11 +178,6 @@ def get_force_push_commits_event_message(
 
 
 def get_create_branch_event_message(user_name: str, url: str | None, branch_name: str) -> str:
-    if url is None:
-        return CREATE_BRANCH_WITHOUT_URL_MESSAGE_TEMPLATE.format(
-            user_name=user_name,
-            branch_name=branch_name,
-        )
     return CREATE_BRANCH_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         url=url,
@@ -202,13 +204,18 @@ def get_pull_request_event_message(
     assignee: str | None = None,
     assignees: list[dict[str, Any]] | None = None,
     assignee_updated: str | None = None,
-    reviewer: str | None = None,
     type: str = "PR",
     title: str | None = None,
+    suffix: str | None = None,
+    include_topic_reference: bool = True,
 ) -> str:
     action_messages = {
         "approval": "added their approval for",
         "unapproval": "removed their approval for",
+        "enqueued": "added",
+        "dequeued": "removed",
+        "milestoned": "linked",
+        "demilestoned": "unlinked",
     }
 
     kwargs = {
@@ -224,7 +231,12 @@ def get_pull_request_event_message(
         }.get(action, ""),
     }
 
-    main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(**kwargs)
+    message_template = (
+        PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE
+        if include_topic_reference
+        else PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITHOUT_REFERENCE
+    )
+    main_message = message_template.format(**kwargs)
 
     if target_branch and base_branch:
         branch_info = PULL_REQUEST_BRANCH_INFO_TEMPLATE.format(
@@ -242,11 +254,11 @@ def get_pull_request_event_message(
     elif assignee:
         assignee_info = PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignee)
 
-    elif reviewer:
-        assignee_info = PULL_REQUEST_REVIEWER_INFO_TEMPLATE.format(reviewer=reviewer)
-
-    if assignees or assignee or reviewer:
+    if assignees or assignee:
         main_message = f"{main_message} {assignee_info}"
+
+    if suffix:
+        main_message = f"{main_message} {suffix}"
 
     punctuation = ":" if message else "."
     if (

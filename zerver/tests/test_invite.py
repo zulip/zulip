@@ -20,6 +20,7 @@ from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
     ConfirmationKeyError,
+    confirmation_url_for,
     create_confirmation_link,
     get_object_from_key,
 )
@@ -36,6 +37,7 @@ from zerver.actions.invites import (
     do_get_invites_controlled_by_user,
     do_invite_users,
     do_revoke_multi_use_invite,
+    do_revoke_user_invite,
     too_many_recent_realm_invites,
 )
 from zerver.actions.realm_settings import (
@@ -61,12 +63,14 @@ from zerver.models import (
     NamedUserGroup,
     PreregistrationUser,
     Realm,
+    RealmAuditLog,
     ScheduledEmail,
     Stream,
     UserMessage,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
@@ -1501,7 +1505,7 @@ earl-test@zulip.com""",
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         # Test we properly handle links in user full names
-        do_change_full_name(hamlet, "</a> https://www.google.com", hamlet)
+        do_change_full_name(hamlet, "</a> https://www.google.com", hamlet, notify=False)
 
         result = self.invite("newuser@zulip.com", ["Denmark"])
         self.assert_json_success(result)
@@ -2240,7 +2244,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         )
 
     def test_invite_welcome_bot_custom_message_from_member(self) -> None:
-        # If a non-admin member is creating an invitaion the Welcome Bot
+        # If a non-admin member is creating an invitation the Welcome Bot
         # custom message is sent if it is configured in the realm.
 
         # If the `welcome_message_custom_text` is configured for the realm.
@@ -2531,19 +2535,38 @@ class InvitationsTestCase(InviteUserBase):
         A DELETE call to /json/invites/<ID> should delete the invite and
         any scheduled invitation reminder emails.
         """
+        iago = self.example_user("iago")
         self.login("iago")
 
         invitee = "DeleteMe@zulip.com"
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         prereg_user = PreregistrationUser.objects.get(email=invitee)
+        confirmation = Confirmation.objects.get(
+            type=Confirmation.INVITATION, object_id=prereg_user.id
+        )
+        self.assertEqual(confirmation.content_object, prereg_user)
 
         # Verify that the scheduled email exists.
         ScheduledEmail.objects.get(address__iexact=invitee, type=ScheduledEmail.INVITATION_REMINDER)
 
         result = self.client_delete("/json/invites/" + str(prereg_user.id))
         self.assertEqual(result.status_code, 200)
+
+        audit_log = RealmAuditLog.objects.latest("id")
+        self.assertEqual(audit_log.event_type, AuditLogEventType.INVITATION_REVOKED)
+        self.assertEqual(audit_log.acting_user, iago)
+        extra_data = audit_log.extra_data
+        self.assertDictEqual(
+            extra_data,
+            {
+                "confirmation_id": confirmation.id,
+                "invitation_type": Confirmation.INVITATION,
+                "invitation_object_id": prereg_user.id,
+            },
+        )
+
         error_result = self.client_delete("/json/invites/" + str(prereg_user.id))
-        self.assert_json_error(error_result, "No such invitation")
+        self.assert_json_error(error_result, "Invitation already used or deactivated.")
 
         self.assertRaises(
             ScheduledEmail.DoesNotExist,
@@ -2581,7 +2604,7 @@ class InvitationsTestCase(InviteUserBase):
         self.assertEqual(result.status_code, 200)
 
         result = self.api_delete(user_profile, "/api/v1/invites/" + str(prereg_user.id))
-        self.assert_json_error(result, "No such invitation")
+        self.assert_json_error(result, "Invitation already used or deactivated.")
 
         self.assertRaises(
             ScheduledEmail.DoesNotExist,
@@ -2609,7 +2632,7 @@ class InvitationsTestCase(InviteUserBase):
         result = self.api_delete(owner, "/api/v1/invites/" + str(prereg_user.id))
         self.assert_json_success(result)
         result = self.api_delete(owner, "/api/v1/invites/" + str(prereg_user.id))
-        self.assert_json_error(result, "No such invitation")
+        self.assert_json_error(result, "Invitation already used or deactivated.")
         self.assertRaises(
             ScheduledEmail.DoesNotExist,
             lambda: ScheduledEmail.objects.get(
@@ -2617,11 +2640,37 @@ class InvitationsTestCase(InviteUserBase):
             ),
         )
 
+    def test_revoked_invitation_link(self) -> None:
+        self.login("desdemona")
+
+        invitee = "DeleteMe@zulip.com"
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+
+        confirmation = Confirmation.objects.get(
+            type=Confirmation.INVITATION, object_id=prereg_user.id
+        )
+        self.assertEqual(confirmation.content_object, prereg_user)
+
+        invite_link = confirmation_url_for(confirmation)
+        do_revoke_user_invite(prereg_user)
+
+        result = self.client_get(invite_link)
+
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("The confirmation link has expired or been deactivated.", result)
+
+        prereg_user.refresh_from_db()
+        self.assertEqual(prereg_user.status, confirmation_settings.STATUS_REVOKED)
+        self.assertTrue(Confirmation.objects.filter(id=confirmation.id).exists())
+
     def test_delete_multiuse_invite(self) -> None:
         """
         A DELETE call to /json/invites/multiuse<ID> should delete the
         multiuse_invite.
         """
+        iago = self.example_user("iago")
         self.login("iago")
 
         zulip_realm = get_realm("zulip")
@@ -2629,10 +2678,26 @@ class InvitationsTestCase(InviteUserBase):
             referred_by=self.example_user("hamlet"), realm=zulip_realm
         )
         validity_in_minutes = 2 * 24 * 60
-        create_confirmation_link(
+        confirmation_link = create_confirmation_link(
             multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
         )
+        confirmation_key = confirmation_link.split("/")[-2]
+        confirmation = Confirmation.objects.get(confirmation_key=confirmation_key)
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
+
+        audit_log = RealmAuditLog.objects.latest("id")
+        self.assertEqual(audit_log.event_type, AuditLogEventType.INVITATION_REVOKED)
+        self.assertEqual(audit_log.acting_user, iago)
+        extra_data = audit_log.extra_data
+        self.assertDictEqual(
+            extra_data,
+            {
+                "confirmation_id": confirmation.id,
+                "invitation_type": Confirmation.MULTIUSE_INVITE,
+                "invitation_object_id": multiuse_invite.id,
+            },
+        )
+
         self.assertEqual(result.status_code, 200)
         self.assertEqual(
             MultiuseInvite.objects.get(id=multiuse_invite.id).status,
@@ -3066,7 +3131,7 @@ class MultiuseInviteTest(ZulipTestCase):
         )
 
     def test_multiuse_invite_welcome_bot_custom_message_from_member(self) -> None:
-        # If a non-admin member is creating an invitaion the Welcome Bot
+        # If a non-admin member is creating an invitation the Welcome Bot
         # custom message is sent if it is configured in the realm.
 
         # If the `welcome_message_custom_text` is configured for the realm.
@@ -3181,14 +3246,22 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_revoked_multiuse_link(self) -> None:
         email = self.nonreg_email("newuser")
         invite_link = self.generate_multiuse_invite_link()
-        multiuse_invite = MultiuseInvite.objects.last()
-        assert multiuse_invite is not None
+        key = invite_link.split("/")[-2]
+
+        multiuse_invite = MultiuseInvite.objects.latest("id")
+        confirmation = Confirmation.objects.get(confirmation_key=key)
+        self.assertEqual(confirmation.content_object, multiuse_invite)
+
         do_revoke_multi_use_invite(multiuse_invite)
 
         result = self.client_post(invite_link, {"email": email})
 
         self.assertEqual(result.status_code, 404)
-        self.assert_in_response("We couldn't find your confirmation link in the system.", result)
+        self.assert_in_response("The confirmation link has expired or been deactivated.", result)
+
+        multiuse_invite.refresh_from_db()
+        self.assertEqual(multiuse_invite.status, confirmation_settings.STATUS_REVOKED)
+        self.assertTrue(Confirmation.objects.filter(id=confirmation.id).exists())
 
     def test_invalid_multiuse_link(self) -> None:
         email = self.nonreg_email("newuser")

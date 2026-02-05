@@ -4,10 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class GiteaHookTests(WebhookTestCase):
-    CHANNEL_NAME = "commits"
-    URL_TEMPLATE = "/api/v1/external/gitea?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "gitea"
-
     def test_multiple_commits(self) -> None:
         expected_topic_name = "test / d"
         expected_message = """kostekIV [pushed](https://try.gitea.io/kostekIV/test/compare/21138d2ca0ce18f8e037696fdbe1b3f0c211f630...2ec0c971d04723523aa20f2b378f8b419b47d4ec) 5 commits to branch d.
@@ -50,6 +46,11 @@ class GiteaHookTests(WebhookTestCase):
         expected_topic_name = "test / PR #1906 test 2"
         expected_message = """kostekIV closed [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) from `d` to `master`."""
         self.check_webhook("pull_request__closed", expected_topic_name, expected_message)
+
+    def test_pull_request_closed_different_user(self) -> None:
+        expected_topic_name = "test / PR #126085 PR closed"
+        expected_message = """Aneesh-Hegde closed [PR #1](https://gitea.com/Aneesh-Hegde/test-repo/pulls/1) from `main` to `main`."""
+        self.check_webhook("pull_request__closed_diff_user", expected_topic_name, expected_message)
 
     def test_pull_request_assigned(self) -> None:
         expected_topic_name = "test / PR #1906 test 2"

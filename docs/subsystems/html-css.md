@@ -212,9 +212,9 @@ first add it to the appropriate place under `static/`.
 - CSS files live under `web/styles`.
 - Portico JavaScript ("portico" means for logged-out pages) lives under
   `web/src/portico`.
-- Custom SVG graphics living under `web/images/icons` are compiled into
+- Custom SVG graphics living under `web/icons` are compiled into
   custom icon webfonts by webfont-loader according to the
-  `web/images/icons/template.hbs` template. See
+  `web/icons/template.hbs` template. See
   [icons](../subsystems/icons.md) for more details on adding icons.
 
 For your asset to be included in a development/production bundle, it
@@ -289,8 +289,8 @@ webpack plugin (`web/debug-require-webpack-plugin.ts`) that exposes
 a version of the `require()` function to the development environment
 browser console for this purpose. For example, you can access our
 `people` module by evaluating
-`people = require("./src/people")`, or the third-party `lodash`
-module with `_ = require("lodash")`. This mechanism is **not** a
+`let people = require("./src/people")`, or the third-party `lodash`
+module with `let _ = require("lodash")`. This mechanism is **not** a
 stable API and should not be used for any purpose other than
 interactive debugging.
 

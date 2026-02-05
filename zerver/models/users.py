@@ -295,6 +295,10 @@ class UserBaseSettings(models.Model):
     # Whether the user wants to see typing notifications.
     receives_typing_notifications = models.BooleanField(default=True)
 
+    # UI setting to control showing channel folders in the Inbox view
+    # of the Zulip web app.
+    web_inbox_show_channel_folders = models.BooleanField(default=True, db_default=True)
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is
     # the same as UserProfile.delivery_email, or is instead a fake
@@ -321,31 +325,19 @@ class UserBaseSettings(models.Model):
     # Whether user wants to see AI features in the UI.
     hide_ai_features = models.BooleanField(default=False)
 
-    display_settings_legacy = dict(
-        # Don't add anything new to this legacy dict.
-        # Instead, see `modern_settings` below.
-        color_scheme=int,
-        default_language=str,
-        web_home_view=str,
-        demote_inactive_streams=int,
-        emojiset=str,
-        enable_drafts_synchronization=bool,
-        enter_sends=bool,
-        fluid_layout_width=bool,
-        high_contrast_mode=bool,
-        left_side_userlist=bool,
-        starred_message_counts=bool,
-        translate_emoticons=bool,
-        twenty_four_hour_time=bool,
-    )
-
-    notification_settings_legacy = dict(
-        # Don't add anything new to this legacy dict.
-        # Instead, see `modern_notification_settings` below.
+    modern_notification_settings = dict(
+        automatically_follow_topics_policy=int,
+        automatically_follow_topics_where_mentioned=bool,
+        automatically_unmute_topics_in_muted_streams_policy=int,
         desktop_icon_count_display=int,
         email_notifications_batching_period_seconds=int,
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
+        enable_followed_topic_audible_notifications=bool,
+        enable_followed_topic_desktop_notifications=bool,
+        enable_followed_topic_email_notifications=bool,
+        enable_followed_topic_push_notifications=bool,
+        enable_followed_topic_wildcard_mentions_notify=bool,
         enable_login_emails=bool,
         enable_marketing_emails=bool,
         enable_offline_email_notifications=bool,
@@ -365,50 +357,47 @@ class UserBaseSettings(models.Model):
     )
 
     modern_settings = dict(
-        # Add new general settings here.
+        allow_private_data_export=bool,
+        color_scheme=int,
+        default_language=str,
+        demote_inactive_streams=int,
         display_emoji_reaction_users=bool,
         email_address_visibility=int,
-        web_escape_navigates_to_home_view=bool,
+        emojiset=str,
+        enable_drafts_synchronization=bool,
+        enter_sends=bool,
+        fluid_layout_width=bool,
+        hide_ai_features=bool,
+        high_contrast_mode=bool,
+        left_side_userlist=bool,
         receives_typing_notifications=bool,
+        resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
-        allow_private_data_export=bool,
-        web_mark_read_on_scroll_policy=int,
-        web_channel_default_view=int,
+        starred_message_counts=bool,
+        translate_emoticons=bool,
+        twenty_four_hour_time=bool,
         user_list_style=int,
         web_animate_image_previews=str,
-        web_stream_unreads_count_display_policy=int,
+        web_channel_default_view=int,
+        web_escape_navigates_to_home_view=bool,
         web_font_size_px=int,
-        web_line_height_percent=int,
-        web_navigate_to_sent_message=bool,
-        web_suggest_update_timezone=bool,
-        hide_ai_features=bool,
-        resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
-        web_left_sidebar_unreads_count_summary=bool,
+        web_home_view=str,
+        web_inbox_show_channel_folders=bool,
         web_left_sidebar_show_channel_folders=bool,
+        web_left_sidebar_unreads_count_summary=bool,
+        web_line_height_percent=int,
+        web_mark_read_on_scroll_policy=int,
+        web_navigate_to_sent_message=bool,
+        web_stream_unreads_count_display_policy=int,
+        web_suggest_update_timezone=bool,
     )
 
-    modern_notification_settings = dict(
-        # Add new notification settings here.
-        enable_followed_topic_desktop_notifications=bool,
-        enable_followed_topic_email_notifications=bool,
-        enable_followed_topic_push_notifications=bool,
-        enable_followed_topic_audible_notifications=bool,
-        enable_followed_topic_wildcard_mentions_notify=bool,
-        automatically_follow_topics_policy=int,
-        automatically_unmute_topics_in_muted_streams_policy=int,
-        automatically_follow_topics_where_mentioned=bool,
-    )
-
-    notification_setting_types = {
-        **notification_settings_legacy,
-        **modern_notification_settings,
-    }
+    notification_setting_types = modern_notification_settings
 
     # Define the types of the various automatically managed properties
     property_types = {
-        **display_settings_legacy,
         **notification_setting_types,
         **modern_settings,
     }
@@ -617,6 +606,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # imports and deleted users.
     is_mirror_dummy = models.BooleanField(default=False)
 
+    # Flag used for imported users who have not activated their account.
+    is_imported_stub = models.BooleanField(default=False)
+
     # Users with this flag set are allowed to forge messages as sent by another
     # user and to send to private streams; also used for Jabber mirroring.
     can_forge_sender = models.BooleanField(default=False, db_index=True)
@@ -675,7 +667,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # us, pre-thumbnailing.
     avatar_hash = models.CharField(null=True, max_length=64)
 
-    zoom_token = models.JSONField(default=None, null=True)
+    # A place to store the user's state related to third-party API
+    # integrations, like bearer tokens for accessing video call
+    # providers.
+    #
+    # Note that an index would need to be added to support searching
+    # by values in this object.
+    third_party_api_state = models.JSONField(default=dict, db_default={})
 
     objects = UserManager()
 
@@ -732,7 +730,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         }
         data: ProfileData = []
         for field in custom_profile_fields_for_realm(self.realm_id):
-            field_values = user_data.get(field.id, None)
+            field_values = user_data.get(field.id)
             if field_values:
                 value, rendered_value = (
                     field_values.get("value"),

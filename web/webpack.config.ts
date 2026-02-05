@@ -1,7 +1,6 @@
 /// <reference types="webpack-dev-server" />
 
 import path from "node:path";
-import * as url from "node:url";
 
 import type {ZopfliOptions} from "@gfx/zopfli";
 import {gzip} from "@gfx/zopfli";
@@ -93,11 +92,6 @@ const config = (
                     loader: "expose-loader",
                     options: {exposes: "require"},
                 },
-                {
-                    test: url.fileURLToPath(import.meta.resolve("jquery")),
-                    loader: "expose-loader",
-                    options: {exposes: ["$", "jQuery"]},
-                },
                 // Generate webfont
                 {
                     test: /\.font\.cjs$/,
@@ -124,10 +118,7 @@ const config = (
                 // Transpile .js and .ts files with Babel
                 {
                     test: /\.[cm]?[jt]s$/,
-                    include: [
-                        path.resolve(import.meta.dirname, "shared/src"),
-                        path.resolve(import.meta.dirname, "src"),
-                    ],
+                    include: [path.resolve(import.meta.dirname, "src")],
                     loader: "babel-loader",
                 },
                 // regular css files
@@ -179,10 +170,14 @@ const config = (
                             "not",
                             "t",
                             "tr",
+                            "map_entries",
+                            "object_entries",
+                            "object_values",
                             "rendered_markdown",
                             "numberFormat",
                             "tooltip_hotkey_hints",
                             "popover_hotkey_hints",
+                            "list_each",
                         ],
                         precompileOptions: {
                             knownHelpersOnly: true,

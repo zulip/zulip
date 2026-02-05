@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
-const {unmock_module, zrequire} = require("./lib/namespace.cjs");
+const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -20,11 +20,8 @@ page_params.translation_data = {
         "<p>Le canal <b>{name}</b> n'existe pas.</p><p>Gérez vos abonnements <z-link>sur votre page canaux</z-link>.</p>",
 };
 
-// All of our other tests stub out i18n activity;
-// here we do a quick sanity check on the engine itself.
 // `i18n.ts` initializes FormatJS and is imported by
 // `templates.ts`.
-unmock_module("../src/i18n");
 const {$t, $t_html, get_language_name, get_language_list_columns, initialize} = zrequire("i18n");
 
 run_test("$t", () => {
@@ -43,7 +40,7 @@ run_test("$t", () => {
     );
 });
 
-run_test("$tr", () => {
+run_test("$t_html", () => {
     assert.equal(
         $t_html(
             {
@@ -64,8 +61,7 @@ run_test("t_tag", ({mock_template}) => {
     const args = {
         message_id: "99",
         should_display_quote_message: true,
-        editability_menu_item: true,
-        should_display_hide_option: true,
+        editability_menu_item: "Edit message",
         conversation_time_url:
             "http://zulip.zulipdev.com/#narrow/channel/101-devel/topic/testing/near/99",
     };
@@ -80,8 +76,18 @@ run_test("t_tag", ({mock_template}) => {
 
 run_test("{{#tr}} to tag for translation", ({mock_template}) => {
     const args = {
-        notification_settings: {},
-        settings_object: {},
+        general_settings: [],
+        notification_settings: {
+            desktop_notification_settings: [],
+            mobile_notification_settings: [],
+            email_message_notification_settings: [],
+            other_email_settings: [],
+        },
+        custom_stream_specific_notification_settings: [],
+        email_notifications_batching_period_values: [],
+        settings_object: {
+            available_notification_sounds: [],
+        },
         settings_label: {
             desktop_icon_count_display:
                 "Unread count badge (appears in desktop sidebar and browser tab)",
@@ -91,6 +97,11 @@ run_test("{{#tr}} to tag for translation", ({mock_template}) => {
             automatically_unmute_topics_in_muted_streams_policy:
                 "Automatically unmute topics in muted channels",
         },
+        automatically_follow_topics_policy_values: {},
+        automatically_unmute_topics_in_muted_streams_policy_values: {},
+        resolved_topic_notice_auto_read_policy_values: {},
+        desktop_icon_count_display_values: {},
+        realm_name_in_email_notifications_policy_values: {},
     };
 
     // We're actually testing `notification_settings.hbs` here which
@@ -124,27 +135,57 @@ run_test("language_list", () => {
             name: "Bahasa Indonesia",
             percent_translated: 32,
         },
+        {
+            code: "mn",
+            locale: "mn",
+            name: "Mongolian",
+            percent_translated: 53,
+        },
+        {
+            code: "bqi",
+            locale: "bqi",
+            name: "Luri (Bakhtiari)",
+            percent_translated: 5,
+        },
+        {
+            code: "zh-hans",
+            locale: "zh_Hans",
+            name: "简体中文",
+            percent_translated: 86,
+        },
     ];
     initialize({language_list});
     assert.equal(get_language_name("en"), "English");
 
     const successful_formatted_list = [
         {
-            name: "English",
             code: "en",
-            name_with_percent: "English",
+            name_with_percent: "English (United States)",
             selected: true,
         },
         {
-            name: "British English",
             code: "en-gb",
-            name_with_percent: "British English (99%)",
+            name_with_percent: "English (United Kingdom) (99%)",
             selected: false,
         },
         {
-            name: "Bahasa Indonesia",
             code: "id",
-            name_with_percent: "Bahasa Indonesia (32%)",
+            name_with_percent: "Indonesia (32%)",
+            selected: false,
+        },
+        {
+            code: "mn",
+            name_with_percent: "Монгол (53%)",
+            selected: false,
+        },
+        {
+            code: "bqi",
+            name_with_percent: "Bakhtiari (5%)",
+            selected: false,
+        },
+        {
+            code: "zh-hans",
+            name_with_percent: "中文 (简体) (86%)",
             selected: false,
         },
     ];

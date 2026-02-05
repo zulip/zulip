@@ -15,7 +15,7 @@ from confirmation.models import Confirmation, create_confirmation_link, generate
 from zerver.actions.custom_profile_fields import do_remove_realm_custom_profile_fields
 from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
-from zerver.actions.user_settings import do_delete_avatar_image
+from zerver.actions.user_settings import do_scrub_avatar_images
 from zerver.lib.demo_organizations import demo_organization_owner_email_exists
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
@@ -721,8 +721,8 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
 
     users = UserProfile.objects.filter(realm=realm)
     for user in users:
-        do_delete_messages_by_sender(user)
-        do_delete_avatar_image(user, acting_user=acting_user)
+        do_delete_messages_by_sender(user, skip_notify=True)
+        do_scrub_avatar_images(user, acting_user=acting_user)
         user.full_name = f"Scrubbed {generate_key()[:15]}"
         scrubbed_email = Address(
             username=f"scrubbed-{generate_key()[:15]}", domain=realm.host
@@ -737,13 +737,16 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
     # more secure against bugs that may cause Message.realm to be incorrect for some
     # cross-realm messages to also determine the actual Recipients - to prevent
     # deletion of excessive messages.
-    all_recipient_ids_in_realm = [
-        *Stream.objects.filter(realm=realm).values_list("recipient_id", flat=True),
-        *UserProfile.objects.filter(realm=realm).values_list("recipient_id", flat=True),
-        *Subscription.objects.filter(
-            recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__realm=realm
-        ).values_list("recipient_id", flat=True),
-    ]
+    all_recipient_ids_in_realm = (
+        Stream.objects.filter(realm=realm)
+        .values_list("recipient_id", flat=True)
+        .union(
+            UserProfile.objects.filter(realm=realm).values_list("recipient_id", flat=True),
+            Subscription.objects.filter(
+                recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__realm=realm
+            ).values_list("recipient_id", flat=True),
+        )
+    )
     cross_realm_bot_message_ids = list(
         Message.objects.filter(
             # Filtering by both message.recipient and message.realm is
@@ -756,7 +759,11 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
             realm=realm,
         ).values_list("id", flat=True)
     )
-    move_messages_to_archive(cross_realm_bot_message_ids)
+    move_messages_to_archive(cross_realm_bot_message_ids, realm=realm, skip_notify=True)
+
+    # Since we delete messages with skip_notify=True, we must take care of updating the first_message_id
+    # of channels in the realm.
+    Stream.objects.filter(realm=realm).update(first_message_id=None)
 
     do_remove_realm_custom_profile_fields(realm)
     do_delete_all_realm_attachments(realm)
@@ -807,7 +814,13 @@ def do_change_realm_org_type(
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data={"old_value": old_value, "new_value": org_type},
+        extra_data={
+            # Prior to Zulip 12.0, RealmAuditLog entries for this
+            # incorrectly used the strings "old_value" and "new_value"
+            # as keys here.
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: org_type,
+        },
     )
 
     event = dict(type="realm", op="update", property="org_type", value=org_type)
@@ -831,8 +844,11 @@ def do_change_realm_max_invites(realm: Realm, max_invites: int, acting_user: Use
         event_time=timezone_now(),
         acting_user=acting_user,
         extra_data={
-            "old_value": old_value,
-            "new_value": new_max,
+            # Prior to Zulip 12.0, RealmAuditLog entries for this
+            # incorrectly used the strings "old_value" and "new_value"
+            # as keys here.
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: new_max,
             "property": "max_invites",
         },
     )
@@ -887,7 +903,13 @@ def do_change_realm_plan_type(
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data={"old_value": old_value, "new_value": plan_type},
+        extra_data={
+            # Prior to Zulip 12.0, RealmAuditLog entries for this
+            # incorrectly used the strings "old_value" and "new_value"
+            # as keys here.
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: plan_type,
+        },
     )
 
     realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)
@@ -928,6 +950,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: UserProfile |
         "realm_url": realm.url,
         "realm_name": realm.name,
         "corporate_enabled": settings.CORPORATE_ENABLED,
+        "is_demo_organization": realm.demo_organization_scheduled_deletion_date is not None,
     }
     language = realm.default_language
     send_email_to_admins(
@@ -945,6 +968,7 @@ def do_send_realm_deactivation_email(
 ) -> None:
     shared_context: dict[str, Any] = {
         "realm_name": realm.name,
+        "is_demo_organization": realm.demo_organization_scheduled_deletion_date is not None,
     }
     deactivation_time = timezone_now()
     owners = set(realm.get_human_owner_users())

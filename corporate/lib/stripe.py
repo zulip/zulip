@@ -5,7 +5,7 @@ import secrets
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Generator
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 from enum import Enum, IntEnum
 from functools import wraps
@@ -102,7 +102,7 @@ CARD_CAPITALIZATION = {
 }
 
 # The version of Stripe API the billing system supports.
-STRIPE_API_VERSION = "2025-04-30.basil"
+STRIPE_API_VERSION = "2025-11-17.clover"
 
 stripe.api_version = STRIPE_API_VERSION
 
@@ -777,7 +777,7 @@ class BillingSession(ABC):
         assert customer is not None and customer.stripe_customer_id is not None
 
         # Check if customer has any $0 invoices.
-        list_params = stripe.Invoice.ListParams(
+        list_params = stripe.params.InvoiceListParams(
             customer=customer.stripe_customer_id,
             limit=1,
             status="paid",
@@ -854,7 +854,7 @@ class BillingSession(ABC):
         plan_tier: int,
         billing_schedule: int,
         charge_automatically: bool,
-        invoice_period: stripe.InvoiceItem.CreateParamsPeriod,
+        invoice_period: stripe.params.InvoiceItemCreateParamsPeriod,
         license_management: str | None = None,
         days_until_due: int | None = None,
         on_free_trial: bool = False,
@@ -892,7 +892,7 @@ class BillingSession(ABC):
         # If automatic charge fails, we simply void the invoice.
         # https://stripe.com/docs/invoicing/integration/automatic-advancement-collection
         auto_advance = not charge_automatically
-        invoice_params = stripe.Invoice.CreateParams(
+        invoice_params = stripe.params.InvoiceCreateParams(
             auto_advance=auto_advance,
             collection_method=collection_method,
             customer=customer.stripe_customer_id,
@@ -1417,8 +1417,11 @@ class BillingSession(ABC):
         return f"Required plan tier for {self.billing_entity_display_name} set to {plan_tier_name}."
 
     def configure_complimentary_access_plan(self, end_date_string: str) -> str:
-        plan_end_date = datetime.strptime(end_date_string, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        if plan_end_date.date() <= timezone_now().date():
+        plan_end_date = datetime.combine(
+            date.fromisoformat(end_date_string), time(0, 0, 0), timezone.utc
+        )
+        plan_anchor_date = timezone_now()
+        if plan_end_date <= plan_anchor_date:
             raise SupportRequestError(
                 f"Cannot configure a complimentary access plan for {self.billing_entity_display_name} to end on {end_date_string}."
             )
@@ -1429,7 +1432,6 @@ class BillingSession(ABC):
                 raise SupportRequestError(
                     f"Cannot configure a complimentary access plan for {self.billing_entity_display_name} because of current plan."
                 )
-        plan_anchor_date = timezone_now()
         if isinstance(self, RealmBillingSession):
             # TODO implement a complimentary access plan/tier for Zulip Cloud.
             raise SupportRequestError(
@@ -1612,8 +1614,10 @@ class BillingSession(ABC):
         return success_message
 
     def update_end_date_of_current_plan(self, end_date_string: str) -> str:
-        new_end_date = datetime.strptime(end_date_string, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        if new_end_date.date() <= timezone_now().date():
+        new_end_date = datetime.combine(
+            date.fromisoformat(end_date_string), time(0, 0, 0), timezone.utc
+        )
+        if new_end_date <= timezone_now():
             raise SupportRequestError(
                 f"Cannot update current plan for {self.billing_entity_display_name} to end on {end_date_string}."
             )
@@ -3207,6 +3211,131 @@ class BillingSession(ABC):
             licenses_at_next_renewal=licenses_for_new_plan,
         )
 
+    def create_stripe_invoice_for_plan(self, plan: CustomerPlan) -> stripe.Invoice:
+        assert plan.customer.stripe_customer_id is not None
+        if plan.charge_automatically:
+            collection_method: Literal["charge_automatically", "send_invoice"] = (
+                "charge_automatically"
+            )
+            days_until_due = None
+        else:
+            collection_method = "send_invoice"
+            days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
+        invoice_params = stripe.params.InvoiceCreateParams(
+            auto_advance=True,
+            collection_method=collection_method,
+            customer=plan.customer.stripe_customer_id,
+            statement_descriptor=plan.name,
+        )
+        if days_until_due is not None:
+            invoice_params["days_until_due"] = days_until_due
+        return stripe.Invoice.create(**invoice_params)
+
+    def apply_flat_discount_to_invoice(
+        self,
+        plan: CustomerPlan,
+        stripe_invoice: stripe.Invoice,
+        renewal_invoice_period: stripe.params.InvoiceItemCreateParamsPeriod,
+    ) -> None:
+        customer_remaining_discounted_months = plan.customer.flat_discounted_months
+        flat_discount = plan.customer.flat_discount
+        assert customer_remaining_discounted_months > 0
+        num_months = 12 if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
+        months = min(customer_remaining_discounted_months, num_months)
+        discount = plan.customer.flat_discount * months
+        plan.customer.flat_discounted_months -= months
+        plan.customer.save(update_fields=["flat_discounted_months"])
+        assert stripe_invoice.id is not None
+        assert plan.customer.stripe_customer_id is not None
+        stripe.InvoiceItem.create(
+            invoice=stripe_invoice.id,
+            currency="usd",
+            customer=plan.customer.stripe_customer_id,
+            description=f"${cents_to_dollar_string(flat_discount)}/month new customer discount",
+            # Negative value to apply discount.
+            amount=(-1 * discount),
+            period=renewal_invoice_period,
+        )
+
+    def build_renewal_invoice_item_parameters(
+        self,
+        plan: CustomerPlan,
+        ledger_entry: LicenseLedger,
+        stripe_invoice: stripe.Invoice,
+        invoice_period: stripe.params.InvoiceItemCreateParamsPeriod,
+    ) -> stripe.params.InvoiceItemCreateParams:
+        assert plan.customer.stripe_customer_id is not None
+        assert stripe_invoice.id is not None
+        invoice_item_params = stripe.params.InvoiceItemCreateParams(
+            customer=plan.customer.stripe_customer_id,
+            currency="usd",
+            discountable=False,
+            idempotency_key=get_idempotency_key(ledger_entry),
+            invoice=stripe_invoice.id,
+            period=invoice_period,
+        )
+        if plan.fixed_price is not None:
+            amount_due = get_amount_due_fixed_price_plan(plan.fixed_price, plan.billing_schedule)
+            invoice_item_params["amount"] = amount_due
+        else:
+            assert plan.price_per_license is not None  # needed for mypy
+            invoice_item_params["unit_amount_decimal"] = str(plan.price_per_license)
+            invoice_item_params["quantity"] = ledger_entry.licenses
+        invoice_item_params["description"] = f"{plan.name} - renewal"
+        return invoice_item_params
+
+    def build_additional_licenses_invoice_item_parameters(
+        self,
+        plan: CustomerPlan,
+        ledger_entry: LicenseLedger,
+        licenses_base: int,
+        stripe_invoice: stripe.Invoice,
+        invoice_period: stripe.params.InvoiceItemCreateParamsPeriod,
+    ) -> stripe.params.InvoiceItemCreateParams:
+        assert plan.customer.stripe_customer_id is not None
+        assert stripe_invoice.id is not None
+        invoice_item_params = stripe.params.InvoiceItemCreateParams(
+            customer=plan.customer.stripe_customer_id,
+            currency="usd",
+            discountable=False,
+            idempotency_key=get_idempotency_key(ledger_entry),
+            invoice=stripe_invoice.id,
+            period=invoice_period,
+        )
+        assert plan.price_per_license is not None
+        last_ledger_entry_renewal = (
+            LicenseLedger.objects.filter(
+                plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
+            )
+            .order_by("-id")
+            .first()
+        )
+        assert last_ledger_entry_renewal is not None
+        last_renewal = last_ledger_entry_renewal.event_time
+        billing_period_end = start_of_next_billing_cycle(plan, ledger_entry.event_time)
+        plan_renewal_or_end_date = get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
+        unit_amount = plan.price_per_license
+        if not plan.is_free_trial():
+            proration_fraction = (plan_renewal_or_end_date - ledger_entry.event_time) / (
+                billing_period_end - last_renewal
+            )
+            unit_amount = int(plan.price_per_license * proration_fraction + 0.5)
+        invoice_item_params["unit_amount_decimal"] = str(unit_amount)
+        invoice_item_params["quantity"] = ledger_entry.licenses - licenses_base
+        invoice_item_params["description"] = f"Additional {plan.name} license"
+        return invoice_item_params
+
+    def update_additional_licenses_invoice_item_quantity(
+        self,
+        ledger_entry: LicenseLedger,
+        invoice_item: stripe.params.InvoiceItemCreateParams,
+        licenses_base: int,
+    ) -> stripe.params.InvoiceItemCreateParams:
+        current_quantity = invoice_item.get("quantity")
+        assert current_quantity is not None
+        invoice_item["quantity"] = current_quantity + (ledger_entry.licenses - licenses_base)
+        return invoice_item
+
     def invoice_plan(self, plan: CustomerPlan, event_time: datetime) -> None:
         if plan.invoicing_status == CustomerPlan.INVOICING_STATUS_STARTED:
             raise NotImplementedError(
@@ -3246,84 +3375,36 @@ class BillingSession(ABC):
 
             # Invoice Variables
             stripe_invoice: stripe.Invoice | None = None
-            need_to_invoice = False
+
+            # Track invoice item parameters for additional licenses added on a specific
+            # date so that we can bundle them into one item on the invoice.
+            current_tracked_date: date | None = None
+            complete_invoice_items: list[stripe.params.InvoiceItemCreateParams] = []
+            pending_invoice_item: stripe.params.InvoiceItemCreateParams | None = None
 
             # Track if we added renewal invoice item which is possibly eligible for discount.
-            renewal_invoice_period: stripe.InvoiceItem.CreateParamsPeriod | None = None
+            renewal_invoice_period: stripe.params.InvoiceItemCreateParamsPeriod | None = None
+
             for ledger_entry in LicenseLedger.objects.filter(
                 plan=plan, id__gt=invoiced_through_id, event_time__lte=event_time
             ).order_by("id"):
-                # InvoiceItem variables.
-                invoice_item_params = stripe.InvoiceItem.CreateParams(
-                    customer=plan.customer.stripe_customer_id
-                )
-
-                if ledger_entry.is_renewal:
-                    if plan.fixed_price is not None:
-                        amount_due = get_amount_due_fixed_price_plan(
-                            plan.fixed_price, plan.billing_schedule
-                        )
-                        invoice_item_params["amount"] = amount_due
-                    else:
-                        assert plan.price_per_license is not None  # needed for mypy
-                        invoice_item_params["unit_amount_decimal"] = str(plan.price_per_license)
-                        invoice_item_params["quantity"] = ledger_entry.licenses
-                    invoice_item_params["description"] = f"{plan.name} - renewal"
-                    need_to_invoice = True
-                elif (
+                create_invoice_item = False
+                # We create invoice items for a plan renewal or additional
+                # licenses added during the past month of the active plan.
+                if ledger_entry.is_renewal or (
                     plan.fixed_price is None
                     and licenses_base is not None
                     and ledger_entry.licenses != licenses_base
                 ):
-                    assert plan.price_per_license is not None
-                    last_ledger_entry_renewal = (
-                        LicenseLedger.objects.filter(
-                            plan=plan, is_renewal=True, event_time__lte=ledger_entry.event_time
-                        )
-                        .order_by("-id")
-                        .first()
-                    )
-                    assert last_ledger_entry_renewal is not None
-                    last_renewal = last_ledger_entry_renewal.event_time
-                    billing_period_end = start_of_next_billing_cycle(plan, ledger_entry.event_time)
-                    plan_renewal_or_end_date = get_plan_renewal_or_end_date(
-                        plan, ledger_entry.event_time
-                    )
-                    unit_amount = plan.price_per_license
-                    if not plan.is_free_trial():
-                        proration_fraction = (
-                            plan_renewal_or_end_date - ledger_entry.event_time
-                        ) / (billing_period_end - last_renewal)
-                        unit_amount = int(plan.price_per_license * proration_fraction + 0.5)
-                    invoice_item_params["unit_amount_decimal"] = str(unit_amount)
-                    invoice_item_params["quantity"] = ledger_entry.licenses - licenses_base
-                    invoice_item_params["description"] = "Additional license ({} - {})".format(
-                        ledger_entry.event_time.strftime("%b %-d, %Y"),
-                        plan_renewal_or_end_date.strftime("%b %-d, %Y"),
-                    )
-                    need_to_invoice = True
+                    create_invoice_item = True
 
-                if stripe_invoice is None and need_to_invoice:
-                    if plan.charge_automatically:
-                        collection_method: Literal["charge_automatically", "send_invoice"] = (
-                            "charge_automatically"
-                        )
-                        days_until_due = None
-                    else:
-                        collection_method = "send_invoice"
-                        days_until_due = DEFAULT_INVOICE_DAYS_UNTIL_DUE
-                    invoice_params = stripe.Invoice.CreateParams(
-                        auto_advance=True,
-                        collection_method=collection_method,
-                        customer=plan.customer.stripe_customer_id,
-                        statement_descriptor=plan.name,
-                    )
-                    if days_until_due is not None:
-                        invoice_params["days_until_due"] = days_until_due
-                    stripe_invoice = stripe.Invoice.create(**invoice_params)
+                if create_invoice_item:
+                    # Ensure we have a stripe.Invoice for the invoice item.
+                    if stripe_invoice is None:
+                        stripe_invoice = self.create_stripe_invoice_for_plan(plan)
+                    assert stripe_invoice is not None
 
-                if invoice_item_params.get("description") is not None:
-                    invoice_period = stripe.InvoiceItem.CreateParamsPeriod(
+                    invoice_period = stripe.params.InvoiceItemCreateParamsPeriod(
                         start=datetime_to_timestamp(ledger_entry.event_time),
                         end=datetime_to_timestamp(
                             get_plan_renewal_or_end_date(plan, ledger_entry.event_time)
@@ -3332,47 +3413,68 @@ class BillingSession(ABC):
 
                     if ledger_entry.is_renewal:
                         renewal_invoice_period = invoice_period
-
-                    invoice_item_params["currency"] = "usd"
-                    invoice_item_params["discountable"] = False
-                    invoice_item_params["period"] = invoice_period
-                    invoice_item_params["idempotency_key"] = get_idempotency_key(ledger_entry)
-                    assert stripe_invoice is not None
-                    assert stripe_invoice.id is not None
-                    invoice_item_params["invoice"] = stripe_invoice.id
-                    stripe.InvoiceItem.create(**invoice_item_params)
+                        invoice_item_params = self.build_renewal_invoice_item_parameters(
+                            plan, ledger_entry, stripe_invoice, invoice_period
+                        )
+                        complete_invoice_items.append(invoice_item_params)
+                    else:
+                        assert licenses_base is not None
+                        if (
+                            current_tracked_date is not None
+                            and current_tracked_date == ledger_entry.event_time.date()
+                        ):
+                            assert pending_invoice_item is not None
+                            # Update tracked pending invoice item parameters for new
+                            # additional licenses that were added on the same date.
+                            pending_invoice_item = (
+                                self.update_additional_licenses_invoice_item_quantity(
+                                    ledger_entry, pending_invoice_item, licenses_base
+                                )
+                            )
+                        else:
+                            # Add the completed invoice item parameters to the tracked
+                            # list, if it exists.
+                            if pending_invoice_item is not None:
+                                complete_invoice_items.append(pending_invoice_item)
+                            # Create new invoice item parameters and update tracked date.
+                            pending_invoice_item = (
+                                self.build_additional_licenses_invoice_item_parameters(
+                                    plan,
+                                    ledger_entry,
+                                    licenses_base,
+                                    stripe_invoice,
+                                    invoice_period,
+                                )
+                            )
+                            current_tracked_date = ledger_entry.event_time.date()
 
                 # Update license base per ledger_entry.
                 licenses_base = ledger_entry.licenses
                 plan.invoiced_through = ledger_entry
                 plan.save(update_fields=["invoiced_through"])
 
-            flat_discount, flat_discounted_months = self.get_flat_discount_info(plan.customer)
+            # Add pending invoice item parameters to complete invoice
+            # item list, if it exists.
+            if pending_invoice_item is not None:
+                complete_invoice_items.append(pending_invoice_item)
+
+            for invoice_item in complete_invoice_items:
+                stripe.InvoiceItem.create(**invoice_item)
+
             if stripe_invoice is not None:
                 # Only apply discount if this invoice contains renewal of the plan.
+                # Note that only self-hosted plans have a flat rate discount offer.
                 if (
                     renewal_invoice_period is not None
+                    and not isinstance(self, RealmBillingSession)
                     and plan.fixed_price is None
-                    and flat_discounted_months > 0
+                    and plan.customer.flat_discounted_months > 0
                 ):
-                    assert stripe_invoice.id is not None
-                    num_months = (
-                        12 if plan.billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL else 1
+                    self.apply_flat_discount_to_invoice(
+                        plan,
+                        stripe_invoice,
+                        renewal_invoice_period,
                     )
-                    flat_discounted_months = min(flat_discounted_months, num_months)
-                    discount = flat_discount * flat_discounted_months
-                    plan.customer.flat_discounted_months -= flat_discounted_months
-                    plan.customer.save(update_fields=["flat_discounted_months"])
-                    stripe.InvoiceItem.create(
-                        invoice=stripe_invoice.id,
-                        currency="usd",
-                        customer=plan.customer.stripe_customer_id,
-                        description=f"${cents_to_dollar_string(flat_discount)}/month new customer discount",
-                        # Negative value to apply discount.
-                        amount=(-1 * discount),
-                        period=renewal_invoice_period,
-                    )
-
                 stripe.Invoice.finalize_invoice(stripe_invoice)
 
         plan.invoicing_status = CustomerPlan.INVOICING_STATUS_DONE
@@ -4349,12 +4451,14 @@ class RealmBillingSession(BillingSession):
         # anything weird.
         pass
 
-    def send_realm_created_internal_admin_message(self) -> None:
+    def send_realm_created_internal_admin_message(self, is_demo_organization: bool = False) -> None:
         channel = "signups"
-        topic = "new organizations"
         support_url = self.support_url()
-        organization_type = get_org_type_display_name(self.realm.org_type)
-        message = f"[{self.realm.name}]({support_url}) ([{self.realm.display_subdomain}]({self.realm.url})). Organization type: {organization_type}"
+        organization_type = get_org_type_display_name(self.realm.org_type).lower()
+        topic = (
+            f"{organization_type} demos" if is_demo_organization else f"{organization_type} signups"
+        )
+        message = f"[{self.realm.name}]({support_url}) ([{self.realm.display_subdomain}]({self.realm.url}))."
         self.send_support_admin_realm_internal_message(channel, topic, message)
 
 
@@ -5246,6 +5350,78 @@ class RemoteServerBillingSession(BillingSession):
                 return
             current_plan = end_of_cycle_plan
 
+    @transaction.atomic(durable=True)
+    def do_reactivate_remote_server(self) -> None:
+        """
+        Utility function for reactivating deactivated remote server registrations.
+        """
+
+        if not self.remote_server.deactivated:
+            billing_logger.warning(
+                "Cannot reactivate remote server with ID %d, server is already active.",
+                self.remote_server.id,
+            )
+            return
+
+        self.remote_server.deactivated = False
+        self.remote_server.save(update_fields=["deactivated"])
+        RemoteZulipServerAuditLog.objects.create(
+            event_type=AuditLogEventType.REMOTE_SERVER_REACTIVATED,
+            server=self.remote_server,
+            event_time=timezone_now(),
+            acting_support_user=self.support_staff,
+            acting_remote_user=self.remote_billing_user,
+        )
+
+    @transaction.atomic(durable=True)
+    def do_deactivate_remote_server(self) -> None:
+        if self.remote_server.deactivated:
+            billing_logger.warning(
+                "Cannot deactivate remote server with ID %d, server has already been deactivated.",
+                self.remote_server.id,
+            )
+            return
+
+        server_plans_to_consider = CustomerPlan.objects.filter(
+            customer__remote_server=self.remote_server
+        ).exclude(status=CustomerPlan.ENDED)
+        realm_plans_to_consider = CustomerPlan.objects.filter(
+            customer__remote_realm__server=self.remote_server
+        ).exclude(status=CustomerPlan.ENDED)
+
+        for possible_plan in list(server_plans_to_consider) + list(realm_plans_to_consider):
+            if possible_plan.tier in [
+                CustomerPlan.TIER_SELF_HOSTED_BASE,
+                CustomerPlan.TIER_SELF_HOSTED_LEGACY,
+                CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
+            ]:  # nocoverage
+                # No action required for free plans.
+                continue
+
+            if possible_plan.status in [
+                CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+                CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+            ]:  # nocoverage
+                # No action required for plans scheduled to downgrade
+                # automatically.
+                continue
+
+            # This customer has some sort of paid plan; ask the customer
+            # to downgrade their paid plan so that they get the
+            # communication in that flow, and then they can come back and
+            # deactivate their server.
+            raise ServerDeactivateWithExistingPlanError  # nocoverage
+
+        self.remote_server.deactivated = True
+        self.remote_server.save(update_fields=["deactivated"])
+        RemoteZulipServerAuditLog.objects.create(
+            event_type=AuditLogEventType.REMOTE_SERVER_DEACTIVATED,
+            server=self.remote_server,
+            event_time=timezone_now(),
+            acting_support_user=self.support_staff,
+            acting_remote_user=self.remote_billing_user,
+        )
+
 
 def stripe_customer_has_credit_card_as_default_payment_method(
     stripe_customer: stripe.Customer,
@@ -5375,78 +5551,6 @@ def ensure_customer_does_not_have_active_plan(customer: Customer) -> None:
         raise UpgradeWithExistingPlanError
 
 
-@transaction.atomic(durable=True)
-def do_reactivate_remote_server(remote_server: RemoteZulipServer) -> None:
-    """
-    Utility function for reactivating deactivated registrations.
-    """
-
-    if not remote_server.deactivated:
-        billing_logger.warning(
-            "Cannot reactivate remote server with ID %d, server is already active.",
-            remote_server.id,
-        )
-        return
-
-    remote_server.deactivated = False
-    remote_server.save(update_fields=["deactivated"])
-    RemoteZulipServerAuditLog.objects.create(
-        event_type=AuditLogEventType.REMOTE_SERVER_REACTIVATED,
-        server=remote_server,
-        event_time=timezone_now(),
-    )
-
-
-@transaction.atomic(durable=True)
-def do_deactivate_remote_server(
-    remote_server: RemoteZulipServer, billing_session: RemoteServerBillingSession
-) -> None:
-    if remote_server.deactivated:
-        billing_logger.warning(
-            "Cannot deactivate remote server with ID %d, server has already been deactivated.",
-            remote_server.id,
-        )
-        return
-
-    server_plans_to_consider = CustomerPlan.objects.filter(
-        customer__remote_server=remote_server
-    ).exclude(status=CustomerPlan.ENDED)
-    realm_plans_to_consider = CustomerPlan.objects.filter(
-        customer__remote_realm__server=remote_server
-    ).exclude(status=CustomerPlan.ENDED)
-
-    for possible_plan in list(server_plans_to_consider) + list(realm_plans_to_consider):
-        if possible_plan.tier in [
-            CustomerPlan.TIER_SELF_HOSTED_BASE,
-            CustomerPlan.TIER_SELF_HOSTED_LEGACY,
-            CustomerPlan.TIER_SELF_HOSTED_COMMUNITY,
-        ]:  # nocoverage
-            # No action required for free plans.
-            continue
-
-        if possible_plan.status in [
-            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
-            CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-        ]:  # nocoverage
-            # No action required for plans scheduled to downgrade
-            # automatically.
-            continue
-
-        # This customer has some sort of paid plan; ask the customer
-        # to downgrade their paid plan so that they get the
-        # communication in that flow, and then they can come back and
-        # deactivate their server.
-        raise ServerDeactivateWithExistingPlanError  # nocoverage
-
-    remote_server.deactivated = True
-    remote_server.save(update_fields=["deactivated"])
-    RemoteZulipServerAuditLog.objects.create(
-        event_type=AuditLogEventType.REMOTE_SERVER_DEACTIVATED,
-        server=remote_server,
-        event_time=timezone_now(),
-    )
-
-
 def get_plan_renewal_or_end_date(plan: CustomerPlan, event_time: datetime) -> datetime:
     billing_period_end = start_of_next_billing_cycle(plan, event_time)
 
@@ -5466,7 +5570,7 @@ def maybe_send_fixed_price_plan_renewal_reminder_email(
     if plan.end_date - plan.next_invoice_date <= timedelta(days=62):
         context = {
             "billing_entity": billing_session.billing_entity_display_name,
-            "end_date": plan.end_date.strftime("%Y-%m-%d"),
+            "end_date": plan.end_date.date().isoformat(),
             "support_url": billing_session.support_url(),
             "notice_reason": "fixed_price_plan_ends_soon",
         }
@@ -5516,7 +5620,7 @@ def maybe_send_stale_audit_log_data_email(
     context = {
         "billing_entity": billing_session.billing_entity_display_name,
         "support_url": billing_session.support_url(),
-        "last_audit_log_update": last_audit_log_update.strftime("%Y-%m-%d"),
+        "last_audit_log_update": last_audit_log_update.date().isoformat(),
         "fixed_price_plan": plan.fixed_price is not None,
         "notice_reason": "stale_audit_log_data",
     }
@@ -5560,7 +5664,7 @@ def check_remote_server_audit_log_data(
             if last_audit_log_update is None:  # nocoverage
                 context["last_audit_log_update"] = "Never uploaded"
             else:
-                context["last_audit_log_update"] = last_audit_log_update.strftime("%Y-%m-%d")
+                context["last_audit_log_update"] = last_audit_log_update.date().isoformat()
             send_email(
                 "zerver/emails/internal_billing_notice",
                 to_emails=[BILLING_SUPPORT_EMAIL],
@@ -5702,7 +5806,9 @@ def customer_has_last_n_invoices_open(customer: Customer, n: int) -> bool:
 
 
 def downgrade_small_realms_behind_on_payments_as_needed() -> None:
-    customers = Customer.objects.all().exclude(stripe_customer_id=None).exclude(realm=None)
+    customers = (
+        Customer.objects.all().exclude(stripe_customer_id=None).exclude(realm=None).order_by("id")
+    )
     for customer in customers:
         realm = customer.realm
         assert realm is not None

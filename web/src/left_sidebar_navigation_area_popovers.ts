@@ -154,7 +154,7 @@ export function initialize(): void {
 
             $popper.one(
                 "click",
-                "#mark_all_messages_as_read",
+                ".mark_all_messages_as_read",
                 {instance},
                 register_mark_all_read_handler,
             );
@@ -197,7 +197,7 @@ export function initialize(): void {
             const $popper = $(instance.popper);
             $popper.one(
                 "click",
-                "#mark_all_messages_as_read",
+                ".mark_all_messages_as_read",
                 {instance},
                 register_mark_all_read_handler,
             );
@@ -244,7 +244,7 @@ export function initialize(): void {
             const $popper = $(instance.popper);
             $popper.one(
                 "click",
-                "#mark_all_messages_as_read",
+                ".mark_all_messages_as_read",
                 {instance},
                 register_mark_all_read_handler,
             );
@@ -261,7 +261,7 @@ export function initialize(): void {
             assert(instance.reference instanceof HTMLElement);
             ui_util.show_left_sidebar_menu_icon(instance.reference);
             popovers.hide_all();
-            const view_code = settings_config.web_home_view_values.recent_topics.code;
+            const view_code = settings_config.web_home_view_values.recent.code;
             const counts = unread.get_counts();
             const unread_messages_present =
                 counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
@@ -285,15 +285,39 @@ export function initialize(): void {
 
     popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
         ...popover_menus.left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+
+            $popper.one(
+                "click",
+                ".mark_all_messages_as_read",
+                {instance},
+                register_mark_all_read_handler,
+            );
+
+            $popper.one(
+                "click",
+                ".toggle_display_unread_message_count",
+                {instance},
+                register_toggle_unread_message_count,
+            );
+        },
         onShow(instance) {
             const built_in_popover_condensed_views =
                 left_sidebar_navigation_area.get_built_in_popover_condensed_views();
+            const unread_count = unread.get_counts();
+            const unread_messages_present = unread_count.home_unread_messages > 0;
+            const show_unread_count = user_settings.web_left_sidebar_unreads_count_summary;
+            const is_home_view_active = window.location.hash === "#" + user_settings.web_home_view;
 
             popovers.hide_all();
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_views_popover({
                         views: built_in_popover_condensed_views,
+                        is_home_view_active,
+                        unread_messages_present,
+                        show_unread_count,
                     }),
                 ),
             );

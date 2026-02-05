@@ -3,8 +3,6 @@
 
 import assert from "minimalistic-assert";
 
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
-
 import * as buddy_data from "./buddy_data.ts";
 import * as gear_menu_util from "./gear_menu_util.ts";
 import * as hash_util from "./hash_util.ts";
@@ -12,10 +10,10 @@ import {$t} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
-import * as muted_users from "./muted_users.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import * as settings_config from "./settings_config.ts";
 import type {ColorSchemeValues} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -37,7 +35,6 @@ type ActionPopoverContext = {
     editability_menu_item: string | undefined;
     move_message_menu_item: string | undefined;
     view_source_menu_item: string | undefined;
-    should_display_hide_option: boolean;
     should_display_mark_as_unread: boolean;
     should_display_remind_me_option: boolean;
     should_display_collapse: boolean;
@@ -47,6 +44,7 @@ type ActionPopoverContext = {
     should_display_delete_option: boolean;
     should_display_read_receipts_option: boolean;
     should_display_add_reaction_option: boolean;
+    should_display_message_report_option: boolean;
 };
 
 type TopicPopoverContext = {
@@ -149,12 +147,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(message_id);
     assert(message !== undefined);
-    const message_container = message_lists.current.view.message_containers.get(message.id)!;
     const not_spectator = !page_params.is_spectator;
-    const should_display_hide_option =
-        muted_users.is_user_muted(message.sender_id) &&
-        !message_container.is_hidden &&
-        not_spectator;
     const is_content_editable = message_edit.is_content_editable(message);
     const can_move_message = message_edit.can_move_message(message);
 
@@ -217,6 +210,18 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     const should_display_read_receipts_option = realm.realm_enable_read_receipts && not_spectator;
     const should_display_remind_me_option = not_spectator;
 
+    const should_display_message_report_option = (): boolean => {
+        if (page_params.is_spectator) {
+            return false;
+        }
+        if (realm.realm_moderation_request_channel_id === -1) {
+            return false;
+        }
+
+        // You can report any message you can access
+        return true;
+    };
+
     function is_add_reaction_icon_visible(): boolean {
         assert(message_lists.current !== undefined);
         const $message_row = message_lists.current.get_row(message_id);
@@ -244,11 +249,11 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         should_display_collapse,
         should_display_uncollapse,
         should_display_add_reaction_option,
-        should_display_hide_option,
         conversation_time_url,
         should_display_delete_option,
         should_display_read_receipts_option,
         should_display_quote_message,
+        should_display_message_report_option: should_display_message_report_option(),
     };
 }
 
@@ -333,7 +338,7 @@ export function get_personal_menu_content_context(): PersonalMenuContext {
 
         // user information
         user_avatar: current_user.avatar_url_medium,
-        is_active: people.is_active_user_for_popover(my_user_id),
+        is_active: people.is_active_user_or_system_bot(my_user_id),
         user_circle_class: buddy_data.get_user_circle_class(my_user_id),
         user_last_seen_time_status: buddy_data.user_last_seen_time_status(my_user_id),
         user_full_name: current_user.full_name,

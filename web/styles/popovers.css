@@ -203,7 +203,8 @@
     }
 }
 
-.custom-user-url-field {
+.custom-user-url-field,
+.external-account-text-field {
     display: flex;
     align-items: center;
     /* Maintain space between URL and copy icon. */
@@ -216,9 +217,21 @@
         text-overflow: ellipsis;
     }
 
-    .copy-custom-field-url {
+    .copy-custom-field-url,
+    .copy-external-account-field {
         height: 1em;
     }
+}
+
+.external-account-link-field {
+    display: inline-flex;
+    align-items: center;
+    /* Maintain space between icon and text. */
+    gap: 3px;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .hidden-remove-button {
@@ -275,6 +288,7 @@
         line-height: 1.1;
         margin-top: 4px;
         white-space: pre-wrap;
+        min-width: 12.5em; /* 200px at 16px/1em */
     }
 }
 
@@ -283,6 +297,7 @@
     color: var(--color-text-popover-menu);
     line-height: 1.1;
     margin-top: 4px;
+    width: max-content;
 }
 
 .popover-group-menu-info {
@@ -401,304 +416,6 @@ ul.popover-group-menu-member-list {
     }
 }
 
-#user-profile-modal {
-    .modal__body {
-        box-sizing: border-box;
-        height: 60vh;
-        padding-left: 16px;
-        padding-right: 16px;
-
-        /*
-            The height of the main body of the profile modal is 60vh. However,
-            the footer is only present in the manage user tab. To make sure the
-            modal doesn't expand while switching between tabs, we can reduce
-            the height of the main body to 52vh - 1px (border radius of the footer)
-            and add a footer of 8vh.
-        */
-        &.modal__body__manage_profile_height {
-            height: calc(52vh - 1px);
-        }
-    }
-
-    .modal__header {
-        justify-items: center;
-    }
-
-    .modal__close {
-        position: absolute;
-        right: 20px;
-    }
-
-    #tab-toggle {
-        font-weight: initial;
-        padding: 0 16px 6px;
-    }
-
-    .name {
-        color: var(--color-user-profile-field-name);
-        font-weight: 600;
-        margin-right: 10px;
-        overflow-wrap: break-word;
-    }
-
-    .value {
-        vertical-align: top;
-        overflow-wrap: anywhere;
-    }
-
-    #exit-sign {
-        /* 24px at 14px/1em */
-        font-size: 1.7143em;
-        line-height: 1;
-    }
-
-    #profile-tab {
-        margin: 1px 5px 0;
-
-        & li.custom_user_field {
-            display: block;
-        }
-    }
-
-    .top {
-        display: flex;
-        justify-content: space-between;
-    }
-
-    @media (width < $ml_min) {
-        .top {
-            flex-direction: column-reverse;
-        }
-    }
-
-    #avatar {
-        display: inline-block;
-        height: 180px;
-        width: 180px;
-        background-size: cover;
-        background-position: center;
-        border-radius: 5px;
-        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 20%);
-
-        &.guest-avatar::after {
-            outline: 9px solid hsl(0deg 0% 100%);
-        }
-    }
-
-    .user-profile-header-actions {
-        display: flex;
-        gap: 5px;
-    }
-
-    .deactivated-user-icon {
-        vertical-align: middle;
-        font-size: 0.7em;
-    }
-
-    #default-section {
-        vertical-align: top;
-
-        .default-field {
-            margin-bottom: 10px;
-        }
-    }
-
-    & hr {
-        border: 1px solid hsl(0deg 0% 93%);
-        margin: 5px 0;
-    }
-
-    #content {
-        .field-section {
-            margin-bottom: 10px;
-
-            &[data-type="2"] .value {
-                overflow-wrap: break-word;
-            }
-        }
-
-        .rendered_markdown p {
-            margin: 0;
-        }
-    }
-
-    .col-left {
-        padding: 0 10px 0 0;
-    }
-
-    .col-right {
-        width: fit-content;
-    }
-
-    .tab-data {
-        .active {
-            display: block;
-        }
-
-        margin-bottom: 20px;
-    }
-
-    .group-tab-element-header,
-    .stream-tab-element-header {
-        margin: 0;
-        display: inline-block;
-        font-weight: inherit;
-        /* 21px at 14px/1em */
-        font-size: 1.5em;
-    }
-
-    #user-profile-streams-tab {
-        .stream_list_info {
-            margin-bottom: 8px;
-        }
-
-        .user-profile-group-list-alert {
-            margin-bottom: 8px;
-        }
-
-        .stream-privacy {
-            display: flex;
-            align-items: center;
-        }
-
-        .filter-icon i {
-            padding-right: 3px;
-        }
-
-        .user_profile_subscribe_widget {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            padding-top: 2px;
-        }
-
-        .dropdown_widget_value {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    }
-
-    .group-list-top-section,
-    .stream-list-top-section {
-        display: flex;
-        margin-top: 12px;
-        align-items: center;
-        margin-bottom: 5px;
-
-        .group-search-container,
-        .stream-search-container {
-            margin-left: auto;
-            display: grid;
-            grid-template:
-                "search-input clear-search" auto / minmax(0, 1fr)
-                30px;
-        }
-
-        .group-search,
-        .stream-search {
-            grid-column: search-input-start / clear-search-end;
-            grid-row: search-input;
-            padding-right: 28px;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            margin-bottom: 0;
-            /* Override default modal input width, since that overflows.
-               This is 185px (the default "width: unset" width) at 14px/em */
-            width: 13.2142em;
-        }
-
-        .group-search:placeholder-shown + #clear_groups_search,
-        .stream-search:placeholder-shown + #clear_stream_search {
-            visibility: hidden;
-        }
-    }
-
-    .subscription-group-list,
-    .subscription-stream-list {
-        border: 1px solid var(--color-border-user-profile-table);
-        border-radius: 4px;
-        overflow: auto;
-        text-align: left;
-        margin-bottom: 5px;
-        -webkit-overflow-scrolling: touch;
-
-        .user-stream-list,
-        .user-group-list {
-            width: 100%;
-            margin: auto;
-            border-radius: 6px;
-            border-collapse: collapse;
-
-            & tr {
-                border-bottom: 1px solid var(--color-border-user-profile-table);
-                /* Ensure equal height for rows with a remove-subscription-button and
-                   those without one. */
-                height: 34px;
-
-                &:last-of-type {
-                    border-bottom: none;
-                }
-
-                & td {
-                    padding: 4px 0;
-
-                    &.remove_subscription,
-                    &.remove_member {
-                        padding-right: 10px;
-                    }
-
-                    &.user-profile-channel-row,
-                    &.user-profile-group-row {
-                        text-align: left;
-                        padding-left: 10px;
-
-                        & .user-profile-channel-container {
-                            display: flex;
-                            gap: 3px;
-                        }
-                    }
-                }
-            }
-
-            .remove-button-wrapper {
-                display: flex;
-                justify-content: flex-end;
-            }
-        }
-    }
-
-    .manage-profile-tab-footer {
-        height: 0;
-
-        &.modal__footer_wrapper {
-            border-top: 1px solid var(--color-border-manage-profile-footer);
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            height: 8vh;
-
-            /* The default padding of the footer is 20px. However, since we have set */
-            /* the height of the footer wrapper to be 8vh on different screen sizes, */
-            /* the buttons might look odd. Instead of using padding top and bottom, we */
-            /* just use the flex and properties to align them. */
-            .modal__footer {
-                padding-top: unset;
-                padding-bottom: unset;
-            }
-        }
-    }
-
-    .empty-list {
-        border: none;
-
-        .empty-table-message {
-            padding: 3em 1em;
-        }
-    }
-}
-
 @media (width < $md_min) {
     .popover-flex {
         position: absolute;
@@ -733,38 +450,17 @@ ul.popover-group-menu-member-list {
         position: static;
         margin-right: 0;
     }
-
-    #user-profile-modal {
-        .group-list-top-section,
-        .stream-list-top-section {
-            display: block;
-
-            .header-section {
-                width: 100%;
-            }
-
-            .group-search,
-            .stream-search {
-                margin-bottom: 8px;
-            }
-
-            #clear_groups_search,
-            #clear_stream_search {
-                padding-top: 1px;
-            }
-        }
-    }
 }
 
 .popover.top .arrow::after {
     left: -1px;
 }
 
-.giphy-popover,
+.gif-picker-popover,
 .emoji-popover-root {
     .tippy-content {
         /* We remove the default padding from this container
-           as it is not necessary for the Giphy popover. */
+           as it is not necessary for the Giphy and Tenor popovers. */
         padding: 0;
 
         /* By resetting to the default color from the `body`,
@@ -789,28 +485,57 @@ ul.popover-group-menu-member-list {
     }
 }
 
-#giphy_grid_in_popover {
-    /* 300px of GIPHY grid + 5px is the extra gutter space
-     * + 1px for outline.
+.modal__overlay #set-user-status-modal + .emoji-popover-root {
+    /* Micromodal prevents pointer events to elements outside the content.
+       We need to re-enable pointer events for the emoji popover to work. */
+    pointer-events: auto;
+}
+
+.gif-grid-in-popover {
+    /* 300px of GIF grid + 5px is the extra gutter space
+     * + 1px for outline + 4px padding.
      * between gif columns. */
-    width: 306px;
+    width: 310px;
     border: 0;
     padding: 0;
 
-    .giphy-gif {
+    .gif-search-container {
+        margin: 4px 4px 2px;
+    }
+
+    .gif-picker-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        grid-auto-rows: auto;
+        gap: 6px;
+
+        /* Meant to prevent outline overflow when the GIF
+       is focused. */
+        padding: 0 2px;
+    }
+
+    .gif-picker-gif {
         cursor: pointer;
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        object-fit: cover;
+
+        &:focus {
+            /* Blue outline for clear visibility
+              * of which image is in focus.
+              */
+            outline: 2px solid var(--color-selected-gif-in-grid-picker);
+        }
+
+        &:hover {
+            outline: 2px solid var(--color-hovered-gif-in-grid-picker);
+        }
     }
 
-    .giphy-gif:focus {
-        /* Red outline for clear visibility
-         * of which image is in focus.
-         */
-        outline: 1px solid hsl(0deg 100% 50%);
-    }
-
-    .giphy-scrolling-container {
+    .gif-scrolling-container {
         overflow: hidden auto;
-        height: 200px;
+        height: 300px;
         margin: 2px 3px;
         padding: 5px 0;
     }
@@ -831,6 +556,7 @@ ul.popover-group-menu-member-list {
     }
 }
 
+#message_report_modal,
 #move_topic_modal {
     /* Modals have a 16px/1em base font-size. */
     & form {
@@ -843,15 +569,13 @@ ul.popover-group-menu-member-list {
     }
 
     .modal__title {
-        /* Grid defined in modal.css */
-        grid-area: heading;
-
         .channel-privacy-type-icon {
             padding-left: 3px;
             padding-right: 5px;
         }
     }
 
+    #report_type_options_widget_wrapper,
     #move_topic_to_stream_widget_wrapper {
         display: flex;
         /* 230px at 16px/1em */
@@ -905,6 +629,9 @@ ul.popover-group-menu-member-list {
             box-sizing: border-box;
             width: 100%;
             height: auto;
+            /* Unset max-width set using modal_text_input selector as box-sizing
+            is set to border-box here and we already set width to 100%. */
+            max-width: unset;
 
             &.empty-topic-display::placeholder {
                 color: inherit;
@@ -912,6 +639,11 @@ ul.popover-group-menu-member-list {
 
             &.empty-topic-only {
                 cursor: default;
+            }
+
+            &.invalid-topic-input {
+                border-color: var(--color-invalid-input-border);
+                box-shadow: var(--invalid-input-box-shadow);
             }
         }
     }
@@ -981,6 +713,10 @@ ul.popover-group-menu-member-list {
             display: inline-block;
             margin-right: 10px;
         }
+    }
+
+    .new-topic-name-error {
+        color: hsl(0deg 100% 50%);
     }
 }
 

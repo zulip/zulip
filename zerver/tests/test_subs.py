@@ -29,12 +29,13 @@ from zerver.actions.streams import (
     bulk_remove_subscriptions,
     deactivated_streams_by_old_name,
     do_change_stream_group_based_setting,
+    do_change_stream_permission,
     do_deactivate_stream,
     do_set_stream_property,
     do_unarchive_stream,
 )
 from zerver.actions.user_groups import bulk_add_members_to_user_groups, check_add_user_group
-from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.attachments import (
     validate_attachment_request,
     validate_attachment_request_for_spectator_access,
@@ -70,7 +71,7 @@ from zerver.lib.subscription_info import (
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import HostRequestMock, cache_tries_captured
 from zerver.lib.types import UserGroupMembersData
-from zerver.lib.user_groups import UserGroupMembershipDetails
+from zerver.lib.user_groups import UserGroupMembershipDetails, get_group_setting_value_for_api
 from zerver.models import (
     Attachment,
     DefaultStream,
@@ -230,7 +231,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream("private_stream_1", invite_only=True)
         self.make_stream("private_stream_2", invite_only=True)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         params = {
             "is_private": orjson.dumps(False).decode(),
         }
@@ -240,7 +241,7 @@ class StreamAdminTest(ZulipTestCase):
 
         stream = self.subscribe(user_profile, "private_stream_1")
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         params = {
             "is_private": orjson.dumps(False).decode(),
         }
@@ -297,7 +298,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(private_stream.invite_only)
 
         stream = self.subscribe(user_profile, "private_stream_3", invite_only=True)
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
         nobody_group = NamedUserGroup.objects.get(
             name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
@@ -331,7 +332,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream("public_stream_1", realm=realm)
         self.make_stream("public_stream_2")
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         params = {
             "is_private": orjson.dumps(True).decode(),
         }
@@ -386,7 +387,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(default_stream.invite_only)
 
         stream = self.subscribe(user_profile, "public_stream_3")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
         nobody_group = NamedUserGroup.objects.get(
             name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
@@ -412,6 +413,17 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_success(result)
         stream = get_stream("public_stream_3", realm)
         self.assertTrue(stream.invite_only)
+
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            params,
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
 
     def test_create_web_public_stream(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -475,7 +487,7 @@ class StreamAdminTest(ZulipTestCase):
         realm = user_profile.realm
         self.make_stream("public_history_stream", realm=realm)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         params = {
             "is_private": orjson.dumps(True).decode(),
             "history_public_to_subscribers": orjson.dumps(True).decode(),
@@ -546,6 +558,17 @@ class StreamAdminTest(ZulipTestCase):
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            params,
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
+
     def test_make_stream_web_public(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -577,7 +600,7 @@ class StreamAdminTest(ZulipTestCase):
             owners_group,
             acting_user=None,
         )
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "Insufficient permission")
 
@@ -590,7 +613,7 @@ class StreamAdminTest(ZulipTestCase):
             nobody_group,
             acting_user=None,
         )
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
         result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "Insufficient permission")
 
@@ -600,7 +623,7 @@ class StreamAdminTest(ZulipTestCase):
             owners_group,
             acting_user=None,
         )
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             result = self.client_patch(f"/json/streams/{stream_id}", params)
         self.assert_json_error(result, "Web-public channels are not enabled.")
@@ -718,6 +741,180 @@ class StreamAdminTest(ZulipTestCase):
             "property": "history_public_to_subscribers",
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+    def test_updating_protected_history_and_can_create_topic_group_for_streams(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        stream = self.make_stream(
+            "stream", realm, invite_only=True, history_public_to_subscribers=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name="role:everyone", realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name="role:moderators", realm=realm, is_system_group=True
+        )
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        anonymous_group = UserGroupMembersData(
+            direct_members=[user_profile.id],
+            direct_subgroups=[moderators_system_group.id],
+        )
+
+        error_msg = "Unsupported parameter combination: history_public_to_subscribers, can_create_topic_group"
+
+        def check_stream_property_update(
+            property_name: str,
+            setting_value: bool | int | UserGroupMembersData,
+            expect_fail: bool = False,
+        ) -> None:
+            params = {property_name: orjson.dumps(setting_value).decode()}
+            if property_name == "can_create_topic_group":
+                params = {property_name: orjson.dumps({"new": setting_value}).decode()}
+
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+            stream.refresh_from_db()
+
+            if expect_fail:
+                self.assert_json_error(result, error_msg)
+                return
+
+            self.assert_json_success(result)
+            if property_name == "can_create_topic_group":
+                expected_value = setting_value
+                current_value = get_group_setting_value_for_api(stream.can_create_topic_group)
+                self.assertEqual(expected_value, current_value)
+            else:
+                self.assertEqual(getattr(stream, property_name), setting_value)
+
+        # Test changing can_create_topic_group setting for a private stream
+        # with protected history.
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
+
+        check_stream_property_update(
+            "can_create_topic_group", moderators_system_group.id, expect_fail=True
+        )
+        check_stream_property_update(
+            "can_create_topic_group", hamletcharacters_group.id, expect_fail=True
+        )
+        check_stream_property_update("can_create_topic_group", anonymous_group, expect_fail=True)
+        check_stream_property_update("can_create_topic_group", everyone_system_group.id)
+
+        # Test changing stream to have protected history for different
+        # can_create_topic_group setting values.
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
+        # Testing for a system group.
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", moderators_system_group, acting_user=user_profile
+        )
+        check_stream_property_update("history_public_to_subscribers", False, expect_fail=True)
+
+        # Testing for a user defined group.
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", hamletcharacters_group, acting_user=user_profile
+        )
+        check_stream_property_update("history_public_to_subscribers", False, expect_fail=True)
+
+        # Testing for an anonymous group.
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", anonymous_group, acting_user=user_profile
+        )
+        check_stream_property_update("history_public_to_subscribers", False, expect_fail=True)
+
+        # Testing for everyone group.
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", everyone_system_group, acting_user=user_profile
+        )
+        check_stream_property_update("history_public_to_subscribers", False)
+
+        # Reset stream permissions.
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
+
+        # Test when both "history_public_to_subscribers" and "can_create_topic_group"
+        # are updated in the same request.
+        # Testing for a system group.
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+            "can_create_topic_group": orjson.dumps({"new": moderators_system_group.id}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_error(result, error_msg)
+
+        # Testing for a user defined group.
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+            "can_create_topic_group": orjson.dumps({"new": hamletcharacters_group.id}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_error(result, error_msg)
+
+        # Testing for an anonymous group.
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+            "can_create_topic_group": orjson.dumps({"new": anonymous_group}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_error(result, error_msg)
+
+        # Testing for everyone system group.
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+            "can_create_topic_group": orjson.dumps({"new": everyone_system_group.id}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.history_public_to_subscribers, False)
+        self.assertEqual(stream.can_create_topic_group.id, everyone_system_group.id)
+
+        # Stream can be set to an anonymous group if its history
+        # is also made public.
+        params = {
+            "history_public_to_subscribers": orjson.dumps(True).decode(),
+            "can_create_topic_group": orjson.dumps({"new": anonymous_group}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.history_public_to_subscribers, True)
+        self.assertEqual(list(stream.can_create_topic_group.direct_members.all()), [user_profile])
+        self.assertEqual(
+            list(stream.can_create_topic_group.direct_subgroups.all()), [moderators_system_group]
+        )
+
+        # Test with an anonymous group with no members and only
+        # everyone system group as subgroup.
+        anonymous_group = UserGroupMembersData(
+            direct_members=[],
+            direct_subgroups=[everyone_system_group.id],
+        )
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+            "can_create_topic_group": orjson.dumps({"new": anonymous_group}).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.history_public_to_subscribers, False)
+        self.assertEqual(stream.can_create_topic_group.id, everyone_system_group.id)
 
     def test_stream_permission_changes_updates_updates_attachments(self) -> None:
         self.login("desdemona")
@@ -997,7 +1194,7 @@ class StreamAdminTest(ZulipTestCase):
         realm = user_profile.realm
         self.make_stream("public_stream", realm=realm)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         params = {
             "is_private": orjson.dumps(False).decode(),
             "history_public_to_subscribers": orjson.dumps(False).decode(),
@@ -1064,7 +1261,7 @@ class StreamAdminTest(ZulipTestCase):
         self.login_user(user_profile)
         stream = self.make_stream("new_stream_1")
         self.subscribe(user_profile, stream.name)
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         # Subscribe Cordelia to verify that the archive notification is marked as read for all subscribers.
         cordelia = self.example_user("cordelia")
@@ -1340,7 +1537,7 @@ class StreamAdminTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         self.make_stream("new_stream")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         result = self.client_delete("/json/streams/999999999")
         self.assert_json_error(result, "Invalid channel ID")
@@ -1349,7 +1546,7 @@ class StreamAdminTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         self.make_stream("private_stream", invite_only=True)
         self.subscribe(user_profile, "private_stream")
@@ -1396,7 +1593,7 @@ class StreamAdminTest(ZulipTestCase):
         realm = user_profile.realm
         stream = self.subscribe(user_profile, "stream_name")
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "stream_name1"})
         self.assert_json_success(result)
 
@@ -1584,7 +1781,7 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream("stream_name1")
 
         stream = self.subscribe(user_profile, "stream_name1")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "stream_name2"})
         self.assert_json_success(result)
 
@@ -1598,6 +1795,17 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(message.content, message_content)
         self.assertEqual(message.sender.email, "notification-bot@zulip.com")
         self.assertEqual(message.sender.realm, get_realm(settings.SYSTEM_BOT_REALM))
+
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"new_name": "stream_without_notification2"},
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
 
     def test_realm_admin_can_update_unsub_private_stream(self) -> None:
         iago = self.example_user("iago")
@@ -1792,6 +2000,17 @@ class StreamAdminTest(ZulipTestCase):
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"description": "New Description"},
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
+
         # Verify that we don't render inline URL previews in this code path.
         with self.settings(INLINE_URL_EMBED_PREVIEW=True):
             result = self.client_patch(
@@ -1805,7 +2024,7 @@ class StreamAdminTest(ZulipTestCase):
             '<p>See <a href="https://zulip.com/team/">https://zulip.com/team/</a></p>',
         )
 
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_MEMBER)
         result = self.client_patch(
             f"/json/streams/{stream_id}", {"description": "Test description"}
         )
@@ -1920,6 +2139,17 @@ class StreamAdminTest(ZulipTestCase):
             RealmAuditLog.NEW_VALUE: None,
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"message_retention_days": orjson.dumps(2).decode()},
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
 
     def test_change_stream_message_retention_days(self) -> None:
         user_profile = self.example_user("desdemona")
@@ -2260,6 +2490,17 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("TestStream2")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"topics_policy": allow_empty_topic},
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
+
     def test_can_set_topics_policy_group(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
@@ -2420,6 +2661,17 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
+        # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        stream = self.make_stream("stream_without_notification")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_send_message_group": orjson.dumps({"new": everyone_group.id}).decode()},
+        )
+        self.assert_json_success(result)
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
+
     def set_up_stream_for_archiving(
         self, stream_name: str, invite_only: bool = False, subscribed: bool = True
     ) -> Stream:
@@ -2434,7 +2686,7 @@ class StreamAdminTest(ZulipTestCase):
         if subscribed:
             self.subscribe(user_profile, stream_name)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         return stream
 
@@ -2551,7 +2803,7 @@ class StreamAdminTest(ZulipTestCase):
 
         # Even becoming a realm admin doesn't help us for an out-of-realm
         # stream.
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         result = self.client_delete("/json/streams/" + str(stream.id))
         self.assert_json_error(result, "Invalid channel ID")
 
@@ -2669,7 +2921,7 @@ class StreamAdminTest(ZulipTestCase):
             self.assert_length(cache_tries, cache_count)
 
         # If the removal succeeded, assert all target users are no longer subscribed.
-        if result.status_code not in [400]:
+        if result.status_code != 400:
             subbed_users = self.users_subscribed_to_stream(stream_name, user_profile.realm)
             for user in target_users:
                 self.assertNotIn(user, subbed_users)
@@ -3204,7 +3456,7 @@ class SubscriptionAPITest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         stream = self.subscribe(user_profile, "stream_name1")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         # Check for empty name
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": ""})
         self.assert_json_error(result, "Channel name can't be empty.")
@@ -3436,7 +3688,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assertEqual(msg.content, expected_msg)
 
-    def test_sucessful_subscription_notifies_in_empty_topic_only_stream(self) -> None:
+    def test_successful_subscription_notifies_in_empty_topic_only_stream(self) -> None:
         invitee = self.example_user("iago")
         invitee_full_name = "Iago"
 
@@ -3480,6 +3732,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
         new_stream_announcements_stream = Stream.objects.get(name="general", realm=realm)
         realm.new_stream_announcements_stream = new_stream_announcements_stream
+        # `send_channel_events_messages` is `False` for new organizations.
+        realm.send_channel_events_messages = True
         realm.save()
 
         invite_streams = ["cross_stream"]

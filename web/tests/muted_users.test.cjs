@@ -67,9 +67,8 @@ test("get_mutes", () => {
     assert.deepEqual(muted_users.get_muted_users(), []);
     muted_users.add_muted_user(6, 1577836800);
     muted_users.add_muted_user(4, 1577836800);
-    const all_muted_users = muted_users
-        .get_muted_users()
-        .sort((a, b) => a.date_muted - b.date_muted);
+    const all_muted_users = muted_users.get_muted_users();
+    all_muted_users.sort((a, b) => a.date_muted - b.date_muted);
 
     assert.deepEqual(all_muted_users, [
         {
@@ -95,7 +94,7 @@ test("initialize", () => {
 
     muted_users.initialize(muted_users_params);
 
-    assert.deepEqual(muted_users.get_muted_users().sort(), [
+    assert.deepEqual(muted_users.get_muted_users(), [
         {
             date_muted: 1577836800000,
             date_muted_str: "Jan 1, 2020",

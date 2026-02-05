@@ -1,3 +1,5 @@
+// See https://zulip.com/api/update-presence for API documentation.
+
 import * as z from "zod/mini";
 
 import * as people from "./people.ts";
@@ -163,7 +165,7 @@ export function status_from_raw(raw: RawPresence, user: User | undefined): Prese
 export function update_info_from_event(
     user_id: number,
     info: z.infer<typeof presence_schema> | null,
-    server_timestamp: number | undefined = undefined,
+    server_timestamp?: number,
 ): void {
     /*
         Example of `info`:

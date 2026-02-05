@@ -5,7 +5,7 @@ import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
-import type {NarrowTerm} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as unread from "./unread.ts";
@@ -26,7 +26,7 @@ export function filter(): Filter | undefined {
     return message_lists.current?.data.filter;
 }
 
-export function search_terms(current_filter: Filter | undefined = filter()): NarrowTerm[] {
+export function search_terms(current_filter: Filter | undefined = filter()): NarrowCanonicalTerm[] {
     if (current_filter === undefined) {
         if (page_params.narrow !== undefined) {
             current_filter = new Filter(page_params.narrow);
@@ -55,16 +55,6 @@ export function is_message_feed_visible(): boolean {
     return message_lists.current !== undefined;
 }
 
-export function update_email(
-    user_id: number,
-    new_email: string,
-    current_filter: Filter | undefined = filter(),
-): void {
-    if (current_filter !== undefined) {
-        current_filter.update_email(user_id, new_email);
-    }
-}
-
 /* Search terms we should send to the server. */
 export function public_search_terms(
     current_filter: Filter | undefined = filter(),
@@ -77,16 +67,17 @@ export function public_search_terms(
 
 // Collect terms which appear only once into a map,
 // and discard those which appear more than once.
-function collect_single(terms: NarrowTerm[]): Map<string, string> {
-    const seen = new Set<string>();
-    const result = new Map<string, string>();
+// Returns `NarrowTerm` so that type is preserved for further use.
+function collect_single(terms: NarrowTerm[]): Map<NarrowTerm["operator"], NarrowTerm> {
+    const seen = new Set<NarrowTerm["operator"]>();
+    const result = new Map<NarrowTerm["operator"], NarrowTerm>();
 
     for (const term of terms) {
         const key = term.operator;
         if (seen.has(key)) {
             result.delete(key);
         } else {
-            result.set(key, term.operand);
+            result.set(key, term);
             seen.add(key);
         }
     }
@@ -119,19 +110,19 @@ export function set_compose_defaults(): {
         }
     }
 
-    const topic = single.get("topic");
-    if (topic !== undefined) {
-        opts.topic = topic;
+    const topic_term = single.get("topic");
+    if (topic_term !== undefined) {
+        assert(topic_term.operator === "topic");
+        opts.topic = topic_term.operand;
     }
 
-    const private_message_recipient_emails = single.get("dm");
+    const dm_term = single.get("dm");
     if (
-        private_message_recipient_emails !== undefined &&
-        people.is_valid_bulk_emails_for_compose(private_message_recipient_emails.split(","))
+        // Check for typescript to understand operand type.
+        dm_term?.operator === "dm" &&
+        people.is_valid_bulk_user_ids_for_compose(dm_term.operand, true)
     ) {
-        opts.private_message_recipient_ids = people.emails_string_to_user_ids(
-            private_message_recipient_emails,
-        );
+        opts.private_message_recipient_ids = dm_term.operand;
     }
     return opts;
 }
@@ -147,11 +138,14 @@ export let stream_id = (
     if (current_filter === undefined) {
         return undefined;
     }
-    const stream_operands = current_filter.operands("channel");
-    if (stream_operands.length === 1 && stream_operands[0] !== undefined) {
-        const id = Number.parseInt(stream_operands[0], 10);
-        if (!Number.isNaN(id)) {
-            return only_valid_id ? stream_data.get_sub_by_id(id)?.stream_id : id;
+    const channel_terms = current_filter.terms_with_operator("channel");
+    if (channel_terms.length === 1) {
+        const channel_operand = channel_terms[0]?.operand;
+        if (channel_operand !== undefined) {
+            const id = Number.parseInt(channel_operand, 10);
+            if (!Number.isNaN(id)) {
+                return only_valid_id ? stream_data.get_sub_by_id(id)?.stream_id : id;
+            }
         }
     }
     return undefined;
@@ -183,35 +177,42 @@ export function topic(current_filter: Filter | undefined = filter()): string | u
     if (current_filter === undefined) {
         return undefined;
     }
-    const operands = current_filter.operands("topic");
-    if (operands.length === 1) {
-        return operands[0];
+    const terms = current_filter.terms_with_operator("topic");
+    if (terms.length === 1) {
+        return terms[0]!.operand;
     }
     return undefined;
 }
 
-export function pm_ids_string(current_filter: Filter | undefined = filter()): string | undefined {
+export function pm_ids(current_filter: Filter | undefined = filter()): number[] | undefined {
     if (current_filter === undefined) {
         return undefined;
     }
 
-    const operands = current_filter.operands("dm");
-    if (operands.length !== 1) {
+    const terms = current_filter.terms_with_operator("dm");
+    if (terms.length !== 1) {
         return undefined;
     }
 
     // If you are narrowed to a group direct message with users 4, 5, and 99,
-    // this will return "4,5,99". Will return undefined when the value of the
-    // operand string does not translate to a comma-separated list of valid
-    // user emails.
-    const emails_string = util.the(operands);
-    return people.reply_to_to_user_ids_string(emails_string);
+    // this will return [4,5,99].
+    const user_ids = util.the(terms).operand;
+    if (user_ids.length === 0 || !people.is_valid_user_ids(user_ids)) {
+        return undefined;
+    }
+
+    return util.the(terms).operand;
+}
+
+export function pm_ids_string(current_filter: Filter | undefined = filter()): string | undefined {
+    const ids = pm_ids(current_filter);
+
+    return ids ? String(ids) : undefined;
 }
 
 export function pm_ids_set(filter?: Filter): Set<number> {
-    const ids_string = pm_ids_string(filter);
-    const pm_ids_list = ids_string ? people.user_ids_string_to_ids_array(ids_string) : [];
-    return new Set(pm_ids_list);
+    const ids = pm_ids(filter) ?? [];
+    return new Set(ids);
 }
 
 // We expect get_first_unread_info and therefore _possible_unread_message_ids
@@ -364,8 +365,8 @@ export function narrowed_by_topic_reply(current_filter: Filter | undefined = fil
     const terms = current_filter.terms().filter((term) => term.operator !== "with");
     return (
         terms.length === 2 &&
-        current_filter.operands("channel").length === 1 &&
-        current_filter.operands("topic").length === 1
+        current_filter.terms_with_operator("channel").length === 1 &&
+        current_filter.terms_with_operator("topic").length === 1
     );
 }
 
@@ -381,7 +382,7 @@ export function narrowed_by_stream_reply(current_filter: Filter | undefined = fi
         return false;
     }
     const terms = current_filter.terms();
-    return terms.length === 1 && current_filter.operands("channel").length === 1;
+    return terms.length === 1 && current_filter.terms_with_operator("channel").length === 1;
 }
 
 export function narrowed_to_stream_id(stream_id_to_check: number, filter?: Filter): boolean {

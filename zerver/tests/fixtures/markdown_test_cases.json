@@ -826,9 +826,9 @@
     {
       "name": "timestamp_invalid_input",
       "input": "<time:<alert(1)>>",
-      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: &lt;alert(1)</span>&gt;</p>",
+      "expected_output": "<p>&lt;time:&lt;alert(1)&gt;&gt;</p>",
       "marked_expected_output": "<p><span>&lt;alert(1)</span>&gt;</p>",
-      "text_content": "Invalid time format: <alert(1)>"
+      "text_content": "<time:<alert(1)>>"
     },
     {
       "name": "timestamp_timezone",
@@ -840,23 +840,23 @@
     {
       "name": "timestamp_incorrect",
       "input": "<time:**hello world**>",
-      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: **hello world**</span></p>",
+      "expected_output": "<p>&lt;time:**hello world**&gt;</p>",
       "marked_expected_output": "<p><span>**hello world**</span></p>",
-      "text_content": "Invalid time format: **hello world**"
+      "text_content": "<time:**hello world**>"
     },
     {
       "name": "timestamp_invalid_timezone",
       "input": "<time:1969-12-31T00:00:00+32:00>",
-      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: 1969-12-31T00:00:00+32:00</span></p>",
+      "expected_output": "<p>&lt;time:1969-12-31T00:00:00+32:00&gt;</p>",
       "marked_expected_output": "<p><span>1969-12-31T00:00:00+32:00</span></p>",
-      "text_content": "Invalid time format: 1969-12-31T00:00:00+32:00"
+      "text_content": "<time:1969-12-31T00:00:00+32:00>"
     },
     {
       "name": "timestamp_overflow",
       "input": "<time:0001-01-01T01:00:00+02:00>",
-      "expected_output": "<p><span class=\"timestamp-error\">Invalid time format: 0001-01-01T01:00:00+02:00</span></p>",
+      "expected_output": "<p>&lt;time:0001-01-01T01:00:00+02:00&gt;</p>",
       "marked_expected_output": "<p><span>0001-01-01T01:00:00+02:00</span></p>",
-      "text_content": "Invalid time format: 0001-01-01T01:00:00+02:00"
+      "text_content": "<time:0001-01-01T01:00:00+02:00>"
     },
     {
       "name": "timestamp_unix",
@@ -867,9 +867,9 @@
     {
       "name": "timestamp_unix_overflow",
       "input": "Let's meet at <time:1234567890123>.",
-      "expected_output": "<p>Let's meet at <span class=\"timestamp-error\">Invalid time format: 1234567890123</span>.</p>",
+      "expected_output": "<p>Let's meet at &lt;time:1234567890123&gt;.</p>",
       "marked_expected_output": "<p>Let's meet at <time datetime=\"+041091-11-25T05:02:03Z\">1234567890123</time>.</p>",
-      "text_content": "Let's meet at Invalid time format: 1234567890123."
+      "text_content": "Let's meet at <time:1234567890123>."
     },
     {
       "name": "tex_inline",
@@ -1080,6 +1080,16 @@
       "input": "Hello @_**Zoe|7** see [this](https://google.com).",
       "expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"https://google.com\">this</a>.</p>",
       "text_content": "Hello Zoe see this."
+    },
+    {
+      "name": "RFC2392 mid links (markdown syntax)",
+      "input": "[message](mid:960830.1639@XIson.com)",
+      "expected_output": "<p><a href=\"mid:960830.1639@XIson.com\">message</a></p>"
+    },
+    {
+      "name": "RFC2392 mid links with part ID (markdown syntax)",
+      "input": "[message](mid:960830.1639@XIson.com/partA.960830.1639@XIson.com)",
+      "expected_output": "<p><a href=\"mid:960830.1639@XIson.com/partA.960830.1639@XIson.com\">message</a></p>"
     }
   ],
   "linkify_tests": [
@@ -1437,6 +1447,26 @@
       "quora http://generate.quora.net/render?width=700&from=-4hours&until=now&height=400&bgcolor=black&lineMode=connected&title=arb%20hint%20status&target=alias(ans.hintland.hand.arb.enhint_rate%2C%22enhint%20rate%22)&target=alias(ans.hintland.hand.arb.unhint_rate%2C%22unhint%20rate%22)&target=alias(ans.hintland.hand.arb.size%2C%22hint%20size%22)&target=alias(scale(ans.vagabond.dingarb_cube_count%2C10000)%2C%22cube%20count%20x%2010K%22)&target=alias(scale(hnumbers.time.ding.gegevens.query.count%2C10)%2C%22ding%20gegevens%20query%20count%20x%2010%22)&fgcolor=white&uniq=0.44046106841415167",
       "<p>quora %s</p>",
       "http://generate.quora.net/render?width=700&amp;from=-4hours&amp;until=now&amp;height=400&amp;bgcolor=black&amp;lineMode=connected&amp;title=arb%20hint%20status&amp;target=alias(ans.hintland.hand.arb.enhint_rate%2C%22enhint%20rate%22)&amp;target=alias(ans.hintland.hand.arb.unhint_rate%2C%22unhint%20rate%22)&amp;target=alias(ans.hintland.hand.arb.size%2C%22hint%20size%22)&amp;target=alias(scale(ans.vagabond.dingarb_cube_count%2C10000)%2C%22cube%20count%20x%2010K%22)&amp;target=alias(scale(hnumbers.time.ding.gegevens.query.count%2C10)%2C%22ding%20gegevens%20query%20count%20x%2010%22)&amp;fgcolor=white&amp;uniq=0.44046106841415167"
+    ],
+    [
+      "Check this: https://podcasts.google.com?feed=abc",
+      "<p>Check this: %s</p>",
+      "https://podcasts.google.com?feed=abc"
+    ],
+    [
+      "Is this https://google.com?",
+      "<p>Is this %s?</p>",
+      "https://google.com"
+    ],
+    [
+      "New logic inside parens: (see https://podcasts.google.com?feed=abc)",
+      "<p>New logic inside parens: (see <a href=\"https://podcasts.google.com?feed=abc\">https://podcasts.google.com?feed=abc</a>)</p>",
+      "(see https://podcasts.google.com?feed=abc)"
+    ],
+    [
+      "New logic with trailing dot: Go to https://podcasts.google.com?feed=abc.",
+      "<p>New logic with trailing dot: Go to <a href=\"https://podcasts.google.com?feed=abc\">https://podcasts.google.com?feed=abc</a>.</p>",
+      "Go to https://podcasts.google.com?feed=abc."
     ]
   ]
 }

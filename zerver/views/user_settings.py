@@ -7,6 +7,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
+from django.db.models import F
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -14,7 +15,7 @@ from django.utils.html import escape
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
-from pydantic import Json
+from pydantic import BaseModel, Json, model_validator
 from pydantic.functional_validators import AfterValidator
 
 from confirmation.models import (
@@ -24,6 +25,7 @@ from confirmation.models import (
     render_confirmation_key_error,
 )
 from zerver.actions.user_settings import (
+    bulk_change_user_setting,
     check_change_full_name,
     do_change_avatar_fields,
     do_change_password,
@@ -41,9 +43,18 @@ from zerver.lib.email_validation import (
     validate_email_is_valid,
     validate_email_not_already_in_realm,
 )
-from zerver.lib.exceptions import JsonableError, RateLimitedError, UserDeactivatedError
+from zerver.lib.exceptions import (
+    JsonableError,
+    OrganizationAdministratorRequiredError,
+    RateLimitedError,
+    UserDeactivatedError,
+)
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.rate_limiter import RateLimitedUser
+from zerver.lib.rate_limiter import (
+    RateLimitedUser,
+    readable_expiry_string_for_plaintext,
+    should_rate_limit,
+)
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.sounds import get_available_notification_sounds
@@ -55,7 +66,13 @@ from zerver.lib.typed_endpoint_validators import (
     timezone_validator,
 )
 from zerver.lib.upload import upload_avatar_image
-from zerver.models import EmailChangeStatus, UserProfile
+from zerver.lib.user_groups import (
+    get_recursive_group_members_union_for_groups,
+    user_group_ids_to_user_groups,
+)
+from zerver.lib.users import user_ids_to_users
+from zerver.models import EmailChangeStatus, RealmAuditLog, UserBaseSettings, UserProfile
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
 from zerver.views.auth import redirect_to_deactivation_notice
@@ -189,7 +206,7 @@ def confirm_email_change(request: HttpRequest, *, key: str) -> HttpResponse:
 
 
 emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices()}
-web_home_view_options = ["recent_topics", "inbox", "all_messages"]
+web_home_view_options = ["recent", "inbox", "all_messages"]
 web_animate_image_previews_options = ["always", "on_hover", "never"]
 
 
@@ -225,6 +242,18 @@ def check_settings_values(
                 seconds=email_notifications_batching_period_seconds
             )
         )
+
+
+class TargetUsersData(BaseModel):
+    user_ids: list[int] = []
+    group_ids: list[int] = []
+    skip_if_already_edited: bool
+
+    @model_validator(mode="after")
+    def validate_terms(self) -> "TargetUsersData":
+        if not self.user_ids and not self.group_ids:
+            raise JsonableError(_("Either user_ids or group_ids must be provided."))
+        return self
 
 
 @human_users_only
@@ -314,6 +343,7 @@ def json_change_settings(
     send_read_receipts: Json[bool] | None = None,
     send_stream_typing_notifications: Json[bool] | None = None,
     starred_message_counts: Json[bool] | None = None,
+    target_users: Json[TargetUsersData] | None = None,
     timezone: Annotated[str, timezone_validator()] | None = None,
     translate_emoticons: Json[bool] | None = None,
     twenty_four_hour_time: Json[bool] | None = None,
@@ -332,6 +362,7 @@ def json_change_settings(
     web_escape_navigates_to_home_view: Json[bool] | None = None,
     web_font_size_px: Json[int] | None = None,
     web_home_view: Annotated[str, check_string_in_validator(web_home_view_options)] | None = None,
+    web_inbox_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
     web_line_height_percent: Json[int] | None = None,
@@ -356,6 +387,78 @@ def json_change_settings(
     # TODO: Change the cache flushing strategy to make sure cache
     # does not contain stale objects.
     user_profile = UserProfile.objects.get(id=user_profile.id)
+
+    # Loop over user_profile.property_types
+    request_settings = {
+        setting_name: requested_value
+        for setting_name, requested_value in locals().items()
+        if setting_name in user_profile.property_types and requested_value is not None
+    }
+
+    if target_users is not None:
+        if not user_profile.is_realm_admin:
+            raise OrganizationAdministratorRequiredError
+
+        # "email" and "password" are not user settings but users still update them
+        # using this endpoint.
+        if email is not None or new_password is not None or timezone is not None:
+            raise JsonableError(_("Cannot change this setting for other users."))
+
+        for setting_name in request_settings:
+            if setting_name in UserBaseSettings.SECURITY_SENSITIVE_USER_SETTINGS:
+                raise JsonableError(_("Cannot change this setting for other users."))
+
+        user_ids = target_users.user_ids
+        group_member_ids = set()
+
+        if target_users.group_ids:
+            valid_groups = user_group_ids_to_user_groups(target_users.group_ids, user_profile.realm)
+            valid_group_ids = [group.id for group in valid_groups]
+            group_member_ids = set(
+                get_recursive_group_members_union_for_groups(valid_group_ids).values_list(
+                    "id", flat=True
+                )
+            )
+
+        all_user_ids = list(set(user_ids) | group_member_ids)
+
+        # User settings do not apply to bots, so exclude them from the query even if they
+        # are in a member of a targeted group or are included in user_ids list. Deactivated
+        # users are included, so that the right thing happens if they are later reactivated.
+        users = user_ids_to_users(
+            all_user_ids, user_profile.realm, allow_deactivated=True, allow_bots=False
+        )
+
+        for setting_name, requested_value in request_settings.items():
+            if target_users.skip_if_already_edited:
+                already_edited_user_ids = set(
+                    RealmAuditLog.objects.filter(
+                        modified_user__in=users,
+                        event_type=AuditLogEventType.USER_SETTING_CHANGED,
+                        extra_data__property=setting_name,
+                        acting_user=F("modified_user"),
+                    ).values_list("modified_user_id", flat=True)
+                )
+
+                eligible_users = [user for user in users if user.id not in already_edited_user_ids]
+            else:
+                eligible_users = users
+
+            users_to_update = [
+                user for user in eligible_users if getattr(user, setting_name) != requested_value
+            ]
+
+            if users_to_update:
+                bulk_change_user_setting(
+                    user_profile.realm,
+                    users_to_update,
+                    setting_name,
+                    requested_value,
+                    acting_user=user_profile,
+                )
+
+        return json_success(request, data={})
+
     if (
         default_language is not None
         or notification_sound is not None
@@ -382,9 +485,10 @@ def json_change_settings(
         except RateLimitedError as e:
             assert e.secs_to_freedom is not None
             secs_to_freedom = int(e.secs_to_freedom)
+            retry_after_string = readable_expiry_string_for_plaintext(secs_to_freedom)
             raise JsonableError(
-                _("You're making too many attempts! Try again in {seconds} seconds.").format(
-                    seconds=secs_to_freedom
+                _("You're making too many attempts! Try again in {retry_after_string}.").format(
+                    retry_after_string=retry_after_string
                 ),
             )
 
@@ -414,11 +518,12 @@ def json_change_settings(
         if user_profile.delivery_email != new_email:
             validate_email_change_request(user_profile, new_email)
 
-            ratelimited, time_until_free = RateLimitedUser(
-                user_profile, domain="email_change_by_user"
-            ).rate_limit()
-            if ratelimited:
-                raise RateLimitedError(time_until_free)
+            if should_rate_limit(request):
+                ratelimited, time_until_free = RateLimitedUser(
+                    user_profile, domain="email_change_by_user"
+                ).rate_limit()
+                if ratelimited:
+                    raise RateLimitedError(time_until_free)
 
             do_start_email_change_process(user_profile, new_email)
 
@@ -431,10 +536,8 @@ def json_change_settings(
             # Note that check_change_full_name strips the passed name automatically
             check_change_full_name(user_profile, full_name, user_profile)
 
-    # Loop over user_profile.property_types
-    request_settings = {k: v for k, v in locals().items() if k in user_profile.property_types}
     for k, v in request_settings.items():
-        if v is not None and getattr(user_profile, k) != v:
+        if getattr(user_profile, k) != v:
             do_change_user_setting(user_profile, k, v, acting_user=user_profile)
 
     if timezone is not None and user_profile.timezone != timezone:
@@ -459,7 +562,7 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
                 max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
             )
         )
-    upload_avatar_image(user_file, user_profile)
+    upload_avatar_image(user_file, user_profile, content_type=user_file.content_type)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     user_avatar_url = avatar_url(user_profile)
 
@@ -473,11 +576,12 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
     if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
-    do_change_avatar_fields(
-        user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile
-    )
-    gravatar_url = avatar_url(user_profile)
+    if user_profile.avatar_source == UserProfile.AVATAR_FROM_USER:
+        do_change_avatar_fields(
+            user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile
+        )
 
+    gravatar_url = avatar_url(user_profile)
     json_result = dict(
         avatar_url=gravatar_url,
     )

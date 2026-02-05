@@ -52,6 +52,19 @@ rules:
     languages: [python]
     severity: ERROR
 
+  - id: use-wrapped-mimetypes
+    pattern-either:
+      - pattern: mimetypes.guess_type
+      - pattern: mimetypes.guess_file_type
+      - pattern: mimetypes.guess_all_extensions
+      - pattern: mimetypes.guess_extension
+    message: Use zerver.lib.mime_types (to ensure our EXTRA_MIME_TYPES are added)
+    languages: [python]
+    severity: ERROR
+    paths:
+      exclude:
+        - zerver/lib/mime_types.py
+
   - id: dont-import-models-in-migrations
     patterns:
       - pattern-not: from zerver.lib.migrate import $X
@@ -227,7 +240,7 @@ rules:
     languages: [python]
     patterns:
       - pattern-either:
-          - pattern: Confirmation.objects.get(...)
+          - pattern: Confirmation.objects.get(..., confirmation_key=..., ...)
           - pattern: Confirmation.objects.filter(..., confirmation_key=..., ...)
       - pattern-not-inside: |
           def get_object_from_key(...):
@@ -366,3 +379,26 @@ rules:
       - pattern: urllib.parse.ParseResult
     severity: ERROR
     message: "Use urlsplit rather than urlparse"
+
+  - id: argparse-redundant-str
+    patterns:
+      - pattern: |
+          ....add_argument(..., type=str, ...)
+    message: |
+      The `type=str` argument is redundant in `argparse` because `str` is the default type.
+    fix-regex:
+      regex: ',\s*type=str'
+      replacement: ""
+    languages: [python]
+    severity: ERROR
+
+  - id: iterator-all
+    message: Use .iterator() when iterating over large sets once
+    pattern: |-
+      for $VAR in $THING.objects.all():
+          $BODY
+    fix: |-
+      for $VAR in $THING.objects.all().iterator():
+          $BODY
+    languages: [python]
+    severity: ERROR

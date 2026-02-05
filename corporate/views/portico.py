@@ -297,6 +297,7 @@ def team_view(request: HttpRequest) -> HttpResponse:
                 "page_type": "team",
                 "contributors": data["contributors"],
             },
+            "REL_CANONICAL_LINK": f"https://zulip.com{request.path}",
             "date": data["date"],
         },
     )
@@ -310,6 +311,7 @@ def landing_view(request: HttpRequest, template_name: str) -> HttpResponse:
             "billing_base_url": "",
             "tier_cloud_standard": str(CustomerPlan.TIER_CLOUD_STANDARD),
             "tier_cloud_plus": str(CustomerPlan.TIER_CLOUD_PLUS),
+            "REL_CANONICAL_LINK": f"https://zulip.com{request.path}",
         }
     )
 
@@ -318,7 +320,9 @@ def landing_view(request: HttpRequest, template_name: str) -> HttpResponse:
 
 @add_google_analytics
 def hello_view(request: HttpRequest) -> HttpResponse:
-    return TemplateResponse(request, "corporate/hello.html", latest_info_context())
+    context = latest_info_context()
+    context["REL_CANONICAL_LINK"] = "https://zulip.com/"
+    return TemplateResponse(request, "corporate/hello.html", context)
 
 
 @add_google_analytics
@@ -332,6 +336,10 @@ def communities_view(request: HttpRequest) -> HttpResponse:
         .exclude(
             # Filter out realms who haven't changed their description from the default.
             description="",
+        )
+        .exclude(
+            # Filter out demo organizations.
+            demo_organization_scheduled_deletion_date__isnull=False,
         )
         .order_by("name")
     )
@@ -381,6 +389,7 @@ def communities_view(request: HttpRequest) -> HttpResponse:
         request,
         "corporate/communities.html",
         context={
+            "REL_CANONICAL_LINK": f"https://zulip.com{request.path}",
             "eligible_realms": eligible_realms,
             "org_types": org_types,
         },

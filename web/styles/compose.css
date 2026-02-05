@@ -1,4 +1,4 @@
-#compose_buttons {
+#legacy-closed-compose-box {
     text-align: right;
     display: flex;
     column-gap: 4px;
@@ -281,7 +281,23 @@
         flex-grow: 1;
         display: grid;
         grid-template-columns: 1fr;
+        position: relative;
         align-items: stretch;
+
+        .compose-new-recipient-button {
+            /* Takes up vertical space in pill container excluding 1px
+               container outline and 1px padding */
+            height: 1.75em;
+            width: 1.75em;
+            position: absolute;
+            right: 0.0625em;
+            top: 0.0625em;
+        }
+
+        .pill-container {
+            /* recipient button width and 1px container width */
+            padding-right: 1.8125em;
+        }
     }
 
     .message_header {
@@ -345,7 +361,7 @@
     &:has(.new_message_textarea.invalid),
     &:has(.new_message_textarea.invalid:focus) {
         border-color: var(--color-invalid-input-border);
-        box-shadow: var(--color-invalid-input-box-shadow);
+        box-shadow: var(--invalid-input-box-shadow);
     }
 }
 
@@ -456,12 +472,6 @@
     margin-bottom: calc(
         (var(--compose-formatting-buttons-row-height) + 1px) * -1
     );
-
-    textarea {
-        /* Flatten the bottom edge of the textarea to
-           merge with the flat top edge of the buttons row */
-        border-radius: 3px 3px 0 0;
-    }
 }
 
 #preview-message-area-container {
@@ -999,6 +1009,10 @@
             }
         }
     }
+
+    .secondary-button {
+        margin-left: 10px;
+    }
 }
 
 .upload_banner {
@@ -1058,22 +1072,21 @@ textarea.new_message_textarea {
     scrollbar-color: hsl(0deg 0% 50%) transparent;
     box-shadow: none;
 
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+    font-family: "Source Sans 3 VF", sans-serif;
+
     &:focus {
         outline: 0;
-    }
-
-    &:read-only,
-    &:disabled {
-        background-color: hsl(0deg 0% 93%);
     }
 }
 
 #message-content-container,
-#compose_recipient_box {
+#compose-channel-recipient {
     color: var(--color-text-default);
 }
 
-#compose_recipient_box {
+#compose-channel-recipient {
     display: grid;
     /* When displaying #topic-not-mandatory-placeholder,
        we let it occupy the entire topic box. Otherwise,
@@ -1099,17 +1112,6 @@ textarea.new_message_textarea {
        #stream_message_recipient_topic `<input>` */
     &:focus-within {
         border-color: var(--color-compose-recipient-box-has-focus);
-    }
-
-    #stream_message_recipient_topic,
-    #recipient_box_clear_topic_button {
-        background: none;
-        border: none;
-
-        &:disabled {
-            cursor: default;
-            opacity: 1;
-        }
     }
 
     /* Styles for input in the recipient_box */
@@ -1155,37 +1157,16 @@ textarea.new_message_textarea {
     }
 
     /* Styles for new conversation button in the recipient_box */
-    #recipient_box_clear_topic_button {
+    .compose-new-recipient-button {
         grid-area: topic-clear-button;
-        /* Set the border radius smaller, relative to the parent */
-        border-radius: 2px;
-        padding: 6px;
-        margin: 1px;
-        color: var(--color-compose-embedded-button-text-color);
-
-        .zulip-icon {
-            display: block;
-        }
-
-        &:hover {
-            background-color: var(
-                --color-compose-embedded-button-background-hover
-            );
-            color: var(--color-compose-embedded-button-text-color-hover);
-        }
-
-        &:focus {
-            outline: 0;
-        }
     }
 
     #stream_message_recipient_topic:not(.empty-topic-display):placeholder-shown
-        ~ #recipient_box_clear_topic_button {
+        ~ .compose-new-recipient-button {
         visibility: hidden;
     }
 
-    #stream_message_recipient_topic:disabled
-        ~ #recipient_box_clear_topic_button {
+    #stream_message_recipient_topic:disabled ~ .compose-new-recipient-button {
         visibility: hidden;
     }
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
@@ -1242,6 +1223,16 @@ textarea.new_message_textarea {
     outline-color: transparent;
 }
 
+.compose-box-open {
+    #closed-compose-controls {
+        display: none;
+    }
+
+    .message_comp {
+        display: block;
+    }
+}
+
 /* We want transitions to run only on user interactions with
    the mouse, once the compose box is open. Any keyboard
    interactions (e.g., Shift-Tabbing from the compose textarea
@@ -1252,7 +1243,7 @@ textarea.new_message_textarea {
 #compose.compose-box-open {
     .low-attention-recipient-row:not(.recently-focused, :focus-within) {
         #compose_select_recipient_widget,
-        #compose_recipient_box,
+        #compose-channel-recipient,
         #compose-direct-recipient .pill-container {
             transition: var(--compose-recipient-row-transition);
             transition-delay: var(--compose-recipient-row-transition-delay);
@@ -1265,7 +1256,7 @@ textarea.new_message_textarea {
             transition-property: color;
         }
 
-        #recipient_box_clear_topic_button {
+        .compose-new-recipient-button {
             transition: var(--compose-recipient-row-transition);
             transition-delay: var(--compose-recipient-row-transition-delay);
             transition-property: color, background-color, opacity;
@@ -1307,7 +1298,7 @@ textarea.new_message_textarea {
     }
 
     #compose_select_recipient_widget,
-    #compose_recipient_box,
+    #compose-channel-recipient,
     #compose-direct-recipient .pill-container {
         background-color: transparent;
         border-color: transparent;
@@ -1343,7 +1334,7 @@ textarea.new_message_textarea {
             }
         }
 
-        #recipient_box_clear_topic_button:hover {
+        .compose-new-recipient-button:hover {
             opacity: 1;
         }
     }
@@ -1569,6 +1560,40 @@ textarea.new_message_textarea {
       themselves, where necessary. */
     min-height: var(--compose-recipient-box-min-height);
     min-width: 0;
+
+    .compose-new-recipient-button {
+        /* Set the border radius smaller, relative to the parent */
+        border-radius: 2px;
+        padding: 6px;
+        margin: 1px;
+        color: var(--color-compose-embedded-button-text-color);
+
+        .zulip-icon {
+            display: block;
+        }
+
+        &:hover {
+            background-color: var(
+                --color-compose-embedded-button-background-hover
+            );
+            color: var(--color-compose-embedded-button-text-color-hover);
+        }
+
+        &:focus {
+            outline: 0;
+        }
+    }
+
+    #stream_message_recipient_topic,
+    .compose-new-recipient-button {
+        background: none;
+        border: none;
+
+        &:disabled {
+            cursor: default;
+            opacity: 1;
+        }
+    }
 }
 
 .compose-control-buttons-container {
@@ -1677,8 +1702,6 @@ textarea.new_message_textarea {
 .preview_message_area {
     padding: 5px 5px 0;
     overflow: auto;
-
-    border-radius: 3px 3px 0 0;
 }
 
 .markdown_preview_spinner {
@@ -1944,12 +1967,15 @@ textarea.new_message_textarea {
 #add-new-saved-snippet-modal,
 #edit-saved-snippet-modal {
     & .saved-snippet-title {
-        width: 97%;
+        /* Subtract (2 * horizontal padding) + (2 * border width) */
+        width: calc(
+            100% - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
         margin-bottom: 20px;
     }
 
     & .saved-snippet-content {
-        width: 97%;
         resize: vertical;
     }
 }

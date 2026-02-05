@@ -19,7 +19,7 @@ const hamlet = {
     full_name: "Hamlet",
 };
 
-people.add_active_user(hamlet);
+people.add_active_user(hamlet, "server_events");
 
 const frontend_id = 99;
 const frontend = {
@@ -32,7 +32,7 @@ stream_data.add_sub_for_tests(frontend);
 run_test("hash_util", () => {
     // Test encode_operand and decode_operand
     function encode_decode_operand(operator, operand, expected_val) {
-        const encode_result = hash_util.encode_operand(operator, operand);
+        const encode_result = hash_util.encode_operand({operator, operand});
         assert.equal(encode_result, expected_val);
         const new_operand = encode_result;
         const decode_result = hash_util.decode_operand(operator, new_operand);
@@ -40,11 +40,11 @@ run_test("hash_util", () => {
     }
 
     let operator = "sender";
-    let operand = hamlet.email;
+    let operand = hamlet.user_id;
 
     encode_decode_operand(operator, operand, "15-Hamlet");
 
-    operator = "stream";
+    operator = "channel";
     operand = frontend_id.toString();
 
     encode_decode_operand(operator, operand, "99-frontend");
@@ -99,18 +99,18 @@ run_test("test_is_same_server_message_link", () => {
     }
 });
 
-run_test("build_reload_url", () => {
+run_test("get_reload_hash", () => {
     window.location.hash = "#settings/profile";
-    assert.equal(hash_util.build_reload_url(), "+oldhash=settings%2Fprofile");
+    assert.equal(hash_util.get_reload_hash(), "settings/profile");
 
     window.location.hash = "#test";
-    assert.equal(hash_util.build_reload_url(), "+oldhash=test");
+    assert.equal(hash_util.get_reload_hash(), "test");
 
     window.location.hash = "#";
-    assert.equal(hash_util.build_reload_url(), "+oldhash=");
+    assert.equal(hash_util.get_reload_hash(), "");
 
     window.location.hash = "";
-    assert.equal(hash_util.build_reload_url(), "+oldhash=");
+    assert.equal(hash_util.get_reload_hash(), "");
 });
 
 run_test("test is_editing_stream", () => {
@@ -176,11 +176,11 @@ run_test("test_is_in_specified_hash_category", () => {
 
 run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
-        {negated: false, operator: "stream", operand: frontend_id.toString()},
+        {negated: false, operator: "channel", operand: frontend_id.toString()},
     ]);
 
     assert.deepEqual(hash_util.parse_narrow(["narrow", "-stream", "99-frontend"]), [
-        {negated: true, operator: "stream", operand: frontend_id.toString()},
+        {negated: true, operator: "channel", operand: frontend_id.toString()},
     ]);
 
     assert.equal(hash_util.parse_narrow(["narrow", "BOGUS"]), undefined);
@@ -188,12 +188,12 @@ run_test("test_parse_narrow", () => {
     // For unknown channel IDs, we still parse it; it could be a valid channel we do
     // not have access to. We'll end up showing "Invalid stream" in the navbar.
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "42-bogus"]), [
-        {negated: false, operator: "stream", operand: "42"},
+        {negated: false, operator: "channel", operand: "42"},
     ]);
 
     // Empty string as a topic name is valid.
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend", "topic", ""]), [
-        {negated: false, operator: "stream", operand: frontend_id.toString()},
+        {negated: false, operator: "channel", operand: frontend_id.toString()},
         {negated: false, operator: "topic", operand: ""},
     ]);
 
@@ -270,4 +270,16 @@ run_test("test_search_public_streams_notice_url", () => {
 run_test("test_current_hash_as_next", () => {
     window.location.hash = "#foo";
     assert.equal(spectators.current_hash_as_next(), "next=/%23foo");
+});
+
+run_test("get_link_hash", () => {
+    assert.equal(
+        hash_util.get_link_hash("/#narrow/channel/9-announce"),
+        "#narrow/channel/9-announce",
+    );
+    assert.equal(
+        hash_util.get_link_hash("https://chat.zulip.org/#narrow/channel/127-integrations/"),
+        "#narrow/channel/127-integrations/",
+    );
+    assert.equal(hash_util.get_link_hash("bad-url"), "");
 });

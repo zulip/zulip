@@ -21,6 +21,7 @@ const stream_events = mock_esm("../src/stream_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const unread_ops = mock_esm("../src/unread_ops");
+const user_group_edit = mock_esm("../src/user_group_edit");
 
 const compose_state = zrequire("compose_state");
 const peer_data = zrequire("peer_data");
@@ -202,6 +203,7 @@ test("stream delete (normal)", ({override}) => {
         stream_id: event.stream_ids[0],
         name: "devel",
         is_archived: false,
+        subscribed: false,
     };
 
     const test_sub = {
@@ -223,19 +225,14 @@ test("stream delete (normal)", ({override}) => {
         removed_stream_ids.push(stream_id);
     });
 
-    let removed_sidebar_rows = 0;
-    override(stream_list, "remove_sidebar_row", () => {
-        removed_sidebar_rows += 1;
-    });
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     override(unread_ops, "process_read_messages_event", noop);
     override(message_events, "remove_messages", noop);
+    override(user_group_edit, "update_group_permissions_panel_on_losing_stream_access", noop);
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
-
-    assert.equal(removed_sidebar_rows, 1);
 });
 
 test("stream delete (special streams)", ({override}) => {
@@ -266,22 +263,24 @@ test("stream delete (special streams)", ({override}) => {
 
     // sanity check data
     assert.equal(event.stream_ids.length, 2);
+    override(realm, "realm_moderation_request_channel_id", event.stream_ids[0]);
     override(realm, "realm_new_stream_announcements_stream_id", event.stream_ids[0]);
     override(realm, "realm_signup_announcements_stream_id", event.stream_ids[1]);
     override(realm, "realm_zulip_update_announcements_stream_id", event.stream_ids[0]);
 
     override(settings_org, "sync_realm_settings", noop);
     override(settings_streams, "update_default_streams_table", noop);
-    override(stream_list, "remove_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     override(unread_ops, "process_read_messages_event", noop);
     override(message_events, "remove_messages", noop);
+    override(user_group_edit, "update_group_permissions_panel_on_losing_stream_access", noop);
 
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
+    assert.equal(realm.realm_moderation_request_channel_id, event.stream_ids[0]);
     assert.equal(realm.realm_new_stream_announcements_stream_id, event.stream_ids[0]);
     assert.equal(realm.realm_signup_announcements_stream_id, event.stream_ids[1]);
     assert.equal(realm.realm_zulip_update_announcements_stream_id, event.stream_ids[0]);
@@ -307,7 +306,6 @@ test("stream delete (stream is selected in compose)", ({override}) => {
     stream_data.add_sub_for_tests(devel_sub);
     stream_data.add_sub_for_tests(test_sub);
 
-    stream_data.subscribe_myself(devel_sub);
     compose_state.set_stream_id(event.stream_ids[0]);
 
     const removed_stream_ids = [];
@@ -318,20 +316,15 @@ test("stream delete (stream is selected in compose)", ({override}) => {
 
     override(settings_streams, "update_default_streams_table", noop);
 
-    let removed_sidebar_rows = 0;
-    override(stream_list, "remove_sidebar_row", () => {
-        removed_sidebar_rows += 1;
-    });
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     override(unread_ops, "process_read_messages_event", noop);
     override(message_events, "remove_messages", noop);
+    override(user_group_edit, "update_group_permissions_panel_on_losing_stream_access", noop);
 
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     assert.equal(compose_state.stream_name(), "");
-
-    assert.equal(removed_sidebar_rows, 1);
 });

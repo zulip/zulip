@@ -4,9 +4,12 @@ const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
+const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {set_global, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
+
+const channel = mock_esm("../src/channel");
 
 const fake_buddy_list = {
     scroll_container_selector: "#whatever",
@@ -32,7 +35,6 @@ function mock_setTimeout() {
     });
 }
 
-const channel = mock_esm("../src/channel");
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
@@ -149,14 +151,16 @@ test("fetch on search", async ({override}) => {
 
     const office = {stream_id: 23, name: "office", subscribed: true};
     stream_data.add_sub_for_tests(office);
-    message_lists.set_current(make_message_list([{operator: "stream", operand: office.stream_id}]));
+    message_lists.set_current(
+        make_message_list([{operator: "stream", operand: office.stream_id.toString()}]),
+    );
     let get_call_count = 0;
-    channel.get = () => {
+    mock_channel_get(channel, (opts) => {
         get_call_count += 1;
-        return {
+        opts.success({
             subscribers: [1, 2, 3, 4],
-        };
-    };
+        });
+    });
     // Only one fetch should happen.
     set_input_val("somevalu");
     set_input_val("somevalue");
@@ -174,11 +178,11 @@ test("fetch on search", async ({override}) => {
     const living_room = {stream_id: 26, name: "living_room", subscribed: true};
     stream_data.add_sub_for_tests(living_room);
     message_lists.set_current(
-        make_message_list([{operator: "stream", operand: kitchen.stream_id}]),
+        make_message_list([{operator: "stream", operand: kitchen.stream_id.toString()}]),
     );
     set_input_val("somevalue");
     message_lists.set_current(
-        make_message_list([{operator: "stream", operand: living_room.stream_id}]),
+        make_message_list([{operator: "stream", operand: living_room.stream_id.toString()}]),
     );
     set_input_val("somevalue");
     await activity_ui.await_pending_promise_for_testing();
@@ -224,11 +228,12 @@ test("blur search left", ({override}) => {
 });
 
 test("filter_user_ids", ({override}) => {
-    const user_presence = {};
-    user_presence[alice.user_id] = "active";
-    user_presence[fred.user_id] = "active";
-    user_presence[jill.user_id] = "active";
-    user_presence[me.user_id] = "active";
+    const user_presence = {
+        [alice.user_id]: "active",
+        [fred.user_id]: "active",
+        [jill.user_id]: "active",
+        [me.user_id]: "active",
+    };
 
     override(presence, "get_status", (user_id) => user_presence[user_id]);
     override(presence, "get_user_ids", () => all_user_ids);

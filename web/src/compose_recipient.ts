@@ -158,34 +158,11 @@ export function update_on_recipient_change(): void {
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
-    check_posting_policy_for_compose_box();
     compose_validate.validate_and_update_send_button_status();
 
     // Clear the topic moved banner when the recipient
     // is changed or compose box is closed.
     compose_validate.clear_topic_moved_info();
-}
-
-export let check_posting_policy_for_compose_box = (): void => {
-    const banner_text = compose_validate.get_posting_policy_error_message();
-    if (banner_text === "") {
-        compose_banner.clear_errors();
-        return;
-    }
-
-    let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    if (compose_state.selected_recipient_id === "direct") {
-        banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
-        compose_banner.cannot_send_direct_message_error(banner_text);
-    } else {
-        compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
-    }
-};
-
-export function rewire_check_posting_policy_for_compose_box(
-    value: typeof check_posting_policy_for_compose_box,
-): void {
-    check_posting_policy_for_compose_box = value;
 }
 
 function switch_message_type(message_type: MessageType): void {
@@ -222,14 +199,14 @@ function update_recipient_label(stream_id?: number): void {
 export function update_compose_for_message_type(opts: ComposeTriggeredOptions): void {
     if (opts.message_type === "stream") {
         $("#compose-direct-recipient").hide();
-        $("#compose_recipient_box").show();
+        $("#compose-channel-recipient").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
         $("#compose-recipient").removeClass("compose-recipient-direct-selected");
         update_recipient_label(opts.stream_id);
     } else {
         $("#compose-direct-recipient").show();
-        $("#compose_recipient_box").hide();
+        $("#compose-channel-recipient").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
         $("#compose-recipient").addClass("compose-recipient-direct-selected");
@@ -307,6 +284,7 @@ function get_options_for_recipient_widget(): Option[] {
         is_direct_message: true,
         unique_id: compose_state.DIRECT_MESSAGE_ID,
         name: $t({defaultMessage: "Direct message"}),
+        aliases: [$t({defaultMessage: "DM"})],
     };
 
     if (!user_groups.is_setting_group_empty(realm.realm_direct_message_permission_group)) {
@@ -424,7 +402,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     $input.removeClass("empty-topic-display empty-topic-only");
     $topic_not_mandatory_placeholder.removeClass("visible");
     $topic_not_mandatory_placeholder.hide();
-    $("#compose_recipient_box").removeClass("disabled");
+    $("#compose-channel-recipient").removeClass("disabled");
 
     if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         $input.attr("placeholder", $t({defaultMessage: "Topic"}));
@@ -440,7 +418,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         compose_state.topic("");
         $input.prop("disabled", true);
         $input.addClass("empty-topic-only");
-        $("#compose_recipient_box").addClass("disabled");
+        $("#compose-channel-recipient").addClass("disabled");
         $("textarea#compose-textarea").trigger("focus");
         has_topic_focus = false;
     }

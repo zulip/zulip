@@ -101,8 +101,10 @@ mock_esm("../src/compose_closed_ui", {
 mock_esm("../src/hash_util", {
     channel_url_by_user_setting: test_url,
     by_stream_topic_url: test_url,
-    by_channel_topic_permalink: test_permalink,
     by_conversation_and_time_url: test_url,
+});
+mock_esm("../src/stream_topic_history", {
+    channel_topic_permalink_hash: test_permalink,
 });
 mock_esm("../src/message_list_data", {
     MessageListData: class {},
@@ -197,6 +199,9 @@ mock_esm("../src/unread", {
 });
 mock_esm("../src/resize", {
     update_recent_view: noop,
+});
+mock_esm("../src/popup_banners", {
+    close_found_missing_unreads_banner: noop,
 });
 const dropdown_widget = mock_esm("../src/dropdown_widget");
 dropdown_widget.DropdownWidget = function DropdownWidget() {
@@ -667,7 +672,7 @@ test("test_no_filter", ({mock_template}) => {
     row_data = generate_topic_data([[1, "topic-1", 0, all_visibility_policies.INHERIT]]);
     i = row_data.length;
     rt.set_default_focus();
-    $(".home-page-input").trigger("focus");
+    $("#search_query").trigger("focus");
     assert.equal(
         rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
         false,
@@ -685,20 +690,18 @@ test("test_filter_pm", ({mock_template}) => {
         is_spectator: false,
     };
 
-    const expected_user_with_icon = [
-        {name: "translated: Muted user", status_emoji_info: undefined},
+    const expected_users_with_icons = [
         {name: "Spike Spiegel", status_emoji_info: undefined},
+        {name: "translated: Muted user", status_emoji_info: undefined},
     ];
-    let i = 0;
 
     mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
     });
 
-    mock_template("user_with_status_icon.hbs", false, (data) => {
-        assert.deepEqual(data, expected_user_with_icon[i]);
-        i += 1;
-        return "<user_with_status_icon stub>";
+    mock_template("users_with_status_icons.hbs", false, (data) => {
+        assert.deepEqual(data, {users: expected_users_with_icons});
+        return "<users_with_status_icons stub>";
     });
 
     mock_template("recent_view_row.hbs", true, (_data, html) => {
@@ -775,7 +778,7 @@ test("test_filter_participated", ({mock_template}) => {
     expected_filter_participated = false;
     rt.process_messages(messages);
 
-    $(".home-page-input").trigger("focus");
+    $("#search_query").trigger("focus");
     assert.equal(
         rt.filters_should_hide_row({last_msg_id: 4, participated: true, type: "stream"}),
         false,
@@ -984,7 +987,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     // update_topic_visibility_policy now relies on external libraries completely
     // so we don't need to check anythere here.
     generate_topic_data([[1, topic1, 0, all_visibility_policies.INHERIT]]);
-    $(".home-page-input").trigger("focus");
+    $("#search_query").trigger("focus");
     assert.equal(rt.update_topic_visibility_policy(stream1, topic1), true);
     // a topic gets muted which we are not tracking
     assert.equal(rt.update_topic_visibility_policy(stream1, "topic-10"), false);
@@ -1050,7 +1053,7 @@ test("test_delete_messages", ({override}) => {
 
     // messages[0] was removed.
     let reduced_msgs = messages.slice(1);
-    override(all_messages_data, "all_messages", () => reduced_msgs);
+    override(all_messages_data, "all_messages_after_mute_filtering", () => reduced_msgs);
 
     let all_topics = rt_data.get_conversations();
     assert.equal(
@@ -1081,7 +1084,7 @@ test("test_delete_messages", ({override}) => {
 });
 
 test("test_topic_edit", ({override}) => {
-    override(all_messages_data, "all_messages", () => messages);
+    override(all_messages_data, "all_messages_after_mute_filtering", () => messages);
     recent_view_util.set_visible(false);
 
     // NOTE: This test should always run in the end as it modified the messages data.

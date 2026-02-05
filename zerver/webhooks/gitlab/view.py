@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
@@ -14,7 +14,7 @@ from zerver.lib.validator import WildValue, check_int, check_none_or, check_stri
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
-    validate_extract_webhook_http_header,
+    get_event_header,
 )
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
@@ -33,9 +33,8 @@ from zerver.lib.webhooks.git import (
 from zerver.models import UserProfile
 
 TOPIC_WITH_DESIGN_INFO_TEMPLATE = "{repo} / {type} {design_name}"
-DESIGN_COMMENT_MESSAGE_TEMPLATE = (
-    "{user_name} {action} on design [{design_name}]({design_url}):\n{content_message}"
-)
+DESIGN_COMMENT_MESSAGE_TEMPLATE = "{user_name} {action}{design_part}:\n{content_message}"
+DESIGN_PART_TEMPLATE = " on design [{design_name}]({design_url})"
 
 FEATURE_FLAG_MESSAGE_TEMPLATE = "{user} {action} the feature flag [{name}]({url})."
 
@@ -48,7 +47,7 @@ def fixture_to_headers(fixture_name: str) -> dict[str, str]:
 
     # Map "push_hook__push_commits_more_than_limit.json" into GitLab's
     # HTTP event title "Push Hook".
-    return {"HTTP_X_GITLAB_EVENT": fixture_name.split("__")[0].replace("_", " ").title()}
+    return {"HTTP_X_GITLAB_EVENT": fixture_name.split("__", 1)[0].replace("_", " ").title()}
 
 
 def get_push_event_body(payload: WildValue, include_title: bool) -> str:
@@ -250,7 +249,8 @@ def get_commented_commit_event_body(payload: WildValue, include_title: bool) -> 
 
 def get_commented_merge_request_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
-    action = "[commented]({}) on".format(comment["url"].tame(check_string))
+    comment_url = comment["url"].tame(check_string)
+    action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
     url = payload["merge_request"]["url"].tame(check_string)
 
     return get_pull_request_event_message(
@@ -260,13 +260,15 @@ def get_commented_merge_request_event_body(payload: WildValue, include_title: bo
         number=payload["merge_request"]["iid"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="MR",
-        title=payload["merge_request"]["title"].tame(check_string) if include_title else None,
+        title=payload["merge_request"]["title"].tame(check_string),
+        include_topic_reference=include_title,
     )
 
 
 def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
-    action = "[commented]({}) on".format(comment["url"].tame(check_string))
+    comment_url = comment["url"].tame(check_string)
+    action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
     url = payload["issue"]["url"].tame(check_string)
 
     return get_pull_request_event_message(
@@ -276,7 +278,8 @@ def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> s
         number=payload["issue"]["iid"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="issue",
-        title=payload["issue"]["title"].tame(check_string) if include_title else None,
+        title=payload["issue"]["title"].tame(check_string),
+        include_topic_reference=include_title,
     )
 
 
@@ -288,18 +291,24 @@ def get_commented_design_event_body(payload: WildValue, include_title: bool) -> 
     action = f"[commented]({comment_url})"
     content_message = CONTENT_MESSAGE_TEMPLATE.format(message=comment["note"].tame(check_string))
 
+    design_part = (
+        DESIGN_PART_TEMPLATE.format(design_name=design_name, design_url=design_url)
+        if include_title
+        else ""
+    )
+
     return DESIGN_COMMENT_MESSAGE_TEMPLATE.format(
         user_name=get_issue_user_name(payload),
         action=action,
-        design_name=design_name,
-        design_url=design_url,
         content_message=content_message,
+        design_part=design_part,
     )
 
 
 def get_commented_snippet_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
-    action = "[commented]({}) on".format(comment["url"].tame(check_string))
+    comment_url = comment["url"].tame(check_string)
+    action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
     # Snippet URL is only available in GitLab 16.1+
     if "url" in payload["snippet"]:
         url = payload["snippet"]["url"].tame(check_string)
@@ -316,7 +325,8 @@ def get_commented_snippet_event_body(payload: WildValue, include_title: bool) ->
         number=payload["snippet"]["id"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="snippet",
-        title=payload["snippet"]["title"].tame(check_string) if include_title else None,
+        title=payload["snippet"]["title"].tame(check_string),
+        include_topic_reference=include_title,
     )
 
 
@@ -442,11 +452,7 @@ def get_access_token_page_url(payload: WildValue) -> str:
 def get_resource_access_token_expiry_event_body(payload: WildValue, include_title: bool) -> str:
     access_token = payload["object_attributes"]
     expiry_date = access_token["expires_at"].tame(check_string)
-    formatted_date = (
-        datetime.strptime(expiry_date, "%Y-%m-%d")
-        .replace(tzinfo=timezone.utc)
-        .strftime("%b %d, %Y")
-    )
+    formatted_date = datetime.fromisoformat(expiry_date).strftime("%b %d, %Y")
 
     return ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE.format(
         name=access_token["name"].tame(check_string),
@@ -583,8 +589,18 @@ def api_gitlab_webhook(
     branches: str | None = None,
     use_merge_request_title: Json[bool] = True,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
+    ignore_private_projects: Json[bool] = False,
 ) -> HttpResponse:
     event = get_event(request, payload, branches)
+
+    # Ignore events from private projects if the URL option is set
+    if (
+        "project" in payload
+        and payload["project"]["visibility_level"].tame(check_int) == 0
+        and ignore_private_projects
+    ):
+        return json_success(request)
+
     if event is not None:
         event_body_function = get_body_based_on_event(event)
         body = event_body_function(
@@ -688,7 +704,7 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
 
 
 def get_event(request: HttpRequest, payload: WildValue, branches: str | None) -> str | None:
-    event = validate_extract_webhook_http_header(request, "X-GitLab-Event", "GitLab")
+    event = get_event_header(request, "X-GitLab-Event", "GitLab")
     if event == "System Hook":
         # Convert the event name to a GitLab event title
         if "event_name" in payload:

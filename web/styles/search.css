@@ -215,12 +215,33 @@
         }
     }
 
-    /* for both input container and search suggestions */
-    .user-pill-container {
+    #searchbox-input-container .user-pill-container,
+    .typeahead-menu .user-pill-container {
+        border: 1px solid transparent;
+
         > .pill-label {
             min-width: fit-content;
             white-space: nowrap;
             width: fit-content;
+            /* Replaced by the 5px gap. */
+            margin-right: 0;
+        }
+
+        .pill {
+            height: var(--length-user-pill-height);
+        }
+
+        .pill-image {
+            height: var(--length-search-pill-image);
+            width: var(--length-search-pill-image);
+        }
+
+        .pill-image-border {
+            border: none;
+        }
+
+        .pill:not(.deactivated-pill) {
+            background-color: var(--color-background-user-pill);
         }
     }
 
@@ -276,7 +297,6 @@
                 can contain multiple user pills that wrap onto
                 new lines. */
             height: unset;
-            border: 1px solid transparent;
 
             /* Not focus-visible, because we want to support mouse+backpace
                 to delete pills */
@@ -288,18 +308,11 @@
             }
 
             > .pill-label {
-                /* Replaced by the 5px gap. */
-                margin-right: 0;
                 /* Don't inherit large line-height for user pill labels. */
                 line-height: 1.1;
             }
 
             .pill {
-                /* Reduce user pill height by 2px to
-                    preserve an apparent border around
-                    them even under `box-sizing: border-box`
-                    in the area. */
-                height: calc(var(--height-input-pill) - 2px);
                 border: none;
                 /* Match border radius to image */
                 border-radius: 4px;
@@ -315,24 +328,11 @@
                 min-width: 4.5em;
                 display: grid;
                 grid-template-columns:
-                    var(--length-search-input-pill-image) minmax(0, 1fr)
+                    var(--length-search-pill-image) minmax(0, 1fr)
                     var(--length-input-pill-exit);
                 align-content: center;
                 /* Don't inherit large line-height for user pills themselves, either. */
                 line-height: 1.1;
-
-                .pill-image {
-                    height: var(--length-search-input-pill-image);
-                    width: var(--length-search-input-pill-image);
-                }
-
-                .pill-image-border {
-                    border: none;
-                }
-
-                &:not(.deactivated-pill) {
-                    background-color: var(--color-background-user-pill);
-                }
             }
         }
     }
@@ -419,7 +419,7 @@
                for search suggestions, since there's no exit button.
                The min-width here prevents extra space on very short names. */
             min-width: 0;
-            grid-template-columns: var(--length-search-input-pill-image) minmax(
+            grid-template-columns: var(--length-search-pill-image) minmax(
                     0,
                     1fr
                 );
@@ -441,6 +441,10 @@
             .exit {
                 display: none;
             }
+        }
+
+        .user-pill-container {
+            gap: 5px;
         }
 
         .pill-image {

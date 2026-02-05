@@ -15,6 +15,7 @@ import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
 import * as message_view from "./message_view.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
@@ -59,7 +60,7 @@ function show_delete_banner(): void {
         ),
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 intent: "success",
                 label: $t({defaultMessage: "Undo"}),
                 custom_classes: "draft-delete-banner-undo-button",
@@ -97,11 +98,12 @@ function restore_draft(draft_id: string): void {
         }
     } else {
         if (compose_args.private_message_recipient_ids.length > 0) {
-            const private_message_recipient_emails =
-                people.user_ids_to_emails_string(compose_args.private_message_recipient_ids) ?? "";
-            message_view.show([{operator: "dm", operand: private_message_recipient_emails}], {
-                trigger: "restore draft",
-            });
+            message_view.show(
+                [{operator: "dm", operand: compose_args.private_message_recipient_ids}],
+                {
+                    trigger: "restore draft",
+                },
+            );
         }
     }
 
@@ -206,11 +208,8 @@ export function handle_keyboard_events(event_key: string): void {
 }
 
 function format_drafts(data: Record<string, LocalStorageDraft>): FormattedDraft[] {
-    const unsorted_raw_drafts = Object.entries(data).map(([id, draft]) => ({...draft, id}));
-
-    const sorted_raw_drafts = unsorted_raw_drafts.sort(
-        (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt,
-    );
+    const sorted_raw_drafts = Object.entries(data).map(([id, draft]) => ({...draft, id}));
+    sorted_raw_drafts.sort((draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt);
 
     const sorted_formatted_drafts = sorted_raw_drafts
         .map((draft_row) => drafts.format_draft(draft_row))
@@ -295,7 +294,7 @@ function render_widgets(
 
 function setup_event_handlers(): void {
     $("#drafts_table .restore-overlay-message").on("click", function (e) {
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             return;
         }
 
@@ -316,12 +315,15 @@ function setup_event_handlers(): void {
         "click",
         ".user-group-mention",
         function (this: HTMLElement, e) {
-            if (document.getSelection()?.type === "Range") {
+            // We stop the event from propagating because that is what
+            // the main `.messagebox .user-group-mention` click handler
+            // expects us to do for drafts.
+            e.stopPropagation();
+            if (mouse_drag.is_drag(e)) {
                 return;
             }
 
             user_group_popover.toggle_user_group_info_popover(this, undefined);
-            e.stopPropagation();
         },
     );
 

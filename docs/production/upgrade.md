@@ -794,7 +794,7 @@ confirm everything is working correctly.
 
 3. Follow [Debian's instructions to upgrade the OS][bullseye-upgrade].
 
-   [bullseye-upgrade]: https://www.debian.org/releases/bullseye/amd64/release-notes/ch-upgrading.html
+   [bullseye-upgrade]: https://www.debian.org/releases/bullseye/amd64/release-notes.en.txt
 
    When prompted for you how to upgrade configuration
    files for services that Zulip manages like Redis, PostgreSQL,

@@ -1,0 +1,22 @@
+{{#if is_archived}}
+    {{#if can_view_channel}}
+        {{#tr}}
+            An <z-link>archived channel</z-link> with this name already exists.
+            {{#*inline "z-link"}}<a href="#channels/{{stream_id}}/general" class="stream-settings-link">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    {{else}}
+        {{t "An archived channel with this name already exists." }}
+    {{/if}}
+    {{#if show_rename}}
+        <a id="archived_stream_rename" data-stream-id="{{stream_id}}">{{t "Rename it" }}</a>
+    {{/if}}
+{{else}}
+    {{#if can_view_channel}}
+        {{#tr}}
+            A <z-link>channel</z-link> with this name already exists.
+            {{#*inline "z-link"}}<a href="#channels/{{stream_id}}/general" class="stream-settings-link">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    {{else}}
+        {{t "A channel with this name already exists." }}
+    {{/if}}
+{{/if}}

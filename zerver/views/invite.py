@@ -1,4 +1,4 @@
-import re
+import email.utils
 from typing import Annotated
 
 from django.conf import settings
@@ -63,6 +63,9 @@ def access_invite_by_id(user_profile: UserProfile, invite_id: int) -> Preregistr
     # have a referred_by set for the user who created it.
     if prereg_user.referred_by is None or prereg_user.referred_by.realm != user_profile.realm:
         raise JsonableError(_("No such invitation"))
+
+    if prereg_user.status != 0:
+        raise JsonableError(_("Invitation already used or deactivated."))
 
     if prereg_user.referred_by_id != user_profile.id:
         check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
@@ -203,14 +206,12 @@ def invite_users_backend(
 
 
 def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
-    invitee_emails_list = set(re.split(r"[,\n]", invitee_emails_raw))
-    invitee_emails = set()
-    for email in invitee_emails_list:
-        is_email_with_name = re.search(r"<(?P<email>.*)>", email)
-        if is_email_with_name:
-            email = is_email_with_name.group("email")
-        invitee_emails.add(email.strip())
-    return invitee_emails
+    return {
+        email_addr
+        for name, email_addr in email.utils.getaddresses(
+            invitee_emails_raw.split("\n"), strict=False
+        )
+    } - {""}
 
 
 @require_member_or_admin
@@ -225,7 +226,7 @@ def revoke_user_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
     prereg_user = access_invite_by_id(user_profile, invite_id)
-    do_revoke_user_invite(prereg_user)
+    do_revoke_user_invite(prereg_user, acting_user=user_profile)
     return json_success(request)
 
 
@@ -235,7 +236,7 @@ def revoke_multiuse_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
     invite = access_multiuse_invite_by_id(user_profile, invite_id)
-    do_revoke_multi_use_invite(invite)
+    do_revoke_multi_use_invite(invite, acting_user=user_profile)
     return json_success(request)
 
 

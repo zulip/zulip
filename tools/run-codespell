@@ -18,6 +18,7 @@ if [ "$#" -eq 0 ]; then
             ':!docs/translating' \
             ':!locale' \
             ':!postgresql.conf.template.erb' \
+            ':!tools/build-demo-organization-wordlist' \
             ':!tools/setup/emoji/emoji_map.json' \
             ':!tools/setup/emoji/emoji_names.py' \
             ':!pnpm-lock.yaml' \

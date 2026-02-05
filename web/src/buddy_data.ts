@@ -256,7 +256,11 @@ export type TitleData = {
     is_deactivated?: boolean;
 };
 
-export function get_title_data(user_ids_string: string, is_group: boolean): TitleData {
+export function get_title_data(
+    user_ids_string: string,
+    is_group: boolean,
+    should_show_status: boolean,
+): TitleData {
     if (is_group) {
         // For groups, just return a string with recipient names.
         return {
@@ -317,7 +321,7 @@ export function get_title_data(user_ids_string: string, is_group: boolean): Titl
     if (user_status.get_status_text(user_id)) {
         return {
             first_line: person.full_name,
-            second_line: user_status.get_status_text(user_id),
+            second_line: should_show_status ? user_status.get_status_text(user_id) : "",
             third_line: last_seen,
             show_you: is_my_user,
         };
@@ -459,8 +463,12 @@ function get_filtered_user_id_list(
         // enough subscribers in the channel.
         const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
         if (stream_id) {
-            const subscribers = peer_data.get_subscriber_ids_assert_loaded(stream_id);
-            if (subscribers.length <= max_channel_size_to_show_all_subscribers) {
+            const subscriber_count = peer_data.get_subscriber_count(stream_id);
+            if (subscriber_count <= max_channel_size_to_show_all_subscribers) {
+                // We can know these are all loaded because we fetch all subscribers
+                // for small channels, and max_channel_size_to_show_all_subscribers
+                // is less than MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE.
+                const subscribers = peer_data.get_subscriber_ids_assert_loaded(stream_id);
                 const base_user_id_set = new Set([...base_user_id_list, ...subscribers]);
                 base_user_id_list = [...base_user_id_set];
             }

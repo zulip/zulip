@@ -7,6 +7,7 @@ const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
+const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -20,7 +21,7 @@ const compose_state = zrequire("compose_state");
 const compose_validate = zrequire("compose_validate");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-const resolved_topic = zrequire("../shared/src/resolved_topic");
+const resolved_topic = zrequire("resolved_topic");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("/compose_recipient");
@@ -109,9 +110,9 @@ people.add_cross_realm_user(welcome_bot);
 const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const everyone = make_user_group({
     name: "role:everyone",
@@ -125,7 +126,7 @@ const admin = make_user_group({
     id: 3,
     members: new Set([32]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const moderators = make_user_group({
     name: "role:moderators",
@@ -397,6 +398,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
         subscribed: true,
         can_send_message_group: everyone.id,
         topics_policy: "inherit",
+        can_create_topic_group: everyone.id,
     };
     stream_data.add_sub_for_tests(special_sub);
 
@@ -443,6 +445,7 @@ test_ui("test_stream_posting_permission", ({mock_template, override}) => {
         name: "stream102",
         subscribed: true,
         can_send_message_group: admin.id,
+        can_create_topic_group: everyone.id,
     };
 
     stream_data.add_sub_for_tests(sub_stream_102);
@@ -719,12 +722,12 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     new_banner_rendered = false;
     const $banner_container = $("#compose_banners");
     $banner_container.set_find_results(".recipient_not_subscribed", []);
-    channel.get = (opts) => {
+    mock_channel_get(channel, (opts) => {
         assert.equal(opts.url, `/json/streams/${sub.stream_id}/members`);
-        return {
+        return opts.success({
             subscribers: [],
-        };
-    };
+        });
+    });
 
     await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(new_banner_rendered);

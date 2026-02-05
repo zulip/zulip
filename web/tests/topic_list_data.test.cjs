@@ -54,7 +54,7 @@ function get_list_info(zoom, search) {
     const zoomed = zoom === undefined ? false : zoom;
     const search_term = search === undefined ? "" : search;
     return topic_list_data.get_list_info(stream_id, zoomed, (topics) =>
-        topic_list_data.filter_topics_by_search_term(topics, search_term),
+        topic_list_data.filter_topics_by_search_term(stream_id, topics, search_term),
     );
 }
 
@@ -66,6 +66,7 @@ test("filter_topics_by_search_term with resolved topics_state", () => {
     let topics_state = "is:resolved";
 
     let result = topic_list_data.filter_topics_by_search_term(
+        general.stream_id,
         topic_names,
         search_term,
         topics_state,
@@ -75,9 +76,42 @@ test("filter_topics_by_search_term with resolved topics_state", () => {
 
     // Filter for unresolved topics.
     topics_state = "-is:resolved";
-    result = topic_list_data.filter_topics_by_search_term(topic_names, search_term, topics_state);
+    result = topic_list_data.filter_topics_by_search_term(
+        general.stream_id,
+        topic_names,
+        search_term,
+        topics_state,
+    );
 
     assert.deepEqual(result, ["topic 1", "topic 2"]);
+});
+
+test("filter_topics_is_followed", ({override}) => {
+    const stream_id = general.stream_id;
+    const topics = ["followed_topic", "unfollowed_topic", "other"];
+
+    override(user_topics, "is_topic_followed", (id, topic_name) => {
+        assert.equal(id, stream_id);
+        return topic_name === "followed_topic";
+    });
+
+    // filter for is:followed
+    const results_followed = topic_list_data.filter_topics_by_search_term(
+        stream_id,
+        topics,
+        "",
+        "is:followed",
+    );
+    assert.deepEqual(results_followed, ["followed_topic"]);
+
+    // filter for -is:followed
+    const results_unfollowed = topic_list_data.filter_topics_by_search_term(
+        stream_id,
+        topics,
+        "",
+        "-is:followed",
+    );
+    assert.deepEqual(results_unfollowed, ["unfollowed_topic", "other"]);
 });
 
 function test(label, f) {
@@ -218,17 +252,41 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 11);
 
-    add_topic_message("After Brooklyn", 1008);
-    add_topic_message("Delhi", 1009);
+    add_topic_message("Backend Developer", 1008);
+    add_topic_message("Developer Backend", 1009);
 
     // When topic search input is not empty, we show topics
     // based on the search term.
-    let search_term = "b,d";
+    let search_term = "b d";
     list_info = get_list_info(zoomed, search_term);
     assert.equal(list_info.items.length, 2);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 2);
+
+    add_topic_message("Work (Project A)", 1010);
+    search_term = "Work (";
+    list_info = get_list_info(zoomed, search_term);
+    assert.equal(list_info.items.length, 1);
+    assert.equal(list_info.items[0].topic_name, "Work (Project A)");
+
+    search_term = "BACKEND";
+    list_info = get_list_info(zoomed, search_term);
+    assert.equal(list_info.items.length, 2);
+    assert.equal(list_info.items[0].topic_name, "Developer Backend");
+    assert.equal(list_info.items[1].topic_name, "Backend Developer");
+
+    add_topic_message("authentication flow", 1011);
+    list_info = get_list_info(zoomed, "auth");
+    assert.equal(list_info.items.length, 1);
+    list_info = get_list_info(zoomed, "thent");
+    assert.equal(list_info.items.length, 0);
+
+    add_topic_message("backend deployment guide", 1012);
+    list_info = get_list_info(zoomed, "ba de gu");
+    assert.equal(list_info.items.length, 1);
+    list_info = get_list_info(zoomed, "gu ba de");
+    assert.equal(list_info.items.length, 1);
 
     // Verify empty string topic shows up for "general" search term.
     search_term = "general";

@@ -54,17 +54,17 @@ from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_i
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_by_id,
-    access_stream_by_id_for_message,
     can_access_stream_history,
     can_edit_topic,
     can_move_messages_out_of_channel,
     can_resolve_topics,
+    check_for_can_create_topic_group_violation,
     check_stream_access_based_on_can_send_message_group,
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
 )
 from zerver.lib.string_validation import check_stream_topic
-from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
+from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
     ORIG_TOPIC,
@@ -82,6 +82,7 @@ from zerver.lib.topic import (
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.url_encoding import stream_message_url
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
@@ -97,6 +98,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
+from zerver.models.groups import get_realm_system_groups_name_dict
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
@@ -397,7 +399,9 @@ def get_mentions_for_message_updates(message: Message) -> set[int]:
         .values_list("user_profile_id", flat=True)
     )
 
-    user_ids_having_message_access = event_recipient_ids_for_action_on_messages([message])
+    user_ids_having_message_access = event_recipient_ids_for_action_on_messages(
+        [message.id], message.is_channel_message
+    )
 
     return set(mentioned_user_ids) & user_ids_having_message_access
 
@@ -471,7 +475,9 @@ def do_update_embedded_data(
         "rendering_only": True,
     }
 
-    users_to_notify = event_recipient_ids_for_action_on_messages([message])
+    users_to_notify = event_recipient_ids_for_action_on_messages(
+        [message.id], message.is_channel_message
+    )
     filtered_ums = [um for um in ums if um.user_profile_id in users_to_notify]
 
     def user_info(um: UserMessage) -> dict[str, Any]:
@@ -901,8 +907,12 @@ def do_update_message(
         # longer have access to these messages.  Note: This could be
         # very expensive, since it's N guest users x M messages.
         UserMessage.objects.filter(
-            user_profile__in=users_losing_usermessages,
-            message__in=changed_messages,
+            id__in=UserMessage.objects.filter(
+                user_profile__in=users_losing_usermessages, message__in=changed_messages
+            )
+            .order_by("id")
+            .select_for_update(no_key=False)
+            .values_list("id", flat=True),
         ).delete()
 
         delete_event: DeleteMessagesEvent = {
@@ -1492,7 +1502,7 @@ def build_message_edit_request(
     is_stream_edited = False
     target_stream = orig_stream
     if stream_id is not None:
-        target_stream = access_stream_by_id_for_message(user_profile, stream_id)[0]
+        target_stream = access_stream_by_id(user_profile, stream_id)[0]
         is_stream_edited = True
 
     topics_policy = get_stream_topics_policy(message.realm, target_stream)
@@ -1652,13 +1662,18 @@ def check_update_message(
             check_user_group_mention_allowed(user_profile, mentioned_group_ids)
 
     if isinstance(message_edit_request, StreamMessageEditRequest):
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        system_groups_name_dict = get_realm_system_groups_name_dict(user_profile.realm_id)
         if message_edit_request.is_stream_edited:
             assert message.is_channel_message
             if not can_move_messages_out_of_channel(user_profile, message_edit_request.orig_stream):
                 raise JsonableError(_("You don't have permission to move this message"))
 
             check_stream_access_based_on_can_send_message_group(
-                user_profile, message_edit_request.target_stream
+                user_profile,
+                message_edit_request.target_stream,
+                user_group_membership_details,
+                system_groups_name_dict,
             )
 
             if (
@@ -1683,6 +1698,19 @@ def check_update_message(
         ):
             check_time_limit_for_change_all_propagate_mode(
                 message, user_profile, topic_name, stream_id
+            )
+
+        if (
+            message_edit_request.is_message_moved
+            and not message_edit_request.topic_resolved
+            and not message_edit_request.topic_unresolved
+        ):
+            check_for_can_create_topic_group_violation(
+                user_profile,
+                message_edit_request.target_stream,
+                message_edit_request.target_topic_name,
+                user_group_membership_details,
+                system_groups_name_dict,
             )
 
     updated_message_result = do_update_message(
@@ -1741,7 +1769,7 @@ def re_thumbnail(
 ) -> None:
     message = message_class.objects.select_for_update().get(id=message_id)
     assert message.rendered_content is not None
-    image_metadata = get_user_upload_previews(
+    image_metadata = manifest_and_get_user_upload_previews(
         message.realm_id,
         message.rendered_content,
         enqueue=enqueue,

@@ -1,10 +1,82 @@
 import Handlebars from "handlebars/runtime.js";
+import assert from "minimalistic-assert";
+import {z} from "zod/mini";
 
-import render_input_wrapper from "../templates/components/input_wrapper.hbs";
-
+import * as blueslip from "./blueslip.ts";
 import * as common from "./common.ts";
 import {default_html_elements, intl} from "./i18n.ts";
 import {postprocess_content} from "./postprocess_content.ts";
+import {user_settings} from "./user_settings.ts";
+
+const orig_escape_expression = Handlebars.Utils.escapeExpression;
+const orig_is_empty = Handlebars.Utils.isEmpty;
+const orig_each = Handlebars.helpers["each"];
+assert(orig_each !== undefined);
+const orig_if = Handlebars.helpers["if"];
+assert(orig_if !== undefined);
+const orig_unless = Handlebars.helpers["unless"];
+assert(orig_unless !== undefined);
+
+Handlebars.Utils.escapeExpression = (value: unknown): string => {
+    /* istanbul ignore if */
+    if (
+        typeof value !== "string" &&
+        typeof value !== "number" &&
+        value !== undefined &&
+        !(typeof value === "object" && value !== null && "toHTML" in value)
+    ) {
+        blueslip.error(`Cannot use a value of type ${typeof value} in a Zulip Handlebars template`);
+    }
+    // Upstream type annotation incorrectly requires string
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return (orig_escape_expression as (value: unknown) => string)(value);
+};
+
+Handlebars.Utils.isEmpty = (value: unknown): boolean => {
+    /* istanbul ignore if */
+    if (
+        typeof value !== "string" &&
+        typeof value !== "number" &&
+        typeof value !== "boolean" &&
+        value !== undefined &&
+        (typeof value !== "object" || Array.isArray(value))
+    ) {
+        blueslip.error(
+            `Cannot test a value of type ${typeof value} in a Zulip Handlebars template`,
+        );
+    }
+    return orig_is_empty(value);
+};
+
+Handlebars.helpers["each"] = function (context, options): unknown {
+    /* istanbul ignore if */
+    if (!Array.isArray(context)) {
+        blueslip.error(
+            `Cannot loop over a value of type ${Object.prototype.toString.call(context)} in a Zulip Handlebars template`,
+        );
+    }
+    return orig_each.call(this, context, options);
+};
+
+Handlebars.helpers["if"] = function (conditional, options): unknown {
+    /* istanbul ignore if */
+    if (typeof conditional === "number") {
+        blueslip.error(
+            `Cannot test a value of type ${typeof conditional} in a Zulip Handlebars template`,
+        );
+    }
+    return orig_if.call(this, conditional, options);
+};
+
+Handlebars.helpers["unless"] = function (conditional, options): unknown {
+    /* istanbul ignore if */
+    if (typeof conditional === "number") {
+        blueslip.error(
+            `Cannot test a value of type ${typeof conditional} in a Zulip Handlebars template`,
+        );
+    }
+    return orig_unless.call(this, conditional, options);
+};
 
 // Below, we register Zulip-specific extensions to the Handlebars API.
 //
@@ -51,6 +123,39 @@ Handlebars.registerHelper({
     not(a) {
         return !a || Handlebars.Utils.isEmpty(a);
     },
+});
+
+Handlebars.registerHelper("map_entries", (m: unknown) => {
+    /* istanbul ignore if */
+    if (!(typeof m === "object" && m instanceof Map)) {
+        blueslip.error("map_entries requires a Map");
+        return m;
+    }
+    return [...m];
+});
+
+Handlebars.registerHelper("object_entries", (o: unknown) => {
+    /* istanbul ignore if */
+    if (typeof o !== "object" || o === null) {
+        blueslip.error("object_entries requires a plain object");
+        return [];
+    }
+    /* istanbul ignore if */
+    if (Symbol.iterator in o) {
+        blueslip.error("object_entries requires a plain object");
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        return [...[...(o as Iterable<unknown>)].entries()];
+    }
+    return Object.entries(o);
+});
+
+Handlebars.registerHelper("object_values", (o: unknown): unknown => {
+    /* istanbul ignore if */
+    if (typeof o !== "object" || o === null || Symbol.iterator in o) {
+        blueslip.error("object_values requires a plain object");
+        return o;
+    }
+    return Object.values(o);
 });
 
 type Context = Record<string, unknown>;
@@ -176,12 +281,47 @@ Handlebars.registerHelper("popover_hotkey_hints", (...args) => {
     );
 });
 
-// The below section is for registering global Handlebar partials.
+const list_format_options_schema = z.object({
+    style: z.optional(z.enum(["narrow", "long", "short"])),
+    type: z.optional(z.enum(["conjunction", "disjunction", "unit"])),
+});
 
-// The "input_wrapper" partial block located at web/templates/components/input_wrapper.hbs
-// is used to wrap any input element that needs to be styled as a Zulip input.
-// Usage example:
-//    {{#> input_wrapper . input_type="filter-input" custom_classes="inbox-search-wrapper" icon="search" input_button_icon="close"}}
-//        <input type="text" id="{{INBOX_SEARCH_ID}}" class="input-element" value="{{search_val}}" autocomplete="off" placeholder="{{t 'Filter' }}" />
-//    {{/input_wrapper}}
-Handlebars.registerPartial("input_wrapper", render_input_wrapper);
+Handlebars.registerHelper(
+    "list_each",
+    function (this: unknown, context: unknown, options: Handlebars.HelperOptions) {
+        const {fn, inverse} = options;
+        const items_html: string[] = [];
+        let empty = false;
+        assert("each" in Handlebars.helpers);
+        const ret: unknown = Handlebars.helpers["each"].call(this, context, {
+            ...options,
+            fn(item_context: unknown, item_options?: Handlebars.RuntimeOptions) {
+                items_html.push(fn(item_context, item_options));
+                return "";
+            },
+            inverse(item_context: unknown, item_options?: Handlebars.RuntimeOptions) {
+                empty = true;
+                return inverse(item_context, item_options);
+            },
+        });
+        if (empty) {
+            return ret;
+        }
+        assert.equal(ret, "");
+        /* istanbul ignore if */
+        if (Intl.ListFormat === undefined) {
+            return items_html.join(", ");
+        }
+        return new Intl.ListFormat(
+            user_settings.default_language,
+            list_format_options_schema.parse(options.hash),
+        )
+            .formatToParts(items_html)
+            .map((part) =>
+                part.type === "element"
+                    ? part.value
+                    : Handlebars.Utils.escapeExpression(part.value),
+            )
+            .join("");
+    },
+);

@@ -10,7 +10,7 @@ import type {HTMLSelectOneElement} from "../types.ts";
 type ComponentIntent = "neutral" | "brand" | "info" | "success" | "warning" | "danger";
 
 type ActionButton = {
-    attention: "primary" | "quiet" | "borderless";
+    variant: "solid" | "subtle" | "text";
     intent: ComponentIntent;
     label: string;
     icon?: string | undefined;
@@ -44,9 +44,9 @@ const custom_normal_banner: Banner = {
     label: "This is a normal banner. Use the controls below to modify this banner.",
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             intent: "neutral",
-            label: "Quiet Button",
+            label: "Subtle Button",
         },
     ],
     close_button: true,
@@ -59,9 +59,9 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "This is a navbar alerts banner. Use the controls below to modify this banner.",
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 intent: "neutral",
-                label: "Quiet Button",
+                label: "Subtle Button",
             },
         ],
         close_button: true,
@@ -73,12 +73,12 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "Welcome back! You have 12 unread messages. Do you want to mark them all as read?",
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 intent: "info",
                 label: "Yes, please!",
             },
             {
-                attention: "borderless",
+                variant: "text",
                 intent: "info",
                 label: "No, I'll catch up.",
             },
@@ -92,7 +92,7 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "Zulip needs to send email to confirm users' addresses and send notifications.",
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 intent: "warning",
                 label: "Configuration instructions",
             },
@@ -111,12 +111,12 @@ const alert_banners: Record<string, AlertBanner> = {
         ),
         buttons: [
             {
-                attention: "borderless",
+                variant: "text",
                 intent: "info",
                 label: $t({defaultMessage: "Learn more"}),
             },
             {
-                attention: "quiet",
+                variant: "subtle",
                 intent: "info",
                 label: $t({defaultMessage: "Convert"}),
             },
@@ -135,17 +135,17 @@ const alert_banners: Record<string, AlertBanner> = {
         ),
         buttons: [
             {
-                attention: "primary",
+                variant: "solid",
                 intent: "brand",
                 label: "Enable notifications",
             },
             {
-                attention: "quiet",
+                variant: "subtle",
                 intent: "brand",
                 label: "Ask me later",
             },
             {
-                attention: "borderless",
+                variant: "text",
                 intent: "brand",
                 label: "Never ask on this computer",
             },
@@ -159,7 +159,7 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "Your profile is missing required fields.",
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 intent: "warning",
                 label: "Edit your profile",
             },
@@ -169,13 +169,27 @@ const alert_banners: Record<string, AlertBanner> = {
     },
     "insecure-desktop-app": {
         process: "insecure-desktop-app",
-        intent: "danger",
+        intent: "warning",
         label: "Zulip Desktop is not updating automatically. Please upgrade for security updates and other improvements.",
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 intent: "warning",
                 label: "Download the latest version",
+            },
+        ],
+        close_button: true,
+        custom_classes: "navbar-alert-banner",
+    },
+    "unsupported-browser": {
+        process: "unsupported-browser",
+        intent: "warning",
+        label: "Because you're using an unsupported or very old browser, Zulip may not work as expected.",
+        buttons: [
+            {
+                variant: "text",
+                intent: "warning",
+                label: "Learn more",
             },
         ],
         close_button: true,
@@ -187,7 +201,7 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "Complete your organization profile, which is displayed on your organization's registration and login pages.",
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 intent: "info",
                 label: "Edit profile",
             },
@@ -201,12 +215,12 @@ const alert_banners: Record<string, AlertBanner> = {
         label: "This Zulip server is running an old version and should be upgraded.",
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 intent: "danger",
                 label: "Learn more",
             },
             {
-                attention: "borderless",
+                variant: "text",
                 intent: "danger",
                 label: "Dismiss for a week",
             },
@@ -217,60 +231,60 @@ const alert_banners: Record<string, AlertBanner> = {
 };
 
 const sortButtons = (buttons: ActionButton[]): void => {
-    const sortOrder: Record<ActionButton["attention"], number> = {
-        primary: 1,
-        quiet: 2,
-        borderless: 3,
+    const sortOrder: Record<ActionButton["variant"], number> = {
+        solid: 1,
+        subtle: 2,
+        text: 3,
     };
 
-    buttons.sort((a, b) => sortOrder[a.attention] - sortOrder[b.attention]);
+    buttons.sort((a, b) => sortOrder[a.variant] - sortOrder[b.variant]);
 };
 
 const update_buttons = (buttons: ActionButton[]): void => {
-    const primary_button = buttons.find((button) => button.attention === "primary");
-    if (primary_button) {
-        $("#enable_primary_button").prop("checked", true);
-        $("#primary_button_text").val(primary_button.label);
-        if (primary_button.icon) {
-            $("#primary_button_select_icon").val(primary_button.icon);
-            $("#enable_primary_button_icon").prop("checked", true);
+    const solid_button = buttons.find((button) => button.variant === "solid");
+    if (solid_button) {
+        $("#enable_solid_button").prop("checked", true);
+        $("#solid_button_text").val(solid_button.label);
+        if (solid_button.icon) {
+            $("#solid_button_select_icon").val(solid_button.icon);
+            $("#enable_solid_button_icon").prop("checked", true);
         } else {
-            $("#disable_primary_button_icon").prop("checked", true);
+            $("#disable_solid_button_icon").prop("checked", true);
         }
     } else {
-        $("#disable_primary_button").prop("checked", true);
-        $("#primary_button_text").val("");
-        $("#disable_primary_button_icon").prop("checked", true);
+        $("#disable_solid_button").prop("checked", true);
+        $("#solid_button_text").val("");
+        $("#disable_solid_button_icon").prop("checked", true);
     }
-    const quiet_button = buttons.find((button) => button.attention === "quiet");
-    if (quiet_button) {
-        $("#enable_quiet_button").prop("checked", true);
-        $("#quiet_button_text").val(quiet_button.label);
-        if (quiet_button.icon) {
-            $("#quiet_button_select_icon").val(quiet_button.icon);
-            $("#enable_quiet_button_icon").prop("checked", true);
+    const subtle_button = buttons.find((button) => button.variant === "subtle");
+    if (subtle_button) {
+        $("#enable_subtle_button").prop("checked", true);
+        $("#subtle_button_text").val(subtle_button.label);
+        if (subtle_button.icon) {
+            $("#subtle_button_select_icon").val(subtle_button.icon);
+            $("#enable_subtle_button_icon").prop("checked", true);
         } else {
-            $("#disable_quiet_button_icon").prop("checked", true);
+            $("#disable_subtle_button_icon").prop("checked", true);
         }
     } else {
-        $("#disable_quiet_button").prop("checked", true);
-        $("#quiet_button_text").val("");
-        $("#disable_quiet_button_icon").prop("checked", true);
+        $("#disable_subtle_button").prop("checked", true);
+        $("#subtle_button_text").val("");
+        $("#disable_subtle_button_icon").prop("checked", true);
     }
-    const borderless_button = buttons.find((button) => button.attention === "borderless");
-    if (borderless_button) {
-        $("#enable_borderless_button").prop("checked", true);
-        $("#borderless_button_text").val(borderless_button.label);
-        if (borderless_button.icon) {
-            $("#borderless_button_select_icon").val(borderless_button.icon);
-            $("#enable_borderless_button_icon").prop("checked", true);
+    const text_button = buttons.find((button) => button.variant === "text");
+    if (text_button) {
+        $("#enable_text_button").prop("checked", true);
+        $("#text_button_text").val(text_button.label);
+        if (text_button.icon) {
+            $("#text_button_select_icon").val(text_button.icon);
+            $("#enable_text_button_icon").prop("checked", true);
         } else {
-            $("#disable_borderless_button_icon").prop("checked", true);
+            $("#disable_text_button_icon").prop("checked", true);
         }
     } else {
-        $("#disable_borderless_button").prop("checked", true);
-        $("#borderless_button_text").val("");
-        $("#disable_borderless_button_icon").prop("checked", true);
+        $("#disable_text_button").prop("checked", true);
+        $("#text_button_text").val("");
+        $("#disable_text_button_icon").prop("checked", true);
     }
 };
 
@@ -397,31 +411,31 @@ $(window).on("load", () => {
         }
     });
 
-    $("input[name='primary-button-select']").on("change", (e) => {
-        if ($(e.target).attr("id") === "enable_primary_button") {
-            if (current_banner.buttons.some((button) => button.attention === "primary")) {
+    $("input[name='solid-button-select']").on("change", (e) => {
+        if ($(e.target).attr("id") === "enable_solid_button") {
+            if (current_banner.buttons.some((button) => button.variant === "solid")) {
                 return;
             }
-            let label = $<HTMLInputElement>("input#primary_button_text").val();
+            let label = $<HTMLInputElement>("input#solid_button_text").val();
             assert(label !== undefined);
             if (label === "") {
-                label = "Primary Button";
+                label = "Solid Button";
             }
-            const is_icon_enabled = $("#enable_primary_button_icon").prop("checked") === true;
+            const is_icon_enabled = $("#enable_solid_button_icon").prop("checked") === true;
             current_banner.buttons.push({
-                attention: "primary",
+                variant: "solid",
                 intent: current_banner.intent,
                 label,
                 icon: is_icon_enabled
                     ? $<HTMLSelectOneElement>(
-                          "select:not([multiple])#primary_button_select_icon",
+                          "select:not([multiple])#solid_button_select_icon",
                       ).val()
                     : undefined,
             });
-            $("#primary_button_text").val(label);
+            $("#solid_button_text").val(label);
         } else {
             current_banner.buttons = current_banner.buttons.filter(
-                (button) => button.attention !== "primary",
+                (button) => button.variant !== "solid",
             );
         }
         sortButtons(current_banner.buttons);
@@ -432,112 +446,17 @@ $(window).on("load", () => {
         }
     });
 
-    $("input[name='primary-button-icon-select']").on("change", (e) => {
-        const primary_button = current_banner.buttons.find(
-            (button) => button.attention === "primary",
-        );
-        if (primary_button === undefined) {
+    $("input[name='solid-button-icon-select']").on("change", (e) => {
+        const solid_button = current_banner.buttons.find((button) => button.variant === "solid");
+        if (solid_button === undefined) {
             return;
         }
-        if ($(e.target).attr("id") === "enable_primary_button_icon") {
-            primary_button.icon =
-                $<HTMLSelectOneElement>(
-                    "select:not([multiple])#primary_button_select_icon",
-                ).val() ?? "";
-        } else {
-            delete primary_button.icon;
-        }
-        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
-        if (current_banner.process === "custom-banner") {
-            custom_normal_banner.buttons = current_banner.buttons;
-            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
-        }
-    });
-
-    $<HTMLSelectOneElement>("select:not([multiple])#primary_button_select_icon").on(
-        "change",
-        function () {
-            const primary_button = current_banner.buttons.find(
-                (button) => button.attention === "primary",
-            );
-            if (primary_button === undefined) {
-                return;
-            }
-            if (!primary_button.icon) {
-                return;
-            }
-            primary_button.icon = this.value;
-            $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
-            if (current_banner.process === "custom-banner") {
-                custom_normal_banner.buttons = current_banner.buttons;
-                $("#showroom_component_banner_default_wrapper").html(
-                    banner_html(custom_normal_banner),
-                );
-            }
-        },
-    );
-
-    $<HTMLInputElement>("input#primary_button_text").on("input", function () {
-        const primary_button = current_banner.buttons.find(
-            (button) => button.attention === "primary",
-        );
-        if (primary_button === undefined) {
-            return;
-        }
-        primary_button.label = this.value;
-        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
-        if (current_banner.process === "custom-banner") {
-            custom_normal_banner.buttons = current_banner.buttons;
-            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
-        }
-    });
-
-    $("input[name='quiet-button-select']").on("change", (e) => {
-        if ($(e.target).attr("id") === "enable_quiet_button") {
-            if (current_banner.buttons.some((button) => button.attention === "quiet")) {
-                return;
-            }
-            let label = $<HTMLInputElement>("input#quiet_button_text").val();
-            assert(label !== undefined);
-            if (label === "") {
-                label = "Quiet Button";
-            }
-            const is_icon_enabled = $("#enable_quiet_button_icon").prop("checked") === true;
-            current_banner.buttons.push({
-                attention: "quiet",
-                intent: current_banner.intent,
-                label,
-                icon: is_icon_enabled
-                    ? $<HTMLSelectOneElement>(
-                          "select:not([multiple])#quiet_button_select_icon",
-                      ).val()
-                    : undefined,
-            });
-            $("#quiet_button_text").val(label);
-            sortButtons(current_banner.buttons);
-        } else {
-            current_banner.buttons = current_banner.buttons.filter(
-                (button) => button.attention !== "quiet",
-            );
-        }
-        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
-        if (current_banner.process === "custom-banner") {
-            custom_normal_banner.buttons = current_banner.buttons;
-            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
-        }
-    });
-
-    $("input[name='quiet-button-icon-select']").on("change", (e) => {
-        const quiet_button = current_banner.buttons.find((button) => button.attention === "quiet");
-        if (quiet_button === undefined) {
-            return;
-        }
-        if ($(e.target).attr("id") === "enable_quiet_button_icon") {
-            quiet_button.icon =
-                $<HTMLSelectOneElement>("select:not([multiple])#quiet_button_select_icon").val() ??
+        if ($(e.target).attr("id") === "enable_solid_button_icon") {
+            solid_button.icon =
+                $<HTMLSelectOneElement>("select:not([multiple])#solid_button_select_icon").val() ??
                 "";
         } else {
-            delete quiet_button.icon;
+            delete solid_button.icon;
         }
         $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
@@ -546,19 +465,19 @@ $(window).on("load", () => {
         }
     });
 
-    $<HTMLSelectOneElement>("select:not([multiple])#quiet_button_select_icon").on(
+    $<HTMLSelectOneElement>("select:not([multiple])#solid_button_select_icon").on(
         "change",
         function () {
-            const quiet_button = current_banner.buttons.find(
-                (button) => button.attention === "quiet",
+            const solid_button = current_banner.buttons.find(
+                (button) => button.variant === "solid",
             );
-            if (quiet_button === undefined) {
+            if (solid_button === undefined) {
                 return;
             }
-            if (!quiet_button.icon) {
+            if (!solid_button.icon) {
                 return;
             }
-            quiet_button.icon = this.value;
+            solid_button.icon = this.value;
             $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
             if (current_banner.process === "custom-banner") {
                 custom_normal_banner.buttons = current_banner.buttons;
@@ -569,12 +488,12 @@ $(window).on("load", () => {
         },
     );
 
-    $<HTMLInputElement>("input#quiet_button_text").on("input", function () {
-        const quiet_button = current_banner.buttons.find((button) => button.attention === "quiet");
-        if (quiet_button === undefined) {
+    $<HTMLInputElement>("input#solid_button_text").on("input", function () {
+        const solid_button = current_banner.buttons.find((button) => button.variant === "solid");
+        if (solid_button === undefined) {
             return;
         }
-        quiet_button.label = this.value;
+        solid_button.label = this.value;
         $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;
@@ -582,32 +501,32 @@ $(window).on("load", () => {
         }
     });
 
-    $("input[name='borderless-button-select']").on("change", function (this: HTMLElement) {
-        if (this.id === "enable_borderless_button") {
-            if (current_banner.buttons.some((button) => button.attention === "borderless")) {
+    $("input[name='subtle-button-select']").on("change", (e) => {
+        if ($(e.target).attr("id") === "enable_subtle_button") {
+            if (current_banner.buttons.some((button) => button.variant === "subtle")) {
                 return;
             }
-            let label = $<HTMLInputElement>("input#borderless_button_text").val();
+            let label = $<HTMLInputElement>("input#subtle_button_text").val();
             assert(label !== undefined);
             if (label === "") {
-                label = "Borderless Button";
+                label = "Subtle Button";
             }
-            const is_icon_enabled = $("#enable_borderless_button_icon").prop("checked") === true;
+            const is_icon_enabled = $("#enable_subtle_button_icon").prop("checked") === true;
             current_banner.buttons.push({
-                attention: "borderless",
+                variant: "subtle",
                 intent: current_banner.intent,
                 label,
                 icon: is_icon_enabled
                     ? $<HTMLSelectOneElement>(
-                          "select:not([multiple])#borderless_button_select_icon",
+                          "select:not([multiple])#subtle_button_select_icon",
                       ).val()
                     : undefined,
             });
-            $("#borderless_button_text").val(label);
+            $("#subtle_button_text").val(label);
             sortButtons(current_banner.buttons);
         } else {
             current_banner.buttons = current_banner.buttons.filter(
-                (button) => button.attention !== "borderless",
+                (button) => button.variant !== "subtle",
             );
         }
         $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
@@ -617,20 +536,17 @@ $(window).on("load", () => {
         }
     });
 
-    $("input[name='borderless-button-icon-select']").on("change", function () {
-        const borderless_button = current_banner.buttons.find(
-            (button) => button.attention === "borderless",
-        );
-        if (borderless_button === undefined) {
+    $("input[name='subtle-button-icon-select']").on("change", (e) => {
+        const subtle_button = current_banner.buttons.find((button) => button.variant === "subtle");
+        if (subtle_button === undefined) {
             return;
         }
-        if (this.id === "enable_borderless_button_icon") {
-            borderless_button.icon =
-                $<HTMLSelectOneElement>(
-                    "select:not([multiple])#borderless_button_select_icon",
-                ).val() ?? "";
+        if ($(e.target).attr("id") === "enable_subtle_button_icon") {
+            subtle_button.icon =
+                $<HTMLSelectOneElement>("select:not([multiple])#subtle_button_select_icon").val() ??
+                "";
         } else {
-            delete borderless_button.icon;
+            delete subtle_button.icon;
         }
         $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
@@ -639,19 +555,19 @@ $(window).on("load", () => {
         }
     });
 
-    $<HTMLSelectOneElement>("select:not([multiple])#borderless_button_select_icon").on(
+    $<HTMLSelectOneElement>("select:not([multiple])#subtle_button_select_icon").on(
         "change",
         function () {
-            const borderless_button = current_banner.buttons.find(
-                (button) => button.attention === "borderless",
+            const subtle_button = current_banner.buttons.find(
+                (button) => button.variant === "subtle",
             );
-            if (borderless_button === undefined) {
+            if (subtle_button === undefined) {
                 return;
             }
-            if (!borderless_button.icon) {
+            if (!subtle_button.icon) {
                 return;
             }
-            borderless_button.icon = this.value;
+            subtle_button.icon = this.value;
             $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
             if (current_banner.process === "custom-banner") {
                 custom_normal_banner.buttons = current_banner.buttons;
@@ -662,14 +578,100 @@ $(window).on("load", () => {
         },
     );
 
-    $<HTMLInputElement>("input#borderless_button_text").on("input", function () {
-        const borderless_button = current_banner.buttons.find(
-            (button) => button.attention === "borderless",
-        );
-        if (borderless_button === undefined) {
+    $<HTMLInputElement>("input#subtle_button_text").on("input", function () {
+        const subtle_button = current_banner.buttons.find((button) => button.variant === "subtle");
+        if (subtle_button === undefined) {
             return;
         }
-        borderless_button.label = this.value;
+        subtle_button.label = this.value;
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
+        if (current_banner.process === "custom-banner") {
+            custom_normal_banner.buttons = current_banner.buttons;
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
+        }
+    });
+
+    $("input[name='text-button-select']").on("change", function (this: HTMLElement) {
+        if (this.id === "enable_text_button") {
+            if (current_banner.buttons.some((button) => button.variant === "text")) {
+                return;
+            }
+            let label = $<HTMLInputElement>("input#text_button_text").val();
+            assert(label !== undefined);
+            if (label === "") {
+                label = "Text Button";
+            }
+            const is_icon_enabled = $("#enable_text_button_icon").prop("checked") === true;
+            current_banner.buttons.push({
+                variant: "text",
+                intent: current_banner.intent,
+                label,
+                icon: is_icon_enabled
+                    ? $<HTMLSelectOneElement>(
+                          "select:not([multiple])#text_button_select_icon",
+                      ).val()
+                    : undefined,
+            });
+            $("#text_button_text").val(label);
+            sortButtons(current_banner.buttons);
+        } else {
+            current_banner.buttons = current_banner.buttons.filter(
+                (button) => button.variant !== "text",
+            );
+        }
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
+        if (current_banner.process === "custom-banner") {
+            custom_normal_banner.buttons = current_banner.buttons;
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
+        }
+    });
+
+    $("input[name='text-button-icon-select']").on("change", function () {
+        const text_button = current_banner.buttons.find((button) => button.variant === "text");
+        if (text_button === undefined) {
+            return;
+        }
+        if (this.id === "enable_text_button_icon") {
+            text_button.icon =
+                $<HTMLSelectOneElement>("select:not([multiple])#text_button_select_icon").val() ??
+                "";
+        } else {
+            delete text_button.icon;
+        }
+        $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
+        if (current_banner.process === "custom-banner") {
+            custom_normal_banner.buttons = current_banner.buttons;
+            $("#showroom_component_banner_default_wrapper").html(banner_html(custom_normal_banner));
+        }
+    });
+
+    $<HTMLSelectOneElement>("select:not([multiple])#text_button_select_icon").on(
+        "change",
+        function () {
+            const text_button = current_banner.buttons.find((button) => button.variant === "text");
+            if (text_button === undefined) {
+                return;
+            }
+            if (!text_button.icon) {
+                return;
+            }
+            text_button.icon = this.value;
+            $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
+            if (current_banner.process === "custom-banner") {
+                custom_normal_banner.buttons = current_banner.buttons;
+                $("#showroom_component_banner_default_wrapper").html(
+                    banner_html(custom_normal_banner),
+                );
+            }
+        },
+    );
+
+    $<HTMLInputElement>("input#text_button_text").on("input", function () {
+        const text_button = current_banner.buttons.find((button) => button.variant === "text");
+        if (text_button === undefined) {
+            return;
+        }
+        text_button.label = this.value;
         $("#showroom_component_banner_navbar_alerts_wrapper").html(banner_html(current_banner));
         if (current_banner.process === "custom-banner") {
             custom_normal_banner.buttons = current_banner.buttons;

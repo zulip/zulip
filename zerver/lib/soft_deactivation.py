@@ -1,7 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 import logging
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from typing import Any, TypedDict
 
 import sentry_sdk
@@ -151,6 +151,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
 
     """
     assert user_profile.last_active_message_id is not None
+    assert user_profile.long_term_idle
     all_stream_subs = list(
         Subscription.objects.filter(
             user_profile=user_profile, recipient__type=Recipient.STREAM
@@ -364,25 +365,23 @@ def do_soft_activate_users(users: list[UserProfile]) -> list[UserProfile]:
     ]
 
 
-def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> list[UserProfile]:
-    users_caught_up = []
+def do_catch_up_soft_deactivated_users(users: QuerySet[UserProfile]) -> None:
+    users_caught_up = 0
     failures = []
-    for user_profile in users:
-        if user_profile.long_term_idle:
-            with sentry_sdk.isolation_scope() as scope:
-                scope.set_user({"id": str(user_profile.id)})
-                try:
-                    add_missing_messages(user_profile)
-                    users_caught_up.append(user_profile)
-                except Exception:  # nocoverage
-                    logger.exception(
-                        "Failed to catch up %d@%s", user_profile.id, user_profile.realm.string_id
-                    )
-                    failures.append(user_profile)
-    logger.info("Caught up %d soft-deactivated users", len(users_caught_up))
+    for user_profile in users.iterator():
+        with sentry_sdk.isolation_scope() as scope:
+            scope.set_user({"id": str(user_profile.id)})
+            try:
+                add_missing_messages(user_profile)
+                users_caught_up += 1
+            except Exception:  # nocoverage
+                logger.exception(
+                    "Failed to catch up %d@%s", user_profile.id, user_profile.realm.string_id
+                )
+                failures.append(user_profile)
+    logger.info("Caught up %d soft-deactivated users", users_caught_up)
     if failures:
         logger.error("Failed to catch up %d soft-deactivated users", len(failures))  # nocoverage
-    return users_caught_up
 
 
 def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> QuerySet[UserProfile]:

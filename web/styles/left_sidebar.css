@@ -15,7 +15,9 @@
     white-space: nowrap;
 }
 
-#left-sidebar .input-element-wrapper:not(.left-sidebar-search-section) {
+#left-sidebar .input-element-wrapper:not(.left-sidebar-search-section),
+#user-profile-modal .stream-list-container .input-element-wrapper,
+#user-profile-modal .group-list-container .input-element-wrapper {
     /* We normalize this based on Firefox's 31px-tall input,
        raising Chrome's (28px) and Safari's (30px) to all
        match, so that `top:` and other offset values are
@@ -58,27 +60,25 @@
     /* 2px right margin here to match the new topic margin-right */
     margin: 2px 1px 2px 0;
     border-radius: 3px;
+    color: var(--color-sidebar-action);
+
+    &:hover {
+        color: var(--color-sidebar-action-hover);
+        background-color: var(--color-background-sidebar-action-hover);
+        cursor: pointer;
+    }
 
     .add_stream_icon {
         /* We display as flex to center the icon while
            keeping the entire highlighted area clickable. */
         display: flex;
         place-items: center center;
-        color: var(--color-left-sidebar-heads-up-icon);
 
         &::before {
             /* To horizontally center the icon within the
                flex, though, we need this margin adjustment. */
             margin: 0 auto;
         }
-    }
-
-    &:hover {
-        color: var(--color-left-sidebar-heads-up-icon-hover);
-        background-color: var(
-            --background-color-left-sidebar-heads-up-icon-hover
-        );
-        cursor: pointer;
     }
 }
 
@@ -305,9 +305,9 @@
         }
     }
 
-    #compose-new-direct-message,
-    #show-all-direct-messages {
-        color: var(--color-left-sidebar-heads-up-icon);
+    .compose-new-direct-message,
+    .show-all-direct-messages {
+        color: var(--color-sidebar-action);
         display: none;
         align-items: center;
         justify-content: center;
@@ -317,10 +317,8 @@
         grid-row: 1 / 1;
 
         &:hover {
-            color: var(--color-left-sidebar-heads-up-icon-hover);
-            background-color: var(
-                --background-color-left-sidebar-heads-up-icon-hover
-            );
+            color: var(--color-sidebar-action-hover);
+            background-color: var(--color-background-sidebar-action-hover);
         }
 
         @media (hover: none) {
@@ -331,8 +329,8 @@
     &.hover-over-dm-section,
     &.zoom-in,
     &:hover {
-        #compose-new-direct-message,
-        #show-all-direct-messages {
+        .compose-new-direct-message,
+        .show-all-direct-messages {
             display: flex;
         }
     }
@@ -354,6 +352,10 @@
     /* Must be padding not margin so that the sticky headers don't show behind it */
     padding: 0 var(--left-sidebar-right-margin)
         var(--sidebar-filter-bottom-spacing) 5px;
+
+    &.no-display {
+        display: none;
+    }
 
     .channel-folders-sidebar-menu-icon {
         grid-area: channel-folders-option;
@@ -445,6 +447,17 @@
 
         .add_stream_icon {
             visibility: visible;
+        }
+    }
+
+    &:has(.left_sidebar_menu_icon_visible) {
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        background-color: var(--color-background-hover-narrow-filter);
+        border-radius: 4px;
+
+        .left-sidebar-title,
+        .stream-list-section-toggle {
+            opacity: var(--opacity-sidebar-heading-hover);
         }
     }
 
@@ -711,6 +724,10 @@
                 background-color: var(--color-background-hover-narrow-filter);
             }
         }
+    }
+
+    &:has(.zoomed-new-topic):hover {
+        background: var(--color-background-sidebar-action-heading-hover);
     }
 
     &:has(.sidebar-topic-action-heading):hover {
@@ -1024,7 +1041,9 @@ li.active-sub-filter {
     }
 }
 
-.top_left_mentions {
+.top_left_mentions,
+#direct-messages-section-header,
+.dm-list-item {
     /* To highlight the background when a new unread arrives,
        we set the background on the .new-unread class. */
     &.new-unread {
@@ -1471,6 +1490,13 @@ li.active-sub-filter {
     }
 }
 
+#left-sidebar-navigation-area:has(.selected-home-view.top-left-active-filter)
+    .top_left_condensed_unread_marker {
+    /* Hide the condensed unread marker when the home view is active,
+       since the home view row already shows the unread count. */
+    display: none;
+}
+
 #views-label-container {
     margin-right: var(--left-sidebar-right-margin);
     grid-template-columns:
@@ -1527,18 +1553,6 @@ li.active-sub-filter {
                 /* In the absence of auto rows in the condensed state,
                    we set an explicit height on the active filter. */
                 height: var(--line-height-sidebar-row);
-            }
-        }
-
-        /* When unread counts display in the condensed-view
-           row for users who do not prefer to mask their unread
-           counts, we suppress the count on the highlighted
-           home-view row. */
-        &:not(:has(.hide-unread-messages-count)) {
-            + #left-sidebar-navigation-list {
-                .selected-home-view .unread_count {
-                    display: none;
-                }
             }
         }
     }
@@ -1862,21 +1876,65 @@ li.active-sub-filter {
     align-self: baseline;
 }
 
+.zoomed-new-topic {
+    display: grid;
+    grid-template:
+        "starting-offset starting-anchor-element icon-content-gap row-content ending-offset"
+        var(--line-height-sidebar-row-prominent)
+        ".               .                       .                row-content ."
+        auto
+        / var(--input-icon-starting-offset) var(
+            --left-sidebar-icon-column-width
+        )
+        var(--left-sidebar-icon-content-gap)
+        minmax(0, 1fr)
+        0;
+    color: var(--color-text-sidebar-action-heading);
+
+    .topic-list-new-topic-icon {
+        grid-area: starting-anchor-element;
+        place-self: center end;
+    }
+
+    .new-topic-label {
+        grid-area: row-content;
+        margin-top: -0.06em;
+        font-size: var(--font-size-sidebar-action-heading);
+        font-weight: var(--font-weight-sidebar-action-heading);
+        font-variant: var(--font-variant-sidebar-action-heading);
+        font-feature-settings: var(
+            --font-feature-settings-sidebar-action-heading
+        );
+        text-transform: var(--text-transform-sidebar-action-heading);
+    }
+
+    &:not(:active):focus {
+        text-decoration: none;
+        border: none;
+        outline: none;
+    }
+
+    &:hover,
+    &:focus-visible {
+        border-radius: 4px;
+        text-decoration: none;
+        color: var(--color-text-sidebar-action-heading);
+    }
+}
+
 .channel-new-topic-button {
     /* display: flex; is set on visible channels and
        channel-row hovers. */
     display: none;
     align-items: center;
     justify-content: center;
-    color: var(--color-left-sidebar-heads-up-icon);
+    color: var(--color-sidebar-action);
     margin: 2px 0;
     border-radius: 3px;
 
     &:hover {
-        color: var(--color-left-sidebar-heads-up-icon-hover);
-        background-color: var(
-            --background-color-left-sidebar-heads-up-icon-hover
-        );
+        color: var(--color-sidebar-action-hover);
+        background-color: var(--color-background-sidebar-action-hover);
     }
 }
 
@@ -1888,6 +1946,10 @@ li.active-sub-filter {
 
 .bottom_left_row .sidebar-menu-icon {
     grid-area: ending-anchor-element;
+}
+
+.stream-list-subsection-header .sidebar-menu-icon {
+    grid-area: three-dot-placeholder;
 }
 
 .stream-name {
@@ -1922,7 +1984,8 @@ li.active-sub-filter {
     positioning.  We should fix that.
 */
 .bottom_left_row .sidebar-menu-icon,
-.top_left_row .sidebar-menu-icon {
+.top_left_row .sidebar-menu-icon,
+.stream-list-section-container .sidebar-menu-icon {
     display: none;
     cursor: pointer;
     /* Use a flex container to handle
@@ -1985,6 +2048,7 @@ li.active-sub-filter {
 #stream_filters li:hover .stream-sidebar-menu-icon,
 .top_left_row:hover .sidebar-menu-icon,
 .bottom_left_row:hover .sidebar-menu-icon,
+#stream_filters .stream-list-subsection-header:hover .sidebar-menu-icon,
 .app-main .column-left .left-sidebar .left_sidebar_menu_icon_visible {
     /* We push against `display: none` with
        `display: flex` because the sidebar vdots
@@ -2044,7 +2108,10 @@ ul.topic-list:has(.show-more-topics)::after {
 #stream_filters
     .narrow-filter
     .topic-list
-    .bottom_left_row:has(a.sidebar-topic-action-heading:focus-visible) {
+    .bottom_left_row:has(
+        a.sidebar-topic-action-heading:focus-visible,
+        a.zoomed-new-topic:focus-visible
+    ) {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-hover-narrow-filter);
@@ -2061,6 +2128,15 @@ li.topic-list-item {
     position: relative;
     padding-right: 5px;
     margin-left: var(--left-sidebar-toggle-width-offset);
+
+    &:has(.zoomed-new-topic) {
+        /* We set a margin equal to starting-offset of filter-input to match
+           its alignment */
+        margin-left: calc(
+            var(--left-sidebar-toggle-width-offset) -
+                var(--input-icon-starting-offset)
+        );
+    }
 }
 
 .dm-box {

@@ -55,4 +55,4 @@ async function user_status_test(page: Page): Promise<void> {
     await test_user_status(page);
 }
 
-common.run_test(user_status_test);
+await common.run_test(user_status_test);

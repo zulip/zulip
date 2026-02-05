@@ -1,4 +1,3 @@
-import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -32,7 +31,6 @@ import * as subscriber_api from "./subscriber_api.ts";
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_groups from "./user_groups.ts";
 import * as user_sort from "./user_sort.ts";
-import * as util from "./util.ts";
 
 const remove_user_id_api_response_schema = z.object({
     removed: z.array(z.string()),
@@ -70,47 +68,6 @@ function get_sub(stream_id: number): StreamSubscription | undefined {
     return sub;
 }
 
-function generate_subscribe_success_messages(
-    subscribed_users: User[],
-    already_subscribed_users: User[],
-    ignored_deactivated_users: User[],
-): {
-    subscribed_users_message_html: string;
-    already_subscribed_users_message_html: string;
-    ignored_deactivated_users_message_html: string;
-} {
-    const subscribed_user_links = subscribed_users.map(
-        (user) =>
-            `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
-    );
-    const already_subscribed_user_links = already_subscribed_users.map(
-        (user) =>
-            `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
-    );
-    const ignored_deactivated_user_links = ignored_deactivated_users.map(
-        (user) =>
-            `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
-    );
-
-    const subscribed_users_message_html = util.format_array_as_list_with_conjunction(
-        subscribed_user_links,
-        "long",
-    );
-    const already_subscribed_users_message_html = util.format_array_as_list_with_conjunction(
-        already_subscribed_user_links,
-        "long",
-    );
-    const ignored_deactivated_users_message_html = util.format_array_as_list_with_conjunction(
-        ignored_deactivated_user_links,
-        "long",
-    );
-    return {
-        subscribed_users_message_html,
-        already_subscribed_users_message_html,
-        ignored_deactivated_users_message_html,
-    };
-}
-
 function show_stream_subscription_request_error_result(error_message: string): void {
     const $stream_subscription_req_result_elem = $(
         ".stream_subscription_request_result",
@@ -144,17 +101,8 @@ function show_stream_subscription_request_success_result({
         ".stream_subscription_request_result",
     ).expectOne();
 
-    let subscribe_success_messages;
-    if (!is_total_subscriber_more_than_five) {
-        subscribe_success_messages = generate_subscribe_success_messages(
-            subscribed_users,
-            already_subscribed_users,
-            ignored_deactivated_users,
-        );
-    }
     const rendered_success_banner = render_subscription_banner({
         intent: "success",
-        subscribe_success_messages,
         subscribed_users,
         already_subscribed_users,
         subscribed_users_count,
@@ -475,7 +423,7 @@ function remove_subscriber({
             stream_data.has_content_access_via_group_permissions(sub)
         ) {
             // We do not show any confirmation modal if user is unsubscribing
-            // themseleves and also has the permission to subscribe to the
+            // themselves and also has the permission to subscribe to the
             // stream again.
             remove_user_from_private_stream();
             return;
@@ -485,7 +433,7 @@ function remove_subscriber({
             stream: sub,
         });
 
-        const html_body = render_unsubscribe_private_stream_modal({
+        const modal_content_html = render_unsubscribe_private_stream_modal({
             unsubscribing_other_user,
             organization_will_lose_content_access:
                 sub_count === 1 &&
@@ -493,9 +441,9 @@ function remove_subscriber({
                 user_groups.is_setting_group_set_to_nobody_group(sub.can_add_subscribers_group),
         });
 
-        let html_heading;
+        let modal_title_html;
         if (unsubscribing_other_user) {
-            html_heading = $t_html(
+            modal_title_html = $t_html(
                 {defaultMessage: "Unsubscribe {full_name} from <z-link></z-link>?"},
                 {
                     full_name: people.get_full_name(target_user_id),
@@ -503,15 +451,15 @@ function remove_subscriber({
                 },
             );
         } else {
-            html_heading = $t_html(
+            modal_title_html = $t_html(
                 {defaultMessage: "Unsubscribe from <z-link></z-link>?"},
                 {"z-link": () => stream_name_with_privacy_symbol_html},
             );
         }
 
         confirm_dialog.launch({
-            html_heading,
-            html_body,
+            modal_title_html,
+            modal_content_html,
             on_click: remove_user_from_private_stream,
         });
         return;

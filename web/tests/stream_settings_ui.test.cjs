@@ -57,14 +57,14 @@ const admins_group = make_user_group({
     id: 1,
     members: new Set([1]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const nobody_group = make_user_group({
     name: "Nobody",
     id: 2,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const initialize_user_groups = () => {
     user_groups.initialize({realm_user_groups: [admins_group, nobody_group]});
@@ -228,7 +228,13 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         render: function render() {},
         value: () => "",
     };
-    stream_settings_components.set_filters_for_tests(filters_dropdown_widget);
+    stream_settings_components.set_archived_status_filters_for_tests(filters_dropdown_widget);
+
+    const folder_filter_dropdown_widget = {
+        render: function render() {},
+        value: () => -2,
+    };
+    stream_settings_components.set_folder_filter_for_tests(folder_filter_dropdown_widget);
 
     stream_settings_ui.render_left_panel_superset();
 

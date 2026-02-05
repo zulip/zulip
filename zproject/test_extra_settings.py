@@ -31,7 +31,6 @@ DATABASES["default"] = {
     "USER": "zulip_test",
     "PASSWORD": LOCAL_DATABASE_PASSWORD,
     "HOST": "localhost",
-    "SCHEMA": "zulip",
     "ENGINE": "django.db.backends.postgresql",
     "TEST_NAME": "django_zulip_tests",
     "OPTIONS": {
@@ -195,6 +194,8 @@ SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = True
 
 
 VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = "account_id"
+VIDEO_ZOOM_API_URL = "https://api.zoom.us"
+VIDEO_ZOOM_OAUTH_URL = "https://zoom.example.com"
 VIDEO_ZOOM_CLIENT_ID = "client_id"
 VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
 

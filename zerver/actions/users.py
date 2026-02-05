@@ -1,4 +1,3 @@
-import secrets
 from collections import defaultdict
 from email.headerregistry import Address
 from typing import Any
@@ -7,33 +6,39 @@ from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
 from django.db import transaction
 from django.db.models import Q
+from django.forms.models import model_to_dict
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import get_language
 
-from zerver.actions.streams import send_peer_remove_events
+from zerver.actions.message_delete import (
+    DeactivateUserActions,
+    delete_deactivated_user_messages,
+    do_delete_messages_by_sender,
+)
+from zerver.actions.message_send import send_user_profile_update_notification
+from zerver.actions.streams import bulk_remove_subscriptions, send_peer_remove_events
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
 )
+from zerver.actions.user_settings import do_change_avatar_fields, do_change_full_name
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
-from zerver.lib.cache import bot_dict_fields
-from zerver.lib.create_user import create_user
+from zerver.lib.cache import bot_dict_fields, flush_user_profile
+from zerver.lib.create_user import create_user_profile
 from zerver.lib.event_types import BotServicesOutgoing
 from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
-from zerver.lib.send_email import (
-    FromAddress,
-    clear_scheduled_emails,
-    maybe_remove_from_suppression_list,
-    send_email,
-)
+from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.soft_deactivation import queue_soft_reactivation
-from zerver.lib.stream_subscription import update_all_subscriber_counts_for_user
+from zerver.lib.stream_subscription import (
+    get_user_subscribed_streams,
+    update_all_subscriber_counts_for_user,
+)
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     get_anonymous_group_membership_dict_for_streams,
@@ -42,7 +47,7 @@ from zerver.lib.streams import (
     stream_to_dict,
 )
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
-from zerver.lib.types import UserGroupMembersData
+from zerver.lib.types import UserGroupMembersData, UserProfileChangeDict
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
@@ -55,8 +60,8 @@ from zerver.lib.users import (
     user_access_restricted_in_realm,
 )
 from zerver.models import (
+    Draft,
     GroupGroupMembership,
-    Message,
     NamedUserGroup,
     Realm,
     RealmAuditLog,
@@ -69,9 +74,14 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.bots import get_bot_services
+from zerver.models.messages import UserMessage
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_fake_email_domain
+from zerver.models.saved_snippets import SavedSnippet
+from zerver.models.scheduled_jobs import ScheduledMessage
 from zerver.models.users import (
+    ExternalAuthID,
+    UserBaseSettings,
     active_non_guest_user_ids,
     active_user_ids,
     bot_owner_user_ids,
@@ -82,186 +92,151 @@ from zerver.tornado.django_api import send_event_on_commit
 
 
 def do_delete_user(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
-    do_deactivate_user(user_profile, acting_user=acting_user)
-
-    to_resubscribe_recipient_ids = set(
-        Subscription.objects.filter(
-            user_profile=user_profile, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
-        ).values_list("recipient_id", flat=True)
-    )
-    user_id = user_profile.id
-    realm = user_profile.realm
-    date_joined = user_profile.date_joined
-    personal_recipient = user_profile.recipient
-
-    with transaction.atomic(durable=True):
-        user_profile.delete()
-        # Recipient objects don't get deleted through CASCADE, so we need to handle
-        # the user's personal recipient manually. This will also delete all Messages pointing
-        # to this recipient (all direct messages sent to the user).
-        assert personal_recipient is not None
-        personal_recipient.delete()
-        replacement_user = create_user(
-            force_id=user_id,
-            email=Address(
-                username=f"deleteduser{user_id}", domain=get_fake_email_domain(realm.host)
-            ).addr_spec,
-            password=None,
-            realm=realm,
-            full_name=f"Deleted User {user_id}",
-            active=False,
-            is_mirror_dummy=True,
-            force_date_joined=date_joined,
-        )
-        subs_to_recreate = [
-            Subscription(
-                user_profile=replacement_user,
-                recipient=recipient,
-                is_user_active=replacement_user.is_active,
-            )
-            for recipient in Recipient.objects.filter(id__in=to_resubscribe_recipient_ids)
-        ]
-        Subscription.objects.bulk_create(subs_to_recreate)
-
-        RealmAuditLog.objects.create(
-            realm=replacement_user.realm,
-            modified_user=replacement_user,
-            acting_user=acting_user,
-            event_type=AuditLogEventType.USER_DELETED,
-            event_time=timezone_now(),
-        )
+    do_delete_user_core(user_profile, delete_messages=True, acting_user=acting_user)
 
 
-def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
-    """This is a version of do_delete_user which does not delete messages
-    that the user was a participant in, and thus is less potentially
-    disruptive to other users.
+def do_delete_user_preserving_messages(
+    user_profile: UserProfile, *, acting_user: UserProfile | None
+) -> None:
+    do_delete_user_core(user_profile, delete_messages=False, acting_user=acting_user)
 
-    The code is a bit tricky, because we want to, at some point, call
-    user_profile.delete() to trigger cascading deletions of related
-    models - but we need to avoid the cascades deleting all messages
-    sent by the user to avoid messing up history of public stream
-    conversations that they may have participated in.
 
-    Not recommended for general use due to the following quirks:
+def do_delete_user_core(
+    user_profile: UserProfile, *, delete_messages: bool, acting_user: UserProfile | None
+) -> None:
+    """
     * Does not live-update other clients via `send_event_on_commit`
       about the user's new name, email, or other attributes.
-    * Not guaranteed to clear caches containing the deleted users. The
-      temporary user may be visible briefly in caches due to the
-      UserProfile model's post_save hook.
-    * Deletes `acting_user`/`modified_user` entries in RealmAuditLog,
-      potentially leading to corruption in audit tables if the user had,
-      for example, changed organization-level settings previously.
-    * May violate invariants like deleting the only subscriber to a
-      stream/group or the last owner in a realm.
-    * Will remove MutedUser records for other users who might have
-      muted this user.
-    * Will destroy Attachment/ArchivedAttachment records for files
-      uploaded by the user, making them inaccessible.
-    * Will destroy ArchivedMessage records associated with the user,
-      making them impossible to restore from backups.
-    * Will destroy Reaction/Submessage objects for reactions/poll
-      votes done by the user.
-
-    Most of these issues are not relevant for the common case that the
-    user being deleted hasn't used Zulip extensively.
-
-    It is possible a different algorithm that worked via overwriting
-    the UserProfile's values with RealmUserDefault values, as well as
-    a targeted set of deletions of cascading models (`Subscription`,
-    `UserMessage`, `CustomProfileFieldValue`, etc.) would be a cleaner
-    path to a high quality system.
 
     Other lesser quirks to be aware of:
     * The deleted user will disappear from all "Read receipts"
       displays, as all UserMessage rows will have been deleted.
+    * Messages mentioning the deleted user will no longer be found
+      by searching mentions:{user_id}, also from UserMessage deletion.
     * Raw Markdown syntax mentioning the user still contain their
       original name (though modern clients will look up the user via
       `data-user-id` and display the current name). This is hard to
       change, and not important, since nothing prevents other users from
       just typing the user's name in their own messages.
-    * Consumes a user ID sequence number, resulting in gaps in the
-      space of user IDs that contain actual users.
-
     """
     do_deactivate_user(user_profile, acting_user=None)
 
     user_id = user_profile.id
-    personal_recipient = user_profile.recipient
     realm = user_profile.realm
-    date_joined = user_profile.date_joined
 
+    # We create a temporary dummy UserProfile just to have a valid object with defaults
+    # set for all the various user settings. We can then copy them over onto the original
+    # user_profile object that we're overwriting.
+    # This is important as the combination of all the settings of a user could make them
+    # theoretically possible to de-anonymize even after deletion, if the original values
+    # were preserved.
+    # This temporary dummy is never saved to the database, so this operation doesn't do any
+    # writes and doesn't consume an id number.
     with transaction.atomic(durable=True):
-        # The strategy is that before calling user_profile.delete(), we need to
-        # reassign Messages  sent by the user to a dummy user, so that they don't
-        # get affected by CASCADE. We cannot yet create a dummy user with .id
-        # matching that of the user_profile, so the general scheme is:
-        # 1. We create a *temporary* dummy for the initial re-assignment of messages.
-        # 2. We delete the UserProfile.
-        # 3. We create a replacement dummy user with its id matching what the UserProfile had.
-        # 4. This is the intended, final replacement UserProfile, so we re-assign
-        #    the messages from step (1) to it and delete the temporary dummy.
-        #
-        # We also do the same for Subscriptions - while they could be handled like
-        # in do_delete_user by re-creating the objects after CASCADE deletion, the code
-        # is cleaner by using the same re-assignment approach for them together with Messages.
-        random_token = secrets.token_hex(16)
-        temp_replacement_user = create_user(
-            email=Address(
-                username=f"temp_deleteduser{random_token}", domain=get_fake_email_domain(realm.host)
-            ).addr_spec,
-            password=None,
+        temp_replacement_user = create_user_profile(
             realm=realm,
-            full_name=f"Deleted User {user_id} (temp)",
-            active=False,
-            is_mirror_dummy=True,
-            force_date_joined=date_joined,
-            create_personal_recipient=False,
-        )
-        # Uses index: zerver_message_realm_sender_recipient (prefix)
-        Message.objects.filter(realm_id=realm.id, sender=user_profile).update(
-            sender=temp_replacement_user
-        )
-        Subscription.objects.filter(
-            user_profile=user_profile, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
-        ).update(user_profile=temp_replacement_user)
-        user_profile.delete()
-
-        replacement_user = create_user(
-            force_id=user_id,
             email=Address(
                 username=f"deleteduser{user_id}", domain=get_fake_email_domain(realm.host)
             ).addr_spec,
             password=None,
-            realm=realm,
-            full_name=f"Deleted User {user_id}",
             active=False,
+            bot_type=user_profile.bot_type,
+            full_name=f"Deleted User {user_id}",
+            bot_owner=user_profile.bot_owner,
             is_mirror_dummy=True,
-            force_date_joined=date_joined,
-            create_personal_recipient=False,
+            tos_version=user_profile.tos_version,
+            # These required arguments should get default values configured on the UserProfile model,
+            # to overwrite the values of user_profile.
+            timezone=UserProfile._meta.get_field("timezone").get_default(),
+            default_language=UserProfile._meta.get_field("default_language").get_default(),
+            email_address_visibility=UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
         )
-        # We don't delete the personal recipient to preserve  personal messages!
-        # Now, the personal recipient belong to replacement_user, because
-        # personal_recipient.type_id is equal to replacement_user.id.
-        replacement_user.recipient = personal_recipient
-        replacement_user.save(update_fields=["recipient"])
 
-        # Uses index: zerver_message_realm_sender_recipient (prefix)
-        Message.objects.filter(realm_id=realm.id, sender=temp_replacement_user).update(
-            sender=replacement_user
+        overwrite_data = model_to_dict(
+            temp_replacement_user,
+            exclude=[
+                "id",
+                "date_joined",
+                "realm",
+                "recipient",
+                "uuid",
+                "last_login",
+                # These come from Django and aren't used by Zulip. We
+                # need to exclude them as they are ManyToManyFields
+                # and as such, would break the code below.
+                "groups",
+                "user_permissions",
+            ],
+        )
+
+        UserProfile.objects.filter(id=user_profile.id).update(**overwrite_data)
+        user_profile.refresh_from_db()
+
+        # First, we run bulk_remove_subscriptions to execute our
+        # complete, end-to-end unsubscribing procedure, which handles
+        # events, updating subscriber_count, etc.
+        #
+        # Then we hard-delete all the Subscription objects to avoid
+        # preserving the user's previous personal metadata about
+        # channel subscriptions (colors, notification preferences, etc.).
+        bulk_remove_subscriptions(
+            realm,
+            [user_profile],
+            get_user_subscribed_streams(user_profile),
+            acting_user=None,
+            skip_events_for_removed_user=True,
         )
         Subscription.objects.filter(
-            user_profile=temp_replacement_user, recipient__type=Recipient.DIRECT_MESSAGE_GROUP
-        ).update(user_profile=replacement_user, is_user_active=replacement_user.is_active)
-        temp_replacement_user.delete()
+            user_profile=user_profile, recipient__type=Recipient.STREAM
+        ).delete()
+
+        fks_to_delete: list[tuple[Any, str]] = [
+            (UserMessage, "user_profile"),
+            (ExternalAuthID, "user"),
+            (SavedSnippet, "user_profile"),
+            (ScheduledMessage, "sender"),
+            (Draft, "user_profile"),
+        ]
+        for table, field_name in fks_to_delete:
+            table.objects.filter(**{field_name: user_profile}).delete()
+        # There's also a many-to-many relationship between UserProfile and ScheduledEmail,
+        # which would require separate handling from foreign keys. But the clearing out
+        # of this data is handled by do_deactivate_user already, so we don't need to do
+        # anything.
+
+        # These audit logs can carry personal information in extra_data.
+        # We need to scrub that data in the process of user deletion.
+        audit_log_event_types_for_scrubbing = [
+            AuditLogEventType.USER_EMAIL_CHANGED,
+            AuditLogEventType.USER_FULL_NAME_CHANGED,
+            AuditLogEventType.USER_SETTING_CHANGED,
+        ]
+        RealmAuditLog.objects.filter(
+            modified_user=user_profile, event_type__in=audit_log_event_types_for_scrubbing
+        ).update(extra_data={}, scrubbed=True)
+
+        if delete_messages:
+            do_delete_messages_by_sender(user_profile)
+
+        if delete_messages:
+            event_type = AuditLogEventType.USER_DELETED
+        else:
+            event_type = AuditLogEventType.USER_DELETED_PRESERVING_MESSAGES
 
         RealmAuditLog.objects.create(
-            realm=replacement_user.realm,
-            modified_user=replacement_user,
-            acting_user=None,
-            event_type=AuditLogEventType.USER_DELETED_PRESERVING_MESSAGES,
+            realm=realm,
+            modified_user=user_profile,
+            acting_user=acting_user,
+            event_type=event_type,
             event_time=timezone_now(),
         )
+
+    flush_user_profile(
+        instance=user_profile,
+        # update_fields=None is treated as "update_fields=<all fields>" and invalidates
+        # all the caches related to this user.
+        update_fields=None,
+    )
 
 
 def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
@@ -387,6 +362,7 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         user_profile,
         include_public=False,
         include_subscribed=True,
+        exclude_archived=False,
     )
     altered_user_dict: dict[int, set[int]] = defaultdict(set)
     streams: list[Stream] = []
@@ -497,7 +473,11 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
 
 
 def do_deactivate_user(
-    user_profile: UserProfile, _cascade: bool = True, *, acting_user: UserProfile | None
+    user_profile: UserProfile,
+    _cascade: bool = True,
+    *,
+    acting_user: UserProfile | None,
+    deactivate_user_actions: DeactivateUserActions | None = None,
 ) -> None:
     if not user_profile.is_active:
         return
@@ -510,13 +490,42 @@ def do_deactivate_user(
         # that a failure partway through this function cannot result
         # in only the user being deactivated.
         bot_profiles = get_active_bots_owned_by_user(user_profile)
+        # Same policies should be applied to the bots as to the user who created
+        # them. If the user is marked as spammer or their content is being
+        # deleted, the same should happen with the bots created by that user.
         for profile in bot_profiles:
-            do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
-
+            do_deactivate_user(
+                profile,
+                _cascade=False,
+                acting_user=acting_user,
+                deactivate_user_actions=deactivate_user_actions,
+            )
     with transaction.atomic(savepoint=False):
         change_user_is_active(user_profile, False)
 
         clear_scheduled_emails([user_profile.id])
+        if deactivate_user_actions is not None:
+            if deactivate_user_actions.delete_profile:
+                # The full name of spam user is changed to Deleted user.
+                if user_profile.full_name != "Deleted user" and not user_profile.is_bot:
+                    do_change_full_name(
+                        user_profile, "Deleted user", acting_user=acting_user, notify=False
+                    )
+                elif user_profile.full_name != "Deactivated bot" and user_profile.is_bot:
+                    do_change_full_name(
+                        user_profile, "Deactivated bot", acting_user=acting_user, notify=False
+                    )
+
+                # TODO: Change avatar image to that of an inaccessible user.
+                if user_profile.avatar_source != UserProfile.AVATAR_FROM_GRAVATAR:
+                    do_change_avatar_fields(
+                        user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user
+                    )
+
+            delete_deactivated_user_messages(
+                user_profile.realm, user_profile, deactivate_user_actions, acting_user
+            )
+
         revoke_invites_generated_by_user(user_profile)
 
         event_time = timezone_now()
@@ -564,7 +573,7 @@ def send_stream_events_for_role_update(
 
     now_accessible_stream_ids = current_accessible_stream_ids - old_accessible_stream_ids
     if now_accessible_stream_ids:
-        recent_traffic = get_streams_traffic(now_accessible_stream_ids, user_profile.realm)
+        recent_traffic = get_streams_traffic(user_profile.realm, now_accessible_stream_ids)
 
         now_accessible_streams = [
             stream
@@ -608,7 +617,7 @@ def send_stream_events_for_role_update(
 
 @transaction.atomic(savepoint=False)
 def do_change_user_role(
-    user_profile: UserProfile, value: int, *, acting_user: UserProfile | None
+    user_profile: UserProfile, value: int, *, acting_user: UserProfile | None, notify: bool
 ) -> None:
     # We want to both (a) take a lock on the UserProfile row, and (b)
     # modify the passed-in UserProfile object, so that callers see the
@@ -624,6 +633,8 @@ def do_change_user_role(
     old_value = user_profile.role
     if old_value == value:
         return
+
+    old_role_name = user_profile.get_role_name()
     old_system_group = get_system_user_group_for_user(user_profile)
 
     previously_accessible_streams = get_streams_for_user(
@@ -657,6 +668,18 @@ def do_change_user_role(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
     )
     send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
+
+    if notify:
+        changes: list[UserProfileChangeDict] = [
+            UserProfileChangeDict(
+                field_name="role",
+                old_value=old_role_name,
+                new_value=user_profile.get_role_name(),
+            )
+        ]
+        send_user_profile_update_notification(
+            user_profile=user_profile, acting_user=acting_user, changes=changes
+        )
 
     UserGroupMembership.objects.filter(
         user_profile=user_profile, user_group=old_system_group
@@ -967,7 +990,6 @@ def do_send_password_reset_email(
 
     if user_profile is not None:
         queue_soft_reactivation(user_profile.id)
-        maybe_remove_from_suppression_list(user_profile.delivery_email)
         context["active_account_in_realm"] = True
         context["reset_url"] = generate_password_reset_url(user_profile, token_generator)
         send_email(
@@ -978,6 +1000,7 @@ def do_send_password_reset_email(
             context=context,
             realm=realm,
             request=request,
+            remove_suppressed_destination=True,
         )
     else:
         context["active_account_in_realm"] = False
@@ -1000,3 +1023,22 @@ def do_send_password_reset_email(
             realm=realm,
             request=request,
         )
+
+
+@transaction.atomic(durable=True)
+def do_change_is_imported_stub(user_profile: UserProfile) -> None:
+    user_profile.is_imported_stub = False
+    user_profile.save(update_fields=["is_imported_stub"])
+
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        modified_user=user_profile,
+        acting_user=user_profile,
+        event_type=AuditLogEventType.USER_IS_IMPORTED_STUB_CHANGED,
+        event_time=timezone_now(),
+    )
+
+    event = dict(
+        type="realm_user", op="update", person=dict(user_id=user_profile.id, is_imported_stub=False)
+    )
+    send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))

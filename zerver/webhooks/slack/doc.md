@@ -28,17 +28,15 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
 1. {!generate-webhook-url-basic.md!}
 
     To send messages from each Slack channel into a **matching Zulip channel**,
-    enable the **Send all notifications to a single topic** option, and add
-    `&channels_map_to_topics=0` to the generated URL. For each public channel in
-    your Slack workspace, be sure to [create][2] a Zulip channel with the same
-    name.
+    open the **Where to send notifications** dropdown and select **Matching
+    Zulip channel**.
 
     To send messages from each Slack channel into a **matching Zulip topic**,
-    disable the **Send all notifications to a single topic** option when
-    generating the URL. Add `&channels_map_to_topics=1` to the generated URL.
+    open the **Topics to use** dropdown, and select **Topics named after Slack
+    channels**.
 
-    To send all Slack messages into a **single Zulip topic**, enable the **Send
-    all notifications to a single topic** option, with no further modifications.
+    To send all Slack messages into a **single Zulip topic**, open the **Topics
+    to use** dropdown, and select **Send all notifications to a single topic**.
 
 1. *(optional)* If you're setting up a [Slack bridge][6] to forward Zulip messages
    into your Slack workspace, replace the value of the `?api_key=` parameter in
@@ -48,20 +46,21 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
 1. Create a new [Slack app][4], and open it. Navigate to the **OAuth
    & Permissions** menu, and scroll down to the **Scopes** section.
 
-1. Make sure **Bot Token Scopes** includes `channels:read`,
-   `channels:history`, `emoji:read`, `team:read`, `users:read`, and
-   `users:read.email`.
+1. Make sure **Bot Token Scopes** includes `channels:history`, `channels:read`,
+   and `users:read`. If you're setting up a [bidirectional bridge][6], make sure
+   to also include the `chat:write` scope.
 
     !!! tip ""
 
-        See [Slack's Events API documentation][3] for details about
-        these scopes.
+        See the [required bot token scopes](#required-bot-token-scopes)
+        section for details about these scopes.
 
-1. Scroll to the **OAuth Tokens for Your Workspace** section in the
-   same menu, and click **Install to Workspace**.
+1. Scroll to the **OAuth Tokens** section in the same menu, and click **Install
+   to Workspace**.  Grant the app permission to access your workspace
+   by clicking **Allow** when prompted.
 
-1. Copy the Slack **Bot User OAuth Token**, and add it to the end of your
-   **integration URL** as `&slack_app_token=BOT_OAUTH_TOKEN`.
+1. You will immediately see a **Bot User OAuth Token**. Copy it and add it
+   to the end of your **integration URL** as `&slack_app_token=BOT_OAUTH_TOKEN`.
 
 1. Go to the **Event Subscriptions** menu, toggle **Enable Events**, and enter
    your updated **integration URL** in the **Request URL** field.
@@ -79,6 +78,26 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
 
 ![](/static/images/integrations/slack/001.png)
 
+### Required bot token scopes
+
+- `channels:history` is required by Slack's Event API's
+  [message.channels](https://api.slack.com/events/message.channels) event. This
+  is used to send new messages from Slack to Zulip.
+
+- `channels:read` is required for Slack's
+  [conversations.info](https://api.slack.com/methods/conversations.info)
+  endpoint. This is used to get the name of the Slack channel a message came
+  from.
+
+- For a [bidirectional bridge][6] setup, the `chat:write` is also required for
+  Slack's
+  [chat.postMessage](https://docs.slack.dev/reference/methods/chat.postMessage/)
+  method. This is used to send new messages from Zulip to Slack.
+
+- `users:read` is required to call
+  Slack's [users.info](https://api.slack.com/methods/users.info) endpoint. This
+  is used to get the name of the Slack message's sender.
+
 ### Related documentation
 
 - [Forward messages Slack <-> Zulip][6] (both directions)
@@ -91,7 +110,7 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
 
 {!webhooks-url-specification.md!}
 
-[1]: /integrations/doc/slack_incoming
+[1]: /integrations/slack_incoming
 [2]: /help/create-a-channel
 [3]: https://api.slack.com/apis/events-api
 [4]: https://api.slack.com/apps

@@ -6,29 +6,27 @@ file](/api/configuring-python-bindings#download-a-zuliprc-file). This file
 contains an API key and other necessary configuration values for using the
 Zulip API with a specific account on a Zulip server.
 
-## Get a bot's API key
+## Get API key
 
 {start_tabs}
 
-{tab|desktop-web}
+{tab|for-a-bot}
 
 {settings_tab|your-bots}
 
-1. Click **Active bots**.
+1. In the **Actions** column, click the **manage bot**
+   (<i class="zulip-icon zulip-icon-user-cog"></i>) icon,
+   and scroll down to **API key**.
 
-1. Find your bot. The bot's API key is under **API KEY**.
-
-{end_tabs}
+1. Click the **copy**
+   (<i class="zulip-icon zulip-icon-copy"></i>) icon to
+   copy the bot's API key to your clipboard.
 
 !!! warn ""
 
     Anyone with a bot's API key can impersonate the bot, so be careful with it!
 
-## Get your API key
-
-{start_tabs}
-
-{tab|desktop-web}
+{tab|for-yourself}
 
 {settings_tab|account-and-privacy}
 
@@ -39,39 +37,30 @@ Zulip API with a specific account on a Zulip server.
 
 1. Copy your API key.
 
-{end_tabs}
-
 !!! warn ""
 
     Anyone with your API key can impersonate you, so be doubly careful with it.
 
+{end_tabs}
 
 ## Invalidate an API key
 
 To invalidate an existing API key, you have to generate a new key.
 
-### Invalidate a bot's API key
-
 {start_tabs}
 
-{tab|desktop-web}
+{tab|for-a-bot}
 
 {settings_tab|your-bots}
 
-1. Click **Active bots**.
+1. In the **Actions** column, click the **manage bot**
+   (<i class="zulip-icon zulip-icon-user-cog"></i>) icon,
+   and scroll down to **API key**.
 
-1. Find your bot.
+1. Click the **generate new API key**
+   (<i class="zulip-icon zulip-icon-refresh-cw"></i>) icon.
 
-1. Under **API KEY**, click the **refresh** (<i class="fa fa-refresh"></i>) icon
-   to the right of the bot's API key.
-
-{end_tabs}
-
-### Invalidate your API key
-
-{start_tabs}
-
-{tab|desktop-web}
+{tab|for-yourself}
 
 {settings_tab|account-and-privacy}
 

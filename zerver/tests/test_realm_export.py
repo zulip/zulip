@@ -3,6 +3,7 @@ from unittest.mock import patch
 from urllib.parse import urlsplit
 
 import botocore.exceptions
+import orjson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
@@ -19,6 +20,7 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 from zerver.models import Realm, RealmExport, UserProfile
+from zerver.models.realms import RealmExportSlug
 from zerver.views.realm_export import export_realm
 
 
@@ -63,7 +65,7 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(args["realm"], admin.realm)
         self.assertEqual(args["export_type"], RealmExport.EXPORT_PUBLIC)
         self.assertTrue(os.path.basename(args["output_dir"]).startswith("zulip-export-"))
-        self.assertEqual(args["threads"], 6)
+        self.assertEqual(args["processes"], 6)
 
         # Get the entry and test that iago initiated it.
         export_row = RealmExport.objects.first()
@@ -121,7 +123,7 @@ class RealmExportTest(ZulipTestCase):
         def fake_export_realm(
             realm: Realm,
             output_dir: str,
-            threads: int,
+            processes: int,
             export_type: int,
             exportable_user_ids: set[int] | None = None,
             export_as_active: bool | None = None,
@@ -129,7 +131,7 @@ class RealmExportTest(ZulipTestCase):
             self.assertEqual(realm, admin.realm)
             self.assertEqual(export_type, RealmExport.EXPORT_PUBLIC)
             self.assertTrue(os.path.basename(output_dir).startswith("zulip-export-"))
-            self.assertEqual(threads, 6)
+            self.assertEqual(processes, 6)
 
             # Check that the export shows up as in progress
             result = self.client_get("/json/export/realm")
@@ -207,41 +209,6 @@ class RealmExportTest(ZulipTestCase):
     def test_export_failure(self) -> None:
         admin = self.example_user("iago")
         self.login_user(admin)
-
-        owner = self.example_user("desdemona")
-        do_change_user_setting(
-            owner,
-            "email_address_visibility",
-            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
-            acting_user=None,
-        )
-
-        result = self.client_post("/json/export/realm")
-        self.assert_json_error_contains(
-            result,
-            "Make sure at least one Organization Owner allows "
-            "other Administrators to see their email address",
-        )
-        do_change_user_setting(
-            owner,
-            "email_address_visibility",
-            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-            acting_user=None,
-        )
-
-        do_change_user_setting(
-            owner,
-            "allow_private_data_export",
-            False,
-            acting_user=None,
-        )
-        result = self.client_post(
-            "/json/export/realm",
-            info={"export_type": RealmExport.EXPORT_FULL_WITH_CONSENT},
-        )
-        self.assert_json_error_contains(
-            result, "Make sure at least one Organization Owner is consenting"
-        )
 
         with (
             patch(
@@ -345,7 +312,7 @@ class RealmExportTest(ZulipTestCase):
             result = self.client_post("/json/export/realm")
         self.assert_json_error(
             result,
-            f"Please request a manual export from {settings.ZULIP_ADMINISTRATOR}.",
+            f"The export you requested is too large for automatic processing. Please request a manual export by contacting {settings.ZULIP_ADMINISTRATOR}.",
         )
 
         # Message limit is set as 250000
@@ -354,7 +321,7 @@ class RealmExportTest(ZulipTestCase):
         result = self.client_post("/json/export/realm")
         self.assert_json_error(
             result,
-            f"Please request a manual export from {settings.ZULIP_ADMINISTRATOR}.",
+            f"The export you requested is too large for automatic processing. Please request a manual export by contacting {settings.ZULIP_ADMINISTRATOR}.",
         )
 
     def test_get_users_export_consents(self) -> None:
@@ -375,11 +342,110 @@ class RealmExportTest(ZulipTestCase):
             do_change_user_setting(user, "allow_private_data_export", True, acting_user=None)
 
         # Verify export consents of users.
+        aaron.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        aaron.save()
+        do_change_user_setting(
+            aaron,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=aaron,
+        )
         result = self.client_get("/json/export/realm/consents")
         response_dict = self.assert_json_success(result)
         export_consents = response_dict["export_consents"]
         for export_consent in export_consents:
+            if export_consent["user_id"] == aaron.id:
+                self.assertEqual(
+                    export_consent["email_address_visibility"],
+                    UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+                )
             if export_consent["user_id"] in [hamlet.id, aaron.id]:
                 self.assertTrue(export_consent["consented"])
                 continue
             self.assertFalse(export_consent["consented"])
+
+    PUBLIC_EXPORT_TYPE: RealmExportSlug = "public"
+    FULL_WITH_CONSENT_EXPORT_TYPE: RealmExportSlug = "full_with_consent"
+    FULL_WITHOUT_CONSENT_EXPORT_TYPE: RealmExportSlug = "full_without_consent"
+
+    def check_success_realm_export(
+        self, acting_user: UserProfile, export_type: RealmExportSlug
+    ) -> None:
+        expected_realm_export_type = RealmExport.EXPORT_TYPES[export_type]
+        with patch("zerver.views.realm_export.queue_event_on_commit") as mock_event_on_commit:
+            result = self.client_post(
+                "/json/export/realm",
+                {
+                    "export_type": export_type,
+                },
+            )
+        self.assert_json_success(result)
+        response = orjson.loads(result.content)
+        realm_export_id = response["id"]
+        expected_event = {
+            "type": "realm_export",
+            "user_profile_id": acting_user.id,
+            "realm_export_id": realm_export_id,
+        }
+        mock_event_on_commit.assert_called_once_with("deferred_work", expected_event)
+        realm_export = RealmExport.objects.get(id=realm_export_id)
+        self.assertEqual(realm_export.type, expected_realm_export_type)
+
+    def test_allow_export_with_no_usable_user_accounts(self) -> None:
+        """
+        Generating export with no usable accounts should be allowed.
+        """
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        # For standard export, this means no one consented to their
+        # private data being shared.
+        UserProfile.objects.filter(
+            role=UserProfile.ROLE_REALM_OWNER,
+            realm=admin.realm,
+        ).update(
+            allow_private_data_export=False,
+        )
+        self.check_success_realm_export(admin, self.FULL_WITH_CONSENT_EXPORT_TYPE)
+
+        # For public export, this means everyone has set their email
+        # address visibility policy to nobody.
+        UserProfile.objects.filter(
+            role=UserProfile.ROLE_REALM_OWNER,
+            realm=admin.realm,
+        ).update(
+            email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+        )
+
+        self.check_success_realm_export(admin, self.PUBLIC_EXPORT_TYPE)
+
+    def test_full_without_consent_export_requires_org_permission(self) -> None:
+        admin = self.example_user("iago")
+        owner = self.example_user("desdemona")
+        self.login_user(admin)
+
+        admin.realm.owner_full_content_access = False
+        admin.realm.save(update_fields=["owner_full_content_access"])
+        result = self.client_post(
+            "/json/export/realm",
+            {
+                "export_type": self.FULL_WITHOUT_CONSENT_EXPORT_TYPE,
+            },
+        )
+        self.assert_json_error(
+            result,
+            "Exports of all public and private data are not enabled for this organization.",
+        )
+
+        admin.realm.owner_full_content_access = True
+        admin.realm.save(update_fields=["owner_full_content_access"])
+        result = self.client_post(
+            "/json/export/realm",
+            {
+                "export_type": self.FULL_WITHOUT_CONSENT_EXPORT_TYPE,
+            },
+        )
+        self.assert_json_error(result, "Must be an organization owner")
+
+        self.login_user(owner)
+        self.check_success_realm_export(owner, self.FULL_WITHOUT_CONSENT_EXPORT_TYPE)

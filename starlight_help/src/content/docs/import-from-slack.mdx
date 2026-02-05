@@ -28,8 +28,11 @@ following steps, which are described in more detail below:
   1. [Export your Slack data](#export-your-slack-data).
   1. [Import your Slack data into Zulip](#import-your-data-into-zulip).
   1. [Clean up](#clean-up-after-the-slack-export) after the Slack export.
-  1. [Get your organization started with Zulip](#get-your-organization-started-with-zulip)!
+  1. [Decide how users will log in](#decide-how-users-will-log-in)!
 </Steps>
+
+Be sure to check out the [guide on moving from Slack](/help/moving-from-slack) for
+a walkthrough of the transition process.
 
 ## Import your organization from Slack into Zulip
 
@@ -72,17 +75,18 @@ in order to export direct message data.
      workspace. If you are one, the Slack web application will display
      that in your profile, in a banner covering the bottom of your
      avatar.
-  1. [Create a new Slack app](https://api.slack.com/apps). Choose the "From
-     scratch" creation option.
+  1. [Create a new Slack app](https://api.slack.com/apps). Choose the **From
+     scratch** creation option.
   1. [Create a
-     bot user](https://api.slack.com/authentication/basics#scopes),
+     bot user](https://docs.slack.dev/app-management/quickstart-app-settings/#creating),
      following the instructions to add the following OAuth scopes to your bot:
      * `emoji:read`
      * `users:read`
      * `users:read.email`
      * `team:read`
-  1. [Install your new app](https://api.slack.com/authentication/basics#installing)
-     to your Slack workspace.
+  1. In **OAuth & Permissions**, under **OAuth Tokens**, click **Install to
+     Workspace**. Grant the app permission to access your workspace by
+     clicking **Allow** when prompted.
   1. You will immediately see a **Bot User OAuth Token**, which is a long
      string of numbers and characters starting with `xoxb-`. Copy this token. It
      grants access to download user and emoji data from your Slack workspace.
@@ -98,7 +102,30 @@ in order to export direct message data.
 <ImportYourDataIntoZulip />
 
 <Tabs>
-  <TabItem label="Zulip Cloud">
+  <TabItem label="Zulip Cloud (self-serve)">
+    <Steps>
+      1. If you've already created an organization at the subdomain you plan to
+         use, email [support@zulip.com](mailto:support@zulip.com) to get it
+         deleted, so that you can start the import process.
+      1. Fill out the information to [create a new Zulip Cloud
+         organization](https://zulip.com/new/). Under **Import chat history?**,
+         select **Import from Slack**.
+      1. Click **Complete registration** in the confirmation email you received.
+      1. Enter your Slack **Bot User OAuth Token**, which will be a long
+         string of numbers and characters starting with `xoxb-`, and click
+         **Submit**.
+      1. Click **Start upload** to upload the **exported data** `.zip` file
+         from your Slack workspace.
+      1. Configure **Who will be allowed to see other users' email addresses?**,
+         and click **Start import**. The import may take some time to complete.
+      1. If you're using a different registration email from your Slack account,
+         select your Slack account from the dropdown. If you don't have an
+         account in the imported workspace, you can create a new Zulip account.
+      1. Set a password for your Zulip account, and click **Submit**.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Zulip Cloud (via support)">
     <ImportIntoAZulipCloudOrganization />
 
     <Steps>
@@ -109,7 +136,7 @@ in order to export direct message data.
     <ImportZulipCloudOrganizationWarning />
   </TabItem>
 
-  <TabItem label="Self hosting">
+  <TabItem label="Self-hosted">
     <ImportIntoASelfHostedServerDescription />
 
     <FlattenedSteps>
@@ -176,15 +203,6 @@ delete [the Slack app](https://api.slack.com/apps) that you created in order to
 [export your Slack data](#export-your-slack-data).  This will prevent the OAuth
 token from being used to access your Slack workspace in the future.
 
-## Get your organization started with Zulip
-
-<ImportGetYourOrganizationStarted />
-
-<ZulipTip>
-  Zulip's [Slack-compatible incoming webhook](/integrations/doc/slack_incoming)
-  makes it easy to migrate integrations.
-</ZulipTip>
-
 ## Decide how users will log in
 
 <ImportHowUsersWillLogIn>
@@ -195,9 +213,12 @@ token from being used to access your Slack workspace in the future.
   ### Manual password resets
 </ImportHowUsersWillLogIn>
 
+To prepare your organization for transitioning to Zulip, follow the [guide on
+moving from Slack](/help/moving-from-slack).
+
 ## Related articles
 
 * [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
-* [Moving to Zulip](/help/moving-to-zulip)
-* [Slack-compatible incoming webhook](/integrations/doc/slack_incoming)
+* [Moving from Slack](/help/moving-from-slack)
+* [Slack-compatible incoming webhook](/integrations/slack_incoming)
 * [Getting started with Zulip](/help/getting-started-with-zulip)

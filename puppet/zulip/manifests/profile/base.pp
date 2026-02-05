@@ -81,14 +81,14 @@ class zulip::profile::base {
     links  => follow,
   }
   file { ['/etc/zulip/zulip.conf', '/etc/zulip/settings.py']:
-    ensure  => file,
+    ensure  => present,
     require => File['/etc/zulip'],
     mode    => '0644',
     owner   => 'zulip',
     group   => 'zulip',
   }
   file { '/etc/zulip/zulip-secrets.conf':
-    ensure  => file,
+    ensure  => present,
     require => File['/etc/zulip'],
     mode    => '0640',
     owner   => 'zulip',

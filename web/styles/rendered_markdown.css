@@ -1,3 +1,8 @@
+/* We have Unicode list-style-type values below.  @charset is a
+   special directive which webpack will relocate to the first bytes of
+   the generated output bundle, so browsers decode the bytes correctly. */
+@charset "UTF-8";
+
 /* We use a custom counter here for Safari to
    get better control of its counter positioning.
    Because Safari does not recognize `content`
@@ -209,11 +214,8 @@
     & table {
         padding-right: 10px;
         margin: 0 5px var(--markdown-interelement-space-px);
-        width: 99%;
-        display: block;
         max-width: fit-content;
         overflow-x: auto;
-        white-space: nowrap;
         border-collapse: collapse;
     }
 
@@ -223,7 +225,7 @@
 
     & tr {
         display: table-row;
-        vertical-align: inherit;
+        vertical-align: top;
     }
 
     & tr th {
@@ -252,6 +254,15 @@
            this vertical offset value works without adjustment for
            oversize emoji blocks. */
         vertical-align: var(--line-fitted-vertical-align-offset-em);
+    }
+
+    /* We double the size of emoji on emoji-only messages. As there
+       is by definition no adjacent text in these messages, there is
+       no need to adjust the `margin` or `vertical-align` properties
+       declared above. */
+    .emoji-only .emoji {
+        height: calc(var(--length-line-oversize-block) * 2);
+        width: calc(var(--length-line-oversize-block) * 2);
     }
 
     /* Mentions and alert words */
@@ -504,7 +515,22 @@
         font-weight: bold;
     }
 
+    .message-media-inline-image:not(.message-media-gallery-image) {
+        .media-anchor-element {
+            /* We want the image to behave as inline, which the
+               .message-media-inline-image will ensure, but in
+               order to keep inline images from touching each
+               other when they flow over separate lines, we
+               introduce top/bottom margins of 3px--a value
+               derived from the border around legacy images and
+               images presented in galleries. */
+            display: inline-block;
+            margin: 3px 0;
+        }
+    }
+
     .twitter-image,
+    .message-media-gallery-image,
     .message-media-preview-image,
     .message-media-preview-video {
         /* Set a background for the image; the background will be visible
@@ -568,6 +594,10 @@
         img.image-loading-placeholder {
             content: var(--svg-url-thumbnail-loader);
         }
+    }
+
+    .inline-image {
+        display: inline;
     }
 
     .twitter-tweet {
@@ -973,8 +1003,8 @@
 }
 
 /* Both the horizontal scrollbar in <pre/> as well as
-   vertical scrollbar in the <textarea/> is styled similarly. */
-.message_edit_form textarea,
+   vertical scrollbar in the view source <textarea/> is styled similarly. */
+.message_edit_form textarea:read-only,
 .rendered_markdown pre {
     /* Ensure the horizontal scrollbar is visible on Mac */
     &::-webkit-scrollbar {
@@ -1017,4 +1047,12 @@
         top: -1px;
         padding-left: 0.3em;
     }
+}
+
+/* This is required to align the time-example output in the "?" menu. */
+#markdown-instructions p:has(time) {
+    display: flex;
+    align-items: center;
+    margin: calc(var(--markdown-interelement-space-px) / 2) 0;
+    padding: calc(var(--message-box-link-focus-ring-block-padding) / 2) 0;
 }

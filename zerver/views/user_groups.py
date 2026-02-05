@@ -69,7 +69,9 @@ def add_user_group(
     subgroups: Json[list[int]] | None = None,
 ) -> HttpResponse:
     user_profile.realm.ensure_not_on_limited_plan()
-    user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
+    user_profiles = user_ids_to_users(
+        members, user_profile.realm, allow_deactivated=False, allow_bots=True
+    )
     name = check_user_group_name(name)
 
     group_settings_map = {}
@@ -356,7 +358,9 @@ def add_members_to_group_backend(
             allow_deactivated=True,
         )
 
-    member_users = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
+    member_users = user_ids_to_users(
+        members, user_profile.realm, allow_deactivated=False, allow_bots=True
+    )
     existing_member_ids = set(
         get_direct_memberships_of_users(user_group.usergroup_ptr, member_users)
     )
@@ -386,7 +390,9 @@ def remove_members_from_group_backend(
     user_group_id: int,
     members: list[int],
 ) -> HttpResponse:
-    user_profiles = user_ids_to_users(members, user_profile.realm, allow_deactivated=False)
+    user_profiles = user_ids_to_users(
+        members, user_profile.realm, allow_deactivated=False, allow_bots=True
+    )
     if len(members) == 1 and user_profile.id == members[0]:
         try:
             user_group = access_user_group_for_update(
@@ -540,7 +546,7 @@ def get_is_user_group_member(
     user_id: PathOnly[Json[int]],
 ) -> HttpResponse:
     user_group = access_user_group_to_read_membership(user_group_id, user_profile.realm)
-    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+    target_user = access_user_by_id(user_profile, user_id, allow_bots=True, for_admin=False)
 
     return json_success(
         request,

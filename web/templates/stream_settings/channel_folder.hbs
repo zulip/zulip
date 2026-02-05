@@ -1,0 +1,31 @@
+<div class="channel-folder-subsection">
+    <div class="input-group channel-folder-container">
+        {{!-- This is a modified version of dropdown_widget_with_label.hbs
+        component so that we can show dropdown button and button to create
+        a new folder on same line without having to add much CSS with
+        hardcoded margin and padding values. --}}
+        <label class="settings-field-label" for="{{channel_folder_widget_name}}_widget">
+            {{t "Channel folder"}}
+            {{> ../help_link_widget link="/help/channel-folders" }}
+        </label>
+        <span class="prop-element hide" id="id_{{channel_folder_widget_name}}" data-setting-widget-type="dropdown-list-widget" data-setting-value-type="number"></span>
+        <div class="dropdown_widget_with_label_wrapper channel-folder-widget-container">
+            {{> ../dropdown_widget widget_name=channel_folder_widget_name}}
+
+            {{#if is_admin}}
+                {{> ../components/action_button
+                  label=(t "Create new folder")
+                  variant="subtle"
+                  intent="neutral"
+                  type="button"
+                  custom_classes="create-channel-folder-button"
+                  }}
+            {{/if}}
+        </div>
+    </div>
+
+    <span class="settings-field-label no-folders-configured-message">
+        {{t "There are no channel folders configured in this organization."}}
+        {{> ../help_link_widget link="/help/channel-folders" }}
+    </span>
+</div>

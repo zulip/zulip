@@ -17,6 +17,7 @@ import * as narrow_title from "./narrow_title.ts";
 import * as overlays from "./overlays.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
+import * as popup_banners from "./popup_banners.ts";
 import * as resize from "./resize.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_list from "./stream_list.ts";
@@ -114,6 +115,7 @@ export function show(opts: {
     compose_recipient.handle_middle_pane_transition();
     opts.complete_rerender(true);
     compose_actions.on_show_navigation_view();
+    popup_banners.close_found_missing_unreads_banner();
 
     // This has to happen after resetting the current narrow filter, so
     // that the buddy list is rendered with the correct narrow state.
@@ -150,14 +152,31 @@ export function hide(opts: {$view: JQuery; set_visible: (value: boolean) => void
 }
 
 export function is_in_focus(): boolean {
+    let can_current_view_steal_focus = true;
+    const focused_element = document.activeElement;
+    if (
+        focused_element instanceof HTMLElement &&
+        // Pill input elements.
+        (focused_element.isContentEditable ||
+            // `<input>` elements.
+            focused_element.classList.contains("input-element")) &&
+        // The input element is outside the current view.
+        // We already check for compose box via compose_state.composing().
+        focused_element.closest(".app .column-middle") === null
+    ) {
+        // If the user is focused on an input element
+        // and it is not handled by current view,
+        // then we should not steal focus from them.
+        can_current_view_steal_focus = false;
+    }
+
     return (
         !compose_state.composing() &&
         !popovers.any_active() &&
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
         !overlays.any_active() &&
         !modals.any_active_or_animating() &&
-        !$(".input-element:not(#recent_view_search):not(#inbox-search)").is(":focus") &&
-        !$("#search_query").is(":focus") &&
+        can_current_view_steal_focus &&
         !$(".navbar-item").is(":focus")
     );
 }

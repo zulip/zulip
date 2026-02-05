@@ -106,7 +106,7 @@ def verify_fixtures_are_sorted(names: list[str]) -> None:
             raise Exception(
                 f"""
                 Please keep your fixtures in order within
-                your events.js file.  The following
+                your events.cjs file.  The following
                 key is out of order
 
                 {names[i]}

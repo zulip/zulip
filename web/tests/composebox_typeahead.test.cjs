@@ -16,6 +16,10 @@ let autosize_called;
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
+const message_lists = mock_esm("../src/message_lists");
+const pm_conversations = mock_esm("../src/pm_conversations", {
+    is_partner: () => false,
+});
 const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea() {
         autosize_called = true;
@@ -45,7 +49,7 @@ set_global("setTimeout", (f, time) => {
 });
 set_global("document", "document-stub");
 
-const typeahead = zrequire("../shared/src/typeahead");
+const typeahead = zrequire("typeahead");
 const stream_topic_history = zrequire("stream_topic_history");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
@@ -55,6 +59,7 @@ const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const peer_data = zrequire("peer_data");
 const user_groups = zrequire("user_groups");
+// const pm_conversations = zrequire("pm_conversations");
 const user_pill = zrequire("user_pill");
 const stream_data = zrequire("stream_data");
 const stream_list_sort = zrequire("stream_list_sort");
@@ -133,15 +138,18 @@ run_test("verify wildcard mentions typeahead for stream message", () => {
     assert.equal(mention_topic.full_name, "topic");
 
     assert.equal(mention_all.special_item_text, "all");
-    assert.equal(mention_all.secondary_text, "translated: Notify channel");
+    assert.equal(mention_all.secondary_text, "translated: Notify all channel subscribers");
     assert.equal(mention_everyone.special_item_text, "everyone");
-    assert.equal(mention_everyone.secondary_text, "translated: Notify channel");
+    assert.equal(mention_everyone.secondary_text, "translated: Notify all channel subscribers");
     assert.equal(mention_stream.special_item_text, "stream");
-    assert.equal(mention_stream.secondary_text, "translated: Notify channel");
+    assert.equal(mention_stream.secondary_text, "translated: Notify all channel subscribers");
     assert.equal(mention_channel.special_item_text, "channel");
-    assert.equal(mention_channel.secondary_text, "translated: Notify channel");
+    assert.equal(mention_channel.secondary_text, "translated: Notify all channel subscribers");
     assert.equal(mention_topic.special_item_text, "topic");
-    assert.equal(mention_topic.secondary_text, "translated: Notify topic");
+    assert.equal(
+        mention_topic.secondary_text,
+        "translated: Notify participants in this conversation",
+    );
 
     compose_validate.stream_wildcard_mention_allowed = () => false;
     compose_validate.topic_wildcard_mention_allowed = () => true;
@@ -250,7 +258,7 @@ const emojis_by_name = new Map(
 const me_command = {
     name: "me",
     aliases: "",
-    text: "translated: /me",
+    text: "/me",
     placeholder: "translated: is …",
     info: "translated: Action message",
 };
@@ -259,13 +267,13 @@ const me_command_item = slash_item(me_command);
 const my_command_item = slash_item({
     name: "my",
     aliases: "",
-    text: "translated: /my (Test)",
+    text: "/my (Test)",
 });
 
 const dark_command = {
     name: "dark",
     aliases: "night",
-    text: "translated: /dark",
+    text: "/dark",
     info: "translated: Switch to the dark theme",
 };
 const dark_command_item = slash_item(dark_command);
@@ -273,7 +281,7 @@ const dark_command_item = slash_item(dark_command);
 const light_command = {
     name: "light",
     aliases: "day",
-    text: "translated: /light",
+    text: "/light",
     info: "translated: Switch to light theme",
 };
 const light_command_item = slash_item(light_command);
@@ -305,6 +313,12 @@ emoji.emojis_by_name.clear();
 for (const [key, val] of emojis_by_name.entries()) {
     emoji.emojis_by_name.set(key, val);
 }
+typeahead.set_frequently_used_emojis(
+    [emoji_thumbs_up.emoji_code, emoji_heart.emoji_code].map((emoji_code) => ({
+        emoji_type: "unicode_emoji",
+        emoji_code,
+    })),
+);
 emoji_picker.rebuild_catalog();
 const emoji_list = composebox_typeahead.emoji_collection.map((emoji) => ({
     ...emoji,
@@ -453,7 +467,7 @@ const hamletcharacters = user_group_item(
         description: "Characters of Hamlet",
         members: new Set([100, 104]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
@@ -493,7 +507,7 @@ const call_center = user_group_item(
         description: "folks working in support",
         members: new Set([102]),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
@@ -511,9 +525,9 @@ const support = user_group_item(
         creator_id: null,
         date_created: 1596710000,
         description: "Support team",
-        members: new Set([]),
+        members: new Set(),
         is_system_group: false,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
@@ -532,7 +546,7 @@ const admins = user_group_item(
         description: "Administrators",
         members: new Set([102, 103]),
         is_system_group: true,
-        direct_subgroup_ids: new Set([]),
+        direct_subgroup_ids: new Set(),
         can_add_members_group: 2,
         can_join_group: 2,
         can_leave_group: 2,
@@ -570,6 +584,7 @@ const sweden_stream = stream_item({
     subscribed: true,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: admins.id,
     can_subscribe_group: support.id,
 });
 const denmark_stream = stream_item({
@@ -579,6 +594,7 @@ const denmark_stream = stream_item({
     subscribed: true,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: members.id,
     can_subscribe_group: support.id,
 });
 const netherland_stream = stream_item({
@@ -588,6 +604,7 @@ const netherland_stream = stream_item({
     subscribed: false,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: members.id,
     can_subscribe_group: support.id,
 });
 const mobile_stream = stream_item({
@@ -597,6 +614,7 @@ const mobile_stream = stream_item({
     subscribed: false,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: members.id,
     can_subscribe_group: support.id,
 });
 const mobile_team_stream = stream_item({
@@ -606,6 +624,7 @@ const mobile_team_stream = stream_item({
     subscribed: true,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: members.id,
     can_subscribe_group: support.id,
 });
 const broken_link_stream = stream_item({
@@ -615,6 +634,7 @@ const broken_link_stream = stream_item({
     subscribed: true,
     can_administer_channel_group: support.id,
     can_add_subscribers_group: support.id,
+    can_create_topic_group: members.id,
 });
 
 stream_data.add_sub_for_tests(sweden_stream);
@@ -1147,7 +1167,7 @@ test("content_typeahead_selected", ({override}) => {
 });
 
 function sorted_names_from(subs) {
-    return subs.map((sub) => sub.name).sort();
+    return subs.map((sub) => sub.name).toSorted();
 }
 
 const sweden_topics_to_show = [
@@ -1197,10 +1217,21 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         return html;
     });
     override(stream_topic_history_util, "get_server_history", noop);
+    override_rewire(ct, "max_num_items", 17);
 
     let topic_typeahead_called = false;
     let pm_recipient_typeahead_called = false;
     let compose_textarea_typeahead_called = false;
+    message_lists.current = {
+        data: {
+            participants: {
+                visible() {
+                    return new Set([104]);
+                },
+            },
+        },
+    };
+    override(pm_conversations, "get_partners", () => [100]);
     override(bootstrap_typeahead, "Typeahead", (input_element, options) => {
         switch (input_element.$element) {
             case $("input#stream_message_recipient_topic"): {
@@ -1210,32 +1241,66 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 });
 
                 compose_state.set_stream_id(sweden_stream.stream_id);
+                const lear_user_data = [
+                    {
+                        type: "user",
+                        user: {
+                            ...lear,
+                            name_with_diacritics_removed: "King Lear",
+                        },
+                    },
+                ];
+                const hamlet_user_data = [
+                    {
+                        type: "user",
+                        user: {
+                            ...hamlet,
+                            name_with_diacritics_removed: "King Hamlet",
+                        },
+                    },
+                ];
                 let actual_value = options.source();
                 // Topics should be sorted alphabetically, not by addition order.
                 let expected_value = sweden_topics_to_show;
+                assert.deepEqual(actual_value, expected_value);
+
+                let query = "lear";
+                actual_value = options.source(query);
+                expected_value = [...lear_user_data, ...sweden_topics_to_show];
+                assert.deepEqual(actual_value, expected_value);
+
+                query = "haml";
+                actual_value = options.source(query);
+                expected_value = [...hamlet_user_data, ...sweden_topics_to_show];
                 assert.deepEqual(actual_value, expected_value);
 
                 // options.item_html()
                 options.query = "Kro";
                 actual_value = options.item_html("kronor");
                 expected_value =
-                    '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">kronor</strong></div>\n';
+                    '<div class="typeahead-content">\n' +
+                    '    <div class="typeahead-text-container">\n' +
+                    '        <strong class="typeahead-strong-section">kronor</strong>    </div>\n' +
+                    "</div>\n";
                 assert.equal(actual_value, expected_value);
 
                 // Highlighted content should be escaped.
                 options.query = "<";
                 actual_value = options.item_html("<&>");
                 expected_value =
-                    '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">&lt;&amp;&gt;</strong></div>\n';
+                    '<div class="typeahead-content">\n' +
+                    '    <div class="typeahead-text-container">\n' +
+                    '        <strong class="typeahead-strong-section">&lt;&amp;&gt;</strong>    </div>\n' +
+                    "</div>\n";
                 assert.equal(actual_value, expected_value);
 
                 options.query = "even m";
                 actual_value = options.item_html("even more ice");
                 expected_value =
-                    '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">even more ice</strong></div>\n';
+                    '<div class="typeahead-content">\n' +
+                    '    <div class="typeahead-text-container">\n' +
+                    '        <strong class="typeahead-strong-section">even more ice</strong>    </div>\n' +
+                    "</div>\n";
                 assert.equal(actual_value, expected_value);
 
                 // options.sorter()
@@ -1243,7 +1308,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Notice that alphabetical sorting isn't managed by this sorter,
                 // it is a result of the topics already being sorted after adding
                 // them with add_topic().
-                let query = "furniture";
+                query = "furniture";
                 actual_value = options.sorter(["furniture"], query);
                 expected_value = ["furniture"];
                 assert.deepEqual(actual_value, expected_value);
@@ -1254,12 +1319,28 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 expected_value = ["ice", "even more ice", "more ice"];
                 assert.deepEqual(actual_value, expected_value);
 
+                // User dm suggestion is shown at last.
+                query = "hamlet";
+                actual_value = options.sorter(
+                    [...hamlet_user_data, "even more hamlet", "hamlet", "more hamlet"],
+                    query,
+                );
+                expected_value = ["hamlet", "even more hamlet", "more hamlet", ...hamlet_user_data];
+                assert.deepEqual(actual_value, expected_value);
+
                 // The sorter should return the query as the first element if there
-                // isn't a topic with such name.
+                // isn't a topic with such name only if user has permission to
+                // create new topics.
                 // This only happens if typeahead is providing other suggestions.
+                override(current_user, "user_id", 102);
                 query = "e"; // Letter present in "furniture" and "ice"
                 actual_value = options.sorter(["furniture", "ice"], query);
                 expected_value = ["e", "furniture", "ice"];
+                assert.deepEqual(actual_value, expected_value);
+
+                override(current_user, "user_id", 100);
+                actual_value = options.sorter(["furniture", "ice"], query);
+                expected_value = ["furniture", "ice"];
                 assert.deepEqual(actual_value, expected_value);
 
                 // Suggest the query if this query doesn't match any existing topic.
@@ -1460,10 +1541,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 ct.get_or_set_token_for_testing("othello");
                 actual_value = options.item_html(othello_item);
                 expected_value =
-                    `    <span class="zulip-icon zulip-icon-user-circle-offline user-circle-offline user-circle"></span>\n` +
-                    `    <img class="typeahead-image" src="/avatar/${othello.user_id}" />\n` +
-                    '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">Othello, the Moor of Venice</strong>    <span class="autocomplete_secondary">othello@zulip.com</span>' +
+                    '<div class="typeahead-content">\n' +
+                    '        <div class="typeahead-image">\n' +
+                    `            <img class="typeahead-image-avatar" src="/avatar/${othello.user_id}" />\n` +
+                    '            <span class="zulip-icon zulip-icon-user-circle-offline user-circle-offline user-circle"></span>\n' +
+                    "        </div>\n" +
+                    '    <div class="typeahead-text-container">\n' +
+                    '        <strong class="typeahead-strong-section">Othello, the Moor of Venice</strong>        <span class="autocomplete_secondary">othello@zulip.com</span>' +
+                    "    </div>\n" +
                     "</div>\n";
                 assert.equal(actual_value, expected_value);
                 // Reset the email such that this does not affect further tests.
@@ -1473,9 +1558,11 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 ct.get_or_set_token_for_testing("hamletcharacters");
                 actual_value = options.item_html(hamletcharacters);
                 expected_value =
-                    '    <i class="typeahead-image zulip-icon zulip-icon-user-group no-presence-circle" aria-hidden="true"></i>\n' +
-                    '<div class="typeahead-text-container">\n' +
-                    '    <strong class="typeahead-strong-section">hamletcharacters</strong>    <span class="autocomplete_secondary">Characters of Hamlet</span>' +
+                    '<div class="typeahead-content">\n' +
+                    '        <i class="typeahead-image zulip-icon zulip-icon-user-group" aria-hidden="true"></i>\n' +
+                    '        <div class="typeahead-text-container">\n' +
+                    '        <strong class="typeahead-strong-section">hamletcharacters</strong>        <span class="autocomplete_secondary">Characters of Hamlet</span>' +
+                    "    </div>\n" +
                     "</div>\n";
                 assert.equal(actual_value, expected_value);
 
@@ -2074,7 +2161,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("test no#o", []);
 
     const poll_command = {
-        text: "translated: /poll",
+        text: "/poll",
         name: "poll",
         info: "translated: Create a poll",
         aliases: "",
@@ -2082,7 +2169,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
         type: "slash",
     };
     const todo_command = {
-        text: "translated: /todo",
+        text: "/todo",
         name: "todo",
         info: "translated: Create a collaborative to-do list",
         aliases: "",

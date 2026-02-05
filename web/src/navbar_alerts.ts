@@ -1,4 +1,4 @@
-import {addDays} from "date-fns";
+import {addDays, differenceInCalendarDays} from "date-fns";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
@@ -6,6 +6,7 @@ import render_navbar_banners_testing_popover from "../templates/popovers/navbar_
 
 import * as banners from "./banners.ts";
 import type {AlertBanner} from "./banners.ts";
+import {is_browser_unsupported_old_version} from "./browser_support.ts";
 import type {ActionButton} from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
@@ -18,7 +19,6 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {current_user, realm} from "./state_data.ts";
-import * as time_zone_util from "./time_zone_util.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
@@ -113,7 +113,7 @@ export function maybe_toggle_empty_required_profile_fields_banner(): void {
         .find((f) => f.required && !f.value);
     if (empty_required_profile_fields_exist) {
         open_navbar_banner_and_resize(PROFILE_MISSING_REQUIRED_FIELDS_BANNER);
-    } else if ($banner && $banner.attr("data-process") === "profile-missing-required-fields") {
+    } else if ($banner?.attr("data-process") === "profile-missing-required-fields") {
         close_navbar_banner_and_resize($banner);
     }
 }
@@ -131,11 +131,7 @@ export function should_show_organization_profile_incomplete_banner(timestamp: nu
 
     const today = new Date(Date.now());
     const time = new Date(timestamp * 1000);
-    const days_old = time_zone_util.difference_in_calendar_days(
-        today,
-        time,
-        timerender.display_time_zone,
-    );
+    const days_old = differenceInCalendarDays(today, time, {in: timerender.display_tz});
 
     if (days_old >= 15) {
         return true;
@@ -158,7 +154,7 @@ export function is_organization_profile_incomplete(): boolean {
 
 export function toggle_organization_profile_incomplete_banner(): void {
     const $banner = $("#navbar_alerts_wrapper").find(".banner");
-    if ($banner && $banner.attr("data-process") === "organization-profile-incomplete") {
+    if ($banner?.attr("data-process") === "organization-profile-incomplete") {
         close_navbar_banner_and_resize($banner);
         return;
     }
@@ -191,17 +187,17 @@ const DESKTOP_NOTIFICATIONS_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "primary",
+            variant: "solid",
             label: $t({defaultMessage: "Enable notifications"}),
             custom_classes: "request-desktop-notifications",
         },
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Customize notifications"}),
             custom_classes: "customize-desktop-notifications",
         },
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Never ask on this computer"}),
             custom_classes: "reject-desktop-notifications",
         },
@@ -219,7 +215,7 @@ const CONFIGURE_OUTGOING_MAIL_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Configuration instructions"}),
             custom_classes: "configure-outgoing-mail-instructions",
         },
@@ -237,9 +233,27 @@ const INSECURE_DESKTOP_APP_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Download the latest version"}),
             custom_classes: "download-latest-zulip-version",
+        },
+    ],
+    close_button: true,
+    custom_classes: "navbar-alert-banner",
+};
+
+const UNSUPPORTED_BROWSER_BANNER: AlertBanner = {
+    process: "unsupported-browser",
+    intent: "warning",
+    label: $t({
+        defaultMessage:
+            "Because you're using an unsupported or very old browser, Zulip may not work as expected.",
+    }),
+    buttons: [
+        {
+            variant: "text",
+            label: $t({defaultMessage: "Learn more"}),
+            custom_classes: "unsupported-browser-learn-more",
         },
     ],
     close_button: true,
@@ -252,7 +266,7 @@ const PROFILE_MISSING_REQUIRED_FIELDS_BANNER: AlertBanner = {
     label: $t({defaultMessage: "Your profile is missing required fields."}),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Edit your profile"}),
             custom_classes: "edit-profile-required-fields",
         },
@@ -270,7 +284,7 @@ const ORGANIZATION_PROFILE_INCOMPLETE_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({
                 defaultMessage: "Edit profile",
             }),
@@ -289,12 +303,12 @@ const SERVER_NEEDS_UPGRADE_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "server-upgrade-learn-more",
         },
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Dismiss for a week"}),
             custom_classes: "server-upgrade-nag-dismiss",
         },
@@ -334,12 +348,12 @@ const bankruptcy_banner = (): AlertBanner => {
         label,
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 label: $t({defaultMessage: "Yes, please!"}),
                 custom_classes: "accept-bankruptcy",
             },
             {
-                attention: "borderless",
+                variant: "text",
                 label: $t({defaultMessage: "No, I'll catch up."}),
                 custom_classes: "banner-close-action",
             },
@@ -353,7 +367,7 @@ const demo_organization_deadline_banner = (): AlertBanner => {
     const days_remaining = demo_organizations_ui.get_demo_organization_deadline_days_remaining();
     let buttons: ActionButton[] = [
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "demo-organizations-help",
         },
@@ -362,7 +376,7 @@ const demo_organization_deadline_banner = (): AlertBanner => {
         buttons = [
             ...buttons,
             {
-                attention: "quiet",
+                variant: "subtle",
                 label: $t({defaultMessage: "Convert"}),
                 custom_classes: "convert-demo-organization",
             },
@@ -374,10 +388,10 @@ const demo_organization_deadline_banner = (): AlertBanner => {
         label: $t(
             {
                 defaultMessage:
-                    "This demo organization will be automatically deleted in {days_remaining} days, unless it's converted into a permanent organization.",
+                    "This demo organization will be automatically deleted in {N, plural, one {# day} other {# days}}, unless it's converted into a permanent organization.",
             },
             {
-                days_remaining,
+                N: days_remaining,
             },
         ),
         buttons,
@@ -402,12 +416,12 @@ const time_zone_update_offer_banner = (): AlertBanner => {
         ),
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 label: $t({defaultMessage: "Yes, please!"}),
                 custom_classes: "accept-update-time-zone",
             },
             {
-                attention: "borderless",
+                variant: "text",
                 label: $t({defaultMessage: "No, don't ask again."}),
                 custom_classes: "decline-time-zone-update",
             },
@@ -424,13 +438,15 @@ export function initialize(): void {
         open_navbar_banner_and_resize(demo_organization_deadline_banner());
     } else if (page_params.insecure_desktop_app) {
         open_navbar_banner_and_resize(INSECURE_DESKTOP_APP_BANNER);
+    } else if (is_browser_unsupported_old_version()) {
+        open_navbar_banner_and_resize(UNSUPPORTED_BROWSER_BANNER);
     } else if (should_offer_to_update_timezone()) {
         open_navbar_banner_and_resize(time_zone_update_offer_banner());
     } else if (realm.server_needs_upgrade) {
         if (should_show_server_upgrade_banner(ls)) {
             open_navbar_banner_and_resize(SERVER_NEEDS_UPGRADE_BANNER);
         }
-    } else if (page_params.warn_no_email === true && current_user.is_admin) {
+    } else if (page_params.warn_no_email && current_user.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
         open_navbar_banner_and_resize(CONFIGURE_OUTGOING_MAIL_BANNER);
@@ -522,7 +538,7 @@ export function initialize(): void {
     });
 
     $("#navbar_alerts_wrapper").on("click", ".download-latest-zulip-version", () => {
-        window.open("https://zulip.com/download", "_blank", "noopener,noreferrer");
+        window.open("https://zulip.com/apps/", "_blank", "noopener,noreferrer");
     });
 
     $("#navbar_alerts_wrapper").on("click", ".edit-profile-required-fields", () => {
@@ -539,6 +555,10 @@ export function initialize(): void {
             "_blank",
             "noopener,noreferrer",
         );
+    });
+
+    $("#navbar_alerts_wrapper").on("click", ".unsupported-browser-learn-more", () => {
+        window.open("/help/supported-browsers", "_blank", "noopener,noreferrer");
     });
 
     $("#navbar_alerts_wrapper").on(
@@ -655,6 +675,10 @@ export function initialize(): void {
                 });
                 $popper.on("click", ".insecure-desktop-app", () => {
                     open_navbar_banner_and_resize(INSECURE_DESKTOP_APP_BANNER);
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".unsupported-browser", () => {
+                    open_navbar_banner_and_resize(UNSUPPORTED_BROWSER_BANNER);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".profile-missing-required-fields", () => {

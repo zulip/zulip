@@ -1,3 +1,5 @@
+# See the Zulip URL spec at https://zulip.com/api/zulip-urls
+
 import urllib.parse
 from typing import Any
 from urllib.parse import urlsplit
@@ -117,6 +119,13 @@ def direct_message_group_narrow_url(
     # For group DMs with more than 2 users, we use other user IDs to create a slug.
     other_user_ids = [r["id"] for r in display_recipient if r["id"] != user.id]
     direct_message_slug = encode_user_ids(other_user_ids)
+
+    # `encode_user_ids` adds the decoration tag "-group" if length
+    # of the user_ids passed to it is 3 or more. `other_user_ids`
+    # has 1 less user ID, so we manually add the tag here.
+    if len(other_user_ids) == 2:
+        direct_message_slug += "-group"
+
     base_url = f"{realm.url}/#narrow/dm/"
     return base_url + direct_message_slug
 
@@ -151,8 +160,14 @@ def message_link_url(
 
 
 def stream_message_url(
-    realm: Realm, message: dict[str, Any], *, conversation_link: bool = False
+    realm: Realm | None,
+    message: dict[str, Any],
+    *,
+    conversation_link: bool = False,
+    include_base_url: bool = True,
 ) -> str:
+    if include_base_url and realm is None:
+        raise ValueError("realm is required when include_base_url=True")
     if conversation_link:
         with_or_near = "with"
     else:
@@ -164,18 +179,13 @@ def stream_message_url(
     encoded_topic_name = encode_hash_component(topic_name)
     encoded_stream = encode_channel(stream_id, stream_name)
 
-    parts = [
-        realm.url,
-        "#narrow",
-        "channel",
-        encoded_stream,
-        "topic",
-        encoded_topic_name,
-        with_or_near,
-        message_id,
-    ]
-    full_url = "/".join(parts)
-    return full_url
+    narrow_fragments = (
+        f"#narrow/channel/{encoded_stream}/topic/{encoded_topic_name}/{with_or_near}/{message_id}"
+    )
+    if include_base_url is True:
+        assert realm is not None
+        return f"{realm.url}/{narrow_fragments}"
+    return narrow_fragments
 
 
 def pm_message_url(

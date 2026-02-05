@@ -1,5 +1,4 @@
 import calendar
-import os
 import time
 from dataclasses import dataclass
 from urllib.parse import urlsplit
@@ -96,7 +95,6 @@ def build_page_params_for_home_page_load(
         bulk_message_deletion=True,
         user_avatar_url_field_optional=True,
         stream_typing_notifications=True,
-        user_settings_object=True,
         linkifier_url_template=True,
         user_list_incomplete=True,
         include_deactivated_groups=True,
@@ -108,7 +106,6 @@ def build_page_params_for_home_page_load(
     if user_profile is not None:
         client = RequestNotes.get_notes(request).client
         assert client is not None
-        partial_subscribers = os.environ.get("PARTIAL_SUBSCRIBERS") is not None
         state_data = do_events_register(
             user_profile,
             realm,
@@ -121,7 +118,7 @@ def build_page_params_for_home_page_load(
             client_capabilities=client_capabilities,
             narrow=narrow,
             include_streams=False,
-            include_subscribers="partial" if partial_subscribers else True,
+            include_subscribers="partial",
         )
         queue_id = state_data["queue_id"]
         default_language = state_data["user_settings"]["default_language"]
@@ -206,10 +203,11 @@ def build_page_params_for_home_page_load(
 
     page_params["translation_data"] = get_language_translation_data(request_language)
 
+    # This is used by `admin.ts` to display realm description for non-administrator
+    # logged-in users.
+    page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
+
     if user_profile is None:
-        # Get rendered version of realm description which is displayed in right
-        # sidebar for spectator.
-        page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
         page_params["language_cookie_name"] = settings.LANGUAGE_COOKIE_NAME
 
     return queue_id, page_params

@@ -5,10 +5,6 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class GitlabHookTests(WebhookTestCase):
-    CHANNEL_NAME = "gitlab"
-    URL_TEMPLATE = "/api/v1/external/gitlab?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "gitlab"
-
     def test_push_event_specified_topic(self) -> None:
         self.url = self.build_webhook_url("topic=Specific%20topic")
         expected_topic_name = "Specific topic"
@@ -19,6 +15,10 @@ class GitlabHookTests(WebhookTestCase):
         expected_topic_name = "my-awesome-project / tomek"
         expected_message = "Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/-/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 2 commits to branch tomek.\n\n* b ([66abd2da288](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n* c ([eb6ae1e591e](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9))"
         self.check_webhook("push_hook", expected_topic_name, expected_message)
+
+    def test_push_event_private_project_ignored(self) -> None:
+        self.url = self.build_webhook_url(ignore_private_projects="true")
+        self.check_webhook(fixture_name="push_hook", expect_noop=True)
 
     def test_push_local_branch_without_commits(self) -> None:
         expected_topic_name = "my-awesome-project / changes"
@@ -233,13 +233,13 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_note_merge_request_event_message(self) -> None:
         expected_topic_name = "testing-zulip-gitlab-integration / MR #1 add new-feature"
-        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/merge_requests/1#note_1406328457) on [MR #1](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/merge_requests/1):\n\n~~~ quote\nI am not sure if this new feature is even required or not.\n~~~"
+        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/merge_requests/1#note_1406328457):\n\n~~~ quote\nI am not sure if this new feature is even required or not.\n~~~"
 
         self.check_webhook("note_hook__merge_request_note", expected_topic_name, expected_message)
 
     def test_note_merge_request_event_message_without_merge_request_title(self) -> None:
         expected_topic_name = "testing-zulip-gitlab-integration / MR #1"
-        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/merge_requests/1#note_1406328457) on [MR #1](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/merge_requests/1):\n\n~~~ quote\nI am not sure if this new feature is even required or not.\n~~~"
+        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/merge_requests/1#note_1406328457):\n\n~~~ quote\nI am not sure if this new feature is even required or not.\n~~~"
         # To keep things as valid JSON.
         self.url = self.build_webhook_url(use_merge_request_title="false")
         self.check_webhook("note_hook__merge_request_note", expected_topic_name, expected_message)
@@ -253,19 +253,19 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_note_issue_event_message(self) -> None:
         expected_topic_name = "testing-zulip-gitlab-integration / issue #1 Add more lines"
-        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1#note_1406279810) on [issue #1](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1):\n\n~~~ quote\nThis is again a random comment.\n~~~"
+        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1#note_1406279810):\n\n~~~ quote\nThis is again a random comment.\n~~~"
 
         self.check_webhook("note_hook__issue_note", expected_topic_name, expected_message)
 
     def test_note_design_event_message(self) -> None:
         expected_topic_name = "testing-zulip-gitlab-integration / design Screenshot.png"
-        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1/designs/Screenshot.png#note_1458583152) on design [Screenshot.png](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1/designs/Screenshot.png):\n\n~~~ quote\nhello\n~~~"
+        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1/designs/Screenshot.png#note_1458583152):\n\n~~~ quote\nhello\n~~~"
 
         self.check_webhook("note_hook__design_note", expected_topic_name, expected_message)
 
     def test_note_confidential_issue_event_message(self) -> None:
         expected_subject = "testing-zulip-gitlab-integration / issue #1 Add more lines"
-        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1#note_1406130881) on [issue #1](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1):\n\n~~~ quote\nSome more comments\n~~~"
+        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1#note_1406130881):\n\n~~~ quote\nSome more comments\n~~~"
 
         self.check_webhook("note_hook__confidential_issue_note", expected_subject, expected_message)
 
@@ -285,13 +285,13 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_note_snippet_old_event_message(self) -> None:
         expected_topic_name = "my-awesome-project / snippet #2 test"
-        expected_message = "Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) on [snippet #2](https://gitlab.com/tomaszkolek0/my-awesome-project/-/snippets/2):\n\n~~~ quote\nNice snippet\n~~~"
+        expected_message = "Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058):\n\n~~~ quote\nNice snippet\n~~~"
 
         self.check_webhook("note_hook__snippet_note_old", expected_topic_name, expected_message)
 
     def test_note_snippet_event_message(self) -> None:
         expected_topic_name = "testing-zulip-gitlab-integration / snippet #2547713 a ver..."
-        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/snippets/2547713#note_1424268837) on [snippet #2547713](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/snippets/2547713):\n\n~~~ quote\nsome comment\n~~~"
+        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/snippets/2547713#note_1424268837):\n\n~~~ quote\nsome comment\n~~~"
 
         self.check_webhook("note_hook__snippet_note", expected_topic_name, expected_message)
 
@@ -424,6 +424,13 @@ A trivial change that should probably be ignored.
 
         self.check_webhook(
             "merge_request_hook__merge_request_merged", expected_topic_name, expected_message
+        )
+
+    def test_merge_request_merged_event_message_ignored(self) -> None:
+        self.url = self.build_webhook_url(ignore_private_projects="true")
+        self.check_webhook(
+            fixture_name="merge_request_hook__merge_request_merged",
+            expect_noop=True,
         )
 
     def test_wiki_page_opened_event_message(self) -> None:

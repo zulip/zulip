@@ -4,7 +4,6 @@ import type * as z from "zod/mini";
 
 import render_navigation_tour_video_modal from "../templates/navigation_tour_video_modal.hbs";
 
-import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -18,10 +17,17 @@ export type OnboardingStep = z.output<typeof onboarding_step_schema>;
 
 export const ONE_TIME_NOTICES_TO_DISPLAY = new Set<string>();
 
+const MAX_RETRIES = 5;
+
 export function post_onboarding_step_as_read(
     onboarding_step_name: string,
     schedule_navigation_tour_video_reminder_delay?: number,
+    attempt = 1,
 ): void {
+    if (attempt > MAX_RETRIES) {
+        return;
+    }
+
     const data: {onboarding_step: string; schedule_navigation_tour_video_reminder_delay?: number} =
         {
             onboarding_step: onboarding_step_name,
@@ -34,14 +40,23 @@ export function post_onboarding_step_as_read(
     void channel.post({
         url: "/json/users/me/onboarding_steps",
         data,
-        error(err) {
-            if (err.readyState !== 0) {
-                blueslip.error(`Failed to mark ${onboarding_step_name} as read.`, {
-                    readyState: err.readyState,
-                    status: err.status,
-                    body: err.responseText,
-                });
+        error(xhr) {
+            if (xhr.status === 400) {
+                // Bad request: Codepath calling this function supplied
+                // invalid 'onboarding_step_name' (almost negligible chance
+                // because it's not user input) - but no point of retrying
+                // in that case.
+                return;
             }
+
+            const retry_delay_secs = util.get_retry_backoff_seconds(xhr, attempt);
+            setTimeout(() => {
+                post_onboarding_step_as_read(
+                    onboarding_step_name,
+                    schedule_navigation_tour_video_reminder_delay,
+                    attempt + 1,
+                );
+            }, retry_delay_secs * 1000);
         },
     });
 }
@@ -69,7 +84,7 @@ function narrow_to_dm_with_welcome_bot_new_user(
             [
                 {
                     operator: "dm",
-                    operand: people.WELCOME_BOT.email,
+                    operand: [people.WELCOME_BOT.user_id],
                 },
             ],
             {trigger: "sidebar"},
@@ -81,19 +96,19 @@ function narrow_to_dm_with_welcome_bot_new_user(
 function show_navigation_tour_video(navigation_tour_video_url: string | null): void {
     if (ONE_TIME_NOTICES_TO_DISPLAY.has("navigation_tour_video")) {
         assert(navigation_tour_video_url !== null);
-        const html_body = render_navigation_tour_video_modal({
+        const modal_content_html = render_navigation_tour_video_modal({
             video_src: navigation_tour_video_url,
             poster_src: "/static/images/navigation-tour-video-thumbnail.png",
         });
         let watch_later_clicked = false;
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Welcome to Zulip!"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Welcome to Zulip!"}),
+            modal_content_html,
             on_click() {
                 // Do nothing
             },
-            html_submit_button: $t_html({defaultMessage: "Skip video — I'm familiar with Zulip"}),
-            html_exit_button: $t_html({defaultMessage: "Watch later"}),
+            modal_submit_button_text: $t({defaultMessage: "Skip video — I'm familiar with Zulip"}),
+            modal_exit_button_text: $t({defaultMessage: "Watch later"}),
             close_on_submit: true,
             id: "navigation-tour-video-modal",
             footer_minor_text: $t({defaultMessage: "Tip: You can watch this video without sound."}),
@@ -160,7 +175,7 @@ function show_navigation_tour_video(navigation_tour_video_url: string | null): v
             },
             on_hide() {
                 // `narrow_to_dm_with_welcome_bot_new_user` triggers a focus change from
-                // #compose_recipient_box to #compose-textarea (see `compose_actions.show_compose_box`
+                // #compose-channel-recipient to #compose-textarea (see `compose_actions.show_compose_box`
                 // with `opts.defer_focus = true`). We start initializing this modal while the
                 // focus transition is in progress, resulting in a flaky behaviour of the
                 // element that will be in focus when modal is closed.

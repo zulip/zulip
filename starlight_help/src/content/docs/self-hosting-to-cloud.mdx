@@ -1,0 +1,32 @@
+---
+title: Move from self-hosting to Zulip Cloud
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+If you no longer want to manage your own server, you can always move your
+organization to [Zulip Cloud](https://zulip.com/zulip-cloud/).
+
+## Move from self-hosting to Zulip Cloud
+
+<Steps>
+  1. [Export](/help/export-your-organization) your organization's data with user
+     consent, or follow [these instructions][data-export] to get a full export
+     without member consent.
+  1. Email [support@zulip.com](mailto:support@zulip.com) with the following
+     information:
+     * The subdomain you would like to use for your organization. Your Zulip chat will
+       be hosted at `<subdomain>.zulipchat.com`.
+     * Your **exported data** file (`.tar.gz` format).
+</Steps>
+
+## Related articles
+
+* [Export your organization](/help/export-your-organization)
+* [Full data export][data-export]
+* [Import organization into a self-hosted Zulip server][import-only]
+* [Move from Zulip Cloud to self-hosting](/help/cloud-to-self-hosting)
+
+[import-only]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#import-into-a-new-zulip-server
+
+[data-export]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#data-export

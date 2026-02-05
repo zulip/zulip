@@ -10,7 +10,7 @@ import * as popovers from "./popovers.ts";
 import * as search_pill from "./search_pill.ts";
 import type {SearchPillWidget} from "./search_pill.ts";
 import * as search_suggestion from "./search_suggestion.ts";
-import type {NarrowTerm} from "./state_data.ts";
+import type {NarrowCanonicalTerm, NarrowTerm} from "./state_data.ts";
 import * as util from "./util.ts";
 
 // Exported for unit testing
@@ -47,26 +47,29 @@ type NarrowSearchOptions = {
 
 type OnNarrowSearch = (terms: NarrowTerm[], options: NarrowSearchOptions) => void;
 
-function full_search_query_in_terms(): NarrowTerm[] {
+function full_search_query_in_terms(): NarrowCanonicalTerm[] | undefined {
     assert(search_pill_widget !== null);
-    return [
-        ...search_pill.get_current_search_pill_terms(search_pill_widget),
-        ...Filter.parse(get_search_bar_text(), true),
-    ];
+    const search_terms = convert_search_text_to_terms();
+
+    if (search_terms === undefined) {
+        return undefined;
+    }
+
+    return [...search_pill.get_current_search_pill_terms(search_pill_widget), ...search_terms];
 }
 
-function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarrowSearch}): string {
+function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarrowSearch}): void {
     if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
         // `updater` is also triggered when 'enter' is triggered
         // while using input tool
-        return get_search_bar_text();
+        return;
     }
 
     const terms = full_search_query_in_terms();
-    if (terms.length === 0) {
+    if (!terms || terms.length === 0) {
         exit_search({keep_search_narrow_open: true});
-        return "";
+        return;
     }
     // Reset the search bar to display as many pills as possible for `terms`.
     // We do this in case some of these terms haven't been pillified yet
@@ -74,7 +77,7 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     assert(search_pill_widget !== null);
     search_pill_widget.clear(true);
     search_pill.set_search_bar_contents(
-        terms,
+        terms.map((term) => Filter.convert_term_to_suggestion(term)),
         search_pill_widget,
         search_typeahead.shown,
         set_search_bar_text,
@@ -88,13 +91,33 @@ function narrow_or_search_for_term({on_narrow_search}: {on_narrow_search: OnNarr
     // Narrowing will have already put some terms in the search box,
     // so leave the current text in.
     $("#search_query").trigger("blur");
-    return get_search_bar_text();
+    return;
 }
 
 function focus_search_input_at_end(): void {
     $("#search_query").trigger("focus");
     // Move cursor to the end of the input text.
     window.getSelection()!.modify("move", "forward", "line");
+}
+
+function convert_search_text_to_terms(
+    shake_pill_if_invalid = true,
+): NarrowCanonicalTerm[] | undefined {
+    const text_terms = Filter.parse(get_search_bar_text());
+    const narrow_terms: NarrowCanonicalTerm[] = [];
+    for (const term of text_terms) {
+        const narrow_term = Filter.convert_suggestion_to_term(term);
+        if (narrow_term === undefined) {
+            if (shake_pill_if_invalid) {
+                // The shake animation will show if there is any invalid term in the,
+                // search bar, even if it's not what the user just typed or selected.
+                $("#search_query").addClass("shake");
+            }
+            return undefined;
+        }
+        narrow_terms.push(narrow_term);
+    }
+    return narrow_terms;
 }
 
 function narrow_to_search_contents_with_search_bar_open(): void {
@@ -105,10 +128,13 @@ function narrow_to_search_contents_with_search_bar_open(): void {
     if (text_terms.at(-1)?.operand === "") {
         return;
     }
-    if (!validate_text_terms()) {
+
+    let terms = convert_search_text_to_terms() ?? [];
+    terms = [...search_pill.get_current_search_pill_terms(search_pill_widget!), ...terms];
+    if (terms.length === 0) {
         return;
     }
-    const terms = full_search_query_in_terms();
+
     on_narrow_search(terms, {trigger: "search"});
 
     // We want to keep the search bar open here, not show the
@@ -121,17 +147,6 @@ function narrow_to_search_contents_with_search_bar_open(): void {
         search_typeahead.lookup(false);
         search_input_has_changed = true;
     }
-}
-
-function validate_text_terms(): boolean {
-    const text_terms = Filter.parse(get_search_bar_text());
-    // The shake animation will show if there is any invalid term in the,
-    // search bar, even if it's not what the user just typed or selected.
-    if (!text_terms.every((term) => Filter.is_valid_search_term(term))) {
-        $("#search_query").addClass("shake");
-        return false;
-    }
-    return true;
 }
 
 export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
@@ -158,10 +173,10 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     });
 
     // Data storage for the typeahead.
-    // This maps a search string to an object with a "description_html" field.
-    // (It's a bit of legacy that we have an object with only one important
-    // field.  There's also a "search_string" field on each element that actually
-    // just represents the key of the hash, so it's redundant.)
+    // TODO: This map has become very redundant now. We needed this earlier to
+    // to associate search string to its respective "description_html". This currently
+    // now just maps search string to "search_string". We should just remove this when
+    // we change Suggestion object to simple strings.
     let search_map = new Map<string, search_suggestion.Suggestion>();
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
@@ -305,7 +320,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
                 // from the typeahead. When that's the case, we don't want to call
                 // narrow_or_search_for_term which exits the search bar, since the user
                 // might have more terms to add still.
-                if (!validate_text_terms()) {
+                if (convert_search_text_to_terms() === undefined) {
                     return;
                 }
                 narrow_or_search_for_term({on_narrow_search});
@@ -388,7 +403,7 @@ function reset_searchbox(clear = false): void {
     search_input_has_changed = false;
     if (!clear) {
         search_pill.set_search_bar_contents(
-            narrow_state.search_terms(),
+            narrow_state.search_terms().map((term) => Filter.convert_term_to_suggestion(term)),
             search_pill_widget,
             search_typeahead.shown,
             set_search_bar_text,

@@ -15,16 +15,18 @@
         <div class="white-box">
             <div class="errorbox config-error">
                 <div class="errorcontent">
+                    {% block error_body %}
                     <p>
                         {% block error_content %}
                         {% endblock %}
                     </p>
 
-                    <p>After making your changes, remember to restart
-                    the Zulip server.</p>
-                    <p><a href=""> Refresh</a> to try again or <a href="{{ go_back_to_url }}">go back to {{ go_back_to_url_name }}</a>.</p>
-                </div>
+                    <p>After making your changes, remember to restart the Zulip server.</p>
 
+                    <p><a href="">Refresh</a> to try again or
+                        <a href="{{ go_back_to_url }}">go back to {{ go_back_to_url_name }}</a>.</p>
+                    {% endblock %}
+                </div>
             </div>
         </div>
     </div>

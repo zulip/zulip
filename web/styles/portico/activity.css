@@ -31,6 +31,15 @@
     }
 }
 
+.installation-activity-filter-container {
+    width: fit-content;
+    border-radius: 4px;
+    background-color: hsl(0deg 0% 92%);
+    border: 1px solid hsl(0deg 0% 68%);
+    padding: 0 8px;
+    margin: 8px;
+}
+
 .summary-table,
 .analytics-table {
     border: 1px solid hsl(0deg 0% 87%);
@@ -158,15 +167,20 @@ tr.admin td:first-child {
         }
     }
 
+    .demo-label,
     .cloud-label,
     .deactivated-label,
     .remote-label {
-        padding: 2px 8px;
+        padding: 4px 8px 0;
         font-size: 0.9em;
         font-weight: bold;
         color: hsl(0deg 0% 100%);
         text-shadow: 0 -1px 0 hsl(0deg 0% 0% / 25%);
         border-radius: 3px;
+    }
+
+    .demo-label {
+        background-color: hsl(0deg 0% 0%);
     }
 
     .cloud-label {
@@ -188,6 +202,25 @@ tr.admin td:first-child {
     .current-plan-data-missing,
     .stale-audit-log {
         color: hsl(2deg 64% 53%);
+    }
+}
+
+.realm-management-actions {
+    #new_subdomain {
+        width: 225px;
+    }
+
+    .support-add-redirect-url-section {
+        display: block;
+        padding: 6px 10px;
+
+        #add_redirect_url {
+            width: auto;
+        }
+
+        .support-redirect-url-label {
+            display: inline;
+        }
     }
 }
 
@@ -318,6 +351,12 @@ tr.admin td:first-child {
     text-overflow: ellipsis;
 }
 
+.user-information-section.user-deactivated,
+.user-realm-information-section.realm-deactivated,
+.support-query-result.realm-deactivated {
+    background-color: hsl(22deg 100% 92%);
+}
+
 .remote-support-query-result.remote-server-deactivated {
     background-color: hsl(2deg 64% 58%);
 
@@ -366,7 +405,7 @@ tr.admin td:first-child {
 }
 
 .scrub-realm-form {
-    padding-bottom: 10px;
+    padding-top: 10px;
 }
 
 .search-query.input-xxlarge {
@@ -468,6 +507,7 @@ tr.admin td:first-child {
     padding-bottom: 25px;
 }
 
+.deactivation-information-container,
 .activity-header-information,
 .push-notification-status,
 .realm-management-actions,
@@ -494,6 +534,11 @@ tr.admin td:first-child {
 .realm-management-actions {
     border: 2px solid hsl(186deg 76% 36%);
     background-color: hsl(188deg 35% 87%);
+}
+
+.deactivation-information-container {
+    border: 2px solid hsl(2deg 64% 58%);
+    background-color: hsl(23deg 100% 95%);
 }
 
 .next-plan-container,

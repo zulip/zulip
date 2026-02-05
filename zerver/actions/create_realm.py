@@ -37,7 +37,11 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.scheduled_jobs import ScheduledMessage
+from zerver.models.users import get_system_bot
 from zproject.backends import all_default_backend_names
+
+DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
 
 
 def do_change_realm_subdomain(
@@ -57,6 +61,7 @@ def do_change_realm_subdomain(
     """
     old_subdomain = realm.subdomain
     old_url = realm.url
+    was_demo_organization = realm.demo_organization_scheduled_deletion_date is not None
     # If the realm had been a demo organization scheduled for
     # deleting, clear that state.
     realm.demo_organization_scheduled_deletion_date = None
@@ -68,7 +73,13 @@ def do_change_realm_subdomain(
             event_type=AuditLogEventType.REALM_SUBDOMAIN_CHANGED,
             event_time=timezone_now(),
             acting_user=acting_user,
-            extra_data={"old_subdomain": old_subdomain, "new_subdomain": new_subdomain},
+            # Old RealmAuditLog entries for this used "old_subdomain" and
+            # "new_subdomain" keys to store this data.
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_subdomain,
+                RealmAuditLog.NEW_VALUE: new_subdomain,
+                "was_demo_organization": was_demo_organization,
+            },
         )
 
         # If a realm if being renamed multiple times, we should find all the placeholder
@@ -76,6 +87,20 @@ def do_change_realm_subdomain(
         placeholder_realms = Realm.objects.filter(deactivated_redirect=old_url, deactivated=True)
         for placeholder_realm in placeholder_realms:
             do_add_deactivated_redirect(placeholder_realm, realm.url)
+
+        # If a realm was a demo organization delete any scheduled messages about the
+        # automatic deletion of the demo organization.
+        if was_demo_organization:
+            sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+            scheduled_notification_bot_messages = ScheduledMessage.objects.filter(
+                sender=sender,
+                delivery_type=ScheduledMessage.SEND_LATER,
+                realm=realm,
+                delivered=False,
+                failed=False,
+            )
+            for scheduled_message in scheduled_notification_bot_messages:
+                scheduled_message.delete()
 
     # The below block isn't executed in a transaction with the earlier code due to
     # the functions called below being complex and potentially sending events,
@@ -142,6 +167,25 @@ def setup_realm_internal_bots(realm: Realm) -> None:
         bot.save()
 
 
+def get_email_address_visibility_default(org_type: int | None = None) -> int:
+    # For the majority of organization types, the default email address visibility
+    # setting for new users should initially be admins only.
+    realm_default_email_address_visibility = DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM
+    if org_type in (
+        Realm.ORG_TYPES["education_nonprofit"]["id"],
+        Realm.ORG_TYPES["education"]["id"],
+    ):
+        # Email address of users should be initially visible to moderators and admins.
+        realm_default_email_address_visibility = (
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS
+        )
+    elif org_type == Realm.ORG_TYPES["business"]["id"]:
+        # Email address of users can be visible to all users for business organizations.
+        realm_default_email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+
+    return realm_default_email_address_visibility
+
+
 def do_create_realm(
     string_id: str,
     name: str,
@@ -196,6 +240,12 @@ def do_create_realm(
         assert not settings.PRODUCTION
         kwargs["date_created"] = date_created
 
+    if is_demo_organization:
+        # To enable creating demo organizations, a deadline of the number
+        # of days after creation that a demo organization should be deleted
+        # needs to be set on the server.
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+
     # Generally, closed organizations like companies want read
     # receipts, whereas it's unclear what an open organization's
     # preferences will be. We enable the setting by default only for
@@ -215,6 +265,7 @@ def do_create_realm(
     with transaction.atomic(durable=True):
         realm = Realm(string_id=string_id, name=name, **kwargs)
         if is_demo_organization:
+            assert settings.DEMO_ORG_DEADLINE_DAYS is not None
             realm.demo_organization_scheduled_deletion_date = realm.date_created + timedelta(
                 days=settings.DEMO_ORG_DEADLINE_DAYS
             )
@@ -239,25 +290,9 @@ def do_create_realm(
             },
         )
 
-        # For the majority of organization types, the default email address visibility
-        # setting for new users should initially be admins only.
-        realm_default_email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
-        if realm.org_type in (
-            Realm.ORG_TYPES["education_nonprofit"]["id"],
-            Realm.ORG_TYPES["education"]["id"],
-        ):
-            # Email address of users should be initially visible to moderators and admins.
-            realm_default_email_address_visibility = (
-                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS
-            )
-        if realm.org_type == Realm.ORG_TYPES["business"]["id"]:
-            # Email address of users can be visible to all users for business organizations.
-            realm_default_email_address_visibility = (
-                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-            )
-
         RealmUserDefault.objects.create(
-            realm=realm, email_address_visibility=realm_default_email_address_visibility
+            realm=realm,
+            email_address_visibility=get_email_address_visibility_default(realm.org_type),
         )
 
         create_system_user_groups_for_realm(realm)
@@ -359,7 +394,7 @@ def do_create_realm(
         from corporate.lib.stripe import RealmBillingSession
 
         billing_session = RealmBillingSession(user=None, realm=realm)
-        billing_session.send_realm_created_internal_admin_message()
+        billing_session.send_realm_created_internal_admin_message(is_demo_organization)
 
     setup_realm_internal_bots(realm)
     return realm

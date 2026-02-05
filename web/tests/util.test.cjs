@@ -337,6 +337,11 @@ run_test("filter_by_word_prefix_match", () => {
     assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /\s/), []);
 });
 
+run_test("prefix_match", () => {
+    assert.ok(util.prefix_match({value: "VIEWS", search_term: "V"}));
+    assert.ok(!util.prefix_match({value: "VIEWS", search_term: "I"}));
+});
+
 run_test("get_string_diff", () => {
     assert.deepEqual(
         util.get_string_diff("#ann is for updates", "#**announce** is for updates"),
@@ -368,10 +373,6 @@ run_test("format_array_as_list", () => {
         util.format_array_as_list(array, "long", "conjunction"),
         "apple, banana, and orange",
     );
-    assert.equal(
-        util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-        '<b class="highlighted-element">apple</b>, <b class="highlighted-element">banana</b>, and <b class="highlighted-element">orange</b>',
-    );
 
     // Conjunction format
     assert.equal(
@@ -389,10 +390,6 @@ run_test("format_array_as_list", () => {
         assert.equal(
             util.format_array_as_list(array, "long", "conjunction"),
             "apple, banana, orange",
-        );
-        assert.equal(
-            util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-            '<b class="highlighted-element">apple</b>, <b class="highlighted-element">banana</b>, <b class="highlighted-element">orange</b>',
         );
 
         assert.equal(
@@ -506,10 +503,10 @@ run_test("compare_a_b", () => {
     };
     const unsorted = [user2, user1, user4, user3];
 
-    const sorted_by_id = [...unsorted].sort((a, b) => util.compare_a_b(a.id, b.id));
+    const sorted_by_id = unsorted.toSorted((a, b) => util.compare_a_b(a.id, b.id));
     assert.deepEqual(sorted_by_id, [user1, user2, user3, user4]);
 
-    const sorted_by_name = [...unsorted].sort((a, b) => util.compare_a_b(a.name, b.name));
+    const sorted_by_name = unsorted.toSorted((a, b) => util.compare_a_b(a.name, b.name));
     assert.deepEqual(sorted_by_name, [user2, user4, user3, user1]);
 });
 
@@ -599,4 +596,64 @@ run_test("sha256_hash", async ({override}) => {
     override(window, "isSecureContext", true);
     hash = await util.sha256_hash(data);
     assert.equal(hash, expected_hash);
+});
+
+run_test("call_function_periodically", () => {
+    let num_set_timeout_calls = 0;
+    let num_callback_calls = 0;
+
+    set_global("setTimeout", (callbacK_function, delay) => {
+        assert.equal(delay, 42);
+
+        num_set_timeout_calls += 1;
+        if (num_set_timeout_calls === 100) {
+            return;
+        }
+        callbacK_function();
+    });
+
+    function callback_func() {
+        num_callback_calls += 1;
+    }
+
+    util.call_function_periodically(callback_func, 42);
+    assert.equal(num_set_timeout_calls, 100);
+    assert.equal(num_callback_calls, 99);
+});
+
+run_test("unique_array_insert", () => {
+    const array = [{a: "foo", b: "bar"}];
+    util.unique_array_insert(array, {c: "beep", d: "boop"});
+    assert.deepEqual(array, [
+        {a: "foo", b: "bar"},
+        {c: "beep", d: "boop"},
+    ]);
+    util.unique_array_insert(array, {c: "beep", d: "boop"});
+    util.unique_array_insert(array, {a: "foo", b: "bar"});
+    assert.deepEqual(array, [
+        {a: "foo", b: "bar"},
+        {c: "beep", d: "boop"},
+    ]);
+});
+
+run_test("parse_youtube_start_time", () => {
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=120"), 120);
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID&t=150"),
+        150,
+    );
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID"),
+        undefined,
+    );
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1h"), 3600);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1h1m1s"), 3661);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1m1s"), 61);
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID&start=100"),
+        100,
+    );
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=1m"), 60);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=1h30m"), 5400);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=invalid"), undefined);
 });

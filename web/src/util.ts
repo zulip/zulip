@@ -1,4 +1,3 @@
-import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import * as z from "zod/mini";
 
@@ -105,7 +104,7 @@ export function normalize_recipients(recipients: string): string {
         .split(",")
         .map((s) => s.trim().toLowerCase())
         .filter((s) => s.length > 0)
-        .sort()
+        .toSorted()
         .join(",");
 }
 
@@ -272,16 +271,9 @@ export function is_channels_synonym(text: string): boolean {
     return text === "streams";
 }
 
-export function canonicalize_channel_synonyms(text: string): string {
-    if (is_channel_synonym(text.toLowerCase())) {
-        return "channel";
-    }
-    if (is_channels_synonym(text.toLowerCase())) {
-        return "channels";
-    }
-    return text;
+export function prefix_match({value, search_term}: {value: string; search_term: string}): boolean {
+    return filter_by_word_prefix_match([value], search_term, (s) => s).length === 1;
 }
-
 export function filter_by_word_prefix_match<T>(
     items: T[],
     search_term: string,
@@ -449,38 +441,6 @@ export function format_array_as_list_with_conjunction(
     return format_array_as_list(array, join_strategy, "conjunction");
 }
 
-export function format_array_as_list_with_highlighted_elements(
-    array: string[],
-    style: Intl.ListFormatStyle,
-    type: Intl.ListFormatType,
-): string {
-    // If Intl.ListFormat is not supported
-    if (Intl.ListFormat === undefined) {
-        return array
-            .map(
-                (item) =>
-                    `<b class="highlighted-element">${Handlebars.Utils.escapeExpression(item)}</b>`,
-            )
-            .join(", ");
-    }
-
-    // Use Intl.ListFormat to format the array as a Internationalized list.
-    const list_formatter = new Intl.ListFormat(user_settings.default_language, {style, type});
-
-    const formatted_parts = list_formatter.formatToParts(array);
-    return formatted_parts
-        .map((part) => {
-            // There are two types of parts: elements (the actual
-            // items), and literals (commas, etc.). We need to
-            // HTML-escape the elements, but not the literals.
-            if (part.type === "element") {
-                return `<b class="highlighted-element">${Handlebars.Utils.escapeExpression(part.value)}</b>`;
-            }
-            return part.value;
-        })
-        .join("");
-}
-
 // Returns the remaining time in milliseconds from the start_time and duration.
 export function get_remaining_time(start_time: number, duration: number): number {
     return Math.max(0, start_time + duration - Date.now());
@@ -573,11 +533,11 @@ export function is_topic_name_considered_empty(topic: string): boolean {
     return false;
 }
 
-export function get_retry_backoff_seconds(
+export let get_retry_backoff_seconds = (
     xhr: JQuery.jqXHR<unknown> | undefined,
     attempts: number,
     tighter_backoff = false,
-): number {
+): number => {
     // We need to respect the server's rate-limiting headers, but beyond
     // that, we also want to avoid contributing to a thundering herd if
     // the server is giving us 500/502 responses.
@@ -607,6 +567,10 @@ export function get_retry_backoff_seconds(
         rate_limit_delay_secs = parsed.data["retry-after"] + Math.random() * 0.5;
     }
     return Math.max(backoff_delay_secs, rate_limit_delay_secs);
+};
+
+export function rewire_get_retry_backoff_seconds(value: typeof get_retry_backoff_seconds): void {
+    get_retry_backoff_seconds = value;
 }
 
 export async function sha256_hash(text: string): Promise<string | undefined> {
@@ -621,4 +585,40 @@ export async function sha256_hash(text: string): Promise<string | undefined> {
     const hashArray = [...new Uint8Array(hashBuffer)];
     const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
     return hashHex;
+}
+
+// This should only be used in loops with small collections, since it
+// runs in linear time.
+export function unique_array_insert<T>(array: T[], new_item: T): void {
+    for (const item of array) {
+        if (_.isEqual(item, new_item)) {
+            return;
+        }
+    }
+    array.push(new_item);
+}
+
+export function parse_youtube_start_time(url: string): number | undefined {
+    const url_obj = new URL(url, window.location.href);
+    const params = new URLSearchParams(url_obj.search);
+    const t = params.get("t") ?? params.get("start");
+
+    if (t === null) {
+        return undefined;
+    }
+
+    // t can be in seconds (e.g. 120) or in #h#m#s format (e.g. 1h2m30s)
+    if (/^\d+$/.test(t)) {
+        return Number.parseInt(t, 10);
+    }
+
+    const match = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/.exec(t);
+    if (match) {
+        const h = Number.parseInt(match[1] ?? "0", 10);
+        const m = Number.parseInt(match[2] ?? "0", 10);
+        const s = Number.parseInt(match[3] ?? "0", 10);
+        return h * 3600 + m * 60 + s;
+    }
+
+    return undefined;
 }

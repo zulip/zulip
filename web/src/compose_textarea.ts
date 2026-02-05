@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 // Save the compose content cursor position and restore when we
-// shift-tab back in (see hotkey.js).
+// shift-tab back in (see hotkey.ts).
 let saved_compose_cursor = 0;
 
 function set_compose_textarea_handlers(): void {

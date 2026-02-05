@@ -3,11 +3,10 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
-import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
+import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
-import * as dialog_widget from "./dialog_widget.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -19,6 +18,7 @@ import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_create_subscribers from "./stream_create_subscribers.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_edit from "./stream_edit.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import {stream_permission_group_settings_schema} from "./stream_types.ts";
@@ -72,18 +72,6 @@ export function maybe_update_error_message(): void {
     stream_name_error.pre_validate(stream_name);
 }
 
-const group_setting_widget_map = new Map<string, GroupSettingPillContainer | null>([
-    ["can_add_subscribers_group", null],
-    ["can_administer_channel_group", null],
-    ["can_delete_any_message_group", null],
-    ["can_delete_own_message_group", null],
-    ["can_move_messages_out_of_channel_group", null],
-    ["can_move_messages_within_channel_group", null],
-    ["can_remove_subscribers_group", null],
-    ["can_resolve_topics_group", null],
-    ["can_send_message_group", null],
-]);
-
 class StreamSubscriptionError {
     report_no_subs_to_stream(): void {
         $("#stream_subscription_error").text(
@@ -99,16 +87,13 @@ class StreamSubscriptionError {
 const stream_subscription_error = new StreamSubscriptionError();
 
 class StreamNameError {
-    report_already_exists(error?: string): void {
-        const error_message =
-            error ?? $t({defaultMessage: "A channel with this name already exists."});
-        $("#stream_name_error").text(error_message);
+    report_already_exists(rendered_error: string): void {
+        $("#stream_name_error").html(rendered_error);
         $("#stream_name_error").show();
     }
 
     clear_errors(): void {
         $("#stream_name_error").hide();
-        $("#archived_stream_rename").hide();
     }
 
     report_empty_stream(): void {
@@ -118,12 +103,6 @@ class StreamNameError {
 
     select(): void {
         $("#create_stream_name").trigger("focus").trigger("select");
-    }
-
-    rename_archived_stream(stream_id: number): void {
-        $("#archived_stream_rename").text($t({defaultMessage: "Rename archived channel"}));
-        $("#archived_stream_rename").attr("data-stream-id", stream_id);
-        $("#archived_stream_rename").show();
     }
 
     pre_validate(stream_name: string): void {
@@ -136,14 +115,17 @@ class StreamNameError {
         // realize the stream already exists, I may want to cancel.)
         const stream = stream_data.get_sub(stream_name);
         if (stream_name && stream) {
-            let error;
-            if (stream.is_archived) {
-                error = $t({defaultMessage: "An archived channel with this name already exists."});
-                if (stream_settings_data.get_sub_for_settings(stream).can_change_name_description) {
-                    this.rename_archived_stream(stream.stream_id);
-                }
-            }
-            this.report_already_exists(error);
+            const can_rename =
+                stream.is_archived &&
+                stream_settings_data.get_sub_for_settings(stream).can_change_name_description;
+
+            const rendered_error = render_channel_name_conflict_error({
+                stream_id: stream.stream_id,
+                is_archived: stream.is_archived,
+                show_rename: can_rename,
+                can_view_channel: true,
+            });
+            this.report_already_exists(rendered_error);
             return;
         }
 
@@ -159,11 +141,17 @@ class StreamNameError {
 
         const stream = stream_data.get_sub(stream_name);
         if (stream) {
-            let error;
-            if (stream.is_archived) {
-                error = $t({defaultMessage: "An archived channel with this name already exists."});
-            }
-            this.report_already_exists(error);
+            const can_rename =
+                stream.is_archived &&
+                stream_settings_data.get_sub_for_settings(stream).can_change_name_description;
+
+            const rendered_error = render_channel_name_conflict_error({
+                stream_id: stream.stream_id,
+                is_archived: stream.is_archived,
+                show_rename: can_rename,
+                can_view_channel: true,
+            });
+            this.report_already_exists(rendered_error);
             this.select();
             return false;
         }
@@ -200,14 +188,15 @@ $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscriber
 
     const stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
     const is_stream_name_valid = stream_name_error.validate_for_submit(stream_name);
-    const privacy_type = $("#stream_creation_form input[type=radio][name=privacy]:checked").val();
+    const privacy_type = stream_settings_components.channel_creation_privacy_widget.value();
     let invite_only = false;
     let is_web_public = false;
 
     let is_any_stream_group_widget_pending = false;
     const permission_settings = Object.keys(realm.server_supported_permission_settings.stream);
     for (const setting_name of permission_settings) {
-        const widget = group_setting_widget_map.get(setting_name);
+        const widget =
+            stream_settings_components.get_group_setting_widget_for_new_stream(setting_name);
         assert(widget !== undefined);
         assert(widget !== null);
         if (widget.is_pending()) {
@@ -221,7 +210,7 @@ $("body").on("click", ".settings-sticky-footer #stream_creation_go_to_subscriber
     }
 
     if (is_stream_name_valid && !is_any_stream_group_widget_pending) {
-        if (privacy_type === "invite-only" || privacy_type === "invite-only-public-history") {
+        if (privacy_type === "invite-only") {
             invite_only = true;
         } else if (privacy_type === "web-public") {
             is_web_public = true;
@@ -267,9 +256,8 @@ function update_announce_stream_state(): void {
     const $announce_stream_checkbox = $<HTMLInputElement>("#announce-new-stream input");
     const $announce_stream_label = $("#announce-new-stream");
     let disable_it = false;
-    const privacy_type = $("#stream_creation_form input[type=radio][name=privacy]:checked").val();
-    const is_invite_only =
-        privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
+    const privacy_type = stream_settings_components.channel_creation_privacy_widget.value();
+    const is_invite_only = privacy_type === "invite-only";
     $announce_stream_label.removeClass("control-label-disabled");
 
     // Here, we arrange to save the state of the announce checkbox
@@ -312,38 +300,31 @@ function create_stream(): void {
     const subscriptions = JSON.stringify([{name: stream_name, description}]);
 
     let invite_only;
-    let history_public_to_subscribers;
     let is_web_public;
-    const privacy_setting = $("#stream_creation_form input[name=privacy]:checked").val();
+    const privacy_type = stream_settings_components.channel_creation_privacy_widget.value();
 
-    switch (privacy_setting) {
+    switch (privacy_type) {
         case "invite-only": {
             invite_only = true;
-            history_public_to_subscribers = false;
-            is_web_public = false;
-
-            break;
-        }
-        case "invite-only-public-history": {
-            invite_only = true;
-            history_public_to_subscribers = true;
             is_web_public = false;
 
             break;
         }
         case "web-public": {
             invite_only = false;
-            history_public_to_subscribers = true;
             is_web_public = true;
 
             break;
         }
         default: {
             invite_only = false;
-            history_public_to_subscribers = true;
             is_web_public = false;
         }
     }
+
+    const history_public_to_subscribers = util.the(
+        $<HTMLInputElement>("input#id_new_history_public_to_subscribers"),
+    ).checked;
 
     const default_stream = util.the(
         $<HTMLInputElement>("#stream_creation_form input.is_default_stream"),
@@ -411,7 +392,7 @@ function create_stream(): void {
     if (folder_id !== settings_config.no_folder_selected) {
         // We do not include "folder_id" in request data if
         // new stream will not be added to any folder.
-        data.folder_id = JSON.stringify(folder_id);
+        data["folder_id"] = JSON.stringify(folder_id);
     }
 
     // Subscribe yourself and possible other people to a new stream.
@@ -435,14 +416,18 @@ function create_stream(): void {
                 // with i18n.  And likely we should be reporting the
                 // error text directly rather than turning it into
                 // "Error creating channel"?
-                stream_name_error.report_already_exists();
-                stream_name_error.select();
-                const message = $t_html({
-                    defaultMessage:
-                        "Error creating channel: A channel with this name already exists.",
+                const rendered_error = render_channel_name_conflict_error({
+                    stream_id: undefined,
+                    is_archived: false,
+                    show_rename: false,
+                    can_view_channel: false,
                 });
+                stream_name_error.report_already_exists(rendered_error);
+                stream_name_error.select();
 
-                ui_report.error(message, undefined, $(".stream_create_info"));
+                stream_settings_components.show_subs_pane.create_stream(
+                    "configure_channel_settings",
+                );
             } else {
                 ui_report.error(
                     $t_html({defaultMessage: "Error creating channel"}),
@@ -483,16 +468,9 @@ function clear_error_display(): void {
 export function show_new_stream_modal(): void {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
-    stream_ui_updates.hide_or_disable_stream_privacy_options_if_required($("#stream-creation"));
 
     stream_create_subscribers.build_widgets();
 
-    // Select the first visible and enabled choice for stream privacy.
-    $(
-        "#stream_creation_form .stream-privacy-values .settings-radio-input-parent:not([hidden]) input:not(:disabled)",
-    )
-        .first()
-        .prop("checked", true);
     // Make the options default to the same each time
 
     // The message retention setting is visible to owners only. The below block
@@ -557,7 +535,9 @@ export function show_new_stream_modal(): void {
     $("#stream_creation_form .default-stream input").prop("checked", false);
     update_announce_stream_state();
     stream_ui_updates.update_can_subscribe_group_label($("#stream-creation"));
-    stream_ui_updates.update_default_stream_and_stream_privacy_state($("#stream-creation"));
+    stream_ui_updates.update_default_stream_option_state($("#stream-creation"));
+    stream_ui_updates.update_history_public_to_subscribers_state($("#stream-creation"));
+    stream_ui_updates.update_can_create_topic_group_setting_state($("#stream-creation"));
     clear_error_display();
 }
 
@@ -570,11 +550,34 @@ function set_up_group_setting_widgets(): void {
                 $pill_container: $("#id_new_" + setting_name),
                 setting_name: stream_permission_group_settings_schema.parse(setting_name),
             });
-        group_setting_widget_map.set(setting_name, group_setting_widgets[setting_name]);
+        stream_settings_components.set_group_setting_widget_for_new_stream(
+            setting_name,
+            group_setting_widgets[setting_name],
+        );
     }
+
+    // Enable or disable protected history stream privacy option when
+    // can_create_topic_group setting is updated.
+    const can_create_topic_group_widget = group_setting_widgets["can_create_topic_group"]!;
+    can_create_topic_group_widget.onPillCreate(() => {
+        stream_ui_updates.update_history_public_to_subscribers_state($("#stream-creation"));
+    });
+    can_create_topic_group_widget.onPillRemove(() => {
+        stream_ui_updates.update_history_public_to_subscribers_state($("#stream-creation"));
+    });
 }
 
 export function set_up_handlers(): void {
+    if (
+        !settings_data.user_can_create_public_streams() &&
+        !settings_data.user_can_create_web_public_streams() &&
+        !settings_data.user_can_create_private_streams()
+    ) {
+        // Return early if user does not have permission to create
+        // streams at all as they cannot access the stream UI.
+        return;
+    }
+
     stream_announce_previous_value =
         settings_data.user_can_create_public_streams() ||
         settings_data.user_can_create_web_public_streams();
@@ -583,16 +586,6 @@ export function set_up_handlers(): void {
     stream_create_subscribers.create_handlers($subscribers_container);
 
     const $container = $("#stream-creation").expectOne();
-
-    $container.on("change", ".stream-privacy-values input", () => {
-        update_announce_stream_state();
-        stream_ui_updates.update_default_stream_and_stream_privacy_state($container);
-        stream_ui_updates.update_can_subscribe_group_label($container);
-    });
-
-    $container.on("change", ".default-stream input", () => {
-        stream_ui_updates.update_default_stream_and_stream_privacy_state($container);
-    });
 
     $container.on("click", ".finalize_create_stream", (e) => {
         e.preventDefault();
@@ -625,14 +618,15 @@ export function set_up_handlers(): void {
         }
 
         if (principals.length >= 50) {
-            const html_body = render_subscription_invites_warning_modal({
+            const modal_content_html = render_subscription_invites_warning_modal({
                 channel_name: stream_name,
                 count: principals.length,
             });
 
             confirm_dialog.launch({
-                html_heading: $t_html({defaultMessage: "Large number of subscribers"}),
-                html_body,
+                modal_title_html: $t_html({defaultMessage: "Large number of subscribers"}),
+                modal_content_html,
+                is_compact: true,
                 on_click() {
                     create_stream();
                 },
@@ -657,62 +651,24 @@ export function set_up_handlers(): void {
         }
     });
 
+    $container.on("input", "#id_new_history_public_to_subscribers", () => {
+        stream_ui_updates.update_can_create_topic_group_setting_state($("#stream-creation"));
+    });
+
     set_up_group_setting_widgets();
     settings_components.enable_opening_typeahead_on_clicking_label($container);
     folder_widget = stream_settings_components.set_up_folder_dropdown_widget();
+    stream_edit.set_up_channel_privacy_dropdown_widget(update_announce_stream_state);
 }
 
 export function initialize(): void {
     $("#channels_overlay_container").on("click", "#archived_stream_rename", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const stream_id = Number.parseInt($("#archived_stream_rename").attr("data-stream-id")!, 10);
-        const stream = stream_data.get_sub_by_id(stream_id);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id")!, 10);
 
-        assert(stream !== undefined);
-
-        const template_data = {
-            stream_name: stream.name,
-            stream_description: stream.description,
-            max_stream_name_length: realm.max_stream_name_length,
-            max_stream_description_length: realm.max_stream_description_length,
-        };
-        const change_stream_info_modal = render_change_stream_info_modal(template_data);
-        dialog_widget.launch({
-            html_heading: $t_html(
-                {defaultMessage: "Edit #{stream_name} (<i>archived</i>)"},
-                {stream_name: stream.name},
-            ),
-            html_body: change_stream_info_modal,
-            id: "change_stream_info_modal",
-            loading_spinner: true,
-            on_click: save_stream_info,
-            post_render() {
-                $("#change_stream_info_modal .dialog_submit_button")
-                    .addClass("save-button")
-                    .attr("data-stream-id", stream_id);
-            },
-            update_submit_disabled_state_on_change: true,
-        });
+        stream_edit.open_stream_edit_modal(stream_id);
     });
-
-    function save_stream_info(): void {
-        const stream_id = Number.parseInt($("#archived_stream_rename").attr("data-stream-id")!, 10);
-        const sub = stream_data.get_sub_by_id(stream_id);
-        const url = `/json/streams/${sub?.stream_id}`;
-        const data: {new_name?: string; description?: string} = {};
-        const new_name = $<HTMLInputElement>("#change_stream_name").val()!.trim();
-        const new_description = $<HTMLInputElement>("#change_stream_description").val()!.trim();
-
-        if (new_name !== sub?.name) {
-            data.new_name = new_name;
-        }
-        if (new_description !== sub?.description) {
-            data.description = new_description;
-        }
-
-        dialog_widget.submit_api_request(channel.patch, url, data);
-    }
 }
 
 export function set_channel_folder_dropdown_value(folder_id: number): void {
