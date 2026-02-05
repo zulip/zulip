@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --only-group=install --preview-features=target-workspace-discovery --script  # -*-python-*-
 #
 # This script contains the actual logic for upgrading from an old
 # version of Zulip to the new version.  upgrade-zulip-stage-3 is
@@ -12,14 +12,6 @@ import subprocess
 import sys
 import time
 
-os.environ["PYTHONUNBUFFERED"] = "y"
-
-# Force a known locale.  Some packages on PyPI fail to install in some locales.
-os.environ["LC_ALL"] = "C.UTF-8"
-os.environ["LANG"] = "C.UTF-8"
-os.environ["LANGUAGE"] = "C.UTF-8"
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     assert_running_as_root,
@@ -31,6 +23,13 @@ from scripts.lib.zulip_tools import (
 )
 
 assert_running_as_root()
+
+os.environ["PYTHONUNBUFFERED"] = "y"
+
+# Force a known locale.  Some packages on PyPI fail to install in some locales.
+os.environ["LC_ALL"] = "C.UTF-8"
+os.environ["LANG"] = "C.UTF-8"
+os.environ["LANGUAGE"] = "C.UTF-8"
 
 # Set a known, reliable PATH
 os.environ["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"

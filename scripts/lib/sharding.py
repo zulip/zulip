@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --only-group=prod --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import filecmp
 import grp
@@ -8,13 +8,9 @@ import pwd
 import subprocess
 import sys
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(BASE_DIR)
-from scripts.lib.setup_path import setup_path
-
-setup_path()
-
 from scripts.lib.zulip_tools import get_config_file, get_tornado_ports
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def nginx_quote(s: str) -> str:

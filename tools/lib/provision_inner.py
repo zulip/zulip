@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 
 ############################## NOTE ################################
 # This script is used to provision a development environment ONLY.
@@ -15,9 +15,6 @@ import shutil
 import subprocess
 import sys
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-sys.path.append(ZULIP_PATH)
 import pygments
 
 from scripts.lib import clean_unused_caches
@@ -37,6 +34,7 @@ from tools.setup.generate_bots_integrations_static_files import (
 )
 from version import PROVISION_VERSION
 
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VENV_PATH = os.path.join(ZULIP_PATH, ".venv")
 UUID_VAR_PATH = get_dev_uuid_var_path()
 

@@ -7,12 +7,17 @@ requires-python = ">=3.10"
 requires = ["uv_build>=0.10.0,<0.11.0"]
 build-backend = "uv_build"
 
-[tool.uv.build-backend]
-module-name = []
-module-root = ""
-
 [dependency-groups]
+install = [
+  "zulip-server",
+
+  # For zulip-puppet-apply
+  "PyYAML",
+]
+
 prod = [
+  { include-group = "install" },
+
   # Django itself
   "django[argon2]==5.2.*",
   "asgiref",
@@ -350,6 +355,10 @@ no-binary-package = [
   "xmlsec",
 ]
 
+[tool.uv.build-backend]
+module-name = []
+module-root = ""
+
 [tool.uv.sources]
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239
@@ -367,6 +376,11 @@ zulip-bots = { git = "https://github.com/zulip/python-zulip-api.git", subdirecto
 
 # zulip's linting framework - zulint
 zulint = { git = "https://github.com/zulip/zulint.git", rev = "0b2858f59c72dbe561052878bb2e458d563e6641" }
+
+[tool.uv.workspace]
+members = [
+    ".",
+]
 
 [tool.black]
 line-length = 100

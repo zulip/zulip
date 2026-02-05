@@ -1,18 +1,15 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 import os
 import re
-import sys
 from collections import defaultdict
 
 import orjson
-
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
-sys.path.append(ZULIP_PATH)
 
 from tools.setup.emoji.custom_emoji_names import CUSTOM_EMOJI_NAME_MAPS
 from tools.setup.emoji.emoji_setup_utils import get_emoji_code
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji, unqualify_emoji
 
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
 CLDR_DATA_FILE = os.path.join(
     ZULIP_PATH, "node_modules", "cldr-annotations-full", "annotations", "en", "annotations.json"
 )

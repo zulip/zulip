@@ -1,11 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 import os
 import subprocess
 import sys
-
-TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-os.chdir(os.path.dirname(TOOLS_DIR))
-sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
 from zerver.openapi.merge_api_changelogs import (
     get_feature_level,
@@ -14,6 +10,9 @@ from zerver.openapi.merge_api_changelogs import (
     remove_unmerged_changelog_files,
     update_feature_level_in_api_docs,
 )
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(TOOLS_DIR))
 
 if __name__ == "__main__":
     ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

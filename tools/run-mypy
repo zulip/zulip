@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import os
 import subprocess
@@ -6,12 +6,11 @@ import sys
 
 from zulint import lister
 
+from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
+
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
 os.chdir(ROOT_DIR)
-
-sys.path.append(ROOT_DIR)
-from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 
 exclude = [
     "stubs/",

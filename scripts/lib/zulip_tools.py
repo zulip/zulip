@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --only-group=install --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import configparser
 import functools

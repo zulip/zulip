@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 
 import argparse
 import contextlib
@@ -12,6 +12,12 @@ from collections.abc import Iterator
 from typing import TYPE_CHECKING, cast
 from unittest import mock
 
+import django
+import orjson
+import responses
+from django.conf import settings
+from django.test.utils import get_runner
+
 if TYPE_CHECKING:
     # This script does not have access to the zerver module during runtime.
     # We can only import this when type checking.
@@ -19,18 +25,6 @@ if TYPE_CHECKING:
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
-sys.path.insert(0, os.path.dirname(TOOLS_DIR))
-
-# check for the venv
-from tools.lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
-import django
-import orjson
-import responses
-from django.conf import settings
-from django.test.utils import get_runner
 
 source_files = [
     "analytics/**/*.py",
