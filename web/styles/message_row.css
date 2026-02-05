@@ -327,6 +327,7 @@
         text-overflow: ellipsis;
         overflow-wrap: normal;
         font-variant: all-small-caps;
+        font-family: inherit;
 
         &:hover {
             background-color: var(
@@ -834,6 +835,7 @@
     border-radius: 4px;
     border: 0;
     line-height: 1;
+    font-family: inherit;
 
     &:focus {
         outline: none;

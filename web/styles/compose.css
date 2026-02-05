@@ -21,6 +21,7 @@
            would likely be a better choice here.
            1.2em is 16.8px at 14px em. */
         font-size: 1.2em;
+        font-family: inherit;
         /* 1.2em is 16.8px at 14px em; this
            maintains the 20px em-equivalent compose
            line height, but at a 16.8px em. */
@@ -75,6 +76,7 @@
             /* Keep the new message button sized to match
                adjacent buttons. */
             font-size: inherit;
+            font-family: inherit;
             min-width: inherit;
             padding: 3px 10px;
             outline: none;
@@ -144,6 +146,7 @@
            adjacent buttons. */
         align-self: stretch;
         font-size: inherit;
+        font-family: inherit;
         min-width: inherit;
         line-height: var(--line-height-compose-buttons);
         padding: 3px 10px;
@@ -756,6 +759,7 @@
         font-weight: 600;
         margin-top: 4.5px;
         margin-bottom: 4.5px;
+        font-family: inherit;
         /* Buttons take a minimum height for
            when their text fits on a single
            line. 2.1333em is 32px at 15px/1em. */
@@ -1134,6 +1138,7 @@ textarea.new_message_textarea {
         padding: 0 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
+        font-family: inherit;
 
         &.empty-topic-display::placeholder {
             color: var(--color-compose-recipient-box-text-color);

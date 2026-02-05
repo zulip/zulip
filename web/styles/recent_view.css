@@ -189,6 +189,7 @@
         flex: 0 0 auto;
         display: flex;
         align-items: center;
+        font-family: inherit;
 
         &:hover {
             background-color: var(--color-background-zulip-button-hover);

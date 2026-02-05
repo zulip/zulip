@@ -615,6 +615,7 @@ h4.user_group_setting_subsection_title {
             padding: 6px 10px 8px;
             display: block;
             margin: 0 auto 10px;
+            font-family: inherit;
         }
 
         .main-view-banner.group_deactivated {

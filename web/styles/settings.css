@@ -380,6 +380,7 @@ select.settings_select {
     background-repeat: no-repeat;
     background-position: 98%;
     background-size: 1em;
+    font-family: inherit;
 }
 
 #admin-active-users-list,
@@ -1619,6 +1620,7 @@ label.preferences-radio-choice-label {
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -2328,6 +2330,7 @@ label.preferences-radio-choice-label {
         var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
             var(--input-border-width)
     );
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
