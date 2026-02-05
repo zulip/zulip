@@ -502,9 +502,9 @@ def validate_schema(schema: dict[str, Any]) -> None:
     if "oneOf" in schema:
         for subschema in schema["oneOf"]:
             validate_schema(subschema)
-    elif schema["type"] == "array":
+    elif "type" in schema and schema["type"] == "array":
         validate_schema(schema["items"])
-    elif schema["type"] == "object":
+    elif "type" in schema and schema["type"] == "object":
         if "additionalProperties" not in schema:
             raise SchemaError(
                 "additionalProperties needs to be defined for objects to make sure they have no"
