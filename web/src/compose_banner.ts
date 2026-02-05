@@ -297,12 +297,15 @@ export function show_convert_pasted_text_to_file_banner({
     show_paste_button,
     convert_to_file_cb,
     paste_to_compose_cb,
+    $textarea,
 }: {
     show_paste_button: boolean;
     convert_to_file_cb: () => void;
     paste_to_compose_cb: () => void;
+    $textarea: JQuery<HTMLTextAreaElement>;
 }): JQuery {
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.convert_pasted_text_to_file)}`).remove();
+    const $banner_container = get_compose_banner_container($textarea);
+    $banner_container.find(CSS.escape(CLASSNAMES.convert_pasted_text_to_file)).remove();
     const $new_row = $(
         render_long_paste_options({
             banner_type: INFO,
@@ -312,6 +315,6 @@ export function show_convert_pasted_text_to_file_banner({
     );
     $new_row.on("click", ".main-view-banner-action-button.convert-to-file", convert_to_file_cb);
     $new_row.on("click", ".main-view-banner-action-button.paste-to-compose", paste_to_compose_cb);
-    append_compose_banner_to_banner_list($new_row, $("#compose_banners"));
+    append_compose_banner_to_banner_list($new_row, $banner_container);
     return $new_row;
 }
