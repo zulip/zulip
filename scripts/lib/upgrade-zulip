@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --only-group=prod --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import configparser
 import logging
@@ -8,10 +8,6 @@ import subprocess
 import sys
 import time
 
-TARBALL_ARCHIVE_PATH = "/home/zulip/archives"
-os.environ["PYTHONUNBUFFERED"] = "y"
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     assert_running_as_root,
@@ -21,6 +17,9 @@ from scripts.lib.zulip_tools import (
     release_deployment_lock,
     su_to_zulip,
 )
+
+TARBALL_ARCHIVE_PATH = "/home/zulip/archives"
+os.environ["PYTHONUNBUFFERED"] = "y"
 
 config_file: configparser.RawConfigParser = get_config_file()
 deploy_options = get_deploy_options(config_file)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 """Create or update a webhook integration screenshot using a test fixture."""
 
 import argparse
@@ -10,29 +10,10 @@ import sys
 from typing import Any
 from urllib.parse import parse_qsl, urlencode
 
-import zulip
-
-SCREENSHOTS_DIR = os.path.abspath(os.path.dirname(__file__))
-TOOLS_DIR = os.path.abspath(os.path.dirname(SCREENSHOTS_DIR))
-ROOT_DIR = os.path.dirname(TOOLS_DIR)
-sys.path.insert(0, ROOT_DIR)
-
-# check for the venv
-from tools.lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
-from scripts.lib.setup_path import setup_path
-
-setup_path()
-
-os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 import django
-
-django.setup()
-
 import orjson
 import requests
+import zulip
 
 from scripts.lib.zulip_tools import BOLDRED, ENDC
 from tools.lib.test_script import prepare_puppeteer_run
@@ -58,6 +39,11 @@ from zerver.lib.webhooks.common import call_fixture_to_headers, parse_multipart_
 from zerver.models import Message, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user_by_delivery_email
+
+SCREENSHOTS_DIR = os.path.abspath(os.path.dirname(__file__))
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+django.setup()
 
 
 def create_integration_bot(integration: Integration, bot_name: str | None = None) -> UserProfile:

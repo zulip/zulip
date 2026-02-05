@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --only-group=install --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import contextlib
 import hashlib
@@ -8,12 +8,6 @@ import platform
 import subprocess
 import sys
 from typing import NoReturn
-
-os.environ["PYTHONUNBUFFERED"] = "y"
-
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-sys.path.append(ZULIP_PATH)
 
 from scripts.lib.node_cache import setup_node_modules
 from scripts.lib.setup_venv import get_venv_dependencies
@@ -27,6 +21,9 @@ from scripts.lib.zulip_tools import (
     run_as_root,
 )
 
+os.environ["PYTHONUNBUFFERED"] = "y"
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, "var")
 
 CONTINUOUS_INTEGRATION = "GITHUB_ACTIONS" in os.environ

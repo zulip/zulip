@@ -4,14 +4,12 @@ import os
 import re
 import shutil
 import subprocess
-import sys
 import time
 
 from django.conf import settings
 from django.db import DEFAULT_DB_ALIAS, ProgrammingError, connection, connections
 from django.db.utils import OperationalError
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from scripts.lib.zulip_tools import (
     TEMPLATE_DATABASE_DIR,
     get_dev_uuid_var_path,

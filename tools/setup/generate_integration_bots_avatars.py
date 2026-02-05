@@ -1,25 +1,19 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import os
 import sys
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if ZULIP_PATH not in sys.path:
-    sys.path.append(ZULIP_PATH)
-from scripts.lib.setup_path import setup_path
-
-setup_path()
+import django
+import pyvips
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
-import django
-
 django.setup()
-
-import pyvips
 
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def create_integration_bot_avatar(logo_path: str, bot_avatar_path: str) -> None:

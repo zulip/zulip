@@ -1,18 +1,14 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import json
 import os
 import subprocess
-import sys
 from typing import NoReturn
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-os.chdir(os.path.join(os.path.dirname(__file__), "../web"))
-
 
 from scripts.lib.zulip_tools import get_config, get_config_file
 from version import ZULIP_VERSION
+
+os.chdir(os.path.join(os.path.dirname(__file__), "../web"))
 
 webpack_command = ["node", "../node_modules/webpack-cli/bin/cli.js"]
 
