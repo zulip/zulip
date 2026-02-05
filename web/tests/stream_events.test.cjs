@@ -124,7 +124,8 @@ function test(label, f) {
     });
 }
 
-test("update_property", ({override}) => {
+test("update_property", ({override, override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     override(compose_recipient, "possibly_update_stream_name_in_compose", noop);
     override(compose_recipient, "on_compose_select_recipient_update", noop);
     override(
@@ -468,7 +469,7 @@ test("marked_(un)subscribed (early return)", () => {
     stream_events.mark_unsubscribed({subscribed: false});
 });
 
-test("marked_subscribed (normal)", ({override}) => {
+test("marked_subscribed (normal)", ({override, override_rewire}) => {
     const sub = {...frontend};
     stream_data.add_sub_for_tests(sub);
     override(stream_color_events, "update_stream_color", noop);
@@ -509,7 +510,7 @@ test("marked_subscribed (normal)", ({override}) => {
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
     $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
-
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_events.mark_subscribed(sub, [], "blue");
 
     const args = stream_list_stub.get_args("sub");
@@ -528,7 +529,8 @@ test("marked_subscribed (normal)", ({override}) => {
     message_lists.current = undefined;
 });
 
-test("marked_subscribed (color)", ({override}) => {
+test("marked_subscribed (color)", ({override, override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     override(stream_list, "add_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
@@ -561,7 +563,8 @@ test("marked_subscribed (color)", ({override}) => {
     }
 });
 
-test("marked_subscribed (emails)", ({override}) => {
+test("marked_subscribed (emails)", ({override, override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     const sub = {...frontend};
     stream_data.add_sub_for_tests(sub);
     override(stream_color_events, "update_stream_color", noop);
@@ -592,7 +595,8 @@ test("marked_subscribed (emails)", ({override}) => {
     assert.deepEqual(sub, args.sub);
 });
 
-test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
+test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override, override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     // Test unsubscribe
     const sub = {...dev_help};
     stream_data.add_sub_for_tests(sub);
@@ -613,7 +617,8 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
     assert.deepEqual(args.sub, sub);
 });
 
-test("mark_unsubscribed (render_title_area)", ({override}) => {
+test("mark_unsubscribed (render_title_area)", ({override, override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     const sub = {...frontend, subscribed: true};
     stream_data.add_sub_for_tests(sub);
 
@@ -683,7 +688,8 @@ test("process_subscriber_update", ({override, override_rewire}) => {
     assert.ok(build_user_sidebar_called);
 });
 
-test("marked_subscribed (new channel creation)", ({override}) => {
+test("marked_subscribed (new channel creation)", ({override, override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_create.set_name(frontend.name);
     const sub = {...frontend};
     stream_data.add_sub_for_tests(sub);

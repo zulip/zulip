@@ -13,7 +13,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const example_settings = require("./lib/example_settings.cjs");
 const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -71,7 +71,7 @@ function contains_sub(subs, sub) {
     return subs.some((s) => s.name === sub.name);
 }
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({override, override_rewire}) => {
         peer_data.clear_for_testing();
         stream_data.clear_subscriptions();
         people.init();
@@ -88,11 +88,11 @@ function test(label, f) {
         );
         override(realm, "realm_can_access_all_users_group", nobody_group.id);
 
-        return f({override});
+        return f({override, override_rewire});
     });
 }
 
-test("unsubscribe", () => {
+test("unsubscribe", ({override_rewire}) => {
     const devel = {name: "devel", subscribed: false, stream_id: 1};
     stream_data.add_sub_for_tests(devel);
 
@@ -106,6 +106,7 @@ test("unsubscribe", () => {
     // ensure our setup is accurate
     assert.ok(stream_data.is_subscribed(devel.stream_id));
 
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     // DO THE UNSUBSCRIBE HERE
     stream_data.unsubscribe_myself(devel);
     assert.ok(!devel.subscribed);

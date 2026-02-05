@@ -615,6 +615,7 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
 });
 
 test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);

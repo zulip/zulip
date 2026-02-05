@@ -196,7 +196,7 @@ test("stream create", ({override}) => {
     assert.deepEqual(sub_store.get(102).name, "test");
 });
 
-test("stream delete (normal)", ({override}) => {
+test("stream delete (normal)", ({override, override_rewire}) => {
     const event = event_fixtures.stream__delete;
 
     const devel_sub = {
@@ -214,6 +214,8 @@ test("stream delete (normal)", ({override}) => {
 
     stream_data.add_sub_for_tests(test_sub);
     stream_data.add_sub_for_tests(devel_sub);
+
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
 
     stream_data.subscribe_myself(devel_sub);
 
@@ -235,7 +237,7 @@ test("stream delete (normal)", ({override}) => {
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 });
 
-test("stream delete (special streams)", ({override}) => {
+test("stream delete (special streams)", ({override, override_rewire}) => {
     const event = event_fixtures.stream__delete;
 
     const devel_sub = {
@@ -253,6 +255,7 @@ test("stream delete (special streams)", ({override}) => {
     stream_data.add_sub_for_tests(devel_sub);
     stream_data.add_sub_for_tests(test_sub);
 
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_data.subscribe_myself(devel_sub);
 
     const removed_stream_ids = [];
