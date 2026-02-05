@@ -141,32 +141,32 @@ export function generate_and_insert_audio_or_video_call_link(
             },
         });
     } else {
-        // TODO: Use `new URL` to generate the URLs here.
         const video_call_id = util.random_int(100000000000000, 999999999999999);
-        const video_call_link = compose_call.get_jitsi_server_url() + "/" + video_call_id;
-        if (is_audio_call) {
-            insert_audio_call_url(
-                video_call_link + "#config.startWithVideoMuted=true",
-                $target_textarea,
-            );
-        } else {
-            /* Because Jitsi remembers what last call type you joined
-               in browser local storage, we need to specify that video
-               should not be muted in the video call case, or your
-               next call will also join without video after joining an
-               audio-only call.
+        const video_call_url = compose_call.get_jitsi_server_url(video_call_id.toString());
+        if (video_call_url === null) {
+            return;
+        }
+        /*  Because Jitsi remembers what last call type you joined
+            in browser local storage, we need to specify that video
+            should not be muted in the video call case, or your
+            next call will also join without video after joining an
+            audio-only call.
 
-               This has the annoying downside that it requires users
-               who have a personal preference to disable video every
-               time, but Jitsi's UI makes that very easy to do, and
-               that inconvenience is probably less important than letting
-               the person organizing a call specify their intended
-               call type (video vs audio).
-           */
-            insert_video_call_url(
-                video_call_link + "#config.startWithVideoMuted=false",
-                $target_textarea,
-            );
+            This has the annoying downside that it requires users
+            who have a personal preference to disable video every
+            time, but Jitsi's UI makes that very easy to do, and
+            that inconvenience is probably less important than letting
+            the person organizing a call specify their intended
+            call type (video vs audio).
+        */
+        const video_muted = is_audio_call ? "true" : "false";
+        video_call_url.hash = `config.startWithVideoMuted=${video_muted}`;
+        const video_call_link = video_call_url.toString();
+
+        if (is_audio_call) {
+            insert_audio_call_url(video_call_link, $target_textarea);
+        } else {
+            insert_video_call_url(video_call_link, $target_textarea);
         }
     }
 }
