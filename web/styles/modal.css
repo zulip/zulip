@@ -200,6 +200,7 @@
     /* We need the backup value for billing related html files where
        this variable is not defined. */
     font-size: var(--base-font-size-px, 14px);
+    font-family: inherit;
     padding: 8px 16px;
     background-color: hsl(0deg 0% 90%);
     border-radius: 4px;
@@ -872,6 +873,7 @@
         100% - 2 * var(--input-horizontal-padding) - 2 *
             var(--input-border-width)
     );
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -1172,6 +1174,7 @@
             border-radius: 8px;
             border: 1px solid hsl(0deg 0% 100%);
             transition: transform 0.25s ease-out;
+            font-family: inherit;
 
             &:hover {
                 transform: scale(1.05);

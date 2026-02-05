@@ -133,7 +133,6 @@ button {
 input,
 button,
 select {
-    font-family: inherit;
     /* Disable bootstrap size CSS; we want to use our default font size on
        body for input elements. */
     line-height: normal;
@@ -999,6 +998,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
     color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
+    font-family: inherit;
 
     transition:
         border-color linear 0.2s,
@@ -1393,6 +1393,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -1529,6 +1530,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .exit {
         font-size: 1.5rem;
         font-weight: 600;
+        font-family: inherit;
         background-color: transparent;
         border: none;
         position: absolute;

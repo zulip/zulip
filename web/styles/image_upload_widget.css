@@ -49,6 +49,7 @@
         right: 10px;
         z-index: 99;
         line-height: 20px;
+        font-family: inherit;
 
         &:focus:not(:focus-visible) {
             outline: none;
