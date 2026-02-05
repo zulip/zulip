@@ -3,8 +3,16 @@ import {realm} from "./state_data.ts";
 export const zoom_token_callbacks = new Map();
 export const video_call_xhrs = new Map<string, JQuery.jqXHR<unknown>>();
 
-export function get_jitsi_server_url(): string | null {
-    return realm.realm_jitsi_server_url ?? realm.server_jitsi_server_url;
+export function get_jitsi_server_url(video_call_id?: string): URL | null {
+    const base_url = realm.realm_jitsi_server_url ?? realm.server_jitsi_server_url;
+    if (!base_url) {
+        return null;
+    }
+    const url = new URL(base_url);
+    if (video_call_id !== undefined) {
+        url.pathname = `/${video_call_id}`;
+    }
+    return url;
 }
 
 export function abort_video_callbacks(edit_message_id = ""): void {
