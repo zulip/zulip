@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --only-group=prod --project=/home/zulip/deployments/current --script  # -*-python-*-
 
 """
 Script to provide information about send-receive times.
@@ -15,23 +15,14 @@ import time
 import traceback
 from typing import Any, Literal, NoReturn
 
-sys.path.append(".")
-sys.path.append("/home/zulip/deployments/current")
-from scripts.lib.setup_path import setup_path
-from scripts.lib.zulip_tools import atomic_nagios_write
-
-setup_path()
-
 import django
 import zulip
-
-sys.path.append("/home/zulip/deployments/current")
-os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
-
-django.setup()
-
 from django.conf import settings
 
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+django.setup()
+
+from scripts.lib.zulip_tools import atomic_nagios_write
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot
 from zproject.config import get_config

@@ -18,12 +18,12 @@ class zulip::process_fts_updates {
     case $facts['os']['family'] {
       'Debian': {
         # Needed to build psycopg2
-        $psycopg2_build_packages = ['build-essential', 'libpq-dev', 'python3-dev']
+        $psycopg2_build_packages = ['build-essential', 'libpq-dev']
       }
       'RedHat': {
         # zulip::postgresql_common installs postgresql-devel, which
         # provides the pg_config needed to build psycopg2.
-        $psycopg2_build_packages = ['gcc', 'python3-devel']
+        $psycopg2_build_packages = ['gcc']
       }
       default: {
         fail('osfamily not supported')
@@ -37,7 +37,7 @@ class zulip::process_fts_updates {
       group   => 'zulip',
       require => User['zulip'],
     }
-    ['pyproject.toml', 'uv.lock'].each |String $project_file| {
+    ['.python-version', 'pyproject.toml', 'uv.lock'].each |String $project_file| {
       file { "/srv/zulip-database-env/${project_file}":
         ensure => file,
         owner  => 'zulip',
@@ -47,14 +47,21 @@ class zulip::process_fts_updates {
       }
     }
     exec { 'process_fts_updates_venv':
-      command     => 'uv sync --frozen --no-managed-python --only-group=database',
-      unless      => 'uv sync --frozen --no-managed-python --only-group=database --check',
+      command     => 'uv sync --frozen --managed-python --only-group=database',
+      unless      => 'uv sync --frozen --managed-python --only-group=database --check',
       cwd         => '/srv/zulip-database-env',
       user        => 'zulip',
-      environment => ['HOME=/home/zulip'],
+      # Install the managed Python interpreter inside the environment,
+      # rather than under the zulip user's home directory, which may
+      # not be readable by the nagios user.
+      environment => [
+        'HOME=/home/zulip',
+        'UV_PYTHON_INSTALL_DIR=/srv/zulip-database-env/python',
+      ],
       timeout     => 600,
       require     => [
         Package[$psycopg2_build_packages],
+        File['/srv/zulip-database-env/.python-version'],
         File['/srv/zulip-database-env/pyproject.toml'],
         File['/srv/zulip-database-env/uv.lock'],
       ],

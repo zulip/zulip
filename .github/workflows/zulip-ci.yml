@@ -179,7 +179,6 @@ jobs:
       - name: Run backend lint
         run: |
           source tools/ci/activate-venv
-          echo "Test suite is running under $(python --version)."
           ./tools/lint --groups=backend --skip=gitlint,mypy # gitlint disabled because flaky
 
       - name: Run backend tests

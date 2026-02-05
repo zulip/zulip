@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --only-group=database --project=/srv/zulip-database-env --script  # -*-python-*-
 
 """Nagios plugin to check the difference between the primary and
 replica PostgreSQL servers' xlog location.  Requires that the user this
 connects to PostgreSQL as has been granted the `pg_monitor` role.
 
-This can only use stdlib modules from python.
+This runs in the minimal /srv/zulip-database-env environment, so it
+can only use modules from the standard library and psycopg2.
 """
 
 import configparser

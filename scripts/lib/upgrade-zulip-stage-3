@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --only-group=install --preview-features=target-workspace-discovery --script  # -*-python-*-
 #
 # This script contains the actual logic for upgrading from an old
 # version of Zulip to the new version.  upgrade-zulip-stage-3 is
@@ -12,14 +12,6 @@ import subprocess
 import sys
 import time
 
-os.environ["PYTHONUNBUFFERED"] = "y"
-
-# Force a known locale.  Some packages on PyPI fail to install in some locales.
-os.environ["LC_ALL"] = "C.UTF-8"
-os.environ["LANG"] = "C.UTF-8"
-os.environ["LANGUAGE"] = "C.UTF-8"
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     assert_running_as_root,
@@ -29,8 +21,16 @@ from scripts.lib.zulip_tools import (
     su_to_zulip,
     upgrade_script_arg_parser,
 )
+from version import ZULIP_VERSION as NEW_ZULIP_VERSION
 
 assert_running_as_root()
+
+os.environ["PYTHONUNBUFFERED"] = "y"
+
+# Force a known locale.  Some packages on PyPI fail to install in some locales.
+os.environ["LC_ALL"] = "C.UTF-8"
+os.environ["LANG"] = "C.UTF-8"
+os.environ["LANGUAGE"] = "C.UTF-8"
 
 # Set a known, reliable PATH
 os.environ["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -84,8 +84,6 @@ HAS_FILLED_CACHES = False
 if args.from_git:
     logging.info("Caching Zulip Git version...")
     subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
-
-from version import ZULIP_VERSION as NEW_ZULIP_VERSION
 
 old_version = parse_version_from(DEPLOYMENTS_DIR + "/current")
 logging.info("Upgrading from %s to %s, in %s", old_version, NEW_ZULIP_VERSION, deploy_path)

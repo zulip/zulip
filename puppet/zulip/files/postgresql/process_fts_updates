@@ -1,4 +1,4 @@
-#!/srv/zulip-database-env/.venv/bin/python3
+#!/usr/bin/env -S uv run --frozen --only-group=database --project=/srv/zulip-database-env --script  # -*-python-*-
 # Processes updates to PostgreSQL full-text search for new/edited messages.
 #
 # Zulip manages its PostgreSQL full-text search as follows.  When the
@@ -145,23 +145,10 @@ pg_args = {}
 
 USING_PGROONGA = False
 try:
-    # Case (1); we insert the path to the development root.
-    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
-
-    # Cases (2) and (4); we insert the path to the production root.
-    # This likely works out the same as the above path.
-    #
-    # We insert this path after the above, so that if running this
-    # command from a specific non-current Zulip deployment, we prefer
-    # that deployment's libraries.
-    sys.path.insert(1, "/home/zulip/deployments/current")
-
-    # For cases (2) and (4), we also need to set up the virtualenv, so we
-    # can read the Django settings.
-    from scripts.lib.setup_path import setup_path
-
-    setup_path()
-
+    # In cases (1), (2), and (4), the environment we are running in
+    # (see the shebang, or tools/run-dev) provides Django and the
+    # Zulip project root on sys.path, so we can read the Django
+    # settings; in case (3), the import fails.
     os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
     from django.conf import settings
 

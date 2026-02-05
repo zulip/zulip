@@ -7,11 +7,14 @@ requires-python = ">=3.10"
 requires = ["uv_build==0.11.*"]
 build-backend = "uv_build"
 
-[tool.uv.build-backend]
-module-name = []
-module-root = ""
-
 [dependency-groups]
+install = [
+  "zulip-server",
+
+  # For zulip-puppet-apply
+  "PyYAML",
+]
+
 database = [
   # Needed to access our database
   "psycopg2",
@@ -19,6 +22,7 @@ database = [
 
 prod = [
   { include-group = "database" },
+  { include-group = "install" },
 
   # Django itself
   "django[argon2]==5.2.*",
@@ -353,6 +357,10 @@ no-binary-package = [
   "xmlsec",
 ]
 
+[tool.uv.build-backend]
+module-name = []
+module-root = ""
+
 [tool.uv.sources]
 # Python 3.14 support: https://github.com/disqus/django-bitfield/pull/137
 django-bitfield = { git = "https://github.com/disqus/django-bitfield.git" }
@@ -373,6 +381,11 @@ zulip-bots = { git = "https://github.com/zulip/python-zulip-api.git", subdirecto
 
 # zulip's linting framework - zulint
 zulint = { git = "https://github.com/zulip/zulint.git" }
+
+[tool.uv.workspace]
+members = [
+    ".",
+]
 
 [tool.black]
 line-length = 100

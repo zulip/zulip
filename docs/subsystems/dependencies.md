@@ -119,25 +119,21 @@ extension, used by our [full-text search](full-text-search.md).
 
 ## Python packages
 
-Zulip uses the version of Python itself provided by the host OS for
-the Zulip server. We currently support Python 3.10 and newer, with
-Ubuntu 22.04 being the platform requiring 3.10 support. The comments
-in `.github/workflows/zulip-ci.yml` document the Python versions used
-by each supported platform.
+Zulip uses a Python installation managed by
+[uv](https://docs.astral.sh/uv/), pinned by the `.python-version`
+file, rather than the version of Python provided by the host OS.
 
-We manage third-party Python packages using [uv](https://docs.astral.sh/uv/),
-with our requirements listed in
+We also manage third-party Python packages using uv, with our
+requirements listed in
 [pyproject.toml](https://docs.astral.sh/uv/concepts/projects/layout/#the-pyprojecttoml),
 and locked versions stored in
 [`uv.lock`](https://docs.astral.sh/uv/concepts/projects/layout/#the-lockfile).
 
 - **Scripts**. Often, we want a script running in production to use
-  the Zulip virtualenv. To make that work without a lot of duplicated
-  code, we have a helpful function,
-  `scripts.lib.setup_path.setup_path`, which on import will put the
-  currently running Python script into the Zulip virtualenv. This is
-  called by `./manage.py` to ensure that our Django code always uses
-  the correct virtualenv as well.
+  the Zulip virtualenv. Such scripts start with a shebang line that
+  reruns them under `uv run`, against the environment of the Zulip
+  deployment they belong to, so that they always use the correct
+  virtualenv.
 - **Mypy type checker**. Because we're using mypy in a strict mode,
   when you add use of a new Python dependency, you usually need to
   either adds stubs to the `stubs/` directory for the library, or edit
