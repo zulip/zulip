@@ -40,7 +40,7 @@ run_test("$t", () => {
     );
 });
 
-run_test("$tr", () => {
+run_test("$t_html", () => {
     assert.equal(
         $t_html(
             {
