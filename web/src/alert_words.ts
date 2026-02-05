@@ -1,9 +1,9 @@
 import _ from "lodash";
 
-import type {Message} from "./message_store.ts";
+import type { Message } from "./message_store.ts";
 import * as message_store from "./message_store.ts";
 import * as people from "./people.ts";
-import type {StateData} from "./state_data.ts";
+import type { StateData } from "./state_data.ts";
 
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.
@@ -18,12 +18,12 @@ export function set_words(words: string[]): void {
     my_alert_words.sort((a, b) => b.length - a.length);
 }
 
-export function get_word_list(): {word: string}[] {
+export function get_word_list(): { word: string }[] {
     // Returns a array of objects
     // (with each alert_word as value and 'word' as key to the object.)
     const words = [];
     for (const word of my_alert_words) {
-        words.push({word});
+        words.push({ word });
     }
     return words;
 }
@@ -53,8 +53,8 @@ export function process_message(message: Message): void {
             /["&'<>]/g,
             (c) => alert_regex_replacements.get(c)!,
         );
-        const before_punctuation = "\\s|^|>|[\\(\\\".,';\\[]";
-        const after_punctuation = "(?=\\s)|$|<|[\\)\\\"\\?!:.,';\\]!]";
+        const before_punctuation = "\\s|^|>|[\\(\\\".,';\\[#@*`]";
+        const after_punctuation = "(?=\\s)|$|<|[\\)\\\"\\?!:.,';\\]!*`]";
 
         const regex = new RegExp(`(${before_punctuation})(${clean})(${after_punctuation})`, "ig");
         const updated_content = message.content.replace(

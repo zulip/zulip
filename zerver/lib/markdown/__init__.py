@@ -1941,7 +1941,7 @@ def possible_linked_topics(content: str) -> set[ChannelTopicInfo]:
 
 
 class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
-    allowed_before_punctuation = {" ", "\n", "(", '"', ".", ",", "'", ";", "[", "*", "`", ">"}
+    allowed_before_punctuation = {" ", "\n", "(", '"', ".", ",", "'", ";", "[", "*", "`", ">", "#", "@"}
     allowed_after_punctuation = {
         " ",
         "\n",
