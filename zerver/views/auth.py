@@ -635,6 +635,7 @@ def get_email_and_realm_from_jwt_authentication_request(
     except jwt.InvalidTokenError:
         raise JsonableError(_("Bad JSON web token"))
 
+    remote_email = payload.get("email", None)
     if remote_email is None:
         raise JsonableError(_("No email specified in JSON web token claims"))
 
