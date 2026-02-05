@@ -39,6 +39,38 @@ type TopicChoiceState = {
     items: TopicInfo[];
 };
 
+function build_topic_info_item(
+    stream_id: number,
+    topic_name: string,
+    num_unread: number,
+    is_topic_muted: boolean,
+    is_active_topic: boolean,
+    contains_unread_mention: boolean,
+): TopicInfo {
+    const is_topic_followed = user_topics.is_topic_followed(stream_id, topic_name);
+    const is_topic_unmuted_or_followed = user_topics.is_topic_unmuted_or_followed(
+        stream_id,
+        topic_name,
+    );
+    const [topic_resolved_prefix, topic_bare_name] = resolved_topic.display_parts(topic_name);
+    const topic_info: TopicInfo = {
+        stream_id,
+        topic_name,
+        topic_resolved_prefix,
+        topic_display_name: util.get_final_topic_display_name(topic_bare_name),
+        is_empty_string_topic: topic_bare_name === "",
+        unread: num_unread,
+        is_zero: num_unread === 0,
+        is_muted: is_topic_muted,
+        is_followed: is_topic_followed,
+        is_unmuted_or_followed: is_topic_unmuted_or_followed,
+        is_active_topic,
+        url: stream_topic_history.channel_topic_permalink_hash(stream_id, topic_name),
+        contains_unread_mention,
+    };
+    return topic_info;
+}
+
 function choose_topics(
     stream_id: number,
     topic_names: string[],
@@ -49,12 +81,6 @@ function choose_topics(
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = topic_choice_state.active_topic === topic_name.toLowerCase();
         const is_topic_muted = user_topics.is_topic_muted(stream_id, topic_name);
-        const is_topic_followed = user_topics.is_topic_followed(stream_id, topic_name);
-        const is_topic_unmuted_or_followed = user_topics.is_topic_unmuted_or_followed(
-            stream_id,
-            topic_name,
-        );
-        const [topic_resolved_prefix, topic_bare_name] = resolved_topic.display_parts(topic_name);
         // Important: Topics are lower-case in this set.
         const contains_unread_mention = topic_choice_state.topics_with_unread_mentions.has(
             topic_name.toLowerCase(),
@@ -122,22 +148,14 @@ function choose_topics(
             // same code we do when zoomed.
         }
 
-        const topic_info: TopicInfo = {
+        const topic_info = build_topic_info_item(
             stream_id,
             topic_name,
-            topic_resolved_prefix,
-            topic_display_name: util.get_final_topic_display_name(topic_bare_name),
-            is_empty_string_topic: topic_bare_name === "",
-            unread: num_unread,
-            is_zero: num_unread === 0,
-            is_muted: is_topic_muted,
-            is_followed: is_topic_followed,
-            is_unmuted_or_followed: is_topic_unmuted_or_followed,
+            num_unread,
+            is_topic_muted,
             is_active_topic,
-            url: stream_topic_history.channel_topic_permalink_hash(stream_id, topic_name),
             contains_unread_mention,
-        };
-
+        );
         topic_choice_state.items.push(topic_info);
     }
 }
