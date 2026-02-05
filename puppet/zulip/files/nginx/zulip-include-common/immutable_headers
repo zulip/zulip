@@ -1,0 +1,4 @@
+include /etc/nginx/zulip-include/headers;
+add_header Cache-Control "public, max-age=31536000, immutable";
+add_header Access-Control-Allow-Origin *;
+add_header Timing-Allow-Origin *;
