@@ -224,15 +224,40 @@ export const update_elements = ($content: JQuery): void => {
         const stream_id_string = $(this).attr("data-stream-id");
         assert(stream_id_string !== undefined);
         const stream_id = Number.parseInt(stream_id_string, 10);
+
         if (stream_id && $(this).find(".highlight").length === 0) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
             const stream_name = sub_store.maybe_get_stream_name(stream_id);
+
             if (stream_name !== undefined) {
                 // If the stream has been deleted,
                 // sub_store.maybe_get_stream_name might return
                 // undefined.  Otherwise, display the current stream name.
-                $(this).text("#" + stream_name);
+                const sub = sub_store.get(stream_id);
+
+                const is_archived = sub ? sub.is_archived : false;
+                const is_invite_only = sub ? sub.invite_only : false;
+                const is_web_public = sub ? sub.is_web_public : false;
+
+                let icon_class = "zulip-icon-hashtag";
+                if (is_archived) {
+                    icon_class = "zulip-icon-archive";
+                } else if (is_invite_only) {
+                    icon_class = "zulip-icon-lock";
+                } else if (is_web_public) {
+                    icon_class = "zulip-icon-globe";
+                }
+
+                const $icon = $("<i>");
+
+                $icon.addClass("channel-privacy-type-icon");
+                $icon.addClass("zulip-icon");
+                $icon.addClass(icon_class);
+
+                $icon.attr("aria-hidden", "true");
+
+                $(this).empty().text(stream_name).prepend($icon);
             }
         }
     });
@@ -240,9 +265,12 @@ export const update_elements = ($content: JQuery): void => {
     $content.find("a.stream-topic, a.message-link").each(function (): void {
         const narrow_url = $(this).attr("href");
         assert(narrow_url !== undefined);
+
         const channel_topic = hash_util.decode_stream_topic_from_url(narrow_url);
         assert(channel_topic !== null);
+
         const channel_name = sub_store.maybe_get_stream_name(channel_topic.stream_id);
+
         if (channel_name !== undefined && $(this).find(".highlight").length === 0) {
             // Display the current channel name if it hasn't been deleted
             // and not being displayed in search highlight.
@@ -250,19 +278,58 @@ export const update_elements = ($content: JQuery): void => {
             // but we are doing so currently.
             const topic_name = channel_topic.topic_name;
             assert(topic_name !== undefined);
+
             const topic_display_name = util.get_final_topic_display_name(topic_name);
+
             const context = {
                 channel_name,
                 topic_display_name,
                 is_empty_string_topic: topic_name === "",
                 href: narrow_url,
             };
+
             if ($(this).hasClass("stream-topic")) {
                 const topic_link_html = render_topic_link({
                     channel_id: channel_topic.stream_id,
                     ...context,
                 });
-                $(this).replaceWith($(topic_link_html));
+
+                const $new_elem = $(topic_link_html);
+
+                const sub = sub_store.get(channel_topic.stream_id);
+                const is_archived = sub ? sub.is_archived : false;
+                const is_invite_only = sub ? sub.invite_only : false;
+                const is_web_public = sub ? sub.is_web_public : false;
+
+                let icon_class = "zulip-icon-hashtag";
+                if (is_archived) {
+                    icon_class = "zulip-icon-archive";
+                } else if (is_invite_only) {
+                    icon_class = "zulip-icon-lock";
+                } else if (is_web_public) {
+                    icon_class = "zulip-icon-globe";
+                }
+
+                const $icon = $("<i>");
+
+                $icon.addClass("channel-privacy-type-icon");
+                $icon.addClass("zulip-icon");
+                $icon.addClass(icon_class);
+
+                $icon.attr("aria-hidden", "true");
+
+                $new_elem.empty();
+                if (context.is_empty_string_topic) {
+                    const $topic_span = $("<span>")
+                        .addClass("empty-topic-display")
+                        .text(topic_display_name);
+                    $new_elem.text(`${channel_name} > `).append($topic_span);
+                } else {
+                    $new_elem.text(`${channel_name} > ${topic_display_name}`);
+                }
+                $new_elem.prepend($icon);
+
+                $(this).replaceWith($new_elem);
             } else {
                 const message_link_html = render_channel_message_link(context);
                 $(this).replaceWith($(message_link_html));
