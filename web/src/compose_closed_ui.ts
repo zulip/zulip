@@ -136,6 +136,17 @@ export function get_recipient_label(
     return undefined;
 }
 
+// This is likely a temporary function for supporting both the
+// new skinned compose box in conversation views and the legacy
+// closed compose box in home views, etc.
+export function update_closed_compose_box_class_by_narrow(is_conversation_narrow: boolean): void {
+    if (is_conversation_narrow) {
+        $("#compose").addClass("composing-to-conversation-narrow");
+    } else {
+        $("#compose").removeClass("composing-to-conversation-narrow");
+    }
+}
+
 // Exported for tests
 export let update_reply_button_state = (): void => {
     const $compose_reply_button_wrapper = $(
@@ -286,6 +297,8 @@ export function update_reply_button(recipient_information?: ReplyRecipientInform
 }
 
 export function initialize(): void {
+    update_closed_compose_box_class_by_narrow(narrow_state.is_message_feed_visible());
+
     // When the message selection changes, change the label on the Reply button.
     $(document).on("message_selected.zulip", () => {
         if (narrow_state.is_message_feed_visible()) {
