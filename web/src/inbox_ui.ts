@@ -321,6 +321,7 @@ function restore_inbox_view_state(): void {
 export function show(filter?: Filter): void {
     assert(hide_other_views_callback !== undefined);
     hide_other_views_callback();
+    compose_closed_ui.update_closed_compose_box_class_by_narrow(false);
     const was_inbox_already_visible = inbox_util.is_visible();
 
     // Check if we are already narrowed to the same channel view.

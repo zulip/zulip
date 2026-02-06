@@ -92,6 +92,7 @@ const ListWidget = mock_esm("../src/list_widget", {
 });
 
 mock_esm("../src/compose_closed_ui", {
+    update_closed_compose_box_class_by_narrow: noop,
     set_standard_text_for_reply_button: noop,
     update_buttons: noop,
 });
