@@ -13,6 +13,7 @@ import render_users_with_status_icons from "../templates/users_with_status_icons
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
@@ -36,7 +37,6 @@ import * as recent_senders from "./recent_senders.ts";
 import * as recent_view_data from "./recent_view_data.ts";
 import type {ConversationData} from "./recent_view_data.ts";
 import * as recent_view_util from "./recent_view_util.ts";
-import * as channel_folders from "./channel_folders.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_data from "./stream_settings_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
