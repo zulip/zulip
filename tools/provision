@@ -56,7 +56,10 @@ echo "PROVISIONING STARTING." >>$LOG_PATH
 # PYTHONUNBUFFERED is important to ensure that tracebacks don't get
 # lost far above where they should be in the output.
 export PYTHONUNBUFFERED=1
-tools/lib/provision.py "$@" 2>&1 | tee -a "$LOG_PATH"
+(
+    sudo env http_proxy="${http_proxy-}" https_proxy="${https_proxy-}" no_proxy="${no_proxy-}" scripts/lib/install-uv \
+        && tools/lib/provision.py "$@"
+) 2>&1 | tee -a "$LOG_PATH"
 failed=${PIPESTATUS[0]}
 
 if [ "$failed" -ne 0 ]; then

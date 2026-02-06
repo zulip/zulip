@@ -426,7 +426,6 @@ def main(options: argparse.Namespace) -> NoReturn:
     run_as_root([*proxy_env, "tools/setup/install-tusd"], sudo_args=["--preserve-env=PATH"])
 
     # Install Python environment
-    run_as_root([*proxy_env, "scripts/lib/install-uv"], sudo_args=["--preserve-env=PATH"])
     run(
         [*proxy_env, "uv", "sync", "--frozen"],
         env={k: v for k, v in os.environ.items() if k not in {"PYTHONDEVMODE", "PYTHONWARNINGS"}},
