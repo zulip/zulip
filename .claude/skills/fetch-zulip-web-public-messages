@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+"""Fetch messages from a Zulip web-public channel via spectator access.
+
+Given a standard Zulip narrow URL, fetches messages using the
+unauthenticated spectator API endpoint. Only works for web-public channels.
+
+Usage:
+    tools/fetch-zulip-web-public-messages URL
+    tools/fetch-zulip-web-public-messages --num-before 200 --num-after 50 URL
+    tools/fetch-zulip-web-public-messages --json URL
+"""
+
+import argparse
+import re
+import sys
+import urllib.parse
+from datetime import datetime, timezone
+from typing import Any
+
+import orjson
+import requests
+
+
+def decode_zulip_hash_component(encoded: str) -> str:
+    """Decode a Zulip URL hash component.
+
+    Mirrors web/src/internal_url.ts:decodeHashComponent:
+    replace all '.' with '%', then percent-decode.
+    """
+    return urllib.parse.unquote(encoded.replace(".", "%"), encoding="utf-8")
+
+
+def parse_zulip_url(url: str) -> tuple[str, int, str, str | None]:
+    """Parse a Zulip narrow URL into its components.
+
+    Returns (server_url, channel_id, topic, anchor_message_id).
+    anchor_message_id is None if not present in the URL.
+    """
+    parsed = urllib.parse.urlsplit(url)
+    server_url = f"{parsed.scheme}://{parsed.netloc}"
+    fragment = parsed.fragment
+
+    # Parse the narrow fragment: narrow/channel/ID-slug/topic/encoded-topic[/with/ID]
+    match = re.match(
+        r"^narrow/(?:channel|stream)/(\d+)-([^/]*)/topic/([^/]+)(?:/with/(\d+))?$",
+        fragment,
+    )
+    if not match:
+        print(f"Error: Could not parse Zulip narrow URL: {url}", file=sys.stderr)
+        print(
+            "Expected format: https://HOSTNAME/#narrow/channel/ID-name/topic/TOPIC[/with/MSG_ID]",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    channel_id = int(match.group(1))
+    topic = decode_zulip_hash_component(match.group(3))
+    anchor: str | None = match.group(4)
+
+    return server_url, channel_id, topic, anchor
+
+
+def fetch_messages(
+    server_url: str,
+    channel_id: int,
+    topic: str,
+    anchor: str | None,
+    num_before: int,
+    num_after: int,
+) -> dict[str, Any]:
+    """Fetch messages from the Zulip spectator API."""
+    narrow = [
+        {"operator": "channels", "operand": "web-public"},
+        {"operator": "channel", "operand": channel_id},
+        {"operator": "topic", "operand": topic},
+    ]
+    params = {
+        "anchor": anchor if anchor is not None else "newest",
+        "num_before": str(num_before),
+        "num_after": str(num_after),
+        "narrow": orjson.dumps(narrow).decode(),
+    }
+
+    response = requests.get(
+        f"{server_url}/json/messages",
+        params=params,
+        timeout=30,
+    )
+
+    if response.status_code != 200:
+        print(f"Error: API returned status {response.status_code}", file=sys.stderr)
+        try:
+            error_data = orjson.loads(response.content)
+            print(f"  {error_data.get('msg', response.text)}", file=sys.stderr)
+        except orjson.JSONDecodeError:
+            print(f"  {response.text}", file=sys.stderr)
+        sys.exit(1)
+
+    return orjson.loads(response.content)
+
+
+def format_messages(data: dict[str, Any]) -> str:
+    """Format API response messages for human-readable output."""
+    messages = data.get("messages", [])
+    if not messages:
+        return "No messages found."
+
+    blocks = []
+    for msg in messages:
+        timestamp = datetime.fromtimestamp(msg["timestamp"], tz=timezone.utc).strftime(
+            "%Y-%m-%d %H:%M UTC"
+        )
+        header = f"--- {msg['sender_full_name']} ({timestamp}) [{msg['id']}] ---"
+        blocks.append(f"{header}\n{msg['content']}")
+
+    return "\n\n".join(blocks) + "\n"
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Fetch messages from a Zulip web-public channel via spectator access."
+    )
+    parser.add_argument("url", help="Zulip narrow URL to fetch messages from")
+    parser.add_argument(
+        "--num-before",
+        type=int,
+        default=100,
+        help="Number of messages before the anchor (default: 100)",
+    )
+    parser.add_argument(
+        "--num-after",
+        type=int,
+        default=100,
+        help="Number of messages after the anchor (default: 100)",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output raw JSON response",
+    )
+    args = parser.parse_args()
+
+    server_url, channel_id, topic, anchor = parse_zulip_url(args.url)
+    data = fetch_messages(server_url, channel_id, topic, anchor, args.num_before, args.num_after)
+
+    if args.json:
+        sys.stdout.buffer.write(orjson.dumps(data, option=orjson.OPT_INDENT_2) + b"\n")
+    else:
+        print(format_messages(data), end="")
+
+
+if __name__ == "__main__":
+    main()
