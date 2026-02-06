@@ -2417,7 +2417,33 @@ class MarkdownMentionTest(ZulipTestCase):
                 f"<p>{unicode_character}@<strong>King Hamlet</strong></p>",
             )
 
-    def test_mention_silent(self) -> None:
+    def test_mention_get_user_ids(self) -> None:
+        # possible_mentions() does NOT differentiate between silent and
+        # non-silent mentions, unlike possible_user_group_mentions().
+        # So we explicitly test that behaviour of possible_mentions(),
+        # when mentioning users, ensuring their Ids are fetched.
+        # This also tests the case where different mention types were used in the same
+        # message.
+        realm = get_realm("zulip")
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        # Mix 4 different types of mentions:
+        # non-silent mention by name, silent mention by name, non-silent mention by ID, silent mention by ID.
+        content = f"@**{aaron.full_name}**, @_**{hamlet.full_name}**, @**|{cordelia.id}**, @_**|{othello.id}**"
+
+        mention_backend = MentionBackend(realm.id)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+
+        # user_ids of all the mentioned users, by different mention types,
+        # should be captured in mention_data.get_user_ids().
+        self.assertEqual(
+            mention_data.get_user_ids(), {aaron.id, hamlet.id, cordelia.id, othello.id}
+        )
+
+    def test_render_silent_mention_user(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
         msg = Message(
@@ -2631,8 +2657,14 @@ class MarkdownMentionTest(ZulipTestCase):
         assert_mentions("smush@**steve**smush", set())
 
         assert_mentions(
-            f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234** @**all**",
-            {"King Hamlet", f"|{aaron.id}", "Cordelia, Lear's daughter", "Foo van Barson|1234"},
+            f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234**, @_**othello** @**all**",
+            {
+                "King Hamlet",
+                f"|{aaron.id}",
+                "Cordelia, Lear's daughter",
+                "Foo van Barson|1234",
+                "othello",
+            },
             False,
             True,
         )
@@ -2641,22 +2673,26 @@ class MarkdownMentionTest(ZulipTestCase):
         sender_user_profile = self.example_user("othello")
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
             realm=sender_user_profile.realm,
         )
 
-        content = "@**King Hamlet** and @**Cordelia, Lear's daughter**, check this out"
+        content = (
+            "@**King Hamlet**, @**Cordelia, Lear's daughter**, and @_**aaron**, check this out"
+        )
 
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
             "<p>"
             '<span class="user-mention" '
-            f'data-user-id="{hamlet.id}">@King Hamlet</span> and '
+            f'data-user-id="{hamlet.id}">@King Hamlet</span>, '
             '<span class="user-mention" '
-            f'data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>, '
+            f'data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>, and '
+            f'<span class="user-mention silent" data-user-id="{aaron.id}">aaron</span>, '
             "check this out</p>",
         )
         self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id, cordelia.id})
