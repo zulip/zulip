@@ -44,6 +44,11 @@ server_events.finished_initial_fetch();
 run_test("announcement_channel_batching_multiple_updates", () => {
     update_announce_stream_option_calls = 0;
 
+    // Initialize realm properties
+    realm.realm_new_stream_announcements_stream_id = 0;
+    realm.realm_signup_announcements_stream_id = 0;
+    realm.realm_zulip_update_announcements_stream_id = 0;
+
     const events = [
         {
             id: 1,
@@ -79,6 +84,9 @@ run_test("announcement_channel_batching_multiple_updates", () => {
 
 run_test("announcement_channel_single_update", () => {
     update_announce_stream_option_calls = 0;
+
+    // Initialize realm properties
+    realm.realm_new_stream_announcements_stream_id = 0;
 
     const events = [
         {
