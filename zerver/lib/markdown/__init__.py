@@ -1955,6 +1955,8 @@ class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
         ";",
         "]",
         "!",
+        ">",
+        "@",
         "*",
         "`",
     }
