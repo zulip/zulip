@@ -1,10 +1,10 @@
-require "shellwords"
+require "open3"
 
 Puppet::Functions.create_function(:zulipconf) do
   def zulipconf(section, key, default)
     zulip_conf_path = Facter.value("zulip_conf_path")
-    output = `/usr/bin/crudini --get -- #{[zulip_conf_path, section, key].shelljoin} 2>&1`; result = $?.success?
-    if result
+    output, _stderr, status = Open3.capture3("/usr/bin/crudini", "--get", "--", zulip_conf_path, section, key)
+    if status.success?
       if [true, false].include? default
         # If the default is a bool, coerce into a bool.  This list is also
         # maintained in scripts/lib/zulip_tools.py
