@@ -435,9 +435,6 @@ export function mark_as_unread_from_here(message_id: number): void {
 
         display_count = locally_available_message_count.toString();
     } else if (locally_available_message_count < UNREAD_COUNT_STEP_SIZE) {
-        // TODO: This logic should have a case for where we're
-        // offline, and skip the prompt in interleaved views in that
-        // case.
         display_count = locally_available_message_count.toString();
     } else {
         // Otherwise, we round down to the nearest
