@@ -232,7 +232,27 @@ export const update_elements = ($content: JQuery): void => {
                 // If the stream has been deleted,
                 // sub_store.maybe_get_stream_name might return
                 // undefined.  Otherwise, display the current stream name.
-                $(this).text("#" + stream_name);
+                const sub = sub_store.get(stream_id);
+                const is_archived = sub ? sub.is_archived : false;
+                const is_invite_only = sub ? sub.invite_only : false;
+                const is_web_public = sub ? sub.is_web_public : false;
+
+                let icon_class = "zulip-icon-hashtag";
+                if (is_archived) {
+                    icon_class = "zulip-icon-archive";
+                } else if (is_invite_only) {
+                    icon_class = "zulip-icon-lock";
+                } else if (is_web_public) {
+                    icon_class = "zulip-icon-globe";
+                }
+
+                const $icon = $("<i>");
+                $icon.addClass("channel-privacy-type-icon");
+                $icon.addClass("zulip-icon");
+                $icon.addClass(icon_class);
+                $icon.attr("aria-hidden", "true");
+
+                $(this).empty().text(stream_name).prepend($icon);
             }
         }
     });
@@ -262,7 +282,40 @@ export const update_elements = ($content: JQuery): void => {
                     channel_id: channel_topic.stream_id,
                     ...context,
                 });
-                $(this).replaceWith($(topic_link_html));
+                const $new_elem = $(topic_link_html);
+
+                const sub = sub_store.get(channel_topic.stream_id);
+                const is_archived = sub ? sub.is_archived : false;
+                const is_invite_only = sub ? sub.invite_only : false;
+                const is_web_public = sub ? sub.is_web_public : false;
+
+                let icon_class = "zulip-icon-hashtag";
+                if (is_archived) {
+                    icon_class = "zulip-icon-archive";
+                } else if (is_invite_only) {
+                    icon_class = "zulip-icon-lock";
+                } else if (is_web_public) {
+                    icon_class = "zulip-icon-globe";
+                }
+
+                const $icon = $("<i>");
+                $icon.addClass("channel-privacy-type-icon");
+                $icon.addClass("zulip-icon");
+                $icon.addClass(icon_class);
+                $icon.attr("aria-hidden", "true");
+
+                $new_elem.empty();
+                if (context.is_empty_string_topic) {
+                    const $topic_span = $("<span>")
+                        .addClass("empty-topic-display")
+                        .text(topic_display_name);
+                    $new_elem.text(`${channel_name} > `).append($topic_span);
+                } else {
+                    $new_elem.text(`${channel_name} > ${topic_display_name}`);
+                }
+                $new_elem.prepend($icon);
+
+                $(this).replaceWith($new_elem);
             } else {
                 const message_link_html = render_channel_message_link(context);
                 $(this).replaceWith($(message_link_html));
