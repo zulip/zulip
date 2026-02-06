@@ -4,7 +4,7 @@ import type * as tippy from "tippy.js";
 
 import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
 import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
-import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
+import render_settings_bot_list_row from "../templates/settings/settings_bot_list_row.hbs";
 
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
@@ -639,7 +639,7 @@ function create_all_bots_table(
     section.list_widget = ListWidget.create($all_bots_table, bot_user_ids, {
         name: widget_name,
         get_item: bot_info,
-        modifier_html: render_settings_user_list_row,
+        modifier_html: render_settings_bot_list_row,
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
             predicate(item) {
@@ -681,7 +681,7 @@ function create_your_bots_table(
     section.list_widget = ListWidget.create($your_bots_table, bot_user_ids, {
         name: widget_name,
         get_item: bot_info,
-        modifier_html: render_settings_user_list_row,
+        modifier_html: render_settings_bot_list_row,
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
             predicate(item) {
