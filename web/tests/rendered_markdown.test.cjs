@@ -412,6 +412,12 @@ run_test("stream-links", ({mock_template}) => {
     $content.set_find_results("a.stream", $stream);
     $content.set_find_results("a.stream-topic, a.message-link", $stream_topic);
 
+    let stream_name_context;
+    mock_template("inline_decorated_channel_name.hbs", true, (data, html) => {
+        stream_name_context = data;
+        return html;
+    });
+
     let topic_link_context;
     let topic_link_rendered_html;
     mock_template("topic_link.hbs", true, (data, html) => {
@@ -426,10 +432,14 @@ run_test("stream-links", ({mock_template}) => {
 
     rm.update_elements($content);
 
-    // Final asserts
-    assert.equal($stream.text(), `#${stream.name}`);
+    // Verify inline_decorated_channel_name was called with the correct stream.
+    assert.ok(stream_name_context, "inline_decorated_channel_name should be called");
+    assert.equal(stream_name_context.stream.stream_id, stream.stream_id);
+    assert.equal(stream_name_context.stream.name, stream.name);
+
     assert.deepEqual(topic_link_context, {
         channel_id: stream.stream_id,
+        stream,
         channel_name: stream.name,
         topic_display_name: "topic name > still the topic name",
         is_empty_string_topic: false,
@@ -465,6 +475,7 @@ run_test("topic-link (empty string topic)", ({mock_template}) => {
     // Final assert
     assert.deepEqual(topic_link_context, {
         channel_id: stream.stream_id,
+        stream,
         channel_name: stream.name,
         topic_display_name: `translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
         is_empty_string_topic: true,
@@ -801,6 +812,153 @@ run_test("code playground multiple", ({override, mock_template}) => {
     assert.equal($view_code.attr("data-tippy-content"), "translated: View in playground");
     assert.equal($view_code.attr("aria-label"), "translated: View in playground");
     assert.equal($view_code.attr("aria-haspopup"), "true");
+});
+
+run_test("stream-private", ({mock_template}) => {
+    // Setup
+    const private_stream = {
+        stream_id: 88,
+        name: "secret-stream",
+        invite_only: true,
+        is_web_public: false,
+        is_archived: false,
+    };
+    stream_data.add_sub_for_tests(private_stream);
+
+    const $content = get_content_element();
+    const $stream = $.create("a.stream");
+    $stream.attr("data-stream-id", private_stream.stream_id);
+    $stream.set_find_results(".highlight", []);
+
+    const $topic = $.create("a.stream-topic");
+    $topic.attr("href", `/#narrow/channel/${private_stream.stream_id}-secret-stream/topic/test`);
+    $topic.set_find_results(".highlight", []);
+    $topic.addClass("stream-topic");
+    $topic[0].replaceWith = noop;
+
+    $content.set_find_results("a.stream", $stream);
+    $content.set_find_results("a.stream-topic, a.message-link", $topic);
+
+    let stream_name_context;
+    mock_template("inline_decorated_channel_name.hbs", true, (data, html) => {
+        stream_name_context = data;
+        return html;
+    });
+
+    let topic_link_context;
+    mock_template("topic_link.hbs", true, (data, html) => {
+        topic_link_context = data;
+        return html;
+    });
+
+    rm.update_elements($content);
+
+    // Verify inline_decorated_channel_name was called with the private stream.
+    assert.ok(stream_name_context, "inline_decorated_channel_name should be called");
+    assert.ok(stream_name_context.stream.invite_only, "Stream should be private");
+
+    // Verify topic_link was called with the private stream.
+    assert.ok(topic_link_context, "topic_link should be called");
+    assert.ok(topic_link_context.stream.invite_only, "Topic stream should be private");
+});
+
+run_test("stream-web-public", ({mock_template}) => {
+    // Setup
+    const web_public_stream = {
+        stream_id: 99,
+        name: "web-public-stream",
+        invite_only: false,
+        is_web_public: true,
+        is_archived: false,
+    };
+    stream_data.add_sub_for_tests(web_public_stream);
+
+    const $content = get_content_element();
+    const $stream = $.create("a.stream");
+    $stream.attr("data-stream-id", web_public_stream.stream_id);
+    $stream.set_find_results(".highlight", []);
+
+    const $topic = $.create("a.stream-topic");
+    $topic.attr(
+        "href",
+        `/#narrow/channel/${web_public_stream.stream_id}-web-public-stream/topic/test`,
+    );
+    $topic.set_find_results(".highlight", []);
+    $topic.addClass("stream-topic");
+    $topic[0].replaceWith = noop;
+
+    $content.set_find_results("a.stream", $stream);
+    $content.set_find_results("a.stream-topic, a.message-link", $topic);
+
+    let stream_name_context;
+    mock_template("inline_decorated_channel_name.hbs", true, (data, html) => {
+        stream_name_context = data;
+        return html;
+    });
+
+    let topic_link_context;
+    mock_template("topic_link.hbs", true, (data, html) => {
+        topic_link_context = data;
+        return html;
+    });
+
+    rm.update_elements($content);
+
+    // Verify inline_decorated_channel_name was called with the web-public stream.
+    assert.ok(stream_name_context, "inline_decorated_channel_name should be called");
+    assert.ok(stream_name_context.stream.is_web_public, "Stream should be web-public");
+
+    // Verify topic_link was called with the web-public stream.
+    assert.ok(topic_link_context, "topic_link should be called");
+    assert.ok(topic_link_context.stream.is_web_public, "Topic stream should be web-public");
+});
+
+run_test("stream-archived", ({mock_template}) => {
+    // Setup
+    const archived_stream = {
+        stream_id: 77,
+        name: "old-stream",
+        invite_only: false,
+        is_web_public: false,
+        is_archived: true,
+    };
+    stream_data.add_sub_for_tests(archived_stream);
+
+    const $content = get_content_element();
+    const $stream = $.create("a.stream");
+    $stream.attr("data-stream-id", archived_stream.stream_id);
+    $stream.set_find_results(".highlight", []);
+
+    const $topic = $.create("a.stream-topic");
+    $topic.attr("href", `/#narrow/channel/${archived_stream.stream_id}-old-stream/topic/test`);
+    $topic.set_find_results(".highlight", []);
+    $topic.addClass("stream-topic");
+    $topic[0].replaceWith = noop;
+
+    $content.set_find_results("a.stream", $stream);
+    $content.set_find_results("a.stream-topic, a.message-link", $topic);
+
+    let stream_name_context;
+    mock_template("inline_decorated_channel_name.hbs", true, (data, html) => {
+        stream_name_context = data;
+        return html;
+    });
+
+    let topic_link_context;
+    mock_template("topic_link.hbs", true, (data, html) => {
+        topic_link_context = data;
+        return html;
+    });
+
+    rm.update_elements($content);
+
+    // Verify inline_decorated_channel_name was called with the archived stream.
+    assert.ok(stream_name_context, "inline_decorated_channel_name should be called");
+    assert.ok(stream_name_context.stream.is_archived, "Stream should be archived");
+
+    // Verify topic_link was called with the archived stream.
+    assert.ok(topic_link_context, "topic_link should be called");
+    assert.ok(topic_link_context.stream.is_archived, "Topic stream should be archived");
 });
 
 run_test("rtl", () => {
