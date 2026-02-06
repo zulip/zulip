@@ -33,7 +33,7 @@ setup_puppet_modules()
 
 distro_info = platform.freedesktop_os_release()
 puppet_config = """
-Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
+Exec { path => "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" }
 """
 
 for pclass in re.split(r"\s*,\s*", config.get("machine", "puppet_classes")):
