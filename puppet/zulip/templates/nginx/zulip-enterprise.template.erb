@@ -27,8 +27,12 @@ server {
         allow 127.0.0.1;
         allow ::1;
 
+<% if @loadbalancers && !@loadbalancers.empty? -%>
 <% @loadbalancers.each do |host| -%>
+<% if host && !host.empty? -%>
         allow <%= host %>;
+<% end -%>
+<% end -%>
 <% end -%>
 
         deny all;
@@ -64,6 +68,9 @@ server {
 server {
     listen 80;
     listen [::]:80;
+    
+    # Match any hostname (but not empty Host header - that goes to default_server)
+    server_name _;
 
     location / {
         return 301 https://$host$request_uri;
