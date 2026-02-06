@@ -23,9 +23,23 @@ mock_esm("../src/loading", {
     destroy_indicator: noop,
 });
 
+mock_esm("../src/reload_state", {
+    is_in_progress() {
+        return false;
+    },
+});
+
+mock_esm("../src/sent_messages", {
+    report_event_received() { },
+    messages: new Map(),
+});
+
 const { realm } = zrequire("state_data");
 
 const server_events = zrequire("server_events");
+
+// Mark initial fetch as complete before running tests
+server_events.finished_initial_fetch();
 
 run_test("announcement_channel_batching_multiple_updates", () => {
     update_announce_stream_option_calls = 0;
