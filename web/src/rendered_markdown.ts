@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import render_channel_message_link from "../templates/channel_message_link.hbs";
@@ -10,6 +11,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 
+import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as hash_util from "./hash_util.ts";
@@ -118,6 +120,41 @@ export function set_name_in_mention_element(
     }
 
     wrap_mention_content_in_dom_element(element, user_is_bot);
+}
+
+// Helper function to highlight alert words in rendered content
+function highlight_alert_words_in_element($element: JQuery): void {
+    const alert_word_list = alert_words.get_word_list();
+
+    for (const {word} of alert_word_list) {
+        const clean = _.escapeRegExp(word).replaceAll(/["&'<>]/g, (c) => {
+            const replacements = new Map<string, string>([
+                ["&", "&amp;"],
+                ["<", "&lt;"],
+                [">", "&gt;"],
+                ['"', '(?:"|&quot;)'],
+                ["'", "(?:'|&#39;)"],
+            ]);
+            return replacements.get(c)!;
+        });
+        const before_punctuation = "\\s|^|>|[\\(\\\".,';\\[]";
+        const after_punctuation = "(?=\\s)|$|<|[\\)\\\"\\?!:.,';\\]!]";
+        const regex = new RegExp(`(${before_punctuation})(${clean})(${after_punctuation})`, "ig");
+
+        $element.each(function () {
+            const $this = $(this);
+            const html = $this.html();
+            if (html === undefined) {
+                return;
+            }
+            const rendered_html = html.replace(
+                regex,
+                (_match, before, word_match, after) =>
+                    before + "<span class='alert-word'>" + word_match + "</span>" + after,
+            );
+            $this.html(rendered_html);
+        });
+    }
 }
 
 export const update_elements = ($content: JQuery): void => {
@@ -268,6 +305,10 @@ export const update_elements = ($content: JQuery): void => {
                 $(this).replaceWith($(message_link_html));
             }
         }
+    });
+
+    $content.find("a.stream-topic, a.message-link").each(function (): void {
+        highlight_alert_words_in_element($(this));
     });
 
     $content.find("time").each(function (): void {

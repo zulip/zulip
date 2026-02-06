@@ -23,6 +23,11 @@ mock_cjs("clipboard", Clipboard);
 
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
+const alert_words = mock_esm("../src/alert_words", {
+    get_word_list() {
+        return [];
+    },
+});
 
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
@@ -828,6 +833,124 @@ run_test("code playground multiple", ({override, mock_template}) => {
     assert.equal($view_code.attr("data-tippy-content"), "translated: View in playground");
     assert.equal($view_code.attr("aria-label"), "translated: View in playground");
     assert.equal($view_code.attr("aria-haspopup"), "true");
+});
+
+run_test("alert-words in channel links", ({override}) => {
+    override(alert_words, "get_word_list", () => [{word: "test"}, {word: "GSoC"}]);
+
+    const $content = get_content_element();
+
+    const $link1 = $.create("a.stream-topic");
+    let link1_html = "#general > test discussion";
+    $link1.set_find_results(".highlight", false);
+    $link1.attr("data-stream-id", "123");
+    $link1.attr("href", "#narrow/channel/123/topic/test");
+    $link1.text("#general > test discussion");
+    $link1.html = function (new_html) {
+        if (new_html === undefined) {
+            return link1_html;
+        }
+        link1_html = new_html;
+        return undefined;
+    };
+    $link1.replaceWith = noop;
+    $link1.each = (f) => f.call($link1);
+
+    const $link2 = $.create("a.message-link");
+    let link2_html = "#general > GSoC 2024 @ 💬";
+    $link2.set_find_results(".highlight", false);
+    $link2.attr("href", "#narrow/channel/123/topic/GSoC");
+    $link2.text("#general > GSoC 2024 @ 💬");
+    $link2.html = function (new_html) {
+        if (new_html === undefined) {
+            return link2_html;
+        }
+        link2_html = new_html;
+        return undefined;
+    };
+    $link2.replaceWith = noop;
+    $link2.each = (f) => f.call($link2);
+
+    $content.set_find_results("a.stream-topic, a.message-link", $array([$link1, $link2]));
+
+    rm.update_elements($content);
+
+    assert.ok(
+        $link1.html().includes("<span class='alert-word'>test</span>"),
+        `Expected "${$link1.html()}" to include alert word span`,
+    );
+    assert.ok(
+        $link2.html().includes("<span class='alert-word'>GSoC</span>"),
+        `Expected "${$link2.html()}" to include alert word span`,
+    );
+    // Verify setter returns undefined
+    assert.equal($link1.html("test value"), undefined);
+    assert.equal($link2.html("test value"), undefined);
+});
+
+run_test("alert-words with special chars and undefined html", ({override}) => {
+    // Test special characters in alert words to cover the replacements map
+    override(alert_words, "get_word_list", () => [
+        {word: "C++"},
+        {word: "test&go"},
+        {word: "<tag>"},
+        {word: "mom's"},
+        {word: '"quote"'},
+    ]);
+
+    const $content = get_content_element();
+
+    // Test 1: Link with C++ (contains +)
+    const $link1 = $.create("a.stream-topic-special");
+    let link1_html = "#general > C++ programming";
+    $link1.set_find_results(".highlight", false);
+    $link1.attr("data-stream-id", "123");
+    $link1.attr("href", "#narrow/channel/123/topic/cpp");
+    $link1.html = function (new_html) {
+        if (new_html === undefined) {
+            return link1_html;
+        }
+        link1_html = new_html;
+        return undefined;
+    };
+    $link1.replaceWith = noop;
+    $link1.each = (f) => f.call($link1);
+
+    // Test 2: Link with & character
+    const $link2 = $.create("a.stream-topic-ampersand");
+    let link2_html = "#general > test&go now";
+    $link2.set_find_results(".highlight", false);
+    $link2.attr("data-stream-id", "123");
+    $link2.attr("href", "#narrow/channel/123/topic/test");
+    $link2.html = function (new_html) {
+        if (new_html === undefined) {
+            return link2_html;
+        }
+        link2_html = new_html;
+        return undefined;
+    };
+    $link2.replaceWith = noop;
+    $link2.each = (f) => f.call($link2);
+
+    // Test 3: Element with undefined html (to cover line 148)
+    const $link3 = $.create("a.message-link-undef");
+    $link3.set_find_results(".highlight", false);
+    $link3.attr("href", "#narrow/channel/123/topic/test");
+    $link3.html = () => undefined;
+    $link3.replaceWith = noop;
+    $link3.each = (f) => f.call($link3);
+
+    $content.set_find_results("a.stream-topic, a.message-link", $array([$link1, $link2, $link3]));
+
+    rm.update_elements($content);
+
+    // Verify special characters are handled correctly
+    assert.ok($link1.html().includes("C++"));
+    assert.ok($link2.html().includes("test&go") || link2_html.includes("test&go"));
+
+    // Verify setter returns undefined
+    assert.equal($link1.html("test value"), undefined);
+    assert.equal($link2.html("test value"), undefined);
 });
 
 run_test("rtl", () => {
