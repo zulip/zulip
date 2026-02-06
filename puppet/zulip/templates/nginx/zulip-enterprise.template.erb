@@ -1,3 +1,52 @@
+# Default server block for requests without Host header
+# This is needed for load balancer health checks that send HTTP/1.0 requests
+# without a Host header. Without this, nginx returns 400 Bad Request.
+# 
+# Security note: This ONLY allows access to /health endpoint. All other
+# requests without a Host header are rejected with 400 Bad Request.
+# This does not weaken security for normal application traffic.
+server {
+    # Listen on all interfaces for HTTP requests without Host header
+    listen 80 default_server;
+    listen [::]:80 default_server;
+<% if !@nginx_http_only -%>
+    # Also listen on HTTPS port for requests without Host header
+    listen <%= @nginx_listen_port %> ssl http2 default_server;
+    listen [::]:<%= @nginx_listen_port %> ssl http2 default_server;
+
+    ssl_certificate <%= @ssl_dir %>/certs/zulip.combined-chain.crt;
+    ssl_certificate_key <%= @ssl_dir %>/private/zulip.key;
+<% end -%>
+
+    # Explicitly set empty server_name to catch requests without Host header
+    server_name "";
+
+    # Allow ONLY the /health endpoint for load balancer health checks
+    location = /health {
+        # Allow health checks from localhost and configured load balancers
+        allow 127.0.0.1;
+        allow ::1;
+
+<% @loadbalancers.each do |host| -%>
+        allow <%= host %>;
+<% end -%>
+
+        deny all;
+
+        # Return simple 200 OK for health checks
+        # This works for HTTP/1.0 requests without Host header
+        return 200 "OK\n";
+        add_header Content-Type text/plain;
+    }
+
+    # Reject all other requests without Host header with 400 Bad Request
+    location / {
+        return 400 "Bad Request: Host header required\n";
+        add_header Content-Type text/plain;
+    }
+}
+
+
 # For local IPC -- tusd to Django, or Django to Tornado
 server {
 <% if @nginx_http_only -%>

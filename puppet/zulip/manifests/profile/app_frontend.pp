@@ -14,6 +14,7 @@ class zulip::profile::app_frontend {
     'Debian' => '/etc/ssl',
     'RedHat' => '/etc/pki/tls',
   }
+  $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
   file { '/etc/nginx/sites-available/zulip-enterprise':
     ensure  => file,
     require => Package[$zulip::common::nginx],
