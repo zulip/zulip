@@ -346,6 +346,7 @@ DATE_FIELDS: dict[TableName, list[Field]] = {
     "zerver_channelfolder": ["date_created"],
     "zerver_externalauthid": ["date_created"],
     "zerver_message": ["last_edit_time", "date_sent"],
+    "zerver_submessage": ["timestamp"],
     "zerver_muteduser": ["date_muted"],
     "zerver_realmauditlog": ["event_time"],
     "zerver_realm": [
@@ -1531,7 +1532,9 @@ def fetch_client_data(response: TableData, client_ids: set[int]) -> None:
 
 def fetch_submessage_data(response: TableData, message_ids: set[int]) -> None:
     query = SubMessage.objects.filter(message_id__in=list(message_ids)).order_by("id")
-    response["zerver_submessage"] = make_raw(query.iterator())
+    rows = make_raw(query.iterator())
+    floatified_rows = [floatify_datetime_fields(row, "zerver_submessage") for row in rows]
+    response["zerver_submessage"] = list(floatified_rows)
 
 
 def custom_fetch_direct_message_groups(response: TableData, context: Context) -> None:

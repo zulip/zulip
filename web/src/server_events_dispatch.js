@@ -780,6 +780,7 @@ export function dispatch_normal_event(event) {
                 msg_type: event.msg_type,
                 message_id: event.message_id,
                 content: event.content,
+                timestamp: event.timestamp,
             };
             submessage.handle_event(submsg);
             break;

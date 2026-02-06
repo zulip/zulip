@@ -1061,6 +1061,7 @@ run_test("submessage", ({override}) => {
         msg_type: "stream",
         message_id: 56,
         content: "test",
+        timestamp: 1770303292,
     });
 });
 

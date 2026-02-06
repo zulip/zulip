@@ -1858,6 +1858,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     if "zerver_submessage" in data:
         re_map_foreign_keys(data, "zerver_submessage", "message", related_table="message")
         re_map_foreign_keys(data, "zerver_submessage", "sender", related_table="user_profile")
+        fix_datetime_fields(data, "zerver_submessage")
         update_model_ids(SubMessage, data, "submessage")
         bulk_import_model(data, SubMessage)
 

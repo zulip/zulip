@@ -9,6 +9,7 @@ from zerver.lib.message import (
     visibility_policy_for_participation,
 )
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import Realm, SubMessage, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -83,6 +84,7 @@ def do_add_submessage(
                     visibility_policy=new_visibility_policy,
                 )
 
+    assert submessage.timestamp is not None
     event = dict(
         type="submessage",
         msg_type=msg_type,
@@ -90,6 +92,7 @@ def do_add_submessage(
         submessage_id=submessage.id,
         sender_id=sender_id,
         content=content,
+        timestamp=datetime_to_timestamp(submessage.timestamp),
     )
     target_user_ids = event_recipient_ids_for_action_on_messages(
         [submessage.message.id], submessage.message.is_channel_message

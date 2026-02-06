@@ -342,10 +342,11 @@ class AbstractSubMessage(models.Model):
 
 class SubMessage(AbstractSubMessage):
     message = models.ForeignKey(Message, on_delete=CASCADE)
+    timestamp = models.DateTimeField(default=timezone_now, db_index=True, null=True)
 
     @staticmethod
     def get_raw_db_rows(needed_ids: list[int]) -> list[dict[str, Any]]:
-        fields = ["id", "message_id", "sender_id", "msg_type", "content"]
+        fields = ["id", "message_id", "sender_id", "msg_type", "content", "timestamp"]
         query = SubMessage.objects.filter(message_id__in=needed_ids).values(*fields)
         query = query.order_by("message_id", "id")
         return list(query)
@@ -353,6 +354,7 @@ class SubMessage(AbstractSubMessage):
 
 class ArchivedSubMessage(AbstractSubMessage):
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)
+    timestamp = models.DateTimeField(default=timezone_now, db_index=True, null=True)
 
 
 post_save.connect(flush_submessage, sender=SubMessage)
