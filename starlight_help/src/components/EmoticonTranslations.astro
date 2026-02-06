@@ -2,24 +2,28 @@
 import EmojiCodes from "../../../static/generated/emoji/emoji_codes.json";
 
 const nameToCodePoint: Record<string, string> = EmojiCodes.name_to_codepoint;
-const rowHTML = (emoticon: string, codepoint: string, name: string) => `
+const emojiImageUrls: Record<string, {src: string}> = import.meta.glob(
+    "../../../static/generated/emoji/images-google-64/*.png",
+    {
+        eager: true,
+        import: "default",
+    },
+);
+
+const rowHTML = (emoticon: string, emoji: string, imageSrc: string) => `
 <tr>
     <td><code>${emoticon}</code></td>
-    <td>
-        <img
-            src="/static/generated/emoji/images-google-64/${codepoint}.png"
-            alt="${name}"
-            class="emoji-big">
-    </td>
+    <td><img src="${imageSrc}" alt="${emoji}" class="emoji-big"></td>
 </tr>
 `;
-
 let body = "";
 const emoticonConversions: Record<string, string> =
     EmojiCodes.emoticon_conversions;
 for (const name of Object.keys(emoticonConversions)) {
     const emoticon: string = emoticonConversions[name]!;
-    body += rowHTML(name, nameToCodePoint[emoticon.slice(1, -1)]!, emoticon);
+    const codepoint = nameToCodePoint[emoticon.slice(1, -1)]!;
+    const imagePath = `../../../static/generated/emoji/images-google-64/${codepoint}.png`;
+    body += rowHTML(name, emoticon, emojiImageUrls[imagePath]!.src);
 }
 ---
 
