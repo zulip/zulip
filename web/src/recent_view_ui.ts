@@ -36,7 +36,9 @@ import * as recent_senders from "./recent_senders.ts";
 import * as recent_view_data from "./recent_view_data.ts";
 import type {ConversationData} from "./recent_view_data.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
@@ -56,6 +58,7 @@ type Row = {
 };
 let topics_widget: ListWidget<ConversationData, Row> | undefined;
 let filters_dropdown_widget: dropdown_widget.DropdownWidget;
+let folder_filter_dropdown_widget: dropdown_widget.DropdownWidget;
 export let is_backfill_in_progress = false;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
@@ -100,10 +103,12 @@ const MAX_SELECTABLE_DIRECT_MESSAGE_COLS = 3;
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";
 const ls_dropdown_key = "recent_topic_dropdown_filters";
+const ls_folder_filter_key = "recent_view_folder_filter";
 const ls = localstorage();
 
 let filters = new Set<string>();
 let dropdown_filters = new Set<string>();
+let folder_filter_value: number = stream_settings_data.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
 
 const recent_conversation_key_prefix = "recent_conversation:";
 
@@ -132,6 +137,7 @@ export function set_backfill_in_progress(value: boolean): void {
 export function clear_for_tests(): void {
     filters.clear();
     dropdown_filters.clear();
+    folder_filter_value = stream_settings_data.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
     recent_view_data.conversations.clear();
     topics_widget = undefined;
 }
@@ -143,6 +149,7 @@ export function set_filters_for_tests(new_filters = [views_util.FILTERS.UNMUTED_
 export function save_filters(): void {
     ls.set(ls_key, [...filters]);
     ls.set(ls_dropdown_key, [...dropdown_filters]);
+    ls.set(ls_folder_filter_key, folder_filter_value);
 }
 
 export function is_in_focus(): boolean {
@@ -916,6 +923,25 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
         }
     }
 
+    // Folder filter: hide rows based on selected folder
+    if (msg.type === "stream") {
+        const folder_filters = stream_settings_data.FOLDER_FILTERS;
+        if (folder_filter_value !== folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+            const sub = sub_store.get(msg.stream_id);
+            if (folder_filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION) {
+                // "Uncategorized" filter: show only channels without a folder
+                if (sub?.folder_id !== null && sub?.folder_id !== undefined) {
+                    return true;
+                }
+            } else {
+                // Specific folder selected: show only channels in that folder
+                if (sub?.folder_id !== folder_filter_value) {
+                    return true;
+                }
+            }
+        }
+    }
+
     if (!filters.has("include_private") && topic_data.type === "private") {
         return true;
     }
@@ -1133,11 +1159,109 @@ function setup_dropdown_filters_widget(): void {
     filters_dropdown_widget.setup();
 }
 
+function update_folder_filter_button(): void {
+    const folder_filters = stream_settings_data.FOLDER_FILTERS;
+    const $button = $("#recent_view_folder_filter_button");
+
+    if (folder_filter_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        $button.removeClass("icon-button-brand").addClass("icon-button-neutral");
+    } else {
+        $button.removeClass("icon-button-neutral").addClass("icon-button-brand");
+    }
+
+    // Update visibility based on whether user has folders
+    const folders = channel_folders.get_folders_with_accessible_channels();
+    if (folders.length === 0) {
+        $("#recent_view_folder_filter_container").addClass("hide");
+    } else {
+        $("#recent_view_folder_filter_container").removeClass("hide");
+    }
+}
+
+function folder_filter_click_handler(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+    widget: DropdownWidget,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const filter_id = $(event.currentTarget).attr("data-unique-id");
+    assert(filter_id !== undefined);
+    folder_filter_value = Number.parseInt(filter_id, 10);
+    dropdown.hide();
+    widget.render();
+    save_filters();
+    update_folder_filter_button();
+
+    assert(topics_widget !== undefined);
+    topics_widget.hard_redraw();
+}
+
+function setup_folder_filter_dropdown_widget(): void {
+    const folder_filters = stream_settings_data.FOLDER_FILTERS;
+
+    const folder_options = (
+        current_value: string | number | undefined,
+    ): dropdown_widget.Option[] => {
+        const folders = channel_folders.get_folders_with_accessible_channels();
+        const options: dropdown_widget.Option[] = folders.map((folder) => ({
+            name: folder.name,
+            unique_id: folder.id,
+            bold_current_selection: current_value === folder.id,
+        }));
+
+        // Show "Uncategorized" option only if user can access at least
+        // one channel that is uncategorized.
+        const show_uncategorized_option = stream_data
+            .get_unsorted_subs()
+            .some((sub) => sub.folder_id === null);
+        if (show_uncategorized_option) {
+            const uncategorized_option = {
+                is_setting_disabled: true,
+                show_disabled_icon: false,
+                show_disabled_option_name: true,
+                unique_id: folder_filters.UNCATEGORIZED_DROPDOWN_OPTION,
+                name: $t({defaultMessage: "Uncategorized"}),
+                bold_current_selection:
+                    current_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION,
+            };
+            options.unshift(uncategorized_option);
+        }
+
+        const any_folder_option = {
+            is_setting_disabled: true,
+            show_disabled_icon: false,
+            show_disabled_option_name: true,
+            unique_id: folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
+            name: $t({defaultMessage: "Any folder"}),
+            bold_current_selection: current_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
+        };
+        options.unshift(any_folder_option);
+
+        return options;
+    };
+
+    folder_filter_dropdown_widget = new dropdown_widget.DropdownWidget({
+        widget_name: "recent-view-folder-filter",
+        widget_selector: ".recent-view-folder-filter-widget-button",
+        get_options: folder_options,
+        item_click_callback: folder_filter_click_handler,
+        $events_container: $("#recent_view_filter_buttons"),
+        unique_id_type: "number",
+        default_id: folder_filter_value,
+    });
+    folder_filter_dropdown_widget.setup();
+    update_folder_filter_button();
+}
+
 export function update_filters_view(): void {
     const rendered_filters = render_recent_view_filters(get_recent_view_filters_params());
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
     filters_dropdown_widget.render();
+    folder_filter_dropdown_widget.render();
+    update_folder_filter_button();
     assert(topics_widget !== undefined);
     topics_widget.hard_redraw();
 }
@@ -1383,6 +1507,7 @@ export function complete_rerender(coming_from_other_views = false): void {
         get_min_load_count,
     });
     setup_dropdown_filters_widget();
+    setup_folder_filter_dropdown_widget();
 }
 
 export function update_recent_view_rendered_time(): void {
@@ -1838,6 +1963,12 @@ function load_filters(): void {
         filters = new Set(recent_topics);
         const filter_data = filter_schema.parse(ls.get(ls_dropdown_key));
         dropdown_filters = new Set(filter_data);
+
+        // Load folder filter value
+        const saved_folder_filter = ls.get(ls_folder_filter_key);
+        if (typeof saved_folder_filter === "number") {
+            folder_filter_value = saved_folder_filter;
+        }
     }
     // Verify that the dropdown_filters are valid.
     const valid_filters = new Set(Object.values(views_util.FILTERS));
