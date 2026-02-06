@@ -135,7 +135,6 @@ button,
 select {
     /* Disable bootstrap size CSS; we want to use our default font size on
        body for input elements. */
-    line-height: normal;
     font-size: inherit;
 }
 
