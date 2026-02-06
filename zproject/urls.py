@@ -171,6 +171,7 @@ from zerver.views.registration import (
     signup_send_confirm,
 )
 from zerver.views.reminders import create_reminders_message_backend, delete_reminder
+from zerver.views.csp_violations import csp_violations
 from zerver.views.report import report_csp_violations
 from zerver.views.saved_snippets import (
     create_saved_snippet,
@@ -832,6 +833,7 @@ urls += [
 # We use this endpoint to just log these reports.
 urls += [
     path("report/csp_violations", report_csp_violations),
+    path("csp-violations", csp_violations),
 ]
 
 # Incoming webhook URLs
