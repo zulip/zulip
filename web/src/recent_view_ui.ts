@@ -108,7 +108,8 @@ const ls = localstorage();
 
 let filters = new Set<string>();
 let dropdown_filters = new Set<string>();
-let folder_filter_value: number = stream_settings_data.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
+// Use literal value -2 (ANY_FOLDER_DROPDOWN_OPTION) to avoid module initialization issues in tests
+let folder_filter_value = -2;
 
 const recent_conversation_key_prefix = "recent_conversation:";
 
@@ -137,7 +138,7 @@ export function set_backfill_in_progress(value: boolean): void {
 export function clear_for_tests(): void {
     filters.clear();
     dropdown_filters.clear();
-    folder_filter_value = stream_settings_data.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
+    folder_filter_value = -2; // ANY_FOLDER_DROPDOWN_OPTION
     recent_view_data.conversations.clear();
     topics_widget = undefined;
 }
