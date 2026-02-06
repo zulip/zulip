@@ -338,6 +338,12 @@
         white-space: pre-wrap;
     }
 
+    .channel-privacy-type-icon {
+        width: auto;
+        padding-right: 0;
+        margin-right: -0.1em; /* -1.6px at 16px/1em */
+    }
+
     .user-group-mention {
         &:hover {
             background-color: var(--color-background-text-hover-group-mention);
