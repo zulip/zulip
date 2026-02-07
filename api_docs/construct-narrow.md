@@ -9,10 +9,10 @@ It is simplest to explain the algorithm for encoding a search as a
 narrow using a single example. Consider the following search query
 (written as it would be entered in the Zulip web app's search box).
 It filters for messages sent to channel `announce`, not sent by
-`iago@zulip.com`, and containing the words `cool` and `sunglasses`:
+`iago@example.com`, and containing the words `cool` and `sunglasses`:
 
 ```
-channel:announce -sender:iago@zulip.com cool sunglasses
+channel:announce -sender:iago@example.com cool sunglasses
 ```
 
 This query would be JSON-encoded for use in the Zulip API using JSON
@@ -26,7 +26,7 @@ as a list of simple objects, as follows:
     },
     {
         "operator": "sender",
-        "operand": "iago@zulip.com",
+        "operand": "iago@example.com",
         "negated": true
     },
     {

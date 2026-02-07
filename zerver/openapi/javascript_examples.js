@@ -165,12 +165,12 @@ add_example("get_messages", "/messages:get", 200, async (client, console) => {
         num_before: 100,
         num_after: 0,
         narrow: [
-            {operator: "sender", operand: "iago@zulip.com"},
+            {operator: "sender", operand: "iago@example.com"},
             {operator: "channel", operand: "Verona"},
         ],
     };
 
-    // Get the 100 last messages sent by "iago@zulip.com" to the channel "Verona"
+    // Get the 100 last messages sent by "iago@example.com" to the channel "Verona"
     console.log(await client.messages.retrieve(readParams));
     // {code_example|end}
 });

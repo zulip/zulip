@@ -707,7 +707,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             [
                 '<span class="remote-label">Remote server: deactivated</span>',
                 "♻️ Reactivate server:",
-                "<b>Acting user</b>: iago@zulip.com",
+                "<b>Acting user</b>: iago@example.com",
             ],
             result,
         )
@@ -1006,7 +1006,7 @@ class TestSupportEndpoint(ZulipTestCase):
             result = get_check_query_result("http://localhost", 1)
             check_zulip_realm_query_result(result)
 
-        result = get_check_query_result("hamlet@zulip.com, lear", 2)
+        result = get_check_query_result("hamlet@example.com, lear", 2)
         check_hamlet_user_query_result(result)
         check_zulip_realm_query_result(result)
         check_lear_realm_query_result(result)
@@ -1020,7 +1020,7 @@ class TestSupportEndpoint(ZulipTestCase):
         check_othello_user_query_result(result)
         check_zulip_realm_query_result(result)
 
-        result = get_check_query_result("lear, Hamlet <hamlet@zulip.com>", 2)
+        result = get_check_query_result("lear, Hamlet <hamlet@example.com>", 2)
         check_hamlet_user_query_result(result)
         check_zulip_realm_query_result(result)
         check_lear_realm_query_result(result)

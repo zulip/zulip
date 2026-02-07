@@ -14,6 +14,7 @@ const {
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const {make_email} = require("./lib/test_email.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -44,19 +45,19 @@ function init_simulated_scrolling() {
 }
 
 const alice = {
-    email: "alice@zulip.com",
+    email: make_email("alice"),
     user_id: 10,
     full_name: "Alice Smith",
 };
 people.add_active_user(alice);
 const bob = {
-    email: "bob@zulip.com",
+    email: make_email("bob"),
     user_id: 15,
     full_name: "Bob Smith",
 };
 people.add_active_user(bob);
 const chris = {
-    email: "chris@zulip.com",
+    email: make_email("chris"),
     user_id: 20,
     full_name: "Chris Smith",
 };

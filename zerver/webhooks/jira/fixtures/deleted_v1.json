@@ -4,7 +4,7 @@
   "user": {
     "self": "http://lfranchi.com:8080/rest/api/2/user?username=lfranchi",
     "name": "lfranchi",
-    "emailAddress": "othello@zulip.com",
+    "emailAddress": "othello@example.com",
     "avatarUrls": {
       "16x16": "http://lfranchi.com:8080/secure/useravatar?size=small&avatarId=10122",
       "48x48": "http://lfranchi.com:8080/secure/useravatar?avatarId=10122"
@@ -43,7 +43,7 @@
       "reporter": {
         "self": "http://lfranchi.com:8080/rest/api/2/user?username=lfranchi",
         "name": "lfranchi",
-        "emailAddress": "othello@zulip.com",
+        "emailAddress": "othello@example.com",
         "avatarUrls": {
           "16x16": "http://lfranchi.com:8080/secure/useravatar?size=small&avatarId=10122",
           "48x48": "http://lfranchi.com:8080/secure/useravatar?avatarId=10122"
@@ -88,7 +88,7 @@
       "assignee": {
         "self": "http://lfranchi.com:8080/rest/api/2/user?username=lfranchi",
         "name": "lfranchi",
-        "emailAddress": "othello@zulip.com",
+        "emailAddress": "othello@example.com",
         "avatarUrls": {
           "16x16": "http://lfranchi.com:8080/secure/useravatar?size=small&avatarId=10122",
           "48x48": "http://lfranchi.com:8080/secure/useravatar?avatarId=10122"
@@ -128,7 +128,7 @@
             "author": {
               "self": "http://lfranchi.com:8080/rest/api/2/user?username=lfranchi",
               "name": "lfranchi",
-              "emailAddress": "othello@zulip.com",
+              "emailAddress": "othello@example.com",
               "avatarUrls": {
                 "16x16": "http://lfranchi.com:8080/secure/useravatar?size=small&avatarId=10122",
                 "48x48": "http://lfranchi.com:8080/secure/useravatar?avatarId=10122"
@@ -140,7 +140,7 @@
             "updateAuthor": {
               "self": "http://lfranchi.com:8080/rest/api/2/user?username=lfranchi",
               "name": "lfranchi",
-              "emailAddress": "othello@zulip.com",
+              "emailAddress": "othello@example.com",
               "avatarUrls": {
                 "16x16": "http://lfranchi.com:8080/secure/useravatar?size=small&avatarId=10122",
                 "48x48": "http://lfranchi.com:8080/secure/useravatar?avatarId=10122"

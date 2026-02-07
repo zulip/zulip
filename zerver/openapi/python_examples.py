@@ -66,7 +66,7 @@ def ensure_users(ids_list: list[int], user_names: list[str]) -> None:
     # matches the users we want to refer to (user_names).
     realm = get_realm("zulip")
     user_ids = [
-        get_user(Address(username=name, domain="zulip.com").addr_spec, realm).id
+        get_user(Address(username=name, domain="example.com").addr_spec, realm).id
         for name in user_names
     ]
     assert ids_list == user_ids
@@ -161,7 +161,7 @@ def test_add_subscriptions_already_subscribed(client: Client) -> None:
         streams=[
             {"name": "python-test"},
         ],
-        principals=["newbie@zulip.com"],
+        principals=["newbie@example.com"],
     )
     assert_success_response(result)
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
@@ -246,8 +246,8 @@ def remove_default_stream(client: Client) -> None:
 @openapi_test_function("/users/{user_id_or_email}/presence:get")
 def get_user_presence(client: Client) -> None:
     # {code_example|start}
-    # Get presence information for "iago@zulip.com".
-    result = client.get_user_presence("iago@zulip.com")
+    # Get presence information for "iago@example.com".
+    result = client.get_user_presence("iago@example.com")
     # {code_example|end}
     assert_success_response(result)
     validate_against_openapi_schema(result, "/users/{user_id_or_email}/presence", "get", "200")
@@ -289,7 +289,7 @@ def create_user(client: Client) -> None:
     # {code_example|start}
     # Create a user.
     request = {
-        "email": "newbie@zulip.com",
+        "email": "newbie@example.com",
         "password": "temp",
         "full_name": "New User",
     }
@@ -338,7 +338,7 @@ def get_members(client: Client) -> None:
     # {code_example|end}
     assert_success_response(result)
     validate_against_openapi_schema(result, "/users", "get", "200")
-    members = [m for m in result["members"] if m["email"] == "newbie@zulip.com"]
+    members = [m for m in result["members"] if m["email"] == "newbie@example.com"]
     assert len(members) == 1
     newbie = members[0]
     assert not newbie["is_admin"]
@@ -368,7 +368,7 @@ def get_members(client: Client) -> None:
 
 @openapi_test_function("/users/{email}:get")
 def get_user_by_email(client: Client) -> None:
-    email = "iago@zulip.com"
+    email = "iago@example.com"
     # {code_example|start}
     result = client.call_endpoint(
         url=f"/users/{email}",
@@ -395,7 +395,7 @@ def send_invitations(client: Client) -> None:
     # {code_example|start}
     # Send invitations.
     request = {
-        "invitee_emails": "example@zulip.com, logan@zulip.com",
+        "invitee_emails": "example@example.com, logan@example.com",
         "invite_expires_in_minutes": 60 * 24 * 10,  # 10 days
         "invite_as": 400,
         "stream_ids": stream_ids,
@@ -425,7 +425,7 @@ def create_reusable_invitation_link(client: Client) -> None:
 @openapi_test_function("/invites/{invite_id}:delete")
 def revoke_email_invitation(client: Client) -> None:
     # Send email invitation.
-    email = "delete-invite@zulip.com"
+    email = "delete-invite@example.com"
     request = {
         "invitee_emails": email,
         "stream_ids": [],
@@ -929,7 +929,7 @@ def remove_subscriptions(client: Client) -> None:
     # Unsubscribe another user from channel "python-test".
     result = client.remove_subscriptions(
         ["python-test"],
-        principals=["newbie@zulip.com"],
+        principals=["newbie@example.com"],
     )
     # {code_example|end}
     assert_success_response(result)
@@ -1113,14 +1113,14 @@ def render_message(client: Client) -> None:
 @openapi_test_function("/messages:get")
 def get_messages(client: Client) -> None:
     # {code_example|start}
-    # Get the 100 last messages sent by "iago@zulip.com" to
+    # Get the 100 last messages sent by "iago@example.com" to
     # the channel named "Verona".
     request: dict[str, Any] = {
         "anchor": "newest",
         "num_before": 100,
         "num_after": 0,
         "narrow": [
-            {"operator": "sender", "operand": "iago@zulip.com"},
+            {"operator": "sender", "operand": "iago@example.com"},
             {"operator": "channel", "operand": "Verona"},
         ],
     }
@@ -1408,7 +1408,7 @@ def test_nonexistent_stream_error(client: Client) -> None:
 def test_private_message_invalid_recipient(client: Client) -> None:
     request = {
         "type": "private",
-        "to": "eeshan@zulip.com",
+        "to": "eeshan@example.com",
         "content": "With mirth and laughter let old wrinkles come.",
     }
     result = client.send_message(request)

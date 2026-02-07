@@ -7,6 +7,7 @@ const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {set_global, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const {make_email} = require("./lib/test_email.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const channel = mock_esm("../src/channel");
@@ -51,23 +52,23 @@ const realm = make_realm();
 set_realm(realm);
 
 const me = {
-    email: "me@zulip.com",
+    email: make_email("me"),
     user_id: 999,
     full_name: "Me Myself",
 };
 
 const alice = {
-    email: "alice@zulip.com",
+    email: make_email("alice"),
     user_id: 1,
     full_name: "Alice Smith",
 };
 const fred = {
-    email: "fred@zulip.com",
+    email: make_email("fred"),
     user_id: 2,
     full_name: "Fred Flintstone",
 };
 const jill = {
-    email: "jill@zulip.com",
+    email: make_email("jill"),
     user_id: 3,
     full_name: "Jill Hill",
 };

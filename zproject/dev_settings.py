@@ -4,7 +4,7 @@ import pwd
 from scripts.lib.zulip_tools import deport
 from zproject.settings_types import SCIMConfigDict
 
-ZULIP_ADMINISTRATOR = "desdemona+admin@zulip.com"
+ZULIP_ADMINISTRATOR = "desdemona+admin@example.com"
 
 # Initiatize TEST_SUITE early, so other code can rely on the setting.
 TEST_SUITE = os.getenv("ZULIP_TEST_SUITE") == "true"

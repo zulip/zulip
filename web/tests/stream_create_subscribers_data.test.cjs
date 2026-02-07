@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const {make_email} = require("./lib/test_email.cjs");
 
 const people = zrequire("people");
 const {set_current_user} = zrequire("state_data");
@@ -13,25 +14,25 @@ const current_user = {};
 set_current_user(current_user);
 
 const me = {
-    email: "me@zulip.com",
+    email: make_email("me"),
     full_name: "Zed", // Zed will sort to the top by virtue of being the current user.
     user_id: 400,
 };
 
 const test_user101 = {
-    email: "test101@zulip.com",
+    email: make_email("test101"),
     full_name: "Test User 101",
     user_id: 101,
 };
 
 const test_user102 = {
-    email: "test102@zulip.com",
+    email: make_email("test102"),
     full_name: "Test User 102",
     user_id: 102,
 };
 
 const test_user103 = {
-    email: "test102@zulip.com",
+    email: make_email("test102"),
     full_name: "Test User 103",
     user_id: 103,
 };

@@ -7,7 +7,7 @@
   "delinquent": false,
   "description": "zulip (Zulip Dev)",
   "discount": null,
-  "email": "hamlet@zulip.com",
+  "email": "hamlet@example.com",
   "id": "upgrade_by_card--Customer.create.1.json",
   "invoice_prefix": "NORMALIZED",
   "invoice_settings": {

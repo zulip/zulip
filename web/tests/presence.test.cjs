@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const {make_email} = require("./lib/test_email.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 mock_esm("../src/settings_data", {
@@ -25,19 +26,19 @@ initialize_user_settings({user_settings});
 const OFFLINE_THRESHOLD_SECS = 200;
 
 const me = {
-    email: "me@zulip.com",
+    email: make_email("me"),
     user_id: 101,
     full_name: "Me Myself",
 };
 
 const alice = {
-    email: "alice@zulip.com",
+    email: make_email("alice"),
     user_id: 1,
     full_name: "Alice Smith",
 };
 
 const fred = {
-    email: "fred@zulip.com",
+    email: make_email("fred"),
     user_id: 2,
     full_name: "Fred Flintstone",
 };
@@ -55,14 +56,14 @@ const zoe = {
 };
 
 const bot = {
-    email: "bot@zulip.com",
+    email: make_email("bot"),
     user_id: 7,
     full_name: "The Bot",
     is_bot: true,
 };
 
 const john = {
-    email: "john@zulip.com",
+    email: make_email("john"),
     user_id: 8,
     full_name: "John Doe",
     // Second 77.
@@ -70,7 +71,7 @@ const john = {
 };
 
 const jane = {
-    email: "jane@zulip.com",
+    email: make_email("jane"),
     user_id: 9,
     full_name: "Jane Doe",
 };

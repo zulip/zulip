@@ -732,7 +732,7 @@ class PasswordResetTest(ZulipTestCase):
             self.assertEqual(
                 info_logs.output,
                 [
-                    "INFO:root:Too many password reset attempts for email hamlet@zulip.com from 127.0.0.1"
+                    "INFO:root:Too many password reset attempts for email hamlet@example.com from 127.0.0.1"
                 ],
             )
             self.assert_length(outbox, 2)
@@ -820,7 +820,7 @@ class PasswordResetTest(ZulipTestCase):
             self.assertEqual(
                 m.output,
                 [
-                    "INFO:root:Password reset attempted for hamlet@zulip.com even though password auth is disabled."
+                    "INFO:root:Password reset attempted for hamlet@example.com even though password auth is disabled."
                 ],
             )
 
@@ -846,7 +846,7 @@ class PasswordResetTest(ZulipTestCase):
         """If both email and LDAP auth backends are enabled, limit password
         reset to users outside the LDAP domain"""
         # If the domain matches, we don't generate an email
-        with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
+        with self.settings(LDAP_APPEND_DOMAIN="example.com"):
             email = self.example_email("hamlet")
             with self.assertLogs(level="INFO") as m:
                 result = self.client_post("/accounts/password/reset/", {"email": email})
@@ -858,7 +858,7 @@ class PasswordResetTest(ZulipTestCase):
         self.assert_length(outbox, 0)
 
         # If the domain doesn't match, we do generate an email
-        with self.settings(LDAP_APPEND_DOMAIN="example.com"):
+        with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
             email = self.example_email("hamlet")
             result = self.client_post("/accounts/password/reset/", {"email": email})
             self.assertEqual(result.status_code, 302)
@@ -3074,7 +3074,7 @@ class UserSignUpTest(ZulipTestCase):
         # If the user's email is inside the LDAP directory and we just
         # have a wrong password, then we refuse to create an account
         password = "nonldappassword"
-        email = "newuser_email@zulip.com"  # belongs to user uid=newuser_with_email in the test directory
+        email = "newuser_email@example.com"  # belongs to user uid=newuser_with_email in the test directory
         subdomain = "zulip"
 
         self.init_default_ldap_database()
@@ -3113,14 +3113,16 @@ class UserSignUpTest(ZulipTestCase):
             )
             self.assertEqual(result.status_code, 302)
             # We get redirected back to the login page because password was wrong
-            self.assertEqual(result["Location"], "/accounts/login/?email=newuser_email%40zulip.com")
+            self.assertEqual(
+                result["Location"], "/accounts/login/?email=newuser_email%40example.com"
+            )
             self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
 
         # If the user's email is not in the LDAP directory, though, we
         # successfully create an account with a password in the Zulip
         # database.
         password = "nonldappassword"
-        email = "nonexistent@zulip.com"
+        email = "nonexistent@example.com"
         subdomain = "zulip"
 
         with patch("zerver.views.registration.get_subdomain", return_value=subdomain):
@@ -3149,7 +3151,7 @@ class UserSignUpTest(ZulipTestCase):
                 self.assertEqual(
                     m.output,
                     [
-                        "WARNING:zulip.ldap:New account email nonexistent@zulip.com could not be found in LDAP"
+                        "WARNING:zulip.ldap:New account email nonexistent@example.com could not be found in LDAP"
                     ],
                 )
 
@@ -3164,7 +3166,7 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEqual(
                 debug_log.output,
                 [
-                    "DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: nonexistent@zulip.com. Input username: nonexistent@zulip.com"
+                    "DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: nonexistent@example.com. Input username: nonexistent@example.com"
                 ],
             )
             self.assertEqual(result.status_code, 302)
@@ -3180,12 +3182,12 @@ class UserSignUpTest(ZulipTestCase):
         ldap_user_attr_map = {"full_name": "cn"}
 
         subdomain = "zulip"
-        email = "newuser@zulip.com"
+        email = "newuser@example.com"
         password = self.ldap_password("newuser")
 
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
-            LDAP_APPEND_DOMAIN="zulip.com",
+            LDAP_APPEND_DOMAIN="example.com",
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
             with self.assertLogs("zulip.ldap", "DEBUG") as debug_log:
@@ -3194,7 +3196,7 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEqual(
                 debug_log.output,
                 [
-                    "DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: iago. Input username: iago@zulip.com"
+                    "DEBUG:zulip.ldap:ZulipLDAPAuthBackend: No LDAP user matching django_to_ldap_username result: iago. Input username: iago@example.com"
                 ],
             )
             stream_ids = [self.get_stream_id(stream_name) for stream_name in streams]
@@ -3281,7 +3283,7 @@ class UserSignUpTest(ZulipTestCase):
         Test `name_changes_disabled` when we are not running under LDAP.
         """
         password = self.ldap_password("newuser")
-        email = "newuser@zulip.com"
+        email = "newuser@example.com"
         subdomain = "zulip"
 
         with patch("zerver.views.registration.get_subdomain", return_value=subdomain):
@@ -3762,13 +3764,13 @@ class TestFindMyTeam(ZulipTestCase):
     def test_result(self) -> None:
         # We capitalize a letter in cordelia's email to test that the search is case-insensitive.
         result = self.client_post(
-            "/accounts/find/", dict(emails="iago@zulip.com,cordeliA@zulip.com")
+            "/accounts/find/", dict(emails="iago@example.com,cordeliA@example.com")
         )
         self.assertEqual(result.status_code, 200)
         content = result.content.decode()
         self.assertIn("Emails sent! The addresses entered on", content)
-        self.assertIn("iago@zulip.com", content)
-        self.assertIn("cordeliA@zulip.com", content)
+        self.assertIn("iago@example.com", content)
+        self.assertIn("cordeliA@example.com", content)
         from django.core.mail import outbox
 
         self.assert_length(outbox, 2)
@@ -3780,7 +3782,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("Lear & Co", cordelia_message.body)
 
     def test_find_team_email_with_no_account(self) -> None:
-        result = self.client_post("/accounts/find/", dict(emails="no_account_email@zulip.com"))
+        result = self.client_post("/accounts/find/", dict(emails="no_account_email@example.com"))
         self.assertEqual(result.status_code, 200)
         content = result.content.decode()
         self.assertIn("Emails sent! The addresses entered on", content)

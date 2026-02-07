@@ -2429,6 +2429,14 @@ def export_emoji_from_local(
             output_path = os.path.join(output_dir, emoji_path)
 
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            if not os.path.exists(local_path):
+                logging.warning(
+                    "Skipping missing custom emoji file %s for realm %s (emoji id %s)",
+                    local_path,
+                    realm.id,
+                    realm_emoji_object.id,
+                )
+                continue
             shutil.copy2(local_path, output_path)
             record = dict(
                 realm_id=realm.id,

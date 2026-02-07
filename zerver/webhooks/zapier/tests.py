@@ -3,12 +3,12 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class ZapierHookTests(WebhookTestCase):
     def test_zapier_when_subject_and_body_are_correct(self) -> None:
-        expected_topic_name = "New email from zulip@zulip.com"
+        expected_topic_name = "New email from zulip@example.com"
         expected_message = "Your email content is: \nMy Email content."
         self.check_webhook("correct_subject_and_body", expected_topic_name, expected_message)
 
     def test_zapier_when_topic_and_body_are_correct(self) -> None:
-        expected_topic_name = "New email from zulip@zulip.com"
+        expected_topic_name = "New email from zulip@example.com"
         expected_message = "Your email content is: \nMy Email content."
         self.check_webhook("correct_topic_and_body", expected_topic_name, expected_message)
 
@@ -26,5 +26,5 @@ class ZapierZulipAppTests(WebhookTestCase):
         result = self.client_post(self.url, payload, content_type="application/json")
         json_result = self.assert_json_success(result)
         self.assertEqual(json_result["full_name"], "Zulip Webhook Bot")
-        self.assertEqual(json_result["email"], "webhook-bot@zulip.com")
+        self.assertEqual(json_result["email"], "webhook-bot@example.com")
         self.assertIn("id", json_result)

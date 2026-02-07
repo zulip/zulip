@@ -1428,7 +1428,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         email = outbox[-1]
         self.assert_length(email.to, 1)
-        self.assertEqual(email.to[0], "sales@zulip.com")
+        self.assertEqual(email.to[0], "sales@example.com")
 
         billing_session = RemoteRealmBillingSession(remote_realm=remote_realm_for_deleted_realm)
         self.assertIn(

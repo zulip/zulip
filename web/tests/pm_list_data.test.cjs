@@ -6,6 +6,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const {make_email, make_email_prefix} = require("./lib/test_email.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
 const unread = mock_esm("../src/unread", {
@@ -38,37 +39,37 @@ set_realm(make_realm());
 initialize_user_settings({user_settings: {}});
 
 const alice = {
-    email: "alice@zulip.com",
+    email: make_email("alice"),
     user_id: 101,
     full_name: "Alice",
 };
 const bob = {
-    email: "bob@zulip.com",
+    email: make_email("bob"),
     user_id: 102,
     full_name: "Bob",
 };
 const me = {
-    email: "me@zulip.com",
+    email: make_email("me"),
     user_id: 103,
     full_name: "Me Myself",
 };
 const zoe = {
-    email: "zoe@zulip.com",
+    email: make_email("zoe"),
     user_id: 104,
     full_name: "Zoe",
 };
 const cardelio = {
-    email: "cardelio@zulip.com",
+    email: make_email("cardelio"),
     user_id: 105,
     full_name: "Cardelio",
 };
 const iago = {
-    email: "iago@zulip.com",
+    email: make_email("iago"),
     user_id: 106,
     full_name: "Iago",
 };
 const bot_test = {
-    email: "outgoingwebhook@zulip.com",
+    email: make_email("outgoingwebhook"),
     user_id: 314,
     full_name: "Outgoing webhook",
     is_admin: false,
@@ -190,7 +191,7 @@ test("get_conversations", ({override}) => {
     );
 
     // filter should work with email
-    pm_data = pm_list_data.get_conversations("me@zulip");
+    pm_data = pm_list_data.get_conversations(make_email_prefix("me"));
     assert.deepEqual(
         pm_data,
         expected_data.filter((item) => item.recipients === "Me Myself"),

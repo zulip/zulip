@@ -1649,7 +1649,7 @@ class StripeTest(StripeTestCase):
                 "amount_due": 5172,
                 "auto_advance": True,
                 "collection_method": "charge_automatically",
-                "customer_email": "hamlet@zulip.com",
+                "customer_email": "hamlet@example.com",
             }
             [invoice_item] = iter(invoice0.lines)
             invoice_item_params = {
@@ -2317,7 +2317,7 @@ class StripeTest(StripeTestCase):
 
         for message in outbox:
             self.assert_length(message.to, 1)
-            self.assertEqual(message.to[0], "sales@zulip.com")
+            self.assertEqual(message.to[0], "sales@example.com")
             self.assertEqual(
                 message.subject,
                 f"Check initial licenses invoiced for {billing_session.billing_entity_display_name}",
@@ -2512,7 +2512,7 @@ class StripeTest(StripeTestCase):
 
         for message in outbox:
             self.assert_length(message.to, 1)
-            self.assertEqual(message.to[0], "sales@zulip.com")
+            self.assertEqual(message.to[0], "sales@example.com")
             self.assertEqual(message.subject, "Error processing paid customer invoice")
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
 
@@ -2716,7 +2716,7 @@ class StripeTest(StripeTestCase):
             self.assertIn("ERROR:corporate.stripe:Uncaught exception in billing", m.output[0])
             self.assertIn(m.records[0].stack_info, m.output[0])
         self.assert_json_error_contains(
-            response, "Something went wrong. Please contact desdemona+admin@zulip.com."
+            response, "Something went wrong. Please contact desdemona+admin@example.com."
         )
         self.assertEqual(
             orjson.loads(response.content)["error_description"], "uncaught exception during upgrade"
@@ -2745,7 +2745,7 @@ class StripeTest(StripeTestCase):
                 "event_handler": {
                     "status": "failed",
                     "error": {
-                        "message": "Something went wrong. Please contact desdemona+admin@zulip.com.",
+                        "message": "Something went wrong. Please contact desdemona+admin@example.com.",
                         "description": "uncaught exception in invoice.paid event handler",
                     },
                 },
@@ -2806,7 +2806,7 @@ class StripeTest(StripeTestCase):
 
         data = {
             "full_name": "King Hamlet",
-            "email": "test@zulip.com",
+            "email": "test@example.com",
             "role": "Manager",
             "organization_name": "Zulip",
             "organization_type": "Business",
@@ -2824,9 +2824,9 @@ class StripeTest(StripeTestCase):
 
         for message in outbox:
             self.assert_length(message.to, 1)
-            self.assertEqual(message.to[0], "sales@zulip.com")
+            self.assertEqual(message.to[0], "sales@example.com")
             self.assertEqual(message.subject, "Demo request for Zulip")
-            self.assertEqual(message.reply_to, ["test@zulip.com"])
+            self.assertEqual(message.reply_to, ["test@example.com"])
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
             self.assertIn("Zulip demo request <noreply-", self.email_display_from(message))
             self.assertIn("Full name: King Hamlet", message.body)
@@ -2855,9 +2855,9 @@ class StripeTest(StripeTestCase):
 
         for message in outbox:
             self.assert_length(message.to, 1)
-            self.assertEqual(message.to[0], "desdemona+admin@zulip.com")
+            self.assertEqual(message.to[0], "desdemona+admin@example.com")
             self.assertEqual(message.subject, "Support request for zulip")
-            self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
+            self.assertEqual(message.reply_to, ["hamlet@example.com"])
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
             self.assertIn("Zulip support request <noreply-", self.email_display_from(message))
             self.assertIn("Requested by: King Hamlet (Organization owner)", message.body)
@@ -2907,9 +2907,9 @@ class StripeTest(StripeTestCase):
 
         for message in outbox:
             self.assert_length(message.to, 1)
-            self.assertEqual(message.to[0], "sales@zulip.com")
+            self.assertEqual(message.to[0], "sales@example.com")
             self.assertEqual(message.subject, "Sponsorship request for zulip")
-            self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
+            self.assertEqual(message.reply_to, ["hamlet@example.com"])
             self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
             self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
             self.assertIn("Requested by: King Hamlet (Organization owner)", message.body)
@@ -2933,7 +2933,7 @@ class StripeTest(StripeTestCase):
             [
                 "This organization has requested sponsorship for a",
                 '<a href="/plans/">Zulip Cloud Standard</a>',
-                'plan.<br/><a href="mailto:support@zulip.com">Contact Zulip support</a> with any questions or updates.',
+                'plan.<br/><a href="mailto:support@example.com">Contact Zulip support</a> with any questions or updates.',
             ],
             response,
         )
@@ -3141,7 +3141,7 @@ class StripeTest(StripeTestCase):
             ),
             patch(
                 "stripe.Customer.retrieve",
-                return_value=Mock(id=stripe_customer_id, email="test@zulip.com"),
+                return_value=Mock(id=stripe_customer_id, email="test@example.com"),
             ),
         ):
             user.realm.plan_type = Realm.PLAN_TYPE_LIMITED
@@ -3171,10 +3171,10 @@ class StripeTest(StripeTestCase):
         realm = get_realm("zulip")
         initial_count = get_latest_seat_count(realm)
         user1 = UserProfile.objects.create(
-            realm=realm, email="user1@zulip.com", delivery_email="user1@zulip.com"
+            realm=realm, email="user1@example.com", delivery_email="user1@example.com"
         )
         user2 = UserProfile.objects.create(
-            realm=realm, email="user2@zulip.com", delivery_email="user2@zulip.com"
+            realm=realm, email="user2@example.com", delivery_email="user2@example.com"
         )
         self.assertEqual(get_latest_seat_count(realm), initial_count + 2)
 
@@ -3191,8 +3191,8 @@ class StripeTest(StripeTestCase):
         # Adding a guest to a realm with a lot of members shouldn't change anything
         UserProfile.objects.create(
             realm=realm,
-            email="user3@zulip.com",
-            delivery_email="user3@zulip.com",
+            email="user3@example.com",
+            delivery_email="user3@example.com",
             role=UserProfile.ROLE_GUEST,
         )
         self.assertEqual(get_latest_seat_count(realm), initial_count)
@@ -5005,8 +5005,8 @@ class StripeTest(StripeTestCase):
             users = []
             for i in range(users_to_create):
                 user = UserProfile.objects.create(
-                    delivery_email=f"user-{i}-{realm_string_id}@zulip.com",
-                    email=f"user-{i}-{realm_string_id}@zulip.com",
+                    delivery_email=f"user-{i}-{realm_string_id}@example.com",
+                    email=f"user-{i}-{realm_string_id}@example.com",
                     realm=realm,
                 )
                 users.append(user)
@@ -8701,7 +8701,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         messages_count = len(outbox)
         message = outbox[-1]
         self.assert_length(message.to, 1)
-        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(message.to[0], "sales@example.com")
         self.assertIn(
             f"Support URL: {self.billing_session.support_url()}",
             message.body,
@@ -8827,9 +8827,9 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         message = outbox[1]
         self.assert_length(outbox, 2)
         self.assert_length(message.to, 1)
-        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(message.to[0], "sales@example.com")
         self.assertEqual(message.subject, "Sponsorship request for Zulip Dev")
-        self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
+        self.assertEqual(message.reply_to, ["hamlet@example.com"])
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
         self.assertIn(
@@ -8875,7 +8875,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assert_length(outbox, 3)
         message = outbox[2]
         self.assert_length(message.to, 1)
-        self.assertEqual(message.to[0], "hamlet@zulip.com")
+        self.assertEqual(message.to[0], "hamlet@example.com")
         self.assertEqual(message.subject, "Community plan sponsorship approved for Zulip Dev!")
         self.assertEqual(message.from_email, "noreply@testserver")
         self.assertIn(expected_message[0], message.body)
@@ -9099,7 +9099,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         messages_count = len(outbox)
         message = outbox[-1]
         self.assert_length(message.to, 1)
-        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(message.to[0], "sales@example.com")
         self.assertEqual(
             message.subject,
             f"Stale audit log data for {self.billing_session.billing_entity_display_name}'s plan",
@@ -9456,9 +9456,9 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         message = outbox[1]
         self.assert_length(outbox, 2)
         self.assert_length(message.to, 1)
-        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(message.to[0], "sales@example.com")
         self.assertEqual(message.subject, "Sponsorship request for demo.example.com")
-        self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
+        self.assertEqual(message.reply_to, ["hamlet@example.com"])
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertIn("Zulip sponsorship request <noreply-", self.email_display_from(message))
         self.assertIn(
@@ -9504,7 +9504,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assert_length(outbox, 3)
         message = outbox[2]
         self.assert_length(message.to, 1)
-        self.assertEqual(message.to[0], "hamlet@zulip.com")
+        self.assertEqual(message.to[0], "hamlet@example.com")
         self.assertEqual(
             message.subject, "Community plan sponsorship approved for demo.example.com!"
         )
@@ -10170,7 +10170,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
 
         message = outbox[-1]
         self.assert_length(message.to, 1)
-        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(message.to[0], "sales@example.com")
         self.assertEqual(
             message.subject,
             f"Stale audit log data for {self.billing_session.billing_entity_display_name}'s plan",
@@ -10682,7 +10682,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         messages_count = len(outbox)
         message = outbox[-1]
         self.assert_length(message.to, 1)
-        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(message.to[0], "sales@example.com")
         self.assertEqual(
             message.subject,
             f"Stale audit log data for {self.billing_session.billing_entity_display_name}'s plan",

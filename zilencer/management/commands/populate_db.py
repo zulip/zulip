@@ -412,7 +412,7 @@ class Command(ZulipBaseCommand):
                 api_key=settings.ZULIP_ORG_KEY,
                 hostname=settings.EXTERNAL_HOST,
                 last_updated=timezone_now(),
-                contact_email="remotezulipserver@zulip.com",
+                contact_email="remotezulipserver@example.com",
             )
             RemoteZulipServerAuditLog.objects.create(
                 event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
@@ -424,16 +424,16 @@ class Command(ZulipBaseCommand):
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
             names = [
-                ("Zoe", "ZOE@zulip.com"),
-                ("Othello, the Moor of Venice", "othello@zulip.com"),
-                ("Iago", "iago@zulip.com"),
-                ("Prospero from The Tempest", "prospero@zulip.com"),
-                ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
-                ("King Hamlet", "hamlet@zulip.com"),
-                ("aaron", "AARON@zulip.com"),
-                ("Polonius", "polonius@zulip.com"),
-                ("Desdemona", "desdemona@zulip.com"),
-                ("शिव", "shiva@zulip.com"),
+                ("Zoe", "ZOE@example.com"),
+                ("Othello, the Moor of Venice", "othello@example.com"),
+                ("Iago", "iago@example.com"),
+                ("Prospero from The Tempest", "prospero@example.com"),
+                ("Cordelia, Lear's daughter", "cordelia@example.com"),
+                ("King Hamlet", "hamlet@example.com"),
+                ("aaron", "AARON@example.com"),
+                ("Polonius", "polonius@example.com"),
+                ("Desdemona", "desdemona@example.com"),
+                ("शिव", "shiva@example.com"),
             ]
 
             # For testing really large batches:
@@ -445,7 +445,7 @@ class Command(ZulipBaseCommand):
 
             for i in range(min(num_names, num_boring_names)):
                 full_name = f"Extra{i:03} User"
-                names.append((full_name, f"extrauser{i}@zulip.com"))
+                names.append((full_name, f"extrauser{i}@example.com"))
 
             if num_names > num_boring_names:
                 fnames = [
@@ -535,7 +535,7 @@ class Command(ZulipBaseCommand):
                         full_name += f" {random.choice(raw_emojis)} "
                     else:
                         full_name += " " + random.choice(lnames)
-                email = fname.lower().encode("ascii", "ignore").decode("ascii") + "@zulip.com"
+                email = fname.lower().encode("ascii", "ignore").decode("ascii") + "@example.com"
                 validate_email(email)
                 names.append((full_name, email))
 
@@ -551,16 +551,16 @@ class Command(ZulipBaseCommand):
                 u.save(update_fields=["timezone"])
 
             # Note: Hamlet keeps default time zone of "".
-            assign_time_zone_by_delivery_email("AARON@zulip.com", "US/Pacific")
-            assign_time_zone_by_delivery_email("othello@zulip.com", "US/Pacific")
-            assign_time_zone_by_delivery_email("ZOE@zulip.com", "US/Eastern")
-            assign_time_zone_by_delivery_email("iago@zulip.com", "US/Eastern")
-            assign_time_zone_by_delivery_email("desdemona@zulip.com", "Canada/Newfoundland")
-            assign_time_zone_by_delivery_email("polonius@zulip.com", "Asia/Shanghai")  # China
-            assign_time_zone_by_delivery_email("shiva@zulip.com", "Asia/Kolkata")  # India
-            assign_time_zone_by_delivery_email("cordelia@zulip.com", "UTC")
+            assign_time_zone_by_delivery_email("AARON@example.com", "US/Pacific")
+            assign_time_zone_by_delivery_email("othello@example.com", "US/Pacific")
+            assign_time_zone_by_delivery_email("ZOE@example.com", "US/Eastern")
+            assign_time_zone_by_delivery_email("iago@example.com", "US/Eastern")
+            assign_time_zone_by_delivery_email("desdemona@example.com", "Canada/Newfoundland")
+            assign_time_zone_by_delivery_email("polonius@example.com", "Asia/Shanghai")  # China
+            assign_time_zone_by_delivery_email("shiva@example.com", "Asia/Kolkata")  # India
+            assign_time_zone_by_delivery_email("cordelia@example.com", "UTC")
 
-            iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
+            iago = get_user_by_delivery_email("iago@example.com", zulip_realm)
             do_change_user_role(
                 iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None, notify=False
             )
@@ -584,23 +584,23 @@ class Command(ZulipBaseCommand):
                 last_edit_time=timezone_now(),
             )
 
-            desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
+            desdemona = get_user_by_delivery_email("desdemona@example.com", zulip_realm)
             do_change_user_role(
                 desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None, notify=False
             )
 
-            shiva = get_user_by_delivery_email("shiva@zulip.com", zulip_realm)
+            shiva = get_user_by_delivery_email("shiva@example.com", zulip_realm)
             do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None, notify=False)
 
-            polonius = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
+            polonius = get_user_by_delivery_email("polonius@example.com", zulip_realm)
             do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None, notify=False)
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
             zulip_realm_bots = [
-                ("Zulip Default Bot", "default-bot@zulip.com"),
+                ("Zulip Default Bot", "default-bot@example.com"),
                 *(
-                    (f"Extra Bot {i}", f"extrabot{i}@zulip.com")
+                    (f"Extra Bot {i}", f"extrabot{i}@example.com")
                     for i in range(options["extra_bots"])
                 ),
             ]
@@ -609,9 +609,9 @@ class Command(ZulipBaseCommand):
                 zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT, bot_owner=desdemona
             )
 
-            zoe = get_user_by_delivery_email("zoe@zulip.com", zulip_realm)
+            zoe = get_user_by_delivery_email("zoe@example.com", zulip_realm)
             zulip_webhook_bots = [
-                ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
+                ("Zulip Webhook Bot", "webhook-bot@example.com"),
             ]
             # If a stream is not supplied in the webhook URL, the webhook
             # will (in some cases) send the notification as a PM to the
@@ -622,10 +622,10 @@ class Command(ZulipBaseCommand):
                 bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
                 bot_owner=zoe,
             )
-            aaron = get_user_by_delivery_email("AARON@zulip.com", zulip_realm)
+            aaron = get_user_by_delivery_email("AARON@example.com", zulip_realm)
 
             zulip_outgoing_bots = [
-                ("Outgoing Webhook", "outgoing-webhook@zulip.com"),
+                ("Outgoing Webhook", "outgoing-webhook@example.com"),
             ]
             create_users(
                 zulip_realm,
@@ -633,7 +633,7 @@ class Command(ZulipBaseCommand):
                 bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
                 bot_owner=aaron,
             )
-            outgoing_webhook = get_user("outgoing-webhook@zulip.com", zulip_realm)
+            outgoing_webhook = get_user("outgoing-webhook@example.com", zulip_realm)
             add_service(
                 "outgoing-webhook",
                 user_profile=outgoing_webhook,
@@ -690,16 +690,16 @@ class Command(ZulipBaseCommand):
 
             if options["test_suite"]:
                 subscriptions_map = {
-                    "AARON@zulip.com": ["Verona"],
-                    "cordelia@zulip.com": ["Verona"],
-                    "hamlet@zulip.com": [
+                    "AARON@example.com": ["Verona"],
+                    "cordelia@example.com": ["Verona"],
+                    "hamlet@example.com": [
                         "Verona",
                         "Denmark",
                         "core team",
                         zulip_discussion_channel_name,
                         zulip_sandbox_channel_name,
                     ],
-                    "iago@zulip.com": [
+                    "iago@example.com": [
                         "Verona",
                         "Denmark",
                         "Scotland",
@@ -707,11 +707,11 @@ class Command(ZulipBaseCommand):
                         zulip_discussion_channel_name,
                         zulip_sandbox_channel_name,
                     ],
-                    "othello@zulip.com": ["Verona", "Denmark", "Scotland"],
-                    "prospero@zulip.com": ["Verona", "Denmark", "Scotland", "Venice"],
-                    "ZOE@zulip.com": ["Verona", "Denmark", "Scotland", "Venice", "Rome"],
-                    "polonius@zulip.com": ["Verona"],
-                    "desdemona@zulip.com": [
+                    "othello@example.com": ["Verona", "Denmark", "Scotland"],
+                    "prospero@example.com": ["Verona", "Denmark", "Scotland", "Venice"],
+                    "ZOE@example.com": ["Verona", "Denmark", "Scotland", "Venice", "Rome"],
+                    "polonius@example.com": ["Verona"],
+                    "desdemona@example.com": [
                         "Verona",
                         "Denmark",
                         "Venice",
@@ -719,7 +719,7 @@ class Command(ZulipBaseCommand):
                         zulip_discussion_channel_name,
                         zulip_sandbox_channel_name,
                     ],
-                    "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
+                    "shiva@example.com": ["Verona", "Denmark", "Scotland"],
                 }
 
                 for profile in profiles:
@@ -822,7 +822,7 @@ class Command(ZulipBaseCommand):
             )
 
             # Fill in values for Iago and Hamlet
-            hamlet = get_user_by_delivery_email("hamlet@zulip.com", zulip_realm)
+            hamlet = get_user_by_delivery_email("hamlet@example.com", zulip_realm)
             do_update_user_custom_profile_data_if_changed(
                 iago,
                 [
@@ -1023,7 +1023,7 @@ class Command(ZulipBaseCommand):
 
                 testsuite_lear_users = [
                     ("King Lear", "king@lear.org"),
-                    ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
+                    ("Cordelia, Lear's daughter", "cordelia@example.com"),
                 ]
                 create_users(
                     lear_realm, testsuite_lear_users, tos_version=settings.TERMS_OF_SERVICE_VERSION
@@ -1199,9 +1199,9 @@ class Command(ZulipBaseCommand):
                 # Also, we don't want interacting with each other
                 # in dev setup.
                 internal_zulip_users_nosubs = [
-                    ("Zulip Commit Bot", "commit-bot@zulip.com"),
-                    ("Zulip Trac Bot", "trac-bot@zulip.com"),
-                    ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
+                    ("Zulip Commit Bot", "commit-bot@example.com"),
+                    ("Zulip Trac Bot", "trac-bot@example.com"),
+                    ("Zulip Nagios Bot", "nagios-bot@example.com"),
                 ]
                 create_users(
                     zulip_realm,
@@ -1481,10 +1481,10 @@ def choose_date_sent(
 
 def create_user_groups() -> None:
     zulip = get_realm("zulip")
-    cordelia = get_user_by_delivery_email("cordelia@zulip.com", zulip)
+    cordelia = get_user_by_delivery_email("cordelia@example.com", zulip)
     members = [
-        get_user_by_delivery_email("cordelia@zulip.com", zulip),
-        get_user_by_delivery_email("hamlet@zulip.com", zulip),
+        get_user_by_delivery_email("cordelia@example.com", zulip),
+        get_user_by_delivery_email("hamlet@example.com", zulip),
     ]
     create_user_group_in_database(
         "hamletcharacters", members, zulip, description="Characters of Hamlet", acting_user=cordelia

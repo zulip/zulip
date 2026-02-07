@@ -85,7 +85,7 @@ log_to_file(logging.getLogger("stripe"), BILLING_LOG_PATH)
 ParamT = ParamSpec("ParamT")
 ReturnT = TypeVar("ReturnT")
 
-BILLING_SUPPORT_EMAIL = "sales@zulip.com"
+BILLING_SUPPORT_EMAIL = "sales@example.com"
 
 MIN_INVOICED_LICENSES = 30
 MAX_INVOICED_LICENSES = 1000

@@ -275,7 +275,23 @@ export async function log_in(
         form.submit();
     });
 
-    await page.waitForSelector("#inbox-main", {visible: true});
+    await page.waitForFunction(() =>
+        !window.location.pathname.startsWith("/login/") &&
+        !window.location.pathname.startsWith("/accounts/login/"),
+    );
+
+    const ready_selectors = ["#inbox-main", "#compose-textarea", "#left-sidebar"];
+    try {
+        await Promise.any(
+            ready_selectors.map((selector) =>
+                page.waitForSelector(selector, {visible: true, timeout: 45000}),
+            ),
+        );
+    } catch (error) {
+        await screenshot(page, "login-timeout");
+        console.error("Login timeout on URL:", await page_url_with_fragment(page));
+        throw error;
+    }
 }
 
 export async function log_out(page: Page): Promise<void> {

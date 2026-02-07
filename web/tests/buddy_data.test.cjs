@@ -8,6 +8,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {noop, run_test} = require("./lib/test.cjs");
+const {make_email} = require("./lib/test_email.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 mock_esm("../src/settings_data", {
@@ -58,25 +59,25 @@ const me = {
 };
 
 const alice = {
-    email: "alice@zulip.com",
+    email: make_email("alice"),
     user_id: 1002,
     full_name: "Alice Smith",
 };
 
 const fred = {
-    email: "fred@zulip.com",
+    email: make_email("fred"),
     user_id: 1003,
     full_name: "Fred Flintstone",
 };
 
 const jill = {
-    email: "jill@zulip.com",
+    email: make_email("jill"),
     user_id: 1004,
     full_name: "Jill Hill",
 };
 
 const mark = {
-    email: "mark@zulip.com",
+    email: make_email("mark"),
     user_id: 1005,
     full_name: "Marky Mark",
 };
