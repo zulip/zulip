@@ -926,7 +926,7 @@ def update_narrow_terms_containing_with_operator(
     if narrow is None:
         return narrow
 
-    with_operator_terms = list(filter(lambda term: term.operator == "with", narrow))
+    with_operator_terms = [term for term in narrow if term.operator == "with"]
     can_user_access_target_message = True
 
     if len(with_operator_terms) > 1:
