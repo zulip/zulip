@@ -1016,7 +1016,8 @@ export async function build_move_topic_to_stream_popover(
         const has_input_focus = $topic_input.is(":focus");
 
         // reset
-        $topic_input.attr("placeholder", "");
+        $topic_input.attr("placeholder",
+        stream_data.can_use_empty_topic(stream_widget_value) ? "" : $t({defaultMessage: "Topic"}),);
         $topic_input.removeClass("empty-topic-display");
         $topic_not_mandatory_placeholder.removeClass("move-topic-new-topic-placeholder-visible");
         update_clear_move_topic_button_state();
@@ -1027,7 +1028,7 @@ export async function build_move_topic_to_stream_popover(
             return;
         }
 
-        if (has_input_focus) {
+        if (has_input_focus && stream_data.can_use_empty_topic(stream_widget_value)) {
             $topic_not_mandatory_placeholder.addClass("move-topic-new-topic-placeholder-visible");
         } else {
             $topic_input.attr("placeholder", empty_string_topic_display_name);
