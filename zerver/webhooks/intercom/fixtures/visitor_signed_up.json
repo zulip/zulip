@@ -1,0 +1,79 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "user",
+            "id": "6961e6de046e053d93e4da0b",
+            "user_id": "fixture-user-1",
+            "anonymous": false,
+            "email": "fixture_user_1@example.com",
+            "phone": null,
+            "name": "Fixture User 1",
+            "pseudonym": "Pink Lightbulb from Bengaluru",
+            "avatar": {
+                "type": "avatar",
+                "image_url": null
+            },
+            "app_id": "abc123def",
+            "companies": {
+                "type": "company.list",
+                "companies": []
+            },
+            "location_data": {
+                "type": "location_data",
+                "city_name": "Bengaluru",
+                "continent_code": "AS",
+                "country_name": "India",
+                "postal_code": "562130",
+                "region_name": "Karnataka",
+                "timezone": "Asia/Kolkata",
+                "country_code": "IND",
+                "latitude": null,
+                "longitude": null
+            },
+            "last_request_at": "2026-01-10T05:42:57.457+00:00",
+            "created_at": "2026-01-10T05:42:55.079+00:00",
+            "remote_created_at": "2026-01-10T05:42:57.490+00:00",
+            "signed_up_at": "2026-01-10T05:42:57.490+00:00",
+            "updated_at": "2026-01-10T05:42:57.000Z",
+            "session_count": 1,
+            "social_profiles": {
+                "type": "social_profile.list",
+                "social_profiles": []
+            },
+            "owner_id": null,
+            "unsubscribed_from_emails": false,
+            "marked_email_as_spam": false,
+            "has_hard_bounced": false,
+            "tags": {
+                "type": "tag.list",
+                "tags": []
+            },
+            "segments": {
+                "type": "segment.list",
+                "segments": []
+            },
+            "custom_attributes": {},
+            "referrer": "http://localhost:5500/",
+            "utm_campaign": null,
+            "utm_content": null,
+            "utm_medium": null,
+            "utm_source": null,
+            "utm_term": null,
+            "do_not_track": null,
+            "last_seen_ip": null,
+            "user_agent_data": null
+        }
+    },
+    "links": {},
+    "id": "notif_36beafa3-1a76-43cd-a971-0e39c2f487bd",
+    "topic": "visitor.signed_up",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768023785,
+    "created_at": 1768023777,
+    "self": null
+}
