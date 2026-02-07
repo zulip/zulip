@@ -1651,8 +1651,7 @@ li.active-sub-filter {
 .left-sidebar:not(.zoom-in) #views-label-container.showing-expanded-navigation {
     /* When the expanded navigation is visible,
         hide the condensed navigation's controls. */
-    #left-sidebar-navigation-list-condensed,
-    .left-sidebar-navigation-menu-icon {
+    #left-sidebar-navigation-list-condensed {
         display: none;
     }
     /* Give the sidebar title through the end of the markers
