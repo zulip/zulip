@@ -1736,6 +1736,7 @@ def apply_event(
                                 "subscribers" if "subscribers" in sub else "partial_subscribers"
                             )
                             subscribers = set(sub[subscriber_key]) | user_ids
+                            # Keep this sorted by user ID; peer_remove relies on it.
                             sub[subscriber_key] = sorted(subscribers)
         elif event["op"] == "peer_remove":
             # Note: We don't update subscriber_count here, as with peer_add.
@@ -1753,8 +1754,10 @@ def apply_event(
                             subscriber_key = (
                                 "subscribers" if "subscribers" in sub else "partial_subscribers"
                             )
-                            subscribers = set(sub[subscriber_key]) - user_ids
-                            sub[subscriber_key] = sorted(subscribers)
+                            # Subscriber lists are sorted, so filtering preserves that.
+                            sub[subscriber_key] = [
+                                uid for uid in sub[subscriber_key] if uid not in user_ids
+                            ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
