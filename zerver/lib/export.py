@@ -295,6 +295,9 @@ NON_EXPORTED_TABLES = {
     # ChannelEmailAddress entries are low value to export since
     # channel email addresses include the server's hostname.
     "zerver_channelemailaddress",
+    # RealmExport records reference the old server's export URLs/paths
+    # and aren't meaningful after a migration to a new server.
+    "zerver_realmexport",
     # For any tables listed below here, it's a bug that they are not present in the export.
 }
 
@@ -353,13 +356,6 @@ DATE_FIELDS: dict[TableName, list[Field]] = {
         "demo_organization_scheduled_deletion_date",
         "push_notifications_enabled_end_timestamp",
         "scheduled_deletion_date",
-    ],
-    "zerver_realmexport": [
-        "date_requested",
-        "date_started",
-        "date_succeeded",
-        "date_failed",
-        "date_deleted",
     ],
     "zerver_savedsnippet": ["date_created"],
     "zerver_scheduledmessage": ["scheduled_timestamp", "request_timestamp"],
@@ -966,13 +962,6 @@ def get_realm_config() -> Config:
     Config(
         table="zerver_realmdomain",
         model=RealmDomain,
-        normal_parent=realm_config,
-        include_rows="realm_id__in",
-    )
-
-    Config(
-        table="zerver_realmexport",
-        model=RealmExport,
         normal_parent=realm_config,
         include_rows="realm_id__in",
     )
