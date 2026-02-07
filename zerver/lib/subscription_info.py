@@ -630,6 +630,8 @@ def bulk_get_subscriber_user_ids(
     One optimization is to use two branches for creating this query,
     to avoid joining on zerver_userprofile when we're not sending
     partial users.
+
+    Both branches must keep the ORDER BY; apply_event relies on it.
     """
 
     if partial_fetch_recipient_ids:
