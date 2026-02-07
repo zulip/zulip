@@ -26,6 +26,7 @@ IGNORED_EVENTS = [
     # Unable to invoke these events, likely restricted for trial accounts.
     *[
         "conversation.rating.added",
+        "ticket.rating.provided",
     ],
 ]
 
