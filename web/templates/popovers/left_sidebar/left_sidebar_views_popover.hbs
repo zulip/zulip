@@ -1,10 +1,14 @@
 <div class="popover-menu" data-simplebar data-simplebar-tab-index="-1">
     <ul role="menu" class="popover-menu-list condensed-views-popover-menu">
-        {{#each views}}
-            {{> left_sidebar_view_popover_item .}}
-        {{/each}}
+        {{#if is_condensed}}
+            {{#each views}}
+                {{> left_sidebar_view_popover_item .}}
+            {{/each}}
+            {{#unless is_home_view_active}}
+                <li role="separator" class="popover-menu-separator"></li>
+            {{/unless}}
+        {{/if}}
         {{#unless is_home_view_active}}
-        <li role="separator" class="popover-menu-separator"></li>
         {{#if unread_messages_present}}
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" class="popover-menu-link mark_all_messages_as_read" tabindex="0">
