@@ -1610,6 +1610,14 @@ class RealmImportExportTest(ExportFile):
         # Verify strange invariant for UserStatus/RealmEmoji.
         self.assertEqual(user_status.emoji_code, str(realm_emoji.id))
 
+        # data to test import of external auth IDs
+        ExternalAuthID.objects.create(
+            user=hamlet,
+            realm=original_realm,
+            external_auth_method_name="saml:idp_name",
+            external_auth_id="hamlet-saml-id",
+        )
+
         # data to test import of botstoragedata and botconfigdata
         bot_profile = do_create_user(
             email="bot-1@zulip.com",
@@ -2314,6 +2322,13 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_channel_folders(r: Realm) -> set[str]:
             return set(ChannelFolder.objects.filter(realm=r).values_list("name", flat=True))
+
+        @getter
+        def get_external_auth_ids(r: Realm) -> set[tuple[str, str, str]]:
+            return {
+                (rec.user.delivery_email, rec.external_auth_method_name, rec.external_auth_id)
+                for rec in ExternalAuthID.objects.filter(realm=r)
+            }
 
         return getters
 

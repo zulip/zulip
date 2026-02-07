@@ -117,7 +117,7 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_hash
-from zerver.models.users import get_system_bot, get_user_profile_by_id
+from zerver.models.users import ExternalAuthID, get_system_bot, get_user_profile_by_id
 from zproject.backends import AUTH_BACKEND_NAME_MAP
 
 ImportedTableData: TypeAlias = dict[str, list[Record]]
@@ -188,6 +188,7 @@ ID_MAP: dict[str, dict[int, int]] = {
     "channelfolder": {},
     "navigationview": {},
     "submessage": {},
+    "externalauthid": {},
 }
 
 id_map_to_list: dict[str, dict[int, list[int]]] = {
@@ -1897,6 +1898,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(UserStatus, data, "userstatus")
         re_map_realm_emoji_codes(data, table_name="zerver_userstatus")
         bulk_import_model(data, UserStatus)
+
+    if "zerver_externalauthid" in data:
+        fix_datetime_fields(data, "zerver_externalauthid")
+        re_map_foreign_keys(data, "zerver_externalauthid", "user", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_externalauthid", "realm", related_table="realm")
+        update_model_ids(ExternalAuthID, data, "externalauthid")
+        bulk_import_model(data, ExternalAuthID)
 
     # Do attachments AFTER message data is loaded.
     logging.info("Importing attachment data from %s", attachments_file)
