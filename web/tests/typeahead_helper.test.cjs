@@ -1280,6 +1280,10 @@ test("compare_group_setting_options", () => {
         -1,
     );
 
+    // A user always has a higher priority than a bot.
+    assert.equal(th.compare_group_setting_options(b_bot_item, b_user_1_item, bob_group), 1);
+    assert.equal(th.compare_group_setting_options(b_user_1_item, b_bot_item, bob_group), -1);
+
     // A user who is a member of the group being changed has higher priority.
     // If both the users are not members of the group being changed, alphabetical order
     // is used to decide priority.
