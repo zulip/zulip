@@ -1,10 +1,8 @@
-##### 2. Add yourself to the `docker` group:
+##### 2. Create the `docker` group and add yourself to it:
 
 ```console
-$ sudo adduser $USER docker
-Adding user `YOURUSERNAME' to group `docker' ...
-Adding user YOURUSERNAME to group docker
-Done.
+$ sudo groupadd docker
+$ sudo usermod -aG docker $USER
 ```
 
 You will need to log out and log back in (or reboot) for this change to take effect.
