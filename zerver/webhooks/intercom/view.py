@@ -18,6 +18,11 @@ def get_ping_message(payload: WildValue) -> tuple[str, str]:
 
 
 IGNORED_EVENTS = [
+    # Require purchasing an Intercom number.
+    *["call"],
+    # Might be restricted for trial accounts.
+    # Only content_stat.banners was attempted, and it was restricted.
+    *["content_stat"],
     # Can only be invoked by SMS from registered US or Canadian numbers.
     *[
         "contact.lead.signed_up",
@@ -27,6 +32,9 @@ IGNORED_EVENTS = [
     *[
         "conversation.rating.added",
         "ticket.rating.provided",
+        "data_connector.execution.completed",
+        "job.completed",
+        "messenger.deployment_completed.event.created",
     ],
 ]
 
@@ -49,7 +57,9 @@ def api_intercom_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     event_type = payload["topic"].tame(check_string)
-    if event_type in IGNORED_EVENTS:
+    # event_type is of the form "{event_category}.{event}".
+    event_category = event_type.split(".", 1)[0]
+    if event_type in IGNORED_EVENTS or event_category in IGNORED_EVENTS:
         return json_success(request)  # nocoverage
 
     handler = EVENT_TO_FUNCTION_MAPPER.get(event_type)
