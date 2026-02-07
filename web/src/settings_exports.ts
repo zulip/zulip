@@ -380,7 +380,6 @@ function maybe_show_notes_about_unusable_users_if_exported(
 function show_start_export_modal(): void {
     const html_body = render_start_export_modal({
         export_type_values: get_export_type_options_to_render(),
-        realm_owner_full_content_access: realm.realm_owner_full_content_access,
     });
 
     function start_export(): void {
