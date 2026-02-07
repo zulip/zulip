@@ -2039,10 +2039,8 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids["othello_id"] = othello_user.id
         query_ids["hamlet_recipient"] = hamlet_user.recipient_id
         query_ids["othello_recipient"] = othello_user.recipient_id
-        recipients = (
-            get_public_streams_queryset(hamlet_user.realm)
-            .values_list("recipient_id", flat=True)
-            .order_by("id")
+        recipients = get_public_streams_queryset(hamlet_user.realm).values_list(
+            "recipient_id", flat=True
         )
         query_ids["public_channels_recipients"] = ", ".join(str(r) for r in recipients)
         return query_ids

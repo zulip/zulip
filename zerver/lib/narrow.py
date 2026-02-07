@@ -494,7 +494,7 @@ class NarrowBuilder:
         else:
             raise BadNarrowOperatorError("unknown channels operand " + operand)
 
-        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
+        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True)
         cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
