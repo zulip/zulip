@@ -17,6 +17,15 @@ def get_ping_message(payload: WildValue) -> tuple[str, str]:
     return (topic_name, body)
 
 
+IGNORED_EVENTS = [
+    # Can only be invoked by SMS from registered US or Canadian numbers.
+    *[
+        "contact.lead.signed_up",
+        "contact.unsubscribed_from_sms",
+    ],
+]
+
+
 EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], tuple[str, str]]] = {
     "ping": get_ping_message
 }
@@ -35,6 +44,8 @@ def api_intercom_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     event_type = payload["topic"].tame(check_string)
+    if event_type in IGNORED_EVENTS:
+        return json_success(request)  # nocoverage
 
     handler = EVENT_TO_FUNCTION_MAPPER.get(event_type)
     if handler is None:
