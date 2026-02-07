@@ -618,22 +618,19 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def _get_direct_message_group_recipients(self, other_user: UserProfile) -> set[int]:
-        self_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
+        self_recipient_ids = set(
+            Subscription.objects.filter(
                 user_profile=self.user_profile,
                 recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
-            ).values("recipient_id")
-        ]
-        narrow_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
+            ).values_list("recipient_id", flat=True)
+        )
+        narrow_recipient_ids = set(
+            Subscription.objects.filter(
                 user_profile=other_user,
                 recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
-            ).values("recipient_id")
-        ]
-
-        return set(self_recipient_ids) & set(narrow_recipient_ids)
+            ).values_list("recipient_id", flat=True)
+        )
+        return self_recipient_ids & narrow_recipient_ids
 
     def by_dm_including(
         self, query: Select, operand: str | int, maybe_negate: ConditionTransform
