@@ -1301,34 +1301,26 @@ def apply_event(
                                 subscriber_key = (
                                     "subscribers" if "subscribers" in sub else "partial_subscribers"
                                 )
-                                sub[subscriber_key] = [
-                                    user_id
-                                    for user_id in sub[subscriber_key]
-                                    if user_id != person_user_id
-                                ]
+                                if person_user_id in sub[subscriber_key]:
+                                    sub[subscriber_key].remove(person_user_id)
 
                     for user_group in state["realm_user_groups"]:
-                        user_group["members"] = [
-                            user_id
-                            for user_id in user_group["members"]
-                            if user_id != person_user_id
-                        ]
+                        if person_user_id in user_group["members"]:
+                            user_group["members"].remove(person_user_id)
 
                     for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
-                        if not isinstance(state["realm_" + setting_name], int):
-                            state["realm_" + setting_name]["direct_members"] = [
-                                user_id
-                                for user_id in state["realm_" + setting_name]["direct_members"]
-                                if user_id != person_user_id
-                            ]
+                        if (
+                            not isinstance(state["realm_" + setting_name], int)
+                            and person_user_id in state["realm_" + setting_name]["direct_members"]
+                        ):
+                            state["realm_" + setting_name]["direct_members"].remove(person_user_id)
                     for group in state["realm_user_groups"]:
                         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
-                            if not isinstance(group[setting_name], int):
-                                group[setting_name]["direct_members"] = [
-                                    user_id
-                                    for user_id in group[setting_name]["direct_members"]
-                                    if user_id != person_user_id
-                                ]
+                            if (
+                                not isinstance(group[setting_name], int)
+                                and person_user_id in group[setting_name]["direct_members"]
+                            ):
+                                group[setting_name]["direct_members"].remove(person_user_id)
         elif event["op"] == "remove":
             if person_user_id in state["raw_users"]:
                 if user_list_incomplete:
