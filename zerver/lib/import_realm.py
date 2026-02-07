@@ -33,7 +33,7 @@ from zerver.actions.user_settings import set_avatar_to_default
 from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
-from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableName
+from zerver.lib.export import Field, Path, Record, TableName, date_fields_for_table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
@@ -249,7 +249,7 @@ def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
 
 def fix_datetime_fields(data: ImportedTableData, table: TableName) -> None:
     for item in data[table]:
-        for field_name in DATE_FIELDS[table]:
+        for field_name in date_fields_for_table(table):
             if item[field_name] is not None:
                 item[field_name] = datetime.fromtimestamp(item[field_name], tz=timezone.utc)
 

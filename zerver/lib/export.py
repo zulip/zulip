@@ -6,6 +6,7 @@
 # it the lists in `ALL_ZULIP_TABLES` and similar data structures and
 # (2) if it doesn't belong in EXCLUDED_TABLES, add a Config object for
 # it to get_realm_config.
+import functools
 import glob
 import hashlib
 import logging
@@ -331,49 +332,34 @@ ANALYTICS_TABLES = {
     "analytics_usercount",
 }
 
-# This data structure lists all the Django DateTimeField fields in the
-# data model.  These are converted to floats during the export process
-# via floatify_datetime_fields, and back during the import process.
-#
-# TODO: This data structure could likely eventually be replaced by
-# inspecting the corresponding Django models
-DATE_FIELDS: dict[TableName, list[Field]] = {
-    "analytics_installationcount": ["end_time"],
-    "analytics_realmcount": ["end_time"],
-    "analytics_streamcount": ["end_time"],
-    "analytics_usercount": ["end_time"],
-    "zerver_attachment": ["create_time"],
-    "zerver_channelfolder": ["date_created"],
-    "zerver_externalauthid": ["date_created"],
-    "zerver_message": ["last_edit_time", "date_sent"],
-    "zerver_muteduser": ["date_muted"],
-    "zerver_realmauditlog": ["event_time"],
-    "zerver_realm": [
-        "date_created",
-        "demo_organization_scheduled_deletion_date",
-        "push_notifications_enabled_end_timestamp",
-        "scheduled_deletion_date",
-    ],
-    "zerver_realmexport": [
-        "date_requested",
-        "date_started",
-        "date_succeeded",
-        "date_failed",
-        "date_deleted",
-    ],
-    "zerver_savedsnippet": ["date_created"],
-    "zerver_scheduledmessage": ["scheduled_timestamp", "request_timestamp"],
-    "zerver_stream": ["date_created"],
-    "zerver_namedusergroup": ["date_created"],
-    "zerver_useractivityinterval": ["start", "end"],
-    "zerver_useractivity": ["last_visit"],
-    "zerver_onboardingstep": ["timestamp"],
-    "zerver_userpresence": ["last_active_time", "last_connected_time"],
-    "zerver_userprofile": ["date_joined", "last_login", "last_reminder"],
-    "zerver_userprofile_mirrordummy": ["date_joined", "last_login", "last_reminder"],
-    "zerver_userstatus": ["timestamp"],
-    "zerver_usertopic": ["last_updated"],
-}
+
+@functools.cache
+def _date_fields_by_table() -> dict[str, list[Field]]:
+    from django.db import models
+
+    result: dict[str, list[Field]] = {}
+    for app_label in ["analytics", "zerver"]:
+        for model in apps.get_app_config(app_label).get_models():
+            result[model._meta.db_table] = [
+                f.name for f in model._meta.get_fields() if isinstance(f, models.DateTimeField)
+            ]
+    return result
+
+
+def date_fields_for_table(table: TableName) -> list[Field]:
+    """
+    Return the DateTimeField names for the given table, via Django
+    model introspection. These are converted to floats during the
+    export process via floatify_datetime_fields, and back during the
+    import process via fix_datetime_fields.
+    """
+
+    if table == "zerver_userprofile_mirrordummy":
+        # zerver_userprofile_mirrordummy is a virtual export table that uses
+        # the UserProfile schema.
+        table = "zerver_userprofile"
+
+    return _date_fields_by_table().get(table, [])
 
 
 def sanity_check_output(data: TableData) -> None:
@@ -549,7 +535,7 @@ def make_raw(query: Iterable[Any], exclude: list[Field] | None = None) -> Iterat
 
 def floatify_datetime_fields(item: Record, table: TableName) -> Record:
     updates = {}
-    for field in DATE_FIELDS[table]:
+    for field in date_fields_for_table(table):
         dt = item[field]
         if dt is None:
             continue
@@ -892,7 +878,7 @@ def export_from_config(
             # The config might specify a function to do final processing
             # of the exported data for the tables - e.g. to strip out private data.
             response[t] = custom_process_results(response[t], context)
-        if t in DATE_FIELDS:
+        if date_fields_for_table(t):
             response[t] = (floatify_datetime_fields(r, t) for r in response[t])
 
         if not config.use_iterator:
