@@ -4,6 +4,11 @@ content-type: application/json
 vary: Accept-Encoding
 vary: Accept-Language, Cookie
 content-language: en
+content-security-policy-report-only: default-src 'none'; report-uri /csp-violations; report-to csp-endpoint
+x-frame-options: DENY
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+permissions-policy: camera=(), microphone=(), geolocation=(), payment=()
 strict-transport-security: max-age=15768000
 x-frame-options: DENY
 x-content-type-options: nosniff
