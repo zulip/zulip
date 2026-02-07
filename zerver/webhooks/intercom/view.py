@@ -23,6 +23,10 @@ IGNORED_EVENTS = [
         "contact.lead.signed_up",
         "contact.unsubscribed_from_sms",
     ],
+    # Unable to invoke these events, likely restricted for trial accounts.
+    *[
+        "conversation.rating.added",
+    ],
 ]
 
 
