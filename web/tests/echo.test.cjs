@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const $ = require("jquery");
 const MockDate = require("mockdate");
 
 const {make_user_group} = require("./lib/example_group.cjs");
@@ -452,4 +453,54 @@ run_test("test reify_message_id", ({override}) => {
 
 run_test("reset MockDate", () => {
     MockDate.reset();
+});
+
+run_test("message_hang_warning cleared on late ack", ({override}) => {
+    $.clear_all_elements();
+
+    let timeout_callback;
+
+    override(markdown, "render", noop);
+    override(markdown, "get_topic_links", noop);
+
+    override(global, "setTimeout", (callback, _delay) => {
+        timeout_callback = callback;
+        return 1;
+    });
+
+    echo.rewire_show_msg_hang_warning(() => {});
+    echo.rewire_clear_msg_hang_warning(() => {});
+
+    const local_id = "001.01";
+
+    echo.insert_local_message(
+        {
+            type: "stream",
+            stream_id: general_sub.stream_id,
+            topic: "test",
+            sender_email: "iago@zulip.com",
+            sender_full_name: "Iago",
+            sender_id: 143,
+        },
+        Number(local_id),
+        (message_data) => {
+            for (const message of message_data.raw_messages) {
+                echo.track_local_message(message);
+            }
+            return message_data.raw_messages;
+        },
+    );
+
+    timeout_callback();
+
+    echo.process_from_server([
+        {
+            local_id,
+            id: 200,
+            content: "Hello",
+            timestamp: 123,
+            flags: [],
+            is_me_message: false,
+        },
+    ]);
 });
