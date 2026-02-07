@@ -1722,8 +1722,9 @@ def apply_event(
                             subscriber_key = (
                                 "subscribers" if "subscribers" in sub else "partial_subscribers"
                             )
-                            subscribers = set(sub[subscriber_key]) - user_ids
-                            sub[subscriber_key] = sorted(subscribers)
+                            sub[subscriber_key] = [
+                                uid for uid in sub[subscriber_key] if uid not in user_ids
+                            ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
