@@ -1436,15 +1436,25 @@ def post_process_limited_query(
 
     rows_limited = len(visible_rows) != len(rows)
 
+    before_rows: list[MessageRowT]
+    anchor_rows: list[MessageRowT]
+    after_rows: list[MessageRowT]
     if anchored_to_right:
         num_after = 0
-        before_rows = visible_rows[:]
+        before_rows = list(visible_rows)
         anchor_rows = []
         after_rows = []
     else:
-        before_rows = [r for r in visible_rows if r[0] < anchor]
-        anchor_rows = [r for r in visible_rows if r[0] == anchor]
-        after_rows = [r for r in visible_rows if r[0] > anchor]
+        before_rows = []
+        anchor_rows = []
+        after_rows = []
+        for r in visible_rows:
+            if r[0] < anchor:
+                before_rows.append(r)
+            elif r[0] == anchor:
+                anchor_rows.append(r)
+            else:
+                after_rows.append(r)
 
     if num_before:
         before_rows = before_rows[-1 * num_before :]
