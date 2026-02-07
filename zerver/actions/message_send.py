@@ -62,10 +62,7 @@ from zerver.lib.notification_data import (
 from zerver.lib.query_helpers import query_for_ids
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.recipient_users import recipient_for_user_profiles
-from zerver.lib.stream_subscription import (
-    get_subscriptions_for_send_message,
-    num_subscribers_for_stream_id,
-)
+from zerver.lib.stream_subscription import get_subscriptions_for_send_message
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_for_send_message,
@@ -80,7 +77,6 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
-from zerver.lib.topic_link_util import get_stream_link_syntax
 from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
@@ -1519,52 +1515,35 @@ def send_pm_if_empty_stream(
     stream_name: str | None = None,
     stream_id: int | None = None,
 ) -> None:
-    """If a bot sends a message to a stream that doesn't exist or has no
-    subscribers, sends a notification to the bot owner (if not a
-    cross-realm bot) so that the owner can correct the issue."""
+    """If a bot sends a message to a stream that doesn't exist, sends a
+    notification to the bot owner (if not a cross-realm bot) so that the
+    owner can correct the issue."""
     if not sender.is_bot or sender.bot_owner is None:
+        return
+
+    if stream is not None:
         return
 
     if sender.bot_owner is not None:
         with override_language(sender.bot_owner.default_language):
-            arg_dict: dict[str, Any] = {
-                "bot_identity": f"`{sender.delivery_email}`",
-            }
-            if stream is None:
-                if stream_id is not None:
-                    arg_dict = {
-                        **arg_dict,
-                        "channel_id": stream_id,
-                    }
-                    content = _(
-                        "Your bot {bot_identity} tried to send a message to channel ID "
-                        "{channel_id}, but there is no channel with that ID."
-                    ).format(**arg_dict)
-                else:
-                    assert stream_name is not None
-                    arg_dict = {
-                        **arg_dict,
-                        "channel_name": f"#**{stream_name}**",
-                        "new_channel_link": "#channels/new",
-                    }
-                    content = _(
-                        "Your bot {bot_identity} tried to send a message to channel "
-                        "{channel_name}, but that channel does not exist. "
-                        "Click [here]({new_channel_link}) to create it."
-                    ).format(**arg_dict)
-            else:
-                if num_subscribers_for_stream_id(stream.id) > 0:
-                    return
-                arg_dict = {
-                    **arg_dict,
-                    "channel_name": f"{get_stream_link_syntax(stream.id, stream.name)}",
-                }
+            if stream_id is not None:
                 content = _(
-                    "Your bot {bot_identity} tried to send a message to "
-                    "channel {channel_name}. The channel exists but "
-                    "does not have any subscribers."
-                ).format(**arg_dict)
-
+                    "@_**{bot_name}** failed to send a message because there is no "
+                    "channel with ID {channel_id}."
+                ).format(
+                    bot_name=sender.full_name,
+                    channel_id=stream_id,
+                )
+            else:
+                assert stream_name is not None
+                content = _(
+                    "@_**{bot_name}** failed to send a message to "
+                    "#**{channel_name}** because the channel does not exist. "
+                    "[Create it](#channels/new)"
+                ).format(
+                    bot_name=sender.full_name,
+                    channel_name=stream_name,
+                )
         send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
 
