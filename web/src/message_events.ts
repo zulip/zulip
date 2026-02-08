@@ -735,7 +735,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     message_list_data_cache.remove(new_filter);
                     const terms = new_filter.terms();
                     const opts = {
-                        trigger: "stream/topic change",
+                        trigger: "retarget topic location",
                         then_select_id: current_selected_id,
                     };
                     message_view.show(terms, opts);
