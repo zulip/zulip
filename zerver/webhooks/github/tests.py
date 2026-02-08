@@ -144,9 +144,24 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker created new deployment."
         self.check_webhook("deployment", TOPIC_DEPLOYMENT, expected_message)
 
-    def test_deployment_status_msg(self) -> None:
+    def test_deployment_status_success_msg(self) -> None:
         expected_message = "Deployment changed status to success."
-        self.check_webhook("deployment_status", TOPIC_DEPLOYMENT, expected_message)
+        self.check_webhook("deployment_status__success", TOPIC_DEPLOYMENT, expected_message)
+
+    def test_deployment_status_pending_msg(self) -> None:
+        expected_topic_name = "test-repo / Deployment on production"
+        expected_message = "Deployment changed status to pending."
+        self.check_webhook("deployment_status__pending", expected_topic_name, expected_message)
+
+    def test_deployment_status_error_msg(self) -> None:
+        expected_topic_name = "test-repo / Deployment on production"
+        expected_message = "Deployment changed status to error."
+        self.check_webhook("deployment_status__error", expected_topic_name, expected_message)
+
+    def test_deployment_status_failure_msg(self) -> None:
+        expected_topic_name = "test-repo / Deployment on production"
+        expected_message = "Deployment changed status to failure."
+        self.check_webhook("deployment_status__failure", expected_topic_name, expected_message)
 
     def test_fork_msg(self) -> None:
         expected_message = "baxterandthehackers forked [public-repo](https://github.com/baxterandthehackers/public-repo)."
