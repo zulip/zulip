@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const example_user = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -40,18 +41,18 @@ test("add_and_remove_mutes", () => {
 });
 
 test("get_unmuted_users", () => {
-    const hamlet = {
+    const hamlet = example_user.make_user({
         user_id: 1,
         full_name: "King Hamlet",
-    };
-    const cordelia = {
+    });
+    const cordelia = example_user.make_user({
         user_id: 2,
         full_name: "Cordelia, Lear's Daughter",
-    };
-    const othello = {
+    });
+    const othello = example_user.make_user({
         user_id: 3,
         full_name: "Othello, Moor of Venice",
-    };
+    });
 
     muted_users.add_muted_user(hamlet.user_id);
     muted_users.add_muted_user(cordelia.user_id);
