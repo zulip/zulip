@@ -1,0 +1,223 @@
+#!/usr/bin/env python3
+"""Analyze backend test coverage and report missing lines with source context.
+
+Usage:
+    # First, generate coverage data:
+    ./tools/test-backend --coverage --no-cov-cleanup --no-html-report <module>
+
+    # Then analyze specific files:
+    ./.claude/fix-backend-coverage/analyze-coverage zerver/tests/test_import_export.py
+
+    # Or analyze all enforced files with missing coverage:
+    ./.claude/fix-backend-coverage/analyze-coverage
+"""
+
+import glob
+import os
+import sys
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+os.chdir(ROOT_DIR)
+sys.path.insert(0, ROOT_DIR)
+
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+import coverage
+
+# These lists are duplicated from tools/test-backend so that this script
+# can run independently.  Keep them in sync.
+source_files = [
+    "analytics/**/*.py",
+    "confirmation/**/*.py",
+    "corporate/**/*.py",
+    "pgroonga/**/*.py",
+    "zerver/**/*.py",
+    "zilencer/**/*.py",
+    "zproject/**/*.py",
+]
+
+not_yet_fully_covered = [
+    "*/migrations/*.py",
+    "*/management/commands/*.py",
+    "analytics/lib/fixtures.py",
+    "analytics/views/stats.py",
+    "corporate/views/installation_activity.py",
+    "corporate/views/plan_activity.py",
+    "corporate/views/realm_activity.py",
+    "corporate/views/remote_billing_page.py",
+    "corporate/views/audit_logs.py",
+    "corporate/views/support.py",
+    "corporate/lib/activity.py",
+    "corporate/lib/remote_billing_util.py",
+    "zerver/lib/addressee.py",
+    "zerver/lib/markdown/__init__.py",
+    "zerver/lib/cache.py",
+    "zerver/lib/cache_helpers.py",
+    "zerver/lib/i18n.py",
+    "zerver/lib/send_email.py",
+    "zerver/lib/url_preview/preview.py",
+    "zerver/lib/markdown/api_arguments_table_generator.py",
+    "zerver/lib/markdown/fenced_code.py",
+    "zerver/lib/markdown/nested_code_blocks.py",
+    "zerver/worker/deferred_work.py",
+    "zerver/worker/missedmessage_emails.py",
+    "zerver/worker/base.py",
+    "zerver/worker/queue_processors.py",
+    "zerver/worker/test.py",
+    "zerver/middleware.py",
+    "zerver/lib/bot_lib.py",
+    "zerver/lib/camo.py",
+    "zerver/lib/debug.py",
+    "zerver/lib/export.py",
+    "zerver/lib/fix_unreads.py",
+    "zerver/lib/import_realm.py",
+    "zerver/lib/logging_util.py",
+    "zerver/lib/profile.py",
+    "zerver/lib/queue.py",
+    "zerver/lib/sqlalchemy_utils.py",
+    "zerver/lib/storage.py",
+    "zerver/lib/templates.py",
+    "zerver/lib/generate_test_data.py",
+    "zerver/lib/server_initialization.py",
+    "zerver/lib/test_fixtures.py",
+    "zerver/lib/test_runner.py",
+    "zerver/lib/test_console_output.py",
+    "zerver/lib/zstd_level9.py",
+    "zerver/openapi/curl_param_value_generators.py",
+    "zerver/openapi/javascript_examples.py",
+    "zerver/openapi/python_examples.py",
+    "zerver/openapi/test_curl_examples.py",
+    "zerver/openapi/merge_api_changelogs.py",
+    "zerver/tornado/descriptors.py",
+    "zerver/tornado/django_api.py",
+    "zerver/tornado/event_queue.py",
+    "zerver/tornado/exceptions.py",
+    "zerver/tornado/handlers.py",
+    "zerver/tornado/ioloop_logging.py",
+    "zerver/tornado/sharding.py",
+    "zerver/tornado/views.py",
+    "zerver/data_import/slack.py",
+    "zerver/data_import/import_util.py",
+    "zerver/webhooks/greenhouse/view.py",
+    "zerver/webhooks/jira/view.py",
+    "zerver/webhooks/teamcity/view.py",
+    "zerver/webhooks/travis/view.py",
+    "zerver/webhooks/zapier/view.py",
+    "zerver/views/sentry.py",
+    "zerver/lib/safe_session_cached_db.py",
+    "zerver/lib/singleton_bmemcached.py",
+    "zerver/lib/migrate.py",
+    "zproject/computed_settings.py",
+    "zproject/custom_dev_settings.py",
+    "zproject/dev_settings.py",
+    "zproject/test_extra_settings.py",
+    "zproject/sentry.py",
+    "zproject/wsgi.py",
+]
+
+enforce_fully_covered = sorted(
+    {path for target in source_files for path in glob.glob(target, recursive=True)}
+    - {path for target in not_yet_fully_covered for path in glob.glob(target, recursive=True)}
+)
+
+not_yet_set = {
+    path for target in not_yet_fully_covered for path in glob.glob(target, recursive=True)
+}
+
+
+def classify_path(path: str) -> str:
+    if path in enforce_fully_covered:
+        return "ENFORCED - must be 100%"
+    if path in not_yet_set:
+        return "EXEMPT - in not_yet_fully_covered"
+    return "UNKNOWN - not in source_files"
+
+
+def print_source_context(path: str, line_no: int) -> None:
+    """Print a missing line with 1 line of context above and below."""
+    try:
+        with open(path) as f:
+            lines = f.readlines()
+    except OSError:
+        print(f"    (could not read {path})")
+        return
+
+    start = max(0, line_no - 2)
+    end = min(len(lines), line_no + 1)
+    for i in range(start, end):
+        prefix = " >> " if i == line_no - 1 else "    "
+        print(f"{prefix}{i + 1:>5}| {lines[i].rstrip()}")
+
+
+def analyze_file(cov: coverage.Coverage, path: str) -> bool:
+    """Analyze coverage for a single file. Returns True if fully covered."""
+    classification = classify_path(path)
+    try:
+        _filename, statements, excluded, missing, _formatted = cov.analysis2(path)
+    except coverage.misc.NoSource:
+        print(f"=== {path} [{classification}] ===")
+        print("  No source found in coverage data.\n")
+        return True
+
+    total = len(statements)
+    excluded_count = len(excluded)
+    missing_count = len(missing)
+    covered = total - missing_count
+    pct = (covered / total * 100) if total > 0 else 100.0
+
+    print(f"=== {path} [{classification}] ===")
+    print(
+        f"Statements: {total} | Excluded: {excluded_count} | Missing: {missing_count} | Coverage: {pct:.1f}%"
+    )
+
+    if missing:
+        print("\nMissing lines:")
+        for line_no in missing:
+            print()
+            print_source_context(path, line_no)
+        print()
+    else:
+        print("  All lines covered!\n")
+
+    if excluded:
+        excluded_str = ", ".join(str(line) for line in excluded)
+        print(f"Excluded lines: {excluded_str}\n")
+
+    return missing_count == 0
+
+
+def main() -> None:
+    cov = coverage.Coverage(config_file="tools/coveragerc")
+    try:
+        cov.load()
+    except coverage.misc.NoDataError:
+        print("ERROR: No coverage data found at var/.coverage")
+        print("Run tests with --coverage first:")
+        print("  ./tools/test-backend --coverage --no-cov-cleanup --no-html-report <module>")
+        sys.exit(1)
+
+    files = sys.argv[1:]
+    if not files:
+        # Analyze all enforced files that have missing coverage.
+        print("No files specified; checking all enforced files for missing coverage...\n")
+        any_missing = False
+        for path in enforce_fully_covered:
+            try:
+                missing_lines = cov.analysis2(path)[3]
+            except coverage.misc.NoSource:
+                continue
+            if missing_lines:
+                analyze_file(cov, path)
+                any_missing = True
+        if not any_missing:
+            print("All enforced files have 100% coverage!")
+    else:
+        for path in files:
+            analyze_file(cov, path)
+
+
+if __name__ == "__main__":
+    main()
