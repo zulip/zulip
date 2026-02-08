@@ -283,3 +283,90 @@ run_test("get_link_hash", () => {
     );
     assert.equal(hash_util.get_link_hash("bad-url"), "");
 });
+
+run_test("test_is_overlay_hash", () => {
+    // All 14 overlay categories should return true.
+    const overlay_hashes = [
+        "#streams/all",
+        "#channels/subscribed",
+        "#drafts",
+        "#groups",
+        "#settings/profile",
+        "#organization/profile",
+        "#invite",
+        "#keyboard-shortcuts",
+        "#message-formatting",
+        "#search-operators",
+        "#about-zulip",
+        "#scheduled",
+        "#reminders",
+        "#user/12345",
+    ];
+    for (const hash of overlay_hashes) {
+        assert.equal(hash_parser.is_overlay_hash(hash), true);
+    }
+
+    // Non-overlay hashes should return false.
+    assert.equal(hash_parser.is_overlay_hash("#narrow/channel/99-frontend"), false);
+    assert.equal(hash_parser.is_overlay_hash("#recent"), false);
+    assert.equal(hash_parser.is_overlay_hash("#feed"), false);
+    assert.equal(hash_parser.is_overlay_hash(""), false);
+    assert.equal(hash_parser.is_overlay_hash(undefined), false);
+});
+
+run_test("test_is_an_allowed_web_public_narrow", () => {
+    // The special case: "is" operator with "resolved" operand.
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("is", "resolved"), true);
+
+    // "is" with other operands is not allowed.
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("is", "starred"), false);
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("is", "mentioned"), false);
+
+    // All allowed operators should return true regardless of operand.
+    for (const op of hash_parser.allowed_web_public_narrow_operators) {
+        assert.equal(hash_parser.is_an_allowed_web_public_narrow(op, "anything"), true);
+    }
+
+    // Disallowed operators should return false.
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("dm", "someone"), false);
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("in", "home"), false);
+});
+
+run_test("test_is_spectator_compatible", () => {
+    // Non-narrow allowed hashes.
+    assert.equal(hash_parser.is_spectator_compatible(""), true);
+    assert.equal(hash_parser.is_spectator_compatible("#recent"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#recent_topics"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#feed"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#all_messages"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#keyboard-shortcuts"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#message-formatting"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#search-operators"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#about-zulip"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#topics"), true);
+
+    // Narrow hashes with allowed operators.
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/channel/99-frontend"), true);
+    assert.equal(
+        hash_parser.is_spectator_compatible("#narrow/channel/99-frontend/topic/testing"),
+        true,
+    );
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/sender/15"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/has/link"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/search/hello"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/id/42"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/near/100"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/with/5"), true);
+
+    // Narrow hashes with disallowed operators.
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/dm/15-dm"), false);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/is/starred"), false);
+
+    // Narrow with "is/resolved" is allowed via is_an_allowed_web_public_narrow.
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/is/resolved"), true);
+
+    // Hashes that are neither narrow nor in the allowed list.
+    assert.equal(hash_parser.is_spectator_compatible("#settings/profile"), false);
+    assert.equal(hash_parser.is_spectator_compatible("#drafts"), false);
+    assert.equal(hash_parser.is_spectator_compatible("#channels/subscribed"), false);
+});
