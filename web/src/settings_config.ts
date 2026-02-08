@@ -32,7 +32,15 @@ import * as util from "./util.ts";
     API documentation) without a ton of copying.
 */
 
-export const demote_inactive_streams_values = {
+type SettingDescription = {
+    code: number;
+    description: string;
+};
+export const demote_inactive_streams_values: {
+    automatic: SettingDescription;
+    always: SettingDescription;
+    never: SettingDescription;
+} = {
     automatic: {
         code: 1,
         description: $t({defaultMessage: "Automatic"}),
