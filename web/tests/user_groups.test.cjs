@@ -11,7 +11,8 @@ const blueslip = require("./lib/zblueslip.cjs");
 
 const group_permission_settings = zrequire("group_permission_settings");
 const user_groups = zrequire("user_groups");
-const {set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
+const {set_current_user, set_realm} = zrequire("state_data");
 
 const realm = make_realm();
 set_realm(realm);
@@ -1182,4 +1183,745 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         setting_name,
         can_edit: true,
     });
+});
+
+run_test("realm_has_deactivated_user_groups", () => {
+    user_groups.init();
+    const active_group = make_user_group({
+        name: "Active group",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        deactivated: false,
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [active_group],
+    });
+
+    assert.equal(user_groups.realm_has_deactivated_user_groups(), false);
+
+    const deactivated_group = make_user_group({
+        name: "Deactivated group",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        deactivated: true,
+    });
+    user_groups.add(deactivated_group);
+
+    assert.equal(user_groups.realm_has_deactivated_user_groups(), true);
+});
+
+run_test("get_all_realm_user_groups", () => {
+    user_groups.init();
+    const nobody = make_user_group({
+        name: "role:nobody",
+        id: 1,
+        members: new Set(),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+        deactivated: false,
+    });
+    const internet = make_user_group({
+        name: "role:internet",
+        id: 2,
+        members: new Set(),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+        deactivated: false,
+    });
+    const custom = make_user_group({
+        name: "Custom group",
+        id: 3,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        deactivated: false,
+    });
+    const deactivated = make_user_group({
+        name: "Deactivated",
+        id: 4,
+        members: new Set(),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        deactivated: true,
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [nobody, internet, custom, deactivated],
+    });
+
+    // By default, excludes deactivated and internet groups.
+    // Includes system groups (unlike get_realm_user_groups).
+    let groups = user_groups.get_all_realm_user_groups();
+    const group_names = new Set(groups.map((g) => g.name));
+    assert.ok(group_names.has("role:nobody"));
+    assert.ok(group_names.has("Custom group"));
+    assert.ok(!group_names.has("role:internet"));
+    assert.ok(!group_names.has("Deactivated"));
+
+    // Include deactivated groups.
+    groups = user_groups.get_all_realm_user_groups(true);
+    assert.ok(groups.some((g) => g.name === "Deactivated"));
+
+    // Include internet group.
+    groups = user_groups.get_all_realm_user_groups(false, true);
+    assert.ok(groups.some((g) => g.name === "role:internet"));
+    assert.ok(!groups.some((g) => g.name === "Deactivated"));
+
+    // Include both deactivated and internet.
+    groups = user_groups.get_all_realm_user_groups(true, true);
+    assert.equal(groups.length, 4);
+});
+
+run_test("get_user_groups_allowed_to_mention", ({override}) => {
+    user_groups.init();
+    const current_user = {user_id: 1};
+    set_current_user(current_user);
+
+    const mentionable = make_user_group({
+        name: "Mentionable",
+        id: 1,
+        members: new Set([1, 2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        // User 1 is in group 1, which is set as can_mention_group.
+        can_mention_group: 1,
+        deactivated: false,
+    });
+    const not_mentionable = make_user_group({
+        name: "Not mentionable",
+        id: 2,
+        members: new Set([3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        // User 1 is not in group 2.
+        can_mention_group: 2,
+        deactivated: false,
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [mentionable, not_mentionable],
+    });
+
+    override(current_user, "user_id", 1);
+
+    const allowed = user_groups.get_user_groups_allowed_to_mention();
+    assert.equal(allowed.length, 1);
+    assert.equal(allowed[0].name, "Mentionable");
+});
+
+run_test("is_empty_group", () => {
+    user_groups.init();
+    const empty_group = make_user_group({
+        name: "Empty",
+        id: 1,
+        members: new Set(),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+    const non_empty_group = make_user_group({
+        name: "Non-empty",
+        id: 2,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+    const group_with_empty_subgroups = make_user_group({
+        name: "Parent of empties",
+        id: 3,
+        members: new Set(),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1]),
+    });
+    const group_with_non_empty_subgroup = make_user_group({
+        name: "Parent of non-empty",
+        id: 4,
+        members: new Set(),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([2]),
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [
+            empty_group,
+            non_empty_group,
+            group_with_empty_subgroups,
+            group_with_non_empty_subgroup,
+        ],
+    });
+
+    assert.equal(user_groups.is_empty_group(empty_group.id), true);
+    assert.equal(user_groups.is_empty_group(non_empty_group.id), false);
+    assert.equal(user_groups.is_empty_group(group_with_empty_subgroups.id), true);
+    assert.equal(user_groups.is_empty_group(group_with_non_empty_subgroup.id), false);
+
+    // Test with nested empty subgroups.
+    const deeply_nested_empty = make_user_group({
+        name: "Deep empty",
+        id: 5,
+        members: new Set(),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([3]),
+    });
+    user_groups.add(deeply_nested_empty);
+    assert.equal(user_groups.is_empty_group(deeply_nested_empty.id), true);
+
+    // Error case: nonexistent group.
+    blueslip.expect("error", "Could not find user group");
+    assert.equal(user_groups.is_empty_group(9999), false);
+
+    // Error case: subgroup not found.
+    const group_with_missing_subgroup = make_user_group({
+        name: "Bad parent",
+        id: 6,
+        members: new Set(),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([8888]),
+    });
+    user_groups.add(group_with_missing_subgroup);
+    blueslip.expect("error", "Could not find subgroup");
+    assert.equal(user_groups.is_empty_group(group_with_missing_subgroup.id), false);
+});
+
+run_test("is_setting_group_empty", () => {
+    user_groups.init();
+    const empty_group = make_user_group({
+        name: "Empty",
+        id: 1,
+        members: new Set(),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+    const non_empty_group = make_user_group({
+        name: "Non-empty",
+        id: 2,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [empty_group, non_empty_group],
+    });
+
+    // Numeric form (group ID).
+    assert.equal(user_groups.is_setting_group_empty(empty_group.id), true);
+    assert.equal(user_groups.is_setting_group_empty(non_empty_group.id), false);
+
+    // GroupSettingValue form with direct members.
+    assert.equal(
+        user_groups.is_setting_group_empty({
+            direct_members: [1],
+            direct_subgroups: [],
+        }),
+        false,
+    );
+
+    // GroupSettingValue form with empty members and empty subgroups.
+    assert.equal(
+        user_groups.is_setting_group_empty({
+            direct_members: [],
+            direct_subgroups: [empty_group.id],
+        }),
+        true,
+    );
+
+    // GroupSettingValue form with non-empty subgroup.
+    assert.equal(
+        user_groups.is_setting_group_empty({
+            direct_members: [],
+            direct_subgroups: [non_empty_group.id],
+        }),
+        false,
+    );
+
+    // Completely empty GroupSettingValue.
+    assert.equal(
+        user_groups.is_setting_group_empty({
+            direct_members: [],
+            direct_subgroups: [],
+        }),
+        true,
+    );
+});
+
+run_test("is_setting_group_set_to_nobody_group", () => {
+    user_groups.init();
+    const nobody = make_user_group({
+        name: "role:nobody",
+        id: 1,
+        members: new Set(),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    const admins = make_user_group({
+        name: "role:administrators",
+        id: 2,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [nobody, admins],
+    });
+
+    // Numeric form: nobody group.
+    assert.equal(user_groups.is_setting_group_set_to_nobody_group(nobody.id), true);
+    // Numeric form: non-nobody group.
+    assert.equal(user_groups.is_setting_group_set_to_nobody_group(admins.id), false);
+
+    // GroupSettingValue form: empty (equivalent to nobody).
+    assert.equal(
+        user_groups.is_setting_group_set_to_nobody_group({
+            direct_members: [],
+            direct_subgroups: [],
+        }),
+        true,
+    );
+
+    // GroupSettingValue form: has members.
+    assert.equal(
+        user_groups.is_setting_group_set_to_nobody_group({
+            direct_members: [1],
+            direct_subgroups: [],
+        }),
+        false,
+    );
+
+    // GroupSettingValue form: has subgroups.
+    assert.equal(
+        user_groups.is_setting_group_set_to_nobody_group({
+            direct_members: [],
+            direct_subgroups: [2],
+        }),
+        false,
+    );
+});
+
+run_test("get_supergroups_of_user_group", () => {
+    user_groups.init();
+    const child = make_user_group({
+        name: "Child",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        deactivated: false,
+    });
+    const parent1 = make_user_group({
+        name: "Parent 1",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1]),
+        deactivated: false,
+    });
+    const parent2 = make_user_group({
+        name: "Parent 2",
+        id: 3,
+        members: new Set([3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1]),
+        deactivated: false,
+    });
+    const unrelated = make_user_group({
+        name: "Unrelated",
+        id: 4,
+        members: new Set([4]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        deactivated: false,
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [child, parent1, parent2, unrelated],
+    });
+
+    const supergroups = user_groups.get_supergroups_of_user_group(child.id);
+    assert.equal(supergroups.length, 2);
+    assert.deepEqual(supergroups.map((g) => g.id).toSorted(), [2, 3]);
+
+    // Group with no parents.
+    const no_parents = user_groups.get_supergroups_of_user_group(unrelated.id);
+    assert.equal(no_parents.length, 0);
+});
+
+run_test("check_group_can_be_subgroup", () => {
+    user_groups.init();
+    const target = make_user_group({
+        name: "Target",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([3]),
+        deactivated: false,
+    });
+    const candidate = make_user_group({
+        name: "Candidate",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        deactivated: false,
+    });
+    const existing_subgroup = make_user_group({
+        name: "Existing subgroup",
+        id: 3,
+        members: new Set([3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        deactivated: false,
+    });
+    const deactivated_group = make_user_group({
+        name: "Deactivated",
+        id: 4,
+        members: new Set(),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        deactivated: true,
+    });
+    // Group that contains target as a recursive subgroup (would create cycle).
+    const would_cycle = make_user_group({
+        name: "Would cycle",
+        id: 5,
+        members: new Set([5]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1]),
+        deactivated: false,
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [target, candidate, existing_subgroup, deactivated_group, would_cycle],
+    });
+
+    // Valid candidate.
+    assert.equal(user_groups.check_group_can_be_subgroup(candidate, target), true);
+    // Deactivated group cannot be a subgroup.
+    assert.equal(user_groups.check_group_can_be_subgroup(deactivated_group, target), false);
+    // Self-reference not allowed.
+    assert.equal(user_groups.check_group_can_be_subgroup(target, target), false);
+    // Already a direct subgroup.
+    assert.equal(user_groups.check_group_can_be_subgroup(existing_subgroup, target), false);
+    // Would create a cycle: would_cycle contains target.
+    assert.equal(user_groups.check_group_can_be_subgroup(would_cycle, target), false);
+});
+
+run_test("is_group_larger_than", () => {
+    user_groups.init();
+    const small_group = make_user_group({
+        name: "Small",
+        id: 1,
+        members: new Set([1, 2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+    const subgroup = make_user_group({
+        name: "Subgroup",
+        id: 2,
+        members: new Set([3, 4]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+    const parent_group = make_user_group({
+        name: "Parent",
+        id: 3,
+        members: new Set([1, 2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([2]),
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [small_group, subgroup, parent_group],
+    });
+
+    const small = user_groups.get_user_group_from_id(small_group.id);
+    const parent = user_groups.get_user_group_from_id(parent_group.id);
+
+    // Group with 2 members, max_size=5: not larger.
+    assert.equal(user_groups.is_group_larger_than(small, 5), false);
+    // Group with 2 members, max_size=1: larger.
+    assert.equal(user_groups.is_group_larger_than(small, 1), true);
+    // Exact boundary: 2 members, max_size=2: not larger (uses >).
+    assert.equal(user_groups.is_group_larger_than(small, 2), false);
+
+    // Parent with 2 direct + 2 from subgroup = 4 unique members.
+    assert.equal(user_groups.is_group_larger_than(parent, 3), true);
+    assert.equal(user_groups.is_group_larger_than(parent, 5), false);
+
+    // Test with overlapping members in subgroup.
+    const overlap_subgroup = make_user_group({
+        name: "Overlap sub",
+        id: 4,
+        members: new Set([1, 5]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+    const overlap_parent = make_user_group({
+        name: "Overlap parent",
+        id: 5,
+        members: new Set([1, 2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([4]),
+    });
+    user_groups.add(overlap_subgroup);
+    user_groups.add(overlap_parent);
+
+    const overlap = user_groups.get_user_group_from_id(overlap_parent.id);
+    // Unique members: {1, 2, 5} = 3.
+    assert.equal(user_groups.is_group_larger_than(overlap, 2), true);
+    assert.equal(user_groups.is_group_larger_than(overlap, 3), false);
+});
+
+run_test("get_direct_subgroups_of_group", () => {
+    user_groups.init();
+    const sub1 = make_user_group({
+        name: "Sub 1",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+    const sub2 = make_user_group({
+        name: "Sub 2",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+    const parent = make_user_group({
+        name: "Parent",
+        id: 3,
+        members: new Set([3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([1, 2]),
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [sub1, sub2, parent],
+    });
+
+    const parent_group = user_groups.get_user_group_from_id(parent.id);
+    const direct_subgroups = user_groups.get_direct_subgroups_of_group(parent_group);
+    assert.equal(direct_subgroups.length, 2);
+    assert.deepEqual(direct_subgroups.map((g) => g.id).toSorted(), [1, 2]);
+
+    // Group with no subgroups.
+    const sub1_group = user_groups.get_user_group_from_id(sub1.id);
+    const no_subgroups = user_groups.get_direct_subgroups_of_group(sub1_group);
+    assert.equal(no_subgroups.length, 0);
+});
+
+run_test("convert_name_to_display_name_for_groups", () => {
+    user_groups.init();
+    const system_group = make_user_group({
+        name: "role:administrators",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    const custom_group = make_user_group({
+        name: "Engineering",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [system_group, custom_group],
+    });
+
+    const groups = [
+        user_groups.get_user_group_from_id(system_group.id),
+        user_groups.get_user_group_from_id(custom_group.id),
+    ];
+    const converted = user_groups.convert_name_to_display_name_for_groups(groups);
+
+    // System group should get translated display name.
+    assert.equal(converted[0].name, "translated: Administrators");
+    // Custom group keeps its original name.
+    assert.equal(converted[1].name, "Engineering");
+});
+
+run_test("format_group_list", () => {
+    user_groups.init();
+    initialize_user_settings({user_settings: {}});
+    const group1 = make_user_group({
+        name: "Admins",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+    const group2 = make_user_group({
+        name: "Moderators",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [group1, group2],
+    });
+
+    const groups = [
+        user_groups.get_user_group_from_id(group1.id),
+        user_groups.get_user_group_from_id(group2.id),
+    ];
+    const result = user_groups.format_group_list(groups);
+    // Intl.ListFormat with "conjunction" joins with "and".
+    assert.ok(result.includes("Admins"));
+    assert.ok(result.includes("Moderators"));
+});
+
+run_test("check_system_user_group_allowed_for_setting", ({override}) => {
+    const setting_config = {
+        require_system_group: false,
+        allow_internet_group: false,
+        allow_nobody_group: true,
+        allow_everyone_group: false,
+        default_group_name: "role:members",
+        default_for_system_groups: null,
+        allowed_system_groups: [],
+    };
+
+    // Internet group blocked when allow_internet_group is false.
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:internet",
+            setting_config,
+            false,
+        ),
+        false,
+    );
+
+    // Internet group allowed when allow_internet_group is true.
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:internet",
+            {...setting_config, allow_internet_group: true},
+            false,
+        ),
+        true,
+    );
+
+    // Nobody group allowed when allow_nobody_group is true and not for_new_settings_ui.
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:nobody",
+            setting_config,
+            false,
+        ),
+        true,
+    );
+
+    // Nobody group blocked when for_new_settings_ui is true.
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:nobody",
+            setting_config,
+            true,
+        ),
+        false,
+    );
+
+    // Nobody group blocked when allow_nobody_group is false.
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:nobody",
+            {...setting_config, allow_nobody_group: false},
+            false,
+        ),
+        false,
+    );
+
+    // Everyone group blocked when allow_everyone_group is false.
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:everyone",
+            setting_config,
+            false,
+        ),
+        false,
+    );
+
+    // Everyone group allowed when allow_everyone_group is true.
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:everyone",
+            {...setting_config, allow_everyone_group: true},
+            false,
+        ),
+        true,
+    );
+
+    // allowed_system_groups whitelist: group not in list is blocked.
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:administrators",
+            {...setting_config, allowed_system_groups: ["role:owners", "role:moderators"]},
+            false,
+        ),
+        false,
+    );
+
+    // allowed_system_groups whitelist: group in list is allowed.
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:administrators",
+            {...setting_config, allowed_system_groups: ["role:administrators", "role:moderators"]},
+            false,
+        ),
+        true,
+    );
+
+    // Fullmembers hidden in new settings UI when waiting period is 0.
+    override(realm, "realm_waiting_period_threshold", 0);
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:fullmembers",
+            setting_config,
+            true,
+        ),
+        false,
+    );
+
+    // Fullmembers shown when waiting period > 0.
+    override(realm, "realm_waiting_period_threshold", 3);
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:fullmembers",
+            setting_config,
+            true,
+        ),
+        true,
+    );
+
+    // Fullmembers shown when not in new settings UI, even with 0 waiting period.
+    override(realm, "realm_waiting_period_threshold", 0);
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:fullmembers",
+            setting_config,
+            false,
+        ),
+        true,
+    );
+
+    // Regular system group passes all checks.
+    assert.equal(
+        user_groups.check_system_user_group_allowed_for_setting(
+            "role:members",
+            setting_config,
+            false,
+        ),
+        true,
+    );
 });
