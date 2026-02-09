@@ -13,7 +13,7 @@
 ``` curl
 # For channel messages
 curl -X POST {{ api_url }}/v1/messages \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -u othello-bot@example.com:BOT_API_KEY \
     --data-urlencode type=stream \
     --data-urlencode 'to="Denmark"' \
     --data-urlencode topic=Castle \
@@ -21,7 +21,7 @@ curl -X POST {{ api_url }}/v1/messages \
 
 # For direct messages
 curl -X POST {{ api_url }}/v1/messages \
-    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -u othello-bot@example.com:BOT_API_KEY \
     --data-urlencode type=direct \
     --data-urlencode 'to=[9]' \
     --data-urlencode 'content=With mirth and laughter let old wrinkles come.'
