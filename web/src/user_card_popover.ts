@@ -984,6 +984,17 @@ function register_click_handlers(): void {
             show_check_icon: true,
         });
     });
+
+    $("body").on("click", ".copy-custom-profile-field-long-text", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    new ClipboardJS(".copy-custom-profile-field-long-text").on("success", (e) => {
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
+    });
 }
 
 export function initialize(): void {

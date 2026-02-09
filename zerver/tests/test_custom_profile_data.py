@@ -63,12 +63,8 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["name"] = "Phone"
         data["hint"] = "Contact number"
-        data["field_type"] = CustomProfileField.LONG_TEXT
-        data["display_in_profile_summary"] = "true"
-        result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "Field type not supported for display in profile summary.")
-
         data["field_type"] = CustomProfileField.USER
+        data["display_in_profile_summary"] = "true"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "Field type not supported for display in profile summary.")
 
