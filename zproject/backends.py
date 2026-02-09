@@ -1298,7 +1298,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             opts["default_stream_groups"] = []
 
         if ldap_external_auth_id_sync_enabled():
-            opts["external_auth_id_dict"] = {self.name: external_auth_id}
+            opts["external_auth_id_dict_for_registration"] = {self.name: external_auth_id}
 
         user_profile = do_create_user(
             email,
@@ -1634,6 +1634,7 @@ class ExternalAuthDataDict(TypedDict, total=False):
     multiuse_object_key: str
     full_name_validated: bool
     group_memberships_sync_map: dict[str, bool] | None
+    external_auth_id_dict_for_registration: dict[str, str]
     # The mobile app doesn't actually use a session, so this
     # data is not applicable there.
     params_to_store_in_authenticated_session: dict[str, str]
@@ -2549,6 +2550,13 @@ def social_auth_finish(
                     group_memberships_sync_map=social_auth_sync_new_user_info.group_memberships_sync_map,
                 )
             )
+        external_auth_id_dict_for_registration = return_data.get(
+            "external_auth_id_dict_for_registration"
+        )
+        if external_auth_id_dict_for_registration is not None:
+            data_dict["external_auth_id_dict_for_registration"] = (
+                external_auth_id_dict_for_registration
+            )
 
     result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
 
@@ -3275,7 +3283,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             return_data=return_data,
             logger=self.logger,
         )
-        return_data["external_auth_id_dict"] = {external_auth_method_name: uid}
+        return_data["external_auth_id_dict_for_registration"] = {external_auth_method_name: uid}
         return user_profile
 
     @override

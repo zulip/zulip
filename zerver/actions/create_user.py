@@ -535,7 +535,7 @@ def do_create_user(
     enable_marketing_emails: bool = True,
     email_address_visibility: int | None = None,
     add_initial_stream_subscriptions: bool = True,
-    external_auth_id_dict: dict[str, str] | None = None,
+    external_auth_id_dict_for_registration: dict[str, str] | None = None,
 ) -> UserProfile:
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
@@ -630,8 +630,11 @@ def do_create_user(
             "add_members", full_members_system_group, [user_profile.id]
         )
 
-    if external_auth_id_dict:
-        for external_auth_method_name, external_auth_id in external_auth_id_dict.items():
+    if external_auth_id_dict_for_registration:
+        for (
+            external_auth_method_name,
+            external_auth_id,
+        ) in external_auth_id_dict_for_registration.items():
             ExternalAuthID.objects.create(
                 user=user_profile,
                 realm=user_profile.realm,
