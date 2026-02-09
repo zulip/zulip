@@ -350,6 +350,16 @@ test("maybe_fetch_stream_subscribers", async () => {
 
     peer_data.clear_for_testing();
     mock_channel_get(channel, (opts) => {
+        opts.error({readyState: 0});
+    });
+    // null because there was an error, but no blueslip error for readystate 0
+    assert.deepEqual(
+        await peer_data.get_subscribers_with_possible_fetch(india.stream_id, false),
+        null,
+    );
+
+    peer_data.clear_for_testing();
+    mock_channel_get(channel, (opts) => {
         opts.error({status: 500, responseJSON: ""});
     });
     blueslip.expect("error", "Failure fetching channel subscribers");

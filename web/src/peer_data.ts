@@ -145,11 +145,15 @@ async function fetch_stream_subscribers_from_server(
                         error_json: xhr.responseJSON,
                     });
                     resolve(false);
+                } else if (xhr.readyState === 0) {
+                    // This means that something in client-side code cancelled the request.
+                    // We've seen this happen, only occasionally, and decided to ignore and
+                    // potentially retry.
+                    resolve(null);
                 } else {
                     blueslip.error("Failure fetching channel subscribers", {
                         stream_id,
                         error_json: xhr.responseJSON,
-                        xhr_ready_state: xhr.readyState,
                     });
                     resolve(null);
                 }
