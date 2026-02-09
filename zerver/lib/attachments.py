@@ -56,6 +56,9 @@ def validate_attachment_request_for_spectator_access(realm: Realm, attachment: A
     if attachment.realm != realm:
         return False
 
+    if not realm.web_public_streams_enabled():
+        return False
+
     # Update cached is_web_public property, if necessary.
     if attachment.is_web_public is None:
         # Fill the cache in a single query. This is important to avoid
