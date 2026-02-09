@@ -102,6 +102,7 @@ from zerver.lib.typed_endpoint_validators import (
 from zerver.lib.upload import all_message_attachments
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
     MultiuseInvite,
@@ -820,6 +821,14 @@ def registration_helper(
             )
 
         if user_profile is None:
+            external_auth_id_dict_for_registration: dict[str, str] | None = None
+            if prereg_user is not None and prereg_user.external_auth_method_name is not None:
+                external_auth_id_dict_for_registration = {
+                    prereg_user.external_auth_method_name: assert_is_not_none(
+                        prereg_user.external_auth_id
+                    ),
+                }
+
             try:
                 user_profile = do_create_user(
                     email,
@@ -838,6 +847,7 @@ def registration_helper(
                     acting_user=None,
                     enable_marketing_emails=enable_marketing_emails,
                     email_address_visibility=email_address_visibility,
+                    external_auth_id_dict_for_registration=external_auth_id_dict_for_registration,
                 )
 
                 # Mark the preregistration object as used if the user was
