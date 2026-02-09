@@ -957,6 +957,11 @@ function register_click_handlers(): void {
         e.preventDefault();
     });
 
+    $("body").on("click", ".copy-custom-profile-field-long-text", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $("body").on("click", ".sidebar-popover-manage-user", function () {
         hide_all();
         const user_id = elem_to_user_id($(this).parents("ul"));
@@ -975,6 +980,12 @@ function register_click_handlers(): void {
             return $(trigger).parent().find(".custom-profile-field-link").attr("href")!;
         },
     }).on("success", (e) => {
+        show_copied_confirmation(e.trigger, {
+            show_check_icon: true,
+        });
+    });
+
+    new ClipboardJS(".copy-custom-profile-field-long-text").on("success", (e) => {
         show_copied_confirmation(e.trigger, {
             show_check_icon: true,
         });
