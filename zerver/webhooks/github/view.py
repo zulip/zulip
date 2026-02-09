@@ -81,6 +81,13 @@ PR_CLOSE_ACTION_EMOJI = {
     "closed without merge": ":wastebasket:",
 }
 
+DEPLOYMENT_STATUS_EMOJI = {
+    "success": ":check:",
+    "failure": ":warning:",
+    "error": ":rotating_light:",
+    "pending": ":time_ticking:",
+}
+
 
 class Helper:
     def __init__(
@@ -282,9 +289,9 @@ def get_deployment_body(helper: Helper) -> str:
 
 def get_change_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
-    return "Deployment changed status to {}.".format(
-        payload["deployment_status"]["state"].tame(check_string),
-    )
+    state = payload["deployment_status"]["state"].tame(check_string)
+    emoji = DEPLOYMENT_STATUS_EMOJI.get(state, "")
+    return f"{emoji} Deployment changed status to {state}."
 
 
 def get_create_or_delete_body(action: str, helper: Helper) -> str:
