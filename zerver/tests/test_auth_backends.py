@@ -4207,6 +4207,41 @@ class SAMLAuthBackendTest(SocialAuthBase):
             ],
         )
 
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_external_auth_id_saml_registration(self) -> None:
+        """Test that registering a new user via SAML creates an ExternalAuthID record."""
+        email = "newuser@zulip.com"
+        name = "New User"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        idps_config_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_config_dict["test_idp"]["attr_user_permanent_id"] = "uid"
+        uid_value = "newuser_uid"
+
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        with self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_config_dict):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain=subdomain,
+                is_signup=True,
+                extra_attributes={"uid": [uid_value]},
+            )
+            self.stage_two_of_registration(
+                result,
+                realm,
+                subdomain,
+                email,
+                name,
+                name,
+                self.BACKEND_CLASS.full_name_validated,
+            )
+        user_profile = get_user_by_delivery_email(email, realm)
+        self.assertTrue(user_profile.is_active)
+        external_auth_ids = list(ExternalAuthID.objects.filter(user=user_profile))
+        self.assert_length(external_auth_ids, 1)
+        self.assertEqual(external_auth_ids[0].external_auth_method_name, "saml:test_idp")
+        self.assertEqual(external_auth_ids[0].external_auth_id, f"test_idp:{uid_value}")
+
 
 class AppleAuthMixin:
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_APPLE_KEY"
