@@ -678,6 +678,11 @@ Source: https://lucide.dev/icons/loader-circle
 Copyright: 2013-2026 Cole Bemis
 License: ISC License
 
+Files: web/icons/id-card.svg
+Source: https://lucide.dev/icons/id-card
+Copyright: 2013-2026 Cole Bemis
+License: ISC License
+
 Files: web/icons/video-call.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
