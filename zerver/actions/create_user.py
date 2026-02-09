@@ -622,7 +622,10 @@ def do_create_user(
         )
 
     if external_auth_id_dict:
-        for external_auth_method_name, external_auth_id in external_auth_id_dict.items():
+        for (
+            external_auth_method_name,
+            external_auth_id,
+        ) in external_auth_id_dict.items():
             ExternalAuthID.objects.create(
                 user=user_profile,
                 realm=user_profile.realm,
