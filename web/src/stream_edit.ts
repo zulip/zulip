@@ -893,7 +893,6 @@ export function initialize(): void {
             is_moderation_request_channel;
 
         const modal_content_html = render_settings_deactivation_stream_modal({
-            stream_name_with_privacy_symbol_html,
             is_moderation_request_channel,
             is_new_stream_announcements_stream,
             is_signup_announcements_stream,
