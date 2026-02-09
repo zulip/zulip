@@ -68,6 +68,23 @@ export function is_zoomed_in(): boolean {
     return zoomed_in;
 }
 
+export function update_streams_sidebar_for_messages(messages: Message[]): void {
+    const channel_id = topic_list.active_stream_id();
+    if (channel_id === undefined) {
+        return;
+    }
+
+    const should_update = messages.some(
+        (message) => message.type === "stream" && message.stream_id === channel_id,
+    );
+
+    if (!should_update) {
+        return;
+    }
+
+    update_streams_sidebar();
+}
+
 function zoom_in(): void {
     zoomed_in = true;
     const stream_id = topic_list.active_stream_id();
