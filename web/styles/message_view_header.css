@@ -139,6 +139,87 @@
     }
 }
 
+/* DM avatars in the navbar */
+.navbar-dm-avatars {
+    display: flex;
+    /* Adjusted margin/padding so that overflow: hidden
+       does not clip the presence dot (which extends ~1px
+       beyond the avatar box). */
+    margin-top: 4px;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    /* Allow this flex child to shrink below its content
+       width so that overflow: hidden clips at the visible
+       boundary instead of the full content edge. */
+    overflow: hidden;
+    min-width: 0;
+    /* Containing block for the ::after fade overlay. */
+    position: relative;
+
+    &.dm-avatars-overflowing::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 30px;
+        background: linear-gradient(
+            to right,
+            transparent,
+            var(--color-background-navbar)
+        );
+        /* Let hover and click events pass through to the
+           avatars underneath. */
+        pointer-events: none;
+    }
+}
+
+.navbar-dm-avatar {
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    .navbar-dm-avatar-image {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    }
+
+    /* Availability dot */
+    .user-circle {
+        position: absolute;
+        font-size: 0.5em;
+        line-height: 1;
+        bottom: -1px;
+        right: -1px;
+        background-color: var(--color-background-navbar);
+        border: 1.5px solid var(--color-background-navbar);
+        border-radius: 50%;
+
+        &.user-circle-offline {
+            display: none;
+        }
+    }
+
+    /* Adjust avatar corner when status dot is visible */
+    &:not(:has(.user-circle-offline)) .navbar-dm-avatar-image {
+        border-bottom-right-radius: 0.3875em;
+    }
+
+    &:hover .navbar-dm-avatar-image {
+        opacity: 0.85;
+    }
+}
+
 /* Media Queries */
 @media only screen and (width <= 620px) {
     .view-description-extended {
