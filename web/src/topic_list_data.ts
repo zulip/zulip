@@ -30,6 +30,7 @@ export type TopicInfo = {
 
 type TopicChoiceState = {
     active_topic: string | undefined;
+    found_active_topic: boolean;
     topics_with_unread_mentions: Set<string>;
     more_topics_unmuted_unreads: number;
     more_topics_have_unread_mention_messages: boolean;
@@ -77,8 +78,11 @@ function show_all_topics(
     topic_choice_state: TopicChoiceState,
 ): void {
     for (const topic_name of topic_names) {
-        const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = topic_choice_state.active_topic === topic_name.toLowerCase();
+        if (is_active_topic) {
+            topic_choice_state.found_active_topic = true;
+        }
+        const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_topic_muted = user_topics.is_topic_muted(stream_id, topic_name);
         // Important: Topics are lower-case in this set.
         const contains_unread_mention = topic_choice_state.topics_with_unread_mentions.has(
@@ -102,8 +106,12 @@ function choose_topics(
     topic_choice_state: TopicChoiceState,
 ): void {
     for (const [idx, topic_name] of topic_names.entries()) {
-        const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = topic_choice_state.active_topic === topic_name.toLowerCase();
+        if (is_active_topic) {
+            topic_choice_state.found_active_topic = true;
+        }
+
+        const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_topic_muted = user_topics.is_topic_muted(stream_id, topic_name);
         // Important: Topics are lower-case in this set.
         const contains_unread_mention = topic_choice_state.topics_with_unread_mentions.has(
@@ -269,6 +277,7 @@ export function get_list_info(
         more_topics_have_unread_mention_messages: false,
         more_topics_have_muted_unread_mention_messages: false,
         active_topic: narrow_state.topic()?.toLowerCase(),
+        found_active_topic: false,
         topics_with_unread_mentions: unread.get_topics_with_unread_mentions(stream_id),
     };
 
