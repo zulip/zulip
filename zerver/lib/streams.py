@@ -16,6 +16,7 @@ from zerver.lib.exceptions import (
     ChannelExistsError,
     IncompatibleParametersError,
     JsonableError,
+    MissingAuthenticationError,
     OrganizationOwnerRequiredError,
 )
 from zerver.lib.stream_subscription import (
@@ -1033,6 +1034,9 @@ def access_stream_by_name(
 
 
 def access_web_public_stream(stream_id: int, realm: Realm) -> Stream:
+    if not realm.web_public_streams_enabled():
+        raise MissingAuthenticationError
+
     error = _("Invalid channel ID")
     try:
         stream = get_stream_by_id_in_realm(stream_id, realm)
