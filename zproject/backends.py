@@ -2324,7 +2324,14 @@ def social_associate_user_helper(
 
     return_data["valid_attestation"] = True
     return_data["validated_email"] = validated_email
-    user_profile = common_get_active_user(validated_email, realm, return_data)
+
+    user_profile = backend.get_authenticated_user(
+        validated_email,
+        realm,
+        return_data,
+        details=kwargs["details"],
+        response=kwargs.get("response", {}),
+    )
 
     full_name = kwargs["details"].get("fullname")
     first_name = kwargs["details"].get("first_name")
@@ -2658,6 +2665,15 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
         if abort_flag.aborted:
             return None
         return result
+
+    def get_authenticated_user(
+        self,
+        email: str,
+        realm: Realm,
+        return_data: dict[str, Any],
+        **kwargs: Any,
+    ) -> UserProfile | None:
+        return common_get_active_user(email, realm, return_data)
 
     def should_auto_signup(self) -> bool:
         return False
@@ -3231,6 +3247,36 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 for idp_name in idps_without_limit_to_subdomains:
                     del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
         super().__init__(*args, **kwargs)
+
+    @override
+    def get_authenticated_user(
+        self,
+        email: str,
+        realm: Realm,
+        return_data: dict[str, Any],
+        **kwargs: Any,
+    ) -> UserProfile | None:
+        response = kwargs["response"]
+        idp_name = response["idp_name"]
+        idp_dict = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
+
+        permanent_id_attr = idp_dict.get("attr_user_permanent_id")
+        email_attr = idp_dict.get("attr_email", "email")
+        if permanent_id_attr is None or permanent_id_attr == email_attr:
+            return common_get_active_user(email, realm, return_data)
+
+        uid = str(self.get_user_id(kwargs["details"], response))
+        external_auth_method_name = f"saml:{idp_name}"
+        user_profile = get_and_sync_user_profile_by_external_auth_id(
+            external_auth_method_name=external_auth_method_name,
+            external_auth_id=uid,
+            email=email,
+            realm=realm,
+            return_data=return_data,
+            logger=self.logger,
+        )
+        return_data["external_auth_id_dict"] = {external_auth_method_name: uid}
+        return user_profile
 
     @override
     def get_idp(self, idp_name: str | None) -> ZulipSAMLIdentityProvider:
