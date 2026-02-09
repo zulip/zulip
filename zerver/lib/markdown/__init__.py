@@ -53,6 +53,7 @@ from zerver.lib.mention import (
 )
 from zerver.lib.mime_types import AUDIO_INLINE_MIME_TYPES, guess_type
 from zerver.lib.outgoing_http import OutgoingSession
+from zerver.lib.per_request_cache import cache_for_current_request
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import (
@@ -2459,6 +2460,7 @@ class TopicLinkMatch:
 # function on the URLs; they are expected to be HTML-escaped when
 # rendered by clients (just as links rendered into message bodies
 # are validated and escaped inside `url_to_a`).
+@cache_for_current_request
 def topic_links(linkifiers_key: int, topic_name: str) -> list[dict[str, str]]:
     matches: list[TopicLinkMatch] = []
     linkifiers = linkifiers_for_realm(linkifiers_key)
