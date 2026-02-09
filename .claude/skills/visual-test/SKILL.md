@@ -1,3 +1,8 @@
+---
+name: visual-test
+description: "Visually verify UI changes using Puppeteer screenshots. Use when you need to check layout, colors, positioning, or other visual aspects of a UI change."
+---
+
 # Visual Test
 
 User-invocable skill for visually verifying UI changes using Puppeteer
