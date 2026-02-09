@@ -375,6 +375,13 @@ tools/            # Development and testing scripts
 docs/             # ReadTheDocs documentation source
 ```
 
+## Zulip Chat Links
+
+When you encounter a Zulip narrow URL (e.g., from `chat.zulip.org` in a
+GitHub issue, PR, or user message), use the `/fetch-zulip-messages` skill
+to read the conversation. Do not use `WebFetch` — it cannot access Zulip
+message content.
+
 ## Common Commands
 
 ```bash

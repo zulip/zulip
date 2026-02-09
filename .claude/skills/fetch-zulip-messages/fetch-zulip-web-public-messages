@@ -40,15 +40,15 @@ def parse_zulip_url(url: str) -> tuple[str, int, str, str | None]:
     server_url = f"{parsed.scheme}://{parsed.netloc}"
     fragment = parsed.fragment
 
-    # Parse the narrow fragment: narrow/channel/ID-slug/topic/encoded-topic[/with/ID]
+    # Parse the narrow fragment: narrow/channel/ID-slug/topic/encoded-topic[/with|near/ID]
     match = re.match(
-        r"^narrow/(?:channel|stream)/(\d+)-([^/]*)/topic/([^/]+)(?:/with/(\d+))?$",
+        r"^narrow/(?:channel|stream)/(\d+)-([^/]*)/topic/([^/]+)(?:/(?:with|near)/(\d+))?$",
         fragment,
     )
     if not match:
         print(f"Error: Could not parse Zulip narrow URL: {url}", file=sys.stderr)
         print(
-            "Expected format: https://HOSTNAME/#narrow/channel/ID-name/topic/TOPIC[/with/MSG_ID]",
+            "Expected format: https://HOSTNAME/#narrow/channel/ID-name/topic/TOPIC[/with|near/MSG_ID]",
             file=sys.stderr,
         )
         sys.exit(1)
