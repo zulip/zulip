@@ -222,8 +222,12 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string | u
     }
     const message = message_lists.current.get(message_id);
     assert(message !== undefined);
-    // If the current selection, if any, is not entirely within the target message,
-    // we quote that entire message.
+    // If we don't have quote_content yet (either because there was no valid
+    // in-message selection, or because the caller only supplied a message_id),
+    // fall back to quoting the entire message using its cached
+    // raw_content (Zulip-flavored markdown), if it is available.
+    // In case of selections that aren't contained within a single message, we
+    // quote the raw_content of the currently focused message.
     quote_content ??= message.raw_content;
     return {message_id, message, quote_content};
 }
