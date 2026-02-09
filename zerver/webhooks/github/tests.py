@@ -145,22 +145,22 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("deployment", TOPIC_DEPLOYMENT, expected_message)
 
     def test_deployment_status_success_msg(self) -> None:
-        expected_message = "Deployment changed status to success."
+        expected_message = ":check: Deployment changed status to success."
         self.check_webhook("deployment_status__success", TOPIC_DEPLOYMENT, expected_message)
 
     def test_deployment_status_pending_msg(self) -> None:
         expected_topic_name = "test-repo / Deployment on production"
-        expected_message = "Deployment changed status to pending."
+        expected_message = ":time_ticking: Deployment changed status to pending."
         self.check_webhook("deployment_status__pending", expected_topic_name, expected_message)
 
     def test_deployment_status_error_msg(self) -> None:
         expected_topic_name = "test-repo / Deployment on production"
-        expected_message = "Deployment changed status to error."
+        expected_message = ":cross_mark: Deployment changed status to error."
         self.check_webhook("deployment_status__error", expected_topic_name, expected_message)
 
     def test_deployment_status_failure_msg(self) -> None:
         expected_topic_name = "test-repo / Deployment on production"
-        expected_message = "Deployment changed status to failure."
+        expected_message = ":rotating_light: Deployment changed status to failure."
         self.check_webhook("deployment_status__failure", expected_topic_name, expected_message)
 
     def test_fork_msg(self) -> None:
