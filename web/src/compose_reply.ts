@@ -328,6 +328,7 @@ export function quote_message(opts: {
         success(raw_data) {
             const data = single_message_content_schema.parse(raw_data);
             assert(data.message.content_type === "text/x-markdown");
+            message.raw_content = data.message.content;
             replace_content(message, data.message.content);
         },
         // We set a timeout here to trigger usage of the fallback markdown via the
