@@ -4,6 +4,7 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_change_stream_permission, do_deactivate_stream
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.events import ClientCapabilities, do_events_register
@@ -187,6 +188,12 @@ class TopicHistoryTest(ZulipTestCase):
                 "topic1",
                 "topic0",
             ],
+        )
+
+        do_set_realm_property(iago.realm, "enable_spectator_access", False, acting_user=None)
+        result = self.client_get(endpoint)
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", status_code=401
         )
 
     def test_get_topics_non_web_public_stream_web_public_request(self) -> None:
