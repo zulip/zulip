@@ -400,7 +400,7 @@ export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
 
     activity.set_received_new_messages(true);
     message_notifications.received_messages(messages);
-    stream_list.update_streams_sidebar();
+    stream_list.update_streams_sidebar_for_messages(messages);
     pm_list.update_private_messages();
 
     return messages;
