@@ -79,7 +79,7 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "mastodon",
     "mercurial",
     "nagios",
-    "notion",
+    "notion_via_zapier",
     "openshift",
     "perforce",
     "puppet",
@@ -979,7 +979,16 @@ ZAPIER_INTEGRATIONS: list[Integration] = [
     Integration("asana", ["project-management"]),
     # Can be used with RSS integration too
     Integration("mastodon", ["communication"]),
-    Integration("notion", ["productivity", "project-management"]),
+    Integration(
+        "notion_via_zapier",
+        ["productivity", "project-management"],
+        fixtureless_screenshot_config_options=[
+            FixturelessScreenshotConfigOptions(image_dir="notion")
+        ],
+        display_name="Notion",
+        logo="images/integrations/logos/notion.svg",
+        doc="zerver/integrations/notion.md",
+    ),
 ]
 
 PLUGIN_INTEGRATIONS: list[Integration] = [

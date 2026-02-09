@@ -139,7 +139,7 @@ CRITICAL - load average: 7.49, 8.20, 4.72
 """,
 )
 
-NOTION = ScreenshotContent(
+NOTION_VIA_ZAPIER = ScreenshotContent(
     topic=f"{PROJECT_NAME} Release {VERSION_NUMBER}",
     content=f"""**{BO_NAME}** [commented]() on:
 > project demo scheduled
