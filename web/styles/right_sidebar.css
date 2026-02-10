@@ -133,7 +133,9 @@
         visibility: hidden;
     }
 
-    li:hover {
+    li:hover,
+    li:focus-within,
+    li.highlighted_user {
         .user-list-sidebar-menu-icon {
             visibility: visible;
         }
@@ -148,6 +150,7 @@
         padding: 0;
 
         &:hover,
+        &:focus-within,
         &.narrow-filter:has(a.user-presence-link:focus-visible),
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);
