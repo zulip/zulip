@@ -368,6 +368,25 @@
         margin-bottom: var(--user-profile-modal-body-margin-bottom);
     }
 
+    &.prevent-user-modal-content-scrolling {
+        .modal__content {
+            flex-grow: 1;
+
+            .simplebar-content {
+                height: 100%;
+                box-sizing: border-box;
+            }
+        }
+
+        .tab-data {
+            height: calc(100% - var(--user-profile-modal-body-margin-bottom));
+        }
+
+        .tabcontent {
+            height: 100%;
+        }
+    }
+
     .group-tab-element-header,
     .stream-tab-element-header {
         margin: 0;
@@ -379,10 +398,6 @@
 
     #user-profile-groups-tab,
     #user-profile-streams-tab {
-        height: calc(
-            var(--user-profile-modal-body-height) -
-                var(--user-profile-modal-body-margin-bottom)
-        );
         display: grid;
         grid-template:
             "alert" auto
