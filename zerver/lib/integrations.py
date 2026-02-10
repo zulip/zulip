@@ -216,7 +216,7 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return self.name != "intercom"
+        return self.name not in ("intercom", "notion")
 
     def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
         paths_to_check = [
@@ -769,6 +769,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         [WebhookScreenshotConfig("incident_activated_new_default_payload.json")],
         display_name="New Relic",
     ),
+    IncomingWebhookIntegration("notion", ["productivity", "project-management"]),
     IncomingWebhookIntegration(
         "opencollective",
         ["financial"],
@@ -1128,7 +1129,7 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # so the screenshot config is commented out.
     {"beeminder"}
     # Disabled integrations that are in the process of being added or rewritten.
-    | {"intercom"}
+    | {"intercom", "notion"}
     # Integrations that call external API endpoints.
     | {"slack"}
     # Integrations that require screenshots of message threads - support is yet to be added
