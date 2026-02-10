@@ -2,6 +2,7 @@
 import argparse
 import configparser
 import os
+import platform
 import re
 import subprocess
 import sys
@@ -13,7 +14,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 
 from scripts.lib.puppet_cache import setup_puppet_modules
-from scripts.lib.zulip_tools import assert_running_as_root, parse_os_release
+from scripts.lib.zulip_tools import assert_running_as_root
 
 assert_running_as_root()
 
@@ -30,7 +31,7 @@ config.read(args.config)
 
 setup_puppet_modules()
 
-distro_info = parse_os_release()
+distro_info = platform.freedesktop_os_release()
 puppet_config = """
 Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
 """

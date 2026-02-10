@@ -23,7 +23,6 @@ from scripts.lib.zulip_tools import (
     WARNING,
     get_dev_uuid_var_path,
     os_families,
-    parse_os_release,
     run,
     run_as_root,
 )
@@ -72,7 +71,7 @@ except OSError:
     )
     sys.exit(1)
 
-distro_info = parse_os_release()
+distro_info = platform.freedesktop_os_release()
 vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
 if vendor == "debian" and os_version == "12":  # bookworm
