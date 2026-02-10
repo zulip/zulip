@@ -252,21 +252,29 @@ def get_web_link_regex() -> Pattern[str]:
 
     file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
     REGEX = rf"""
-        (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
-                             # (Double-negative lookbehind to allow start-of-string)
         (?P<url>             # Main group
-            (?:(?:           # Domain part
-                https?://[\w.:@-]+?   # If it has a protocol, anything goes.
-               |(?:                   # Or, if not, be more strict to avoid false-positives
-                    (?:[\w-]+\.)+     # One or more domain components, separated by dots
-                    (?:{tlds})        # TLDs
-                )
-            )
+            # URL with explicit protocol - allow any preceding character (including multibyte)
             (?:
-                (?:/ {nested_paren_chunk} )      # A path, beginning with /; zero-to-6 sets of paired parens
-                |
-                (?: \? (?![)\"\s]|\Z) {nested_paren_chunk} ) # Query starting with ? (must not be trailing punctuation)
-            )?)              # Path is optional
+                (?<![a-zA-Z0-9])                 # Don't match if preceded by ASCII alphanumeric
+                                                 # (allows multibyte, whitespace, and special chars)
+                https?://[\w.:@-]+?              # Protocol and domain
+                (?:
+                    (?:/ {nested_paren_chunk} )      # A path, beginning with /; zero-to-6 sets of paired parens
+                    |
+                    (?: \? (?![)\"\s]|\Z) {nested_paren_chunk} ) # Query starting with ? (must not be trailing punctuation)
+                )?                                   # Path is optional
+            )
+            # URL without protocol - strict preceding character requirement
+            |(?:
+                (?<![^\s'"\(,:<])                # Start after whitespace or specified chars
+                                                 # (Double-negative lookbehind to allow start-of-string)
+                (?:(?:[\w-]+\.)+(?:{tlds}))      # Domain components and TLD
+                (?:
+                    (?:/ {nested_paren_chunk} )      # A path, beginning with /; zero-to-6 sets of paired parens
+                    |
+                    (?: \? (?![)\"\s]|\Z) {nested_paren_chunk} ) # Query starting with ? (must not be trailing punctuation)
+                )?                                   # Path is optional
+            )
             | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
             {file_links}               # File path start with file:///, enable by setting ENABLE_FILE_LINKS=True
             | (?:bitcoin:[13][a-km-zA-HJ-NP-Z1-9]{{25,34}})  # Bitcoin address pattern, see https://mokagio.github.io/tech-journal/2014/11/21/regex-bitcoin.html
