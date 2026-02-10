@@ -442,6 +442,12 @@
         }
     }
 
+    @media (width <= 670px) {
+        .comparison-table .competitor-cell {
+            padding: 12px 2px 10px;
+        }
+    }
+
     @media (width <= 500px) {
         .comparison-table th {
             font-size: 13px;
