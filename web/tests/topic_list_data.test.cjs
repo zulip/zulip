@@ -49,12 +49,16 @@ const general = {
 
 stream_data.add_sub_for_tests(general);
 
-function get_list_info(zoom, search) {
+function get_list_info(zoom, search, followed_topics) {
     const stream_id = general.stream_id;
     const zoomed = zoom === undefined ? false : zoom;
     const search_term = search === undefined ? "" : search;
-    return topic_list_data.get_list_info(stream_id, zoomed, (topics) =>
-        topic_list_data.filter_topics_by_search_term(stream_id, topics, search_term),
+    const prioritize_followed_topics = followed_topics === undefined ? false : followed_topics;
+    return topic_list_data.get_list_info(
+        stream_id,
+        zoomed,
+        (topics) => topic_list_data.filter_topics_by_search_term(stream_id, topics, search_term),
+        prioritize_followed_topics,
     );
 }
 
@@ -413,6 +417,112 @@ test("get_list_info unreads", ({override}) => {
             "topic 10",
             "topic 11",
             "topic 12",
+            "topic 13",
+            "topic 15",
+        ],
+    );
+
+    override(narrow_state, "topic", () => {});
+
+    // No changes to the unzoomed list data if followed topics are
+    // prioritized, but no followed topics exist.
+    list_info = get_list_info(false, "", true);
+    assert.equal(list_info.items.length, 10);
+    assert.equal(list_info.more_topics_unreads, 2);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, true);
+    assert.equal(list_info.num_possible_topics, 16);
+
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        [
+            "topic 0",
+            "topic 1",
+            "topic 2",
+            "topic 3",
+            "topic 4",
+            "topic 5",
+            "topic 10",
+            "topic 11",
+            "topic 12",
+            "topic 13",
+        ],
+    );
+
+    // Follow topic 12.
+    override(user_topics, "is_topic_followed", (stream_id, topic_name) => {
+        assert.equal(stream_id, general.stream_id);
+        return topic_name === "topic 12";
+    });
+
+    // If not prioritizing followed topics (default), then the order of
+    // topics does not change.
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 10);
+    assert.equal(list_info.more_topics_unreads, 2);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, true);
+    assert.equal(list_info.num_possible_topics, 16);
+
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        [
+            "topic 0",
+            "topic 1",
+            "topic 2",
+            "topic 3",
+            "topic 4",
+            "topic 5",
+            "topic 10",
+            "topic 11",
+            "topic 12",
+            "topic 13",
+        ],
+    );
+
+    // If prioritizing followed topics, then topic 12 is shown
+    // before other topics with unreads, but after the most
+    // recent topics in the channel.
+    list_info = get_list_info(false, "", true);
+    assert.equal(list_info.items.length, 10);
+    assert.equal(list_info.more_topics_unreads, 2);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, true);
+    assert.equal(list_info.num_possible_topics, 16);
+
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        [
+            "topic 0",
+            "topic 1",
+            "topic 2",
+            "topic 3",
+            "topic 4",
+            "topic 5",
+            "topic 12",
+            "topic 10",
+            "topic 11",
+            "topic 13",
+        ],
+    );
+
+    // If there is an active topic, then it's shown.
+    override(narrow_state, "topic", () => "topic 15");
+    list_info = get_list_info(false, "", true);
+    assert.equal(list_info.items.length, 11);
+    assert.equal(list_info.more_topics_unreads, 2);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, true);
+    assert.equal(list_info.num_possible_topics, 16);
+
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        [
+            "topic 0",
+            "topic 1",
+            "topic 2",
+            "topic 3",
+            "topic 4",
+            "topic 5",
+            "topic 12",
+            "topic 10",
+            "topic 11",
             "topic 13",
             "topic 15",
         ],

@@ -284,11 +284,13 @@ export class TopicListWidget {
         spinner: boolean,
         formatter: (conversation: TopicInfo) => ListInfoNode,
         is_zoomed: boolean,
+        prioritize_followed_topics = false,
     ): vdom.Tag<ListInfoNodeOptions> {
         const list_info = topic_list_data.get_list_info(
             this.my_stream_id,
             is_zoomed,
             this.filter_topics,
+            prioritize_followed_topics,
         );
 
         const num_possible_topics = list_info.num_possible_topics;
@@ -351,8 +353,9 @@ export class TopicListWidget {
         spinner = false,
         formatter: (conversation: TopicInfo) => ListInfoNode,
         is_zoomed: boolean,
+        prioritize_followed_topics = false,
     ): void {
-        const new_dom = this.build_list(spinner, formatter, is_zoomed);
+        const new_dom = this.build_list(spinner, formatter, is_zoomed, prioritize_followed_topics);
 
         const replace_content = (html: string): void => {
             this.remove();
@@ -394,8 +397,13 @@ export class LeftSidebarTopicListWidget extends TopicListWidget {
     override build(spinner = false): void {
         const is_zoomed = zoomed;
         const formatter = keyed_topic_li;
+        let prioritize_followed_topics = false;
+        if (!is_zoomed) {
+            const search_term = get_left_sidebar_topic_search_term();
+            prioritize_followed_topics = search_term === "";
+        }
 
-        super.build(spinner, formatter, is_zoomed);
+        super.build(spinner, formatter, is_zoomed, prioritize_followed_topics);
     }
 }
 

@@ -268,6 +268,7 @@ export function get_list_info(
     stream_id: number,
     zoomed: boolean,
     filter_topics: (topic_names: string[]) => string[],
+    prioritize_followed_topics = false,
 ): TopicListInfo {
     const topic_choice_state: TopicChoiceState = {
         items: [],
@@ -299,6 +300,36 @@ export function get_list_info(
             (topic) => !user_topics.is_topic_unmuted_or_followed(stream_id, topic),
         );
         choose_topics(stream_id, other_topics, topic_choice_state);
+    } else if (prioritize_followed_topics) {
+        // Always check most recent topics because they may be shown
+        // even if there are no unread messages.
+        const most_recent_topics = topic_names.slice(0, MAX_TOPICS);
+        choose_topics(stream_id, most_recent_topics, topic_choice_state);
+
+        // Check older topics with unread messages, prioritizing
+        // followed topics.
+        const older_topics = topic_names.slice(MAX_TOPICS);
+        const followed_topics_with_unreads = older_topics.filter(
+            (topic) =>
+                user_topics.is_topic_followed(stream_id, topic) &&
+                unread.topic_has_any_unread(stream_id, topic),
+        );
+        choose_topics(stream_id, followed_topics_with_unreads, topic_choice_state);
+        const other_topics_with_unreads = older_topics.filter(
+            (topic) =>
+                !user_topics.is_topic_followed(stream_id, topic) &&
+                unread.topic_has_any_unread(stream_id, topic),
+        );
+        choose_topics(stream_id, other_topics_with_unreads, topic_choice_state);
+
+        // Check if there is an active topic. It should be shown
+        // even if it's not recent and has no unread messages.
+        if (
+            topic_choice_state.active_topic !== undefined &&
+            !topic_choice_state.found_active_topic
+        ) {
+            choose_topics(stream_id, [topic_choice_state.active_topic], topic_choice_state);
+        }
     } else {
         choose_topics(stream_id, topic_names, topic_choice_state);
     }
