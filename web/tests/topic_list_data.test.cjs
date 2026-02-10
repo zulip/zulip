@@ -391,6 +391,35 @@ test("get_list_info unreads", ({override}) => {
         ],
     );
 
+    // If there is an active topic, then it's shown, even
+    // if it's an older topic with no unread messages.
+    override(narrow_state, "stream_id", () => 556);
+    override(narrow_state, "topic", () => "topic 15");
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 11);
+    assert.equal(list_info.more_topics_unreads, 2);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, true);
+    assert.equal(list_info.num_possible_topics, 16);
+
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        [
+            "topic 0",
+            "topic 1",
+            "topic 2",
+            "topic 3",
+            "topic 4",
+            "topic 5",
+            "topic 10",
+            "topic 11",
+            "topic 12",
+            "topic 13",
+            "topic 15",
+        ],
+    );
+
+    override(narrow_state, "topic", () => {});
+
     add_unreads("topic 9", 1);
 
     add_unreads("topic 4", 1);
