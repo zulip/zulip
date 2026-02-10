@@ -37,7 +37,7 @@ from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, Query, TimeTrackingCursor
 from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.per_request_cache import flush_per_request_caches
-from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
+from zerver.lib.rate_limiter import RateLimitedIPAddr
 from zerver.lib.request import RequestNotes
 from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.lib.upload.s3 import S3UploadBackend
@@ -808,11 +808,14 @@ def ratelimit_rule(
     """Temporarily add a rate-limiting rule to the rate limiter"""
     RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
 
-    domain_rules = rules.get(domain, []).copy()
+    domain_rules = settings.RATE_LIMITING_RULES.get(domain, []).copy()
     domain_rules.append((range_seconds, num_requests))
     domain_rules.sort(key=lambda x: x[0])
 
-    with patch.dict(rules, {domain: domain_rules}), override_settings(RATE_LIMITING=True):
+    with (
+        patch.dict(settings.RATE_LIMITING_RULES, {domain: domain_rules}),
+        override_settings(RATE_LIMITING=True),
+    ):
         yield
 
 
