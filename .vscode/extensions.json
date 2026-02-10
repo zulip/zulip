@@ -1,0 +1,23 @@
+{
+    // Recommended VS Code extensions for zulip/zulip.
+    //
+    // VS Code prompts a user to install the recommended extensions
+    // when a workspace is opened for the first time.  The user can
+    // also review the list with the 'Extensions: Show Recommended
+    // Extensions' command.  See
+    // https://code.visualstudio.com/docs/editor/extension-marketplace#_workspace-recommended-extensions
+    // for more information.
+    //
+    // Extension identifier format: ${publisher}.${name}.
+    // Example: vscode.csharp
+
+    "recommendations": [
+        "42crunch.vscode-openapi",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode-remote.vscode-remote-extensionpack"
+    ],
+
+    // Extensions recommended by VS Code which are not recommended for users of zulip/zulip.
+    "unwantedRecommendations": []
+}

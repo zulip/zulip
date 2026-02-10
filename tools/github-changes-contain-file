@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+def is_file_changed(file_path: str) -> bool:
+    event_path = os.environ.get("GITHUB_EVENT_PATH", "")
+    if not event_path:
+        sys.exit("GITHUB_EVENT_PATH environment variable not set")
+
+    with open(Path(event_path)) as f:
+        event = json.load(f)
+
+    before = event.get("before")
+    after = event.get("after")
+    if not before or not after:
+        sys.exit("Missing 'before' or 'after' commit SHAs in event data")
+
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--quiet", before, after, "--", file_path],
+            check=False,
+            capture_output=True,
+        )
+        return result.returncode == 1
+    except subprocess.CalledProcessError:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "file",
+    )
+    args = parser.parse_args()
+
+    if is_file_changed(args.file):
+        sys.exit(0)
+    else:
+        sys.exit(1)

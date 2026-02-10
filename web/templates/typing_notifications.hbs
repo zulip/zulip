@@ -1,0 +1,10 @@
+{{! Typing notifications }}
+<ul id="typing_notification_list">
+    {{#if several_users}}
+        <li class="typing_notification">{{t "Several people are typing…" }}</li>
+    {{else}}
+        {{#each users}}
+            {{> typing_notification .}}
+        {{/each}}
+    {{/if}}
+</ul>

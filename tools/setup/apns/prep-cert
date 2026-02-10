@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+this_dir=${BASH_SOURCE[0]%/*}
+
+die() {
+    echo >&2 "$1"
+    exit 1
+}
+
+request() {
+    (($# == 2)) || die "usage: prep-cert request KEY_OUT CSR_OUT"
+    local key_out=$1
+    local csr_out=$2
+
+    openssl req -new \
+        -config "${this_dir}/csr.conf" \
+        -keyout "${key_out}" -out "${csr_out}"
+}
+
+combine() {
+    (($# == 3)) || die "usage: prep-cert combine KEY CERT OUT"
+    local key=$1
+    local cert=$2
+    local out=$3
+
+    local tmpdir
+    tmpdir=$(mktemp -d)
+    cleanup() {
+        rm -rf "${tmpdir}"
+        trap - RETURN EXIT
+    }
+    trap cleanup RETURN EXIT
+
+    local cert_pem="${tmpdir}/cert.pem"
+    local combined_p12="${tmpdir}/combined.p12"
+    openssl x509 -in "${cert}" -inform der -out "${cert_pem}"
+    openssl pkcs12 -export -passout pass: \
+        -inkey "${key}" -in "${cert_pem}" -out "${combined_p12}"
+    openssl pkcs12 -in "${combined_p12}" -passin pass: \
+        -out "${out}" -nodes
+}
+
+case "${1-}" in
+    request) shift && request "$@" ;;
+    combine) shift && combine "$@" ;;
+    *) die "usage: prep-cert {request|combine} ...ARGS" ;;
+esac

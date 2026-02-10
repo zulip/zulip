@@ -1,0 +1,32 @@
+{% extends "zerver/portico_signup.html" %}
+{% set entrypoint = "billing_auth" %}
+
+{% block title %}
+<title>Server registration deactivated | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="register-account flex full-page" id="account-deactivated-success-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            <h1>
+                Registration deactivated for<br />{{ server_hostname }}
+            </h1>
+        </div>
+        <div class="white-box">
+            <div id="account-deactivated-success-page-details">
+                <div class="input-box account-deactivated-success-page-field" id="account-deactivated-success-page-top-message">
+                    <div class="not-editable-realm-field">
+                        Your server's registration has been deactivated.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+{% endblock %}

@@ -1,0 +1,16 @@
+{
+  "amount": -400,
+  "checkout_session": null,
+  "created": 1000000000,
+  "credit_note": null,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED",
+  "description": "Credit from early termination of active plan",
+  "ending_balance": -400,
+  "id": "switch_realm_from_standard_to_plus_plan--Customer.create_balance_transaction.1.json",
+  "invoice": null,
+  "livemode": false,
+  "metadata": {},
+  "object": "customer_balance_transaction",
+  "type": "adjustment"
+}

@@ -1,0 +1,34 @@
+# DIFFS: Noise suppression.
+#
+# Suppress noisy generated files in diffs.
+# (When you actually want to see these diffs, use `git diff -a`.)
+
+# Large test fixtures:
+corporate/tests/stripe_fixtures/*.json -diff
+
+
+# FORMATTING
+
+# Maintain LF (Unix-style) newlines in text files.
+*   text=auto eol=lf
+
+# Make sure various media files never get somehow auto-detected as text
+# and then newline-converted.
+*.gif binary
+*.jpg binary
+*.jpeg binary
+*.eot binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.png binary
+*.otf binary
+*.tif binary
+*.ogg binary
+*.bson binary
+*.bmp binary
+*.mp3 binary
+*.pdf binary
+
+# Treat SVG files as code for diffing purposes.
+*.svg diff

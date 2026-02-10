@@ -1,0 +1,108 @@
+.message-edit-history-container {
+    .header-body {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 5px;
+
+        @media (width < $lg_min) {
+            display: block;
+        }
+    }
+
+    .message-edit-history-list {
+        /*
+        styles are based on drafts-list
+        see web/styles/drafts.css
+        */
+        & h2 {
+            font-size: 1.1em;
+            line-height: normal;
+            margin-bottom: 5px;
+        }
+    }
+
+    .message_edit_history_content {
+        .highlight_text_inserted {
+            color: var(--color-message-edit-history-text-inserted);
+            background-color: var(
+                --color-message-edit-history-background-inserted
+            );
+        }
+
+        .highlight_text_deleted {
+            color: var(--color-message-edit-history-text-deleted);
+            background-color: var(
+                --color-message-edit-history-background-deleted
+            );
+            text-decoration: line-through;
+            word-break: break-all;
+        }
+    }
+
+    .messagebox-content {
+        display: block !important;
+
+        .message_content {
+            cursor: default !important;
+        }
+    }
+
+    #message-history-error {
+        /*
+        styles are based on .model_content
+        see web/styles/modal.css
+        */
+        font-size: 1rem;
+        display: none;
+        margin: 10px;
+    }
+
+    .overlay_loading_indicator_style {
+        width: 100% !important;
+        height: 100% !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+#message-history-overlay
+    .message-edit-history-container
+    .message_edit_history_content {
+    /* We need to use different color for links to distinguish
+       them from normal text and have enough contrast so that they
+       are visible clearly. */
+    .highlight_text_inserted,
+    .highlight_text_deleted {
+        > a {
+            color: light-dark(
+                var(--color-markdown-link),
+                hsl(200.27deg 100% 85.49%)
+            );
+        }
+    }
+
+    /* Show `Link:` text of media beside it
+       to clarify click area for opening media
+       in new tab vs in lightbox. */
+    .highlight_text_inserted:has(.media-anchor-element .media-image-element),
+    .highlight_text_deleted:has(.media-anchor-element .media-image-element) {
+        > .media-anchor-element {
+            display: flex;
+            overflow-wrap: anywhere;
+
+            > .media-image-element {
+                flex-grow: 1;
+                flex-shrink: 0;
+            }
+        }
+
+        @media (width < $sm_min) {
+            > .media-anchor-element {
+                flex-direction: column;
+            }
+        }
+    }
+}

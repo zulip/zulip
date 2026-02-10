@@ -1,0 +1,21 @@
+<div class="empty_feed_notice">
+    <h4 class="empty-feed-notice-title"> {{ title }} </h4>
+    {{#if search_data}}
+        {{#if search_data.has_stop_word}}
+        <div class="empty-feed-notice-description">
+            {{t "Common words were excluded from your search:" }} <br/>
+            {{#each search_data.query_words}}
+                {{#if is_stop_word}}
+                <del>{{query_word}}</del>
+                {{else}}
+                <span class="search-query-word">{{query_word}}</span>
+                {{/if}}
+            {{/each}}
+        </div>
+        {{/if}}
+    {{else if notice_html}}
+        <div class="empty-feed-notice-description">
+            {{{ notice_html }}}
+        </div>
+    {{/if}}
+</div>

@@ -1,0 +1,232 @@
+---
+title: Link to a message or conversation
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import ChannelActions from "../include/_ChannelActions.mdx";
+import ChannelLongPressMenu from "../include/_ChannelLongPressMenu.mdx";
+import MessageActionsMenu from "../include/_MessageActionsMenu.mdx";
+import MessageLongPressMenu from "../include/_MessageLongPressMenu.mdx";
+import StartComposing from "../include/_StartComposing.mdx";
+import TopicActions from "../include/_TopicActions.mdx";
+import TopicLongPressMenu from "../include/_TopicLongPressMenu.mdx";
+
+import LinkIcon from "~icons/zulip-icon/link"
+
+Zulip makes it easy to share links to messages, topics, and channels. You can
+link from one Zulip [conversation](/help/reading-conversations) to another, or
+share links to Zulip conversations in issue trackers, emails, or other external
+tools.
+
+## Link to a channel within Zulip
+
+Channel links are automatically formatted as [#channel name](#link-to-a-channel-within-zulip).
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Type `#` followed by a few letters from the channel name.
+      1. Pick the desired channel from the autocomplete.
+      1. Pick the top option from the autocomplete to link to the channel without
+         selecting a topic.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      To link to the channel you're composing to, type `#>`, and pick the
+      top option from the autocomplete.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+In the web and desktop apps, when you paste a channel link into Zulip,
+it's automatically formatted as `#**channel name**`. You can use
+<kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> +
+<kbd>V</kbd> to paste as plain text if you prefer.
+
+You can create a channel link manually by typing `#**channel name**`.
+
+## Link to a topic within Zulip
+
+Topic links are automatically formatted as [#channel > topic](#link-to-a-topic-within-zulip).
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Type `#` followed by a few letters from the channel name.
+      1. Pick the desired channel from the autocomplete.
+      1. Type a few letters from the topic name.
+      1. Pick the desired topic from the autocomplete.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      To link to a topic in the channel you're composing to, type `#>`
+      followed by a few letters from the topic name, and pick the desired
+      topic from the autocomplete.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+In the web and desktop apps, when you paste a topic link into Zulip, it's
+automatically formatted as `#**channel name>topic name**`. You can use
+<kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> +
+<kbd>V</kbd> to paste as plain text if you prefer.
+
+You can create a topic link manually by typing `#**channel name>topic name**`.
+
+## Link to Zulip from anywhere
+
+All URLs in Zulip are designed to be **shareable**, including:
+
+* Links to messages, topics, and channels.
+* Search URLs, though note that personal
+  [filters](/help/search-for-messages#search-filters) (e.g., `is:followed`) will
+  be applied according to the user who's viewing the URL.
+
+In addition, links to messages, topics, and channels are **permanent**:
+
+* [Message links](#get-a-link-to-a-specific-message) will still work even when
+  the message is [moved to another topic](/help/move-content-to-another-topic)
+  or [channel](/help/move-content-to-another-channel), or if its [topic is
+  resolved](/help/resolve-a-topic). Zulip uses the same permanent link syntax
+  when [quoting a message](/help/quote-or-forward-a-message).
+* [Topic links](#get-a-link-to-a-specific-topic) will still work even when the
+  topic is [renamed](/help/rename-a-topic), [moved to another
+  channel](/help/move-content-to-another-channel), or
+  [resolved](/help/resolve-a-topic).
+  <ZulipTip>
+    When some messages are [moved out of a
+    topic](/help/move-content-to-another-topic) and others are left in place,
+    links to that topic will follow the location of the message whose ID is
+    encoded in the topic URL (usually the first or last message in the topic).
+  </ZulipTip>
+* [Channel links](#get-a-link-to-a-specific-channel) will still work even when a
+  channel is [renamed](/help/rename-a-channel) or
+  [archived](/help/archive-a-channel).
+
+When you copy a Zulip link in the web and desktop apps, and paste it anywhere that
+accepts HTML formatting (e.g., your email, GitHub, docs, etc.), the link will be
+formatted as it would be in Zulip (e.g., [#channel > topic](#link-to-a-topic-within-zulip)).
+To paste the plain URL, you can paste without formatting (likely <kbd>Ctrl</kbd> +
+<kbd>Shift</kbd> + <kbd>V</kbd> in your browser).
+
+<ZulipNote>
+  Due to a Safari quirk, pasting Zulip links from Safari into GitHub
+  and some other apps may result in incorrect formatting. You can
+  paste without formatting, or use a different browser.
+</ZulipNote>
+
+### Get a link to a specific message
+
+This copies to your clipboard a permanent link to the message, displayed in the
+context of its conversation. To preserve your reading status, messages won't be
+automatically marked as read when you view a conversation via a message link.
+
+In the web and desktop apps, when you paste a message link into the compose box,
+it gets automatically formatted to be easy to read:
+
+```
+#**channel name>topic name@message ID**
+```
+
+When you send your message, the link will appear as
+[#channel > topic @ 💬](#get-a-link-to-a-specific-message).
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <MessageActionsMenu />
+
+      1. Click **Copy link to message**.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      If using Zulip in a browser, you can also click on the timestamp
+      of a message, and copy the URL from your browser's address bar.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MessageLongPressMenu />
+
+      1. Tap **Copy link to message**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+In the web and desktop apps, when you paste a message link into Zulip,
+it is automatically formatted for you. You can use
+<kbd data-mac-following-key="⌥">Ctrl</kbd> + <kbd>Shift</kbd> +
+<kbd>V</kbd> to paste as plain text if you prefer.
+
+### Get a link to a specific topic
+
+<Tabs>
+  <TabItem label="Via message recipient bar">
+    <Steps>
+      1. Click the **copy link to topic** (<LinkIcon />) icon in the message
+         recipient bar.
+    </Steps>
+
+    <ZulipTip>
+      If using Zulip in a browser, you can also click on a topic name,
+      and copy the URL from your browser's address bar.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Via left sidebar">
+    <FlattenedSteps>
+      <TopicActions />
+
+      1. Click **Copy link to topic**.
+    </FlattenedSteps>
+
+    <ZulipTip>
+      If using Zulip in a browser, you can also click on a topic name,
+      and copy the URL from your browser's address bar.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <TopicLongPressMenu />
+
+      1. Tap **Copy link to topic**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+### Get a link to a specific channel
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <ChannelActions />
+
+      1. Click **Copy link to channel**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <ChannelLongPressMenu />
+
+      1. Tap **Copy link to channel**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Add a custom linkifier](/help/add-a-custom-linkifier)
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Linking to your organization](/help/linking-to-zulip)
+* [Pin information](/help/pin-information)

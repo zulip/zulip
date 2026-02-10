@@ -1,0 +1,12 @@
+<div class="search_list_item">
+    {{#each pills}}
+        {{#if (eq this.operator "search")}}
+            <div class="description">{{{this.description_html}}}</div>
+        {{else if (eq this.type "search_user")}}
+            <span class="pill-container">{{> search_user_pill this}}</span>
+        {{else}}
+            <span class="pill-container">{{> input_pill this}}</span>
+        {{/if}}
+    {{/each}}
+    {{#if description_html}}<div class="description">{{{description_html}}}</div>{{/if}}
+</div>

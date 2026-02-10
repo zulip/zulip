@@ -1,0 +1,47 @@
+---
+import assert from "node:assert/strict";
+
+import type {Element} from "hast";
+import {fromHtml} from "hast-util-from-html";
+import {toHtml} from "hast-util-to-html";
+
+import keyboard_svg from "../../../web/icons/keyboard.svg?raw";
+
+const keyboard_icon_fragment = fromHtml(keyboard_svg, {fragment: true});
+const keyboard_icon_first_child = keyboard_icon_fragment.children[0]!;
+assert.ok(
+    keyboard_icon_first_child.type === "element" &&
+        keyboard_icon_first_child.tagName === "svg",
+);
+keyboard_icon_first_child.properties.class = "zulip-unplugin-icon";
+
+// We want to add the `Keyboard tip: ` prefix without a line break or
+// wrapping it in a paragraph. If we write `Keyboard tip: <slot />`,
+// slot will be wrapped in it's own paragraph and thus will be placed on
+// the next line as `Keyboard tip:`. We have to edit slot HTML tree
+// directly instead to solve this. Same case applies for the keyboard
+// icon we are inserting. We just inject the icon as raw svg.
+const prefix_text_element: Element = {
+    type: "element",
+    tagName: "strong",
+    properties: {},
+    children: [{type: "text", value: " Keyboard tip: "}],
+};
+const prefix_element_list = [keyboard_icon_first_child, prefix_text_element];
+
+const tree = fromHtml(await Astro.slots.render("default"), {fragment: true});
+const first_element = tree.children[0];
+assert.ok(first_element?.type === "element");
+
+first_element.children = [...prefix_element_list, ...first_element.children];
+tree.children[0] = first_element;
+---
+
+<aside
+    aria-label="Keyboard tip"
+    class=`starlight-aside starlight-aside--tip keyboard-tip`
+>
+    <div class="starlight-aside__content">
+        <Fragment set:html={toHtml(tree)} />
+    </div>
+</aside>

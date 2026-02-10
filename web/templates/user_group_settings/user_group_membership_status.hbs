@@ -1,0 +1,14 @@
+{{#if is_direct_member}}
+    {{t "You are a member of this group."}}
+{{else if (not is_member)}}
+    {{t "You are not a member of this group."}}
+{{else}}
+    {{#tr}}
+        You are a member of this group because you are a member of a subgroup (<z-subgroup-names></z-subgroup-names>).
+        {{#*inline "z-subgroup-names" ~}}
+            {{~#list_each associated_subgroup_names type="unit" as |name| ~}}
+            <b class="highlighted-element">{{name}}</b>
+            {{~/list_each ~}}
+        {{~/inline}}
+    {{/tr}}
+{{/if}}

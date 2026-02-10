@@ -1,0 +1,36 @@
+---
+title: Protect your account
+---
+
+import {Steps} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ChangePasswordAndAPIKey from "../include/_ChangePasswordAndAPIKey.mdx";
+
+Every Zulip user has an API key, which can be used to do essentially everything
+that you can do when you're logged in. You should treat your Zulip API key as
+carefully as you treat your password. Integrations should use a [bot's API
+key](/api/api-keys) rather than your own whenever possible.
+
+Be sure to change both your password and API key immediately in the following
+situations:
+
+* Accidentally sharing your password or API key with someone else.
+* Losing a device where you're logged in to Zulip (e.g., a cell phone or laptop).
+* Losing a device that has a downloaded copy of your [`zuliprc`
+  file](/api/configuring-python-bindings#download-a-zuliprc-file), which
+  includes your API key.
+
+Changing your API key will immediately log you out of Zulip on all devices.
+
+## Change your password and API key
+
+<ChangePasswordAndAPIKey />
+
+## Related articles
+
+* [Change your password](/help/change-your-password)
+* [Logging in](/help/logging-in)
+* [Logging out](/help/logging-out)
+* [Deactivate your account](/help/deactivate-your-account)

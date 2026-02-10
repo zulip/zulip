@@ -1,0 +1,84 @@
+[
+    {
+        "recipient_type": "channel",
+        "channel": "Session 2 Keynote",
+        "color": "#C6A8AD",
+        "topic": "slides and presentation",
+        "users": {
+            "Dal Kim": {},
+            "Kevin Lin": {},
+            "John Lin": {}
+        },
+        "messages": [
+            {
+                "sender": "Dal Kim",
+                "content": "Welcome everyone! Here are the slides for the keynote talk: [keynote-slides.ppt](#). Don't forget to join for a live presentation at <time:2024-05-22T17:00:00+05:30>!",
+                "starred": true,
+                "reactions": {
+                    "+1": ["Iago", "Kevin Lin", "John Lin"],
+                    "tada": ["John Lin", "Kevin Lin"]
+                },
+                "date": {"year": 2024, "month": 5, "day": 21, "hour": 13, "minute": 45}
+            },
+            {
+                "sender": "Dal Kim",
+                "content": "Join now for the Keynote presentation!\nWe'll be using this stream for Q&A.\n\n[Join video call.](#)",
+                "date": {"year": 2024, "month": 5, "day": 21, "hour": 17, "minute": 0}
+            }
+        ],
+        "screenshot": "static/images/landing-page/events/your_communication_hub_day_1.png"
+    },
+    {
+        "recipient_type": "channel",
+        "channel": "general",
+        "color": "#9987E1",
+        "topic": "conference feedback",
+        "users": {
+            "James Williams": {}
+        },
+        "messages": [
+            {
+                "sender": "James Williams",
+                "content": "As we are wrapping up, let us know what you enjoyed the most about this conference.",
+                "date": {"year": 2024, "month": 5, "day": 21, "hour": 20, "minute": 50}
+            },
+            {
+                "sender": "James Williams",
+                "content": "/poll What did you like the best?\nKeynote address\nLightning talks\nUsing Zulip",
+                "date": {"year": 2024, "month": 5, "day": 21, "hour": 20, "minute": 55}
+            }
+        ],
+        "screenshot": "static/images/landing-page/events/your_communication_hub_day_2.png"
+    },
+    {
+        "recipient_type": "channel",
+        "channel": "Day 2: Intro to RSA",
+        "color": "#94C849",
+        "topic": "factorization algorithms",
+        "users": {
+            "Manvir Singh": {},
+            "Zoe Davis": {},
+            "Maxy Stert": {}
+        },
+        "messages": [
+            {
+                "sender": "Manvir Singh",
+                "content": "You could use [Pollard's rho algorithm](#), which factors a number n in time $$O(n^{\\frac{1}{4}})$$, faster than trial division:\n\n```python\ndef pollard_rho(n: int) -> int:\n    g = lambda x: (x ** 2 + 1) % n\n    x, y, d = 2, 2, 1\n    while d == 1:\n        x, y = g(x), g(g(y))\n        d = math.gcd(x - y, n)\n    return d\n```",
+                "reactions": {
+                    "+1": ["Zoe Davis"]
+                },
+                "date": {"year": 2024, "month": 5, "day": 14, "hour": 16, "minute": 59}
+            },
+            {
+                "sender": "Zoe Davis",
+                "content": "The fastest known algorithm is the general number field sieve, which heuristically runs in time:\n```math\n\\exp\\left(\\left(\\sqrt[3]{\\frac{64}{9}} + o(1)\\right)(\\ln n)^{\\frac{1}{3}} (\\ln\\ln n)^{\\frac{2}{3}}\\right)\n```\n However, it is much more complicated.",
+                "reactions": {
+                    "runner": ["Manvir Singh"],
+                    "thinking": ["Maxy Stert", "Iago"]
+                },
+                "date": {"year": 2024, "month": 5, "day": 14, "hour": 18, "minute": 19}
+            }
+        ],
+        "screenshot": "static/images/landing-page/events/message_formatting_day.png"
+    }
+]

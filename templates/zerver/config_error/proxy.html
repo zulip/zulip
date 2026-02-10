@@ -1,0 +1,90 @@
+{% extends "zerver/config_error/container.html" %}
+{% macro setting() -%}
+    {%- if docker_config -%}
+        <code>LOADBALANCER_IPS</code> in your Docker image's environment
+    {%- else -%}
+        <code>ips</code> in the <code>loadbalancers</code> section of <code>/etc/zulip/zulip.conf</code>
+    {%- endif -%}
+{%- endmacro %}
+
+{% block error_body %}
+
+{% if not current_proxies and not x_forwarded_for %}
+
+<p>
+    You have not configured any reverse proxies in {{ setting() }},
+    and an HTTP request was received without any reverse proxy
+    headers.  Zulip requires that all client traffic to it be over
+    HTTPS.  Since you have configured Zulip itself to be served over
+    HTTP, it must be placed behind a proxy which does TLS termination.
+</p>
+
+<p>
+    You must configure a reverse proxy in front of Zulip which serves
+    traffic over HTTPS, and configure Zulip to trust that proxy, by
+    adding its IP to {{ setting() }}.  See our <a href="https://zulip.readthedocs.io/en/stable/production/reverse-proxies.html"
+    >documentation about deploying behind reverse proxies</a> for more
+    details.
+</p>
+
+{% elif not current_proxies %}
+
+<p>
+    You have not configured any reverse proxies in {{ setting() }},
+    but reverse proxy headers were detected in a request from
+    <code>{{ remote_addr }}</code>.
+</p>
+
+<p>
+    Add <code>{{ remote_addr }}</code> to {{ setting() }} and restart
+    your Zulip server.  See
+    our <a href="https://zulip.readthedocs.io/en/stable/production/reverse-proxies.html"
+    >documentation about deploying behind reverse proxies</a> for more
+    details.
+</p>
+
+{% elif not x_forwarded_proto %}
+
+<p>
+    You have configured reverse proxies (<code>{{ current_proxies }}</code>),
+    and traffic is being served through them, but the remote proxy did
+    not send an <code>X-Forwarded-Proto</code> header.
+</p>
+
+<p>
+    Please read our <a href="https://zulip.readthedocs.io/en/stable/production/reverse-proxies.html"
+    >documentation about configuring your reverse proxy</a>, and
+    configure your proxy to send an <code>X-Forwarded-Proto</code>
+    header.
+</p>
+
+{% else %}
+
+<p>
+    You have configured reverse proxies (<code>{{ current_proxies }}</code>),
+    but this request did not come from a matching IP address -- it
+    came from <code>{{ remote_addr }}</code>.
+</p>
+
+<p>
+    You should update {{ setting() }} to include <code>{{ remote_addr }}</code>,
+    and restart your Zulip server.  See our <a href="https://zulip.readthedocs.io/en/stable/production/reverse-proxies.html"
+    >documentation about deploying behind reverse proxies</a> for more
+    details.
+</p>
+
+{% endif %}
+
+<hr />
+
+<h2>Request headers:</h2>
+
+<pre>
+{% for item in all_headers -%}
+{% if item[1] != "" -%}
+{{ item[0] }}: {{ item[1] }}
+{% endif -%}
+{% endfor -%}
+</pre>
+
+{% endblock %}

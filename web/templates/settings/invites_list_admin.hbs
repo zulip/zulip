@@ -1,0 +1,58 @@
+<div id="admin-invites-list" class="user-settings-section" data-user-settings-section="invitations">
+    <div class="invite-user-settings-banner banner-wrapper">
+        {{> ../components/banner
+          label=(t "You do not have permission to send invite emails in this organization.")
+          intent="info"
+          custom_classes="admin-permissions-banner"
+          }}
+    </div>
+    {{#unless is_admin }}
+    <div class="banner-wrapper">
+        {{> ../components/banner
+          label=(t "You can only view or manage invitations that you sent.")
+          intent="info"
+          custom_classes="admin-permissions-banner"
+          }}
+    </div>
+    {{/unless}}
+    {{> ../components/action_button
+      label=(t 'Invite users to organization')
+      variant="subtle"
+      intent="brand"
+      custom_classes="user-settings-invite-user-label invite-user-link"
+      }}
+    <div class="settings_panel_list_header">
+        <h3>{{t "Invitations "}}</h3>
+        <div class="alert-notification" id="invites-field-status"></div>
+        {{> filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter invitations')}}
+    </div>
+
+    <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
+        <table class="table table-striped">
+            <thead class="table-sticky-headers">
+                <tr>
+                    <th class="active" data-sort="invitee">{{t "Invitee" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
+                    {{#if is_admin }}
+                    <th data-sort="alphabetic" data-sort-prop="referrer_name">{{t "Invited by" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
+                    {{/if}}
+                    <th data-sort="numeric" data-sort-prop="invited">{{t "Invited at" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
+                    <th data-sort="numeric" data-sort-prop="expiry_date">{{t "Expires at" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
+                    <th data-sort="numeric" data-sort-prop="invited_as">{{t "Invited as" }}
+                        <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                    </th>
+                    <th class="actions">{{t "Actions" }}</th>
+                </tr>
+            </thead>
+            <tbody id="admin_invites_table" class="admin_invites_table" data-empty="{{t 'There are no invitations.' }}" data-search-results-empty="{{t 'No invitations match your current filter.' }}"></tbody>
+        </table>
+    </div>
+    <div id="admin_page_invites_loading_indicator"></div>
+</div>

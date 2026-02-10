@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -e
+
+usage() {
+    cat >&2 <<EOF
+usage: $0 PULL_REQUEST_ID [REMOTE]
+
+Fetch the given GitHub pull request branch, and reset our
+current branch to it.
+
+Useful for anyone reading or reviewing a PR, in order to
+run the code and to study it with a full local set of tools.
+
+REMOTE defaults to the value of the Git config variable
+\`zulip.zulipRemote\` if set, else to \`upstream\`.
+
+If the Git config variable \`zulip.prPseudoRemote\` is set,
+e.g. with:
+  git config zulip.prPseudoRemote pr
+then the PR branch is also recorded as a local ref, like a
+remote-tracking branch as if the PRs make up a "remote".  In
+the example, PR #1234 is recorded as \`pr/1234\`, or in full
+\`refs/remotes/pr/1234\`.  This is useful for keeping track of
+the PR branch while comparing with other code, and for using
+the reflog to compare with previous versions of the same PR.
+
+See also \`push-to-pull-request\`.
+EOF
+    exit 1
+}
+
+remote_default="$(git config zulip.zulipRemote || echo upstream)"
+pseudo_remote="$(git config zulip.prPseudoRemote || echo)"
+
+request_id="$1"
+remote=${2:-"$remote_default"}
+
+if [ -z "$request_id" ]; then
+    usage
+fi
+
+this_dir=${BASH_SOURCE[0]%/*}
+# shellcheck source=lib/git-tools.bash
+. "${this_dir}"/lib/git-tools.bash
+
+require_clean_work_tree 'reset to PR'
+
+if [ -z "$pseudo_remote" ]; then
+    set -x
+    git fetch "$remote" "pull/$request_id/head"
+    git reset --hard FETCH_HEAD
+else
+    target_ref=refs/remotes/"$pseudo_remote"/"$request_id"
+    set -x
+    git fetch "$remote" +"pull/$request_id/head:$target_ref"
+    git reset --hard "$target_ref"
+fi

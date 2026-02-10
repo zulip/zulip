@@ -1,0 +1,35 @@
+{
+  "data": [
+    {
+      "api_version": "2025-11-17.clover",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "configuration": "bpc_NORMALIZED",
+          "created": 1000000000,
+          "customer": "cus_NORMALIZED",
+          "flow": null,
+          "id": "stripe_billing_portal_urls--Event.list.1.json",
+          "livemode": false,
+          "locale": null,
+          "object": "billing_portal.session",
+          "on_behalf_of": null,
+          "return_url": "http://zulip.testserver/upgrade/?manual_license_management=false&tier=1&setup_payment_by_invoice=false",
+          "url": "https://billing.stripe.com/p/session/test_NORMALIZED"
+        }
+      },
+      "id": "stripe_billing_portal_urls--Event.list.1.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": "stripe_billing_portal_urls--Event.list.1.json",
+        "idempotency_key": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "billing_portal.session.created"
+    }
+  ],
+  "has_more": true,
+  "object": "list",
+  "url": "/v1/events"
+}

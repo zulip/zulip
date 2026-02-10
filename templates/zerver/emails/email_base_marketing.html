@@ -1,0 +1,53 @@
+{% import 'zerver/emails/macros.html' as  macros %}
+{% import 'zerver/emails/email.css' as css_styles %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <meta charset="UTF-8" />
+        <title>Zulip</title>
+        <style>{{css_styles}}</style>
+    </head>
+    <body class="default-email-font-settings">
+        <table border="0" cellpadding="0" cellspacing="0" class="body layout">
+            <tr>
+                <td>&nbsp;</td>
+                <td class="container wide-container">
+                    <div class="content wide-content">
+                        <a href="#" class="illustration">
+                            {% block illustration %}{% endblock %}
+                        </a>
+                        <span class="preheader">
+                            {% block preheader %}{% endblock %}
+                        </span>
+                        <table class="main layout">
+                            <tr>
+                                <td class="wrapper">
+                                    <table border="0" cellpadding="0" cellspacing="0" class="layout">
+                                        <tr>
+                                            <td class="custom-email-content">
+                                                {% block content %}{% endblock %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <img src="{{ email_images_base_url }}/footer.png" alt="{{ _('Swimming fish') }}"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="footer">
+                            <table border="0" cellpadding="0" cellspacing="0" class="layout">
+                                <tr>
+                                    <td class="footer-content-block">
+                                        <span class="physical-address">{{physical_address}}</span>
+                                        {% block manage_preferences %}{% endblock %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

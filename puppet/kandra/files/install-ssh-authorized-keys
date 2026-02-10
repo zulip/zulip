@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+args="$(getopt -o '' --long check -- "$@")"
+eval "set -- $args"
+check=false
+while true; do
+    case "$1" in
+        --check)
+            check=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+username="$1"
+shift
+
+homedir="$(getent passwd "$username" | cut -d: -f6)"
+sshdir="$homedir/.ssh"
+
+workfile=$(mktemp)
+cleanup() { rm "$workfile"; }
+trap cleanup EXIT
+
+for ssh_secret_name in "$@"; do
+    /srv/zulip-aws-tools/bin/aws --output text \
+        secretsmanager get-secret-value \
+        --secret-id "$ssh_secret_name" \
+        --query SecretString \
+        | jq -r 'keys[] as $k | "\(.[$k]) \($k)"' \
+            >>"$workfile"
+done
+
+chmod 644 "$workfile"
+chown "$username:$username" "$workfile"
+
+if [ "$check" = "true" ]; then
+    diff -N "$workfile" "$sshdir/authorized_keys"
+    exit 0
+fi
+
+rsync -av "$workfile" "$sshdir/authorized_keys"

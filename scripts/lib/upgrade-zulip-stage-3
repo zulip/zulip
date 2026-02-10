@@ -1,0 +1,387 @@
+#!/usr/bin/env python3
+#
+# This script contains the actual logic for upgrading from an old
+# version of Zulip to the new version.  upgrade-zulip-stage-3 is
+# always run from the new version of Zulip, so any bug fixes take
+# effect on the very next upgrade.
+import argparse
+import logging
+import os
+import re
+import subprocess
+import sys
+import time
+
+os.environ["PYTHONUNBUFFERED"] = "y"
+
+# Force a known locale.  Some packages on PyPI fail to install in some locales.
+os.environ["LC_ALL"] = "C.UTF-8"
+os.environ["LANG"] = "C.UTF-8"
+os.environ["LANGUAGE"] = "C.UTF-8"
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
+    assert_running_as_root,
+    get_config,
+    get_config_file,
+    parse_version_from,
+    start_arg_parser,
+    su_to_zulip,
+)
+
+assert_running_as_root()
+
+# Set a known, reliable PATH
+os.environ["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+logging.Formatter.converter = time.gmtime
+logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-3: %(message)s", level=logging.INFO)
+
+# make sure we have appropriate file permissions
+os.umask(0o22)
+
+restart_parser = start_arg_parser(action="restart", add_help=False)
+
+parser = argparse.ArgumentParser(parents=[restart_parser])
+parser.add_argument("deploy_path", metavar="deploy_path", help="Path to deployment directory")
+parser.add_argument(
+    "--skip-restart",
+    action="store_true",
+    help="Configure, but do not restart into, the new version; aborts if any system-wide changes would happen.",
+)
+parser.add_argument("--skip-puppet", action="store_true", help="Skip doing puppet/apt upgrades.")
+parser.add_argument("--skip-migrations", action="store_true", help="Skip doing migrations.")
+parser.add_argument(
+    "--skip-downgrade-check",
+    action="store_true",
+    help="Skip the safety check to prevent database downgrades.",
+)
+parser.add_argument(
+    "--from-git", action="store_true", help="Upgrading from git, so run update-prod-static."
+)
+parser.add_argument(
+    "--ignore-static-assets",
+    action="store_true",
+    help="Do not attempt to copy/manage static assets.",
+)
+parser.add_argument(
+    "--skip-purge-old-deployments", action="store_true", help="Skip purging old deployments."
+)
+parser.add_argument(
+    "--audit-fts-indexes", action="store_true", help="Audit and fix full text search indexes."
+)
+args = parser.parse_args()
+
+if args.skip_restart:
+    if args.less_graceful:
+        logging.warning("Ignored --less-graceful; --skip-restart is always graceful.")
+        args.less_graceful = False
+    if args.skip_migrations:
+        logging.warning(
+            "Ignored --skip-migrations; all upgrades with --skip-restart asserts no migrations."
+        )
+        args.skip_migrations = False
+    if args.skip_puppet:
+        logging.warning(
+            "Ignored --skip-puppet; all upgrades with --skip-restart asserts no puppet changes."
+        )
+        args.skip_puppet = False
+
+if not args.skip_puppet and args.less_graceful:
+    logging.warning("Ignored --less-graceful; all upgrades without --skip-puppet are ungraceful.")
+
+if args.only_django:
+    logging.error(
+        "Only restarting Django into a new deployment leads to inconsistent caches "
+        "with Tornado; use --skip-client-reloads instead."
+    )
+    sys.exit(1)
+
+deploy_path = args.deploy_path
+os.chdir(deploy_path)
+
+config_file = get_config_file()
+
+IS_SERVER_UP = True
+HAS_FILLED_CACHES = False
+
+if args.from_git:
+    logging.info("Caching Zulip Git version...")
+    subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
+
+from version import ZULIP_VERSION as NEW_ZULIP_VERSION
+
+old_version = parse_version_from(DEPLOYMENTS_DIR + "/current")
+logging.info("Upgrading from %s to %s, in %s", old_version, NEW_ZULIP_VERSION, deploy_path)
+
+migrations_needed = False
+
+
+def fill_memcached_caches() -> None:
+    global HAS_FILLED_CACHES
+    if HAS_FILLED_CACHES or migrations_needed:
+        return
+    subprocess.check_call(
+        ["./manage.py", "fill_memcached_caches", "--automated", "--skip-checks"],
+        preexec_fn=su_to_zulip,
+    )
+    HAS_FILLED_CACHES = True
+
+
+def shutdown_server(fill_caches: bool = True) -> None:
+    global IS_SERVER_UP
+
+    if args.skip_restart:
+        logging.info("Upgrade would require shutting down Zulip -- aborting!")
+        sys.exit(1)
+
+    if fill_caches:
+        fill_memcached_caches()
+
+    if IS_SERVER_UP:
+        logging.info("Stopping Zulip...")
+        subprocess.check_call(["./scripts/stop-server"], preexec_fn=su_to_zulip)
+        IS_SERVER_UP = False
+
+
+if not (args.skip_restart or args.skip_puppet):
+    # We need to temporarily hold pgroonga, if installed -- upgrading
+    # it without running the appropriate upgrade SQL can cause
+    # PostgreSQL to crash
+    if get_config(config_file, "machine", "pgroonga", False):
+        subprocess.check_call(["apt-mark", "hold", "postgresql-*-pgdg-pgroonga"])
+    logging.info("Upgrading system packages...")
+    subprocess.check_call(["apt-get", "update"])
+    subprocess.check_call(["apt-get", "-y", "--with-new-pkgs", "upgrade"])
+    if get_config(config_file, "machine", "pgroonga", False):
+        subprocess.check_call(["apt-mark", "unhold", "postgresql-*-pgdg-pgroonga"])
+
+# Now we should have an environment set up where we can run our tools;
+# first, creating the production venv.
+subprocess.check_call(
+    [os.path.join(deploy_path, "scripts", "lib", "create-production-venv"), deploy_path]
+)
+
+# Check to make sure that this upgrade is not actually a database
+# downgrade.
+if not args.skip_downgrade_check:
+    subprocess.check_call(
+        [os.path.join(deploy_path, "scripts", "lib", "check-database-compatibility")],
+        preexec_fn=su_to_zulip,
+    )
+
+# Make sure the right version of node is installed
+subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node")])
+
+# Generate any new secrets that were added in the new version required.
+# TODO: Do caching to only run this when it has changed.
+subprocess.check_call(
+    [os.path.join(deploy_path, "scripts", "setup", "generate_secrets.py"), "--production"]
+)
+
+# TODO/compatibility: Puppet class names for the manifest renames in
+# the 11.0 release.  Can be removed when we can no longer directly
+# upgrade from 10.x.
+class_renames = {
+    "zulip::postfix_localmail": "zulip::local_mailserver",
+}
+classes = re.split(r"\s*,\s*", get_config(config_file, "machine", "puppet_classes", ""))
+new_classes = [class_renames.get(c, c) for c in classes]
+if classes != new_classes:
+    if args.skip_restart:
+        logging.error("Would need to adjust puppet classes -- aborting!")
+        sys.exit(1)
+    logging.info("Adjusting Puppet classes for renames...")
+    subprocess.check_call(
+        [
+            "crudini",
+            "--set",
+            "/etc/zulip/zulip.conf",
+            "machine",
+            "puppet_classes",
+            ", ".join(new_classes),
+        ]
+    )
+
+# And then, building/installing the static assets.
+if args.ignore_static_assets:
+    # For the OS version upgrade use case, the static assets are
+    # already in place, and we don't need to do anything.  Further,
+    # neither of the options below will work for all installations,
+    # because if we installed from Git, `prod-static/serve` may be
+    # empty so we can't do the non-Git thing, whereas if we installed
+    # from a tarball, we won't have a `tools/` directory and thus
+    # cannot run `tools/update-prod-static`.
+    pass
+elif args.from_git:
+    # Because `upgrade-zulip-from-git` needs to build static assets, it
+    # is at risk of being OOM killed on systems with limited free RAM.
+    mem_bytes = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+    mem_gib = mem_bytes / (1024.0**3)  # e.g. 3.74
+
+    # Ideally, we'd have 2 thresholds here, depending on whether the
+    # system is running queue workers multithreaded or multiprocess.
+    # See puppet/zulip/manifests/app_frontend_base.pp for background.
+    if mem_gib < 4.2:
+        logging.info("Shutting down server to ensure sufficient free RAM for webpack.")
+        shutdown_server(fill_caches=False)
+
+    # Note: The fact that this is before we apply Puppet changes means
+    # that we don't support adding new Puppet dependencies of
+    # update-prod-static with the Git upgrade process.  But it'll fail
+    # safely; this seems like a worthwhile tradeoff to minimize downtime.
+    logging.info("Building static assets...")
+    try:
+        subprocess.check_call(["./tools/update-prod-static"], preexec_fn=su_to_zulip)
+    except subprocess.CalledProcessError:
+        logging.error("Failed to build static assets.")
+        if IS_SERVER_UP:
+            logging.error("Usually the cause is insufficient free RAM to run webpack.")
+            logging.error("Try stopping the Zulip server (scripts/stop-server) and trying again.")
+        sys.exit(1)
+
+else:
+    # Since this doesn't do any actual work, it's likely safe to have
+    # this run before we apply Puppet changes (saving a bit of downtime).
+    logging.info("Installing static assets...")
+    subprocess.check_call(
+        ["cp", "-rT", os.path.join(deploy_path, "prod-static/serve"), "/home/zulip/prod-static"],
+        preexec_fn=su_to_zulip,
+    )
+
+# Perform system checks -- including database checks, so we don't need
+# to do them when we do migrations, below.
+if not args.skip_checks:
+    subprocess.check_call(["./manage.py", "check", "--database", "default"], preexec_fn=su_to_zulip)
+
+# Our next optimization is to check whether any migrations are needed
+# before we start the critical section of the restart.  This saves
+# about 1s of downtime in a no-op upgrade.  We omit this check if we
+# already stopped the server above, due to low memory.
+if not IS_SERVER_UP:
+    migrations_needed = True
+elif not args.skip_migrations:
+    logging.info("Checking for needed migrations")
+    migrations_output = subprocess.check_output(
+        ["./manage.py", "showmigrations", "--skip-checks"], preexec_fn=su_to_zulip, text=True
+    )
+    for ln in migrations_output.split("\n"):
+        line_str = ln.strip()
+        if line_str.startswith("[ ]"):
+            migrations_needed = True
+
+if args.skip_restart and migrations_needed:
+    logging.error("Would need to apply migrations -- aborting!")
+    sys.exit(1)
+
+# Install hooks before we check for puppet changes, so we skip an
+# unnecessary stop/start cycle if hook changes are the only ones.
+logging.info("Installing hooks")
+subprocess.check_call(
+    ["./scripts/zulip-puppet-apply", "--tags", "hooks", "--force"],
+)
+
+# If we are planning on running puppet, we can pre-run it in --noop
+# mode and see if it will actually make any changes; if not, we can
+# skip it during the upgrade.  We omit this check if the server is
+# already stopped, since it's not better than just pressing on.
+has_puppet_changes = True
+if not args.skip_puppet and IS_SERVER_UP:
+    logging.info("Pre-checking for puppet changes...")
+    try_puppet = subprocess.run(
+        ["./scripts/zulip-puppet-apply", "--noop", "--force"],
+        stdout=subprocess.DEVNULL,
+        check=False,
+    )
+    if try_puppet.returncode == 0:
+        if args.skip_restart:
+            logging.info("Verified no Puppet changes are necessary.")
+        else:
+            logging.info("No puppet changes found, skipping!")
+        args.skip_puppet = True
+        has_puppet_changes = False
+    elif try_puppet.returncode == 2:
+        logging.error("Puppet error -- aborting!")
+        sys.exit(1)
+    elif args.skip_restart:
+        logging.error("Would need to apply puppet changes -- aborting!")
+        sys.exit(1)
+
+
+if args.skip_restart:
+    logging.info("Successfully configured in %s!", deploy_path)
+else:
+    # NOTE: Here begins the most likely critical period, where we may be
+    # shutting down the server; we should strive to minimize the number of
+    # steps that happen between here and the "Restarting Zulip" line
+    # below.
+    hooks_args = []
+    if args.from_git:
+        hooks_args = ["--from-git"]
+
+    subprocess.check_call(["./scripts/lib/run_hooks.py", "pre-deploy", *hooks_args])
+
+    if not args.skip_puppet:
+        # Puppet may adjust random services; to minimize risk of issues
+        # due to inconsistent state, we shut down the server first.
+        shutdown_server()
+        logging.info("Applying Puppet changes...")
+        subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
+        subprocess.check_call(["apt-get", "-y", "--with-new-pkgs", "upgrade"])
+        # Puppet may have reloaded supervisor, and in so doing started
+        # services; mark as potentially needing to stop the server.
+        IS_SERVER_UP = True
+
+    if migrations_needed:
+        # Database migrations assume that they run on a database in
+        # quiesced state.
+        shutdown_server()
+        logging.info("Applying database migrations...")
+        subprocess.check_call(
+            ["./manage.py", "migrate", "--noinput", "--skip-checks"], preexec_fn=su_to_zulip
+        )
+
+    logging.info("Restarting Zulip...")
+    start_args = ["--skip-checks"]
+    if args.only_django and IS_SERVER_UP:
+        # Calling `start-server --only-django` only starts Django,
+        # which is almost certainly not what we want after an upgrade.
+        # If we had to stop services for other reasons (e.g. puppet),
+        # we ignore --only-django and downgrade it to
+        # --skip-client-reloads
+        start_args.append("--only-django")
+    else:
+        start_args.append("--skip-client-reloads")
+    if not HAS_FILLED_CACHES:
+        start_args.append("--fill-cache")
+    if IS_SERVER_UP:
+        if args.less_graceful:
+            start_args.append("--less-graceful")
+        subprocess.check_call(["./scripts/restart-server", *start_args], preexec_fn=su_to_zulip)
+    else:
+        subprocess.check_call(["./scripts/start-server", *start_args], preexec_fn=su_to_zulip)
+
+    logging.info("Upgrade complete!")
+
+    subprocess.check_call(["./scripts/lib/run_hooks.py", "post-deploy", *hooks_args])
+
+    if not args.skip_client_reloads and not args.only_django:
+        subprocess.check_call(["./scripts/reload-clients", "--background"], preexec_fn=su_to_zulip)
+
+if args.audit_fts_indexes:
+    logging.info("Correcting full-text search indexes for updated dictionary files")
+    logging.info("This may take a while but the server should work while it runs.")
+    subprocess.check_call(
+        ["./manage.py", "audit_fts_indexes", "--automated", "--skip-checks"], preexec_fn=su_to_zulip
+    )
+
+if not args.skip_purge_old_deployments:
+    logging.info("Purging old deployments...")
+    subprocess.check_call(["./scripts/purge-old-deployments"])
+else:
+    logging.info("Skipping purging old deployments.")
+
+if args.skip_puppet and has_puppet_changes:
+    logging.info("Showing un-applied Puppet changes:")
+    subprocess.check_call(["./scripts/zulip-puppet-apply", "--noop", "--show_diff"])

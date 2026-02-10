@@ -1,0 +1,22 @@
+{% if create_realm %}
+{{ _("You have requested a new Zulip organization:") }}
+* {% trans %}Organization URL: {{ organization_url }}{% endtrans %}
+
+* {% trans %}Organization type: {{ organization_type }}{% endtrans %}
+{% else %}
+{{ _("You recently signed up for Zulip. Awesome!") }}
+{% endif %}
+
+
+{% if create_realm %}
+{{ _("Click the button below to create the organization and register your account. You'll be able to update the information above if you like.") }}
+{% else %}
+{{ _("Click the link below to complete registration.") }}
+{% endif %}
+    <{{ activate_url }}>
+
+{% if corporate_enabled %}
+    {% trans %}Do you have questions or feedback to share? Contact us at {{ support_email }} — we'd love to help!{% endtrans %}
+{% else %}
+    {% trans %}If you have any questions, please contact this Zulip server's administrators at {{ support_email }}.{% endtrans %}
+{% endif %}

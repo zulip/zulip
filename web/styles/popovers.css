@@ -1,0 +1,1328 @@
+/*
+  Our Tippy popovers use the strangely named "light-border" Tippy
+  theme, so this block defines the common styling for all of our Tippy
+  popovers. (Tippy tooltips are defined in tooltips.css).
+*/
+.tippy-box[data-theme="light-border"] {
+    background-color: var(--color-background-popover);
+    /* Basic Tippy popovers scale with the base font-size. */
+    font-size: var(--base-font-size-px);
+
+    .tippy-content {
+        /* We set the font-size here to override the
+           default value in the upstream tippy.css */
+        /* 14px at 14px/1em */
+        font-size: 1em;
+    }
+
+    /* TODO: Clean this logic up after drop Bootstrap styling */
+    & hr {
+        /* Override bootstrap defaults */
+        margin: 5px 0;
+    }
+
+    &[data-placement^="top"] {
+        > .tippy-arrow {
+            &::before {
+                border-top-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="bottom"] {
+        > .tippy-arrow {
+            &::before {
+                border-bottom-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="left"] {
+        > .tippy-arrow {
+            &::before {
+                border-left-color: var(--color-background-popover);
+            }
+        }
+    }
+
+    &[data-placement^="right"] {
+        > .tippy-arrow {
+            &::before {
+                border-right-color: var(--color-background-popover);
+            }
+        }
+    }
+}
+
+.tippy-box[data-theme="dropdown-widget"] {
+    border-radius: 6px;
+    background-color: var(--color-background-dropdown-widget);
+    border: 1px solid var(--color-border-dropdown-widget);
+    box-shadow:
+        0 7px 13px light-dark(hsl(0deg 0% 0% / 15%), hsl(0deg 0% 0% / 35%)),
+        0 5px 8px light-dark(hsl(0deg 0% 0% / 12%), hsl(0deg 0% 0% / 32%)),
+        0 2px 4px light-dark(hsl(0deg 0% 0% / 10%), hsl(0deg 0% 0% / 20%));
+    /* Tippy dropdown widgets scale with the base font-size. */
+    font-size: var(--base-font-size-px);
+
+    .tippy-content {
+        /* We set the font-size here to override the
+           default value in the upstream tippy.css */
+        /* 14px at 14px/1em */
+        font-size: 1em;
+        color: hsl(0deg 0% 75%);
+        padding: 0;
+    }
+}
+
+.tippy-box[data-theme="popover-menu"] {
+    background-color: var(--color-background-popover-menu);
+    border: 1px solid var(--color-border-popover-menu);
+    border-radius: 6px;
+    box-shadow: var(--box-shadow-popover-menu);
+    font-size: 1.0714em; /* 15px at 14px em */
+
+    > .tippy-content {
+        padding: 0;
+        /* We set the font-size here to override the
+           default value in the upstream tippy.css */
+        /* 15 at 15px/1em */
+        font-size: 1em;
+    }
+
+    > .tippy-arrow {
+        color: var(--color-background-popover-menu);
+    }
+
+    &[data-placement^="top"] > .tippy-arrow::before {
+        bottom: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="bottom"] > .tippy-arrow::before {
+        top: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="left"] > .tippy-arrow::before {
+        right: var(--popover-tippy-arrow-before-offset);
+    }
+
+    &[data-placement^="right"] > .tippy-arrow::before {
+        left: var(--popover-tippy-arrow-before-offset);
+    }
+}
+
+.giphy-popover .tippy-box .tippy-arrow {
+    /* Since the GIPHY banner at the popover is black,
+       match the arrow color with the banner. */
+    color: hsl(0deg 0% 0%);
+}
+
+.tippy-box[data-theme="popover-menu"]:has(#gear-menu-dropdown) {
+    --box-shadow-popover-menu: var(--box-shadow-gear-menu);
+}
+
+.user_full_name {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.user-card-popover-actions {
+    --color-text-item: var(--color-text-user-card-secondary);
+
+    .user-card-popover-bot-owner-field {
+        &.text-item {
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .pill-container {
+            border: none !important;
+        }
+
+        .pill {
+            border: none;
+            text-decoration: none;
+            color: var(--color-text-popover-menu);
+            background-color: var(--color-background-text-direct-mention);
+
+            &:hover {
+                color: var(--color-text-popover-menu);
+                background-color: var(
+                    --color-background-text-hover-direct-mention
+                );
+                text-decoration: none;
+            }
+        }
+    }
+
+    .pill-container {
+        padding: 0;
+    }
+
+    .custom-profile-field-value {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .custom-profile-field-value.rendered_markdown p {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        /* Overriding CSS from rendered_markdown.css */
+        margin: 0;
+    }
+
+    .custom-profile-field-link {
+        color: var(--color-text-item);
+
+        &:hover {
+            text-decoration: none;
+        }
+
+        &:focus-visible {
+            color: var(--color-text-url-hover);
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: 2px;
+            border-radius: 2px;
+        }
+
+        .custom-profile-field-text {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+.custom-user-url-field,
+.external-account-text-field {
+    display: flex;
+    align-items: center;
+    /* Maintain space between URL and copy icon. */
+    gap: 3px;
+    overflow: hidden;
+
+    .custom-profile-fields-link {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .copy-custom-field-url,
+    .copy-external-account-field {
+        height: 1em;
+    }
+}
+
+.external-account-link-field {
+    display: inline-flex;
+    align-items: center;
+    /* Maintain space between icon and text. */
+    gap: 3px;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.hidden-remove-button {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+    pointer-events: none;
+}
+
+.hidden-remove-button:has(.button-loading-indicator) {
+    visibility: visible;
+    cursor: default;
+    opacity: 1;
+}
+
+.hidden-remove-button-row:hover
+    .hidden-remove-button:not(:has(.button-loading-indicator)) {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#stream-actions-menu-popover,
+#stream-card-popover {
+    .popover-stream-name {
+        font-weight: 600;
+        color: var(--color-text-popover-menu);
+        line-height: 1.1;
+    }
+
+    .popover-stream-name,
+    .stream-privacy.filter-icon {
+        margin-top: 4px;
+    }
+
+    .zulip-icon-lock {
+        /* Override the margin-top set on the stream lock icon
+           at the top-level, since we don't need to pull up this
+           icon for the stream actions popover header.  */
+        margin: 0 !important;
+    }
+
+    .popover-stream-info-menu-description {
+        color: var(--color-text-popover-menu);
+    }
+}
+
+#topic-actions-menu-popover {
+    .popover-topic-name {
+        font-weight: 600;
+        color: var(--color-text-popover-menu);
+        line-height: 1.1;
+        margin-top: 4px;
+        white-space: pre-wrap;
+        min-width: 12.5em; /* 200px at 16px/1em */
+    }
+}
+
+.popover-header-name {
+    font-weight: 600;
+    color: var(--color-text-popover-menu);
+    line-height: 1.1;
+    margin-top: 4px;
+    width: max-content;
+}
+
+.popover-group-menu-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 3px var(--user-group-popover-horizontal-padding);
+}
+
+.popover-group-menu-name-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    /* 18px at 15px/1em */
+    font-size: 1.2em;
+    font-weight: 600;
+    /* 20px at 18px/1em */
+    line-height: 1.1111em;
+    color: var(--color-text-full-name);
+    overflow-wrap: anywhere;
+}
+
+.popover-group-menu-description {
+    /* 15px at 15px/1em */
+    font-size: 1em;
+    /* 16px at 15px/1em */
+    line-height: 1.0667em;
+}
+
+ul.popover-group-menu-member-list {
+    max-height: 300px;
+    display: flex;
+    flex-direction: column;
+
+    .simplebar-content {
+        display: grid;
+        grid-template-areas: "group-member-icon gap group-member-name";
+        grid-template-columns:
+            max-content var(--user-group-popover-icon-text-gap)
+            minmax(0, 1fr);
+        width: unset;
+    }
+
+    .popover-group-menu-member {
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-column: 1 / -1;
+        align-items: center;
+        padding: 0 var(--user-group-popover-horizontal-padding);
+    }
+
+    .popover-group-member-icon {
+        justify-self: center;
+        grid-area: group-member-icon;
+    }
+
+    .popover-group-menu-member-name {
+        grid-area: group-member-name;
+    }
+}
+
+.popover-group-menu-placeholder {
+    padding: 0 var(--user-group-popover-horizontal-padding);
+}
+
+.popover-group-menu-member {
+    .zulip-icon-user-group {
+        color: var(--color-icon-purple);
+    }
+}
+
+.popover-group-menu-member-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.popover-group-menu-description,
+.popover-group-menu-member-name,
+.popover-group-menu-placeholder {
+    color: var(--color-text-popover-menu);
+}
+
+.user-status-icon-wrapper {
+    display: flex;
+}
+
+.popover-group-menu-user-presence {
+    /* 11px at 16px/1em */
+    font-size: 0.6875em;
+}
+
+.user_profile_presence {
+    /* Remove font-size to allow this to scale
+       with the menu header text. Declaring font-size
+       here maintains the legacy design of keeping
+       the user-circle smaller, despite the larger
+       surrounding text and icons. */
+    font-size: calc(var(--base-font-size-px) * 0.6666);
+    line-height: 1;
+}
+
+.popover-avatar {
+    height: 240px;
+    width: 240px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+
+    &.guest-avatar::after {
+        outline: 10px solid hsl(0deg 0% 100%);
+    }
+
+    .popover-inner {
+        width: 240px;
+    }
+}
+
+@media (width < $md_min) {
+    .popover-flex {
+        position: absolute;
+        top: 0 !important;
+        left: 0 !important;
+
+        width: 100vw;
+        height: 100vh;
+
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        background-color: hsl(0deg 0% 0% / 70%);
+
+        /* Needs to be higher than the 105 for div.overlay so that the
+           emoji picker can render on top of the user status picker. */
+        z-index: 106;
+
+        opacity: 0;
+        pointer-events: none;
+
+        transition: opacity 0.3s ease;
+
+        &.fade.in {
+            opacity: 1;
+            pointer-events: all;
+        }
+    }
+
+    .emoji-picker-popover {
+        position: static;
+        margin-right: 0;
+    }
+}
+
+.popover.top .arrow::after {
+    left: -1px;
+}
+
+.gif-picker-popover,
+.emoji-popover-root {
+    .tippy-content {
+        /* We remove the default padding from this container
+           as it is not necessary for the Giphy and Tenor popovers. */
+        padding: 0;
+
+        /* By resetting to the default color from the `body`,
+           we can ignore the colors applied from `tippy-box`. */
+        color: var(--color-text-default);
+    }
+}
+
+.emoji-popover-root {
+    /* The emoji popover has a different background color for the
+       header and footer, so we customize the arrow to match this color. */
+    .tippy-box[data-placement="top"] .tippy-arrow::before {
+        border-top-color: var(--color-border-emoji-picker-tippy-arrow);
+    }
+
+    .tippy-box[data-placement="bottom"] .tippy-arrow::before {
+        border-bottom-color: var(--color-border-emoji-picker-tippy-arrow);
+    }
+
+    .tippy-box[data-placement="left"] .tippy-arrow::before {
+        border-left-color: var(--color-border-emoji-picker-tippy-arrow);
+    }
+}
+
+.modal__overlay #set-user-status-modal + .emoji-popover-root {
+    /* Micromodal prevents pointer events to elements outside the content.
+       We need to re-enable pointer events for the emoji popover to work. */
+    pointer-events: auto;
+}
+
+.gif-grid-in-popover {
+    /* 300px of GIF grid + 5px is the extra gutter space
+     * + 1px for outline + 4px padding.
+     * between gif columns. */
+    width: 310px;
+    border: 0;
+    padding: 0;
+
+    .gif-search-container {
+        margin: 4px 4px 2px;
+    }
+
+    .gif-picker-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        grid-auto-rows: auto;
+        gap: 6px;
+
+        /* Meant to prevent outline overflow when the GIF
+       is focused. */
+        padding: 0 2px;
+    }
+
+    .gif-picker-gif {
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        object-fit: cover;
+
+        &:focus {
+            /* Blue outline for clear visibility
+              * of which image is in focus.
+              */
+            outline: 2px solid var(--color-selected-gif-in-grid-picker);
+        }
+
+        &:hover {
+            outline: 2px solid var(--color-hovered-gif-in-grid-picker);
+        }
+    }
+
+    .gif-scrolling-container {
+        overflow: hidden auto;
+        height: 300px;
+        margin: 2px 3px;
+        padding: 5px 0;
+    }
+
+    .popover-footer {
+        text-align: center;
+        background-color: hsl(0deg 0% 0%);
+        /* The border radius corresponds to the default radius value from `tippy-box`. */
+        border-radius: 0 0 4px 4px;
+
+        /* This prevents the footer from experiencing height
+           fluctuations at the moment when the image is uploaded. */
+        min-height: 25px;
+
+        & img {
+            width: 120px;
+        }
+    }
+}
+
+#message_report_modal,
+#move_topic_modal {
+    /* Modals have a 16px/1em base font-size. */
+    & form {
+        margin: 0;
+    }
+
+    .modal_select {
+        width: auto;
+        max-width: 100%;
+    }
+
+    .modal__title {
+        .channel-privacy-type-icon {
+            padding-left: 3px;
+            padding-right: 5px;
+        }
+    }
+
+    #report_type_options_widget_wrapper,
+    #move_topic_to_stream_widget_wrapper {
+        display: flex;
+        /* 230px at 16px/1em */
+        max-width: 14.375em;
+
+        .dropdown-widget-button {
+            outline: none;
+            /* 24px at 16px/1em */
+            line-height: 1.5em;
+            width: 100%;
+        }
+
+        .dropdown_widget_value {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--color-text-default);
+
+            .channel-privacy-type-icon {
+                /* 13px at 16px/1em */
+                font-size: 0.8125em;
+                /* 13px at 13px/1em */
+                width: 1em;
+                height: 1em;
+                position: relative;
+                top: 2px;
+            }
+        }
+
+        .zulip-icon-chevron-down {
+            padding-left: 5px;
+            color: hsl(0deg 0% 58%);
+            font-weight: lighter;
+        }
+    }
+
+    #move-topic-new-topic-input-wrapper {
+        position: relative;
+        display: grid;
+        /* 30px at 16px/1em */
+        grid-template:
+            "move-topic-input clear-topic" auto / minmax(0, 1fr)
+            1.875em;
+
+        & input.move_messages_edit_topic {
+            grid-column: move-topic-input-start / clear-topic-end;
+            grid-row: move-topic-input;
+            /* 30px at 16px/1em */
+            padding-right: 1.875em;
+            margin-bottom: unset;
+            box-sizing: border-box;
+            width: 100%;
+            height: auto;
+            /* Unset max-width set using modal_text_input selector as box-sizing
+            is set to border-box here and we already set width to 100%. */
+            max-width: unset;
+
+            &.empty-topic-display::placeholder {
+                color: inherit;
+            }
+
+            &.empty-topic-only {
+                cursor: default;
+            }
+
+            &.invalid-topic-input {
+                border-color: var(--color-invalid-input-border);
+                box-shadow: var(--invalid-input-box-shadow);
+            }
+        }
+    }
+
+    .move-topic-new-topic-placeholder {
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        pointer-events: none;
+        visibility: hidden;
+    }
+
+    .move-topic-new-topic-placeholder-visible {
+        visibility: visible;
+    }
+
+    #message_move_select_options {
+        width: 100%;
+    }
+
+    #move_messages_count {
+        /* Disabled pending fixes to the logic. */
+        display: none;
+    }
+
+    .topic_stream_edit_header {
+        #select_stream_id {
+            border-left: 0;
+            padding-left: 0;
+            border-radius: 3px;
+            margin: 0 5px 5px -10px;
+            text-indent: 10px;
+        }
+
+        .dropdown-menu {
+            position: fixed;
+            top: 125px;
+            left: 40px;
+        }
+    }
+
+    .topic_move_breadcrumb_messages {
+        margin: 0 5px 5px 0;
+        align-self: center;
+        width: 100%;
+
+        & label.checkbox {
+            /* Place the checkboxes on their own lines. */
+            display: block;
+
+            & input {
+                margin: 0;
+                vertical-align: baseline;
+            }
+
+            & + label.checkbox {
+                margin-top: 10px;
+            }
+        }
+
+        & label {
+            display: inline-block;
+            margin-right: 10px;
+        }
+    }
+
+    .new-topic-name-error {
+        color: hsl(0deg 100% 50%);
+    }
+}
+
+#language_selection_modal {
+    width: min(750px, 70vw);
+}
+
+.default_language_modal_table {
+    column-count: 3;
+
+    @media (width < $md_min) {
+        column-count: 2;
+    }
+
+    @media (width < $sm_min) {
+        column-count: 1;
+    }
+}
+
+#send_later_popover {
+    & hr {
+        margin: 5px 0;
+    }
+}
+
+.visibility-policy-popover {
+    .popover-menu-list {
+        padding: 2px;
+    }
+}
+
+.recipient-bar-topic-visibility-switcher {
+    .tab-option-content {
+        /* 15px at 16px/1em */
+        font-size: 0.9375em;
+        color: var(--color-text-popover-menu);
+        gap: 10px;
+        justify-content: flex-start;
+        padding: 2px 13px;
+    }
+}
+
+.popover-menu-user-header {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 7px;
+    text-align: left;
+    padding: 4px;
+
+    .popover-menu-user-avatar-container {
+        position: relative;
+        flex-shrink: 0;
+        width: var(--length-user-popover-menu-avatar);
+        height: var(--length-user-popover-menu-avatar);
+    }
+
+    .popover-menu-user-avatar {
+        width: var(--length-user-popover-menu-avatar);
+        height: var(--length-user-popover-menu-avatar);
+        border-radius: 4px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .popover-menu-user-presence {
+        position: absolute;
+        /* Presence dot does not scale, because
+           the avatar itself does not scale. */
+        font-size: var(--length-user-status-circle-popover-menu);
+        line-height: 1;
+        right: -1px;
+        bottom: -1px;
+        background-color: var(--color-background-popover-menu);
+        border: solid 1px var(--color-background-popover-menu);
+        border-radius: 50%;
+
+        &.deactivated-user-icon {
+            font-size: 0.8em;
+            background-color: var(--color-background-popover-menu);
+            padding: 1px;
+        }
+    }
+
+    .popover-menu-user-info {
+        width: max-content;
+        align-self: center;
+        overflow: hidden;
+    }
+
+    .popover-menu-user-full-name {
+        /* 18px at 15px/1em */
+        font-size: 1.2em;
+        font-weight: 600;
+        /* 20px at 18px/1em */
+        line-height: 1.1111em;
+        color: var(--color-text-full-name);
+        overflow-wrap: anywhere;
+
+        .zulip-icon.zulip-icon-bot {
+            vertical-align: middle;
+        }
+    }
+
+    .popover-menu-user-type {
+        /* 14px at 15px/1em */
+        font-size: 0.9333em;
+        font-weight: 400;
+        /* 16px at 14px/1em */
+        line-height: 1.1428em;
+        color: var(--color-text-item);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.user-card-popover-email-field {
+    & .user_popover_email {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+}
+
+#popover-menu-copy-email,
+.copy-custom-profile-field-link {
+    display: flex;
+    margin-left: auto;
+
+    &.hide_copy_icon {
+        display: none;
+    }
+
+    &:focus-visible {
+        outline: 1px solid var(--color-outline-focus) !important;
+    }
+}
+
+.personal-menu-header {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 7px;
+    text-align: left;
+    padding: 4px;
+
+    .avatar {
+        position: relative;
+        width: 64px;
+        height: 64px;
+    }
+
+    .avatar-image {
+        width: 64px;
+        height: 64px;
+        border-radius: 4px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .status-circle {
+        position: absolute;
+        top: unset;
+        left: unset;
+        font-size: var(--length-user-status-circle);
+        line-height: 1;
+        right: -1px;
+        bottom: -1px;
+        background-color: var(--color-background-popover-menu);
+        border: solid 1px var(--color-background-popover-menu);
+        border-radius: 50%;
+    }
+
+    .text-area {
+        flex-grow: 1;
+        padding-top: 4px;
+
+        & p {
+            margin: 0 0 4px;
+        }
+    }
+
+    .full-name {
+        /* 18px at 15px/1em */
+        font-size: 1.2em;
+        font-weight: 600;
+        /* 20px at 18px/1em */
+        line-height: 1.1111em;
+        color: var(--color-text-full-name) !important;
+        max-width: 150px;
+        overflow-wrap: anywhere;
+    }
+
+    .user-type {
+        /* 14px at 15px/1em */
+        font-size: 0.9333em;
+        font-weight: 400;
+        /* 16px at 14px/1em */
+        line-height: 1.1429em;
+        color: var(--color-text-item) !important;
+    }
+}
+
+.popover-menu {
+    margin: 0;
+    max-height: 85vh;
+    overflow-x: hidden;
+    user-select: none;
+    border-radius: 6px;
+
+    .simplebar-content {
+        /* Set the popover menu width equal to the width of the
+        longest menu item, thus letting the menu items control
+        the width of the menu. */
+        width: min-content;
+        /* Set `max-width` to the minimum of `97vw` and the value defined by
+        the `--popover-menu-max-width` custom property, which should be defined
+        as a local custom property in the scope of a particular popover where
+        we want apply a `max-width` limit.
+
+        When we don't define this local custom property, the fallback value of
+        `97vw` is considered and the `max-width` is then set to `min(97vw, 97vw)`
+        which is simply equivalent to `97vw`.
+
+        IMPORTANT: Setting `--popover-menu-max-width` in the `:root` scope
+        instead of the local scope, eliminates the fallback behavior and thus
+        prevents us from setting the max-width on a case-to-case basis. */
+        max-width: min(var(--popover-menu-max-width, 97vw), 97vw);
+    }
+
+    .popover-menu-label {
+        /* Keep menu items on a single line, unless forced to wrap
+        by a max-width on the popover. */
+        width: max-content;
+        flex: 1 0 0;
+    }
+
+    .text-item,
+    .link-item .popover-menu-link {
+        box-sizing: border-box;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: flex-start;
+        gap: 5px;
+        /* 3px at 15px/1em, 10px at 15px/1em */
+        padding: 0.2em 0.6666em;
+        /* 15px at 15px/1em */
+        font-size: 1em;
+        /* 16px at 15px/1em */
+        line-height: 1.0667em;
+        /* 26px at 16px/1em - this height was carried forward
+           despite the information density change in 15px > 16px,
+           so we calculate its height to the 16px em in use. */
+        min-height: 1.625em;
+
+        .popover-menu-icon {
+            /* 16px at 15px/1em */
+            font-size: 1.0667em;
+            /* 16px at 16px/1em */
+            width: 1em;
+            height: 1em;
+            text-align: center;
+        }
+    }
+
+    .text-item {
+        color: var(--color-text-item);
+        width: auto;
+        user-select: text;
+    }
+
+    .link-item {
+        outline: none;
+
+        &:focus-within {
+            background: var(--color-background-hover-popover-menu);
+        }
+
+        .popover-menu-label,
+        .popover-menu-icon {
+            margin-top: 2px;
+        }
+
+        .popover-menu-icon {
+            color: var(--color-icon-purple);
+        }
+
+        .popover-menu-link {
+            color: var(--color-text-popover-menu) !important;
+            text-decoration: none;
+            flex-grow: 1;
+
+            &:hover {
+                background: var(--color-background-hover-popover-menu);
+                outline: none;
+            }
+
+            &:focus-visible {
+                border-radius: 4px;
+                /* Override the default focus style */
+                outline: 1px solid var(--color-outline-focus) !important;
+                outline-offset: -1px;
+            }
+
+            &:active {
+                background: var(--color-background-active-popover-menu);
+            }
+        }
+    }
+
+    .tab-picker {
+        &.popover-menu-tab-group {
+            margin: 2px 10px;
+        }
+
+        .tab-option-content:focus-visible {
+            border-radius: 4px;
+            /* Override the default focus style */
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: -1px;
+        }
+    }
+
+    .status_emoji {
+        align-self: flex-start;
+        flex-shrink: 0;
+        /* 16px at 15px/1em */
+        width: 1.0667em;
+        height: 1.0667em;
+    }
+
+    .popover-menu-icon {
+        position: relative;
+        top: -1px;
+    }
+
+    .info-density-controls {
+        display: flex;
+        padding: 0.125em 0.625em;
+        gap: 0.5em;
+
+        .zulip-icon {
+            width: 0.933em;
+            height: 0.933em;
+        }
+    }
+}
+
+#help-menu-dropdown,
+#gear-menu-dropdown,
+#personal-menu-dropdown {
+    .simplebar-content {
+        min-width: var(--navbar-popover-menu-min-width);
+    }
+}
+
+#message-actions-menu-dropdown {
+    /* 350px at 15px/1em */
+    --popover-menu-max-width: 23.3333em;
+
+    .simplebar-content {
+        min-width: var(--message-actions-popover-min-width);
+    }
+}
+
+#stream-actions-menu-popover,
+#topic-actions-menu-popover {
+    .simplebar-content {
+        min-width: var(--topic-actions-popover-min-width);
+    }
+}
+
+#user_card_popover {
+    /* 250px at 14px/1em */
+    --popover-menu-max-width: 17.8571em;
+
+    .simplebar-content {
+        min-width: var(--user-card-popover-min-width);
+    }
+}
+
+.user-group-info-popover {
+    .simplebar-content {
+        min-width: var(--user-group-info-popover-min-width);
+    }
+}
+
+#stream-card-popover {
+    .simplebar-content {
+        min-width: var(--stream-card-popover-min-width);
+    }
+}
+
+.color-picker-popover {
+    --popover-menu-max-width: calc(
+        var(--padding-color-swatch-list) * 2 + var(--size-color-swatch) * 6 +
+            var(--grid-gap-color-swatch) * 5
+    );
+}
+
+.personal-menu-clear-status {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    color: hsl(0deg 0% 40%) !important;
+    border-radius: 4px;
+    opacity: 0.5;
+
+    &:focus {
+        /* Override bootstrap defaults */
+        outline: 1px solid var(--color-outline-focus) !important;
+        outline-offset: 0;
+    }
+
+    &:hover,
+    &:focus {
+        opacity: 0.9;
+        text-decoration: none;
+    }
+}
+
+.personal-menu-clear-status .personal-menu-clear-status-icon {
+    top: 0;
+}
+
+.personal-menu-status-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.personal-menu-status-text {
+    color: var(--color-text-personal-menu-some-status);
+}
+
+.personal-menu-no-status-text {
+    color: var(--color-text-personal-menu-no-status);
+}
+
+#gear-menu-dropdown {
+    .org-info-container {
+        padding: 9px 0 5px;
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
+
+        .org-info {
+            display: flex;
+            justify-content: flex-start;
+            font-style: normal;
+            font-weight: 400;
+            /* 16px at 15px/1em */
+            line-height: 1.0667em;
+            letter-spacing: 0.28px;
+
+            &:focus-within {
+                background: var(--color-background-hover-popover-menu);
+            }
+
+            .popover-menu-link {
+                padding: 2px 10px;
+                flex-grow: 1;
+                text-decoration: none;
+
+                &:hover {
+                    background: var(--color-background-hover-popover-menu);
+                    outline: none;
+                }
+
+                &:focus-visible {
+                    border-radius: 4px;
+                    /* Override the default focus style */
+                    outline: 1px solid var(--color-outline-focus) !important;
+                    outline-offset: -1px;
+                }
+
+                &:active {
+                    background: var(--color-background-active-popover-menu);
+                }
+            }
+        }
+
+        .org-url {
+            margin-bottom: 7px;
+            padding: 0 10px;
+        }
+
+        .org-name,
+        .org-plan .popover-menu-link {
+            color: var(--color-text-popover-menu);
+        }
+
+        .org-name {
+            /* 17px at 15px/1em */
+            font-size: 1.1333em;
+            font-weight: 600;
+            /* 22px at 17px/1em */
+            line-height: 1.2941em;
+            padding: 0 10px;
+        }
+
+        .org-upgrade {
+            /* 14px at 15px/1em */
+            font-size: 0.9333em;
+            /* 16px at 14px/1em */
+            line-height: 1.1428em;
+        }
+
+        .org-upgrade,
+        .org-url {
+            color: var(--color-gear-menu-lighter-text);
+        }
+
+        .org-upgrade a,
+        .org-version a {
+            color: var(--color-gear-menu-blue-text);
+        }
+    }
+
+    .theme-switcher {
+        /* Left and right margins are set to match the alignment with
+        other items in the menu. Other elements have space of 0.6666em
+        on both sides, but they have font size set to 1em and theme
+        switcher has font size set to 1.0666em. So, we need space of
+        0.6666/1.0666 em on each side. */
+        margin: 0 0.625em;
+    }
+
+    .info-density-controls {
+        /* Left and right paddings are set to match the alignment with
+        other items in the menu. */
+        padding: 0.4em 0.6666em 0.25em;
+    }
+}
+
+ul.popover-menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+
+    li.popover-menu-separator {
+        margin: 4px 0;
+        border-bottom: solid 1px var(--color-border-popover-menu-separator);
+    }
+}
+
+.popover-menu-hotkey-hints {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+    padding-left: 5px;
+
+    > .popover-menu-hotkey-hint {
+        box-sizing: border-box;
+        color: var(--color-popover-hotkey-hint);
+        text-align: center;
+        /* 14px at 15px/1em */
+        font-size: 0.9333em;
+        font-style: normal;
+        font-weight: 500;
+        /* 14px at 14px/1em */
+        line-height: 1em;
+        /* 20px at 14px/1em */
+        min-width: 1.4285em;
+        padding: 2px 4px;
+        border-radius: 3px;
+        border: 1px solid var(--color-border-popover-hotkey-hint);
+    }
+}
+
+.condensed-views-popover-menu {
+    .popover-menu-link:has(.label-and-unread-wrapper) {
+        align-items: center;
+
+        .popover-menu-icon {
+            margin-top: 1px;
+        }
+
+        .label-and-unread-wrapper {
+            /* Occupy the maximum width of the
+               parent flex container. */
+            flex: 1 0 max-content;
+            display: flex;
+            gap: 5px;
+            align-items: baseline;
+        }
+
+        .popover-menu-label {
+            margin-top: 0;
+        }
+
+        .unread_count {
+            margin: 0 0 0 6px;
+            border-color: var(--color-border-unread-counter-popover-menu);
+            width: max-content;
+            height: auto;
+            line-height: 1.2445em;
+            align-self: baseline;
+        }
+    }
+}
+
+#groups-to-add {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#user-group-to-add {
+    flex: 1;
+    min-width: 0;
+}

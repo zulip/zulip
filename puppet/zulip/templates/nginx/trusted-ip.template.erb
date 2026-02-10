@@ -1,0 +1,54 @@
+<% if @loadbalancers.any? %>
+  # Configuration for making Zulip app frontends accept the
+  # X-Forwarded-For header used by proxies.  The trusted IP addresses
+  # here are set by `loadbalancer.ips` in /etc/zulip/zulip.conf.
+  #
+  # This causes us to update $remote_addr, which we use in logging, and
+  # also pass down to Zulip as X-Real-Ip.
+  real_ip_header X-Forwarded-For;
+  real_ip_recursive on;
+  <% @loadbalancers.each do |host| -%>
+  set_real_ip_from <%= host %>;
+  <% end -%>
+
+  <% if @true_client_header == '' %>
+    # real_ip has done the work of updating $remote_addr based
+    # on the trusted @loadbalancers
+    map $remote_addr $trusted_remote_addr {
+      default $remote_addr;
+    }
+  <% else %>
+    <% if @true_client_header_from.any? %>
+      # We have a separate set of post-X-Forwarded-For IPs we
+      # trust with $http_<%= @true_client_header %>
+      geo $remote_addr $do_trust_<%= @true_client_header %> {
+        default 0;
+        <% @true_client_header_from.each do |host| %>
+        <%= host %> 1;
+        <%- end %>
+      }
+    <% else %>
+      # If our most recent hop came from a trusted source, we
+      # trust $http_<%= @true_client_header %>
+      geo $realip_remote_addr $do_trust_<%= @true_client_header %> {
+        default 0;
+        <% @loadbalancers.each do |host| %>
+        <%= host %> 1;
+        <%- end %>
+      }
+    <% end %>
+
+    # This is done in two steps because geo handles CIDRs,
+    # and map handles interpolation.
+    map "$do_trust_<%= @true_client_header %>:$http_<%= @true_client_header %>" $trusted_remote_addr {
+      "~^0:"  $remote_addr;
+      "~^1:$" $remote_addr;
+      "~^1:"  $http_<%= @true_client_header %>;
+    }
+  <% end %>
+<% else %>
+  # No remote proxies -- the remote_addr is what it is
+  map $remote_addr $trusted_remote_addr {
+    default $remote_addr;
+  }
+<% end %>

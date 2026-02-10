@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import subprocess
+import sys
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(ZULIP_PATH)
+from scripts.lib import clean_unused_caches
+from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
+    get_recent_deployments,
+    maybe_perform_purging,
+    su_to_zulip,
+)
+
+LOCAL_GIT_CACHE_DIR = "/srv/zulip.git"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="This script can be used for cleaning old unused deployments.",
+        epilog="Orphaned/unused caches older than threshold days will be automatically "
+        "examined and removed.",
+    )
+    parser.add_argument(
+        "--threshold",
+        dest="threshold_days",
+        type=int,
+        default=14,
+        metavar="<days>",
+        help="Deployments older than threshold days will be deleted. (defaults to 14)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="If specified then script will only print the deployments and "
+        "caches that it will delete/keep back. It will not delete anything.",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="If specified then script will print a detailed report of what is going on.",
+    )
+    parser.add_argument(
+        "--no-print-headings",
+        dest="no_headings",
+        action="store_true",
+        help="If specified then script will not print headings for what will be deleted/kept back.",
+    )
+
+    args = parser.parse_args()
+    args.verbose |= args.dry_run  # Always print a detailed report in case of dry run.
+    return args
+
+
+def get_deployments_to_be_purged(recent_deployments: set[str]) -> set[str]:
+    all_deployments = {
+        os.path.join(DEPLOYMENTS_DIR, deployment) for deployment in os.listdir(DEPLOYMENTS_DIR)
+    }
+    deployments_to_purge = set()
+    for deployment in all_deployments:
+        # Deployments whose name is not in the format of a timestamp are
+        # always included in the recent_deployments and are not deleted.
+        if not os.path.isdir(deployment):
+            # Skip things like uwsgi sockets.
+            continue
+        if not os.path.exists(os.path.join(deployment, "zerver")):
+            # Skip things like "lock" that aren't actually a deployment directory
+            continue
+        if deployment not in recent_deployments:
+            deployments_to_purge.add(deployment)
+    return deployments_to_purge
+
+
+def main() -> None:
+    args = parse_args()
+    deployments_to_keep = get_recent_deployments(args.threshold_days)
+    deployments_to_purge = get_deployments_to_be_purged(deployments_to_keep)
+
+    maybe_perform_purging(
+        deployments_to_purge, deployments_to_keep, "deployment", args.dry_run, args.verbose, True
+    )
+
+    if not args.dry_run:
+        if os.path.exists(LOCAL_GIT_CACHE_DIR):
+            subprocess.check_call(
+                ["git", "worktree", "prune"], cwd=LOCAL_GIT_CACHE_DIR, preexec_fn=su_to_zulip
+            )
+
+        if not args.no_headings:
+            print("Deployments cleaned successfully...")
+            print("Cleaning orphaned/unused caches...")
+
+    # Call 'clean_unused_caches.py' script to clean any orphaned/unused caches.
+    clean_unused_caches.main(args)
+    print("Done!")
+
+
+if __name__ == "__main__":
+    main()

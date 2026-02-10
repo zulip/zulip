@@ -1,0 +1,2 @@
+deb [signed-by=/etc/apt/keyrings/ksplice.asc] http://www.ksplice.com/apt noble ksplice
+deb-src [signed-by=/etc/apt/keyrings/ksplice.asc] http://www.ksplice.com/apt noble ksplice

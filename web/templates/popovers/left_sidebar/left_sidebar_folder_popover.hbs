@@ -1,0 +1,18 @@
+<div class="popover-menu" data-simplebar data-simplebar-tab-index="-1">
+    <ul role="menu" class="popover-menu-list">
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" id="folder_popover_view_channels" class="popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-hashtag" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "View channels" }}</span>
+            </a>
+        </li>
+        {{#if can_manage_folder}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" id="folder_popover_manage_folder" class="popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-folder-cog" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Manage folder" }}</span>
+            </a>
+        </li>
+        {{/if}}
+    </ul>
+</div>

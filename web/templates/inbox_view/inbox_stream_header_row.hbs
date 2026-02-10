@@ -1,0 +1,40 @@
+<div id="inbox-stream-header-{{stream_id}}" class="inbox-header {{#if is_hidden}}hidden_by_filters{{/if}} {{#if is_collapsed}}inbox-collapsed-state{{/if}}" data-col-index="{{ column_indexes.FULL_ROW }}" tabindex="0" data-stream-id="{{stream_id}}" style="background: {{stream_header_color}};">
+    <div class="inbox-focus-border">
+        <div class="inbox-left-part-wrapper">
+            <div class="inbox-left-part">
+                <div class="inbox-header-name">
+                    <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
+                        {{> ../stream_privacy . }}
+                    </span>
+                    <span class="inbox-header-name-text">{{stream_name}}</span>
+                    {{#if is_archived}}
+                        <span class="inbox-header-stream-archived">
+                            <i class="archived-indicator">({{t 'archived' }})</i>
+                        </span>
+                    {{/if}}
+                </div>
+                <div class="collapsible-button toggle-inbox-header-icon {{#if is_collapsed}}icon-collapsed-state{{/if}}"><i class="channel-row-chevron zulip-icon zulip-icon-chevron-down"></i></div>
+                <span class="unread_mention_info tippy-zulip-tooltip
+                  {{#unless mention_in_unread}}hidden{{/unless}}"
+                  data-tippy-content="{{t 'You have unread mentions'}}">@</span>
+                <div class="unread-count-focus-outline" tabindex="0" data-col-index="{{ column_indexes.UNREAD_COUNT }}">
+                    <span class="unread_count tippy-zulip-tooltip on_hover_topic_read"
+                      data-stream-id="{{stream_id}}" data-tippy-content="{{t 'Mark as read' }}"
+                      aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
+                </div>
+            </div>
+        </div>
+        <div class="inbox-right-part-wrapper">
+            <div class="inbox-right-part">
+                {{#if is_muted}}
+                <span class="channel-visibility-policy-indicator toggle-channel-visibility tippy-zulip-tooltip" data-stream-id="{{stream_id}}" tabindex="0" data-col-index="{{ column_indexes.TOPIC_VISIBILITY }}" data-tooltip-template-id="inbox-channel-mute-toggle-tooltip-template">
+                    <i class="zulip-icon zulip-icon-mute recipient_bar_icon" role="button"></i>
+                </span>
+                {{/if}}
+                <div class="inbox-action-button inbox-stream-menu" data-stream-id="{{stream_id}}" tabindex="0" data-col-index="{{ column_indexes.ACTION_MENU }}">
+                    <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

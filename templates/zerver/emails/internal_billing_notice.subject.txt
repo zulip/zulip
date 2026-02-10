@@ -1,0 +1,9 @@
+{% if notice_reason == "fixed_price_plan_ends_soon" %}
+Fixed-price plan for {{ billing_entity }} ends on {{ end_date }}
+{% elif notice_reason == "stale_audit_log_data" %}
+Stale audit log data for {{ billing_entity }}'s plan
+{% elif notice_reason == "locally_deleted_realm_on_paid_plan" %}
+{{ billing_entity }} on paid plan marked as locally deleted
+{% elif notice_reason == "license_discrepancy" %}
+Check initial licenses invoiced for {{ billing_entity }}
+{% endif %}

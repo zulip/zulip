@@ -1,0 +1,25 @@
+<div class="above_compose_banner main-view-banner success {{classname}}">
+    <p class="banner_content">
+        {{banner_text}}
+        {{#if message_recipient}}
+        <a class="above_compose_banner_action_link" {{#if above_composebox_narrow_url}}href="{{above_composebox_narrow_url}}"{{/if}} data-message-id="{{link_msg_id}}">
+            {{#with message_recipient}}
+            {{#if (eq message_type "channel")}}
+                {{#tr}}
+                    Go to #{channel_name} &gt; <z-topic-display-name></z-topic-display-name>
+                    {{#*inline "z-topic-display-name"}}<span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}>{{topic_display_name}}</span>{{/inline}}
+                {{/tr}}
+            {{else}}
+                {{t 'Go to {recipient_text}' }}
+            {{/if}}
+            {{/with}}
+        </a>
+        {{/if}}
+    </p>
+    {{#if action_button_text}}
+        <button class="action-button action-button-subtle-success" data-message-id="{{link_msg_id}}">
+            <span class="action-button-label">{{ action_button_text }}</span>
+        </button>
+    {{/if}}
+    <a role="button" class="zulip-icon zulip-icon-close main-view-banner-close-button"></a>
+</div>

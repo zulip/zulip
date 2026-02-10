@@ -1,0 +1,1108 @@
+import $ from "jquery";
+import assert from "minimalistic-assert";
+import * as tippy from "tippy.js";
+
+import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
+import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
+import render_information_density_update_button_tooltip from "../templates/information_density_update_button_tooltip.hbs";
+import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
+import render_tooltip_templates from "../templates/tooltip_templates.hbs";
+import render_topics_not_allowed_error from "../templates/topics_not_allowed_error.hbs";
+
+import * as compose_state from "./compose_state.ts";
+import * as compose_validate from "./compose_validate.ts";
+import {$t} from "./i18n.ts";
+import * as information_density from "./information_density.ts";
+import * as people from "./people.ts";
+import * as settings_config from "./settings_config.ts";
+import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
+import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
+
+// For tooltips without data-tippy-content, we use the HTML content of
+// a <template> whose id is given by data-tooltip-template-id.
+export function get_tooltip_content(reference: Element): string | Element | DocumentFragment {
+    let template_id;
+    if (
+        reference instanceof HTMLElement &&
+        (template_id = reference.getAttribute("data-tooltip-template-id")) !== null
+    ) {
+        const template = document.querySelector<HTMLTemplateElement>(
+            `template#${CSS.escape(template_id)}`,
+        );
+        if (template !== null) {
+            const fragment = template.content.cloneNode(true);
+            assert(fragment instanceof DocumentFragment);
+            return fragment;
+        }
+    }
+    return "";
+}
+
+// We use different delay settings for tooltips. The default "instant"
+// version has just a tiny bit of delay to create a natural feeling
+// transition, while the "long" version is intended for elements where
+// we want to avoid distracting the user with the tooltip
+// unnecessarily.
+export const INSTANT_HOVER_DELAY: [number, number] = [100, 20];
+// INTERACTIVE_HOVER_DELAY is for elements like the emoji reactions, where
+// the tooltip includes useful information (who reacted?), but that
+// needs a short delay for users who are just tapping a reaction
+// element and not interested in the tooltip's contents.
+export const INTERACTIVE_HOVER_DELAY: [number, number] = [425, 20];
+export const LONG_HOVER_DELAY: [number, number] = [750, 20];
+// EXTRA_LONG_HOVER_DELAY is for elements like the compose box send
+// button where the tooltip content is almost exactly the same as the
+// text in the button, and the tooltip exists just to advertise a
+// keyboard shortcut. For these tooltips, it's very important to avoid
+// distracting users unnecessarily.
+export const EXTRA_LONG_HOVER_DELAY: [number, number] = [1500, 20];
+// These delays are specifically for singleton tooltips. Unlike default tooltips,
+// singleton tooltips can feel disconnected or abrupt when using the default hide delays
+// from INSTANT_HOVER_DELAY or LONG_HOVER_DELAY, due to the very low hide timings we use.
+
+// To address this, we increase the hide delay to 250ms. This ensures smoother transitions
+// and prevents tooltips from disappearing too quickly, improving the overall UX.
+export const SINGLETON_INSTANT_HOVER_DELAY: [number, number] = [100, 250];
+export const SINGLETON_LONG_HOVER_DELAY: [number, number] = [750, 250];
+
+// We override the defaults set by tippy library here,
+// so make sure to check this too after checking tippyjs
+// documentation for default properties.
+tippy.default.setDefaultProps({
+    // Tooltips shouldn't take more space than mobile widths.
+    // 300px at 14px/1em
+    maxWidth: "21.4286em",
+    delay: INSTANT_HOVER_DELAY,
+    placement: "top",
+    // Disable animations to make the tooltips feel snappy.
+    animation: false,
+    // Show tooltips on long press on touch based devices.
+    touch: ["hold", 750],
+    // Create the tooltip inside the parent element. This has the
+    // undesirable side effect of CSS properties of the parent elements
+    // applying to tooltips, which causes ugly clipping if the parent
+    // element has overflow rules. Even with that, we prefer to have
+    // tooltips appended to the parent so that the tooltip gets removed
+    // if the parent is hidden / removed from DOM; which is not the case
+    // with appending it to `body` which has side effect of tooltips
+    // sticking around due to browser not communicating to tippy that
+    // the element has been removed without having a Mutation Observer.
+    appendTo: "parent",
+    // To add a text tooltip, override this by setting data-tippy-content.
+    // To add an HTML tooltip, set data-tooltip-template-id to the id of a <template>.
+    // Or, override this with a function returning string (text) or DocumentFragment (HTML).
+    content: get_tooltip_content,
+});
+
+export let typeahead_status_emoji_tooltip: tippy.Instance | undefined;
+
+export const topic_visibility_policy_tooltip_props = {
+    delay: LONG_HOVER_DELAY,
+    appendTo: () => document.body,
+    onShow(instance: tippy.Instance) {
+        let should_render_privacy_icon;
+        let current_stream_obj;
+        const $elem = $(instance.reference);
+        if ($elem.hasClass("recipient-bar-control-icon")) {
+            // The topic visibility policy button located in the recipient bar
+            // uses the icon button component, and extracts the stream id from
+            // the message header instead of the button itself. This results in
+            // the need for a different logic to extract the required data.
+            should_render_privacy_icon = $elem
+                .children(".zulip-icon")
+                .hasClass("zulip-icon-inherit");
+            current_stream_obj = stream_data.get_sub_by_id(
+                Number($elem.closest(".message_header").attr("data-stream-id")),
+            );
+        } else {
+            should_render_privacy_icon = $elem.hasClass("zulip-icon-inherit");
+            current_stream_obj = stream_data.get_sub_by_id(
+                Number($elem.parent().attr("data-stream-id")),
+            );
+        }
+        const current_visibility_policy_str = $elem.attr("data-tippy-content");
+        const tooltip_context = {
+            ...current_stream_obj,
+            current_visibility_policy_str,
+            should_render_privacy_icon,
+        };
+        instance.setContent(
+            ui_util.parse_html(render_change_visibility_policy_button_tooltip(tooltip_context)),
+        );
+    },
+    onHidden(instance: tippy.Instance) {
+        instance.destroy();
+    },
+};
+
+export function initialize(): void {
+    $("#tooltip-templates-container").html(render_tooltip_templates());
+
+    // Our default tooltip configuration. For this, one simply needs to:
+    // * Set `class="tippy-zulip-tooltip"` on an element for enable this.
+    // * Set `data-tippy-content="{{t 'Tooltip content' }}"`, often
+    //   replacing a `title` attribute on an element that had both.
+    // * Set placement; we typically use `data-tippy-placement="top"`.
+    tippy.delegate("body", {
+        target: ".tippy-zulip-tooltip",
+    });
+
+    // variant of tippy-zulip-tooltip above having delay=LONG_HOVER_DELAY,
+    // default placement="top" with fallback placement="bottom",
+    // and appended to body
+    tippy.delegate("body", {
+        target: ".tippy-zulip-delayed-tooltip",
+        // Disable trigger on focus, to avoid displaying on-click.
+        trigger: "mouseenter",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "bottom",
+                    },
+                },
+            ],
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".toggle-subscription-tooltip",
+        trigger: "mouseenter",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "bottom",
+        onShow(instance) {
+            let template = "show-unsubscribe-tooltip-template";
+            if (instance.reference.classList.contains("unsubscribed")) {
+                template = "show-subscribe-tooltip-template";
+            }
+            $(instance.reference).attr("data-tooltip-template-id", template);
+            instance.setContent(get_tooltip_content(instance.reference));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#subscription_overlay .subscription_settings .sub-stream-name, #groups_overlay .user_group_settings_wrapper .group-name",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "top",
+        onShow(instance) {
+            const name_element = instance.reference;
+            assert(name_element instanceof HTMLElement);
+            // Only show tooltip if the stream or group name is truncated.
+            // See https://stackoverflow.com/questions/21064101/understanding-offsetwidth-clientwidth-scrollwidth-and-height-respectively
+            // for more details.
+            if (name_element.offsetWidth >= name_element.scrollWidth) {
+                return false;
+            }
+
+            return undefined;
+        },
+    });
+
+    // The below definitions are for specific tooltips that require
+    // custom JavaScript code or configuration.  Note that since the
+    // below specify the target directly, elements using those should
+    // not have the tippy-zulip-tooltip class.
+
+    tippy.delegate("body", {
+        target: ".draft-selection-tooltip",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            let content = $t({defaultMessage: "Select draft"});
+            const $elem = $(instance.reference);
+            if ($($elem).parent().find(".draft-selection-checkbox").hasClass("fa-check-square")) {
+                content = $t({defaultMessage: "Deselect draft"});
+            }
+            instance.setContent(content);
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".delete-selected-drafts-button-container",
+        appendTo: () => document.body,
+        onShow(instance) {
+            let content = $t({defaultMessage: "Delete all selected drafts"});
+            const $elem = $(instance.reference);
+            if ($($elem).find(".delete-selected-drafts-button").is(":disabled")) {
+                content = $t({defaultMessage: "No drafts selected"});
+            }
+            instance.setContent(content);
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#add-poll-modal .dialog_submit_button_container",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const content = $t({defaultMessage: "Please enter a question."});
+            const $elem = $(instance.reference);
+            // Show tooltip to enter question only if submit button is disabled
+            // (due to question field being empty).
+            if ($elem.find(".dialog_submit_button").is(":disabled")) {
+                instance.setContent(content);
+                return undefined;
+            }
+            return false;
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#add-todo-modal .todo-description-container",
+        onShow(instance) {
+            const $elem = $(instance.reference);
+
+            /* Due to height: 0, data-reference-hidden for tooltip is set on the tooltip and can
+            cause the tooltip to hide. We should  use .show-when-reference-hidden here too since we
+            want data-reference-hidden to work when user scrolls here.*/
+            $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
+
+            if ($elem.find(".todo-description-input").is(":disabled")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Enter a task before adding a description.",
+                    }),
+                );
+                return undefined;
+            }
+            return false;
+        },
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        target: ".add-task-wrapper",
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const content = $elem.attr("data-tippy-content");
+            if (content === undefined) {
+                return false;
+            }
+            instance.setContent(content);
+            return undefined;
+        },
+        appendTo: () => document.body,
+    });
+
+    $("body").on(
+        "blur",
+        ".message_control_button, .delete-selected-drafts-button-container",
+        function (this: tippy.ReferenceElement, _event: JQuery.Event) {
+            // Remove tooltip when user is trying to tab through all the icons.
+            // If user tabs slowly, tooltips are displayed otherwise they are
+            // destroyed before they can be displayed.
+            this._tippy?.destroy();
+        },
+    );
+
+    tippy.delegate("body", {
+        target: [
+            "#scroll-to-bottom-button-clickable-area",
+            ".spectator_narrow_login_button",
+            ".error-icon-message-recipient .zulip-icon",
+            "#personal-menu-dropdown .status-circle",
+            ".popover-group-menu-member-list .popover-group-menu-user-presence",
+            ".delete-code-playground",
+        ].join(","),
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        target: [
+            "#compose_close",
+            ".expand-composebox-button",
+            ".collapse-composebox-button",
+            ".maximize-composebox-button",
+        ].join(","),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".media-info-wrapper > .media-description > .title",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const title = $(instance.reference).attr("aria-label");
+            if (title === undefined) {
+                return false;
+            }
+            const filename = $(instance.reference).attr("data-filename");
+            const $markup = $("<span>").text(title);
+            if (title !== filename) {
+                // If the image title is the same as the filename, there's no reason
+                // to show this next line.
+                const second_line = $t({defaultMessage: "File name: {filename}"}, {filename});
+                $markup.append($("<br>"), $("<span>").text(second_line));
+            }
+            instance.setContent(util.the($markup));
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        // Configure tooltips for the stream_sorter_toggle buttons.
+
+        // TODO: Ideally, we'd extend this to be a common mechanism for
+        // tab switchers, with the strings living in a more normal configuration
+        // location.
+        target: ".stream_sorter_toggle .ind-tab [data-tippy-content]",
+
+        // Adjust their placement to `bottom`.
+        placement: "bottom",
+
+        // Avoid inheriting `position: relative` CSS on the stream sorter widget.
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        // This tooltip appears on the "Summary" checkboxes in
+        // settings > custom profile fields, when at the limit of 2
+        // fields with display_in_profile_summary enabled.
+        target: [
+            "#profile-field-settings .display_in_profile_summary_tooltip",
+            "#edit-custom-profile-field-form-modal .display_in_profile_summary_tooltip",
+            "#add-new-custom-profile-field-form .display_in_profile_summary_tooltip",
+        ].join(","),
+        content: $t({
+            defaultMessage: "Only 2 custom profile fields can be displayed on the user card.",
+        }),
+        appendTo: () => document.body,
+        onTrigger(instance) {
+            // Sometimes just removing class is not enough to destroy/remove tooltip, especially in
+            // "Add a new custom profile field" form, so here we are manually calling `destroy()`.
+            if (!instance.reference.classList.contains("display_in_profile_summary_tooltip")) {
+                instance.destroy();
+            }
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#full_name_input_container.disabled_setting_tooltip",
+        content: $t({
+            defaultMessage:
+                "Name changes are disabled in this organization. Contact an administrator to change your name.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#email_field_container.disabled_setting_tooltip",
+        content: $t({defaultMessage: "Email address changes are disabled in this organization."}),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#deactivate_account_container.disabled_setting_tooltip, .deactivate-user-container.disabled_setting_tooltip",
+        content: $t({
+            defaultMessage:
+                "Because you are the only organization owner, you cannot deactivate your account.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: [
+            "[data-tab-key='available'].disabled",
+            "[data-tab-key='all-streams'].disabled",
+        ].join(","),
+        content: $t({
+            defaultMessage: "You can only view channels that you are subscribed to.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".history-public-to-subscribers.protected_history_with_new_topics_permission_tooltip",
+        content: $t({
+            defaultMessage:
+                "This setting can be changed only in channels where everyone including guests can start new topics.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".can_create_topic_group_container.can_create_topic_group_disabled_tooltip",
+        content: $t({
+            defaultMessage:
+                "This setting can be changed only in channels where subscribers can view messages sent before they joined.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".default-stream.default_stream_private_tooltip",
+        content: $t({
+            defaultMessage: "Private channels cannot be default channels for new users.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "[data-tab-key='invite-link-tab'].disabled",
+        content: $t({
+            defaultMessage:
+                "You do not have permissions to create invite links in this organization.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#copy_generated_invite_link",
+        onShow(instance) {
+            instance.setContent(
+                $t({
+                    defaultMessage: "Copy link",
+                }),
+            );
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: [
+            "#user_email_address_dropdown_container.disabled_setting_tooltip",
+            "#realm_invite_required_container.disabled_setting_tooltip",
+        ].join(","),
+        content: $t({
+            defaultMessage: "Configure your email to access this feature.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#api_key_button_container.disabled_setting_tooltip",
+        content: $t({
+            defaultMessage: "Add an email to access your API key.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "[data-tab-key='invite-email-tab'].disabled",
+        content: $t({
+            defaultMessage:
+                "You do not have permissions to send invite emails in this organization.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#user_message_content_in_email_notifications_label",
+        onShow(instance) {
+            if ($("#user_message_content_in_email_notifications").prop("disabled")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage:
+                            "Including message content in message notification emails is not allowed in this organization.",
+                    }),
+                );
+                return undefined;
+            }
+            return false;
+        },
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        target: "#stream_creation_form .add_subscribers_disabled",
+        content: $t({
+            defaultMessage:
+                "You do not have permission to add other users to channels in this organization.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".add-users-button-wrapper",
+        onShow(instance) {
+            const $wrapper = $(instance.reference);
+            const $button = $wrapper.find(".add-users-button");
+            const $container = $wrapper.closest(".add-button-container").find(".pill-container");
+
+            const button_is_disabled = Boolean($button.prop("disabled"));
+            const container_is_enabled =
+                $container.find(".input").prop("contenteditable") === "true";
+            const has_loading_button = $button.find(".button-loading-indicator").length > 0;
+            if (
+                button_is_disabled &&
+                container_is_enabled &&
+                !$button.hasClass("hidden-below") &&
+                !has_loading_button
+            ) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Enter who should be added.",
+                    }),
+                );
+                return undefined;
+            }
+
+            return false;
+        },
+        appendTo: () => document.body,
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".user_row .actions button",
+        trigger: "mouseenter",
+        onShow(instance) {
+            if ($(instance.reference).closest("span").hasClass("deactivate-user-tooltip")) {
+                instance.setContent($t({defaultMessage: "Deactivate user"}));
+                return undefined;
+            } else if ($(instance.reference).closest("span").hasClass("reactivate-user-tooltip")) {
+                instance.setContent($t({defaultMessage: "Reactivate user"}));
+                return undefined;
+            } else if ($(instance.reference).closest("span").hasClass("deactivate-bot-tooltip")) {
+                instance.setContent($t({defaultMessage: "Deactivate bot"}));
+                return undefined;
+            } else if ($(instance.reference).closest("span").hasClass("reactivate-bot-tooltip")) {
+                instance.setContent($t({defaultMessage: "Reactivate bot"}));
+                return undefined;
+            }
+            return false;
+        },
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        target: ".user-status-emoji-picker",
+        delay: INTERACTIVE_HOVER_DELAY,
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        target: ".user-card-status-area .status-emoji",
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        target: ".status-emoji-name:not(.typeahead-item .status-emoji-name)",
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        appendTo: () => document.body,
+
+        /*
+            Status emoji tooltips for most locations in the app. This
+            basic tooltip logic is overridden by separate logic in
+            click_handlers.ts for the left and right sidebars, to
+            avoid problematic interactions with the main tooltips for
+            those regions.
+        */
+
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".typeahead-item .status-emoji-name",
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        appendTo: () => document.body,
+
+        /*
+            Status emoji tooltips for emojis inside typeahead to
+            separately handle emoji instance.
+        */
+
+        onShow(instance) {
+            typeahead_status_emoji_tooltip = instance;
+        },
+        onHidden(instance) {
+            instance.destroy();
+            typeahead_status_emoji_tooltip = undefined;
+        },
+    });
+
+    tippy.delegate("body", {
+        target: [
+            ".custom-profile-field-value",
+            ".copy-custom-profile-field-link",
+            "#popover-menu-copy-email",
+            ".personal-menu-clear-status",
+            ".user-card-clear-status-button",
+        ].join(","),
+        placement: "top",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance: tippy.Instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        /*
+            The tooltip for new user group button (+) icon button on #groups
+            overlay was not mounted correctly as its sibling element (search bar)
+            is inserted dynamically after handlebar got rendered. So we append the
+            tooltip element to the body itself with target as the + button.
+        */
+        target: "#groups_overlay .two-pane-settings-plus-button",
+        content: $t({
+            defaultMessage: "Create new user group",
+        }),
+        placement: "bottom",
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        target: "#move_topic_to_stream_widget_wrapper",
+        onShow(instance) {
+            if ($("#move_topic_to_stream_widget").prop("disabled")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage:
+                            "You do not have permission to move messages to another channel in this organization.",
+                    }),
+                );
+                return undefined;
+            }
+            return false;
+        },
+        appendTo: () => document.body,
+    });
+
+    tippy.delegate("body", {
+        target: "#userlist-header-search",
+        delay: LONG_HOVER_DELAY,
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const total_user_count = people.get_active_human_count();
+            instance.setContent(
+                ui_util.parse_html(render_buddy_list_title_tooltip({total_user_count})),
+            );
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#userlist-toggle-button",
+        delay: LONG_HOVER_DELAY,
+        placement: "bottom",
+        appendTo: () => document.body,
+        onShow(instance) {
+            let template = "show-userlist-tooltip-template";
+            if ($("#right-sidebar-container").css("display") !== "none") {
+                template = "hide-userlist-tooltip-template";
+            }
+            $(instance.reference).attr("data-tooltip-template-id", template);
+            instance.setContent(get_tooltip_content(instance.reference));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#realm-navbar-wide-logo",
+        placement: "right",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const escape_navigates_to_home_view = user_settings.web_escape_navigates_to_home_view;
+            const home_view =
+                settings_config.web_home_view_values[user_settings.web_home_view].description;
+            instance.setContent(
+                ui_util.parse_html(
+                    render_org_logo_tooltip({home_view, escape_navigates_to_home_view}),
+                ),
+            );
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".custom-user-field-label-wrapper.required-field-wrapper",
+        content: $t({
+            defaultMessage: "This profile field is required.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".settings-profile-user-field.not-editable-by-user-input-wrapper",
+        content: $t({
+            defaultMessage:
+                "You are not allowed to change this field. Contact an administrator to update it.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".popover-contains-shift-hotkey",
+        trigger: "mouseenter",
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const hotkey_hints = $(instance.reference).attr("data-hotkey-hints");
+            if (hotkey_hints) {
+                instance.setContent(hotkey_hints.replace("⇧", "Shift").replaceAll(",", " + "));
+                return undefined;
+            }
+            return false;
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".saved_snippets-dropdown-list-container .dropdown-list-delete",
+        content: $t({defaultMessage: "Delete snippet"}),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".saved_snippets-dropdown-list-container .dropdown-list-edit",
+        content: $t({defaultMessage: "Edit snippet"}),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".folder_id-dropdown-list-container .dropdown-list-delete, .new_channel_folder_id-dropdown-list-container .dropdown-list-delete",
+        content: $t({defaultMessage: "Delete folder"}),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".folder_id-dropdown-list-container .dropdown-list-manage-folder, .new_channel_folder_id-dropdown-list-container .dropdown-list-manage-folder",
+        content(reference) {
+            if (reference.querySelector(".zulip-icon-preview")) {
+                return $t({defaultMessage: "View details"});
+            }
+            return $t({defaultMessage: "Manage folder"});
+        },
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".generate-channel-email-button-container.disabled_setting_tooltip",
+        onShow(instance) {
+            instance.setContent(
+                ui_util.parse_html(
+                    $("#compose_disable_stream_reply_button_tooltip_template").html(),
+                ),
+            );
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".disabled-tooltip",
+        trigger: "focus mouseenter",
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".delete-option",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "top",
+        onShow(instance) {
+            /* Ensure the tooltip remains visible even when data-reference-hidden is set. */
+            $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
+
+            instance.setContent($t({defaultMessage: "Delete"}));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: [
+            "#personal-menu-dropdown .info-density-button-container",
+            "#user-preferences .info-density-button-container",
+            "#realm-user-default-settings .information-density-settings:not(.disabled-setting) .info-density-button-container",
+            "#gear-menu-dropdown .info-density-button-container",
+        ].join(","),
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "bottom",
+        onShow(instance) {
+            const button_container = instance.reference;
+            assert(button_container instanceof HTMLElement);
+
+            const tooltip_context =
+                information_density.get_tooltip_context_for_info_density_buttons(
+                    $(button_container).find(".info-density-button"),
+                );
+            instance.setContent(
+                ui_util.parse_html(
+                    render_information_density_update_button_tooltip(tooltip_context),
+                ),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#welcome_message_custom_text_buttons_container",
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            if ($($elem).find("#send_test_welcome_bot_custom_message").prop("disabled")) {
+                const content = $t({defaultMessage: "Welcome Bot message text is required."});
+                instance.setContent(content);
+                return undefined;
+            }
+            return false;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".topic-edit-save-wrapper",
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const $save_button = $elem.find(".topic_edit_save");
+            if (!$save_button.prop("disabled")) {
+                return false;
+            }
+
+            if ($save_button.hasClass("topic-required")) {
+                const error_message =
+                    compose_validate.get_topics_required_error_tooltip_message_html();
+                instance.setContent(ui_util.parse_html(error_message));
+                return undefined;
+            }
+
+            const content = $elem.attr("data-tippy-content");
+            if (content === undefined) {
+                return false;
+            }
+            instance.setContent(content);
+            return undefined;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".send_notification_to_new_subscribers_container.control-label-disabled",
+        trigger: "mouseenter",
+        placement: "top",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const content = $t(
+                {
+                    defaultMessage:
+                        "Notification message cannot be sent when subscribing more than {max_users} users.",
+                },
+                {
+                    max_users: realm.max_bulk_new_subscription_messages,
+                },
+            );
+            instance.setContent(content);
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#compose-channel-recipient, #move-topic-new-topic-input-wrapper",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            if ($($elem).find(".empty-topic-only").prop("disabled")) {
+                const error_message = render_topics_not_allowed_error({
+                    empty_string_topic_display_name: util.get_final_topic_display_name(""),
+                });
+                instance.setContent(ui_util.parse_html(error_message));
+                // `display: flex` doesn't show the tooltip content inline when <i>general chat</i>
+                // is in the error message.
+                $(instance.popper).find(".tippy-content").css("display", "block");
+                return undefined;
+            }
+            return false;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".reset-user-setting-to-default",
+        // Disable trigger on focus, to avoid displaying the tooltip
+        // after the confirmation modal closes.
+        trigger: "mouseenter",
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: "#recipient_box_clear_topic_button",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const stream_id = compose_state.stream_id();
+            let content = $t({defaultMessage: "New topic"});
+            if (stream_id && !stream_data.can_create_new_topics_in_stream(stream_id)) {
+                content = $t({defaultMessage: "Clear topic"});
+            }
+            instance.setContent(content);
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    // Show expand / collapse tooltip in inbox view on hover over inbox header.
+    let collapse_or_expand_tooltip: tippy.Instance | undefined;
+    let collapse_or_expand_timeout: ReturnType<typeof setTimeout> | undefined;
+    $("body").on(
+        "mouseenter",
+        ".inbox-header-name, .inbox-left-part .collapsible-button",
+        function (this: HTMLElement) {
+            function show_inbox_collapse_expand_tooltip(elt: HTMLElement): void {
+                const $collapse_button = $(elt)
+                    .closest(".inbox-header")
+                    .find(".collapsible-button .zulip-icon");
+                collapse_or_expand_tooltip = tippy.default($collapse_button[0]!, {
+                    showOnCreate: true,
+                    trigger: "manual",
+                    delay: 0,
+                    appendTo: () => document.body,
+                    content(reference) {
+                        const $header = $(reference).closest(".inbox-header");
+                        const is_folder = $header.hasClass("inbox-folder");
+                        const is_collapsed = $header.hasClass("inbox-collapsed-state");
+                        if (is_folder) {
+                            if (is_collapsed) {
+                                return $t({
+                                    defaultMessage: "Expand channel folder",
+                                });
+                            }
+                            return $t({
+                                defaultMessage: "Collapse channel folder",
+                            });
+                        }
+
+                        if (is_collapsed) {
+                            return $t({
+                                defaultMessage: "Expand channel",
+                            });
+                        }
+                        return $t({
+                            defaultMessage: "Collapse channel",
+                        });
+                    },
+                    onHidden(instance) {
+                        instance.destroy();
+                    },
+                });
+            }
+
+            // Show tooltip after a delay.
+            collapse_or_expand_timeout = setTimeout(() => {
+                show_inbox_collapse_expand_tooltip(this);
+            }, LONG_HOVER_DELAY[0]);
+        },
+    );
+
+    $("body").on("mouseleave", ".inbox-header-name, .inbox-left-part .collapsible-button", () => {
+        // Destroy the tooltip and clear the timeout.
+        if (collapse_or_expand_tooltip) {
+            collapse_or_expand_tooltip.destroy();
+            collapse_or_expand_tooltip = undefined;
+        }
+        if (collapse_or_expand_timeout !== undefined) {
+            clearTimeout(collapse_or_expand_timeout);
+            collapse_or_expand_timeout = undefined;
+        }
+    });
+}

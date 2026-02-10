@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+import logging
+import os
+import pwd
+import subprocess
+import sys
+import time
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+from scripts.lib.supervisor import list_supervisor_processes
+from scripts.lib.zulip_tools import (
+    ENDC,
+    OKGREEN,
+    WARNING,
+    has_application_server,
+    has_process_fts_updates,
+    su_to_zulip,
+)
+
+deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
+os.chdir(deploy_path)
+
+username = pwd.getpwuid(os.getuid()).pw_name
+if username == "root":
+    su_to_zulip()
+elif username != "zulip":
+    logging.error("Must be run as user 'zulip'.")
+    sys.exit(1)
+
+logging.Formatter.converter = time.gmtime
+logging.basicConfig(format="%(asctime)s stop-server: %(message)s", level=logging.INFO)
+
+services = []
+
+# Start with the least-critical services:
+if has_process_fts_updates():
+    services.append("process-fts-updates")
+
+if has_application_server():
+    # Contrary to the order in (re)start-server, we stop django before the
+    # workers, to increase the chance that we finish processing any work
+    # that may have been enqueued by the Django, leaving the final state
+    # closer to "empty."  We stop Django before Tornado so it doesn't try
+    # to make requests to make queues with a down'd Tornado.
+    services.append("zulip-django")
+    services.append("zulip-tornado:*")
+    services.append("zulip-workers:*")
+    services.append("zulip-tus")
+    services.append("zulip-katex")
+    services.append("zulip-email-server")
+    if has_application_server(once=True):
+        # These used to be included in "zulip-workers:*"; we may be
+        # stopping an older version of Zulip, which has not applied
+        # puppet to reload the new list of processes, but the
+        # list_supervisor_processes below will filter them out if they
+        # do not exist.
+        services.append("zulip_deliver_scheduled_emails")
+        services.append("zulip_deliver_scheduled_messages")
+
+services = list_supervisor_processes(services, only_running=True)
+if services:
+    subprocess.check_call(["supervisorctl", "stop", *services])
+
+print()
+print(OKGREEN + "Zulip stopped successfully!" + ENDC)
+
+using_sso = subprocess.check_output(["./scripts/get-django-setting", "USING_APACHE_SSO"])
+if using_sso.strip() == b"True":
+    print()
+    print(WARNING + "Apache2 needs to be shut down; as root, run:" + ENDC)
+    print("    service apache2 stop")
+    print()

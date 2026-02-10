@@ -1,0 +1,1252 @@
+/* Styles for the Micromodal-based modals */
+:root {
+    /* Exit buttons are sometimes Cancel, but sometimes
+       other "Nah, forget it" actions. */
+    --color-exit-button-text: hsl(0deg 0% 0%);
+    --color-exit-button-border: hsl(300deg 2% 11% / 30%);
+    --color-exit-button-background: hsl(226deg 1% 42% / 20%);
+    --color-exit-button-background-interactive: hsl(226deg 1% 42% / 27%);
+
+    /* Since modals are also present in portico and billing pages, we define
+       the modal related variables directly here in the modal.css — which is
+       a part of the common.ts bundle shared between portico and main app. */
+    --color-background-modal-overlay: color-mix(
+        in oklch,
+        hsl(0deg 0% 0%) 25%,
+        transparent
+    );
+    --color-modal-heading-text: light-dark(
+        hsl(0deg 0% 15%),
+        color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
+    );
+    --color-modal-subtitle-text: color-mix(
+        in oklch,
+        var(--color-modal-heading-text) 75%,
+        transparent
+    );
+    --color-background-modal: light-dark(hsl(0deg 0% 93%), hsl(0deg 0% 14%));
+    --color-background-modal-bar: light-dark(
+        hsl(0deg 0% 96%),
+        hsl(0deg 0% 20%)
+    );
+    --color-border-modal: light-dark(
+        hsl(0deg 0% 55%),
+        color-mix(in oklch, hsl(0deg 0% 100%) 15%, transparent)
+    );
+    --color-border-modal-bar: light-dark(
+        hsl(0deg 0% 76%),
+        color-mix(in oklch, hsl(0deg 0% 100%) 12%, transparent)
+    );
+}
+
+.modal__overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--color-background-modal-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 105;
+}
+
+.modal__container {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-background-modal);
+    max-width: calc(100% - 32px);
+    max-height: 96%;
+    width: 37.1428em; /* 520px at 14px em */
+    overflow: hidden;
+    border: 1px solid var(--color-border-modal);
+    border-radius: 7px;
+    box-sizing: border-box;
+}
+
+.modal__header {
+    display: grid;
+    /* The grid structure uses two grid columns to define the
+       area for the modal close button, with the rightmost column
+       being used for the close button and to also serve as the
+       right padding and the column to its left accounts for the
+       space of modal close button icon width - right padding. */
+    grid-template:
+        ". modal-header-content modal-close-button modal-close-button" 2.75em /* 44px at 16px/1em */
+        ". modal-header-content .                  ." minmax(0, auto)
+        ". modal-tab-switcher   modal-tab-switcher ." minmax(0, auto)
+        / 1em minmax(0, 1fr) minmax(0, auto) 1em; /* 16px at 16px/1em */
+    background-color: var(--color-background-modal-bar);
+
+    &:has(+ .modal__content) {
+        border-bottom: 1px solid var(--color-border-modal-bar);
+    }
+}
+
+.modal__header-content {
+    grid-area: modal-header-content;
+    /* 10px at 16px/1em */
+    padding: 0.625em 0;
+}
+
+.modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    /* 8px 16px 12px 16px at 16px/1em */
+    padding: 0.5em 1em 0.75em;
+    background-color: var(--color-background-modal-bar);
+}
+
+.modal__content + .modal__footer {
+    /* These styles apply only when the modal content
+       is present in the modal. */
+    padding: 0.75em 1em; /* 12px 16px at 16px/1em */
+    border-top: 1px solid var(--color-border-modal-bar);
+}
+
+.modal__title {
+    margin: 0;
+    /* 20px at 16px/1em */
+    font-size: 1.25em;
+    font-weight: 650;
+    line-height: 1.2; /* 24px at 20px/1em */
+    overflow: hidden;
+    overflow-wrap: break-word;
+    color: var(--color-modal-heading-text);
+
+    .icon-button {
+        /* 16px icon + 4px padding = 24px icon button,
+           which matches with the line height of the
+           modal title. */
+        padding: 0.25em; /* 4px at 16px/1em */
+    }
+
+    .channel-privacy-type-icon {
+        /* This pushes back on suspect styles
+           in app_components.css. A fuller fix
+           will require tracking down other
+           instances of this class. */
+        width: auto;
+        padding-right: 0;
+    }
+
+    /* help_link_widget margin for the fa-circle-o. */
+    .help_link_widget {
+        margin-left: 5px;
+    }
+}
+
+.modal__title:has(.stream-or-topic-reference) {
+    /* Reduce the font weight of headings that
+       include stream or topic references (e.g.,
+       topic move/rename modals). */
+    font-weight: 450;
+
+    .stream-or-topic-reference {
+        /* Make the stream or topic references
+           more prominent. */
+        font-weight: 600;
+    }
+}
+
+.modal__subtitle {
+    margin-top: 0.25em; /* 4px at 16px/1em */
+    line-height: 1.25; /* 20px at 16px/1em */
+    color: var(--color-modal-subtitle-text);
+}
+
+.modal__close {
+    grid-area: modal-close-button;
+
+    &:focus-visible {
+        outline-offset: -2px !important;
+    }
+}
+
+.modal__content {
+    display: flex;
+    flex-direction: column;
+    /* 14px 16px at 16px/1em */
+    padding: 0.875em 1em;
+    /* Prevent the appearance of a horizontal
+       native scrollbar at certain
+       info-density/zoom levels. */
+    overflow: hidden auto;
+    /* Set a max-width, less the 1em of left and right
+       padding specified above. */
+    max-width: calc(100% - 2em);
+
+    > .simplebar-wrapper {
+        /* Compensate the 3em reduced in modal_content so it positions
+           itself correctly */
+        max-width: calc(100% + 3em);
+    }
+
+    .channel-privacy-type-icon {
+        /* This pushes back on suspect styles
+           in app_components.css. A fuller fix
+           will require tracking down other
+           instances of this class. */
+        width: auto;
+        padding-right: 0;
+    }
+}
+
+#api_key_value {
+    font-family: "Source Code Pro", monospace;
+    font-size: 1em;
+}
+
+.modal__button {
+    /* We need the backup value for billing related html files where
+       this variable is not defined. */
+    font-size: var(--base-font-size-px, 14px);
+    padding: 8px 16px;
+    background-color: hsl(0deg 0% 90%);
+    border-radius: 4px;
+    border-width: 0;
+    cursor: pointer;
+    text-transform: none;
+    overflow: visible;
+    line-height: 1.15;
+    margin: 0;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    transition: transform 0.25s ease-out;
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+}
+
+.modal__button:focus,
+.modal__button:hover {
+    transform: scale(1.05);
+    /* The extremely subtle 1.05 scale can cause
+       a gap to appear between the outline and
+       button background color; this negative
+       offset preserves the scale effect, but also
+       covers any tiny gaps owing to subtle scaling. */
+    outline-offset: -1px;
+}
+
+.dialog_exit_button {
+    color: var(--color-exit-button-text);
+    background: var(--color-exit-button-background);
+    border: 1px solid var(--color-exit-button-border);
+
+    &:hover {
+        background: var(--color-exit-button-background-interactive);
+    }
+}
+
+.dialog_submit_button {
+    margin-left: 12px;
+    background-color: hsl(240deg 96% 68%);
+    color: hsl(0deg 0% 100%) !important;
+}
+
+.modal__tab-switcher-container {
+    grid-area: modal-tab-switcher;
+    font-weight: initial;
+    padding-bottom: 0.5em; /* 8px at 16px/1em */
+}
+
+/* Modal-specific CSS belongs below this point. */
+
+#user-profile-modal {
+    .modal__container {
+        height: var(--user-profile-modal-height);
+    }
+
+    .name {
+        color: var(--color-user-profile-field-name);
+        font-weight: 600;
+        margin-right: 10px;
+        overflow-wrap: break-word;
+    }
+
+    .value {
+        vertical-align: top;
+        overflow-wrap: anywhere;
+    }
+
+    #exit-sign {
+        /* 24px at 14px/1em */
+        font-size: 1.7143em;
+        line-height: 1;
+    }
+
+    #profile-tab {
+        margin: 1px 5px 0;
+
+        & li.custom_user_field {
+            display: block;
+        }
+    }
+
+    .top {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    @media (width < $ml_min) {
+        .top {
+            flex-direction: column-reverse;
+        }
+    }
+
+    #avatar {
+        display: inline-block;
+        height: 180px;
+        width: 180px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 5px;
+        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 20%);
+
+        &.guest-avatar::after {
+            outline: 9px solid hsl(0deg 0% 100%);
+        }
+    }
+
+    .user-profile-header-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    .deactivated-user-icon {
+        vertical-align: middle;
+        font-size: 0.7em;
+    }
+
+    #default-section {
+        vertical-align: top;
+
+        .default-field {
+            margin-bottom: 10px;
+        }
+    }
+
+    & hr {
+        border: 1px solid hsl(0deg 0% 93%);
+        margin: 5px 0;
+    }
+
+    #content {
+        .field-section {
+            margin-bottom: 10px;
+
+            &[data-type="2"] .value {
+                overflow-wrap: break-word;
+            }
+        }
+
+        .rendered_markdown p {
+            margin: 0;
+        }
+    }
+
+    .col-left {
+        padding: 0 10px 0 0;
+    }
+
+    .col-right {
+        width: fit-content;
+    }
+
+    .tab-data {
+        .active {
+            display: block;
+        }
+
+        margin-bottom: var(--user-profile-modal-body-margin-bottom);
+    }
+
+    .group-tab-element-header,
+    .stream-tab-element-header {
+        margin: 0;
+        display: inline-block;
+        font-weight: 600;
+        /* 18px at 16px/1em */
+        font-size: 1.125em;
+    }
+
+    #user-profile-groups-tab,
+    #user-profile-streams-tab {
+        height: calc(
+            var(--user-profile-modal-body-height) -
+                var(--user-profile-modal-body-margin-bottom)
+        );
+        display: grid;
+        grid-template:
+            "alert" auto
+            "top" minmax(0, 1fr)
+            "bottom" auto
+            / minmax(0, 1fr);
+
+        .stream_list_info:has(.banner),
+        .user-profile-group-list-alert:has(.banner) {
+            grid-area: alert;
+            margin-bottom: 8px;
+        }
+
+        .stream-list-loader:not(:empty) {
+            margin: auto; /* center the spinner */
+
+            .loading_indicator_spinner {
+                margin-top: 10px;
+            }
+        }
+
+        .error-message:not(:empty) {
+            color: var(--color-alert-error-red);
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .stream-list-bottom-section,
+        .group-list-bottom-section {
+            grid-area: bottom;
+        }
+
+        .user_profile_subscribe_widget {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding-top: 2px;
+            gap: 10px;
+        }
+
+        .dropdown_widget_value {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .group-list-top-section,
+    .stream-list-top-section {
+        grid-area: top;
+        margin-top: 0.3125em;
+        margin-bottom: 0.75em;
+    }
+
+    @media (width < $md_min) {
+        .group-list-top-section,
+        .stream-list-top-section {
+            display: block;
+
+            .header-section {
+                width: 100%;
+            }
+        }
+    }
+
+    .manage-profile-tab-footer:not(.manage-profile-tab-active) {
+        display: none;
+    }
+}
+
+.folder-channels-list-header {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.125em; /* 18px at 16px em */
+}
+
+#user-profile-modal .group-list-container,
+#user-profile-modal .stream-list-container {
+    height: calc(100% - var(--header-line-height));
+}
+
+#edit_channel_folder {
+    .stream-list-container {
+        height: 30vh;
+    }
+
+    .add_channel_folder_widget {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        gap: 10px;
+
+        .dropdown-widget-button,
+        .dropdown_widget_with_label_wrapper {
+            max-width: 100%;
+            width: var(--modal-input-width);
+        }
+    }
+}
+
+#channel_folder_banner {
+    &:has(.banner) {
+        margin-bottom: 10px;
+    }
+}
+
+#user-profile-modal .group-list-container,
+#user-profile-modal .stream-list-container,
+#edit_channel_folder .stream-list-container {
+    border-radius: 4px;
+    background-color: var(--background-color-user-profile-list-container);
+    border: 1px solid var(--color-border-user-profile-list-container);
+    padding: 0.25em 0.25em 0;
+    margin-bottom: 5px;
+    -webkit-overflow-scrolling: touch;
+
+    .user-profile-group-row,
+    .stream-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.3125em 0.625em;
+        align-items: center;
+        text-decoration: none;
+        border-bottom: none;
+        border-radius: 4px;
+        color: var(--color-dropdown-item);
+        cursor: pointer;
+
+        .user-group-list-item,
+        .stream-row-content {
+            display: flex;
+            overflow: hidden;
+        }
+
+        .stream-privacy {
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-icon i {
+            padding-right: 3px;
+        }
+
+        &:hover {
+            background-color: var(--color-user-profile-list-item-hover);
+        }
+
+        &:focus-visible {
+            outline: 1px solid var(--color-outline-user-profile-list-item);
+            outline-offset: -2px;
+        }
+
+        .user-group-name,
+        .stream-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 2px;
+        }
+    }
+
+    .subscription-group-list,
+    .subscription-stream-list,
+    .edit-channel-folder-stream-list {
+        /* We set max-height to remaining height of stream-list-container
+            so that we don't clip it. Search field height takes up 2em of total. */
+        height: calc(100% - 2em);
+
+        .user-group-list,
+        .user-stream-list,
+        .folder-stream-list {
+            list-style: none;
+            margin: 0;
+        }
+    }
+}
+
+.user-profile-name-heading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    /* Padding for icon outlines to occupy the space so that they don't get clipped. */
+    padding: 0 1px;
+    /* This line-height is to increase the vertical clickable areas on the icons. */
+    line-height: 1.2727em; /* 28px at 22px font-size at 14px em */
+
+    .user-profile-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+#user-profile-modal .save-success {
+    vertical-align: top;
+    background-color: transparent;
+    border-radius: 4px;
+    margin-right: 10px;
+    color: hsl(156deg 30% 50%);
+    padding: 0.5rem 1rem;
+    line-height: 1.15;
+
+    &:not(:empty) {
+        border: 1px solid hsl(156deg 30% 50%);
+    }
+}
+
+#read_receipts_error,
+#dialog_error {
+    margin-bottom: 10px;
+}
+
+#read_receipts_modal {
+    .modal__container {
+        width: 25.7142em; /* 360px at 14px em */
+
+        .modal__content {
+            /* When showing read receipts, we use simplebar
+            to make the list scrollable.  It requires this to
+            be flex. */
+            display: flex;
+
+            /* Setting a minimum height prevents the loading indicator
+               appearing/disappearing from resizing the modal in the
+               common case that one is requesting read receipts for
+               direct messages. */
+            min-height: 120px;
+            /* Setting a maximum height is just for aesthetics; the modal looks
+               weird if its aspect ratio gets too stretched. */
+            max-height: 480px;
+
+            /* For the notification bot error, we want to keep the modal clean and small.
+               The 16px padding is intended to match the padding at the top of the modal. */
+            &.compact {
+                min-height: unset;
+                padding-bottom: 16px;
+            }
+        }
+    }
+
+    .modal__header {
+        padding-bottom: 0;
+    }
+
+    .loading_indicator {
+        margin: auto;
+    }
+
+    .read_receipts_list {
+        /* Override legacy bootstrap ul margins. */
+        margin: 0;
+
+        & li {
+            .read_receipts_user_avatar {
+                display: inline-block;
+                height: 1.25em; /* 20px at 16px font-size at 14px em */
+                width: 1.25em; /* 20px at 16px font-size at 14px em */
+                position: relative;
+                right: 8px;
+                border-radius: 4px;
+            }
+
+            margin: 2px 0;
+            list-style-type: none;
+            overflow-x: hidden;
+            padding-left: 10px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            line-height: 1.625em; /* 26px at 16px font-size at 14px em */
+
+            &:hover {
+                background-color: light-dark(
+                    hsl(0deg 0% 0% / 5%),
+                    hsl(0deg 0% 100% / 5%)
+                );
+            }
+
+            &:active,
+            &:focus {
+                background-color: light-dark(
+                    hsl(0deg 0% 0% / 10%),
+                    hsl(0deg 0% 100% / 10%)
+                );
+                outline: none;
+            }
+        }
+    }
+}
+
+.deactivate-actions {
+    margin-top: 0.625em;
+}
+
+.email_field {
+    margin-top: 10px;
+
+    .email_field_textarea {
+        margin-bottom: 10px;
+    }
+
+    .border-top {
+        border-top: 1px solid hsl(300deg 2% 11% / 30%);
+        padding-top: 10px;
+    }
+
+    .email-body {
+        margin-left: 20px;
+        margin-top: 20px;
+    }
+}
+
+@keyframes mmfadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes mmfadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+.micromodal {
+    display: none;
+}
+
+.micromodal.modal--opening,
+.micromodal.modal--open {
+    display: block;
+}
+
+.micromodal[aria-hidden="true"] .modal__overlay {
+    animation: mmfadeOut 75ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.micromodal[aria-hidden="false"] .modal__overlay {
+    animation: mmfadeIn 120ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.micromodal[aria-hidden="true"] .modal__container {
+    animation: mmfadeOut 75ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.micromodal[aria-hidden="false"] .modal__container {
+    animation: mmfadeIn 120ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.micromodal .modal__container,
+.micromodal .modal__overlay {
+    will-change: transform;
+}
+
+.micromodal .modal__content.footer-hidden {
+    margin-bottom: 1.25em;
+}
+
+.modal__spinner .loading_indicator_spinner {
+    height: 16px;
+
+    & path {
+        fill: hsl(0deg 0% 100%);
+    }
+}
+
+.modal__spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-input-formatted-description {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+#demo-owner-update-email-field-hint {
+    opacity: 0.7;
+}
+
+#sender_channel_email_address_widget {
+    width: 12.875em; /* 206px at 16px/em */
+}
+
+#copy_email_address_modal {
+    width: 800px;
+
+    .inline {
+        display: inline;
+    }
+
+    .question-which-parts {
+        padding-bottom: 10px;
+    }
+
+    .stream-email-header {
+        font-size: 1.125em; /* 18px at 16px/em */
+    }
+}
+
+.modal_select {
+    width: var(--modal-input-width);
+    padding: 4px 25px 4px 6px;
+    color: var(--color-text-default);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
+    cursor: pointer;
+    background-color: hsl(0deg 0% 100%);
+    max-width: 100%;
+
+    &:disabled {
+        cursor: not-allowed;
+
+        /* The background-color of select elements inside modal is different than the others in
+        settings pages, because the background of the modal is brighter than the setting page. */
+        background-color: hsl(0deg 0% 90%);
+
+        /* This is reset for other browsers to use Chrome's opacity. */
+        opacity: 0.7;
+    }
+}
+
+.modal-field-label {
+    margin-bottom: var(--margin-bottom-field-description);
+    /* Avoid having the clickable area extend to the full width of the containing element */
+    width: fit-content;
+}
+
+.modal__body,
+.overlay-content {
+    .dropdown-widget-button,
+    .dropdown_widget_with_label_wrapper {
+        width: var(--modal-input-width);
+    }
+}
+
+.modal__body,
+.modal__content {
+    .dropdown-widget-button,
+    .dropdown_widget_with_label_wrapper {
+        max-width: 100%;
+    }
+}
+
+.modal_password_input,
+.modal_url_input,
+.modal_text_input {
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
+    color: var(--color-text-default);
+    border-radius: 4px;
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border-color linear 0.2s,
+        box-shadow linear 0.2s;
+    /* Subtract (2 * horizontal padding) + (2 * border width) */
+    width: calc(
+        var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
+            var(--input-border-width)
+    );
+    max-width: calc(
+        100% - 2 * var(--input-horizontal-padding) - 2 *
+            var(--input-border-width)
+    );
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+.modal__container .modal_text_input:read-only {
+    background-color: var(--background-color-readonly-modal-input);
+    opacity: var(--opacity-readonly-modal-input);
+}
+
+.modal-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    /* We set the minimum height of textarea to be enough for two lines
+    of text. Since box-sizing is set to "border-box", we also add
+    2 * var(--input-vertical-padding) + 2 * var(--input-border-width). */
+    min-height: calc(
+        2em * var(--base-line-height-unitless) + 2 *
+            var(--input-vertical-padding) + 2 * var(--input-border-width)
+    );
+}
+
+#add-realm-domain-widget {
+    .modal_text_input {
+        width: 14.7143em; /* 206px at 14px em */
+    }
+}
+
+.edit_profile_field_choices_container,
+#profile_field_choices {
+    .modal_text_input {
+        margin-bottom: 0;
+    }
+
+    .choice-row {
+        display: flex;
+        align-items: center;
+    }
+}
+
+.choice-row,
+.option-row {
+    .icon-button {
+        font-size: 1.1em;
+    }
+}
+
+#create_bot_short_name,
+#edit_bot_short_name {
+    /* A shorter dropdown width (~200px at 14px em)
+       to ensure the email all fits on one line. */
+    width: 14em;
+}
+
+#edit_bot_short_name.invalid {
+    border-color: var(--color-invalid-input-border);
+    box-shadow: var(--invalid-input-box-shadow);
+}
+
+.email_change_container .settings-field-hint {
+    color: var(--color-text-settings-field-hint);
+    font-size: 0.9em;
+}
+
+#add-poll-modal,
+#add-todo-modal {
+    /* this height allows 3-4 option rows
+    to fit in without need for scrolling */
+    height: 32.1428em; /* 450px / 14px em */
+    overflow: hidden;
+
+    .modal__content {
+        flex-grow: 1;
+
+        .simplebar-content {
+            box-sizing: border-box;
+            height: 100%;
+        }
+    }
+
+    #add-poll-form,
+    #add-todo-form {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        height: 100%;
+
+        .poll-label,
+        .todo-label {
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .poll-question-input-container,
+        .todo-title-input-container {
+            display: flex;
+            margin-bottom: 10px;
+
+            #poll-question-input,
+            #todo-title-input {
+                flex-grow: 1;
+            }
+        }
+
+        .poll-options-list,
+        .todo-options-list {
+            margin: 0;
+            height: 0;
+            overflow: auto;
+            flex-grow: 1;
+            padding-top: 2px;
+            padding-right: var(--width-simplebar-scroll-hover);
+
+            .option-row {
+                list-style-type: none;
+                cursor: move;
+                margin-top: 10px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+
+                .drag-icon {
+                    color: hsl(0deg 0% 75%);
+                }
+
+                .poll-option-input {
+                    /* Overwrite .modal_text_input margin to keep vertical centering. */
+                    margin-bottom: 0;
+                    flex-grow: 1;
+                }
+
+                .todo-input {
+                    flex: 1 1 auto;
+                    margin-bottom: 0;
+                    max-width: 30%;
+                }
+
+                .todo-description-container {
+                    flex: 1 1 auto;
+                    display: flex;
+                    min-width: 0;
+
+                    .todo-description-input {
+                        flex-grow: 1;
+                        margin-bottom: 0;
+                    }
+                }
+            }
+
+            .option-row:first-child {
+                margin-top: 0;
+            }
+
+            .option-row:last-child {
+                cursor: default;
+
+                .delete-option {
+                    visibility: hidden;
+                }
+
+                .drag-icon {
+                    visibility: hidden;
+                }
+            }
+        }
+
+        @media (max-width: $sm_min) {
+            .option-row {
+                .todo-input {
+                    width: 100%;
+                    min-width: 90px;
+                }
+
+                .todo-description-container {
+                    .todo-description-input {
+                        width: 100%;
+                        min-width: 90px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+#introduce-zulip-view-modal {
+    i {
+        vertical-align: middle;
+    }
+
+    .keyboard-button {
+        color: var(--color-hotkey-hint);
+        font-size: 0.75em; /* 12px at 16px/em */
+        font-weight: 500;
+        padding: 0.125em 0.25em; /* 2px 4px at 16px/em */
+        border-radius: 3px;
+        border: 1px solid var(--color-hotkey-hint);
+    }
+}
+
+#generate-integration-url-modal {
+    #integrations-event-container {
+        .integration-all-events-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 5px 0 10px;
+        }
+
+        #integrations-event-options {
+            .integration-event-wrapper {
+                margin: var(--settings-nested-checkbox-vertical-margins);
+            }
+
+            .integration-event-name {
+                word-break: break-all;
+            }
+        }
+    }
+}
+
+.slack-topics-dropdown-dropdown-list-container {
+    /* 250px at 14px */
+    width: 17.8571em;
+}
+
+.dialog-widget-footer-minor-text {
+    font-size: smaller;
+    font-style: italic;
+    margin-right: auto;
+}
+
+#topic-summary-modal {
+    width: 45em;
+}
+
+#navigation-tour-video-modal {
+    width: 97vw;
+    max-width: 1024px;
+
+    .modal__content {
+        overflow: hidden;
+    }
+
+    #navigation-tour-video-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        &::after {
+            content: "";
+            position: absolute;
+            background-image: url("../images/play_button.svg");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: transparent;
+            width: 20%;
+            height: 20%;
+            pointer-events: none;
+        }
+
+        &.hide-play-button::after {
+            content: none;
+            background-image: none;
+        }
+    }
+
+    #navigation-tour-video {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        cursor: pointer;
+        border: 1px solid hsl(0deg 0% 50%);
+
+        &.dimmed-background {
+            opacity: 0.4;
+        }
+    }
+
+    #navigation-tour-video-ended-button-wrapper {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        visibility: hidden;
+
+        #navigation-tour-video-ended-button {
+            color: hsl(0deg 0% 100%) !important;
+            cursor: pointer;
+            font-size: 200%;
+            padding: 1% 5%;
+            border-radius: 8px;
+            border: 1px solid hsl(0deg 0% 100%);
+            transition: transform 0.25s ease-out;
+
+            &:hover {
+                transform: scale(1.05);
+            }
+        }
+    }
+}
+
+ul.modal-options-list {
+    list-style: none;
+    margin: 0;
+}
+
+.modal-option-content {
+    box-sizing: border-box;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    gap: 0.4375em; /* 7px at 16px/1em */
+    padding: 0.25em 0.5em; /* 4px 8px at 16px/1em */
+    line-height: 1.25em; /* 20px at 16px/1em */
+    color: var(--color-text-default);
+    border-radius: 4px;
+
+    &:focus {
+        /* Override the default focus style */
+        outline: none !important;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-text-default);
+        background: var(--color-background-hover-popover-menu);
+        text-decoration: none;
+    }
+
+    &:focus-visible {
+        outline: 1px solid var(--color-outline-focus) !important;
+        outline-offset: -1px;
+    }
+
+    &:active {
+        background: var(--color-background-active-popover-menu);
+    }
+}
+
+#users_to_reset_configuration {
+    width: 100%;
+}
+
+#change_group_info_modal .user-group-info-modal-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625em; /* 10px at 16px/1em */
+}
+
+/* ==============================================================
+ *  MODAL MARGIN OVERRIDES
+ *  Some elements inside the modal content area have default
+ *  margins applied to them from other CSS files.
+ *  While these margins worked well in the previous modal design,
+ *  they create unwanted extra space between the modal content
+ *  and the modal footer in the redesigned modals.
+ *
+ *  TODO: Remove these overrides once we implement a standardized
+ *  flexbox/grid structure for the modal content.
+ *  ============================================================== */
+
+.modal__content p:last-of-type {
+    /* Override default value for <p> tags in bootstrap.app.css */
+    margin-bottom: 0;
+}
+
+.modal__content .input-group:last-of-type {
+    /* Override default value for input-group in settings.css. */
+    margin-bottom: 0;
+}
+
+.modal__content .modal-form {
+    /* Override default value for form in bootstrap.app.css */
+    margin-bottom: 0;
+}
+
+.modal__content .modal-options-list {
+    /* Override default value for <ul> in bootstrap.app.css */
+    margin-bottom: 0;
+}
+
+/* ==============================================================
+ * END MODAL MARGIN OVERRIDES
+ * ============================================================== */

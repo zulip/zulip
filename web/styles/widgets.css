@@ -1,0 +1,349 @@
+.widget-content {
+    margin-bottom: var(--markdown-interelement-space-px);
+}
+
+.widget-choices {
+    & ul {
+        padding: 3px;
+    }
+
+    & li {
+        padding: 2px;
+        list-style: none;
+    }
+
+    & button {
+        font-weight: 700;
+        color: hsl(240deg 100% 50%);
+    }
+
+    .widget-choices-heading {
+        font-weight: 600;
+    }
+}
+
+.todo-widget {
+    .todo-task-list-title-bar {
+        flex: 1 1 auto;
+        display: flex;
+        /* Ensure controls remain visible on narrower screens. */
+        flex-flow: row wrap;
+        gap: 5px;
+        margin-bottom: var(--markdown-interelement-space-px);
+    }
+
+    .add-task-bar {
+        display: flex;
+        /* Ensure controls remain visible on narrower screens. */
+        flex-flow: row wrap;
+        gap: 5px;
+    }
+
+    /* For the box-shadow to be visible on the left */
+    .add-task,
+    .add-desc {
+        font-weight: 400;
+    }
+
+    & label.checkbox {
+        display: flex; /* Arrange that a multi-line description line wraps properly. */
+        /* Keep checkboxes vertically aligned, including with multi-line tasks. */
+        align-items: baseline;
+        /* Reset default label.checkbox styles. */
+        gap: 5px;
+        position: static;
+        min-height: 0;
+
+        & input[type="checkbox"] {
+            ~ .custom-checkbox {
+                display: inline-block;
+                vertical-align: middle;
+                position: static;
+
+                padding: 2px;
+                margin: 0;
+
+                font-size: 1.3em; /* 18.2px / 14px em */
+                height: 0.6593em; /* 12px at 18.2px / em */
+                width: 0.6593em; /* 12px at 18.2px / em */
+
+                font-weight: 300;
+                line-height: 0.8;
+                text-align: center;
+                border: 2px solid var(--color-border-todo-checkbox);
+
+                border-radius: 4px;
+                filter: brightness(1);
+
+                cursor: pointer;
+            }
+
+            &:checked ~ .custom-checkbox {
+                background-image: url("../images/checkbox-white.svg");
+                background-size: 75%;
+                background-position: 50% 50%;
+                background-repeat: no-repeat;
+                background-color: var(--color-background-todo-checkbox-checked);
+                border-color: var(--color-border-todo-checkbox-checked);
+            }
+
+            &:disabled ~ .custom-checkbox {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            &:hover ~ .custom-checkbox {
+                border-color: var(--color-border-todo-checkbox-hover);
+            }
+
+            &:not(:checked):hover ~ .custom-checkbox {
+                /* We only change the background color on hover,
+                   when the checkbox is not checked. */
+                background-color: var(--color-background-todo-checkbox-hover);
+            }
+
+            &:focus ~ .custom-checkbox {
+                outline-color: hsl(0deg 0% 100% / 0%);
+            }
+        }
+    }
+}
+
+.todo-widget,
+.poll-widget {
+    .poll-question-header,
+    .todo-task-list-title-header {
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    & li {
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+        list-style: none;
+        margin: 0 0 5px;
+    }
+
+    & ul {
+        margin: 0 0 5px;
+        padding: 0;
+    }
+
+    & input[type="text"] {
+        /* Reset from zulip.css */
+        height: unset;
+        border: 1px solid hsl(0deg 0% 80%);
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+        border-radius: 4px;
+        color: var(--color-text-default);
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+            outline: 0;
+            box-shadow: none;
+            background-color: var(--color-background-widget-input);
+            transition:
+                border-color linear 0.2s,
+                box-shadow linear 0.2s;
+        }
+    }
+}
+
+.poll-widget {
+    .poll-option-bar {
+        display: flex;
+        /* Ensure controls remain visible on narrower screens. */
+        flex-flow: row wrap;
+        gap: 5px;
+    }
+
+    .poll-option {
+        font-weight: 400;
+    }
+
+    .poll-option-label {
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+    }
+
+    .poll-option-text {
+        font-weight: 600;
+        /* Start with max-content, but allow options
+           to shrink, so that voting names wrap comfortably. */
+        flex: 0 1 max-content;
+    }
+
+    .poll-vote {
+        color: var(--color-poll-vote);
+        border-color: var(--color-border-poll-vote);
+        border-style: solid;
+        font-weight: 600;
+        border-radius: 3px;
+        /* We don't want poll-vote tallies to spill
+           digits onto second lines in narrow viewports. */
+        flex-shrink: 0;
+        min-width: 1.7857em; /* 25px at 14px / em */
+        height: 1.7857em; /* 25px at 14px / em */
+        font-size: 0.9285em; /* 13px at 14px / em */
+        background-color: var(--color-background-widget-button);
+
+        &:hover {
+            color: var(--color-poll-vote-hover);
+            background-color: var(--color-background-poll-vote-hover);
+            border-color: var(--color-border-poll-vote-hover);
+        }
+
+        &:focus {
+            outline: 0;
+            color: var(--color-poll-vote-focus);
+            background-color: var(--color-background-poll-vote-focus);
+            border-color: var(--color-border-poll-vote-focus);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+
+    .poll-names {
+        color: var(--color-poll-names);
+        /* Aim for 50% of the flexbox for voting names,
+           but also shrink modestly (.5) adjacent a long
+           option. */
+        flex: 1 0.5 50%;
+    }
+}
+
+button {
+    &.task {
+        height: 20px;
+        width: 20px;
+        background-color: transparent;
+        border-color: hsl(156deg 28% 70%);
+        margin-right: 4px;
+        border-radius: 3px;
+
+        &:hover {
+            border: 1px solid hsl(194deg 60% 40%);
+        }
+    }
+
+    &.add-task,
+    &.poll-option {
+        color: hsl(156deg 41% 40%);
+        border: 1px solid hsl(156deg 28% 70%);
+        width: max-content;
+        flex: 0 0 auto;
+        border-radius: 3px;
+        background-color: var(--color-background-widget-button);
+        padding: 4px;
+        padding-left: 14px;
+        padding-right: 14px;
+
+        &:hover,
+        &:focus {
+            outline: 0;
+            border-color: hsl(156deg 30% 50%);
+            transition: 0.2s ease;
+            transition-property: background-color, border-color, color;
+        }
+
+        &:active {
+            transition: 0.2s ease;
+            transition-property: background-color, border-color, color;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            filter: saturate(0);
+            background-color: var(--color-background-zulip-button-disabled);
+            color: hsl(0deg 3% 52%);
+        }
+    }
+}
+
+input {
+    &.add-task,
+    &.add-desc,
+    &.poll-option,
+    &.poll-question,
+    &.todo-task-list-title {
+        flex: 1 0 auto;
+        padding: var(--input-vertical-padding) var(--input-horizontal-padding);
+    }
+}
+
+.widget-error {
+    color: hsl(1deg 45% 50%);
+    font-size: 0.8571em; /* 12px at 14px/em */
+    display: flex;
+    align-items: center;
+}
+
+.poll-question-check,
+.poll-question-remove,
+.todo-task-list-title-check,
+.todo-task-list-title-remove {
+    align-self: stretch;
+    /* TODO: Re-express the 30.5px value here
+       as part of information density work. */
+    flex: 0 0 30.5px;
+    min-height: 30.5px;
+    border-radius: 3px;
+    border: 1px solid var(--color-border-zulip-button);
+    background-color: var(--color-background-zulip-button);
+
+    &:hover {
+        border-color: var(--color-border-zulip-button-interactive);
+        background-color: var(--color-background-zulip-button-hover);
+    }
+}
+
+.poll-edit-question,
+.todo-edit-task-list-title {
+    color: var(--color-message-action-visible);
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-message-action-interactive);
+    }
+}
+
+.poll-question-bar {
+    flex: 1 1 auto;
+    display: flex;
+    /* Ensure controls remain visible on narrower screens. */
+    flex-flow: row wrap;
+    gap: 5px;
+    /* Reserve space for the focus outline to prevent it from being cut off */
+    margin-right: 2px;
+    margin-bottom: var(--markdown-interelement-space-px);
+}
+
+.poll-widget-header-area,
+.todo-widget-header-area {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+.current-user-vote {
+    background-color: hsl(156deg 10% 90% / 90%);
+}
+
+.add-task-wrapper {
+    display: inline;
+    position: relative;
+    z-index: 1;
+
+    /* Unlike other browsers like Chrome, Microsoft Edge, etc.,
+    Firefox does not automatically display the "not-allowed"
+    cursor for disabled elements. The below css ensures that the
+    correct cursor is shown across all browsers. */
+    &:hover {
+        cursor: not-allowed;
+    }
+}

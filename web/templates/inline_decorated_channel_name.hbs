@@ -1,0 +1,10 @@
+{{! This controls whether the swatch next to streams in the left sidebar has a lock icon. }}
+{{~#if stream.is_archived ~}}
+<i class="zulip-icon zulip-icon-archive channel-privacy-type-icon" {{#if show_colored_icon}}style="color: {{stream.color}}"{{/if}} aria-hidden="true"></i> <span class="decorated-channel-name">{{stream.name ~}}</span>
+{{~ else if stream.invite_only ~}}
+<i class="zulip-icon zulip-icon-lock channel-privacy-type-icon" {{#if show_colored_icon}}style="color: {{stream.color}}"{{/if}} aria-hidden="true"></i> <span class="decorated-channel-name">{{stream.name ~}}</span>
+{{~ else if stream.is_web_public ~}}
+<i class="zulip-icon zulip-icon-globe channel-privacy-type-icon" {{#if show_colored_icon}}style="color: {{stream.color}}"{{/if}} aria-hidden="true"></i> <span class="decorated-channel-name">{{stream.name ~}}</span>
+{{~ else ~}}
+<i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" {{#if show_colored_icon}}style="color: {{stream.color}}"{{/if}} aria-hidden="true"></i> <span class="decorated-channel-name">{{stream.name ~}}</span>
+{{~/if~}}

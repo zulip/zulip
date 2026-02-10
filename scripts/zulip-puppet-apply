@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+import argparse
+import configparser
+import os
+import re
+import subprocess
+import sys
+import tempfile
+
+import yaml
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+
+from scripts.lib.puppet_cache import setup_puppet_modules
+from scripts.lib.zulip_tools import assert_running_as_root, parse_os_release
+
+assert_running_as_root()
+
+parser = argparse.ArgumentParser(description="Run Puppet")
+parser.add_argument(
+    "--force", "-f", action="store_true", help="Do not prompt with proposed changes"
+)
+parser.add_argument("--noop", action="store_true", help="Do not apply the changes")
+parser.add_argument("--config", default="/etc/zulip/zulip.conf", help="Alternate zulip.conf path")
+args, extra_args = parser.parse_known_args()
+
+config = configparser.RawConfigParser()
+config.read(args.config)
+
+setup_puppet_modules()
+
+distro_info = parse_os_release()
+puppet_config = """
+Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
+"""
+
+for pclass in re.split(r"\s*,\s*", config.get("machine", "puppet_classes")):
+    if " " in pclass:
+        print(
+            f"The `machine.puppet_classes` setting in {args.config} must be comma-separated, not space-separated!"
+        )
+        sys.exit(1)
+    puppet_config += f"include {pclass}\n"
+
+# We use the Puppet configuration from the same Zulip checkout as this script
+scripts_path = os.path.join(BASE_DIR, "scripts")
+puppet_module_path = os.path.join(BASE_DIR, "puppet")
+puppet_cmd = [
+    "puppet",
+    "apply",
+    f"--modulepath={puppet_module_path}:/srv/zulip-puppet-cache/current",
+    "-e",
+    puppet_config,
+]
+if args.noop:
+    puppet_cmd += ["--noop"]
+puppet_cmd += extra_args
+
+# Set the scripts path to be a factor so it can be used by Puppet code
+puppet_env = os.environ.copy()
+puppet_env["FACTER_zulip_conf_path"] = args.config
+puppet_env["FACTER_zulip_scripts_path"] = scripts_path
+
+
+def noop_would_change(puppet_cmd: list[str]) -> bool:
+    # --noop does not work with --detailed-exitcodes; see
+    # https://tickets.puppetlabs.com/browse/PUP-686
+    with tempfile.NamedTemporaryFile() as lastrun_file:
+        try:
+            subprocess.check_call(
+                # puppet_cmd may already contain --noop, but it is safe to
+                # supply twice
+                [*puppet_cmd, "--noop", "--lastrunfile", lastrun_file.name],
+                env=puppet_env,
+            )
+        except subprocess.CalledProcessError:
+            sys.exit(2)
+
+        # Reopen the file since Puppet rewrote it with a new inode
+        with open(lastrun_file.name) as lastrun:
+            lastrun_data = yaml.safe_load(lastrun)
+            resources = lastrun_data.get("resources", {})
+            if resources.get("failed", 0) != 0:
+                sys.exit(2)
+            return resources.get("out_of_sync", 0) != 0
+
+
+if not args.noop and not args.force:
+    if not noop_would_change([*puppet_cmd, "--show_diff"]):
+        sys.exit(0)
+
+    do_apply = None
+    while do_apply != "y":
+        sys.stdout.write("Apply changes? [y/N] ")
+        sys.stdout.flush()
+        do_apply = sys.stdin.readline().strip().lower()
+        if do_apply in ("", "n"):
+            sys.exit(0)
+
+if args.noop and args.force:
+    if noop_would_change(puppet_cmd):
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
+ret = subprocess.call([*puppet_cmd, "--detailed-exitcodes"], env=puppet_env)
+# ret = 0 => no changes, no errors
+# ret = 2 => changes, no errors
+# ret = 4 => no changes, yes errors
+# ret = 6 => changes, yes errors
+if ret not in (0, 2):
+    sys.exit(2)

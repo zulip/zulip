@@ -1,0 +1,39 @@
+{
+   "action":"Create",
+   "alert":{
+      "alertId":"ec03dad6-62c8-4c94-b38b-d88f398e900f",
+      "message":"another alert",
+      "tags":[
+         "vip"
+      ],
+      "tinyId":"2",
+      "source":"test@example.com",
+      "entity":"Server",
+      "alias":"alert-alias",
+      "createdAt":1502709956288,
+      "updatedAt":1502709956288000110,
+      "username":"test@example.com",
+      "userId":"8d43133c-a002-4e95-bf2b-2d6f95e47c96",
+      "recipients":[
+
+      ],
+      "teams":[
+      ],
+      "insertedAt":1502709956288000110,
+      "priority":3
+   },
+   "source":{
+      "name":"web",
+      "type":"API"
+   },
+   "integrationId":"daca46c6-e26b-4dda-8f8a-21f6db7eeaef",
+   "integrationName":"Webhook",
+   "integrationType":"Webhook",
+   "alertFlowContext":{
+      "requestId":"df3ad546-c7b6-4520-8de3-52bb12d1e99a",
+      "traceId":"df3ad546-c7b6-4520-8de3-52bb12d1e99a",
+      "content":{
+
+      }
+   }
+}

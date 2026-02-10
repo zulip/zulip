@@ -1,0 +1,2525 @@
+html {
+    overflow: hidden scroll;
+    overscroll-behavior-y: none;
+    width: calc(100% - var(--disabled-scrollbar-width));
+}
+
+body,
+html {
+    height: var(--full-height-dynamic-viewport);
+    touch-action: manipulation;
+}
+
+.column-middle,
+#main_div {
+    background-color: var(--color-background);
+}
+
+#app-loading.loaded {
+    display: none !important; /* We are now loaded, by definition. */
+}
+
+body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-size: var(--base-font-size-px);
+    /* The line-height used in most of the UI should be at least
+       its legacy value, but should expand with larger base
+       line-height values. */
+    line-height: max(
+        var(--legacy-body-line-height-unitless),
+        var(--base-line-height-unitless)
+    );
+    font-family: "Source Sans 3 VF", sans-serif;
+    color: var(--color-text-default);
+    background-color: var(--color-background);
+
+    /* Implementation for fluid layout width setting. */
+    .header-main,
+    .app .app-main,
+    #compose-container {
+        max-width: calc(
+            var(--left-sidebar-max-width) + var(--message-area-max-width) +
+                var(--right-sidebar-max-width)
+        );
+    }
+
+    /* When sidebars are manually hidden, we set the max-width
+       for the layout to a different maximum width. This keeps
+       the message area predictably readable. */
+    &.hide-left-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: calc(
+                var(--message-area-max-width) + var(--right-sidebar-max-width)
+            );
+
+            /* When we're less than the xl_min breakpoint, we instead
+               constrain to just the message area's max-width, since
+               the right column will be hidden below that point. */
+            @container header-container (width < $cq_xl_min) {
+                max-width: var(--message-area-max-width);
+            }
+
+            @container app (width < $cq_xl_min) {
+                max-width: var(--message-area-max-width);
+            }
+        }
+    }
+
+    /* Fallback media query. */
+    @media (width < $xl_min) {
+        &.without-container-query-support.hide-left-sidebar:not(
+                .fluid_layout_width
+            ) {
+            .header-main,
+            .app .app-main,
+            #compose-container {
+                max-width: var(--message-area-max-width);
+            }
+        }
+    }
+
+    &.hide-right-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: calc(
+                var(--left-sidebar-max-width) + var(--message-area-max-width)
+            );
+        }
+    }
+
+    &.hide-left-sidebar.hide-right-sidebar:not(.fluid_layout_width) {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: var(--message-area-max-width);
+        }
+    }
+
+    &.fluid_layout_width {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: inherit;
+        }
+    }
+}
+
+input,
+button {
+    /* Browsers default to inline-block,
+       so preserve this value. */
+    vertical-align: middle;
+    /* Preserve normal font-weight, though
+       it appears UA stylesheets do not set
+       the weight to other values. */
+    font-weight: normal;
+    /* Likewise with zeroed margin. */
+    margin: 0;
+
+    /* Reset these values from Firefox's
+       UA stylesheet (still present in
+       April 2025) */
+    &::-moz-focus-inner {
+        padding: 0;
+        border: 0;
+    }
+}
+
+input,
+button,
+select {
+    font-family: "Source Sans 3 VF", sans-serif;
+    /* Disable bootstrap size CSS; we want to use our default font size on
+       body for input elements. */
+    line-height: normal;
+    font-size: inherit;
+}
+
+blockquote p {
+    font-weight: normal;
+}
+
+/* These colors are typically overridden,
+   but referencing them as variables prevents
+   specificity wars and ugly :not() selectors,
+   especially in dark theme. */
+a {
+    cursor: pointer;
+    color: var(--color-text-generic-link);
+    text-decoration: none;
+}
+
+a:hover,
+a:focus {
+    color: var(--color-text-generic-link-interactive);
+    text-decoration: underline;
+
+    & code {
+        color: var(--color-text-generic-link-interactive);
+    }
+}
+
+code,
+pre {
+    font-family: "Source Code Pro", monospace;
+}
+
+.no-select {
+    user-select: none;
+}
+
+.text-select {
+    user-select: text;
+}
+
+p.n-margin {
+    margin: 10px 0 0;
+}
+
+.small-line-height {
+    line-height: 1.1;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-clear {
+    clear: both;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.history-limited-box {
+    color: hsl(16deg 60% 45%);
+    border: 1px solid hsl(16deg 60% 45%);
+    box-shadow: 0 0 2px hsl(16deg 60% 45%);
+}
+
+.all-messages-search-caution {
+    border: 1px solid hsl(192deg 19% 75% / 20%);
+    box-shadow: 0 0 2px hsl(192deg 19% 75% / 20%);
+}
+
+.history-limited-box,
+.all-messages-search-caution {
+    border-radius: 4px;
+    display: none;
+    margin: 0 auto 12px;
+    padding: 5px;
+    /* Difference should be 16px to accommodate the icon. */
+    /* This emulates hanging indent. */
+    padding-left: 26px;
+    text-indent: -10px;
+
+    .all-messages-search-caution-icon {
+        margin: 0 3px 0 1px;
+    }
+
+    & p {
+        margin: 0;
+        padding: 4px;
+    }
+}
+
+.messages-logo-svg {
+    width: 1.7188em; /* 27.5px at 16px/1em */
+}
+
+.bottom-messages-logo {
+    display: none;
+}
+
+.top-messages-logo,
+.bottom-messages-logo {
+    width: 1.7143em; /* 24px at 14px/em */
+    height: 1.7143em;
+    margin: 0 auto 0.8571em; /* 12px at 14px/em */
+
+    & svg {
+        & circle {
+            fill: var(--color-zulip-logo);
+            stroke: var(--color-zulip-logo);
+        }
+
+        & path {
+            fill: var(--color-zulip-logo-z);
+            stroke: var(--color-zulip-logo-z);
+        }
+    }
+
+    &.loading circle {
+        fill: var(--color-zulip-logo-loading);
+        stroke: var(--color-zulip-logo-loading);
+    }
+}
+
+.top-messages-logo {
+    /* Since padding under message header is not transparent
+       we need to position it below the padding. */
+    padding-top: var(--header-padding-bottom);
+}
+
+/* See https://web.dev/animations-guide/#triggers before adding any funny animation properties here. */
+@keyframes feedback-slide-in {
+    from {
+        transform: translateY(-120%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(50px);
+        opacity: 1;
+    }
+}
+
+@keyframes feedback-slide-out {
+    from {
+        transform: translateY(50px);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(-120%);
+        opacity: 0;
+    }
+}
+
+#feedback-container-content-wrapper {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    max-width: calc(100% - 20px);
+    padding: 15px;
+    background-color: var(--color-background-modal);
+    border-radius: 5px;
+    box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
+    box-sizing: border-box;
+}
+
+#feedback_container {
+    display: none;
+    position: fixed;
+    width: 100%;
+    z-index: 110;
+
+    @container app (width < $cq_md_min) {
+        width: calc(90% - 30px);
+        left: 5%;
+        top: 5%;
+    }
+
+    &.show-feedback-container {
+        display: block;
+        animation: feedback-slide-in 0.6s forwards;
+    }
+
+    &.slide-out-feedback-container {
+        animation: feedback-slide-out 0.6s;
+    }
+
+    & h3 {
+        font-size: 16pt;
+        margin-top: 2px;
+    }
+
+    .exit-me {
+        margin: 0 0 0 5px;
+    }
+
+    .float-header {
+        display: flex;
+        align-items: center;
+    }
+
+    .feedback-button-container {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+    }
+}
+
+#navbar-fixed-container {
+    position: fixed;
+    top: 0;
+    z-index: 102;
+}
+
+/* Adjust width of any fixed / absolute positioned elements that might be visible in
+   the background when a overlay / modal is open. */
+#navbar-fixed-container,
+#compose {
+    width: calc(100% - var(--disabled-scrollbar-width));
+}
+
+.header {
+    width: 100%;
+    height: var(--header-height);
+    /* Since the headers are sticky, we need non-transparent background. */
+    background-color: var(--color-background);
+    /* Add 1px box-shadow below header so that if there is a gap between sticky header
+       and header at some zoom level, it is covered by this */
+    box-shadow: 0 1px 0 0 var(--color-background);
+}
+
+#navbar-middle .column-middle-inner,
+.header,
+#message_view_header {
+    background-color: var(--color-background-navbar);
+    box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
+}
+
+.app {
+    min-width: 100%;
+    min-height: var(--full-height-dynamic-viewport);
+    z-index: 99;
+}
+
+.app-main,
+.header-main {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    position: relative;
+}
+
+body.has-overlay-scrollbar {
+    /* Move simplebar scrollbar to the left so that
+       browser scrollbar doesn't overlap with it. */
+    .app-main .column-right .simplebar-track.simplebar-vertical {
+        right: var(--browser-overlay-scrollbar-width);
+    }
+}
+
+/* Styles for popovers rendered as an overlay at the
+   center of the screen, primarily used in mobile sizes. */
+#popover-overlay-background {
+    position: fixed;
+    inset: 0;
+
+    /* Needs to be higher than the 105 for div.overlay so that the
+       emoji picker can render on top of the user status picker. */
+    z-index: 106;
+    background-color: hsl(0deg 0% 0% / 70%);
+}
+
+.white-space-preserve-wrap {
+    white-space: pre-wrap;
+}
+
+.white-space-preserve {
+    white-space: pre;
+}
+
+.white-space-nowrap {
+    white-space: nowrap;
+}
+
+/* Set flex display on login buttons only in the
+   spectator view. We want them to display none
+   otherwise. */
+.spectator-view #top_navbar .column-right .spectator_login_buttons {
+    display: flex;
+}
+
+/* This applies to column-left both in navbar and app. */
+.column-right {
+    width: var(--right-sidebar-width);
+    max-width: var(--right-sidebar-max-width);
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    .spectator_login_buttons {
+        /* Allow the login buttons flexbox to
+           grow and shrink to fit the available
+           area. */
+        flex: 1 1 0;
+        /* Use a flexbox gap of 7px between the
+           buttons to reflect the outer 7px of space. */
+        gap: 7px;
+        /* Don't allow login buttons flexbox to
+           break out of the allotted right-column
+           space. */
+        overflow: hidden;
+        /* This should be removed once the navbar
+           has been rewritten entirely with modern
+           layout methods. For now, we pull this up
+           so that the buttons and search box are
+           the same height and their boxes sit on the
+           same invisible line. */
+        margin-top: -1px;
+        /* Prevent collisions with the search box. */
+        margin-left: 15px;
+
+        & a {
+            font-size: calc(16em / 14);
+            /* Vertically size the buttons to
+               match the search box. */
+            line-height: 28px;
+            font-weight: 450;
+            letter-spacing: 0.03ch;
+            /* Allow individual buttons to grow
+               and shrink inside their containers,
+               with padding to prevent text from
+               sitting against the edge of the button. */
+            flex: 1 1 0;
+            padding: 0 4px;
+            /* Center the text nodes within the
+               flex items. */
+            text-align: center;
+            /* Internationalization: disallow wrapping,
+               and display an ellipsis when there's not
+               space enough to accommodate the button
+               text. */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            /* Button curvature and transitions. */
+            border-radius: 4px;
+            transition: transform 100ms ease-out;
+
+            &:hover,
+            &:focus {
+                text-decoration: none;
+            }
+
+            &:active {
+                transform: scale(0.98);
+            }
+
+            & i {
+                margin-right: 3px;
+            }
+        }
+
+        & .login_button {
+            color: var(
+                --color-navbar-spectator-medium-attention-brand-button-text
+            );
+            background-color: var(
+                --color-navbar-spectator-medium-attention-brand-button-background
+            );
+
+            &:hover,
+            &:focus {
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-hover
+                );
+            }
+
+            &:active {
+                color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-text
+                );
+                background-color: var(
+                    --color-navbar-spectator-medium-attention-brand-button-background-active
+                );
+            }
+        }
+    }
+
+    .spectator_narrow_login_button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: var(--header-height);
+        width: var(--header-height);
+
+        @media (width >= $xl_min) and (height >= 600px) {
+            display: none;
+        }
+
+        .login_button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+
+            &:hover {
+                text-decoration: none;
+            }
+
+            & i {
+                color: var(--color-navbar-icon);
+                font-size: 1.6em;
+            }
+        }
+    }
+}
+
+/* This applies to column-left both in navbar and app. */
+.column-left {
+    width: var(--left-sidebar-width);
+    max-width: var(--left-sidebar-width);
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.app-main .column-right.expanded,
+.app-main .column-left.expanded {
+    /* We share a baseline z-index to make
+       sure overlays respect the .topmost-overlay
+       below. */
+    z-index: 10;
+}
+
+.app-main .column-right.expanded.topmost-overlay,
+.app-main .column-left.expanded.topmost-overlay {
+    z-index: 15;
+}
+
+#message_feed_container,
+.app-main .column-left .left-sidebar,
+.app-main .column-right .right-sidebar {
+    padding-top: calc(
+        var(--navbar-fixed-height) + var(--header-padding-bottom)
+    );
+}
+
+.app-main {
+    height: 100%;
+    min-height: var(--full-height-dynamic-viewport);
+
+    &::after {
+        /* We use `content` values to determine
+           viewport state from JavaScript; this
+           hides the values without disrupting
+           the document flow. */
+        position: absolute;
+        display: none;
+    }
+
+    .column-left .left-sidebar,
+    .column-right .right-sidebar {
+        position: fixed;
+        z-index: 100;
+    }
+
+    .column-left .left-sidebar {
+        width: var(--left-sidebar-width);
+        padding-left: var(--left-sidebar-padding-left);
+    }
+
+    .column-right .right-sidebar {
+        padding-left: var(--right-sidebar-left-spacing);
+        width: var(--right-sidebar-width);
+    }
+
+    .column-middle {
+        min-height: var(--full-height-dynamic-viewport);
+        /* We need `overflow-y: visible` for sticky headers to work. */
+    }
+}
+
+/* We test for spec-aligned container query support
+   using these styles. */
+.container-query-test {
+    /* Keep the test div from rendering. */
+    visibility: hidden;
+    /* Establish a container. */
+    container: test-container / inline-size;
+    /* Establish a positioning context that
+       conforming browsers will ignore. */
+    position: relative;
+    top: 100px;
+
+    .container-query-test-child {
+        /* Non-spec aligned browsers will keep
+           this element to the top of the containing
+           <div>; spec-aligned browsers move it to the
+           top of the viewport. We check for this in
+           information_density.ts */
+        position: fixed;
+        top: 0;
+    }
+}
+
+.with-container-query-support {
+    /* With spec-aligned container support, we
+       can establish em-aware containers to
+       query as needed.
+       Note that container queries can only
+       act on children of the container, so
+       at least for now, we include separate
+       queries for #header-container in the
+       navbar as well as .app-main in capable
+       browsers.
+    */
+    #header-container {
+        container: header-container / inline-size;
+    }
+
+    .app {
+        container: app / inline-size;
+    }
+}
+
+.column-middle,
+#compose-content {
+    margin-right: var(--right-sidebar-width);
+    margin-left: calc(
+        var(--left-sidebar-width) + var(--left-sidebar-padding-left)
+    );
+    position: relative;
+}
+
+input {
+    font-family: "Source Sans 3 VF", sans-serif;
+}
+
+/* Override browsers that use
+   `cursor: default` */
+label,
+button {
+    cursor: pointer;
+}
+
+/* Override Bootstrap's fixed sizes for various elements */
+label {
+    font-size: inherit;
+    line-height: inherit;
+}
+
+button:focus {
+    outline: 0;
+}
+
+/* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
+a:not(:active):focus,
+button:focus-visible,
+label.checkbox input[type="checkbox"]:focus ~ .rendered-checkbox,
+i.fa:focus,
+i.zulip-icon:focus-visible,
+[role="button"]:focus {
+    outline: 2px solid var(--color-outline-focus);
+    /* TODO: change solid to auto once the Chromium bug #1105822 is fixed */
+}
+
+/* List of text-like input types taken from Bootstrap */
+input:not(.input-element) {
+    &[type="text"],
+    &[type="password"],
+    &[type="email"],
+    &[type="url"],
+    &[type="color"] {
+        font-size: inherit;
+        height: 1.4em;
+        background-color: var(--color-background-legacy-input);
+        border-color: var(--color-border-legacy-input);
+
+        &:focus {
+            border-color: var(--color-border-legacy-input-focus);
+        }
+    }
+}
+
+li,
+.table th,
+.table td {
+    line-height: inherit;
+}
+
+.bootstrap-btn {
+    font-size: inherit;
+    height: auto;
+    line-height: 100%;
+}
+
+/* Classes which style copy buttons */
+.copy_button_base {
+    outline-color: hsl(0deg 0% 73%);
+    height: 18px;
+    width: 10px;
+    padding: 6px;
+    display: block;
+    /* The below two avoids the padded element from displaying
+    its own border and background color */
+    border: none;
+    background-clip: content-box;
+
+    &:hover svg path {
+        fill: var(--color-fill-hover-copy-icon);
+    }
+}
+
+.copy_message {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    height: 1em;
+    backdrop-filter: blur(20px);
+    outline: 1px solid var(--color-copy-button-square-bg-active);
+}
+
+/* Classes for hiding and showing controls */
+
+.notdisplayed {
+    display: none !important;
+}
+
+.notvisible {
+    visibility: hidden !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+}
+
+/* Lighter strong */
+
+strong {
+    font-weight: 600;
+}
+
+.preserve_spaces {
+    white-space: pre-wrap;
+}
+
+.logout {
+    white-space: nowrap;
+}
+
+.buddy_list_tooltip_content {
+    text-align: left;
+    overflow-wrap: break-word;
+    /* 280px at 14px/1em */
+    max-width: 20em;
+}
+
+#change_visibility_policy_button_tooltip {
+    text-align: left;
+
+    .tooltip-privacy-icon {
+        position: relative;
+        display: inline-block;
+    }
+
+    .tooltip-privacy-icon .zulip-icon-lock {
+        margin-top: -0.15em !important;
+    }
+
+    .tooltip-privacy-icon i {
+        position: absolute;
+        top: 0.1667em;
+    }
+
+    .privacy-tooltip-stream-name {
+        margin-left: 1.25em;
+    }
+}
+
+.narrow-filter {
+    display: block;
+    position: relative;
+}
+
+@keyframes pulse-unread {
+    /* Only unread dots in collapsed Views
+       have offset variables set; all others
+       will fall back to 0 (no offset). */
+    0% {
+        transform: scale(1) translateX(var(--unread-dot-x-offset, 0));
+    }
+
+    50% {
+        transform: scale(var(--pulse-unread-scale-max))
+            translateX(var(--unread-dot-x-offset-scaled, 0));
+    }
+
+    100% {
+        transform: scale(1) translateX(var(--unread-dot-x-offset, 0));
+    }
+}
+
+.new-unread .unread_count {
+    animation: 2s ease-in-out 2 pulse-unread;
+}
+
+.messagebox-content .slow-send-spinner {
+    display: block;
+    font-size: 0.8571em; /* 12px at 14px/em */
+    text-align: right;
+    opacity: 0.8;
+    color: var(--color-text-default);
+    animation: rotate 1s infinite linear;
+}
+
+.star {
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.copy-paste-text {
+    /* Hide the text that we want copy paste to capture */
+    position: absolute;
+    left: -99999px;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(359deg);
+    }
+}
+
+@keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.selected_message {
+    .messagebox-content {
+        /* We add an outline and shift it inside the message so that without
+           any vertical padding changes, we can have the outline surrounding
+           the message without overflowing the boundary of the message in any case. */
+        outline: 1px solid var(--color-selected-message-outline);
+        border-radius: 5px;
+        outline-offset: -1px;
+    }
+}
+
+.selected_msg_for_touchscreen {
+    @media (hover: none) {
+        .message_reactions .reaction_button {
+            visibility: visible;
+            pointer-events: all;
+        }
+    }
+}
+
+/* Make the action icon on the message row
+   always visible while the popover is open */
+.has_actions_popover .actions_hover {
+    visibility: visible !important;
+    pointer-events: all !important;
+    opacity: 1 !important;
+
+    & i:focus {
+        /* Avoid displaying a focus outline outside the popover on the \vdots
+           icon when opened via the mouse. */
+        outline: 0 !important;
+    }
+}
+
+.has_actions_popover .info {
+    opacity: 1;
+    visibility: visible;
+}
+
+.small {
+    font-size: 80%;
+}
+
+.tiny {
+    font-size: 60%;
+}
+
+div.message-list {
+    border-collapse: separate;
+    margin-left: auto;
+    display: none;
+    width: 100%;
+}
+
+div.focused-message-list {
+    display: block;
+}
+
+/* In conversation view, always show the recipient bar action buttons */
+div.focused-message-list.is-conversation-view .recipient_row {
+    & .recipient_bar_controls {
+        opacity: 1;
+        transition: opacity 0.15s ease-in;
+    }
+}
+
+.rtl {
+    direction: rtl;
+}
+
+.topic_edit {
+    display: none;
+    flex-grow: 1;
+
+    .alert {
+        display: inline-block;
+        margin: 0;
+        padding: 0 10px;
+        line-height: 17px;
+    }
+}
+
+.topic_edit_form {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding-right: 5px;
+    position: relative;
+}
+
+.inline_topic_edit {
+    flex: 1;
+    line-height: 1.2142em;
+    padding: 0 5px;
+    color: var(--color-text-default);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
+
+    transition:
+        border-color linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+
+    &.empty-topic-display::placeholder {
+        color: inherit;
+    }
+}
+
+.inline-topic-edit-placeholder {
+    position: absolute;
+    left: 5px;
+    max-width: 65%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.inline-topic-edit-placeholder-visible {
+    visibility: visible;
+}
+
+.topic_edit_save {
+    border-color: light-dark(hsl(0deg 0% 0% / 10%), hsl(0deg 0% 0% / 60%));
+    border-width: 1px;
+    border-style: solid;
+    background-clip: padding-box;
+}
+
+.topic_edit_save,
+.topic_edit_cancel {
+    /* Adjust top and bottom padding to fit into the recipient row. */
+    padding: 0.125em 0.625em; /* 2px 10px at 16px/em */
+}
+
+.information-settings .user-profile-picture,
+.user_sidebar_entry.with_avatar .user-profile-picture,
+.inline_profile_picture {
+    display: inline-block;
+    /* Don't inherit the line-height from message-avatar;
+       this preserves the dimensions and rounded corners
+       on the image itself. */
+    line-height: 1;
+    vertical-align: top;
+    border-radius: 4px;
+    overflow: hidden;
+
+    &.guest-avatar::after {
+        outline: 2px solid hsl(0deg 0% 100%);
+    }
+}
+
+.inline_profile_picture {
+    width: var(--message-box-avatar-width);
+    height: var(--message-box-avatar-height);
+}
+
+.information-settings .user-profile-picture,
+.user_sidebar_entry.with_avatar .user-profile-picture {
+    width: var(--right-sidebar-avatar-width);
+    height: var(--right-sidebar-avatar-height);
+    margin-right: var(--right-sidebar-avatar-right-margin);
+}
+
+.streamname {
+    font-weight: bold;
+}
+
+.top-navbar-container {
+    /* Calculate right margin so that title and description
+       elements can truncate and not collide with or run underneath
+       with the search section. */
+    margin-right: calc(
+        var(--search-box-width) + var(--navbar-content-righthand-offset)
+    );
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.top-navbar-container-allow-description-extension {
+    overflow: visible;
+}
+
+#streamlist-toggle {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    text-align: center;
+}
+
+.hide-streamlist-toggle-visibility,
+.hide-navbar-buttons-visibility {
+    visibility: hidden;
+}
+
+#header-container .left-sidebar-toggle-button {
+    text-decoration: none;
+    color: var(--color-navbar-icon);
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    width: var(--header-height);
+    height: var(--header-height);
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+
+        .left-sidebar-toggle-unreadcount {
+            border-color: var(--color-header-button-hover-no-alpha);
+        }
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:active,
+    &:focus-visible {
+        .left-sidebar-toggle-unreadcount {
+            border-color: var(--color-header-button-focus-no-alpha);
+        }
+    }
+}
+
+.left-sidebar-toggle-unreadcount {
+    position: absolute;
+    display: none;
+    /* 6px at 16px/1em */
+    height: 0.375em;
+    width: 0.375em;
+    background-color: var(--color-navbar-icon);
+
+    /* 2px at 16px/1em */
+    border: 0.125em solid var(--color-background-navbar);
+    /* 6px at 16px/1em */
+    border-radius: 0.375em;
+    padding: 0;
+
+    /* At 16px/1em, the toggle icon is 20px on a side, which is
+       half the width of its container (40px on a side). To
+       place the 10px-wide unread counter correctly, then, we
+       set it to 25% of the right of the container, or 10px,
+       and likewise 25% down from the top of the container,
+       also 10px. */
+
+    top: 25%;
+    right: 25%;
+}
+
+nav {
+    .column-left {
+        text-align: left;
+        display: flex;
+        justify-content: left;
+        gap: 4px;
+
+        .brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-logo {
+            display: inline-block;
+            height: 1.25em; /* 20px at 16px em */
+            max-width: var(--realm-logo-max-width);
+
+            @media (height < $short_navbar_cutoff_height) {
+                height: 0.9375em; /* 15px at 16px em */
+            }
+        }
+
+        .left-sidebar-toggle-button .left-sidebar-toggle-unreadcount {
+            /* The toggle icon is half the width of its container
+            and is at the center of the container.
+            So, the left width starts from left 25% of the container
+            and ends till 75% of the container's width.
+            Similarly, vertically, the dot is starts at the top 25% of
+            the container's height and ends at 75% of the total height
+
+            So, the top right corner of the icon is at 25% from top and
+            75% from the right. This is the location where we place the
+            unread indicator dot. */
+            top: 25%;
+            right: 25%;
+        }
+    }
+
+    & a {
+        &.no-style:hover {
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .no-style {
+            text-decoration: none;
+        }
+    }
+}
+
+#bottom_whitespace {
+    display: block;
+    height: var(--max-unmaximized-compose-height);
+}
+
+.operator_value {
+    font-family: "Source Code Pro", monospace;
+    color: hsl(353deg 70% 65%);
+}
+
+.operator {
+    font-family: "Source Code Pro", monospace;
+}
+
+#loading_older_messages_indicator,
+#loading_more_indicator {
+    margin: 10px;
+}
+
+#loading_older_messages_indicator_box_container,
+#loading_more_indicator_box_container {
+    position: absolute;
+    left: 50%;
+
+    /* Override the base rules in app_components.css, which would require
+       coordination with loading.make_indicator */
+    .loading_indicator_spinner {
+        height: 2.7143em; /* 38px at 14px/em */
+        width: 2.7143em; /* 38px at 14px/em */
+    }
+}
+
+#loading_older_messages_indicator_box,
+#loading_more_indicator_box {
+    position: relative;
+    left: -1.3571em; /* 50% of 38px = 19px at 14px/em */
+    top: -3.0714em; /* -43px at 14px/em */
+    z-index: 1;
+    border-radius: 6px;
+}
+
+#page_loading_indicator {
+    margin: 10px auto;
+}
+
+#page_loading_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#page_loading_indicator_box {
+    position: relative;
+    /* 50% of 38px = 19px at 14px/1em */
+    left: -1.3571em;
+    /* -43px at 14px/1em */
+    top: -3.0714em;
+    z-index: 1;
+    border-radius: 6px;
+}
+
+#create_stream_subscribers {
+    margin-top: 10px;
+
+    .checkbox {
+        display: block;
+
+        & input[type="checkbox"] {
+            margin: 5px 0;
+            float: none;
+        }
+    }
+}
+
+.sub_button_row {
+    text-align: center;
+}
+
+div.topic_edit_spinner {
+    display: flex;
+    align-items: center;
+    width: 1.2em; /* 18px at 15px/em  (from font size set in .message-header-contents) */
+    height: 1.2em; /* 18px at 15px/em */
+}
+
+div.topic_edit_spinner .loading_indicator_spinner {
+    width: 0.9333em; /* 14px at 15px/em  (from font size set in .message-header-contents) */
+    height: 0.9333em; /* 14px at 15px/em */
+
+    & path {
+        fill: var(--color-recipient-bar-controls-spinner);
+    }
+}
+
+.custom-time-input-value,
+#invite-user-form {
+    margin: 0;
+}
+
+.invite-user-select {
+    vertical-align: middle;
+}
+
+.invite-user-modal-banners {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &:has(.banner) {
+        /* Only apply bottom margin if there is a banner present. */
+        margin-bottom: 10px;
+    }
+
+    .banner-wrapper:empty {
+        /* Avoid unnecessary spacing between empty banner
+           wrappers due to the flex gap property. */
+        display: none;
+    }
+}
+
+.copy-invite-link-banner {
+    .banner-content {
+        white-space: nowrap;
+    }
+
+    .banner-label {
+        width: 100%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+}
+
+@container banner (width >= 25em) {
+    #copy_generated_invite_link .action-button-label {
+        display: none;
+    }
+}
+
+.invite-tips-list {
+    /* Override default bottom margin of ul tags in bootstrap. */
+    margin-bottom: 0;
+}
+
+#invite-user-form .loading_indicator_spinner {
+    height: 1em;
+    width: fit-content;
+    display: inline-block;
+    float: none;
+    margin: 0 5px;
+}
+
+.add-user-group-container,
+.add_streams_container {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+}
+
+#invite_welcome_custom_message_text {
+    height: 8em;
+}
+
+.custom-time-input-value {
+    width: 5ch;
+    margin-right: 15px;
+
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
+    color: var(--color-text-default);
+    border-radius: 4px;
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border-color linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+.custom-time-input-unit {
+    width: auto;
+}
+
+.empty_feed_notice {
+    max-width: 42.8571em;
+    margin: 0 auto;
+    padding: 3em 1em;
+    text-align: center;
+}
+
+.empty-feed-notice-title {
+    font-size: 1.5em;
+    font-weight: 400;
+    line-height: inherit;
+    overflow-wrap: break-word;
+}
+
+.empty-feed-notice-description {
+    font-size: 1.1em;
+
+    .search-query-word {
+        overflow-wrap: break-word;
+    }
+}
+
+.message-fade,
+.user_sidebar_entry.user-fade {
+    opacity: 0.4;
+}
+
+.emoji {
+    height: 25px;
+    width: 25px;
+    /* Maintain `vertical-align` for inline-block styles in messages: */
+    vertical-align: middle;
+    /* But, for all others, use flexbox and its align-self property.
+      What is excellent about this is that flexbox will ignore the
+      `vertical-align` value, while inline-block contexts will ignore
+      the `align-self` property: */
+    align-self: center;
+}
+
+.status-emoji {
+    /* 16px at 14px/1em */
+    height: 1.1429em;
+    width: 1.1429em;
+    /* We are setting minimum width here because when the user's name is very long,
+    emoji's width decreases and causes it to break. */
+    min-width: 1.1429em;
+    /* In most contexts, status emoji appear immediately after a name
+      field with no margin. Position the status emoji with 3px of left
+      margin to space it from the name, and set no right margin so
+      that any components to the right appear equally distant as they
+      would be from a name. */
+    margin-left: 3px;
+    margin-right: 0;
+}
+
+#pw_strength {
+    width: 100%;
+    height: 10px;
+    margin-bottom: 0;
+}
+
+.screen {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: hsl(0deg 0% 0%);
+    z-index: 20000;
+}
+
+.deactivated_user .deactivated-user-icon {
+    color: inherit;
+    margin-left: 2px;
+    font-size: 0.9em;
+}
+
+.no-drag {
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.flatpickr-calendar {
+    /* Hide the up and down arrows in the Flatpickr datepicker year */
+    .flatpickr-months .numInputWrapper span {
+        display: none;
+    }
+
+    .flatpickr-time-separator {
+        position: relative;
+        left: 5px;
+    }
+
+    .flatpickr-time input {
+        margin: 0 5px;
+        min-height: 30px;
+    }
+
+    .flatpickr-confirm {
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(213deg 90% 65%);
+        font-size: var(--flatpickr-confirm-button-font-size);
+        font-weight: 600;
+    }
+
+    @media (width < $md_min) {
+        /* Center align flatpickr on mobile
+         * devices so that it doesn't go out of
+         * the viewport. */
+        left: 0 !important;
+        right: 0 !important;
+        margin: auto;
+
+        &::after,
+        &::before {
+            border-top-width: 0 !important;
+        }
+    }
+}
+
+#about-zulip {
+    .exit {
+        font-size: 1.5rem;
+        font-weight: 600;
+        background-color: transparent;
+        border: none;
+        position: absolute;
+        right: 8px;
+        z-index: 1;
+        color: hsl(0deg 0% 67%);
+    }
+
+    .overlay-content {
+        width: 440px;
+        border-radius: 4px;
+    }
+
+    .zulip-version-info,
+    .zulip-merge-base-info {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .about-zulip-logo {
+        text-align: center;
+        margin: 30px;
+    }
+
+    .about-zulip-logo img {
+        height: 40px;
+    }
+
+    .overlay-body {
+        max-height: 60vh;
+        padding: 15px;
+    }
+}
+
+@media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+    .spectator-view {
+        #navbar-middle {
+            /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: calc(var(--header-height) * 3 + 10px);
+        }
+
+        #help-menu,
+        #gear-menu {
+            position: relative;
+            right: var(--header-height);
+        }
+
+        #top_navbar .column-right .spectator_login_buttons {
+            display: none;
+        }
+    }
+
+    .header-main .column-right {
+        /* For a diminutive right column in the navbar,
+           allow the width to be that of the flexing
+           button elements. */
+        width: auto;
+    }
+}
+
+@media (width < $md_min) {
+    .spectator-view {
+        #navbar-middle {
+            /* = (width of button, square with header) * 3 (number of buttons) */
+            margin-right: calc(var(--header-height) * 3);
+        }
+
+        .header-main .column-right {
+            width: calc(var(--header-height) * 3);
+        }
+    }
+}
+
+%hide-right-sidebar {
+    .column-right {
+        display: none;
+
+        &.expanded {
+            /* In the extended state, we open the sidebar
+               to its maximum possible size (otherwise, it
+               would be unnecessarily too narrow). */
+            --right-sidebar-width: var(--right-sidebar-max-width);
+            display: block;
+            position: absolute;
+            float: none;
+            right: 15px;
+            top: 0;
+
+            .simplebar-track.simplebar-vertical {
+                right: 0;
+            }
+
+            .right-sidebar {
+                box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
+                border-left: 1px solid var(--color-border-sidebar);
+                height: 100%;
+                width: var(--right-sidebar-width);
+                right: 0;
+                background-color: var(--color-background);
+            }
+        }
+    }
+}
+
+.hide-right-sidebar {
+    .app-main {
+        @extend %hide-right-sidebar;
+    }
+
+    #navbar-middle {
+        margin-right: var(--right-column-collapsed-sidebar-width);
+    }
+
+    #compose-content,
+    .app-main .column-middle {
+        margin-right: 7px;
+    }
+}
+
+.hide-right-sidebar-by-visibility .app-main .column-right {
+    visibility: hidden;
+}
+
+.left-sidebar-toggle-button .zulip-icon-panel-left {
+    display: none;
+}
+
+.column-middle.expanded {
+    .left-sidebar-toggle-button .zulip-icon-panel-left {
+        display: none;
+    }
+
+    .left-sidebar-toggle-button .zulip-icon-panel-left-dashed {
+        display: block;
+    }
+}
+
+%hide-left-sidebar {
+    .left-sidebar-toggle-button .zulip-icon-panel-left {
+        display: block;
+    }
+
+    .left-sidebar-toggle-button .zulip-icon-panel-left-dashed {
+        display: none;
+    }
+
+    .column-left {
+        display: none;
+
+        &.expanded {
+            /* In the extended state, we open the sidebar
+               to its maximum possible size (otherwise, it
+               would be unnecessarily too narrow). */
+            --left-sidebar-width: var(--left-sidebar-max-width);
+            display: block;
+            position: absolute;
+            float: none;
+            left: 0;
+            top: 0;
+
+            .left-sidebar {
+                background-color: var(--color-background);
+                box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
+                border-right: 1px solid var(--color-border-sidebar);
+                height: 100%;
+                padding-left: 10px;
+                width: var(--left-sidebar-width);
+            }
+        }
+    }
+}
+
+.hide-left-sidebar {
+    .app-main {
+        @extend %hide-left-sidebar;
+    }
+
+    #compose-content,
+    .app-main .column-middle {
+        margin-left: 7px;
+    }
+
+    @container header-container (width > $cq_md_min) {
+        #navbar-middle {
+            margin-left: var(--middle-column-left-margin-fluid-layout);
+        }
+    }
+
+    @container header-container (width < $cq_xl_min) {
+        #top_navbar .column-left {
+            width: auto;
+        }
+    }
+
+    @container header-container (width < $cq_md_min) {
+        #navbar-middle {
+            margin-left: 0;
+        }
+    }
+
+    @container app (width < $cq_xl_min) {
+        #compose-content,
+        .app-main .column-middle {
+            margin-left: 7px;
+        }
+    }
+}
+
+/* Media-query fallback for the cinched-up logo presentation. */
+@media (width > $md_min) {
+    .without-container-query-support {
+        &.hide-left-sidebar {
+            #navbar-middle {
+                margin-left: var(--middle-column-left-margin-fluid-layout);
+            }
+        }
+    }
+}
+
+body:not(.hide-left-sidebar) {
+    /* User can clearly see the unread count in the left sidebar. So,
+       we don't need an indicator here as it will only serve as a disctraction. */
+    #header-container .column-left .left-sidebar-toggle-unreadcount {
+        display: none !important;
+    }
+}
+
+body:not(.spectator-view) {
+    /* The large Log In button for spectators makes this rule
+       inappropriate for that view. */
+    @container header-container (width < $cq_xl_min) {
+        #navbar-middle {
+            /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
+            margin-right: var(--right-column-collapsed-sidebar-width);
+        }
+    }
+}
+
+/* We have some regrettable but temporarily necessary code duplication
+   in the queries that follow.
+
+   In browsers that support spec-aligned, em-aware container queries,
+   we query on the app-main container. That enables breakpoints that
+   look best at a chose base font size.
+
+   However, in browsers that lag the spec, we fall back to the original
+   media queries. The layout will not look as good as it could, but
+   essential scrolling behavior will be maintained. */
+
+@container app (width < $cq_xl_min) {
+    .app-main {
+        @extend %hide-right-sidebar;
+
+        .column-middle {
+            margin-right: 7px;
+        }
+    }
+
+    #typing_notifications,
+    #scheduled_message_indicator,
+    #compose-content {
+        margin-right: 7px;
+    }
+}
+
+@container header-container (width < $cq_md_min) {
+    .header-main .column-left {
+        display: none;
+    }
+
+    #navbar-middle {
+        margin-left: 0;
+    }
+
+    #streamlist-toggle {
+        display: block;
+    }
+
+    .top-navbar-container {
+        /* The --header-height variable is used to make
+        the squared toggle area, so we offset it
+        accordingly. */
+        margin-left: var(--header-height);
+    }
+}
+
+@container app (width < $cq_md_min) {
+    .app-main {
+        @extend %hide-left-sidebar;
+
+        .column-middle {
+            margin-left: 7px;
+            margin-right: 7px;
+        }
+
+        .column-middle .column-middle-inner {
+            margin-left: 0;
+            margin-right: 0;
+        }
+    }
+
+    #typing_notifications,
+    #scheduled_message_indicator,
+    #compose-content {
+        margin-left: 7px;
+    }
+}
+
+@container app (width <= $cq_ml_min) {
+    .column-right.expanded,
+    .column-left.expanded {
+        width: 100vw;
+        max-width: 100%;
+    }
+
+    .app-main .column-right.expanded .right-sidebar,
+    .app-main .column-left.expanded .left-sidebar {
+        width: 100vw;
+        max-width: 100%;
+    }
+}
+
+@container header-container (width <= $cq_sm_min) {
+    .narrow_description {
+        display: none;
+    }
+}
+
+/* Begin fallback media queries. */
+@media (width < $xl_min) {
+    .without-container-query-support {
+        .app-main {
+            @extend %hide-right-sidebar;
+
+            .column-middle {
+                margin-right: 7px;
+            }
+        }
+
+        #navbar-middle {
+            /* = (width of button, square with header) * 4 (number of buttons) + 3px extra margin. */
+            margin-right: calc(var(--header-height) * 4 + 3px);
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-right: 7px;
+        }
+
+        .hide-left-sidebar {
+            #compose-content,
+            .app-main .column-middle {
+                margin-left: 7px;
+            }
+
+            #top_navbar .column-left {
+                width: auto;
+            }
+        }
+    }
+}
+
+@media (width < $md_min) {
+    .without-container-query-support {
+        .app-main {
+            @extend %hide-left-sidebar;
+
+            .column-middle {
+                margin-left: 7px;
+                margin-right: 7px;
+            }
+
+            .column-middle .column-middle-inner {
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
+
+        .header-main .column-left {
+            display: none;
+        }
+
+        #navbar-middle {
+            margin-left: 0;
+        }
+
+        #streamlist-toggle {
+            display: block;
+        }
+
+        .top-navbar-container {
+            margin-left: 40px;
+        }
+
+        #feedback_container {
+            width: calc(90% - 30px);
+            left: 5%;
+            top: 5%;
+        }
+
+        #typing_notifications,
+        #scheduled_message_indicator,
+        #compose-content {
+            margin-left: 7px;
+        }
+    }
+}
+
+@media (width <= $ml_min) {
+    .without-container-query-support {
+        .column-right.expanded,
+        .column-left.expanded {
+            width: 100vw;
+            max-width: 100%;
+        }
+
+        .app-main .column-right.expanded .right-sidebar,
+        .app-main .column-left.expanded .left-sidebar {
+            width: 100vw;
+            max-width: 100%;
+        }
+    }
+}
+
+@media (width <= $sm_min) {
+    .without-container-query-support {
+        .narrow_description {
+            display: none;
+        }
+    }
+}
+
+/* End fallback media queries. */
+
+/* Begin viewport state queries. */
+
+/* We sometimes need the state of the viewport in JavaScript;
+   by setting values on `content:`, we can query instead for
+   those, independent of whether it's a container or media query
+   responsible for layout. See for example `sidebar_ui.ts`.
+
+   These queries for greater than or equal to should be ordered
+   smallest to largest. */
+
+/* Adjustments for smaller viewports are critical
+   regardless of info-density settings, so we
+   don't include a container-query check here. */
+@media (width < $md_min) {
+    .app-main::after {
+        content: "lt_md_min";
+    }
+}
+
+@container app (width >= $cq_md_min) {
+    .app-main::after {
+        content: "gte_md_min";
+    }
+}
+
+@media (width >= $md_min) {
+    .without-container-query-support {
+        .app-main::after {
+            content: "gte_md_min";
+        }
+    }
+}
+
+@container app (width >= $cq_xl_min) {
+    .app-main::after {
+        content: "gte_md_min gte_xl_min";
+    }
+}
+
+@media (width >= $xl_min) {
+    .without-container-query-support {
+        .app-main::after {
+            content: "gte_md_min gte_xl_min";
+        }
+    }
+}
+
+/* End viewport state queries. */
+
+@media (height < $short_navbar_cutoff_height) {
+    .app-main .column-right.expanded .right-sidebar,
+    .app-main .column-left.expanded .left-sidebar {
+        margin-top: var(--navbar-fixed-height);
+        /* For very short screen sizes, skip the relatively large top padding. */
+        padding-top: 0;
+    }
+
+    /* TODO: Properly and accurately align the
+       topmost headers on the left and right
+       sidebar. */
+    .app-main .column-right.expanded .right-sidebar-items {
+        margin-top: 10px;
+    }
+
+    .app-main .column-left.expanded .left-sidebar-navigation-area {
+        margin-top: 10px;
+    }
+
+    /* Usually the styling is applied directly to the icon, but here
+    the icon is `position: static`, so we can't. */
+    .search_closed {
+        top: 5px;
+    }
+
+    #streamlist-toggle,
+    #message_view_header,
+    #searchbox,
+    .header {
+        line-height: var(--header-height);
+        height: var(--header-height);
+    }
+
+    .spectator_narrow_login_button {
+        height: var(--header-height) !important;
+    }
+
+    .left-sidebar-toggle-button {
+        height: var(--header-height);
+    }
+
+    nav
+        .column-left
+        .left-sidebar-toggle-button
+        .left-sidebar-toggle-unreadcount {
+        top: 5px;
+        left: 16px;
+    }
+
+    .left-sidebar-toggle-unreadcount {
+        /* Adjust in response to shorter navbar. */
+        top: 5px;
+        right: 4px;
+    }
+
+    #top_navbar .column-right #personal-menu .header-button-avatar {
+        width: 1.25em; /* 20px at 16px em */
+        height: 1.25em; /* 20px at 16px em */
+    }
+}
+
+/* As these adjustments are properly the province of
+   the viewport, we do not present these mm_min queries
+   in a corresponding container query block. */
+@media (width < $mm_min) {
+    html {
+        overflow-x: hidden;
+    }
+
+    /* We don't want user to experience Zulip below this width since
+       we don't develop features for below this width. */
+    body,
+    html,
+    .app-main,
+    .header-main {
+        min-width: 320px;
+    }
+
+    #compose #compose-content {
+        margin-right: 5px;
+        margin-left: 5px;
+    }
+}
+
+#scroll-to-bottom-button-container {
+    display: block;
+    position: absolute;
+    bottom: 41px;
+    right: 0;
+    visibility: hidden;
+    opacity: 0;
+    transition:
+        visibility 500ms,
+        opacity 500ms ease-in-out;
+
+    &.show {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    #scroll-to-bottom-button-clickable-area {
+        width: 3.75em; /* 60px at 16px em */
+        height: 3.75em; /* 60px at 16px em */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        &:hover #scroll-to-bottom-button {
+            background: hsl(240deg 96% 68%);
+        }
+
+        #scroll-to-bottom-button {
+            text-align: center;
+            width: 2.5em; /* 40px at 16px em */
+            height: 2.5em; /* 40px at 16px em */
+            background: hsl(240deg 96% 68% / 50%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+
+            & .scroll-to-bottom-icon {
+                color: hsl(0deg 0% 100%);
+                margin: 0 auto;
+                font-size: 1.3125em; /* 21px at 16px em */
+            }
+        }
+    }
+}
+
+.spectator_login_for_image_button {
+    max-width: 250px;
+    height: 50px;
+
+    :hover {
+        text-decoration: none;
+    }
+
+    .login_button {
+        padding: 5px;
+        margin-top: 5px;
+
+        .fa {
+            top: 1px;
+        }
+    }
+}
+
+.simplebar-content-wrapper {
+    /* `simplebar-content-wrapper` has `tabindex=-1` set, which makes sure
+       that it does not get focus when navigating via a keyboard.
+
+       But in a few situations, we programmatically focus this
+       element, and in this case, we don't want to see the outline. */
+    outline: none;
+
+    /* This prevents the popover from closing once the top/bottom is reached */
+    overscroll-behavior: contain;
+}
+
+.popover-filter-input-wrapper {
+    display: flex;
+
+    .popover-filter-input {
+        background: var(--color-background-widget-input);
+        color: var(--color-text-dropdown-input);
+        width: 100%;
+        margin: 4px 4px 2px;
+
+        &:focus {
+            background: hsl(0deg 0% 100%);
+            border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
+            box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
+        }
+    }
+}
+
+.dropdown-list-container {
+    .dropdown-list-wrapper {
+        /* Sync with `max-height` in dropdown_widget. */
+        max-height: 210px;
+        /* 200px/14px */
+        min-width: 14.285em;
+
+        .dropdown-list {
+            list-style: none;
+            margin: 0;
+
+            .zulip-icon-preview {
+                font-size: 1.125em;
+            }
+        }
+    }
+
+    &.folder_id-dropdown-list-container {
+        width: calc(var(--modal-input-width) * 0.75);
+
+        /* Alignment adjustments on channel-folder selector. */
+        .dropdown-list-item-name:has(.dropdown-list-buttons) {
+            /* We hold the first row height to 28px at 16px/1em
+               for the sake of the buttons plus their padding. */
+            grid-template-rows: 1.75em minmax(0, auto);
+            /* We also align everything to start, so that we can
+               offset the text from the top to align it with the
+               buttons. */
+            align-items: start;
+
+            .dropdown-list-text-neutral {
+                /* 0.2em is an eyeballed value that keeps the buttons
+                   well aligned with the first/only line of text. */
+                padding-top: 0.2em;
+                align-self: start;
+            }
+        }
+    }
+
+    .no-dropdown-items {
+        color: hsl(0deg 0% 60%);
+        display: none;
+        padding: 3px 10px 3px 8px;
+        font-weight: 400;
+        line-height: 20px;
+        white-space: normal;
+    }
+
+    .dropdown-list .dropdown-list-item-common-styles {
+        display: grid;
+        grid-template:
+            "privacy-icon     item-label       " min-content
+            "item-description item-description" minmax(0, min-content) / minmax(
+                0,
+                auto
+            )
+            minmax(0, 1fr);
+        color: var(--color-dropdown-item);
+        padding: 3px 10px 3px 8px;
+        font-weight: 400;
+        white-space: normal;
+        /* Keep the line-height stable, instead of using the
+           user-set line-height, so that the icon is always
+           vertically centered properly. */
+        line-height: 1.214;
+
+        .channel-privacy-type-icon,
+        .zulip-icon-deactivated-circle {
+            grid-area: privacy-icon;
+            line-height: 1.214;
+            font-size: 0.93em;
+            /* We set only the width so that flexbox
+            can do its work to properly center,
+            regardless of the height. */
+            width: 0.93em;
+            padding-right: 5px;
+            padding-left: 0;
+            /* Override the [data-tippy-root] style in
+               `tooltips.css`.
+               Because we are manually holding icon
+               alignment to the first/only line of a
+               channel, we make this adjustment here.
+               Calculated by eye to look good at 12px-20px. */
+            top: 0.05em;
+        }
+
+        .decorated-channel-name {
+            grid-area: item-label;
+        }
+
+        .dropdown-list-item-description {
+            grid-area: item-description;
+        }
+
+        .dropdown-list-item-name {
+            grid-area: item-label;
+            display: grid;
+            grid-template:
+                "item-text item-buttons" minmax(0, auto)
+                "item-text .           " minmax(0, auto) / minmax(0, 1fr)
+                minmax(0, auto);
+            align-items: center;
+
+            &:has(.dropdown-list-buttons) {
+                grid-template-rows: 1.75em minmax(0, auto);
+                align-items: start;
+
+                .dropdown-list-text-neutral {
+                    padding-top: 0.2em;
+                    align-self: start;
+                }
+            }
+
+            .dropdown-list-text-neutral {
+                grid-area: item-text;
+                align-self: center;
+            }
+        }
+
+        /* This correctly places neutral text items
+           appearing without a wrapping
+           `.dropdown-list-item-name` class. */
+        .dropdown-list-text-neutral {
+            grid-area: item-label;
+            align-self: center;
+        }
+
+        .dropdown-list-buttons {
+            grid-area: item-buttons;
+            display: flex;
+            visibility: hidden;
+        }
+
+        &:focus,
+        &:hover {
+            color: var(--color-dropdown-item);
+            text-decoration: none;
+            background-color: var(--background-color-active-dropdown-item);
+            outline: none;
+
+            .dropdown-list-delete,
+            .dropdown-list-edit,
+            .dropdown-list-manage-folder {
+                visibility: visible;
+            }
+        }
+    }
+}
+
+.dropdown-list-container .list-item {
+    color: var(--color-dropdown-item);
+
+    &:focus,
+    &.current_selection {
+        background-color: var(--background-color-active-dropdown-item);
+        outline: none;
+    }
+}
+
+.inbox-filter-dropdown-list-container,
+.recent-view-filter-dropdown-list-container,
+.folder-filter-dropdown-list-container,
+.stream_settings_filter-dropdown-list-container,
+.user_group_visibility_settings-dropdown-list-container {
+    overflow: visible;
+
+    .list-item {
+        &:focus {
+            border-radius: 4px;
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: -2px;
+            background-color: transparent;
+        }
+
+        &.current_user_setting {
+            background-color: var(--background-color-active-dropdown-item);
+            outline: none;
+        }
+    }
+}
+
+.dropdown-list-item-common-styles .dropdown-list-text-selected {
+    font-weight: 600;
+}
+
+#scheduled_messages_overlay .error-icon-message-recipient {
+    width: 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-grow: 1;
+    color: var(--color-failed-message-send-icon);
+
+    .zulip-icon {
+        padding: 5px;
+    }
+}
+
+.emoji-popover-tab-item {
+    .zulip-icon-star {
+        position: relative;
+        top: 2px;
+    }
+}
+
+.header-main .column-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    & a:focus {
+        filter: none;
+        outline: 0;
+    }
+}
+
+.header-button {
+    width: var(--header-height);
+    height: var(--header-height);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    .zulip-icon {
+        color: var(--color-navbar-icon);
+    }
+
+    .zulip-icon-gear {
+        font-size: 1.125em; /* 18px at 16px em */
+    }
+
+    .zulip-icon-help-bigger,
+    .zulip-icon-user-list {
+        font-size: 1.25em; /* 20px at 16px em */
+    }
+
+    .zulip-icon-help {
+        position: relative;
+        top: 0.5px;
+        right: -0.5px;
+    }
+}
+
+.left-sidebar-toggle-button {
+    .zulip-icon-panel-left,
+    .zulip-icon-panel-left-dashed {
+        font-size: 1.25em; /* 20px at 16px em */
+    }
+}
+
+#personal-menu {
+    .header-button-avatar {
+        /* Put styling on div rather than img to gracefully handle
+           uBlock Origin blocking of gravatar, which seems to make
+           the img disappear. */
+        width: 1.5em; /* 24px at 16px em */
+        height: 1.5em; /* 24px at 16px em */
+        background-size: cover;
+        border-radius: 4px;
+        background-color: var(--color-background-image-loader);
+        border: 1px solid var(--color-border-personal-menu-avatar);
+        overflow: hidden;
+
+        .header-button-avatar-image {
+            /* Overcome `vertical-align: middle`. This prevents the
+               avatar in the navbar from being lower by a pixel. */
+            display: block;
+        }
+
+        &:has(.avatar-loaded) {
+            background-color: transparent;
+            border-color: transparent;
+        }
+    }
+}
+
+.default-language-display,
+.empty-topic-display,
+.empty-topic-placeholder-display::placeholder,
+.drafts-unknown-msg-header-field {
+    font-style: italic;
+}
+
+.popover-menu-user-avatar-container.deactivated,
+.inline_profile_picture.deactivated {
+    position: relative;
+
+    > img {
+        opacity: 0.5;
+    }
+
+    .deactivated-user-icon {
+        background-color: var(--color-background);
+        color: var(--color-user-circle-deactivated);
+        padding: 2px;
+        font-size: 0.8em;
+        position: absolute;
+        border-radius: 10px;
+        bottom: -2px;
+        right: -2px;
+    }
+}
+
+.scroll-to-time {
+    &:focus:not(:focus-visible) {
+        /* Avoid outline on click */
+        outline: none;
+    }
+}

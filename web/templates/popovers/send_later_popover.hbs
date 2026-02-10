@@ -1,0 +1,80 @@
+<div class="popover-menu" id="send_later_popover" data-simplebar data-simplebar-tab-index="-1">
+    <ul role="menu" class="popover-menu-list">
+        <li role="none" class="popover-menu-list-item">
+            <div role="group" class="enter_sends_choices" aria-label="{{t 'Enter to send choices' }}">
+                <label role="menuitemradio" class="enter_sends_choice" tabindex="0">
+                    <input type="radio" class="enter_sends_choice_radio" name="enter_sends_choice" value="true"{{#if enter_sends_true }} checked{{/if}} />
+                    <span class="enter_sends_choice_text_container">
+                        <span class="enter_sends_major enter_sends_choice_text">
+                            {{#tr}}
+                                Press <z-shortcut></z-shortcut> to send
+                                {{#*inline "z-shortcut"}}{{popover_hotkey_hints "Enter"}}{{/inline}}
+                            {{/tr}}
+                        </span>
+                        <span class="enter_sends_minor enter_sends_choice_text">
+                            {{#tr}}
+                                Press <z-shortcut></z-shortcut> to add a new line
+                                {{#*inline "z-shortcut"}}{{popover_hotkey_hints "Ctrl" "Enter"}}{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </span>
+                </label>
+                <label role="menuitemradio" class="enter_sends_choice" tabindex="0">
+                    <input type="radio" class="enter_sends_choice_radio" name="enter_sends_choice" value="false"{{#unless enter_sends_true }} checked{{/unless}} />
+                    <span class="enter_sends_choice_text_container">
+                        <span class="enter_sends_major enter_sends_choice_text">
+                            {{#tr}}
+                                Press <z-shortcut></z-shortcut> to send
+                                {{#*inline "z-shortcut"}}{{popover_hotkey_hints "Ctrl" "Enter"}}{{/inline}}
+                            {{/tr}}
+                        </span>
+                        <span class="enter_sends_minor enter_sends_choice_text">
+                            {{#tr}}
+                                Press <z-shortcut></z-shortcut> to add a new line
+                                {{#*inline "z-shortcut"}}{{popover_hotkey_hints "Enter"}}{{/inline}}
+                            {{/tr}}
+                        </span>
+                    </span>
+                </label>
+            </div>
+        </li>
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="open_send_later_modal popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-calendar" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Schedule message" }}</span>
+            </a>
+        </li>
+        {{#if formatted_send_later_time}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="send_later_selected_send_later_time popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-calendar-clock" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t 'Schedule for {formatted_send_later_time}' }}</span>
+            </a>
+        </li>
+        {{/if}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a href="#scheduled" role="menuitem" class="navigate-link-on-enter popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-calendar-days" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "View scheduled messages" }}</span>
+            </a>
+        </li>
+        <li role="separator" class="popover-menu-separator drafts-item-in-popover"></li>
+        <li role="none" class="link-item popover-menu-list-item drafts-item-in-popover">
+            <a href="#drafts" role="menuitem" class="view_contextual_drafts popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-drafts" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "View drafts" }}</span>
+                <span class="compose-drafts-count-container"><span class="unread_count quiet-count compose-drafts-count"></span></span>
+            </a>
+        </li>
+        {{#if show_compose_new_message}}
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="compose_new_message popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-file-check" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Save draft and start a new message" }}</span>
+            </a>
+        </li>
+        {{/if}}
+    </ul>
+</div>

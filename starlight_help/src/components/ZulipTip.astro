@@ -1,0 +1,65 @@
+---
+import assert from "node:assert/strict";
+
+import type {Element} from "hast";
+import {fromHtml} from "hast-util-from-html";
+import {toHtml} from "hast-util-to-html";
+
+import lightbulb_svg from "../../../web/icons/lightbulb.svg?raw";
+
+const lightbulb_icon_fragment = fromHtml(lightbulb_svg, {fragment: true});
+const lightbulb_icon_first_child = lightbulb_icon_fragment.children[0]!;
+assert.ok(
+    lightbulb_icon_first_child.type === "element" &&
+        lightbulb_icon_first_child.tagName === "svg",
+);
+lightbulb_icon_first_child.properties.class =
+    "zulip-unplugin-icon aside-icon-lightbulb";
+
+// We want to add the `Tip: ` prefix without a line break or wrapping
+// it in a paragraph. If we write `Tip: <slot />`, slot will be wrapped
+// in it's own paragraph and thus will be placed on the next line as
+// `Tip:`. We have to edit slot HTML tree directly instead to solve this.
+// Same case applies for the ligthbulb icon we are inserting. We just
+// inject the icon as raw svg.
+const prefix_text_element: Element = {
+    type: "element",
+    tagName: "strong",
+    properties: {},
+    children: [
+        {
+            type: "text",
+            // Whitespace before the text to ensure space between
+            // this text and the preceding icon.
+            value: " Tip: ",
+        },
+    ],
+};
+let prefix_element_list = [lightbulb_icon_first_child, prefix_text_element];
+
+const tree = fromHtml(await Astro.slots.render("default"), {fragment: true});
+const first_element = tree.children[0];
+assert.ok(first_element?.type === "element");
+
+// This is currently happening only in one case, for _ImportSelfHostedServerTips.mdx
+// where the tip contains an unordered list. Just placing the element as is without
+// a paragraph does not look good in that case.
+if (first_element.tagName !== "p") {
+    const paragraph_wrapping_element: Element = {
+        type: "element",
+        tagName: "p",
+        properties: {},
+        children: [...prefix_element_list],
+    };
+    prefix_element_list = [paragraph_wrapping_element];
+}
+
+first_element.children = [...prefix_element_list, ...first_element.children];
+tree.children[0] = first_element;
+---
+
+<aside aria-label="Tip" class=`starlight-aside starlight-aside--tip`>
+    <div class="starlight-aside__content">
+        <Fragment set:html={toHtml(tree)} />
+    </div>
+</aside>

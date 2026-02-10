@@ -1,0 +1,526 @@
+#!/usr/bin/env python3
+import argparse
+import asyncio
+import errno
+import logging
+import os
+import pwd
+import signal
+import subprocess
+import sys
+from collections.abc import Awaitable, Callable
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+from urllib.parse import urlsplit
+
+import aiohttp
+import aiohttp.web_fileresponse
+from aiohttp import hdrs, web
+from aiohttp.http_exceptions import BadStatusLine
+
+from scripts.lib.zulip_tools import CYAN, ENDC
+from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
+from zerver.lib.mime_types import EXTRA_MIME_TYPES
+from zerver.lib.partial import partial
+
+if "posix" in os.name and os.geteuid() == 0:
+    raise RuntimeError("run-dev should not be run as root.")
+
+DESCRIPTION = """
+Starts the app listening on localhost, for local development.
+
+This script launches the Django and Tornado servers, then runs a reverse proxy
+which serves to both of them.  After it's all up and running, browse to
+
+    http://localhost:9991/
+
+Note that, while runserver and runtornado have the usual auto-restarting
+behavior, the reverse proxy itself does *not* automatically restart on changes
+to this file.
+"""
+
+parser = argparse.ArgumentParser(
+    description=DESCRIPTION, formatter_class=argparse.RawTextHelpFormatter
+)
+
+parser.add_argument("--test", action="store_true", help="Use the testing database and ports")
+parser.add_argument("--minify", action="store_true", help="Minifies assets for testing in dev")
+parser.add_argument("--interface", help="Set the IP or hostname for the proxy to listen on")
+parser.add_argument(
+    "--no-clear-memcached",
+    action="store_false",
+    dest="clear_memcached",
+    help="Do not clear memcached on startup",
+)
+parser.add_argument("--streamlined", action="store_true", help="Avoid process_queue, etc.")
+parser.add_argument(
+    "--behind-https-proxy",
+    action="store_true",
+    help="Start app server in HTTPS mode, using reverse proxy",
+)
+parser.add_argument(
+    "--help-center-static-build",
+    action="store_true",
+    help="Host existing static build of help center with search",
+)
+parser.add_argument(
+    "--help-center-dev-server",
+    action="store_true",
+    help="Run dev server for help center alongside the Zulip app. Hot reload will work for this mode, but search will not work in the generated website.",
+)
+parser.add_argument(
+    "--only-help-center",
+    action="store_true",
+    help="Run help center dev server on port 9991 without running the Zulip web app and related services",
+)
+add_provision_check_override_param(parser)
+options = parser.parse_args()
+help_center_dev_server_enabled = (
+    options.help_center_dev_server and not options.help_center_static_build
+)
+
+assert_provisioning_status_ok(options.skip_provision_check)
+
+if options.interface is None:
+    user_id = os.getuid()
+    user_name = pwd.getpwuid(user_id).pw_name
+    if user_name in ["vagrant", "zulipdev"]:
+        # In the Vagrant development environment, we need to listen on
+        # all ports, and it's safe to do so, because Vagrant is only
+        # exposing certain guest ports (by default just 9991) to the
+        # host.  The same argument applies to the remote development
+        # servers using username "zulipdev".
+        options.interface = None
+    else:
+        # Otherwise, only listen to requests on localhost for security.
+        options.interface = "127.0.0.1"
+elif options.interface == "":
+    options.interface = None
+
+runserver_args: list[str] = []
+base_port = 9991
+if options.test:
+    base_port = 9981
+    settings_module = "zproject.test_settings"
+    # Don't auto-reload when running Puppeteer tests
+    runserver_args = ["--noreload"]
+    runtornado_command = ["./manage.py", "runtornado"]
+else:
+    settings_module = "zproject.settings"
+    runtornado_command = [
+        "-m",
+        "tornado.autoreload",
+        "--until-success",
+        "./manage.py",
+        "runtornado",
+        "--autoreload",
+        "--immediate-reloads",
+        "--automated",
+    ]
+
+manage_args = [f"--settings={settings_module}"]
+os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
+
+# Disable Djangos development server warning; we provide plenty of
+# warnings on this point in the documentation, which is a better place
+# to stop folks than the actual server.
+os.environ["DJANGO_RUNSERVER_HIDE_WARNING"] = "true"
+
+if options.behind_https_proxy:
+    os.environ["BEHIND_HTTPS_PROXY"] = "1"
+
+proxy_port = base_port
+django_port = base_port + 1
+tornado_port = base_port + 2
+webpack_port = base_port + 3
+help_center_port = base_port + 4
+tusd_port = base_port + 5
+
+for mime_type, extension in EXTRA_MIME_TYPES:
+    aiohttp.web_fileresponse.CONTENT_TYPES.add_type(mime_type, extension)
+
+os.chdir(os.path.join(os.path.dirname(__file__), ".."))
+
+if options.clear_memcached:
+    subprocess.check_call("./scripts/setup/flush-memcached")
+
+# Set up a new process group, so that we can later kill run{server,tornado}
+# and all of the processes they spawn.
+os.setpgrp()
+
+# Save pid of parent process to the pid file. It can be used later by
+# tools/stop-run-dev to kill the server without having to find the
+# terminal in question.
+
+if options.test:
+    pid_file_path = os.path.join(os.path.join(os.getcwd(), "var/puppeteer/run_dev.pid"))
+else:
+    pid_file_path = os.path.join(os.path.join(os.getcwd(), "var/run/run_dev.pid"))
+
+# Required for compatibility python versions.
+if not os.path.exists(os.path.dirname(pid_file_path)):
+    os.makedirs(os.path.dirname(pid_file_path))
+with open(pid_file_path, "w+") as f:
+    f.write(str(os.getpgrp()) + "\n")
+
+
+def server_processes() -> list[list[str]]:
+    main_cmds = [
+        [
+            "./manage.py",
+            "rundjangoserver",
+            *manage_args,
+            *runserver_args,
+            f"127.0.0.1:{django_port}",
+        ],
+        [
+            "env",
+            "PYTHONUNBUFFERED=1",
+            "python3",
+            *runtornado_command,
+            *manage_args,
+            f"127.0.0.1:{tornado_port}",
+        ],
+    ]
+
+    if options.streamlined:
+        # The streamlined operation allows us to do many
+        # things, but search/etc. features won't work.
+        return main_cmds
+
+    other_cmds = [
+        ["./manage.py", "process_queue", "--all", *manage_args, "--automated"],
+        [
+            "env",
+            "PGHOST=127.0.0.1",  # Force password authentication using .pgpass
+            "./puppet/zulip/files/postgresql/process_fts_updates",
+            "--quiet",
+        ],
+        ["./manage.py", "deliver_scheduled_messages", "--automated"],
+        [
+            "./manage.py",
+            "runtusd",
+            f"{tusd_port}",
+            f"http://localhost:{django_port}/api/internal/tusd",
+        ],
+    ]
+
+    # NORMAL (but slower) operation:
+    return main_cmds + other_cmds
+
+
+def do_one_time_webpack_compile() -> None:
+    # We just need to compile webpack assets once at startup, not run a daemon,
+    # in test mode.  Additionally, webpack-dev-server doesn't support running 2
+    # copies on the same system, so this model lets us run the Puppeteer tests
+    # with a running development server.
+    subprocess.check_call(["./tools/webpack", "--quiet", "--test"])
+
+
+def start_webpack_watcher() -> "subprocess.Popen[bytes]":
+    webpack_cmd = ["./tools/webpack", "--watch", f"--port={webpack_port}"]
+    if options.minify:
+        webpack_cmd.append("--minify")
+    if options.interface is None:
+        # If interface is None and we're listening on all ports, we also need
+        # to disable the webpack host check so that webpack will serve assets.
+        webpack_cmd.append("--disable-host-check")
+    if options.interface:
+        webpack_cmd.append(f"--host={options.interface}")
+    else:
+        webpack_cmd.append("--host=0.0.0.0")
+    return subprocess.Popen(webpack_cmd)
+
+
+session: aiohttp.ClientSession
+
+# https://datatracker.ietf.org/doc/html/rfc2616#section-13.5.1
+HOP_BY_HOP_HEADERS = {
+    hdrs.CONNECTION,
+    hdrs.KEEP_ALIVE,
+    hdrs.PROXY_AUTHENTICATE,
+    hdrs.PROXY_AUTHORIZATION,
+    hdrs.TE,
+    hdrs.TRAILER,
+    hdrs.TRANSFER_ENCODING,
+    hdrs.UPGRADE,
+}
+
+# Headers that aiohttp would otherwise generate by default
+SKIP_AUTO_HEADERS = {
+    hdrs.ACCEPT,
+    hdrs.ACCEPT_ENCODING,
+    hdrs.CONTENT_TYPE,
+    hdrs.USER_AGENT,
+}
+
+
+async def forward(upstream_port: int, request: web.Request) -> web.StreamResponse:
+    try:
+        upstream_response = await session.request(
+            request.method,
+            request.url.with_host("127.0.0.1").with_port(upstream_port),
+            headers=[
+                (key, value)
+                for key, value in request.headers.items()
+                if key not in HOP_BY_HOP_HEADERS
+            ],
+            data=request.content.iter_any() if request.body_exists else None,
+            allow_redirects=False,
+            auto_decompress=False,
+            skip_auto_headers=SKIP_AUTO_HEADERS,
+        )
+    except aiohttp.ClientError as error:
+        logging.error(
+            "Failed to forward %s %s to port %d: %s",
+            request.method,
+            request.url.path,
+            upstream_port,
+            error,
+        )
+        raise web.HTTPBadGateway from error
+
+    response = web.StreamResponse(status=upstream_response.status, reason=upstream_response.reason)
+    response.headers.extend(
+        (key, value)
+        for key, value in upstream_response.headers.items()
+        if key not in HOP_BY_HOP_HEADERS
+    )
+    assert request.remote is not None
+    response.headers["X-Real-IP"] = request.remote
+    response.headers["X-Forwarded-Port"] = str(proxy_port)
+    await response.prepare(request)
+    async for data in upstream_response.content.iter_any():
+        await response.write(data)
+    await response.write_eof()
+    return response
+
+
+def run_help_center_dev_server(
+    allowed_hosts: str, port: int = help_center_port
+) -> "subprocess.Popen[bytes]":
+    env = os.environ.copy()
+    env["ZULIP_WEB_APP_PROXY_PORT"] = str(proxy_port)
+
+    return subprocess.Popen(
+        [
+            "/usr/local/bin/corepack",
+            "pnpm",
+            "dev",
+            f"--port={port}",
+            "--host",
+            f"--allowed-hosts={allowed_hosts}",
+        ],
+        cwd="starlight_help",
+        env=env,
+    )
+
+
+def get_help_center_allowed_hosts() -> str:
+    import django
+
+    django.setup()
+    from django.conf import settings
+
+    hostnames = set()
+    # * is not a valid value for --allowed-hosts in vite.
+    # Ports are not allowed for --allowed-hosts in vite.
+    for host in settings.ALLOWED_HOSTS:
+        if host != "*":
+            hostname = urlsplit(f"//{host}").hostname
+            if hostname:
+                hostnames.add(hostname)
+
+    return ",".join(hostnames)
+
+
+@web.middleware
+async def help_center_middleware(
+    request: web.Request, handler: Callable[[web.Request], Awaitable[web.StreamResponse]]
+) -> web.StreamResponse:
+    if request.path.startswith("/help"):
+        try:
+            filename = request.match_info["filename"]
+            _name, ext = os.path.splitext(filename)
+            if not ext:
+                filename = os.path.join(filename, "index.html")
+            request.match_info["filename"] = filename
+        except KeyError:
+            pass
+
+    return await handler(request)
+
+
+middlewares = []
+if options.help_center_static_build:
+    middlewares.append(help_center_middleware)
+
+app = web.Application(middlewares=middlewares)
+
+
+def setup_routes(
+    enable_help_center: bool = False, enable_help_center_dev_server: bool = False
+) -> None:
+    if enable_help_center:
+        # Order of adding the rules matters. aiohttp will stop at the first
+        # match, and we want `/help` to be matched before Django URIs.
+        try:
+            app.router.add_static("/help", "starlight_help/dist")
+        except ValueError:
+            print("""Please run the build step for the help center before enabling it.
+The instructions for the build step can be found in the `./devtools`
+page. `/help` urls will give you an error until you complete the
+build step and rerun `run-dev`.""")
+    elif enable_help_center_dev_server:
+
+        async def redirect_help(request: web.Request) -> web.HTTPFound:
+            return web.HTTPFound(request.url.with_port(help_center_port))
+
+        app.add_routes(
+            [
+                web.route(hdrs.METH_ANY, r"/{path:(help).*}", redirect_help),
+            ]
+        )
+    app.add_routes(
+        [
+            web.route(
+                hdrs.METH_ANY, r"/{path:json/events|api/v1/events}", partial(forward, tornado_port)
+            ),
+            web.route(hdrs.METH_ANY, r"/{path:webpack/.*}", partial(forward, webpack_port)),
+            web.route(hdrs.METH_ANY, r"/{path:api/v1/tus/.*}", partial(forward, tusd_port)),
+            web.route(hdrs.METH_ANY, r"/{path:.*}", partial(forward, django_port)),
+        ]
+    )
+
+
+def print_listeners(external_host_url: str) -> None:
+    if options.only_help_center:
+        print(
+            f"\n{CYAN}Help center dev server running on:{ENDC} {external_host_url}/help\nZulip web app and other related services will not run in this mode."
+        )
+        return
+
+    print(f"\nStarting Zulip on:\n\n\t{CYAN}{external_host_url}/{ENDC}\n\nInternal ports:")
+    ports = [
+        (proxy_port, "Development server proxy (connect here)"),
+        (django_port, "Django"),
+        (tornado_port, "Tornado"),
+    ]
+
+    if not options.test:
+        ports.append((webpack_port, "webpack"))
+
+    if help_center_dev_server_enabled:
+        ports.append((help_center_port, "Help center - Astro dev server"))
+
+    if not options.streamlined:
+        ports.append((tusd_port, "tusd"))
+
+    for port, label in ports:
+        print(f"   {port}: {label}")
+    print()
+
+
+def https_log_filter(record: logging.LogRecord) -> bool:
+    # aiohttp emits an exception with a traceback when receiving an
+    # https request (https://github.com/aio-libs/aiohttp/issues/8065).
+    # Abbreviate it to a one-line message.
+    if (
+        record.exc_info is not None
+        and isinstance(error := record.exc_info[1], BadStatusLine)
+        and error.message.startswith(
+            (
+                "Invalid method encountered:\n\n  b'\\x16",
+                'Invalid method encountered:\n\n  b"\\x16',
+            )
+        )
+    ):
+        record.msg = "Rejected https request (this development server only supports http)"
+        record.exc_info = None
+    return True
+
+
+logging.getLogger("aiohttp.server").addFilter(https_log_filter)
+
+runner: web.AppRunner
+children: list["subprocess.Popen[bytes]"] = []
+
+
+async def serve() -> None:
+    global runner, session
+
+    # Since we can't import settings from here, we duplicate some
+    # EXTERNAL_HOST logic from dev_settings.py.
+    IS_DEV_DROPLET = pwd.getpwuid(os.getuid()).pw_name == "zulipdev"
+    if IS_DEV_DROPLET:
+        # Technically, the `zulip.` is a subdomain of the server, so
+        # this is kinda misleading, but 99% of development is done on
+        # the default/zulip subdomain.
+        default_hostname = "zulip." + os.uname()[1].lower()
+    else:
+        default_hostname = "localhost"
+
+    external_host = os.getenv("EXTERNAL_HOST", f"{default_hostname}:{proxy_port}")
+    http_protocol = "https" if options.behind_https_proxy else "http"
+    external_host_url = f"{http_protocol}://{external_host}"
+
+    if options.only_help_center:
+        help_center_allowed_hosts = get_help_center_allowed_hosts()
+        children.append(run_help_center_dev_server(help_center_allowed_hosts, proxy_port))
+        print_listeners(external_host_url)
+        return
+
+    if options.test:
+        do_one_time_webpack_compile()
+    else:
+        children.append(start_webpack_watcher())
+
+    if help_center_dev_server_enabled:
+        help_center_allowed_hosts = get_help_center_allowed_hosts()
+        children.append(run_help_center_dev_server(help_center_allowed_hosts))
+
+    setup_routes(options.help_center_static_build, options.help_center_dev_server)
+
+    children.extend(subprocess.Popen(cmd) for cmd in server_processes())
+
+    session = aiohttp.ClientSession()
+    runner = web.AppRunner(app, auto_decompress=False, handler_cancellation=True)
+    await runner.setup()
+    site = web.TCPSite(runner, host=options.interface, port=proxy_port)
+    try:
+        await site.start()
+    except OSError as e:
+        if e.errno == errno.EADDRINUSE:
+            print("\n\nERROR: You probably have another server running!!!\n\n")
+        raise
+
+    print_listeners(external_host_url)
+
+
+loop = asyncio.new_event_loop()
+
+try:
+    loop.run_until_complete(serve())
+    for s in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(s, loop.stop)
+    loop.run_forever()
+finally:
+    loop.run_until_complete(runner.cleanup())
+    loop.run_until_complete(session.close())
+
+    for child in children:
+        child.terminate()
+
+    print("Waiting for children to stop...")
+    for child in children:
+        child.wait()
+
+    # Remove pid file when development server closed correctly.
+    os.remove(pid_file_path)

@@ -1,0 +1,1 @@
+deb [signed-by=/etc/apt/keyrings/teleport-pubkey.asc] https://apt.releases.teleport.dev/ubuntu noble stable/v17

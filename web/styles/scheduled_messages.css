@@ -1,0 +1,37 @@
+#reminders-overlay-container,
+#scheduled_messages_overlay_container {
+    .no-overlay-messages {
+        display: none;
+
+        &:only-child {
+            display: block;
+        }
+    }
+}
+
+#scheduled_message_indicator {
+    display: block;
+    margin-left: 10px;
+    font-style: italic;
+    color: hsl(0deg 0% 53%);
+}
+
+#reminders-overlay-container .message_content {
+    cursor: auto;
+}
+
+.schedule-reminder-note {
+    /* Horizontal resizing in the popover doesn't look good at all. */
+    resize: vertical;
+    width: 100%;
+    min-width: 10em;
+    padding: 3px;
+    /* We set the minimum height of textarea to be enough for two lines of text. */
+    min-height: calc(2em * var(--base-line-height-unitless));
+
+    background-color: var(--background-color-textarea);
+
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+    font-family: "Source Sans 3 VF", sans-serif;
+}

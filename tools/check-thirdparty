@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+"""Check the docs/THIRDPARTY file against the DEP-5 copyright format.
+
+https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+
+Disclaimer: This script is not a lawyer.  It cannot validate that the
+claimed licenses are correct.  It can only check for basic syntactic
+issues.
+"""
+
+# Copyright © 2020 Kandra Labs, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+
+import difflib
+import io
+import os
+import subprocess
+import sys
+
+from debian import copyright
+
+COPYRIGHT_FILENAME = "docs/THIRDPARTY"
+os.chdir(os.path.join(os.path.dirname(__file__), ".."))
+status = 0
+
+*files, empty = subprocess.check_output(
+    ["git", "ls-files", "-z"],
+    encoding="utf-8",
+).split("\0")
+assert empty == ""
+files += [
+    "static/generated/emoji/images/emoji/unicode/ignore-this-path",
+]
+
+with open(COPYRIGHT_FILENAME) as f:
+    lines = list(f)
+c = copyright.Copyright(lines)
+
+if not c.header.known_format():
+    print(f"{COPYRIGHT_FILENAME}: Unknown header format {c.header.format}")
+    status = 1
+
+defined_licenses = {
+    p.license.to_str().split("\n", 1)[0]
+    for p in c.all_license_paragraphs()
+    if "\n" in p.license.to_str()
+}
+
+for p in c.all_files_paragraphs():
+    for g in p.files:
+        if not any(map(copyright.globs_to_re([g]).fullmatch, files)):
+            print(f"{COPYRIGHT_FILENAME}: No such file {g}")
+            status = 1
+
+    if "\n" not in p.license.to_str() and p.license.to_str() not in defined_licenses:
+        print(f"{COPYRIGHT_FILENAME}: Missing license text for {p.license.to_str()}")
+        status = 1
+
+dumped = c.dump()
+if dumped != "".join(lines):
+    print(f"{COPYRIGHT_FILENAME}: Changes expected:")
+    sys.stdout.writelines(
+        difflib.unified_diff(
+            lines,
+            io.StringIO(dumped).readlines(),
+            COPYRIGHT_FILENAME,
+            COPYRIGHT_FILENAME,
+        ),
+    )
+    status = 1
+
+sys.exit(status)

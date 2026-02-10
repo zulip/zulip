@@ -1,0 +1,34 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>{{ _("No organization found") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+
+<div class="app find-account-page flex full-page account-creation">
+    <div class="inline-block new-style">
+        <div class="lead">
+            <h1 class="get-started">{{ _('No organization found') }}</h1>
+        </div>
+
+        <div class="app-main find-account-page-container white-box">
+            <p>
+                {% trans %}There is no Zulip organization at <b>{{ current_url }}</b>.{% endtrans %}
+            </p>
+            <p>
+                {% if corporate_enabled %}
+                    {% trans %}Please try a different URL, <a href="{{ root_domain_url }}/accounts/find/">get a list of your Zulip Cloud accounts</a>, or <a href="mailto:{{ support_email }}">contact Zulip support</a>.{% endtrans %}
+                {% else %}
+                    {% trans %}Please try a different URL, <a href="{{ root_domain_url }}/accounts/find/">get a list of your accounts</a> on this server, or <a href="mailto:{{ support_email }}">contact this Zulip server's administrators</a>.{% endtrans %}
+                {% endif %}
+            </p>
+            {% if is_selfhosting_management_error_page %}
+            <p>
+                {% trans %}<a href="{{ current_url }}/serverlogin/">Click here</a> to access plan management for your Zulip server.{% endtrans %}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

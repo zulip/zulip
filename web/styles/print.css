@@ -1,0 +1,107 @@
+@media print {
+    /* Hide unnecessary blocks. */
+    #navbar_alerts_wrapper,
+    #streamlist-toggle,
+    #left-sidebar-container,
+    #right-sidebar-container,
+    .column-left,
+    .top-messages-logo,
+    #userlist-toggle,
+    .message_length_controller,
+    #loading_older_messages_indicator,
+    #page_loading_indicator,
+    #message_feed_errors_container,
+    #bottom_whitespace,
+    #mark_read_on_scroll_state_banner,
+    #mark_read_on_scroll_state_banner_place_holder,
+    .trailing_bookend,
+    #compose {
+        display: none;
+    }
+
+    /* Allow printer to set the margins, and
+       prevent Safari from using screen-based ones. */
+    .column-middle {
+        margin: 0;
+    }
+
+    /* Prevent headers from running on every page. */
+    #navbar-fixed-container,
+    .message-feed .message_header {
+        position: static;
+    }
+
+    /* Save a bit of paper by removing height, which
+       otherwise creates a blank final page, and padding. */
+    html,
+    body {
+        height: auto;
+    }
+
+    #message_feed_container {
+        padding-top: 0;
+    }
+
+    /* Hide unnecessary controls, but leave them
+       in the document flow. */
+    .search_icon,
+    #search_exit,
+    .settings-dropdown-cog,
+    .recipient_bar_controls {
+        visibility: hidden;
+    }
+
+    /* Try to keep the message header with the messages
+       that follow in interleaved views. */
+    .message_header_stream {
+        break-after: avoid;
+    }
+
+    /* Don't highlight the selected message. */
+    .selected_message .messagebox-content {
+        outline: 0;
+    }
+
+    .messagebox-content {
+        .message_edit_notice,
+        .message-time {
+            /* Firefox seems to have a bug that fuzzes out
+               small text with opacity; this unsets that
+               value, and replaces with a matching gray. */
+            opacity: unset;
+            color: hsl(0deg 0% 0% / 48%);
+        }
+    }
+
+    /* Show collapsed content for printing. Note that
+       CSS Grid does not yet break very intelligently
+       in all browsers, so longer messages may sometimes
+       appear at the top of new pages. */
+    .message_content.collapsed,
+    .message_content.condensed {
+        max-height: unset !important;
+        min-height: unset !important;
+        overflow: auto !important;
+        height: auto !important;
+        mask-image: none;
+    }
+
+    /* Print links in the same color as text, with any
+       likely full URL values in parentheses. */
+    .message_content a {
+        color: inherit;
+
+        &[href^="http"]::after {
+            content: " (" attr(href) ")";
+        }
+    }
+
+    /* Ensure that emoji print. They are background-images,
+       which ordinarily do not print, so these properties
+       should ensure proper printing of inline, status, and
+       other emoji. */
+    .emoji {
+        color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

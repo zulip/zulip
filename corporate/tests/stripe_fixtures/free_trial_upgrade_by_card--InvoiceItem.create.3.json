@@ -1,0 +1,32 @@
+{
+  "amount": 152000,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED",
+  "date": 1000000000,
+  "description": "Zulip Cloud Standard - renewal",
+  "discountable": false,
+  "discounts": [],
+  "id": "free_trial_upgrade_by_card--InvoiceItem.create.3.json",
+  "invoice": "in_NORMALIZED",
+  "livemode": false,
+  "metadata": {},
+  "net_amount": 152000,
+  "object": "invoiceitem",
+  "parent": null,
+  "period": {
+    "end": 1393729445,
+    "start": 1362193445
+  },
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "8000"
+  },
+  "proration": false,
+  "quantity": 19,
+  "tax_rates": [],
+  "test_clock": null
+}

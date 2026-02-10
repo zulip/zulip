@@ -1,0 +1,32 @@
+{{! Stream sidebar rows }}
+
+<li class="narrow-filter{{#if is_muted}} out_of_home_view{{/if}}" data-stream-id="{{id}}">
+    <div class="bottom_left_row">
+        <a href="{{url}}" class="subscription_block selectable_sidebar_block" draggable="false">
+
+            <span class="stream-privacy-original-color-{{id}} stream-privacy filter-icon" style="color: {{color}}">
+                {{> stream_privacy . }}
+            </span>
+
+            <span class="stream-name">{{name}}</span>
+
+            <div class="left-sidebar-controls">
+                {{#if can_post_messages}}
+                <div class="channel-new-topic-button tippy-zulip-tooltip hidden-for-spectators auto-hide-left-sidebar-overlay" data-tippy-content="{{#if (or is_empty_topic_only_channel cannot_create_topics_in_channel)}}{{t 'New message'}}{{else}}{{t 'New topic'}}{{/if}}" data-stream-id="{{id}}">
+                    <i class="channel-new-topic-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
+                </div>
+                {{/if}}
+            </div>
+
+            <div class="stream-markers-and-unreads">
+                <span class="unread_mention_info"></span>
+                <span class="unread_count normal-count"></span>
+                <span class="masked_unread_count">
+                    <i class="zulip-icon zulip-icon-masked-unread"></i>
+                </span>
+            </div>
+
+            <span class="sidebar-menu-icon stream-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+        </a>
+    </div>
+</li>

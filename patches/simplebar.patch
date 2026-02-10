@@ -1,0 +1,12 @@
+diff --git a/package.json b/package.json
+index c32d49a585411bce4d1e0ce02895c23f8d3f7849..1935c22ae7f4db47ffce1d8341bf975f0d99c046 100644
+--- a/package.json
++++ b/package.json
+@@ -25,6 +25,7 @@
+       "require": "./dist/index.cjs",
+       "types": "./dist/index.d.ts"
+     },
++    "./dist/simplebar.css": "./dist/simplebar.css",
+     "./dist/simplebar.min.css": "./dist/simplebar.min.css"
+   },
+   "homepage": "https://grsmto.github.io/simplebar/",

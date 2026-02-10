@@ -1,0 +1,29 @@
+<div class="popover-menu" data-simplebar data-simplebar-tab-index="-1">
+    <ul role="menu" class="popover-menu-list condensed-views-popover-menu">
+        {{#each views}}
+            {{> left_sidebar_view_popover_item .}}
+        {{/each}}
+        {{#unless is_home_view_active}}
+        <li role="separator" class="popover-menu-separator"></li>
+        {{#if unread_messages_present}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="popover-menu-link mark_all_messages_as_read" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-read" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Mark messages as read" }}</span>
+            </a>
+        </li>
+        {{/if}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="popover-menu-link toggle_display_unread_message_count" tabindex="0">
+                {{#if show_unread_count}}
+                <i class="popover-menu-icon zulip-icon zulip-icon-hide" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Hide unread counter" }}</span>
+                {{else}}
+                <i class="popover-menu-icon zulip-icon zulip-icon-eye" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Show unread counter" }}</span>
+                {{/if}}
+            </a>
+        </li>
+        {{/unless}}
+    </ul>
+</div>

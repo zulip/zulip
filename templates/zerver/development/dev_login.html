@@ -1,0 +1,125 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "dev-login" %}
+
+{% block title %}
+<title>Log in | Zulip Dev</title>
+{% endblock %}
+
+{# Login page. #}
+{% block portico_content %}
+<!-- The following empty tag has unique data-page-id so that this
+page can be easily identified in it's respective JavaScript file -->
+<div data-page-id="dev-login"></div>
+<div class="app login-page flex full-page">
+    <div class="app-main login-page-container dev-login white-box">
+        {% if current_realm %}
+        <h4 class="login-page-header">Click on a user to log in to {{ current_realm.name }}!</h4>
+        {% else %}
+        <h4 class="login-page-header">Click on a user to log in!</h4>
+        {% endif %}
+        <p class="devlogin_subheader">(Browse the <a href="/devtools">developer tools</a> or visit the <a href="/login/">normal login page</a>.)</p>
+        <form name="direct_login_form" id="direct_login_form" method="post" class="login-form">
+            <input type="hidden" name="next" value="{{ next }}" />
+            <div class="controls">
+                <div class="group">
+                    {% if realm_web_public_access_enabled %}
+                    <h2>{{_('Anonymous user') }}</h2>
+                    <p>
+                        <input type="submit" formaction="{{ current_realm.url }}{{ url('login-local') }}"
+                          name="prefers_web_public_view" class="dev-button dev-login-button" value="Anonymous login" />
+                    </p>
+                    {% endif %}
+                    <h2>{{_('Owners') }}</h2>
+                    {% if direct_owners %}
+                        {% for direct_owner in direct_owners %}
+                        <p>
+                            <button type="submit" formaction="{{ direct_owner.realm.url }}{{ url('login-local') }}"
+                              name="direct_email" class="dev-button dev-login-button" value="{{ direct_owner.delivery_email }}">
+                                {% if direct_owner.realm.demo_organization_scheduled_deletion_date %}
+                                    {{ direct_owner.full_name }}
+                                {% else %}
+                                    {{ direct_owner.delivery_email }}
+                                {% endif %}
+                            </button>
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No owners found in this realm</p>
+                    {% endif %}
+                    <h2>{{ _('Administrators') }}</h2>
+                    {% if direct_admins %}
+                        {% for direct_admin in direct_admins %}
+                        <p>
+                            <input type="submit" formaction="{{ direct_admin.realm.url }}{{ url('login-local') }}"
+                              name="direct_email" class="dev-button dev-login-button" value="{{ direct_admin.delivery_email }}" />
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No administrators found in this realm</p>
+                    {% endif %}
+                    <h2>{{ _('Moderators') }}</h2>
+                    {% if direct_moderators %}
+                        {% for direct_moderator in direct_moderators %}
+                        <p>
+                            <input type="submit" formaction="{{ direct_moderator.realm.url }}{{ url('login-local') }}"
+                              name="direct_email" class="dev-button dev-login-button" value="{{ direct_moderator.delivery_email }}" />
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No moderators found in this realm</p>
+                    {% endif %}
+                    <h2>{{ _('Guest users') }}</h2>
+                    {% if guest_users %}
+                        {% for guest_user in guest_users %}
+                        <p>
+                            <input type="submit" formaction="{{ guest_user.realm.url }}{{ url('login-local') }}"
+                              name="direct_email" class="dev-button dev-login-button" value="{{ guest_user.delivery_email }}" />
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No guest users found in this realm</p>
+                    {% endif %}
+                </div>
+
+                <div class="group">
+                    <h2>{{ _('Normal users') }}</h2>
+                    {% if direct_users %}
+                        {% for direct_user in direct_users %}
+                        <p>
+                            <input type="submit" formaction="{{ direct_user.realm.url }}{{ url('login-local') }}"
+                              name="direct_email" class="dev-button dev-login-button" value="{{ direct_user.delivery_email }}" />
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No normal users found in this realm</p>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+        <form name="change_realm" action="{{ url('login_page') }}" method="post">
+            {{ csrf_input }}
+            <h2>Realm</h2>
+            <select class="bootstrap-focus-style" name="new_realm" onchange="this.form.submit()">
+                <option value="all_realms" {% if not current_realm %}selected="selected"{% endif %}>All realms</option>
+                {% for realm in all_realms %}
+                <option value="{{realm.string_id}}" {% if current_realm == realm %}selected="selected"{% endif %}>{{realm.name}}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <div id="devtools-wrapper">
+            <div id="devtools-registration">
+                <form name="register_dev_user" action="{{ url('register_dev_user') }}" method="POST">
+                    <input type="submit" class="dev-button dev-create-button" value="Create new user" />
+                </form>
+                <form name="register_dev_realm" action="{{ url('register_dev_realm') }}" method="POST">
+                    <input type="submit" class="dev-button dev-create-button" value="Create new realm" />
+                </form>
+                <form name="register_demo_dev_realm" action="{{ url('register_demo_dev_realm') }}" method="POST">
+                    <input type="submit" class="dev-button dev-create-button" value="Create demo organization" />
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

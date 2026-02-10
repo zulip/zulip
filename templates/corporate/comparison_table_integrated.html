@@ -1,0 +1,1740 @@
+<div class="zulip-plans-comparison {% if is_self_hosted_realm %}is-self-hosted-realm{% endif %}">
+    <h2 id="cloud-plan-comparison">Cloud plans</h2>
+    <h2 id="self-hosted-plan-comparison">Self-hosted plans</h2>
+    <h2 id="all-plan-comparison">All plans</h2>
+
+    <div class="comparison-tabs">
+        <button class="comparison-tab comparison-tab-cloud" data-label="tab-cloud" type="button">
+            <span class="grouped-icons">
+                <i class="icon icon-plan icon-cloud"></i>
+            </span>
+            Cloud
+        </button>
+        <button class="comparison-tab comparison-tab-self-hosted" data-label="tab-hosted" type="button">
+            <span class="grouped-icons">
+                <i class="icon icon-plan icon-self-hosted"></i>
+            </span>
+            Self-hosted
+        </button>
+        <button class="comparison-tab comparison-tab-all" data-label="tab-all" type="button">
+            <span class="grouped-icons">
+                <i class="icon icon-plan icon-cloud"></i>
+                <i class="icon icon-plan icon-self-hosted"></i>
+            </span>
+            All plans
+        </button>
+    </div>
+
+    <div class="h2-subheader">
+        <p class="subheader-open-source">
+            All plans offer the same 100% <a href="https://github.com/zulip/zulip">open-source</a> software.
+        </p>
+        <p class="subheader-self-hosted-legend">
+            Zulip’s support team will provide assistance with features marked <span class="icon-with-copy">with a <i class="icon icon-check"></i>.</span><br />
+            Features you will need to set up and maintain on your own are marked <span class="icon-with-copy">with a <i class="icon icon-wrench"></i>.</span>
+        </p>
+    </div>
+
+    <!-- comparison-table-top is important to observe sticky table header -->
+    <div class="comparison-table-top"></div>
+    <table class="comparison-table">
+        <colgroup>
+            <col />
+            <col class="features-col-group" span="7" />
+        </colgroup>
+        <thead>
+            <tr>
+                <th class="comparison-table-feature">
+                    <span class="label-features">Features</span>
+                </th>
+                <th class="cloud-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-cloud"></i>
+                    </div>
+                    <span class="label-plan">Free</span>
+                </th>
+                <th class="cloud-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-cloud"></i>
+                    </div>
+                    <span class="label-plan">Stan<wbr />dard</span>
+                </th>
+                <th class="cloud-cell last-cloud-th">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-cloud"></i>
+                    </div>
+                    <span class="label-plan">Plus</span>
+                </th>
+                <th class="self-hosted-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-self-hosted"></i>
+                    </div>
+                    <span class="label-plan">Free</span>
+                </th>
+                <th class="self-hosted-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-self-hosted"></i>
+                    </div>
+                    <span class="label-plan">Basic</span>
+                </th>
+                <th class="self-hosted-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-self-hosted"></i>
+                    </div>
+                    <span class="label-plan">Busi<wbr />ness</span>
+                </th>
+                <th class="self-hosted-cell">
+                    <div class="grouped-icons">
+                        <i class="icon icon-plan icon-self-hosted"></i>
+                    </div>
+                    <span class="label-plan">Enter<wbr />prise</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="comparison-table-feature subheader">Collaboration basics</td>
+                <td colspan="7" class="subheader-filler"></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/search-for-messages">Message history search</a>
+                </td>
+                <td class="comparison-value-warning cloud-cell" data-title="{{ _('10,000 messages') }}">Limited</td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature"><a href="/help/invite-new-users">Users</a></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/introduction-to-channels">Channels</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/introduction-to-topics">Topic-based threading</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/share-and-upload-files">File sharing and storage</a>
+                </td>
+                <td class="comparison-value-warning cloud-cell" data-title="{{ _('Files up to 10 MB') }}">5 GB total</td>
+                <td class="comparison-value-positive cloud-cell" data-title="{{ _('Files up to 1 GB') }}">5 GB/user</td>
+                <td class="comparison-value-positive cloud-cell" data-title="{{ _('Files up to 1 GB') }}">5 GB/user</td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/start-a-call">Voice and video calls (1:1)</a>
+                    <div class="comparison-table-feature-desc"><a href="/help/configure-call-provider">Choose a call provider</a> (Zoom, Jitsi, etc.)</div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/start-a-call">Voice and video calls (group)</a>
+                    <div class="comparison-table-feature-desc"><a href="/help/configure-call-provider">Choose a call provider</a> (Zoom, Jitsi, etc.)</div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/integrations/">Integrations with other apps</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://hosted.weblate.org/projects/zulip/">Localized in more than 20 languages</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+
+            <tr>
+                <td class="comparison-table-feature subheader">Apps</td>
+                <td colspan="7" class="subheader-filler"></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/supported-browsers">Web app</a>
+                    <div class="comparison-table-feature-desc">Any modern browser</div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/apps/">Desktop apps</a>
+                    <div class="comparison-table-feature-desc">Windows, Mac, Linux</div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/apps/">Mobile apps</a>
+                    <div class="comparison-table-feature-desc">iOS and Android</div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature"><a href="/apps/">Terminal app</a></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/mobile-notifications">Mobile push notifications</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-infinity"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('For organizations with up to 10 users') }}">Limited</td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Unlimited') }}"><i class="icon icon-infinity"></i></td>
+            </tr>
+
+            <tr>
+                <td class="comparison-table-feature subheader">Efficient communication</td>
+                <td colspan="7" class="subheader-filler"></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/format-your-message-using-markdown">Expressive formatting</a>
+                    <div class="comparison-table-feature-desc">Code syntax highlighting, LaTeX, etc.</div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    Collaborative messages
+                    <div class="comparison-table-feature-desc"><a href="/help/create-a-poll">Polls</a>, <a href="/help/collaborative-to-do-lists">to-do lists</a></div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/keyboard-shortcuts">Extensive keyboard shortcuts</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    Move messages between
+                    <a href="/help/move-content-to-another-channel">channels</a> and
+                    <a href="/help/move-content-to-another-topic">topics</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/resolve-a-topic">Mark topics as resolved</a>
+                    <div class="comparison-table-feature-desc">Lightweight project management</div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/link-to-a-message-or-conversation">Permanent links</a> to messages and topics
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/status-and-availability">User status and availability</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature"><a href="/help/custom-emoji">Custom emoji</a></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/read-receipts">Read receipts</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/typing-notifications">Typing notifications</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/saved-snippets">Saved snippets</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/schedule-a-message">Send later</a>,
+                    <a href="/help/marking-messages-as-unread">mark unread</a>, and other workflows
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/schedule-a-reminder">Schedule reminders</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/dm-mention-alert-notifications">
+                        Highly configurable notification settings
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/email-notifications">Email notifications</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/view-images-and-videos">Previews for links, images and videos</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/add-a-custom-linkifier">Linkifiers</a>
+                    <div class="comparison-table-feature-desc">Auto-link text to issues, tickets, etc.</div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+
+            <tr>
+                <td class="comparison-table-feature subheader">Integrations</td>
+                <td colspan="7" class="subheader-filler"></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/configure-call-provider">
+                        Configurable call provider
+                    </a>
+                    <div class="comparison-table-feature-desc">Zoom, Jitsi, BigBlueButton, etc.</div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/animated-gifs">Native GIPHY integration</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/integrations/">130+ native integrations</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    1000s of integrations though <a href="/integrations/zapier">Zapier</a> and
+                    <a href="/integrations/ifttt">IFTTT</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/bots-overview">
+                        Admin controls for all bots and integrations
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/outgoing-webhooks">
+                        Custom webhooks
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/api/rest">
+                        REST API custom integrations
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://github.com/42wim/matterbridge">
+                        Chat bridges with other products
+                    </a>
+                    <div class="comparison-table-feature-desc">Slack, Microsoft Teams, Matrix, etc.</div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/message-a-channel-by-email">Email bridge integration</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">AI / LLM integration</td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+
+            <tr>
+                <td class="comparison-table-feature subheader">User administration</td>
+                <td colspan="7" class="subheader-filler"></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/invite-users-to-join">Email authentication</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/invite-users-to-join">Reusable invitation links</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/configure-authentication-methods">OAuth social logins</a>
+                    <div class="comparison-table-feature-desc">Google, GitHub, GitLab, Apple</div>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/custom-profile-fields">Custom profile fields</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/saml-authentication">SSO with SAML</a>
+                    <div class="comparison-table-feature-desc">Including Okta and OneLogIn</div>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#microsoft-entra-id">SSO with Microsoft Entra ID</a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a
+                      href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#openid-connect"
+                      >
+                        SSO with OpenID Connect
+                    </a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://python-social-auth.readthedocs.io/en/latest/backends/index.html#social-backends">
+                        100+ authentication options
+                    </a>
+                    <div class="comparison-table-feature-desc">With python-social-auth</div>
+                </td>
+
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-warning cloud-cell">Please inquire</td>
+                <td class="comparison-value-warning cloud-cell">Please inquire</td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#ldap-including-active-directory">
+                        AD/LDAP user sync
+                    </a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-warning cloud-cell">Please inquire</td>
+                <td class="comparison-value-warning cloud-cell">Please inquire</td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#ldap-including-active-directory">
+                        AD/LDAP group sync
+                    </a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-warning cloud-cell">Please inquire</td>
+                <td class="comparison-value-warning cloud-cell">Please inquire</td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature"><a href="/help/saml-authentication#synchronizing-group-membership-with-saml">SAML group sync</a></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature"><a href="/help/scim">SCIM user sync</a></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature"><a href="/help/scim#synchronizing-group-membership-with-scim">SCIM group sync</a></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature"><a href="/api/create-user">Create users via the Zulip API</a></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/create-user-groups">Custom user groups</a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/guest-users">Guest users</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/guest-users">Limit user list access for guests</a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+
+            <tr>
+                <td class="comparison-table-feature subheader">Advanced administration</td>
+                <td colspan="7" class="subheader-filler"></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/channel-permissions#private-channels">Private channels with shared history</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/channel-permissions#private-channels">Private channels with private history</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/channel-posting-policy">Channel posting permissions</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/restrict-direct-messages">
+                        Direct messaging permissions
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    Permissions for
+                    <a href="/help/restrict-message-editing-and-deletion">
+                        editing
+                    </a>,
+                    <a href="/help/restrict-message-editing-and-deletion">
+                        deleting
+                    </a>
+                    and <a href="/help/restrict-moving-messages">moving</a> messages
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/channel-permissions">
+                        Customize permissions by channel
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/user-roles">
+                        Manage permissions by user role
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/user-groups">
+                        Manage permissions with user groups
+                    </a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/manage-permissions">
+                        Grant permissions to individual users
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/configure-default-new-user-settings">
+                        Configure initial settings for new users
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/set-default-channels-for-new-users">
+                        Configure initial channels for new users
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.com/help/public-access-option">Public access option</a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.com/help/moderating-open-organizations">Advanced moderation tools</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/analytics">Usage statistics charts</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/create-your-organization-profile">Custom branding</a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/change-organization-url">Custom domain</a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell" data-title="{{ _('25 users minimum') }}"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+
+            <tr>
+                <td class="comparison-table-feature subheader">Security</td>
+                <td colspan="7" class="subheader-filler"></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://github.com/zulip">100% open-source, auditable codebase</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/restrict-account-creation#configuring-email-domain-restrictions">
+                        Restricted email domains
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#email-and-password">
+                        Custom password strength requirement
+                    </a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/stable/production/ssl-certificates.html">
+                        TLS encryption
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="/help/custom-certificates">Custom SSL certificate authority</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a
+                      href="https://zulip.readthedocs.io/en/latest/production/reverse-proxies.html">
+                        Custom TLS server termination</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/deployment.html#customizing-the-outgoing-http-proxy">
+                        Firewalled hosting
+                    </a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">Air-gapped hosting</td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">Data encryption at rest</td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html">
+                        No-content push notifications
+                    </a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/management-commands.html#other-useful-manage-py-commands">
+                        Revoke and reset any user's credentials
+                    </a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html#rate-limiting">
+                        API endpoint access rate limits
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+
+            <tr>
+                <td class="comparison-table-feature subheader">Compliance</td>
+                <td colspan="7" class="subheader-filler"></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/restrict-message-editing-and-deletion">
+                        Message editing and deletion policies
+                    </a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/export-your-organization">Complete data exports</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/message-retention-policy">Granular data retention policies</a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">Detailed audit log of administrative actions</td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a
+                      href="https://zulip.readthedocs.io/en/latest/production/export-and-import.html#compliance-exports"
+                      >
+                        Compliance exports
+                    </a>
+                </td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/gdpr-compliance">GDPR compliant</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">HIPAA compliant</td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">Compliance customization and support</td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-warning cloud-cell">Please inquire</td>
+                <td class="comparison-value-warning cloud-cell">Please inquire</td>
+
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive self-hosted-cell">Billed hourly</td>
+                <td class="comparison-value-positive self-hosted-cell">Billed hourly</td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+
+            <tr>
+                <td class="comparison-table-feature subheader">Deployment options</td>
+                <td colspan="7" class="subheader-filler"></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/multiple-organizations.html">Multiple organizations on one server</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/modify.html#applying-a-small-change">Maintain a local fork</a>
+                    <div class="comparison-table-feature-desc">Keep custom code across upgrades</div>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/export-and-import.html">Comprehensive data backups and restores</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/export-and-import.html#database-only-backup-tools">Real-time data backup and replication</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/upload-backends.html">Off-server attachment storage</a>
+                    <div class="comparison-table-feature-desc">NAS, S3, etc.</div>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/deployment.html#customizing-the-outgoing-http-proxy">Outgoing proxy</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://github.com/zulip/docker-zulip">Docker deployments</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://github.com/zulip/docker-zulip/tree/main/kubernetes/chart/zulip">Kubernetes deployments with Helm</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/requirements.html#scalability">Scalability for thousands of concurrent users</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/deployment.html#running-zulip-s-service-dependencies-on-different-machines">Deploy supporting services on separate hosts</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/deployment.html#postgresql-warm-standby">Disaster recovery failover</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/production/deployment.html#postgresql-warm-standby">Monitoring and alerting</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">
+                    <a href="https://zulip.readthedocs.io/en/latest/subsystems/logging.html#sentry-error-logging">Sentry integration for error reporting</a>
+                </td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+
+            <tr>
+                <td class="comparison-table-feature subheader">Support</td>
+                <td colspan="7" class="subheader-filler"></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    Comprehensive documentation for <a href="/help/">users</a>, <a href="/help/moving-to-zulip">administrators</a> and <a href="https://zulip.readthedocs.io/en/stable/production/index.html">server administrators</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    Chat support in the
+                    <a href="/development-community/">Zulip development community</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">Feature feedback sessions</td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell">Chat only</td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    <a href="/help/contact-support">Email support</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">Import data from another Zulip server</td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">
+                    Import data from <a href="/help/import-from-slack">Slack</a>,
+                    <a href="/help/import-from-mattermost">Mattermost</a>, or
+                    <a href="/help/import-from-rocketchat">Rocket.Chat</a>
+                </td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive cloud-cell"><i class="icon icon-check"></i></td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">Import data from other chat products</td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-warning cloud-cell">Please inquire</td>
+
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-warning self-hosted-cell" data-title="{{ _('Self-managed') }}"><i class="icon icon-wrench"></i></td>
+                <td class="comparison-value-positive self-hosted-cell">Billed hourly</td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">Realtime support for installation and upgrades</td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive self-hosted-cell">Billed hourly</td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">Implementation consulting</td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell">Billed hourly</td>
+                <td class="comparison-value-positive cloud-cell">Billed hourly</td>
+
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive self-hosted-cell">Billed hourly</td>
+                <td class="comparison-value-positive self-hosted-cell">Billed hourly</td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">Training sessions</td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell">Billed hourly</td>
+                <td class="comparison-value-positive cloud-cell">Billed hourly</td>
+
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive self-hosted-cell">Billed hourly</td>
+                <td class="comparison-value-positive self-hosted-cell">Billed hourly</td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr>
+                <td class="comparison-table-feature">Custom feature development</td>
+                <td class="comparison-value-negative cloud-cell"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive cloud-cell">Billed hourly</td>
+                <td class="comparison-value-positive cloud-cell">Billed hourly</td>
+
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive self-hosted-cell">Billed hourly</td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+            <tr class="self-hosted-feature-only">
+                <td class="comparison-table-feature">Advance notice for security releases</td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+                <td class="comparison-value-null cloud-cell"></td>
+
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-negative self-hosted-cell" data-title="{{ _('Not available') }}"><i class="icon icon-x"></i></td>
+                <td class="comparison-value-positive self-hosted-cell" data-title="{{ _('Supported') }}"><i class="icon icon-check"></i></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

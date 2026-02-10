@@ -1,0 +1,101 @@
+<div id="subscription_overlay" class="overlay two-pane-settings-overlay" data-overlay="subscriptions">
+    <div class="flex overlay-content">
+        <div class="two-pane-settings-container overlay-container">
+            <div class="two-pane-settings-header">
+                <div class="fa fa-chevron-left"></div>
+                <span class="subscriptions-title">{{t 'Channels' }}</span>
+                <div class="exit">
+                    <span class="exit-sign">&times;</span>
+                </div>
+            </div>
+            <div class="two-pane-settings-content">
+                <div class="left">
+                    <div class="two-pane-settings-subheader">
+                        <div class="list-toggler-container">
+                            <div id="add_new_subscription">
+                                {{#if can_create_streams}}
+                                <button class="create_stream_button two-pane-settings-plus-button tippy-zulip-delayed-tooltip" data-tooltip-template-id="create-new-stream-tooltip-template" data-tippy-placement="bottom">
+                                    <i class="create_button_plus_sign zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
+                                </button>
+                                {{/if}}
+                                <div class="float-clear"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="two-pane-settings-body">
+                        <div class="input-append stream_name_search_section two-pane-settings-search" id="stream_filter">
+                            <div id="folder_filter_container">
+                                <button type="button" id="folder_filter_button" class="filter-folders-dropdown-widget-button icon-button icon-button-neutral" tabindex="0" aria-label="{{t 'Filter channels' }}">
+                                    <i class="zulip-icon zulip-icon-folder-chevron" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <input type="text" name="stream_name" id="search_stream_name" class="filter_text_input" autocomplete="off"
+                              placeholder="{{t 'Filter' }}" value=""/>
+                            <button type="button" class="clear_search_button" id="clear_search_stream_name">
+                                <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                            </button>
+                            <div class="stream_settings_filter_container {{#unless realm_has_archived_channels}}hide_filter{{/unless}}">
+                                {{> ../dropdown_widget widget_name="stream_settings_filter"}}
+                            </div>
+                        </div>
+                        <div class="no-streams-to-show">
+                            <div class="subscribed_streams_tab_empty_text">
+                                <span class="settings-empty-option-text">
+                                    {{t 'You are not subscribed to any channels.'}}
+                                    {{#if can_view_all_streams}}
+                                    <a href="#channels/all">{{t 'View all channels'}}</a>
+                                    {{/if}}
+                                </span>
+                            </div>
+                            <div class="available_streams_tab_empty_text">
+                                <span class="settings-empty-option-text">
+                                    {{t 'No channels to show.'}}
+                                    <a href="#channels/all">{{t 'View all channels'}}</a>
+                                </span>
+                            </div>
+                            <div class="no_stream_match_filter_empty_text">
+                                <span class="settings-empty-option-text">
+                                    {{t 'No channels match your filter.'}}
+                                </span>
+                            </div>
+                            <div class="all_streams_tab_empty_text">
+                                <span class="settings-empty-option-text">
+                                    {{t 'There are no channels you can view in this organization.'}}
+                                    {{#if can_create_streams}}
+                                        <a href="#channels/new">{{t 'Create a channel'}}</a>
+                                    {{/if}}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="streams-list two-pane-settings-left-simplebar-container" data-simplebar data-simplebar-tab-index="-1">
+                        </div>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="two-pane-settings-subheader">
+                        <div class="display-type">
+                            <div id="stream_settings_title" class="stream-info-title">{{t 'Channel settings' }}</div>
+                        </div>
+                    </div>
+                    <div class="two-pane-settings-body">
+                        <div class="nothing-selected">
+                            <div class="stream-info-banner banner-wrapper"></div>
+                            <div class="create-stream-button-container">
+                                <button type="button" class="create_stream_button animated-purple-button" {{#unless can_create_streams}}disabled{{/unless}}>{{t 'Create channel' }}</button>
+                                {{#unless can_create_streams}}
+                                <span class="settings-empty-option-text">
+                                    {{t 'You do not have permission to create channels.' }}
+                                </span>
+                                {{/unless}}
+                            </div>
+                        </div>
+                        <div id="stream_settings" class="two-pane-settings-right-simplebar-container settings" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+                            {{!-- edit stream here --}}
+                        </div>
+                        {{> stream_creation_form . }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

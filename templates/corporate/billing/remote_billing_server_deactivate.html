@@ -1,0 +1,55 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "billing_auth" %}
+
+{% block title %}
+<title>{{ _("Deactivate server registration?") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div id="server-deactivate-page" class="register-account account-deactivation flex full-page">
+    <div class="new-style">
+        <div class="pitch">
+            <h1>
+                Deactivate registration for<br />{{ server_hostname }}?
+            </h1>
+        </div>
+        <div class="white-box">
+            <div id="server-deactivate-details">
+                {% if show_existing_plan_error %}
+                <div id="server-deactivate-error" class="alert alert-danger">
+                    Could not deactivate registration. You must first
+                    <a href="https://zulip.com/help/self-hosted-billing#cancel-paid-plan">cancel</a>
+                    all paid plans associated with this server, including scheduled plan upgrades.
+                </div>
+                {% endif %}
+                <form id="server-deactivate-form" method="post" action="{{ action_url }}">
+                    {{ csrf_input }}
+                    <div id="server-deactivate-form-top-description" class="input-box server-deactivate-form-field">
+                        <div class="not-editable-realm-field">
+                            You are about to deactivate this server's
+                            registration with
+                            the <a href="https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html">Zulip
+                        Mobile Push Notification Service</a>. This
+                        will disable delivery of mobile push
+                        notifications for all organizations hosted
+                        on <b>{{ server_hostname }}</b>.
+                        </div>
+                    </div>
+                    <input type="hidden" name="confirmed" value="true" />
+                    <div class="upgrade-button-container">
+                        <button type="submit" id="server-deactivate-button" class="stripe-button-el invoice-button">
+                            <span class="server-deactivate-button-text">Deactivate registration</span>
+                            <img class="loader remote-billing-button-loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
+                        </button>
+                    </div>
+                </form>
+                <div class="input-box upgrade-page-field">
+                    <div class="support-link not-editable-realm-field">
+                        Questions? Contact <a href="mailto:support@zulip.com">support@zulip.com</a>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

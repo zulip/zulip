@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+
+import os
+
+
+def get_build_url_from_environment() -> str:
+    server = os.environ["GITHUB_SERVER_URL"]
+    repo = os.environ["GITHUB_REPOSITORY"]
+    run_id = os.environ["GITHUB_RUN_ID"]
+    return f"{server}/{repo}/actions/runs/{run_id}"
+
+
+if __name__ == "__main__":
+    branch = os.environ.get("GITHUB_REF", "unknown branch").split("/")[-1]
+    topic = f"{branch} failing"
+    build_url = get_build_url_from_environment()
+    github_actor = os.environ.get("GITHUB_ACTOR", "unknown user")
+    content = f"[Build]({build_url}) triggered by {github_actor} on branch `{branch}` has failed."
+
+    # Output in the key-value pair format GitHub Actions outputs are expected
+    # to be in.
+    print(f"topic={topic}\ncontent={content}")

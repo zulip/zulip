@@ -1,0 +1,678 @@
+.action-button {
+    position: relative;
+    display: flex;
+    gap: 0.75ch;
+    justify-content: center;
+    align-items: center;
+    line-height: 1.25;
+    font-size: var(--base-font-size-px);
+    font-family: "Source Sans 3 VF", sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.02ch;
+    padding: 0.25em 0.625em;
+    color: var(--color-text-neutral-subtle-action-button);
+    background-color: var(--color-background-neutral-subtle-action-button);
+    border-radius: 4px;
+    white-space: nowrap;
+    user-select: none;
+    border: none;
+    cursor: pointer;
+    clip-path: inset(-1px);
+    transition: 0.05s ease-in;
+    transition-property: background-color, clip-path;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-neutral-subtle-action-button-hover
+        );
+        transition: 0.1s ease-out;
+        transition-property: background-color, clip-path;
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-neutral-subtle-action-button-active
+        );
+        clip-path: inset(1px round 4px);
+    }
+
+    &:focus {
+        /* Override common button outline style set in zulip.css and dark_theme.css */
+        outline: none;
+    }
+
+    &:focus-visible {
+        /* Override common button outline style set in zulip.css and dark_theme.css */
+        outline: var(--outline-width-button-focus) solid
+            var(--color-outline-button-focus) !important;
+        outline-offset: var(--outline-offset-button-focus);
+        clip-path: inset(
+            calc(
+                    -1 *
+                        (
+                            var(--outline-width-button-focus) +
+                                var(--outline-offset-button-focus)
+                        )
+                )
+                round 4px
+        );
+    }
+
+    &:disabled {
+        cursor: default;
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    .zulip-icon {
+        /* We apply the same line-height to icons,
+           as those applied to the label element,
+           to maintain a consistent height for
+           icon-only action buttons. */
+        line-height: 1.25; /* 20px at 16px/1em */
+    }
+}
+
+.action-button-label {
+    max-width: 32ch;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Action buttons -- Neutral Intent */
+.action-button-solid-neutral {
+    color: var(--color-text-neutral-solid-action-button);
+    background-color: var(--color-background-neutral-solid-action-button);
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-neutral-solid-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-neutral-solid-action-button-active
+        );
+    }
+}
+
+.action-button-subtle-neutral {
+    color: var(--color-text-neutral-subtle-action-button);
+    background-color: var(--color-background-neutral-subtle-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-neutral-subtle-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-neutral-subtle-action-button-active
+        );
+    }
+}
+
+.action-button-text-neutral {
+    color: var(--color-text-neutral-text-action-button);
+    background-color: transparent;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-neutral-text-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-neutral-text-action-button-active
+        );
+    }
+}
+
+/* Action buttons -- Brand Intent */
+.action-button-solid-brand {
+    color: var(--color-text-brand-solid-action-button);
+    background-color: var(--color-background-brand-solid-action-button);
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-brand-solid-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-brand-solid-action-button-active
+        );
+    }
+}
+
+.action-button-subtle-brand {
+    color: var(--color-text-brand-subtle-action-button);
+    background-color: var(--color-background-brand-subtle-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-brand-subtle-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-brand-subtle-action-button-active
+        );
+    }
+}
+
+.action-button-text-brand {
+    color: var(--color-text-brand-text-action-button);
+    background-color: transparent;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-brand-text-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-brand-text-action-button-active
+        );
+    }
+}
+
+/* Action buttons -- Info Intent */
+.action-button-solid-info {
+    color: var(--color-text-info-solid-action-button);
+    background-color: var(--color-background-info-solid-action-button);
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-info-solid-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-info-solid-action-button-active
+        );
+    }
+}
+
+.action-button-subtle-info {
+    color: var(--color-text-info-subtle-action-button);
+    background-color: var(--color-background-info-subtle-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-info-subtle-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-info-subtle-action-button-active
+        );
+    }
+}
+
+.action-button-text-info {
+    color: var(--color-text-info-text-action-button);
+    background-color: transparent;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(--color-background-info-text-action-button-hover);
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-info-text-action-button-active
+        );
+    }
+}
+
+/* Action buttons -- Success Intent */
+.action-button-solid-success {
+    color: var(--color-text-success-solid-action-button);
+    background-color: var(--color-background-success-solid-action-button);
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-success-solid-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-success-solid-action-button-active
+        );
+    }
+}
+
+.action-button-subtle-success {
+    color: var(--color-text-success-subtle-action-button);
+    background-color: var(--color-background-success-subtle-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-success-subtle-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-success-subtle-action-button-active
+        );
+    }
+}
+
+.action-button-text-success {
+    color: var(--color-text-success-text-action-button);
+    background-color: transparent;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-success-text-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-success-text-action-button-active
+        );
+    }
+}
+
+/* Action buttons -- Warning Intent */
+.action-button-solid-warning {
+    color: var(--color-text-warning-solid-action-button);
+    background-color: var(--color-background-warning-solid-action-button);
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-warning-solid-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-warning-solid-action-button-active
+        );
+    }
+}
+
+.action-button-subtle-warning {
+    color: var(--color-text-warning-subtle-action-button);
+    background-color: var(--color-background-warning-subtle-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-warning-subtle-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-warning-subtle-action-button-active
+        );
+    }
+}
+
+.action-button-text-warning {
+    color: var(--color-text-warning-text-action-button);
+    background-color: transparent;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-warning-text-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-warning-text-action-button-active
+        );
+    }
+}
+
+/* Action buttons -- Danger Intent */
+.action-button-solid-danger {
+    color: var(--color-text-danger-solid-action-button);
+    background-color: var(--color-background-danger-solid-action-button);
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-danger-solid-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-danger-solid-action-button-active
+        );
+    }
+}
+
+.action-button-subtle-danger {
+    color: var(--color-text-danger-subtle-action-button);
+    background-color: var(--color-background-danger-subtle-action-button);
+    box-shadow: 0 0 0.5px 0.5px var(--color-inner-shadow-action-button) inset;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-danger-subtle-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-danger-subtle-action-button-active
+        );
+    }
+}
+
+.action-button-text-danger {
+    color: var(--color-text-danger-text-action-button);
+    background-color: transparent;
+
+    &:hover,
+    &:focus-visible {
+        background-color: var(
+            --color-background-danger-text-action-button-hover
+        );
+    }
+
+    &:active {
+        background-color: var(
+            --color-background-danger-text-action-button-active
+        );
+    }
+}
+
+.icon-button {
+    /* This class should always be used with an icon-button-* class
+       defining the color scheme of the button, defined below. */
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 1;
+    font-size: var(--base-font-size-px);
+    background-color: transparent; /* Override button default background color */
+    padding: 0.375em;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    clip-path: inset(-1px);
+    transition: 0.05s ease-in;
+    transition-property: background-color, clip-path;
+
+    &:hover,
+    &:focus-visible {
+        transition: 0.1s ease-out;
+        transition-property: background-color, clip-path;
+    }
+
+    &:active {
+        clip-path: inset(1px round 4px);
+    }
+
+    &:focus {
+        /* Override common button outline style set in zulip.css and dark_theme.css */
+        outline: none;
+    }
+
+    &:focus-visible {
+        /* Override common button outline style set in zulip.css and dark_theme.css */
+        outline: var(--outline-width-button-focus) solid
+            var(--color-outline-button-focus) !important;
+        outline-offset: var(--outline-offset-button-focus);
+        clip-path: inset(
+            calc(
+                    -1 *
+                        (
+                            var(--outline-width-button-focus) +
+                                var(--outline-offset-button-focus)
+                        )
+                )
+                round 4px
+        );
+    }
+
+    &:disabled {
+        cursor: default;
+        pointer-events: none;
+        opacity: 0.5;
+    }
+}
+
+.icon-button-neutral {
+    color: var(--color-text-neutral-icon-button);
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-text-neutral-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-neutral-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover,
+        &:focus-visible {
+            background-color: var(
+                --color-background-neutral-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-neutral-icon-button-square-active);
+            background-color: var(
+                --color-background-neutral-icon-button-square-active
+            );
+        }
+    }
+}
+
+.icon-button-brand {
+    color: var(--color-text-brand-icon-button);
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-text-brand-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-brand-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover,
+        &:focus-visible {
+            background-color: var(
+                --color-background-brand-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-brand-icon-button-square-active);
+            background-color: var(
+                --color-background-brand-icon-button-square-active
+            );
+        }
+    }
+}
+
+.icon-button-info {
+    color: var(--color-text-info-icon-button);
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-text-info-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-info-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover,
+        &:focus-visible {
+            background-color: var(
+                --color-background-info-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-info-icon-button-square-active);
+            background-color: var(
+                --color-background-info-icon-button-square-active
+            );
+        }
+    }
+}
+
+.icon-button-success {
+    color: var(--color-text-success-icon-button);
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-text-success-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-success-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover,
+        &:focus-visible {
+            background-color: var(
+                --color-background-success-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-success-icon-button-square-active);
+            background-color: var(
+                --color-background-success-icon-button-square-active
+            );
+        }
+    }
+}
+
+.icon-button-warning {
+    color: var(--color-text-warning-icon-button);
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-text-warning-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-warning-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover,
+        &:focus-visible {
+            background-color: var(
+                --color-background-warning-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-warning-icon-button-square-active);
+            background-color: var(
+                --color-background-warning-icon-button-square-active
+            );
+        }
+    }
+}
+
+.icon-button-danger {
+    color: var(--color-text-danger-icon-button);
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color-text-danger-icon-button-hover);
+    }
+
+    &:active {
+        color: var(--color-text-danger-icon-button-active);
+    }
+
+    &.icon-button-square {
+        &:hover,
+        &:focus-visible {
+            background-color: var(
+                --color-background-danger-icon-button-square-hover
+            );
+        }
+
+        &:active {
+            color: var(--color-text-danger-icon-button-square-active);
+            background-color: var(
+                --color-background-danger-icon-button-square-active
+            );
+        }
+    }
+}
+
+.button-loading-indicator {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .loading_indicator_spinner {
+        /* Override standard values defined
+           in web/styles/app_components.css */
+        height: 100%;
+        width: unset;
+        aspect-ratio: 1;
+
+        & path {
+            /* Set the loading indicator color
+               to the font color of the button. */
+            fill: currentcolor;
+        }
+    }
+}
+
+.button-hide-loading-indicator-on-hover:hover {
+    .button-loading-indicator {
+        visibility: hidden;
+    }
+
+    .action-button-label,
+    .zulip-icon {
+        visibility: visible !important;
+    }
+}

@@ -1,0 +1,79 @@
+<% @hosts_fullstack.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
+       hostgroups       all,fullstack,non_aws_host,frontends,not_pageable_servers,postgresql
+       }
+<% end -%>
+
+<% @hosts_app_prod.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
+       hostgroups       all,aws_host,prod_frontends,pageable_servers
+       }
+<% end -%>
+
+<% @hosts_app_staging.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
+       hostgroups       all,aws_host,staging_frontends,not_pageable_servers
+       }
+<% end -%>
+
+<% @hosts_postgresql_primary.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
+       hostgroups       all,aws_host,postgresql_primary,pageable_servers
+       }
+<% end -%>
+
+<% @hosts_postgresql_replica.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
+       hostgroups       all,aws_host,postgresql_replica,pageable_servers
+       }
+<% end -%>
+
+<% @hosts_redis.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
+       hostgroups       all,aws_host,not_pageable_servers, redis
+       }
+<% end -%>
+
+<% @hosts_smokescreen.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
+       hostgroups       all,aws_host,pageable_servers,smokescreen
+       }
+<% end -%>
+
+<% @hosts_other.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %><% unless host.include?(".") %>.<%= @default_host_domain %><% end %>
+       hostgroups       all,<% if host.include?(".") %>non_<% end %>aws_host,not_pageable_servers,other
+       }
+<% end -%>

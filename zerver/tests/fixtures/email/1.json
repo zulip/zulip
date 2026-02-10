@@ -1,0 +1,8 @@
+[
+    {
+        "from": "hamlet@zulip.com",
+        "to": "foo@zulip.com",
+        "subject": "1.json",
+        "body": "Email fixture 1.json body"
+    }
+]

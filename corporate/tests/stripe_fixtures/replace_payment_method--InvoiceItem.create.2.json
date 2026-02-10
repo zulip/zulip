@@ -1,0 +1,31 @@
+{
+  "amount": 5000,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED",
+  "date": 1000000000,
+  "description": null,
+  "discountable": true,
+  "discounts": [],
+  "id": "replace_payment_method--InvoiceItem.create.2.json",
+  "invoice": "in_NORMALIZED",
+  "livemode": false,
+  "metadata": {},
+  "object": "invoiceitem",
+  "parent": null,
+  "period": {
+    "end": 1000000000,
+    "start": 1000000000
+  },
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "5000"
+  },
+  "proration": false,
+  "quantity": 1,
+  "tax_rates": [],
+  "test_clock": null
+}

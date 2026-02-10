@@ -1,0 +1,15 @@
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/notifications" />
+
+      1. Under **Topic notifications**, select the desired option from the
+         **Automatically unmute topics in muted channels** dropdown.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>

@@ -1,0 +1,7 @@
+{{#list_each members as |member| ~}}
+{{~#if (eq member.type "user") ~}}
+<a data-user-id="{{member.user.user_id}}" class="view_user_profile">{{member.user.full_name}}</a>
+{{~else if (eq member.type "user_group") ~}}
+<a data-user-group-id="{{member.id}}" class="view_user_group">{{member.name}}</a>
+{{~/if ~}}
+{{~/list_each}}

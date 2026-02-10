@@ -1,0 +1,14 @@
+/* While the portico pages design is in flux,
+   we need to limit globally scoped CSS like this
+   to its own file.
+
+   The bulk of styles as well as CSS variables are
+   in `pricing_plans.css`, which gets shared on
+   non-plans pages such as /for/business/ */
+
+html {
+    /* Set the background on HTML to the starting
+       color for the plans-page gradient, so that the
+       top overscroll is undetectable. */
+    background: var(--color-background-gradient-start);
+}

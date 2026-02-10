@@ -1,0 +1,117 @@
+---
+title: Manage a bot
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+
+import CopyIcon from "~icons/zulip-icon/copy";
+import DownloadIcon from "~icons/zulip-icon/download";
+import RefreshIcon from "~icons/zulip-icon/refresh-cw";
+import UserCogIcon from "~icons/zulip-icon/user-cog";
+
+Zulip lets you manage the properties of any bot for which you are the owner.
+Organization [administrators](/help/user-roles) can also manage any
+active bot in the organization.
+
+## Manage a bot
+
+<Tabs>
+  <TabItem label="Your bots">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/your-bots" />
+
+      1. In the **Actions** column, click the **manage bot** (<UserCogIcon />)
+         icon for the bot you want to manage.
+      1. Update bot information as desired, and click **Save changes**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="All bots">
+    <AdminOnly />
+
+    <FlattenedSteps>
+      <NavigationSteps target="settings/bots" />
+
+      1. In the **Actions** column, click the **manage bot** (<UserCogIcon />)
+         icon for the bot you want to manage.
+      1. Update bot information as desired, and click **Save changes**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Download `zuliprc` configuration file
+
+### Generic bots
+
+<Tabs>
+  <TabItem label="Your bots">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/your-bots" />
+
+      1. In the **Actions** column, click the **download** (<DownloadIcon />)
+         icon for the bot.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="All bots">
+    <AdminOnly />
+
+    <FlattenedSteps>
+      <NavigationSteps target="settings/bots" />
+
+      1. In the **Actions** column, click the **download** (<DownloadIcon />)
+         icon for the bot.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+### Outgoing and incoming webhook bots
+
+Only the owner of an outgoing or incoming webhook bot has access to its `zuliprc`
+configuration file.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/your-bots" />
+
+  1. In the **Actions** column, click the **manage bot** (<UserCogIcon />) icon,
+     and scroll down to **Zuliprc configuration**.
+  1. Click the **download** (<DownloadIcon />) icon to download the configuration
+     file, or click **copy** <CopyIcon /> icon to copy the file contents to your
+     clipboard.
+</FlattenedSteps>
+
+<ZulipTip>
+  You can also click the **download** (<DownloadIcon />) icon above the **Bots**
+  table to download a single configuration file for all of your active **outgoing
+  webhook** bots.
+</ZulipTip>
+
+## Get a bot's API key
+
+Only a bot's owner has access to its API key.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/your-bots" />
+
+  1. In the **Actions** column, click the **manage bot** (<UserCogIcon />) icon,
+     and scroll down to **API key**.
+  1. Click the **copy** <CopyIcon /> icon to copy the bot's API key to your clipboard.
+
+  <ZulipTip>
+    To generate a new API key, click the **generate new API key** (<RefreshIcon />)
+    icon.
+  </ZulipTip>
+</FlattenedSteps>
+
+## Related articles
+
+* [Bots overview](/help/bots-overview)
+* [Integrations overview](/help/integrations-overview)
+* [Add a bot or integration](/help/add-a-bot-or-integration)
+* [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
+* [View all bots in your organization](/help/view-all-bots-in-your-organization)

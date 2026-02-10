@@ -1,0 +1,9 @@
+{{#> compose_banner . }}
+    <p class="banner_message">
+        {{error_message}}
+        {{#tr}}
+        <z-link>Learn more.</z-link>
+        {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </p>
+{{/compose_banner}}

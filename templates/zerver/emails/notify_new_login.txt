@@ -1,0 +1,22 @@
+{{ _("We noticed a recent login for the following Zulip account.") }}
+
+{% trans organization_url=realm_url %}Organization: {{ organization_url }}{% endtrans %}
+
+{% trans %}Email: {{ user_email }}{% endtrans %}
+
+{% trans %}Time: {{ login_time }}{% endtrans %}
+
+{% trans %}Device: {{ device_browser }} on {{ device_os }}.{% endtrans %}
+
+{% trans %}IP address: {{ device_ip }}{% endtrans %}
+
+
+{{ _("If this was you, great! There's nothing else you need to do.") }}
+
+{% trans reset_link=realm_url + "/accounts/password/reset/" %}
+If you do not recognize this login, or think your account may have been compromised, please reset your password at {{ reset_link }} or contact us immediately at {{ support_email }}.
+{%- endtrans %}
+
+
+{{ _("Thanks,") }}
+{{ _("Zulip Security") }}

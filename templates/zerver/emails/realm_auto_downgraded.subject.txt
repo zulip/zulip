@@ -1,0 +1,1 @@
+{{ string_id }}: Your organization has been downgraded to Zulip Cloud Free

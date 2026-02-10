@@ -1,0 +1,313 @@
+<template id="view-user-card-tooltip-template">
+    {{t 'View user card' }}
+    {{tooltip_hotkey_hints "U"}}
+</template>
+<template id="view-bot-card-tooltip-template">
+    {{t 'View bot card' }}
+    {{tooltip_hotkey_hints "U"}}
+</template>
+<template id="scroll-to-bottom-button-tooltip-template">
+    {{t 'Scroll to bottom' }}
+    {{tooltip_hotkey_hints "End"}}
+</template>
+<template id="compose_disable_stream_reply_button_tooltip_template">
+    {{t 'You do not have permission to post in this channel.' }}
+</template>
+<template id="compose_reply_message_button_tooltip_template">
+    {{t 'Reply to selected message' }}
+    {{tooltip_hotkey_hints "R"}}
+</template>
+<template id="compose_reply_selected_topic_button_tooltip_template">
+    {{t 'Reply to selected conversation' }}
+    {{tooltip_hotkey_hints "R"}}
+</template>
+<template id="left_bar_compose_mobile_button_tooltip_template">
+    {{t 'Start new conversation' }}
+</template>
+<template id="new_topic_message_button_tooltip_template">
+    {{t 'New topic' }}
+    {{tooltip_hotkey_hints "C"}}
+</template>
+<template id="new_message_button_tooltip_template">
+    {{t 'New message'}}
+    {{tooltip_hotkey_hints "C"}}
+</template>
+<template id="new_stream_message_button_tooltip_template">
+    {{t 'New channel message' }}
+    {{tooltip_hotkey_hints "C"}}
+</template>
+<template id="new_direct_message_button_tooltip_template">
+    {{t 'New direct message' }}
+    {{tooltip_hotkey_hints "X"}}
+</template>
+<template id="compose_close_tooltip_template">
+    {{t 'Cancel compose' }}
+    {{tooltip_hotkey_hints "Esc"}}
+</template>
+<template id="compose_close_and_save_tooltip_template">
+    {{t 'Cancel compose and save draft' }}
+    {{tooltip_hotkey_hints "Esc"}}
+</template>
+<template id="send-enter-tooltip-template">
+    {{t 'Send' }}
+    {{tooltip_hotkey_hints "Enter"}}
+</template>
+<template id="send-ctrl-enter-tooltip-template">
+    {{t 'Send' }}
+    {{tooltip_hotkey_hints "Ctrl" "Enter"}}
+</template>
+<template id="preview-tooltip">
+    {{t 'Preview mode' }}
+    {{tooltip_hotkey_hints "Alt" "P"}}
+</template>
+<template id="exit-preview-tooltip">
+    {{t 'Exit preview mode' }}
+    {{tooltip_hotkey_hints "Alt" "P"}}
+</template>
+<template id="add-global-time-tooltip">
+    <div>
+        <div>{{t "Add global time" }}</div>
+        <div class="tooltip-inner-content italic">{{t "Everyone sees global times in their own time zone." }}</div>
+    </div>
+</template>
+<template id="add-poll-tooltip">
+    <div>
+        <span>{{t "Add poll" }}</span><br/>
+        <span class="tooltip-inner-content italic">{{t "A poll must be an entire message." }}</span>
+    </div>
+</template>
+<template id="add-todo-tooltip">
+    <div>
+        <span>{{t "Add to-do list" }}</span><br/>
+        <span class="tooltip-inner-content italic">{{t "A to-do list must be an entire message." }}</span>
+    </div>
+</template>
+<template id="add-saved-snippet-tooltip">
+    {{t "Add saved snippet" }}
+    {{tooltip_hotkey_hints "Ctrl" "'"}}
+</template>
+<template id="link-tooltip">
+    {{t 'Link' }}
+    {{tooltip_hotkey_hints "Ctrl" "Shift" "L"}}
+</template>
+<template id="bold-tooltip">
+    {{t 'Bold' }}
+    {{tooltip_hotkey_hints "Ctrl" "B"}}
+</template>
+<template id="italic-tooltip">
+    {{t 'Italic' }}
+    {{tooltip_hotkey_hints "Ctrl" "I"}}
+</template>
+<template id="code-tooltip">
+    {{t 'Code' }}
+    {{tooltip_hotkey_hints "Ctrl" "Shift" "C"}}
+</template>
+<template id="delete-draft-tooltip-template">
+    {{t 'Delete draft' }}
+    {{tooltip_hotkey_hints "Backspace"}}
+</template>
+<template id="gear-menu-tooltip-template">
+    {{t 'Main menu' }}
+    {{tooltip_hotkey_hints "G"}}
+</template>
+<template id="personal-menu-tooltip-template">
+    {{t 'Personal menu' }}
+    {{tooltip_hotkey_hints "G" "→"}}
+</template>
+<template id="help-menu-tooltip-template">
+    {{t 'Help menu' }}
+    {{tooltip_hotkey_hints "G" "←"}}
+</template>
+<template id="automatic-theme-template">
+    <div>
+        <div>{{t "Automatic theme" }}</div>
+        <div class="tooltip-inner-content italic">{{t "Follows system settings." }}</div>
+    </div>
+</template>
+<template id="all-message-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="all_messages">
+        <div>{{t 'Combined feed' }}</div>
+        <div class="tootlip-inner-content views-message-count italic hidden-for-spectators"></div>
+        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
+    </div>
+    {{tooltip_hotkey_hints "A"}}
+</template>
+<template id="recent-conversations-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="recent_topics">
+        <div>{{t 'Recent conversations' }}</div>
+        <div class="tootlip-inner-content views-message-count italic hidden-for-spectators"></div>
+        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide hidden-for-spectators">{{t 'This is your home view.' }}</div>
+    </div>
+    {{tooltip_hotkey_hints "T"}}
+</template>
+<template id="starred-message-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="starred_message">
+        <div>{{t 'Starred messages' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+    </div>
+    {{tooltip_hotkey_hints "*"}}
+</template>
+<template id="my-reactions-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="recent_topics">
+        <div>{{t 'Reactions to your messages' }}</div>
+    </div>
+</template>
+<template id="inbox-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="inbox">
+        <div>{{t 'Inbox' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+        <div class="tooltip-inner-content views-tooltip-home-view-note italic hide">{{t 'This is your home view.' }}</div>
+    </div>
+    {{tooltip_hotkey_hints "Shift" "I"}}
+</template>
+<template id="drafts-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="drafts">
+        <div>{{t 'Drafts' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+    </div>
+    {{tooltip_hotkey_hints "D"}}
+</template>
+<template id="scheduled-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="scheduled_message">
+        <div>{{t 'Scheduled messages'}}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+    </div>
+</template>
+<template id="reminders-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="reminders">
+        <div>{{t 'Reminders'}}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+    </div>
+</template>
+<template id="show-all-direct-messages-template">
+    {{t 'Direct message feed' }}
+    {{tooltip_hotkey_hints "Shift" "P"}}
+</template>
+<template id="mentions-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="mentions">
+        <div>{{t 'Mentions' }}</div>
+        <div class="tootlip-inner-content views-message-count italic"></div>
+    </div>
+</template>
+<template id="message-expander-tooltip-template">
+    {{t 'Show more' }}
+    {{tooltip_hotkey_hints "-"}}
+</template>
+<template id="message-condenser-tooltip-template">
+    {{t 'Show less' }}
+    {{tooltip_hotkey_hints "-"}}
+</template>
+<template id="edit-content-tooltip-template">
+    {{t "Edit message" }}
+    {{tooltip_hotkey_hints "E"}}
+</template>
+<template id="move-message-tooltip-template">
+    {{t "Move message" }}
+    {{tooltip_hotkey_hints "M"}}
+</template>
+<template id="add-emoji-tooltip-template">
+    {{t "Add emoji reaction" }}
+    {{tooltip_hotkey_hints ":"}}
+</template>
+<template id="message-actions-tooltip-template">
+    {{t "Message actions" }}
+    {{tooltip_hotkey_hints "I"}}
+</template>
+<template id="dismiss-failed-send-button-tooltip-template">
+    <div>
+        <div>{{t "Dismiss failed message" }}</div>
+        <div class="italic tooltip-inner-content">
+            {{t "This content remains saved in your drafts." }}
+        </div>
+    </div>
+</template>
+<template id="slow-send-spinner-tooltip-template">
+    <div>
+        <div>{{t "Sending…" }}</div>
+        <div class="italic">
+            {{t "This message will remain saved in your drafts until it is successfully sent." }}
+        </div>
+    </div>
+</template>
+<template id="star-message-tooltip-template">
+    <div class="starred-status">{{t "Star this message" }}</div>
+    {{tooltip_hotkey_hints "Ctrl" "S"}}
+</template>
+<template id="unstar-message-tooltip-template">
+    <div class="starred-status">{{t "Unstar this message" }}</div>
+    {{tooltip_hotkey_hints "Ctrl" "S"}}
+</template>
+<template id="search-query-tooltip-template">
+    {{t 'Search' }}
+    {{tooltip_hotkey_hints "/"}}
+</template>
+<template id="show-left-sidebar-tooltip-template" >
+    {{t 'Show left sidebar' }}
+    {{tooltip_hotkey_hints "Q"}}
+</template>
+<template id="hide-left-sidebar-tooltip-template" >
+    {{t 'Hide left sidebar' }}
+</template>
+<template id="show-userlist-tooltip-template">
+    {{t 'Show user list' }}
+    {{tooltip_hotkey_hints "W"}}
+</template>
+<template id="hide-userlist-tooltip-template">
+    {{t 'Hide user list' }}
+</template>
+<template id="topic-unmute-tooltip-template">
+    {{t "Unmute topic" }}
+    {{tooltip_hotkey_hints "Shift" "M"}}
+</template>
+<template id="topic-mute-tooltip-template">
+    {{t "Mute topic" }}
+    {{tooltip_hotkey_hints "Shift" "M"}}
+</template>
+<template id="delete-scheduled-message-tooltip-template">
+    {{t 'Delete scheduled message' }}
+    {{tooltip_hotkey_hints "Backspace"}}
+</template>
+<template id="delete-reminder-tooltip-template">
+    {{t 'Delete reminder' }}
+    {{tooltip_hotkey_hints "Backspace"}}
+</template>
+<template id="create-new-stream-tooltip-template">
+    {{t 'Create new channel' }}
+    {{tooltip_hotkey_hints "N"}}
+</template>
+<template id="show-subscribe-tooltip-template">
+    {{t 'Subscribe to this channel' }}
+    {{tooltip_hotkey_hints "Shift" "S"}}
+</template>
+<template id="show-unsubscribe-tooltip-template">
+    {{t 'Unsubscribe from this channel' }}
+    {{tooltip_hotkey_hints "Shift" "S"}}
+</template>
+<template id="view-stream-tooltip-template">
+    {{t 'View channel' }}
+    {{tooltip_hotkey_hints "Shift" "V"}}
+</template>
+<template id="mobile-push-notification-tooltip-template">
+    {{t 'Mobile push notifications are not enabled on this server.' }}
+</template>
+<template id="color-picker-confirm-button-tooltip-template">
+    {{t 'Confirm new color' }}
+</template>
+<template id="save-button-tooltip-template">
+    {{t 'Save' }}
+</template>
+<template id="cancel-button-tooltip-template">
+    {{t 'Cancel' }}
+</template>
+<template id="filter-left-sidebar-tooltip-template">
+    {{t 'Filter left sidebar' }}
+    {{tooltip_hotkey_hints "Q"}}
+</template>
+<template id="inbox-channel-mute-toggle-tooltip-template">
+    <div>
+        <div>{{t "You have muted this channel." }}</div>
+        <div class="italic">
+            {{t "Click to unmute this channel." }}
+        </div>
+    </div>
+</template>

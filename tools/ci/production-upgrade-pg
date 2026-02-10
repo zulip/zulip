@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# This tests upgrading PostgreSQL
+set -e
+set -x
+
+su zulip -c /home/zulip/deployments/current/scripts/stop-server
+/home/zulip/deployments/current/scripts/setup/upgrade-postgresql
+su zulip -c /home/zulip/deployments/current/scripts/start-server
+
+echo "Upgrade of PostgreSQL complete!"
+exit 0

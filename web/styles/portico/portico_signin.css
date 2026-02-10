@@ -1,0 +1,1775 @@
+html {
+    min-height: 500px;
+}
+
+.flex {
+    display: flex;
+    padding: 20px 0 80px;
+    align-items: center;
+    justify-content: center;
+
+    min-height: calc(100vh - var(--height-footer));
+}
+
+.m-10 {
+    margin: 10px;
+}
+
+.semi-bold {
+    font-weight: 600;
+}
+
+.white-box {
+    position: relative;
+    padding: 30px;
+    min-width: 0;
+    /* Sensibly and correctly wrap email addresses
+       over multiple lines, when necessary. */
+    overflow-wrap: break-word;
+
+    background-color: hsl(0deg 0% 100%);
+    box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
+    border: 1px solid hsl(0deg 0% 87%);
+    border-radius: 4px;
+}
+
+.bottom-text {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: 400;
+    font-size: 0.9em;
+
+    & a {
+        color: hsl(164deg 100% 23%);
+
+        &:hover {
+            text-decoration: none;
+            color: hsl(156deg 62% 61%);
+        }
+    }
+}
+
+.left-text {
+    text-align: left;
+    margin-top: 0;
+}
+
+#realm-import-post-process,
+#new-realm-creation {
+    .get-started {
+        font-size: 2rem;
+    }
+}
+
+#create-account {
+    padding: 20px 0;
+}
+
+.bottom-text-large {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: 400;
+    font-size: 1.2em;
+
+    & a {
+        color: hsl(164deg 100% 23%);
+
+        &:hover {
+            text-decoration: none;
+            color: hsl(156deg 62% 61%);
+        }
+    }
+}
+
+.grey {
+    color: hsl(0deg 0% 67%);
+}
+
+.app-main {
+    .login-page-header {
+        font-size: 1.5em;
+        font-weight: 300;
+        margin: 0;
+        line-height: 1.25;
+        height: 0;
+        transform: translateX(-15px) translateY(-60px);
+        text-align: left;
+    }
+
+    .login-page-container.dev-login {
+        .login-page-header {
+            height: auto;
+            margin-top: 20px;
+            transform: none;
+            text-align: center;
+        }
+
+        & h2 {
+            font-size: 1em;
+            font-weight: 400;
+        }
+
+        .group {
+            display: inline-block;
+            vertical-align: top;
+
+            margin: 0 20px;
+        }
+
+        & select {
+            height: 30px;
+            padding: 0 6px;
+            width: 220px;
+            font-size: 14px;
+            color: hsl(0deg 0% 33%);
+            border-radius: 4px;
+            border: 1px solid hsl(0deg 0% 80%);
+            margin-bottom: 10px;
+            cursor: pointer;
+            background-color: hsl(0deg 0% 100%);
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+    }
+
+    &.forgot-password-container {
+        font-weight: 400;
+    }
+
+    &.find-account-page-container {
+        width: 500px;
+        font-weight: 400;
+    }
+
+    .find-account-form-tip {
+        font-size: 0.8em;
+    }
+
+    &.goto-account-page-container {
+        width: 500px;
+        font-weight: 400;
+
+        .realm-redirect-form {
+            text-align: center;
+
+            .inline-block {
+                text-align: center;
+            }
+        }
+    }
+
+    &.confirm-continue-page-container {
+        width: 400px;
+        font-weight: 400;
+
+        .white-box {
+            min-width: 365px;
+        }
+
+        .form-inline {
+            display: inline-block;
+        }
+
+        .form-inline .outline {
+            border: 2px inset hsl(213deg 23% 25%);
+            background-color: hsl(0deg 0% 100%);
+            color: hsl(213deg 23% 25%);
+            padding: 13px 20px 11px;
+
+            &:hover {
+                background-color: hsl(213deg 65% 97%);
+            }
+        }
+
+        & p {
+            font-size: 19px;
+        }
+    }
+
+    &.account-email-confirm-container .white-box {
+        max-width: 545px;
+    }
+}
+
+.login-page-container {
+    &.dev-login {
+        margin-top: 20px;
+        border: none;
+
+        .login-form {
+            width: auto;
+        }
+    }
+
+    .group {
+        margin: 0 20px;
+        display: inline-block;
+    }
+
+    .dev-button {
+        color: hsl(170deg 41% 52%);
+        border: 1px solid hsl(170deg 41% 52%);
+        border-radius: 4px;
+        background-color: transparent;
+        font-family: inherit;
+        font-weight: normal;
+        line-height: 20px;
+        vertical-align: middle;
+        margin: 0;
+        width: auto;
+
+        transition:
+            color 0.3s ease,
+            border-color 0.3s ease;
+
+        &:hover {
+            color: hsl(156deg 62% 61%);
+            border-color: hsl(156deg 62% 61%);
+        }
+
+        &.dev-login-button {
+            padding: 8px;
+            font-size: 19px;
+            min-width: 300px;
+            cursor: pointer;
+        }
+
+        &.dev-create-button {
+            padding: 6px 12px;
+            margin-bottom: 4px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+    }
+}
+
+.new-style .login-page-container .alert,
+.register-page-container .new-style .alert {
+    margin: 0;
+    text-align: left;
+    font-size: 0.7em;
+    font-weight: 600;
+}
+
+.register-page-container {
+    &.closed-realm {
+        .right-side {
+            display: none;
+        }
+
+        .left-side {
+            border-right: none;
+        }
+
+        .invite-required {
+            display: block;
+
+            color: hsl(0deg 0% 67%);
+            font-weight: normal;
+        }
+    }
+
+    .invite-required {
+        display: none;
+        line-height: 1;
+
+        & i {
+            margin-right: 5px;
+        }
+    }
+}
+
+.forgot-password-container {
+    width: 503px;
+
+    & form {
+        margin-bottom: 0;
+    }
+}
+
+.deactivated-realm-container {
+    width: 503px;
+}
+
+.header {
+    color: hsl(0deg 0% 27%);
+    background-color: hsl(0deg 0% 100%);
+    position: sticky;
+    width: 100%;
+    top: 0;
+
+    .top-links a,
+    /* specificity to override the color of `.light` */
+    .header-main .logo .portico-header-text {
+        color: hsl(0deg 0% 27%);
+    }
+}
+
+.register-form {
+    &.new-style {
+        text-align: left;
+        color: hsl(0deg 0% 45%);
+    }
+
+    #errors {
+        font-size: 0.8em;
+        font-weight: 400;
+        margin-bottom: 20px;
+        margin-top: 10px;
+
+        &:empty {
+            margin-top: 0;
+        }
+    }
+
+    & button {
+        margin-top: 22px;
+    }
+
+    .new-organization-button {
+        &[disabled] {
+            cursor: default;
+            opacity: 0.6;
+        }
+    }
+}
+
+.account-accept-terms-page {
+    #registration,
+    #accept_tos_button {
+        margin: 0;
+    }
+
+    .fakecontrol {
+        font-weight: normal;
+    }
+
+    .description {
+        margin-bottom: 20px;
+        font-size: 16px;
+        font-weight: 400;
+        max-width: 400px;
+    }
+
+    #new-user-email-address-visibility {
+        max-width: 400px;
+    }
+
+    .center-block {
+        max-width: 800px;
+
+        .controls {
+            margin-bottom: 5px;
+        }
+    }
+
+    #accept_tos_button {
+        margin-top: 20px;
+    }
+}
+
+#demo-realm-creation {
+    .terms-of-service.input-group {
+        width: 330px;
+        margin: 25px auto 10px;
+    }
+
+    .input-box .register-button {
+        margin-top: 0;
+
+        &[disabled] {
+            cursor: default;
+            opacity: 0.6;
+        }
+    }
+}
+
+.register-account #registration {
+    .terms-of-service,
+    .input-group .marketing-emails,
+    .default-stream-groups .input-group,
+    .default-stream-groups p {
+        width: 330px;
+        margin: 0 auto 10px;
+    }
+}
+
+.account-creation {
+    font-weight: 400;
+
+    .pitch {
+        margin-bottom: 0;
+    }
+
+    .alert.alert-info {
+        padding: 8px 14px;
+        text-align: left;
+
+        font-size: 1em;
+        line-height: 1.3;
+    }
+
+    .white-box p:last-of-type {
+        margin-bottom: 0;
+    }
+}
+
+.relative {
+    position: relative;
+}
+
+.new-style {
+    & button {
+        display: inline-block;
+        vertical-align: top;
+        padding: 13px 22px;
+
+        font-family: "Source Sans 3 VF", sans-serif;
+
+        font-size: 1.2rem;
+        font-weight: 400;
+        box-sizing: border-box;
+        outline: none;
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(213deg 23% 25%);
+
+        margin: 25px 0 5px;
+        height: 50px;
+
+        border: none;
+        border-radius: 4px;
+
+        transition: 0.3s ease;
+        transition-property: background-color, outline;
+
+        &:hover {
+            background-color: hsl(213deg 33% 31%);
+        }
+
+        &:active {
+            background-color: hsl(214deg 28% 16%);
+        }
+
+        &:focus {
+            outline: 3px solid hsl(213deg 81% 79%);
+        }
+
+        &.full-width {
+            width: 100%;
+        }
+    }
+
+    .alert-info {
+        font-weight: 400;
+    }
+
+    .alert {
+        &:not(
+                #server-deactivate-error,
+                #server-login-error,
+                .alert-info,
+                .billing-page-success,
+                .upgrade-page-success,
+                .sponsorship-page-success,
+                #autopay-error
+            ) {
+            padding: 0;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.7em;
+            line-height: 1.2;
+            background-color: transparent;
+
+            border: none;
+            color: hsl(0deg 44% 54%);
+        }
+
+        &.alert-error {
+            text-align: left;
+        }
+    }
+
+    .form-inline {
+        margin: 0;
+    }
+
+    .get-started {
+        font-size: 2.5rem;
+        text-align: center;
+        color: hsl(0deg 0% 40%);
+        margin-bottom: 20px;
+    }
+
+    .right-side .alert {
+        max-width: 328px;
+    }
+
+    .input-box {
+        position: relative;
+        display: inline-block;
+        vertical-align: top;
+
+        & input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        input[type="url"],
+        textarea,
+        select {
+            padding: 10px 32px 10px 12px;
+            margin: 25px 0 5px;
+
+            font-family: "Source Sans 3 VF", sans-serif;
+            font-size: 1.2rem;
+            line-height: normal;
+            height: auto;
+
+            width: 280px;
+
+            border: 1px solid hsl(0deg 0% 87%);
+            box-shadow: none;
+            border-radius: 4px;
+            background-color: hsl(0deg 0% 100%);
+            color: hsl(0deg 0% 33%);
+
+            transition: border-color 0.3s ease;
+
+            &:focus:invalid {
+                box-shadow: none;
+                color: hsl(0deg 0% 27%);
+            }
+
+            &:focus {
+                border-color: hsl(0deg 0% 53%);
+                outline: 0;
+            }
+        }
+
+        & input[type="email"] {
+            margin-bottom: 10px;
+        }
+
+        /* TODO: We need to audit all the portico <label> elements
+           and:
+           1) Add a unifying class so that these side-effect-prone
+              element selectors don't continue to introduce ugly
+              regressions
+           2) Rework the containing layout of `.input-box` so as to
+              not use fiddly positioning
+           3) Clean up other related .altcha-label references in
+              this file.
+        */
+        & label:not(.altcha-label) {
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            margin-top: 1px;
+
+            transition: 0.3s ease;
+            transition-property:
+                color, font-size, font-weight, transform; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+        }
+
+        .altcha-label {
+            /* Push back against Bootstrap. */
+            margin-bottom: 0;
+        }
+
+        &.moving-label {
+            & input[type="text"]:invalid + label,
+            input[type="email"]:invalid + label,
+            input[type="password"]:invalid + label {
+                transform: translateY(39px) translateX(14px);
+                font-size: 1.2rem;
+                font-weight: 400;
+                color: hsl(0deg 0% 67%);
+
+                pointer-events: none;
+            }
+        }
+
+        & label,
+        input[type="text"]:focus + label,
+        input[type="email"]:focus + label,
+        input[type="password"]:focus + label,
+        select:focus + label,
+        input[type="text"]:valid + label,
+        input[type="email"]:valid + label,
+        input[type="password"]:valid + label,
+        select:valid + label {
+            left: 0;
+            transform: translateY(0) translateX(0);
+            pointer-events: auto;
+
+            font-size: 1rem;
+            font-weight: 600;
+            color: hsl(0deg 0% 27%);
+        }
+
+        /* The width of the "Organization name" text box
+           right above this one is also 326px. */
+        & select {
+            width: 326px;
+            cursor: pointer;
+        }
+
+        & p.text-error {
+            display: block;
+            padding: 0;
+
+            color: hsl(1.1deg 44.7% 50.4%);
+            font-size: 0.7em;
+            font-weight: 600;
+            text-align: left;
+            line-height: 1.2;
+
+            position: relative;
+            left: 1px;
+        }
+
+        & label.text-error {
+            display: block;
+
+            top: 0;
+            right: 0;
+            text-align: right;
+            color: hsl(1.1deg 44.7% 50.4%);
+            font-size: 0.7em;
+            font-weight: 600;
+            padding-left: 0;
+        }
+    }
+
+    .lead {
+        margin: 0;
+    }
+
+    .inline-block {
+        text-align: left;
+    }
+
+    .contact-admin p.invite-hint {
+        font-size: 1.3rem;
+        margin-top: 0.8rem;
+        text-align: center;
+    }
+}
+
+#login_form {
+    .input-box {
+        display: block;
+    }
+
+    .loader {
+        display: none;
+        vertical-align: top;
+        position: relative;
+
+        height: 30px;
+        margin-top: -10px;
+        top: 5px;
+    }
+}
+
+.registration-form-hint {
+    text-align: left;
+    font-size: 0.8em;
+    line-height: normal;
+    margin-left: 2px;
+
+    .change_email_address_visibility {
+        cursor: pointer;
+    }
+}
+
+#change-email-address-visibility-modal {
+    font-weight: 400;
+
+    & label {
+        font-size: inherit;
+    }
+
+    & h1 {
+        font-weight: 600;
+        font-family: inherit;
+    }
+
+    & select {
+        margin-bottom: 10px;
+        width: fit-content;
+        font-size: 16px;
+        font-family: inherit;
+    }
+}
+
+/* -- /accounts/register/ page -- */
+.portico-page {
+    .registration-lead-section {
+        margin: 10px 0;
+        text-align: center;
+        width: 100%;
+        max-width: 100%;
+
+        .registration-lead-title {
+            margin: 5px 0;
+            font-family: inherit;
+            font-weight: 300;
+            font-size: 32px;
+            line-height: 40px;
+            color: hsl(0deg 0% 40%);
+            text-rendering: optimizelegibility;
+        }
+
+        .registration-lead-subtitle {
+            margin: 0;
+            font-family: inherit;
+            font-weight: 400;
+            font-size: 16px;
+            line-height: 150%;
+            color: hsl(0deg 0% 40%);
+
+            .registration-lead-subtitle-link {
+                color: hsl(200deg 100% 40%);
+                text-decoration: none;
+            }
+        }
+    }
+
+    .pitch {
+        & h1 {
+            margin-bottom: 5px;
+        }
+
+        & p {
+            font-weight: 400;
+            color: hsl(0deg 0% 67%);
+        }
+    }
+
+    .or {
+        width: 100%;
+        display: block;
+        margin: 10px auto;
+        color: hsl(0deg 0% 34%);
+        font-weight: 600;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+
+        &::before {
+            content: " ";
+
+            display: inline-block;
+            position: absolute;
+            width: calc(100% - 5px);
+            top: calc(50% - 2px);
+            left: 0;
+            z-index: -1;
+
+            border-bottom: 2px solid hsl(0deg 0% 87%);
+        }
+
+        & span {
+            background-color: hsl(0deg 0% 100%);
+            padding: 0 5px;
+        }
+    }
+}
+
+.register-account .pitch,
+.account-accept-terms-page .pitch {
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.split-view {
+    .org-header {
+        text-align: left;
+
+        .info-box {
+            display: inline-block;
+            position: relative;
+            margin: 20px 0 0 20px;
+            width: calc(100% - 125px);
+
+            /* full width minus the avatar + padding + borders */
+            text-align: left;
+        }
+    }
+
+    .left-side {
+        width: 500px;
+        border-right: 1px solid hsl(0deg 0% 93%);
+        position: relative;
+        left: -1px;
+
+        .description {
+            text-align: left;
+            font-weight: normal;
+
+            margin-top: 20px;
+            margin-right: 10px;
+        }
+
+        + .right-side {
+            border-left: 1px solid hsl(0deg 0% 93%);
+            /* this is to make sure the borders of the left and right side overlap
+               each other. */
+            padding-left: 15px;
+            margin-left: -5px;
+        }
+    }
+
+    .right-side .form-inline {
+        width: 328px;
+    }
+}
+
+.split-view .right-side,
+.split-view .left-side {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.split-view .org-header .avatar,
+.register-page-container .org-header .avatar {
+    display: inline-block;
+    vertical-align: top;
+
+    width: 100px;
+    height: 100px;
+}
+
+.info-box {
+    .organization-name,
+    .organization-path {
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .organization-name {
+        font-size: 1.5em;
+        font-weight: 300;
+        line-height: 1.2;
+    }
+
+    .organization-path {
+        font-weight: 400;
+        color: hsl(0deg 0% 47%);
+        margin-top: 5px;
+    }
+}
+
+.confirm-email-change-page .white-box {
+    max-width: 500px;
+    overflow-wrap: anywhere;
+}
+
+.anonymous_access_form {
+    & button {
+        /* Avoid excessive space at top of login form */
+        margin-top: 0;
+    }
+}
+
+button.login-social-button {
+    width: 328px;
+    height: auto;
+    /* Using 16% gives us space between text and icon so that they don't overlap. */
+    padding-left: 16%;
+    line-height: 1;
+
+    background-size: auto 60%;
+    background-repeat: no-repeat;
+    background-position: 13px 50%;
+    background-color: hsl(0deg 0% 100%);
+    box-shadow:
+        0 1px 3px hsl(0deg 0% 0% / 30%),
+        0 0 5px hsl(0deg 0% 0% / 10%);
+    margin-left: 0;
+    margin-top: 0;
+
+    color: hsl(0deg 0% 34%);
+
+    &:hover {
+        background-color: hsl(0deg 0% 98%);
+        box-shadow: 1px 2px 5px hsl(0deg 0% 0% / 20%);
+    }
+
+    &:active {
+        background-color: hsl(0deg 0% 93%);
+        box-shadow: 0 1px 1px hsl(0deg 0% 0% / 30%);
+    }
+}
+
+button#login_auth_button_gitlab,
+button#register_auth_button_gitlab {
+    /* GitLab icon size looks a bit inconsistent with others. This fixes it. */
+    background-size: auto 90%;
+    background-position-x: 3px;
+}
+
+.login-page-container .right-side .actions,
+.back-to-login-wrapper {
+    margin: 20px 0 0;
+    text-align: left;
+
+    &.forgot-password-container {
+        margin: 0;
+    }
+
+    &.signup-link-wrapper {
+        font-weight: normal;
+        float: right;
+
+        .register-link {
+            font-size: 1rem;
+            margin-left: 5px;
+        }
+    }
+}
+
+.register-page-container .register-form-login-redirect {
+    margin-top: 10px;
+    float: right;
+    font-size: 17px;
+    font-weight: normal;
+
+    .register-link {
+        font-size: 17px;
+        margin-left: 5px;
+    }
+}
+
+.back-to-login-wrapper .back-to-login {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+
+    i {
+        position: relative;
+        top: -1px;
+        font-size: 0.8em;
+    }
+}
+
+.split-view .actions a,
+.back-to-login {
+    color: hsl(164deg 100% 23%);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.8em;
+    line-height: 1.5;
+    vertical-align: top;
+
+    transition: color 0.2s ease;
+
+    &:hover {
+        text-decoration: none;
+        color: hsl(156deg 62% 61%);
+    }
+}
+
+#password-reset-confirm,
+#realm-import-post-process,
+#realm-creation-form-slack-import,
+#account-deactivated-success-page-details,
+#server-deactivate-details,
+#remote-billing-confirm-login-form,
+#remote-billing-confirm-email-form,
+#server-login-page-details,
+#upgrade-page-details,
+#billing-page-details,
+#sponsorship-form,
+#sponsorship-status-page-details,
+#registration,
+#new-realm-creation,
+#demo-realm-creation {
+    width: auto;
+    padding: 0;
+    margin: 30px;
+
+    & fieldset {
+        margin: 30px;
+        padding: 0;
+        border: 0;
+
+        .input-box:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .info-box {
+        margin: 10px 0 0 20px;
+
+        .organization-name {
+            max-width: 228px;
+        }
+    }
+
+    .input-box {
+        display: block;
+        text-align: center;
+        width: 330px;
+        margin: 25px auto 10px;
+        position: relative;
+
+        &.full-width {
+            width: calc(100% - 20px);
+        }
+
+        & label:not(.altcha-label) {
+            position: absolute;
+            margin: 0;
+            top: 0;
+            left: 2px;
+
+            &.static {
+                width: 100%;
+                text-align: left;
+                position: static !important;
+                margin-left: 2px;
+            }
+        }
+
+        &.account-deactivated-success-page-field,
+        &.server-deactivate-form-field,
+        &.remote-billing-confirm-login-form-field,
+        &.server-login-form-field,
+        &.upgrade-page-field,
+        &.billing-page-field,
+        &.support-form-field,
+        &.sponsorship-form-field {
+            width: 450px;
+
+            & input,
+            textarea {
+                width: 400px;
+                font-size: 1rem;
+            }
+
+            & select {
+                width: 450px;
+            }
+
+            & textarea {
+                resize: vertical;
+                color: hsl(0deg 0% 33%);
+                vertical-align: middle;
+                background-color: hsl(0deg 0% 100%);
+
+                &:focus {
+                    outline: 0;
+                }
+            }
+        }
+    }
+
+    & [for="realm_in_root_domain"] {
+        font-weight: normal !important;
+    }
+
+    .register-button-box {
+        text-align: center;
+    }
+
+    .register-button {
+        margin: 25px auto 30px;
+        width: 330px;
+        border-radius: 4px;
+    }
+
+    .support-submit-button,
+    #sponsorship-button {
+        margin-top: 20px;
+        margin-bottom: 5px;
+        width: 450px;
+    }
+
+    .register-button .loader,
+    .upgrade-button-loader,
+    .sponsorship-button-loader,
+    .billing-button-loader {
+        display: none;
+        vertical-align: top;
+        position: relative;
+        height: 30px;
+        margin-top: -10px;
+        top: 5px;
+    }
+
+    #id_team_subdomain.subdomain {
+        margin-top: 0;
+        text-align: right;
+        position: relative;
+        padding-right: 10px;
+
+        width: 150px;
+
+        + .realm_subdomain_label {
+            top: 15px;
+            margin-left: 180px;
+            display: inline-block;
+
+            font-weight: normal;
+            font-size: inherit;
+        }
+    }
+
+    #subdomain_section {
+        .inline-block {
+            width: 100%;
+        }
+
+        .or {
+            margin-top: 0;
+        }
+    }
+
+    #id_email,
+    #support_from,
+    #support_realm,
+    .not-editable-realm-field {
+        font-weight: normal;
+        margin: 2px;
+        padding-top: 25px;
+        text-align: left;
+        overflow-wrap: break-word;
+    }
+
+    .help-text {
+        width: 100%;
+        max-width: none;
+        margin: 2px 0;
+        text-align: left;
+        color: hsl(0deg 0% 47%);
+        font-size: 0.9rem;
+        font-weight: 400;
+        line-height: 1.2;
+    }
+
+    .help-inline {
+        display: block;
+    }
+
+    & legend {
+        display: block;
+        width: 100%;
+        padding: 0;
+        margin-bottom: 0;
+        font-size: 21px;
+        line-height: 40px;
+        color: hsl(0deg 0% 0% / 50%);
+        border: 0;
+        border-bottom: 1px solid hsl(0deg 0% 90%);
+
+        + .input-box {
+            margin-top: 20px;
+        }
+
+        .edit-realm-details {
+            float: right;
+            cursor: pointer;
+        }
+    }
+
+    .center-block .pitch {
+        margin-bottom: 0;
+    }
+
+    .input-group {
+        & label {
+            font-size: 1rem;
+
+            &.inline-block {
+                margin-top: -1px;
+            }
+
+            &.marketing_emails_checkbox {
+                text-indent: -24px;
+                margin-left: 24px;
+            }
+        }
+
+        &.radio {
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+    .remote-billing-confirm-email-subscription-form-field {
+        width: 450px;
+        margin-top: 15px;
+
+        .checkbox {
+            display: block;
+            /* Present a hanging indent on subscription copy
+               and checkboxes. */
+            text-indent: -26px;
+            margin: 0 0 10px 26px;
+        }
+
+        strong {
+            font-weight: 600;
+        }
+    }
+
+    .org-url {
+        margin-bottom: 5px !important;
+    }
+}
+
+#password-reset-confirm {
+    .white-box {
+        display: inline-block;
+        text-align: left;
+        width: 328px;
+    }
+
+    #pw_strength {
+        width: 328px;
+    }
+
+    .password-reset-button {
+        margin-top: 10px;
+        width: 328px;
+    }
+
+    #password_reset .input-group {
+        & label {
+            font-size: 1rem;
+
+            &.inline-block {
+                margin-top: -1px;
+            }
+
+            &.marketing_emails_checkbox {
+                text-indent: -24px;
+                margin-left: 24px;
+            }
+        }
+    }
+
+    .password-reset-invalid {
+        margin: 0;
+    }
+}
+
+#billing-page-details {
+    .billing-section-title {
+        display: block;
+        margin: 2px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: hsl(0deg 0% 27%);
+        line-height: 20px;
+        text-align: left;
+    }
+
+    .billing-section-content {
+        font-weight: normal;
+        margin: 2px;
+        text-align: left;
+        overflow-wrap: break-word;
+    }
+}
+
+.static.org-url + #subdomain_section {
+    margin-top: 0 !important;
+
+    .or {
+        display: none;
+    }
+}
+
+#profile_info_section {
+    #profile_avatar {
+        border: 1px solid hsl(0deg 0% 80%);
+        border-radius: 8px;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 10px;
+    }
+
+    #profile_full_name {
+        font-size: 1.2rem;
+        font-weight: 400;
+    }
+}
+
+#source_realm_select_section {
+    position: relative;
+    top: 15px;
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+.goto-account-page {
+    #realm_redirect_subdomain {
+        text-align: right;
+        position: relative;
+        padding-right: 10px;
+    }
+
+    #realm_redirect_external_host {
+        font-size: 20px;
+        top: 13px;
+        left: 5px;
+        position: relative;
+    }
+
+    #realm_redirect_description {
+        top: 15px;
+        position: relative;
+        text-align: left;
+        font-weight: 600;
+        margin-bottom: -5px;
+    }
+
+    #enter-realm-button {
+        margin-top: 14px;
+    }
+}
+
+#choose_email {
+    flex-direction: column;
+
+    .white-box {
+        min-width: 450px;
+        padding: 30px 0 50px;
+    }
+
+    & form {
+        padding: 0;
+        margin: 0;
+
+        &.select-email-form:hover {
+            background-color: hsl(202deg 56% 91%);
+            cursor: pointer;
+
+            & i.fa {
+                color: hsl(203deg 63% 76%);
+            }
+        }
+    }
+
+    .choose-email-box {
+        padding: 13px 0;
+        margin: 0 30px;
+        border-bottom: 1px solid hsl(0deg 0% 95%);
+        display: flex;
+        align-items: center;
+
+        & p {
+            margin: 0;
+            font-size: 0.8em;
+
+            &:last-child {
+                line-height: 1.2em;
+            }
+        }
+
+        .email {
+            font-size: 0.95em;
+            font-weight: 400;
+        }
+
+        & img,
+        i {
+            width: 35px;
+            height: 35px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+
+        & i.fa {
+            color: hsl(0deg 0% 67%);
+            text-align: center;
+            line-height: 38px;
+
+            &::before {
+                font-size: 30px;
+            }
+        }
+    }
+}
+
+/* -- media queries -- */
+
+@media (width <= 950px) {
+    .split-view .left-side {
+        width: 400px;
+    }
+}
+
+@media (width <= 850px) {
+    .split-view .left-side {
+        width: 350px;
+    }
+}
+
+@media (width <= 815px) {
+    .flex {
+        min-height: calc(100vh - 530px);
+    }
+}
+
+@media (width <= 795px) {
+    .register-account #registration {
+        padding: 10px;
+    }
+
+    .register-page-container,
+    .login-page-container {
+        width: 400px;
+        text-align: center;
+    }
+
+    .split-view {
+        .org-header {
+            .avatar {
+                width: 50px;
+                height: 50px;
+            }
+
+            .info-box {
+                margin-top: 0;
+
+                .organization-path {
+                    margin-top: 0;
+                }
+            }
+        }
+
+        .left-side,
+        .right-side {
+            display: block;
+            margin: 0 auto !important;
+            max-width: 100%;
+        }
+
+        .left-side + .right-side {
+            border-left: none;
+            padding: 0;
+            margin: 0 auto;
+        }
+
+        .left-side {
+            border: none;
+            margin-right: 0;
+            min-height: 0;
+            margin-bottom: 20px;
+            width: 324px;
+
+            .description {
+                margin: 20px 0;
+
+                & a {
+                    color: hsl(200deg 100% 36%);
+                }
+            }
+        }
+
+        .right-side {
+            width: 324px;
+        }
+    }
+}
+
+@media (width <= 500px) {
+    .new-style .get-started {
+        font-size: 1.6em;
+    }
+
+    .app-main.register-page-container,
+    .app-main.login-page-container,
+    .app-main.find-account-page-container,
+    .app-main.goto-account-page-container,
+    .app-main.forgot-password-container {
+        display: inline-block;
+        padding: 20px;
+        width: calc(100% - 40px);
+    }
+
+    .forgot-password-container form {
+        .input-box {
+            text-align: center;
+        }
+
+        & button {
+            width: 328px;
+        }
+    }
+
+    .white-box {
+        box-shadow: none;
+    }
+
+    .account-creation {
+        font-weight: 400;
+    }
+
+    .flex {
+        /* the header becomes smaller, so comp for that. */
+        min-height: calc(100vh - 505px);
+    }
+
+    #create-account,
+    #new-realm-creation {
+        margin: 0 -30px;
+        transform: scale(0.9);
+    }
+
+    #create-account {
+        margin: -70px;
+
+        #registration {
+            padding: 0;
+        }
+    }
+}
+
+@media (width <= 400px) {
+    .flex {
+        min-height: calc(100vh - 560px);
+    }
+
+    #create-account,
+    #new-realm-creation {
+        margin: -10px -40px;
+        transform: scale(0.8);
+    }
+
+    #create-account {
+        margin: -100px;
+    }
+}
+
+@media (width <= 340px) {
+    #create-account,
+    #new-realm-creation {
+        margin: -40px -60px;
+        transform: scale(0.7);
+    }
+
+    #create-account {
+        margin: -150px;
+    }
+}
+
+@media (width >= 800px) {
+    .account-creation .white-box {
+        max-width: 800px;
+    }
+}
+
+#registration #how-realm-creator-found-zulip label {
+    top: -5px;
+}
+
+#how-realm-creator-found-zulip .how-found-zulip-extra-data-input {
+    margin-top: 5px;
+    display: none;
+}
+
+#sales-support-form-bottom-info {
+    padding: 0;
+
+    .not-editable-realm-field {
+        margin: 0;
+        padding: 0;
+    }
+}
+
+#realm-creation-import-from-wrapper #import_from[disabled] {
+    cursor: not-allowed;
+}
+
+#realm-creation-import-from-wrapper .extra-info-realm-creation-import-from {
+    padding-top: 5px;
+}
+
+#slack-import-dashboard-wrapper {
+    width: 100%;
+    margin: 10px 0 0 5px;
+
+    #slack-import-dashboard {
+        margin-right: 5px;
+    }
+
+    &.hidden {
+        display: none;
+    }
+}
+
+#realm-import-post-process,
+#realm-creation-form-slack-import {
+    .register-button {
+        margin: 0 auto;
+    }
+
+    #update-slack-access-token {
+        display: none;
+    }
+
+    .slack-import-extra-info {
+        margin-top: 0;
+
+        .not-editable-realm-field {
+            padding-top: 0;
+        }
+    }
+
+    .input-box.no-validation {
+        margin: 0;
+    }
+}
+
+#slack-import-dashboard .uppy-DragDrop-container {
+    border: 1px dashed hsl(0deg 0% 0%);
+    background-color: hsl(0deg 0% 0% / 5%);
+    color: hsl(0deg 0% 40%);
+    font-size: 1rem;
+
+    &:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    &:focus-visible {
+        outline: 1px solid hsl(213deg 81% 79%);
+    }
+}
+
+#realm-import-owner {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+#cancel-slack-import {
+    color: hsl(200deg 100% 40%);
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+        cursor: pointer;
+        color: hsl(200.16deg 100% 25.1%);
+        text-decoration: underline;
+    }
+}
+
+#realm-creation-form-slack-import .register-button {
+    &[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.self-hosting-login-help-text {
+    margin-top: 10px;
+}
+
+#email-address-visibility-select {
+    margin-top: 100px;
+    padding-right: 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#email-address-visibility-select-wrapper label {
+    text-align: left;
+}
+
+#email-address-visibility-help-text {
+    font-weight: normal;
+}
+
+.altcha .altcha-main {
+    /* Use `inline` instead of `flex` to get
+       desired effect of loading indicator and
+       status text next to each other.
+    */
+    display: inline;
+}
+
+.altcha .altcha-main .altcha-label {
+    /* Style similar to `registration-form-hint` */
+    font-weight: 300;
+    font-size: 0.8em;
+    color: inherit;
+    text-align: center;
+    padding-left: 5px;
+    display: inline;
+}
+
+.altcha .altcha-checkbox {
+    /* Loading indicator is displayed
+       using these properties. */
+    display: inline;
+    margin-right: 5px;
+}
+
+.altcha {
+    width: 100%;
+    margin: auto;
+    border: none !important;
+    /* Negate the space applied by altcha-widget to
+       avoid too much empty space below submit button.
+    */
+    margin-bottom: -48px;
+}
+
+.altcha.altcha-checkbox-hidden {
+    /* We only want to show the loading
+       indicator and not the checkbox. */
+    .altcha-checkbox {
+        display: none;
+    }
+
+    .altcha-main .altcha-label {
+        padding-left: 0;
+    }
+}
+
+#demo-realm-creation .new-organization-button,
+#new-realm-creation .new-organization-button {
+    margin-bottom: 0;
+}
+
+#demo-realm-creation #demo-submit-button-container,
+#new-realm-creation #altcha-submit-button-container {
+    margin-bottom: 30px;
+}
+
+#slack-import-dashboard .uppy-Dashboard-note {
+    font-size: 1rem;
+    font-weight: 450;
+    color: inherit;
+}
+
+.slack-import-file-upload-instruction {
+    margin-top: 1rem;
+}
+
+#realm-creation-form-slack-import {
+    /* Set a minimum height that's roughly ~2x the height of status page
+       with maximum content in English, to avoid the page height jumping
+       distractingly. */
+    min-height: 400px;
+}
+
+#bottom-hint-slack-import-page {
+    display: flex;
+    justify-content: center;
+
+    .bottom-text {
+        text-align: left;
+    }
+}
+
+#slack-import-unexpected-failure .text-error {
+    font-size: 1em;
+}

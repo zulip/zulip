@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+import os
+import random
+import subprocess
+import sys
+from pathlib import Path
+
+if __name__ == "__main__":
+    ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    os.chdir(ZULIP_PATH)
+
+    dir_path = Path("api_docs/unmerged.d")
+    os.makedirs(dir_path, exist_ok=True)
+
+    random_hex_value = f"{random.randint(0, 0xFFFFFF):06x}"
+    file_path = f"{dir_path}/ZF-{random_hex_value}.md"
+
+    with open(file_path, "w") as f:
+        f.write("")
+
+    try:
+        subprocess.run(["git", "add", file_path], check=True)
+    except subprocess.CalledProcessError as e:
+        print(e)
+        sys.exit(1)
+
+    print(
+        f"""Created an empty API changelog file.
+If you've made changes to the API, document them here:
+{file_path}
+
+For help, see:
+    https://zulip.readthedocs.io/en/latest/documentation/api.html#step-by-step-guide
+"""
+    )

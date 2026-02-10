@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+
+import difflib
+import os
+import re
+import sys
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(BASE_DIR)
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+
+current_path = "/etc/zulip/settings.py"
+if len(sys.argv) >= 2:
+    current_path = sys.argv[1]
+
+print(f"Reading current configuration from {current_path}...")
+with open(current_path) as f:
+    current_contents = f.read()
+
+import requests
+
+print("Fetching old versions of setting templates from Github...")
+templ = {}
+url: str | None = "https://api.github.com/repos/zulip/zulip/tags?per_page=100"
+
+while url is not None:
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        print(resp.content)
+        sys.exit(1)
+
+    url = resp.links.get("next", {}).get("url")
+    for tag in [t["name"] for t in resp.json()]:
+        if not re.match(r"^\d+\.\d+(\.\d+)?$", tag):
+            continue
+
+        filename = "zproject/prod_settings_template.py"
+        if [int(x) for x in tag.split(".")] < [1, 4]:
+            filename = "zproject/local_settings_template.py"
+
+        print(f"  - {tag}")
+        resp = requests.get(
+            f"https://raw.githubusercontent.com/zulip/zulip/{tag}/{filename}",
+        )
+        if resp.status_code == 200:
+            templ[tag] = resp.content.decode()
+        else:
+            print("Failure: ")
+            print(resp)
+
+print("Computing minimal difference...")
+sequence_matchers = {}
+for version, contents in templ.items():
+    sm = difflib.SequenceMatcher(None, current_contents, contents)
+    sequence_matchers[version] = sm
+
+likely = sorted(sequence_matchers.keys(), key=lambda v: sequence_matchers[v].ratio(), reverse=True)
+print(f"Most likely version: {likely[0]}")
+
+
+diff = difflib.unified_diff(
+    templ[likely[0]].splitlines(keepends=True),
+    current_contents.splitlines(keepends=True),
+    fromfile=f"zulip-server-{version}/zproject/prod_settings_template.py",
+    tofile=current_path,
+)
+
+print()
+print("".join(diff), end="")

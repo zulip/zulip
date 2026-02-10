@@ -1,0 +1,4 @@
+include /etc/nginx/zulip-include/headers;
+add_header Access-Control-Allow-Origin * always;
+add_header Access-Control-Allow-Headers Authorization always;
+add_header Access-Control-Allow-Methods 'GET, POST, DELETE, PUT, PATCH, HEAD' always;

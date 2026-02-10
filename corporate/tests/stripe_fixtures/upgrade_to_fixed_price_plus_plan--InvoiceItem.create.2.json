@@ -1,0 +1,32 @@
+{
+  "amount": 36000,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED",
+  "date": 1000000000,
+  "description": "Zulip Cloud Plus - renewal",
+  "discountable": false,
+  "discounts": [],
+  "id": "upgrade_to_fixed_price_plus_plan--InvoiceItem.create.2.json",
+  "invoice": "in_NORMALIZED",
+  "livemode": false,
+  "metadata": {},
+  "net_amount": 36000,
+  "object": "invoiceitem",
+  "parent": null,
+  "period": {
+    "end": 1388620800,
+    "start": 1357084800
+  },
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "36000"
+  },
+  "proration": false,
+  "quantity": 1,
+  "tax_rates": [],
+  "test_clock": null
+}

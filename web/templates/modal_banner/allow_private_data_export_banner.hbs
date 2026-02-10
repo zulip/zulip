@@ -1,0 +1,8 @@
+{{#> modal_banner . }}
+    <p class="banner_message">
+        {{#tr}}
+            Do you want to <z-link>allow your private data to be exported</z-link>?
+            {{#*inline "z-link"}}<a href="#settings/account-and-privacy">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </p>
+{{/modal_banner}}

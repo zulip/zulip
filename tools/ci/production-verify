@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+# This tests a Zulip production environment (installed via
+# production-install) with some Nagios checks and other tools to
+# verify that everything is working properly.
+set -e
+set -x
+
+usage() {
+    cat <<'EOF'
+Usage:
+  production-verify
+  production-verify --test-custom-db
+  production-verify --help
+
+Options:
+  --test-custom-db
+      Use custom database and user names.
+
+EOF
+}
+
+# Shell option parsing.
+args="$(getopt -o '' --long help,test-custom-db -n "$0" -- "$@")"
+eval "set -- $args"
+NAGIOS_USER="zulip"
+while true; do
+    case "$1" in
+        --help)
+            usage
+            exit 0
+            ;;
+
+        --test-custom-db)
+            NAGIOS_USER="zulipcustomuser"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+cat >>/etc/zulip/settings.py <<EOF
+# CircleCI override settings above
+AUTHENTICATION_BACKENDS = ( 'zproject.backends.EmailAuthBackend', )
+NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
+ALLOWED_HOSTS = []
+EOF
+
+check_header() {
+    if ! sed "s|{nginx_version_string}|$nginx_version|g" "$success_header_file" \
+        | diff -ur - /tmp/http-headers-processed; then
+        set +x
+        echo
+        echo "FAILURE: The HTTP headers returned from loading the homepage on the server do not match the contents of tools/ci/success-http-headers.template.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
+        echo "Displaying the contents of the server's error log:"
+        echo
+        cat /var/log/zulip/errors.log
+        echo
+        echo "Displaying the contents of the main server log:"
+        echo
+        cat /var/log/zulip/server.log
+        exit 1
+    fi
+}
+
+echo
+echo "Now testing that the supervisord jobs are running properly"
+echo
+sleep 15 # Guaranteed to have a working supervisord process get an extra digit
+if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*uptime //' | grep -q 0:00:0; then
+    set +x
+    echo
+    echo "FAILURE: Supervisor output shows daemons are crashing:"
+    echo
+    supervisorctl status
+    echo
+    echo "DEBUG: printing Zulip server's error log:"
+    cat /var/log/zulip/errors.log
+    echo
+    echo "DEBUG: printing Zulip server's workers log:"
+    cat /var/log/zulip/workers.log
+    echo
+    echo "DEBUG: printing Zulip server's tornado log:"
+    cat /var/log/zulip/tornado.log
+    echo
+    echo "DEBUG: printing process_fts_updates log:"
+    cat /var/log/zulip/fts-updates.log
+    exit 1
+fi
+
+# TODO: Ideally this would test actually logging in, but this is a start.
+echo
+echo "Now testing that the newly installed server's settings endpoint loads"
+echo
+
+curl -ILk https://localhost/api/v1/server_settings -o /tmp/http-headers
+grep -vi -e '^content-length:' -e '^date:' -e '^expires:' -e '^set-cookie:' /tmp/http-headers >/tmp/http-headers-processed
+
+nginx_version="$(nginx -v 2>&1)"
+nginx_version="${nginx_version#nginx version: }"
+success_header_file="/tmp/success-http-headers.template.txt"
+check_header
+
+# Start the RabbitMQ queue worker related section
+echo
+echo "Now confirming all the RabbitMQ queue processors are correctly registered!"
+echo
+# These hacky shell scripts just extract the sorted list of queue processors, running and expected
+supervisorctl status | cut -f1 -dR | cut -f2- -d: | grep events | cut -f1 -d" " | cut -f3- -d_ | cut -f1 -d- | sort -u >/tmp/running_queue_processors.txt
+su zulip -c /home/zulip/deployments/current/scripts/lib/queue_workers.py | sort -u >/tmp/expected_queue_processors.txt
+if ! diff /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt >/dev/null; then
+    set +x
+    echo "FAILURE: Runnable queue processors declared in zerver/worker/queue_processors.py "
+    echo "do not match those in puppet/zulip/manifests/profile/base.pp"
+    echo "See https://zulip.readthedocs.io/en/latest/subsystems/queuing.html for details."
+    echo
+    diff -ur /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt
+    exit 1
+fi
+
+echo
+echo "Now running RabbitMQ consumer Nagios tests"
+echo
+# First run the check that usually runs in cron and populates the state files
+/home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers
+
+# Then, compute the list of all Django queue workers to run Nagios checks against
+consumer_list=$(/home/zulip/deployments/current/scripts/lib/queue_workers.py --queue-type=consumer)
+for consumer in $consumer_list; do
+    if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_cron_file "/var/lib/nagios_state/check-rabbitmq-consumers-$consumer"; then
+        set +x
+        echo
+        echo "FAILURE: Missing Nagios consumer for $consumer; displaying full consumer output:"
+        set -x
+        rabbitmqctl list_consumers
+        supervisorctl status
+        tail -n +1 /var/log/zulip/events*.log
+        exit 1
+    fi
+done
+
+# Some of the Nagios tests have been temporarily disabled to work
+# around a Travis CI infrastructure issue.
+echo
+echo "Now running additional Nagios tests"
+echo
+if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_queue_worker_errors \
+    || ! su zulip -c "/usr/local/bin/process_fts_updates --nagios-check --nagios-user=$NAGIOS_USER"; then # || \
+    #   ! su zulip -c "/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time --site=https://127.0.0.1/api --nagios --insecure"; then
+    set +x
+    echo
+    echo "FAILURE: Nagios checks don't pass:"
+    echo
+    echo "DEBUG: printing Zulip server's error log:"
+    cat /var/log/zulip/errors.log
+    exit 1
+fi
+echo "Production installation test successful!"
+exit 0

@@ -1,0 +1,26 @@
+{
+    "attachments": [
+        {
+            "appId": "bd05fb5b1e39e29b396e03c2efe053196e3b9458",
+            "title": "NoteTitle",
+            "forward": true,
+            "views": {
+                "widget": {
+                    "src": "https://apps.flock.co:443/flock-notes/notes/8a0fc0c2-e567-4685-a7a7-883898da47c3/preview",
+                    "width": 0,
+                    "height": 65
+                }
+            }
+        }
+    ],
+    "id": "Amreh",
+    "to": "g:183ff1e90d79465793273a31d7d1e537",
+    "from": "u:9qehqo3ixo3t93e3",
+    "notification": "Shared a note",
+    "text": "",
+    "appId": "bd05fb5b1e39e29b396e03c2efe053196e3b9458",
+    "timestamp": "2018-03-01T08:16:08.335Z",
+    "timestampInMillis": 1519892168335,
+    "uid": "1519892168335-y7J-m203",
+    "onBehalfOf": ""
+}

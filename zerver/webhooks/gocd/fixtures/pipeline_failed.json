@@ -1,0 +1,50 @@
+{
+    "data": {
+      "pipeline": {
+        "name": "pipeline-one",
+        "counter": "7",
+        "group": "defaultGroup",
+        "build-cause": [
+          {
+            "material": {
+              "git-configuration": {
+                "shallow-clone": false,
+                "branch": "master",
+                "url": "https://github.com/PieterCK/getting-started-repo.git"
+              },
+              "type": "git"
+            },
+            "changed": false,
+            "modifications": [
+              {
+                "revision": "963eb239c7b91eac2e15c727e06e908fd334e6f9",
+                "modified-time": "Dec 14, 2016, 5:09:14 AM",
+                "data": {}
+              }
+            ]
+          }
+        ],
+        "stage": {
+          "name": "stage-two",
+          "counter": "1",
+          "approval-type": "success",
+          "approved-by": "anonymous",
+          "state": "Failed",
+          "result": "Failed",
+          "create-time": "Aug 28, 2024, 9:30:19 PM",
+          "last-transition-time": "Aug 28, 2024, 9:31:00 PM",
+          "jobs": [
+            {
+              "name": "task-two",
+              "schedule-time": "Aug 28, 2024, 9:30:19 PM",
+              "complete-time": "Aug 28, 2024, 9:31:00 PM",
+              "state": "Completed",
+              "result": "Failed",
+              "agent-uuid": "a35cf64c-7746-46ae-ba65-597d70898d50"
+            }
+          ]
+        }
+      }
+    },
+    "type": "stage"
+  }

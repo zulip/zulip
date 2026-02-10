@@ -1,0 +1,413 @@
+---
+import assert from "node:assert";
+
+import {CORPORATE_ENABLED, SHOW_RELATIVE_LINKS} from "astro:env/client";
+
+/* eslint-disable import/extensions */
+import RawBarChartIcon from "~icons/zulip-icon/bar-chart?raw";
+import RawBuildingIcon from "~icons/zulip-icon/building?raw";
+import RawCreditCardIcon from "~icons/zulip-icon/credit-card?raw";
+import RawEditIcon from "~icons/zulip-icon/edit?raw";
+import RawGearIcon from "~icons/zulip-icon/gear?raw";
+import RawGitPullRequestIcon from "~icons/zulip-icon/git-pull-request?raw";
+import RawHashIcon from "~icons/zulip-icon/hash?raw";
+import RawHelpIcon from "~icons/zulip-icon/help?raw";
+import RawInfoIcon from "~icons/zulip-icon/info?raw";
+import RawKeyboardIcon from "~icons/zulip-icon/keyboard?raw";
+import RawManageSearchIcon from "~icons/zulip-icon/manage-search?raw";
+import RawRocketIcon from "~icons/zulip-icon/rocket?raw";
+import RawToolIcon from "~icons/zulip-icon/tool?raw";
+import RawUserGroupCogIcon from "~icons/zulip-icon/user-group-cog?raw";
+/* eslint-enable import/extensions */
+
+const PERSONAL_SETTINGS_TYPE = "Personal settings";
+const ORGANIZATION_SETTINGS_TYPE = "Organization settings";
+const SHOW_BILLING_HELP_LINKS = CORPORATE_ENABLED;
+
+// This list has been transformed one-off from `help_settings_links.py`, we
+// have added a comment in that file to update this list in case of any
+// changes.
+const setting_link_mapping: Record<
+    string,
+    {
+        setting_type: string;
+        setting_name: string;
+        setting_link: string;
+    }
+> = {
+    // a mapping from the setting target that is the same as the final URL
+    // breadcrumb to that setting to the name of its setting type, the setting
+    // name as it appears in the user interface, and a relative link that can
+    // be used to get to that setting
+    profile: {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Profile",
+        setting_link: "/#settings/profile",
+    },
+    "account-and-privacy": {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Account & privacy",
+        setting_link: "/#settings/account-and-privacy",
+    },
+    preferences: {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Preferences",
+        setting_link: "/#settings/preferences",
+    },
+    notifications: {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Notifications",
+        setting_link: "/#settings/notifications",
+    },
+    "your-bots": {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Bots",
+        setting_link: "/#settings/your-bots",
+    },
+    "alert-words": {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Alert words",
+        setting_link: "/#settings/alert-words",
+    },
+    "uploaded-files": {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Uploaded files",
+        setting_link: "/#settings/uploaded-files",
+    },
+    topics: {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Topics",
+        setting_link: "/#settings/topics",
+    },
+    "muted-users": {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Muted users",
+        setting_link: "/#settings/muted-users",
+    },
+    "organization-profile": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Organization profile",
+        setting_link: "/#organization/organization-profile",
+    },
+    "organization-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Organization settings",
+        setting_link: "/#organization/organization-settings",
+    },
+    "organization-permissions": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Organization permissions",
+        setting_link: "/#organization/organization-permissions",
+    },
+    "default-user-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Default user settings",
+        setting_link: "/#organization/organization-level-user-defaults",
+    },
+    "emoji-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Custom emoji",
+        setting_link: "/#organization/emoji-settings",
+    },
+    "auth-methods": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Authentication methods",
+        setting_link: "/#organization/auth-methods",
+    },
+    users: {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Users",
+        setting_link: "/#organization/users/active",
+    },
+    deactivated: {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Users",
+        setting_link: "/#organization/users/deactivated",
+    },
+    invitations: {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Users",
+        setting_link: "/#organization/users/invitations",
+    },
+    bots: {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Bots",
+        setting_link: "/#organization/bots",
+    },
+    "default-channels-list": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Default channels",
+        setting_link: "/#organization/default-channels-list",
+    },
+    "linkifier-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Linkifiers",
+        setting_link: "/#organization/linkifier-settings",
+    },
+    "playground-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Code playgrounds",
+        setting_link: "/#organization/playground-settings",
+    },
+    "profile-field-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Custom profile fields",
+        setting_link: "/#organization/profile-field-settings",
+    },
+    "channel-folder-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Channel folders",
+        setting_link: "/#organization/channel-folders",
+    },
+    "data-exports-admin": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Data exports",
+        setting_link: "/#organization/data-exports-admin",
+    },
+};
+
+type RelativeLinkInfo = {
+    label: string;
+    relative_link: string;
+    icon?: string | undefined;
+};
+
+const default_template_for_relative_links = `
+<ol>
+  <li>Click on the <strong>gear</strong> (${RawGearIcon}) icon in the upper right corner of the web or desktop app.</li>
+  <li class="navigation-step-relative-type">Select {item}.</li>
+</ol>
+`;
+
+const relative_link_mapping: Record<
+    string,
+    {
+        data: Record<string, RelativeLinkInfo>;
+        template: string;
+        is_link_relative: () => boolean;
+    }
+> = {
+    gear: {
+        data: {
+            "channel-settings": {
+                label: "Channel settings",
+                relative_link: "/#channels/subscribed",
+                icon: `${RawHashIcon}`,
+            },
+            settings: {
+                label: "Personal Settings",
+                relative_link: "/#settings/profile",
+                icon: `${RawToolIcon}`,
+            },
+            "organization-settings": {
+                label: "Organization settings",
+                relative_link: "/#organization/organization-profile",
+                icon: `${RawBuildingIcon}`,
+            },
+            "group-settings": {
+                label: "Group settings",
+                relative_link: "/#groups/your",
+                icon: `${RawUserGroupCogIcon}`,
+            },
+            stats: {
+                label: "Usage statistics",
+                relative_link: "/stats",
+                icon: `${RawBarChartIcon}`,
+            },
+            integrations: {
+                label: "Integrations",
+                relative_link: "/integrations/",
+                icon: `${RawGitPullRequestIcon}`,
+            },
+            "about-zulip": {
+                label: "About Zulip",
+                relative_link: "/#about-zulip",
+            },
+        },
+        template: default_template_for_relative_links,
+        is_link_relative: () => SHOW_RELATIVE_LINKS,
+    },
+    "gear-billing": {
+        data: {
+            plans: {
+                label: "Plans and pricing",
+                relative_link: "/plans/",
+                icon: `${RawRocketIcon}`,
+            },
+            billing: {
+                label: "Billing",
+                relative_link: "/billing/",
+                icon: `${RawCreditCardIcon}`,
+            },
+        },
+        template: default_template_for_relative_links,
+        is_link_relative: () => SHOW_RELATIVE_LINKS && SHOW_BILLING_HELP_LINKS,
+    },
+    help: {
+        data: {
+            "keyboard-shortcuts": {
+                label: "Keyboard shortcuts",
+                relative_link: "/#keyboard-shortcuts",
+                icon: `${RawKeyboardIcon}`,
+            },
+            "message-formatting": {
+                label: "Message formatting",
+                relative_link: "/#message-formatting",
+                icon: `${RawEditIcon}`,
+            },
+            "search-filters": {
+                label: "Search filters",
+                relative_link: "/#search-operators",
+                icon: `${RawManageSearchIcon}`,
+            },
+            "about-zulip": {
+                label: "About Zulip",
+                relative_link: "/#about-zulip",
+                icon: `${RawInfoIcon}`,
+            },
+        },
+        template: `
+<ol>
+  <li>Click on the <strong>Help menu</strong> (${RawHelpIcon}) icon in the upper right corner of the app.</li>
+  <li class="navigation-step-relative-type">Select {item}.</li>
+</ol>
+`,
+        is_link_relative: () => SHOW_RELATIVE_LINKS,
+    },
+    channel: {
+        data: {
+            all: {
+                label: "All",
+                relative_link: "/#channels/all",
+            },
+            available: {
+                label: "Available",
+                relative_link: "/#channels/available",
+            },
+        },
+        template: `
+<ol>
+  <li>Click on the <strong>gear</strong> (${RawGearIcon}) icon in the upper right corner of the web or desktop app.</li>
+  <li>Select ${RawHashIcon} <strong>Channel settings</strong>.</li>
+  <li>Click {item} in the upper left.</li>
+</ol>
+`,
+        is_link_relative: () => SHOW_RELATIVE_LINKS,
+    },
+    group: {
+        data: {
+            all: {
+                label: "All groups",
+                relative_link: "/#groups/all",
+            },
+        },
+        template: `
+<ol>
+  <li>Click on the <strong>gear</strong> (${RawGearIcon}) icon in the upper right corner of the web or desktop app.</li>
+  <li>Select ${RawUserGroupCogIcon} <strong>Group settings</strong>.</li>
+  <li>Click {item} in the upper left.</li>
+</ol>
+`,
+        is_link_relative: () => SHOW_RELATIVE_LINKS,
+    },
+};
+
+const getSettingsMarkdown = (
+    setting_type: string,
+    setting_type_icon: string,
+    setting_name: string,
+) => `
+<ol>
+    <li>
+        Click on the <b>gear</b> (${RawGearIcon}) icon in the upper
+        right corner of the web or desktop app.
+    </li>
+    <li>
+        Select <b>${setting_type_icon} ${setting_type}</b>.
+    </li>
+    <li>
+        On the left, click <b>${setting_name}</b>.
+    </li>
+</ol>
+`;
+
+const getSettingsHTML = (setting_key: string): string => {
+    const {setting_type, setting_name, setting_link} =
+        setting_link_mapping[setting_key]!;
+
+    if (!SHOW_RELATIVE_LINKS) {
+        const setting_type_icon =
+            setting_type === ORGANIZATION_SETTINGS_TYPE
+                ? `${RawBuildingIcon}`.trim()
+                : `${RawToolIcon}`.trim();
+        return getSettingsMarkdown(
+            setting_type,
+            setting_type_icon,
+            setting_name,
+        );
+    }
+
+    const relativeLink = `<a href="${setting_link}">${setting_name}</a>`;
+
+    // The "Bots" label appears in both Personal and
+    // Organization settings in the user interface, so we need special
+    // text for this setting.
+    // As for the the case of "Users", it refers to the Users tab in
+    // organization settings. Since the users tab has multiple sub tabs
+    // like active, deactivated etc., we need a way to point to them.
+    const label =
+        setting_name === "Bots" || setting_name === "Users"
+            ? `Navigate to the ${relativeLink} tab of the <b>${setting_type}</b> menu.`
+            : `Go to ${relativeLink}.`;
+
+    return `<ol>
+                <li>${label}</li>
+            </ol>`;
+};
+
+const RELATIVE_NAVIGATION_HANDLERS_BY_TYPE: Record<
+    string,
+    (key: string) => string
+> = {};
+
+for (const type of Object.keys(relative_link_mapping)) {
+    const {data, template, is_link_relative} = relative_link_mapping[type]!;
+
+    RELATIVE_NAVIGATION_HANDLERS_BY_TYPE[type] = (key: string) => {
+        const {label, relative_link, icon} = data[key]!;
+        let formattedLabel = label;
+        if (icon !== undefined) {
+            const trimmedIcon = `${icon}`.trim();
+            formattedLabel = trimmedIcon + label;
+        }
+        const formattedItem = is_link_relative()
+            ? `<a href="${relative_link}">${formattedLabel}</a>`
+            : `<strong>${formattedLabel}</strong>`;
+        return template.replace("{item}", formattedItem);
+    };
+}
+
+const {target} = Astro.props;
+const navigation_link_type = target.split("/")[0];
+
+if (
+    navigation_link_type !== "settings" &&
+    navigation_link_type !== "relative"
+) {
+    throw new Error(
+        "Invalid navigation link type. Only `settings` or `relative` is allowed.",
+    );
+}
+
+let resultHTML: string | undefined;
+if (navigation_link_type === "settings") {
+    resultHTML = getSettingsHTML(target.split("/")[1]);
+} else {
+    const link_type = target.split("/")[1];
+    const key = target.split("/")[2];
+    resultHTML = RELATIVE_NAVIGATION_HANDLERS_BY_TYPE[link_type]!(key);
+}
+assert.ok(resultHTML !== undefined);
+---
+
+<Fragment set:html={resultHTML} />

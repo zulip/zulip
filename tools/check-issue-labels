@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+import argparse
+import configparser
+import os
+import re
+import sys
+from typing import Any
+
+import requests
+
+# Scans zulip repository for issues that don't have any `area` labels.
+# GitHub API token is required as GitHub limits unauthenticated
+# requests to 60/hour. There is a good chance that this limit is
+# bypassed in consecutive attempts.
+# The API token can be generated here
+# https://github.com/settings/tokens/new?description=Zulip%20Issue%20Label%20Checker
+#
+# Copy conf.ini-template to conf.ini and populate with your API token.
+#
+# usage: python check-issue-labels
+# Pass --force as an argument to run without a token.
+
+
+def get_config() -> configparser.ConfigParser:
+    config = configparser.ConfigParser()
+    config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), "conf.ini"))
+    return config
+
+
+def area_labeled(issue: dict[str, Any]) -> bool:
+    for label in issue["labels"]:
+        label_name = str(label["name"])
+        if "area:" in label_name:
+            return True
+    return False
+
+
+def is_issue(item: dict[str, Any]) -> bool:
+    return "issues" in item["html_url"]
+
+
+def get_next_page_url(link_header: str) -> str | None:
+    matches = re.findall(r"\<(\S+)\>; rel=\"next\"", link_header)
+    try:
+        return matches[0]
+    except IndexError:
+        return None
+
+
+def check_issue_labels() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--force", action="store_true")
+    args = parser.parse_args()
+
+    if not args.force:
+        config = get_config()
+        try:
+            token = config.get("github", "api_token")
+        except configparser.Error:
+            print(
+                "Error fetching GitHub API token. Copy conf.ini-template to conf.ini and populate with "
+                "your API token. If you want to continue without using a token use --force."
+            )
+            sys.exit(1)
+
+    next_page_url: str | None = "https://api.github.com/repos/zulip/zulip/issues"
+    unlabeled_issue_urls: list[str] = []
+    while next_page_url:
+        try:
+            if args.force:
+                response = requests.get(next_page_url)
+            else:
+                response = requests.get(next_page_url, headers={"Authorization": f"token {token}"})
+            if response.status_code == 401:
+                sys.exit("Error. Please check the token.")
+            if response.status_code == 403:
+                sys.exit(
+                    "403 Error. This is generally caused when API limit is exceeded. You use an API "
+                    "token to overcome this limit."
+                )
+        except requests.exceptions.RequestException as e:
+            print(e)
+            sys.exit(1)
+
+        next_page_url = get_next_page_url(response.headers["Link"])
+        unlabeled_issue_urls.extend(
+            item["html_url"]
+            for item in response.json()
+            if is_issue(item) and not area_labeled(item)
+        )
+
+    if unlabeled_issue_urls:
+        print("The following issues don't have any area labels associated with it")
+        print("\n".join(unlabeled_issue_urls))
+    else:
+        print("No GitHub issues found with missing area labels.")
+
+
+if __name__ == "__main__":
+    check_issue_labels()

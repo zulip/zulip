@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+
+source "$(dirname "$0")/../common/zulip_notify.sh"
+
+if ! ref=$(crudini --get /etc/zulip/zulip.conf push_git_ref ref); then
+    exit 0
+fi
+
+diffstat=$(git diff --stat "$ZULIP_NEW_MERGE_BASE_COMMIT" ./*/migrations/)
+
+if [ -z "$diffstat" ]; then
+    exit 0
+fi
+
+echo "zulip_notify_schema_diff: Found schema differences from merge-base!"
+
+zulip_send "${deploy_environment} deploy on $(hostname) found differences in schema from merge-base:
+
+\`\`\`
+${diffstat}
+\`\`\`
+
+Please manually adjust the \`${ref}\` ref.
+"

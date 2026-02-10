@@ -1,0 +1,13 @@
+{{#if service}}
+    {{#if service.config_data}}
+        <div id="config_edit_inputbox">
+            {{#each (object_entries service.config_data) as |entry|}}
+                <div class="input-group">
+                    <label for="embedded_bot_{{entry.[0]}}_edit" class="modal-field-label">{{entry.[0]}}</label>
+                    <input type="text" name="{{entry.[0]}}" id="embedded_bot_{{entry.[0]}}_edit" class="modal_text_input"
+                      maxlength=1000 value="{{entry.[1]}}" />
+                </div>
+            {{/each}}
+        </div>
+    {{/if}}
+{{/if}}

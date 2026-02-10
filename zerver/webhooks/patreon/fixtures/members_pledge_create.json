@@ -1,0 +1,117 @@
+{
+    "data": {
+      "attributes": {
+        "campaign_lifetime_support_cents": 0,
+        "currently_entitled_amount_cents": 500,
+        "email": "kopi@pangea.com",
+        "full_name": "Kopi",
+        "is_follower": false,
+        "is_free_trial": false,
+        "last_charge_date": "2023-12-29T05:26:19.000+00:00",
+        "last_charge_status": "Paid",
+        "lifetime_support_cents": 0,
+        "next_charge_date": "2024-01-29T00:00:00.000+00:00",
+        "note": "",
+        "patron_status": "active_patron",
+        "pledge_cadence": 1,
+        "pledge_relationship_start": "2023-12-29T05:26:17.634+00:00",
+        "will_pay_amount_cents": 500
+      },
+      "id": "38c264ba-0612-4bb9-bc33-f9755cc68bb0",
+      "relationships": {
+        "address": {
+          "data": null
+        },
+        "campaign": {
+          "data": {
+            "id": "11539233",
+            "type": "campaign"
+          },
+          "links": {
+            "related": "https://www.patreon.com/api/oauth2/v2/campaigns/11539233"
+          }
+        },
+        "currently_entitled_tiers": {
+          "data": []
+        },
+        "user": {
+          "data": {
+            "id": "111836593",
+            "type": "user"
+          },
+          "links": {
+            "related": "https://www.patreon.com/api/oauth2/v2/user/111836593"
+          }
+        }
+      },
+      "type": "member"
+    },
+    "included": [
+      {
+        "attributes": {
+          "created_at": "2023-12-29T01:11:16.000+00:00",
+          "creation_name": "",
+          "discord_server_id": null,
+          "google_analytics_id": null,
+          "has_rss": false,
+          "has_sent_rss_notify": false,
+          "image_small_url": "https://c10.patreonusercontent.com/4/patreon-media/p/campaign/11539233/e1a083b0bf3a44d399523f2f08e59d9c/eyJ3IjoxOTIwLCJ3ZSI6MX0%3D/1.png?token-time=1704326400&token-hash=Qb6nRUM96w1o5QgxEpHevoF7TZ5LjFVPAxpQBOLKHas%3D",
+          "image_url": "https://c10.patreonusercontent.com/4/patreon-media/p/campaign/11539233/e1a083b0bf3a44d399523f2f08e59d9c/eyJ3IjoxOTIwLCJ3ZSI6MX0%3D/1.png?token-time=1704326400&token-hash=Qb6nRUM96w1o5QgxEpHevoF7TZ5LjFVPAxpQBOLKHas%3D",
+          "is_charged_immediately": true,
+          "is_monthly": true,
+          "is_nsfw": false,
+          "main_video_embed": null,
+          "main_video_url": null,
+          "one_liner": null,
+          "patron_count": 5,
+          "pay_per_name": "month",
+          "pledge_url": "/checkout/11539233",
+          "published_at": "2023-12-29T01:29:54.000+00:00",
+          "rss_artwork_url": null,
+          "rss_feed_title": null,
+          "summary": null,
+          "thanks_embed": null,
+          "thanks_msg": null,
+          "thanks_video_url": null,
+          "url": "https://www.patreon.com/user?u=111828554",
+          "vanity": null
+        },
+        "id": "11539233",
+        "type": "campaign"
+      },
+      {
+        "attributes": {
+          "about": null,
+          "created": "2023-12-29T02:38:24.000+00:00",
+          "first_name": "Kopi",
+          "full_name": "Kopi",
+          "hide_pledges": true,
+          "image_url": "https://c10.patreonusercontent.com/4/patreon-media/p/user/111836593/7e238b05a88548e2ac1afed4e0f95b74/eyJ3IjoyMDB9/1.png?token-time=2145916800&token-hash=NI0mVHbv2rxc8cQ1qGsRCOFHPbHe4Le_0L1OLKZJsYo%3D",
+          "is_creator": false,
+          "last_name": "",
+          "like_count": 0,
+          "social_connections": {
+            "discord": null,
+            "facebook": null,
+            "google": null,
+            "instagram": null,
+            "reddit": null,
+            "spotify": null,
+            "spotify_open_access": null,
+            "twitch": null,
+            "twitter": null,
+            "vimeo": null,
+            "youtube": null
+          },
+          "thumb_url": "https://c10.patreonusercontent.com/4/patreon-media/p/user/111836593/7e238b05a88548e2ac1afed4e0f95b74/eyJ3IjoyMDB9/1.png?token-time=2145916800&token-hash=NI0mVHbv2rxc8cQ1qGsRCOFHPbHe4Le_0L1OLKZJsYo%3D",
+          "url": "https://www.patreon.com/user?u=111836593",
+          "vanity": null
+        },
+        "id": "111836593",
+        "type": "user"
+      }
+    ],
+    "links": {
+      "self": "https://www.patreon.com/api/oauth2/v2/members/38c264ba-0612-4bb9-bc33-f9755cc68bb0"
+    }
+}

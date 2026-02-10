@@ -1,0 +1,353 @@
+import hashlib
+import hmac
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
+
+from django.http import HttpRequest, QueryDict
+from django.http.response import HttpResponse
+from django.test import override_settings
+from django.utils.encoding import force_bytes
+from typing_extensions import override
+
+from zerver.actions.custom_profile_fields import try_add_realm_custom_profile_field
+from zerver.actions.streams import do_rename_stream
+from zerver.decorator import webhook_view
+from zerver.lib.exceptions import InvalidJSONError, JsonableError
+from zerver.lib.request import RequestNotes
+from zerver.lib.send_email import FromAddress
+from zerver.lib.test_classes import WebhookTestCase, ZulipTestCase
+from zerver.lib.test_helpers import HostRequestMock
+from zerver.lib.webhooks.common import (
+    INVALID_JSON_MESSAGE,
+    MISSING_EVENT_HEADER_MESSAGE,
+    MissingHTTPEventHeaderError,
+    call_fixture_to_headers,
+    check_send_webhook_message,
+    get_event_header,
+    guess_zulip_user_from_external_account,
+    standardize_headers,
+    validate_webhook_signature,
+)
+from zerver.models import Client, CustomProfileField, Message, UserProfile
+from zerver.models.realms import get_realm
+from zerver.models.users import get_user
+
+
+class WebhooksCommonTestCase(ZulipTestCase):
+    def test_webhook_http_header_header_exists(self) -> None:
+        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
+        request = HostRequestMock()
+        request.META["HTTP_X_CUSTOM_HEADER"] = "custom_value"
+        request.user = webhook_bot
+
+        header_value = get_event_header(request, "X-Custom-Header", "test_webhook")
+
+        self.assertEqual(header_value, "custom_value")
+
+    def test_webhook_http_header_header_does_not_exist(self) -> None:
+        realm = get_realm("zulip")
+        webhook_bot = get_user("webhook-bot@zulip.com", realm)
+        webhook_bot.last_reminder = None
+        notification_bot = self.notification_bot(realm)
+        request = HostRequestMock()
+        request.user = webhook_bot
+        request.path = "some/random/path"
+
+        exception_msg = "Missing the HTTP event header 'X-Custom-Header'"
+        with self.assertRaisesRegex(MissingHTTPEventHeaderError, exception_msg):
+            get_event_header(request, "X-Custom-Header", "test_webhook")
+
+        msg = self.get_last_message()
+        expected_message = MISSING_EVENT_HEADER_MESSAGE.format(
+            bot_name=webhook_bot.full_name,
+            request_path=request.path,
+            header_name="X-Custom-Header",
+            integration_name="test_webhook",
+            support_email=FromAddress.SUPPORT,
+        ).rstrip()
+        self.assertEqual(msg.sender.id, notification_bot.id)
+        self.assertEqual(msg.content, expected_message)
+
+    def test_notify_bot_owner_on_invalid_json(self) -> None:
+        @webhook_view("ClientName", notify_bot_owner_on_invalid_json=False)
+        def my_webhook_no_notify(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+            raise InvalidJSONError("Malformed JSON")
+
+        @webhook_view("ClientName", notify_bot_owner_on_invalid_json=True)
+        def my_webhook_notify(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+            raise InvalidJSONError("Malformed JSON")
+
+        webhook_bot_email = "webhook-bot@zulip.com"
+        webhook_bot_realm = get_realm("zulip")
+        webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
+        webhook_bot_api_key = webhook_bot.api_key
+        request = HostRequestMock()
+        request.POST["api_key"] = webhook_bot_api_key
+        request.host = "zulip.testserver"
+        expected_msg = INVALID_JSON_MESSAGE.format(webhook_name="ClientName")
+
+        last_message_id = self.get_last_message().id
+        with self.assertRaisesRegex(JsonableError, "Malformed JSON"):
+            my_webhook_no_notify(request)
+
+        # First verify that without the setting, it doesn't send a direct
+        # message to bot owner.
+        msg = self.get_last_message()
+        self.assertEqual(msg.id, last_message_id)
+        self.assertNotEqual(msg.content, expected_msg.strip())
+
+        # Then verify that with the setting, it does send such a message.
+        request = HostRequestMock()
+        request.POST["api_key"] = webhook_bot_api_key
+        request.host = "zulip.testserver"
+        with self.assertRaisesRegex(JsonableError, "Malformed JSON"):
+            my_webhook_notify(request)
+        msg = self.get_last_message()
+        self.assertNotEqual(msg.id, last_message_id)
+        self.assertEqual(msg.sender.id, self.notification_bot(webhook_bot_realm).id)
+        self.assertEqual(msg.content, expected_msg.strip())
+
+    @patch("zerver.lib.webhooks.common.importlib.import_module")
+    def test_call_fixture_to_headers_for_success(self, import_module_mock: MagicMock) -> None:
+        def fixture_to_headers(fixture_name: str) -> dict[str, str]:
+            # A sample function which would normally perform some
+            # extra operations before returning a dictionary
+            # corresponding to the fixture name passed. For this test,
+            # we just return a fixed dictionary.
+            return {"key": "value"}
+
+        fake_module = SimpleNamespace(fixture_to_headers=fixture_to_headers)
+        import_module_mock.return_value = fake_module
+
+        headers = call_fixture_to_headers("some_integration", "complex_fixture")
+        self.assertEqual(headers, {"key": "value"})
+
+    def test_call_fixture_to_headers_for_non_existent_integration(self) -> None:
+        headers = call_fixture_to_headers("some_random_nonexistent_integration", "fixture_name")
+        self.assertEqual(headers, {})
+
+    @patch("zerver.lib.webhooks.common.importlib.import_module")
+    def test_call_fixture_to_headers_with_no_fixtures_to_headers_function(
+        self,
+        import_module_mock: MagicMock,
+    ) -> None:
+        fake_module = SimpleNamespace()
+        import_module_mock.return_value = fake_module
+
+        self.assertEqual(
+            call_fixture_to_headers("some_integration", "simple_fixture"),
+            {},
+        )
+
+    def test_standardize_headers(self) -> None:
+        self.assertEqual(standardize_headers({}), {})
+
+        raw_headers = {"Content-Type": "text/plain", "X-Event-Type": "ping"}
+        djangoified_headers = standardize_headers(raw_headers)
+        expected_djangoified_headers = {"CONTENT_TYPE": "text/plain", "HTTP_X_EVENT_TYPE": "ping"}
+        self.assertEqual(djangoified_headers, expected_djangoified_headers)
+
+    @override_settings(VERIFY_WEBHOOK_SIGNATURES=True)
+    def test_validate_webhook_signature(self) -> None:
+        request = HostRequestMock()
+        request.GET = QueryDict("", mutable=True)
+
+        # Valid signature
+        webhook_secret = "test_secret"
+        payload = '{"key": "value"}'
+        signature = hmac.new(
+            force_bytes(webhook_secret), force_bytes(payload), hashlib.sha256
+        ).hexdigest()
+
+        request.GET.update({"webhook_secret": webhook_secret})
+        validate_webhook_signature(request, payload, signature)
+
+        # Invalid signature
+        invalid_signature = "invalid_signature"
+        with self.assertRaisesRegex(
+            JsonableError,
+            "Webhook signature verification failed.",
+        ):
+            validate_webhook_signature(request, payload, invalid_signature)
+
+        # No webhook_secret parameter
+        request.GET.clear()
+        with self.assertRaisesRegex(
+            JsonableError,
+            "The webhook secret is missing. Please set the webhook_secret while generating the URL.",
+        ):
+            validate_webhook_signature(request, payload, signature)
+
+    def test_check_send_webhook_message_returns_id(self) -> None:
+        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
+        stream = self.make_stream("test_stream")
+        self.subscribe(webhook_bot, stream.name)
+
+        request = HostRequestMock()
+        request.user = webhook_bot
+        client = Client.objects.get_or_create(name="TestClient")[0]
+        RequestNotes.get_notes(request).client = client
+
+        message_id = check_send_webhook_message(
+            request,
+            webhook_bot,
+            "Test topic",
+            "Test message content",
+            stream=stream.name,
+        )
+
+        self.assertIsInstance(message_id, int)
+        assert message_id is not None
+        msg = Message.objects.get(id=message_id)
+        self.assertEqual(msg.topic_name(), "Test topic")
+
+
+class TestGuessZulipUserFromExternalAccount(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.realm = get_realm("zulip")
+        self.hamlet = self.example_user("hamlet")
+        self.othello = self.example_user("othello")
+        self.github_name = "GitHub username"
+
+    def get_github_field(self) -> CustomProfileField:
+        return CustomProfileField.objects.get(
+            realm=self.realm,
+            name=self.github_name,
+        )
+
+    def set_user_external_account(
+        self, user: UserProfile, field: CustomProfileField, value: str
+    ) -> None:
+        self.set_user_custom_profile_data(user, [{"id": field.id, "value": value}])
+
+    def test_single_exact_match(self) -> None:
+        github_field = self.get_github_field()
+        self.set_user_external_account(self.hamlet, github_field, "octocat")
+
+        result = guess_zulip_user_from_external_account(
+            self.realm, "octocat", self.github_name, external_username_case_insensitive=True
+        )
+        self.assertEqual(result, self.hamlet)
+
+        # Test case-sensitive account names
+        result = guess_zulip_user_from_external_account(
+            self.realm, "ocTOcat", self.github_name, external_username_case_insensitive=False
+        )
+        self.assertIsNone(result)
+
+        # Test multiple matching field values found
+        self.set_user_external_account(self.othello, github_field, "octocat")
+
+        result = guess_zulip_user_from_external_account(
+            self.realm, "octocat", self.github_name, external_username_case_insensitive=True
+        )
+        self.assertIsNone(result)
+
+    def test_no_matches_found(self) -> None:
+        # Test no matching field
+        result = guess_zulip_user_from_external_account(
+            self.realm, "someuser", "gitlab", external_username_case_insensitive=True
+        )
+        self.assertIsNone(result)
+
+        # test no matching field value
+        result = guess_zulip_user_from_external_account(
+            self.realm, "nonexistentuser", self.github_name, external_username_case_insensitive=True
+        )
+        self.assertIsNone(result)
+
+    def test_matches_from_custom_external_account_field(self) -> None:
+        external_account_field_name = "Otherhub username"
+        external_account_field = try_add_realm_custom_profile_field(
+            self.realm,
+            external_account_field_name,
+            CustomProfileField.EXTERNAL_ACCOUNT,
+            field_data={"subtype": "custom", "url_pattern": "https://other.com/%(username)s"},
+        )
+        self.set_user_external_account(self.hamlet, external_account_field, "octocat")
+
+        result = guess_zulip_user_from_external_account(
+            self.realm,
+            "octocat",
+            external_account_field_name,
+            external_username_case_insensitive=True,
+        )
+        self.assertEqual(result, self.hamlet)
+
+
+class WebhookURLConfigurationTestCase(WebhookTestCase):
+    WEBHOOK_DIR_NAME = "helloworld"
+
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        stream = self.subscribe(self.test_user, self.channel_name)
+
+        # In actual webhook tests, we will not need to use stream id.
+        # We assign stream id to channel_name for testing URL configuration only.
+        self.channel_name = str(stream.id)
+        do_rename_stream(stream, "helloworld_renamed", self.test_user)
+
+        self.url = self.build_webhook_url()
+
+    def test_trigger_stream_message_by_id(self) -> None:
+        # check_webhook cannot be used here as it
+        # subscribes the test user to self.channel_name
+        payload = self.get_body("hello")
+
+        self.send_webhook_payload(
+            self.test_user, self.url, payload, content_type="application/json"
+        )
+
+        expected_topic_name = "Hello World"
+        expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**"
+
+        msg = self.get_last_message()
+        self.assert_channel_message(
+            message=msg,
+            channel_name="helloworld_renamed",
+            topic_name=expected_topic_name,
+            content=expected_message,
+        )
+
+
+class MissingEventHeaderTestCase(WebhookTestCase):
+    URL_TEMPLATE = "/api/v1/external/groove?stream={stream}&api_key={api_key}"
+    WEBHOOK_DIR_NAME = "groove"
+
+    # This tests the get_event_header function with an actual webhook,
+    # instead of just making a mock
+    def test_missing_event_header(self) -> None:
+        self.subscribe(self.test_user, self.channel_name)
+        with self.assertNoLogs("zulip.zerver.webhooks.anomalous", level="INFO"):
+            result = self.client_post(
+                self.url,
+                self.get_body("ticket_state_changed"),
+                content_type="application/x-www-form-urlencoded",
+            )
+        self.assert_json_error(result, "Missing the HTTP event header 'X-Groove-Event'")
+
+        realm = get_realm("zulip")
+        webhook_bot = get_user("webhook-bot@zulip.com", realm)
+        webhook_bot.last_reminder = None
+        notification_bot = self.notification_bot(realm)
+        msg = self.get_last_message()
+        expected_message = MISSING_EVENT_HEADER_MESSAGE.format(
+            bot_name=webhook_bot.full_name,
+            request_path="/api/v1/external/groove",
+            header_name="X-Groove-Event",
+            integration_name="Groove",
+            support_email=FromAddress.SUPPORT,
+        ).rstrip()
+        if msg.sender.id != notification_bot.id:  # nocoverage
+            # This block seems to fire occasionally; debug output:
+            print(msg)
+            print(msg.content)
+        self.assertEqual(msg.sender.id, notification_bot.id)
+        self.assertEqual(msg.content, expected_message)
+
+    @override
+    def get_body(self, fixture_name: str) -> str:
+        return self.webhook_fixture_data("groove", fixture_name, file_type="json")

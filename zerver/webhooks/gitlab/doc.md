@@ -1,0 +1,48 @@
+# Zulip GitLab integration
+
+Receive GitLab notifications in Zulip!
+
+{start_tabs}
+
+1. {!create-an-incoming-webhook.md!}
+
+1. Decide where to send {{ integration_display_name }} notifications, and
+   [generate the integration URL](/help/generate-integration-url). You'll be
+   able to configure which branches you'll receive notifications from,
+   and whether to exclude notifications from private projects.
+
+1. Go to your repository on GitLab and click **Settings** on the left
+   sidebar.  Click on **Webhooks** and select **Add new webhook**.
+
+1. Set **URL** to the URL you generated, and **Name** to a name of your
+   choice, such as `Zulip`. Select the [events](#filtering-incoming-events)
+   you would like to receive notifications for, and click **Add Webhook**.
+
+!!! warn ""
+
+    **Note**: If your GitLab server and your Zulip server are on a local network
+    together, and you're running GitLab 10.5 or newer, you may need to enable
+    GitLab's "Allow requests to the local network from hooks and
+    services" setting (by default, recent GitLab versions refuse to post
+    webhook events to servers on the local network).  You can find this
+    setting near the bottom of the GitLab "Settings" page in the "Admin area".
+
+{end_tabs}
+
+{!congrats.md!}
+
+![](/static/images/integrations/gitlab/001.png)
+
+{!event-filtering-additional-feature.md!}
+
+### Configuration options
+
+* By default, the Zulip topics for merge requests will contain the title
+  of the GitLab merge request. You can change the topic format to just
+  contain the merge request ID by adding `&use_merge_request_title=false`
+  to the generated URL.
+
+### Related documentation
+
+{!webhooks-url-specification.md!}
+* [GitLab webhooks documentation](https://docs.gitlab.com/user/project/integrations/webhooks/#create-a-webhook)

@@ -1,0 +1,16 @@
+{
+  "amount": -7200,
+  "checkout_session": null,
+  "created": 1000000000,
+  "credit_note": null,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED",
+  "description": "Credit from early termination of active plan",
+  "ending_balance": -7200,
+  "id": "change_plan_tier_from_standard_to_plus--Customer.create_balance_transaction.1.json",
+  "invoice": null,
+  "livemode": false,
+  "metadata": {},
+  "object": "customer_balance_transaction",
+  "type": "adjustment"
+}

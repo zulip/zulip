@@ -1,0 +1,3 @@
+app_service:
+  enabled: yes
+  apps:

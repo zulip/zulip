@@ -1,0 +1,68 @@
+global:
+  config_version: 3
+input:
+  type: file
+  path: /var/log/nginx/access.log
+  fail_on_missing_logfile: false
+  readall: false
+imports:
+- type: grok_patterns
+  dir: <%= @include_dir %>
+grok_patterns:
+  - 'NONQUERY [^? ]+'
+  - 'OPTIONALQUERY (?:\?%{NOTSPACE})?'
+  - 'APIPATH /+(api/v1|json)(?<apipath>/(events|users/me/presence|messages(/flags)?|remotes/push/(register|unregister|notify)|remotes/server/(register|analytics|analytics/status)|typing|register|server_settings|tus/))'
+  - 'EXTERNALPATH /+(?<external>api/v1/external/)[a-zA-Z0-9_-]+'
+  - 'ROOTPATH (?<rootpath>/+)'
+  - 'TOPPATH /+(?<toppath>(api/internal/(email_mirror_message|tusd)|compatibility|error_tracing))'
+  - 'PREFIXPATH /+(?<prefixpath>(static|user_uploads|avatar|api/v1/tus)/)\S+'
+  - 'ANYPATH (%{APIPATH}|%{EXTERNALPATH}|%{TOPPATH}|%{PREFIXPATH}|%{ROOTPATH}|%{NONQUERY:otherpath})%{OPTIONALQUERY}'
+  - 'OURHOSTNAME (?<hostname>((?<realm><%= @realm_names_regex %>)|%{NOTSPACE}))'
+  - 'OURLOG %{IPORHOST:clientip} - \S+ \[%{HTTPDATE:timestamp}\] "%{WORD:verb} %{ANYPATH} HTTP/%{NUMBER:httpversion}" %{NUMBER:response} (?:%{NUMBER:bytes}|-) %{QS:referrer} %{QS:agent} %{OURHOSTNAME} %{NUMBER:response_time}'
+metrics:
+- type: counter
+  name: nginx_http_response_codes_total
+  help: Total number of requests, by response code, normalized path, and HTTP method
+  match: '%{OURLOG}'
+  labels:
+    code: '{{.response}}'
+    method: '{{.verb}}'
+    path: '{{if .apipath}}/api/v1{{.apipath}}{{else if .external}}/api/v1/external/...{{else if .rootpath}}{{if .realm}}/{{else}}(other){{end}}{{else if .toppath}}/{{.toppath}}{{else if .prefixpath}}/{{.prefixpath}}...{{else}}(other){{end}}'
+- type: counter
+  name: nginx_http_response_bytes
+  help: Total number of bytes, by normalized path
+  match: '%{OURLOG}'
+  value: '{{.bytes}}'
+  labels:
+    path: '{{if .apipath}}/api/v1{{.apipath}}{{else if .external}}/api/v1/external/...{{else if .rootpath}}{{if .realm}}/{{else}}(other){{end}}{{else if .toppath}}/{{.toppath}}{{else if .prefixpath}}/{{.prefixpath}}...{{else}}(other){{end}}'
+- type: histogram
+  name: nginx_http_response_time_seconds
+  help: Response time in seconds, from first request byte to last response byte
+  match: '%{OURLOG}'
+  value: '{{.response_time}}'
+  buckets:
+    - 0.001
+    - 0.002
+    - 0.005
+    - 0.010
+    - 0.025
+    - 0.050
+    - 0.100
+    - 0.200
+    - 0.500
+    - 1.000
+    - 2.000
+    - 5.000
+    - 10.00
+    - 20.00
+    - 50.00
+    - 60.00
+    - 120.0
+  labels:
+    code: '{{.response}}'
+    method: '{{.verb}}'
+    path: '{{if .apipath}}/api/v1{{.apipath}}{{else if .external}}/api/v1/external/...{{else if .rootpath}}{{if .realm}}/{{else}}(other){{end}}{{else if .toppath}}/{{.toppath}}{{else if .prefixpath}}/{{.prefixpath}}...{{else}}(other){{end}}'
+
+server:
+  protocol: http
+  port: 9144

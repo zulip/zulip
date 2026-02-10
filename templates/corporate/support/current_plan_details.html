@@ -1,0 +1,38 @@
+<div class="current-plan-information">
+    <p class="support-section-header">
+        {% if plan_data.stripe_customer_url %}
+        <a target="_blank" rel="noopener noreferrer" href="{{ plan_data.stripe_customer_url }}"><i class="fa fa-credit-card"></i></a>
+        {% else %}
+        <i class="fa fa-credit-card"></i>
+        {% endif %}
+        Current plan information:
+    </p>
+    {% if plan_data.warning %}
+    <div class="current-plan-data-missing">
+        <b>{{ plan_data.warning }}</b><br />
+    </div>
+    {% endif %}
+    <b>Plan name</b>: {{ plan_data.current_plan.name }}<br />
+    <b>Status</b>: {{ plan_data.current_plan.get_plan_status_as_text() }}<br />
+    {% if plan_data.current_plan.tier == plan_data.current_plan.TIER_SELF_HOSTED_COMMUNITY %}
+    <!-- Any data below doesn't makes sense for sponsored organizations. -->
+    {% else %}
+    {% if plan_data.current_plan.discount %}
+        <b>Discount</b>: {{ plan_data.current_plan.discount }}%<br />
+    {% endif %}
+    {% if plan_data.is_complimentary_access_plan %}
+        <b>End date</b>: {{ plan_data.current_plan.end_date.strftime('%d %B %Y') }}<br />
+    {% else %}
+        <b>Licenses</b>: {{ plan_data.licenses_used }}/{{ plan_data.licenses }} ({% if plan_data.current_plan.automanage_licenses %}Automatic{% else %}Manual{% endif %})<br />
+        <b>Billing schedule</b>: {% if plan_data.current_plan.billing_schedule == plan_data.current_plan.BILLING_SCHEDULE_ANNUAL %}Annual{% else %}Monthly{% endif %}<br />
+        {% if plan_data.current_plan.price_per_license %}
+            <b>Price per license</b>: ${{ dollar_amount(plan_data.current_plan.price_per_license) }}<br />
+        {% elif plan_data.current_plan.fixed_price %}
+            <b>Plan type</b>: Fixed price<br />
+        {% endif %}
+        <b>Annual recurring revenue</b>: ${{ dollar_amount(plan_data.annual_recurring_revenue) }}<br />
+        <b>Start of next billing cycle</b>: {{ plan_data.next_billing_cycle_start.strftime('%d %B %Y') }}<br />
+    {% endif %}
+    <a target="_blank" rel="noopener noreferrer" href="/activity/plan_ledger/{{ plan_data.current_plan.id }}/">License ledger entries</a><br />
+    {% endif %}
+</div>

@@ -1,0 +1,13 @@
+{{> ../dropdown_widget_with_label
+  widget_name=channel_privacy_widget_name
+  label=(t 'Who can access this channel')}}
+
+<div class="history-public-to-subscribers">
+    {{> ../settings/settings_checkbox
+      prefix=prefix
+      setting_name="history_public_to_subscribers"
+      is_checked=history_public_to_subscribers
+      label=(t "Subscribers can view messages sent before they joined")
+      help_link="/help/channel-permissions#private-channels"
+      }}
+</div>

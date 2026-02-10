@@ -1,0 +1,28 @@
+<div class="next-plan-information">
+    <p class="support-section-header">⏱️ Next plan information:</p>
+    <b>Plan name</b>: {{ plan_data.next_plan.name }}<br />
+    <b>Status</b>: {{ plan_data.next_plan.get_plan_status_as_text() }}<br />
+    {% if plan_data.next_plan.price_per_license %}
+        <b>Start date</b>: {{ plan_data.next_plan.billing_cycle_anchor.strftime('%d %B %Y') }}<br />
+        <b>Billing schedule</b>: {% if plan_data.next_plan.billing_schedule == plan_data.next_plan.BILLING_SCHEDULE_ANNUAL %}Annual{% else %}Monthly{% endif %}<br />
+        {% if plan_data.next_plan.discount %}
+            <b>Discount</b>: {{ plan_data.next_plan.discount }}%<br />
+        {% endif %}
+        <b>Price per license</b>: ${{ dollar_amount(plan_data.next_plan.price_per_license) }}<br />
+        <b>Estimated billed licenses</b>: {{ plan_data.current_plan.licenses_at_next_renewal() }}<br />
+    {% elif plan_data.next_plan.fixed_price %}
+        <b>Plan has a fixed price.</b><br />
+        {% if plan_data.next_plan.sent_invoice_id %}
+            <b>Payment pending for Invoice ID</b>: {{plan_data.next_plan.sent_invoice_id}}<br />
+        {% endif %}
+    {% endif %}
+    <b>Estimated annual revenue</b>: ${{ dollar_amount(plan_data.estimated_next_plan_revenue) }}<br />
+    {% if plan_data.next_plan.fixed_price %}
+    <form method="POST" class="delete-next-fixed-price-plan-form">
+        {{ csrf_input }}
+        <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+        <input type="hidden" name="delete_fixed_price_next_plan" value="true" />
+        <button type="submit" class="delete-next-fixed-price-plan-button">Delete configured fixed price next plan</button>
+    </form>
+    {% endif %}
+</div>

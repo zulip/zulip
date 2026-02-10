@@ -1,0 +1,62 @@
+{
+  "active": true,
+  "application": null,
+  "business_profile": {
+    "headline": "List of past invoices",
+    "privacy_policy_url": null,
+    "terms_of_service_url": null
+  },
+  "created": 1000000000,
+  "default_return_url": null,
+  "features": {
+    "customer_update": {
+      "allowed_updates": [],
+      "enabled": false
+    },
+    "invoice_history": {
+      "enabled": true
+    },
+    "payment_method_update": {
+      "enabled": false,
+      "payment_method_configuration": null
+    },
+    "subscription_cancel": {
+      "cancellation_reason": {
+        "enabled": false,
+        "options": [
+          "too_expensive",
+          "missing_features",
+          "switched_service",
+          "unused",
+          "other"
+        ]
+      },
+      "enabled": false,
+      "mode": "at_period_end",
+      "proration_behavior": "none"
+    },
+    "subscription_pause": {
+      "enabled": false
+    },
+    "subscription_update": {
+      "default_allowed_updates": [],
+      "enabled": false,
+      "proration_behavior": "none",
+      "schedule_at_period_end": {
+        "conditions": []
+      },
+      "trial_update_behavior": "end_trial"
+    }
+  },
+  "id": "stripe_billing_portal_urls_for_remote_server--billing_portal.Configuration.create.1.json",
+  "is_default": false,
+  "livemode": false,
+  "login_page": {
+    "enabled": false,
+    "url": null
+  },
+  "metadata": {},
+  "name": null,
+  "object": "billing_portal.configuration",
+  "updated": 1000000000
+}

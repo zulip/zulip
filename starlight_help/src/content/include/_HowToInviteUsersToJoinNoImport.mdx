@@ -1,0 +1,34 @@
+import { Steps, TabItem } from "@astrojs/starlight/components";
+
+<TabItem label="Require invitations">
+  <Steps>
+    1. [Configure allowed authentication
+       methods](/help/configure-authentication-methods). Zulip offers a variety of
+       authentication methods, including email/password, Google, GitHub, GitLab,
+       Apple, LDAP and [SAML](/help/saml-authentication). Users can [log
+       in][logging-in] with any allowed authentication method, regardless of how
+       they signed up.
+    1. Invite users by [sending email invitations][email-invitations] or
+       sharing a [reusable invitation link][invitation-links].
+  </Steps>
+</TabItem>
+
+<TabItem label="Allow anyone to join">
+  <Steps>
+    1. Allow users to [join without an invitation][set-if-invitations-required].
+    1. Configure the appropriate [email domain restrictions][restrict-email-domain]
+       for your organization.
+    1. Share a link to your registration page, which is
+       [https://your-org.zulipchat.com](https://your-org.zulipchat.com) for Zulip Cloud organizations.
+  </Steps>
+</TabItem>
+
+[email-invitations]: /help/invite-new-users#send-email-invitations
+
+[invitation-links]: /help/invite-new-users#create-a-reusable-invitation-link
+
+[set-if-invitations-required]: /help/restrict-account-creation#set-whether-invitations-are-required-to-join
+
+[restrict-email-domain]: /help/restrict-account-creation#configuring-email-domain-restrictions
+
+[logging-in]: /help/logging-in

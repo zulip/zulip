@@ -1,0 +1,42 @@
+{% extends "zerver/marketing_page.html" %}
+
+{% set PAGE_TITLE = "Website attributions | Zulip" %}
+{% set PAGE_DESCRIPTION = "Attributions for the Zulip website." %}
+{% set allow_search_engine_indexing = False %} <!-- Page is not indexed by search engines. -->
+
+
+{% block marketing_content %}
+
+<div class="portico-landing why-page">
+    <div class="hero empty-hero"></div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+                <h1>Website attributions</h1>
+                <ul>
+                    <li>
+                        <b>On <a href="/for/business/">/for/business/</a> page:</b>
+                        <img alt="" src="{{ static('images/landing-page/companies/software-engineer.svg') }}" />
+                        <p>"<a href="https://iconscout.com/illustration/software-engineer-2043023">Software engineer Illustration</a>" By <a href="https://iconscout.com/contributors/delesign/illustrations">Delesign Graphic</a> is licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</p>
+                    </li>
+                    <li>
+                        <b>On <a href="/zulip-cloud/">/zulip-cloud/</a> page:</b>
+                        <img alt="" src="{{ static('images/landing-page/zulip-cloud/support.svg') }}" />
+                        <p><a href="https://storyset.com/work">Work illustrations by Storyset</a></p>
+                    </li>
+                    <li>
+                        <b>On <a href="/role/engineers/">/role/engineers/</a> page:</b>
+                        <img alt="" src="{{ static('images/landing-page/engineers/programmer.jpg') }}" />
+                        <p><a href="https://pixabay.com/photos/woman-program-programming-glasses-3597101/">Programmer illustration by Pixabay</a></p>
+                    </li>
+                    <li>
+                        <b>On <a href="/role/engineers/">/role/engineers/</a> page:</b>
+                        <img alt="" src="{{ static('images/landing-page/engineers/focus.jpg') }}" />
+                        <p><a href="https://pixabay.com/photos/dog-laptop-computer-glasses-2983021/">Dog in glasses with a laptop illustration by Pixabay</a></p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

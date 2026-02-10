@@ -1,0 +1,49 @@
+{
+    "attachments": [
+        {
+            "id": "todo_attachment",
+            "appId": "6d0aa37b00944ec0a7426d34ca2df048",
+            "color": "#2A83Fc",
+            "views": {
+                "flockml": "<flockml>Study for end term exams.</flockml>"
+            },
+            "buttons": [
+                {
+                    "name": "View",
+                    "action": {
+                        "mobileType": "modal",
+                        "type": "openWidget",
+                        "desktopType": "sidebar",
+                        "url": "https://apps-static.flock.co/todo/index.html?type=chat&chat&chatName=mychannel&listId=li%3Ac5f13a8a-e90a-4396-b810-1cfe85ef7c31&todoId=to%3Ab4273700-ac8c-44d0-91a3-d13d3d11e500",
+                        "sendContext": false
+                    },
+                    "id": "view"
+                },
+                {
+                    "name": "Mark as done",
+                    "icon": "https://apps-static.flock.com/todo/markasdone.svg",
+                    "action": {
+                        "type": "sendEvent",
+                        "sendContext": false
+                    },
+                    "id": "complete;g:183ff1e90d79465793273a31d7d1e537;li:c5f13a8a-e90a-4396-b810-1cfe85ef7c31;to:b4273700-ac8c-44d0-91a3-d13d3d11e500"
+                }
+            ]
+        }
+    ],
+    "id": "LrAbZ",
+    "to": "g:183ff1e90d79465793273a31d7d1e537",
+    "from": "u:Bgcq3pt33pqpllbt",
+    "notification": "Rishabh rawat added a to-do in New List 1 list",
+    "flockml": "<flockml>Rishabh rawat added a to-do in New List 1 list</flockml>",
+    "text": "",
+    "sendAs": {
+        "name": "To-do bot",
+        "profileImage": "https://apps-static.flock.com/todo/todoboticon.png"
+    },
+    "appId": "6d0aa37b00944ec0a7426d34ca2df048",
+    "timestamp": "2018-03-01T07:56:41.413Z",
+    "timestampInMillis": 1519891001413,
+    "uid": "1519891001413-vNe-m201",
+    "onBehalfOf": "u:9qehqo3ixo3t93e3"
+}

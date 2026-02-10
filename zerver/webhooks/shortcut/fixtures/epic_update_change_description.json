@@ -1,0 +1,21 @@
+{
+    "id":"5b29605e-df5c-4d9a-b37c-d89c9d59400e",
+    "changed_at":"2018-06-19T19:58:22.497Z",
+    "primary_id":20,
+    "version":"v1",
+    "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
+    "actions":[
+        {
+            "id":20,
+            "entity_type":"epic",
+            "action":"update",
+            "name":"New Cool Epic!",
+            "changes":{
+                "description":{
+                    "new":"Changed a description!",
+                    "old":"Added a description!"
+                }
+            }
+        }
+    ]
+}

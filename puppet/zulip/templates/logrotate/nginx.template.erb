@@ -1,0 +1,18 @@
+/var/log/nginx/*.log {
+	daily
+	missingok
+	rotate <%= @access_log_retention_days %>
+	compress
+	delaycompress
+	notifempty
+	create 0640 zulip adm
+	sharedscripts
+	prerotate
+		if [ -d /etc/logrotate.d/httpd-prerotate ]; then \
+			run-parts /etc/logrotate.d/httpd-prerotate; \
+		fi \
+	endscript
+	postrotate
+		invoke-rc.d nginx rotate >/dev/null 2>&1
+	endscript
+}

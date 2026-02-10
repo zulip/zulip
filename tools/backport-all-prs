@@ -1,0 +1,156 @@
+#!/usr/bin/env -S uv run --script --frozen --only-group release-tools  # -*-python-*-
+
+import re
+import subprocess
+import time
+from typing import Annotated
+
+import typer
+from github import Auth, Github
+from github.PullRequest import PullRequest
+from github.Repository import Repository
+from rich.console import Console
+from rich.progress import track
+
+
+def prs_to_backport(repo: Repository, console: Console, skip: set[int]) -> list[int]:
+    backport_prs = []
+    with console.status("Getting list of closed backport candidate PRs..."):
+        issues = list(repo.get_issues(labels=["backport candidate"], state="closed"))
+    for issue in track(issues, console=console, description="Fetching PR metadata..."):
+        if issue.number in skip:
+            continue
+        if issue.pull_request is None:
+            continue
+        pr = repo.get_pull(issue.number)
+
+        if pr.merged_at is None:
+            print(f"PR {pr.number} does not have a merged_at time!")
+            continue
+
+        backport_prs.append((pr.number, pr.merged_at))
+
+    backport_prs.sort(key=lambda x: x[1])
+    return [pr[0] for pr in backport_prs]
+
+
+def wait_for_complete(repo: Repository, pr: PullRequest, console: Console) -> None:
+    commit = repo.get_commit(pr.head.sha)
+    with console.status("Waiting for tests to pass..."):
+        while True:
+            time.sleep(10)
+            check_runs = commit.get_check_runs()
+            if check_runs.totalCount == 0:
+                continue
+            all_completed = True
+            for check in check_runs:
+                if check.status != "completed":
+                    all_completed = False
+                    break
+                elif check.conclusion not in ["success", "neutral", "skipped"]:
+                    raise Exception(f"{check.name} failed!")
+            if all_completed:
+                break
+    pr.merge(merge_method="rebase")
+
+
+def mark_as_backported(repo: Repository, backport_pr: int, pr_number: int, commit: str) -> None:
+    pr = repo.get_pull(pr_number)
+    pr.create_issue_comment(f"Backported in #{backport_pr} ({commit})")
+    pr.remove_from_labels("backport candidate")
+
+
+def validate_github_token(value: str) -> str:
+    # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-authentication-to-github#githubs-token-formats
+    if value.startswith("github_"):
+        return value
+    if re.match(r"gh[pousr]_", value):
+        return value
+    raise typer.BadParameter("Github access tokens start with `github_`, or `gh`")
+
+
+def main(
+    token: Annotated[
+        str,
+        typer.Option(
+            metavar="TOKEN",
+            envvar="GITHUB_TOKEN",
+            show_envvar=True,
+            callback=validate_github_token,
+            help="Github access token",
+        ),
+    ],
+    skip: Annotated[list[int], typer.Option(default_factory=list)],
+) -> int:
+    """Make a backport PR"""
+
+    console = Console(stderr=True, log_path=False)
+
+    latest_tag = subprocess.check_output(
+        ["git", "tag", "-l", "--sort=-committerdate"],
+        text=True,
+    ).splitlines()[0]
+    target_branch = latest_tag.split(".")[0] + ".x"
+
+    gh = Github(auth=Auth.Token(token))
+    repo = gh.get_repo("zulip/zulip")
+    pr_ids = prs_to_backport(repo, console, set(skip))
+
+    branchname = f"backports-{target_branch}"
+    subprocess.check_call(["git", "fetch", "upstream"])
+    subprocess.check_call(
+        [
+            "git",
+            "checkout",
+            "-b",
+            branchname,
+            "--track",
+            f"upstream/{target_branch}",
+        ]
+    )
+    successful_pr_id_commits = []
+    for pr_number in track(pr_ids, console=console, description="Backporting..."):
+        try:
+            subprocess.check_call(
+                ["./tools/backport-pull-request", str(pr_number)],
+                stderr=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+            )
+            current_commit = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], text=True
+            ).strip()
+            successful_pr_id_commits.append((pr_number, current_commit))
+        except subprocess.CalledProcessError:
+            subprocess.check_call(["git", "cherry-pick", "--abort"])
+
+    if not successful_pr_id_commits:
+        print("No PRs successfully backported!")
+        return 1
+
+    body = f"Backport to {target_branch}:\n"
+    for pr_number, _ in successful_pr_id_commits:
+        body += f"- #{pr_number}\n"
+
+    subprocess.check_call(["git", "push", "origin", f"HEAD:{branchname}"])
+    backport_pr = repo.create_pull(
+        title=f"{target_branch} backports",
+        body=body,
+        head=f"{gh.get_user().login}:{branchname}",
+        base=target_branch,
+    )
+    wait_for_complete(repo, backport_pr, console)
+
+    for pr_number, commit in track(
+        successful_pr_id_commits, console=console, description="Commenting on backported PRs..."
+    ):
+        mark_as_backported(repo, backport_pr.number, pr_number, commit)
+
+    subprocess.check_call(["git", "push", "origin", "--delete", branchname])
+    subprocess.check_call(["git", "checkout", target_branch])
+    subprocess.check_call(["git", "branch", "--delete", "--force", branchname])
+    subprocess.check_call(["git", "pull"])
+    return 0
+
+
+if __name__ == "__main__":
+    typer.run(main)

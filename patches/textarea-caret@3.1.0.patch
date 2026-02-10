@@ -1,0 +1,20 @@
+diff --git a/index.js b/index.js
+index 0b06d12bb550fbf8043645a8d680817909cb2b04..c94bbcbf0e65ecf370195f6f3b03a2be62012d0c 100644
+--- a/index.js
++++ b/index.js
+@@ -65,7 +65,6 @@ function getCaretCoordinates(element, position, options) {
+   // The mirror div will replicate the textarea's style
+   var div = document.createElement('div');
+   div.id = 'input-textarea-caret-position-mirror-div';
+-  document.body.appendChild(div);
+ 
+   var style = div.style;
+   var computed = window.getComputedStyle ? window.getComputedStyle(element) : element.currentStyle;  // currentStyle for IE < 9
+@@ -113,6 +112,7 @@ function getCaretCoordinates(element, position, options) {
+   // For inputs, just '.' would be enough, but no need to bother.
+   span.textContent = element.value.substring(position) || '.';  // || because a completely empty faux span doesn't render at all
+   div.appendChild(span);
++  document.body.appendChild(div);
+ 
+   var coordinates = {
+     top: span.offsetTop + parseInt(computed['borderTopWidth']),

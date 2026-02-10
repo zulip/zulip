@@ -1,0 +1,132 @@
+{
+    "data":{
+        "id":187087,
+        "user_story":{
+            "description":"",
+            "custom_attributes_values":{
+
+            },
+            "id":1825616,
+            "milestone":null,
+            "owner":{
+                "permalink":"https://tree.taiga.io/profile/eeshangarg",
+                "username":"eeshangarg",
+                "full_name":"Eeshan Garg",
+                "photo":null,
+                "id":258659,
+                "gravatar_id":"cd181af88d928dab53c55600c9f7551d"
+            },
+            "modified_date":"2017-10-25T00:53:02.074Z",
+            "external_reference":null,
+            "points":[
+                {
+                    "value":null,
+                    "role":"UX",
+                    "name":"?"
+                },
+                {
+                    "value":null,
+                    "role":"Design",
+                    "name":"?"
+                },
+                {
+                    "value":null,
+                    "role":"Front",
+                    "name":"?"
+                },
+                {
+                    "value":null,
+                    "role":"Back",
+                    "name":"?"
+                }
+            ],
+            "watchers":[
+
+            ],
+            "assigned_to":null,
+            "is_blocked":false,
+            "ref":8,
+            "subject":"A related user story, which is epic",
+            "tribe_gig":null,
+            "finish_date":null,
+            "blocked_note":"",
+            "status":{
+                "is_archived":false,
+                "slug":"new",
+                "name":"New",
+                "id":1364773,
+                "is_closed":false,
+                "color":"#999999"
+            },
+            "project":{
+                "permalink":"https://tree.taiga.io/project/eeshangarg-zulip",
+                "id":229096,
+                "name":"Zulip",
+                "logo_big_url":null
+            },
+            "team_requirement":false,
+            "created_date":"2017-10-25T00:42:40.254Z",
+            "client_requirement":false,
+            "generated_from_issue":null,
+            "is_closed":false,
+            "tags":[
+
+            ]
+        },
+        "order":1508892527009,
+        "epic":{
+            "description":"An epic about supporting epics!",
+            "subject":"This is Epic!",
+            "watchers":[
+
+            ],
+            "epics_order":1508892504131,
+            "created_date":"2017-10-25T00:48:24.157Z",
+            "id":50717,
+            "assigned_to":null,
+            "status":{
+                "id":1004969,
+                "is_closed":false,
+                "slug":"new",
+                "name":"New",
+                "color":"#999999"
+            },
+            "color":"#888a85",
+            "project":{
+                "permalink":"https://tree.taiga.io/project/eeshangarg-zulip",
+                "id":229096,
+                "name":"Zulip",
+                "logo_big_url":null
+            },
+            "team_requirement":false,
+            "ref":9,
+            "client_requirement":false,
+            "custom_attributes_values":{
+
+            },
+            "owner":{
+                "permalink":"https://tree.taiga.io/profile/eeshangarg",
+                "username":"eeshangarg",
+                "full_name":"Eeshan Garg",
+                "photo":null,
+                "id":258659,
+                "gravatar_id":"cd181af88d928dab53c55600c9f7551d"
+            },
+            "modified_date":"2017-10-25T00:48:24.175Z",
+            "tags":[
+
+            ]
+        }
+    },
+    "type":"relateduserstory",
+    "date":"2017-10-25T00:53:52.348Z",
+    "by":{
+        "permalink":"https://tree.taiga.io/profile/eeshangarg",
+        "username":"eeshangarg",
+        "full_name":"Eeshan Garg",
+        "photo":null,
+        "id":258659,
+        "gravatar_id":"cd181af88d928dab53c55600c9f7551d"
+    },
+    "action":"delete"
+}

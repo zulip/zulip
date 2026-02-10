@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+import os
+import platform
+import shlex
+import subprocess
+import sys
+from collections.abc import Callable
+
+TOOLS_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.dirname(TOOLS_DIR)
+sys.path.insert(0, ROOT_DIR)
+from scripts.lib.zulip_tools import get_dev_uuid_var_path
+
+UUID_VAR_PATH = get_dev_uuid_var_path()
+
+
+def run(check_func: Callable[[], bool]) -> None:
+    """
+    This decorator simply runs functions.  It makes it more
+    convenient to add new checks without a big main() function.
+    """
+    rc = check_func()
+    if not rc:
+        sys.exit(1)
+
+
+def run_command(args: list[str]) -> None:
+    print(shlex.join(args))
+    subprocess.check_call(args)
+
+
+@run
+def check_python_version() -> bool:
+    subprocess.check_call(["/usr/bin/env", "python", "-V"])
+    return True
+
+
+@run
+def pwd() -> bool:
+    print(os.getcwd())
+    return True
+
+
+@run
+def host_info() -> bool:
+    print(platform.platform())
+    return True
+
+
+@run
+def check_django() -> bool:
+    try:
+        import django
+
+        print("Django version:", django.get_version())
+        return True
+    except ImportError:
+        print(
+            """
+            ERROR!
+            We cannot import Django, which is usually a
+            symptom of not having your Python venv
+            set up correctly.
+
+            Make sure your shell does this at init time:
+
+            source /srv/zulip/.venv/bin/activate
+
+            Or maybe you forget to run inside your VM?
+            """
+        )
+        return False
+
+
+@run
+def provision_version() -> bool:
+    fn = os.path.join(UUID_VAR_PATH, "provision_version")
+    with open(fn) as f:
+        version = tuple(map(int, f.read().strip().split(".")))
+    print("latest version provisioned:", version)
+    from version import PROVISION_VERSION
+
+    print("desired version:", PROVISION_VERSION)
+    if not (PROVISION_VERSION <= version < (PROVISION_VERSION[0] + 1,)):
+        print("You need to provision!")
+        return False
+    return True
+
+
+@run
+def node_stuff() -> bool:
+    print("node version:")
+    subprocess.check_call(["node", "--version"])
+    return True
+
+
+@run
+def test_models() -> bool:
+    settings_module = "zproject.settings"
+    os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
+    import django
+
+    django.setup()
+    from zerver.models import Realm, UserProfile
+
+    print("Num realms: ", Realm.objects.count())
+    print("Num users: ", UserProfile.objects.count())
+    return True
+
+
+@run
+def check_migrations() -> bool:
+    print()
+    rc = subprocess.check_call("./tools/test-migrations")
+    return rc == 0

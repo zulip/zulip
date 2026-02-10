@@ -1,0 +1,25 @@
+<li class="bottom_left_row {{#if is_active_topic}}active-sub-filter{{/if}} {{#if is_zero}}zero-topic-unreads{{/if}} {{#if is_muted}}muted_topic{{/if}} {{#if is_unmuted_or_followed}}unmuted_or_followed_topic{{/if}} topic-list-item" data-topic-name="{{topic_name}}">
+    <a href="{{url}}" class="topic-box" draggable="false">
+        <span class="sidebar-topic-check">
+            {{topic_resolved_prefix}}
+        </span>
+        <span class="sidebar-topic-name">
+            <span class="sidebar-topic-name-inner {{#if is_empty_string_topic}}empty-topic-display{{/if}}">{{topic_display_name}}</span>
+        </span>
+        <div class="topic-markers-and-unreads change_visibility_policy" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}">
+            {{#if contains_unread_mention}}
+                <span class="unread_mention_info">
+                    @
+                </span>
+            {{else if is_followed}}
+                <i class="zulip-icon zulip-icon-follow visibility-policy-icon" role="button" aria-hidden="true" data-tippy-content="{{t 'You follow this topic.'}}"></i>
+            {{/if}}
+            <span class="unread_count normal-count {{#if is_zero}}zero_count{{/if}}">
+                {{unread}}
+            </span>
+        </div>
+        <span class="sidebar-menu-icon topic-sidebar-menu-icon">
+            <i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i>
+        </span>
+    </a>
+</li>

@@ -1,0 +1,256 @@
+/* CSS for Bootstrap typeahead */
+
+.dropdown-menu {
+    display: none;
+    min-width: 160px;
+    list-style: none;
+}
+
+.open > .dropdown-menu {
+    display: block;
+}
+
+.typeahead {
+    z-index: 1051;
+}
+
+.typeahead.dropdown-menu .typeahead-menu .simplebar-content {
+    min-width: max-content;
+
+    & > li {
+        overflow-wrap: anywhere;
+
+        & > a {
+            display: flex;
+            align-items: center;
+            padding: 0.2142em 0.7142em; /* 3px 10px at 14px em */
+            gap: 0.3571em; /* 5px at 14px em */
+            font-weight: normal;
+            /* We want to keep this `max-width` less than 320px. */
+            max-width: 292px;
+            line-height: 1.43; /* 20px / 14px */
+            color: var(--color-dropdown-item);
+            white-space: nowrap;
+
+            @media (width >= $ml_min) {
+                /* Scale up with font size on larger widths. */
+                /* 292px / 14px */
+                max-width: 20.86em;
+            }
+
+            /* hidden text just to maintain line height for a blank option */
+            strong:empty {
+                &::after {
+                    content: ".";
+                    visibility: hidden;
+                }
+            }
+
+            &:hover,
+            &:focus {
+                text-decoration: none;
+                outline: 0;
+            }
+
+            &.topic-typeahead-link {
+                gap: 5px;
+            }
+
+            &.topic-edit-typeahead {
+                display: flex;
+                flex-wrap: wrap;
+
+                .typeahead-strong-section {
+                    /* We want to wrap the topic but preserve
+                       original white spaces sequence too. */
+                    white-space: pre-wrap;
+                }
+            }
+
+            .typeahead-content {
+                display: flex;
+                align-items: center;
+                overflow: hidden;
+                gap: 0.3571em;
+            }
+
+            .typeahead-text-container {
+                display: flex;
+                align-self: center;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                gap: 3px;
+                align-items: baseline;
+            }
+
+            .compose-stream-name {
+                overflow: visible;
+                gap: 0;
+            }
+        }
+
+        .stream-to-topic-arrow {
+            margin-left: 0.375em; /* 6px at 16px em */
+            cursor: default;
+            color: var(--color-compose-chevron-arrow);
+            text-decoration: none;
+        }
+    }
+
+    .active > a {
+        &,
+        &:hover,
+        &:focus {
+            color: var(--color-active-dropdown-item);
+            background-color: var(--background-color-active-typeahead-item);
+        }
+
+        & .user-circle-offline {
+            /* Ensure better contrast on highlighted
+               typeahead items. */
+            color: var(--color-user-circle-offline-typeahead-highlight);
+        }
+    }
+
+    .pronouns,
+    .autocomplete_secondary {
+        align-self: baseline;
+        opacity: 0.8;
+        font-size: 85%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        & > a {
+            color: var(--color-dropdown-item);
+            text-decoration: underline 1px;
+            text-decoration-color: var(--color-dropdown-item-link-underline);
+            opacity: 0.6;
+        }
+    }
+
+    .autocomplete_secondary {
+        flex: 1 1 0;
+    }
+
+    .active .pronouns,
+    .active .autocomplete_secondary {
+        opacity: 1;
+    }
+}
+
+.typeahead.dropdown-menu {
+    .typeahead-menu {
+        list-style: none;
+        margin: 4px 0;
+        max-height: min(248px, 95vh);
+        overflow-y: auto;
+    }
+
+    .typeahead-footer {
+        margin: 0;
+        padding: 4px 10px;
+        border-top: 1px solid hsl(0deg 0% 0% / 20%);
+        display: flex;
+        align-items: center;
+    }
+
+    #typeahead-footer-text {
+        color: var(--color-dropdown-item);
+        font-size: 0.8571em; /* 12px at 14px/em */
+    }
+
+    a strong.typeahead-strong-section {
+        /* Can't use flex to display this item if
+           we want `text-overflow: ellipsis` to work
+           which only works on block elements. */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: pre;
+        align-items: baseline;
+        font-weight: 500;
+
+        .channel-privacy-type-icon {
+            margin-right: 3px;
+        }
+    }
+}
+
+.typeahead-option-label-container {
+    display: flex !important;
+    justify-content: space-between;
+
+    > strong {
+        margin-right: 14px;
+    }
+
+    .typeahead-option-label {
+        color: var(--color-typeahead-option-label);
+    }
+}
+
+.typeahead-image.zulip-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* For FontAwesome icons and zulip icons used in place of images for some users. */
+.typeahead-image {
+    flex: 0 0 auto;
+    position: relative;
+    height: 1.3125em; /* 21px at 16px/1em */
+    width: 1.3125em; /* 21px at 16px/1em */
+    border-radius: 4px;
+
+    .typeahead-image-avatar {
+        border-radius: 4px;
+        /* Override bootstrap img */
+        vertical-align: baseline;
+    }
+
+    .user-circle {
+        position: absolute;
+        /* This is smaller than the sidebar because avatars here are smaller */
+        font-size: 0.4375em; /* 7px at 16px/1em */
+        line-height: 1;
+        bottom: -0.5px;
+        right: -0.5px;
+        background-color: var(--color-background-dropdown-widget);
+        padding: 1px;
+        border-radius: 50%;
+
+        &.user-circle-offline {
+            display: none;
+        }
+    }
+
+    /* Move the background styles onto the :before element so that the 1px padding
+       outline still works. */
+    .user-circle-idle {
+        background: var(--color-background-dropdown-widget);
+    }
+
+    .user-circle-idle::before {
+        background: var(--gradient-user-circle-idle);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        border-radius: 50%;
+    }
+}
+
+.typeahead-text-container {
+    i.zulip-icon-bot {
+        align-self: center;
+    }
+
+    /*
+    Negates the extra 3px left margin from `.status-emoji` in zulip.css, which,
+    combined with .typeahead-text-container's `gap`, created unintended spacing.
+    The typeahead's spacing is now managed only by `gap` in
+    .typeahead-text-container.
+    */
+    .status-emoji {
+        margin-left: 0;
+    }
+}

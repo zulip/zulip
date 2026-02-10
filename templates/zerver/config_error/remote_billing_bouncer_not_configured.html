@@ -1,0 +1,9 @@
+{% extends "zerver/config_error/container.html" %}
+
+{% block error_content %}
+    {% trans doc_url="https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html" %}
+        This server is not configured to use push notifications. For instructions on how to
+        configure push notifications, please see the
+        <a href="{{ doc_url }}">documentation</a>.
+    {% endtrans %}
+{% endblock %}

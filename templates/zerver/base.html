@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang='{{LANGUAGE_CODE}}' {% if color_scheme == 1 %} class="color-scheme-automatic" {% elif color_scheme == 2 %} class="dark-theme" {% endif %}>
+
+    {# Base template for the whole site. #}
+
+    <head>
+        <meta charset="UTF-8" />
+        {% block title %}
+            {% if user_profile and user_profile.realm.name %}
+                <title>{{user_profile.realm.name}} - Zulip</title>
+            {% else %}
+                {% if PAGE_TITLE %}
+                <title>{{ PAGE_TITLE }}</title>
+                {% endif %}
+            {% endif %}
+        {% endblock %}
+        <link id="favicon" rel="icon" href="{{ static('images/favicon.svg') }}?v=4" />
+        <link rel="alternate icon" href="{{ static('images/favicon.png') }}?v=4" />
+        {% block meta_viewport %}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        {% endblock %}
+        {% if not user_profile %}
+        {% include 'zerver/meta_tags.html' %}
+        {% endif %}
+
+        {% if sentry_params is defined %}
+        <script id="sentry-params" type="text/json">{{ sentry_params|tojson }}</script>
+        {% endif %}
+
+        {% block webpack %}
+            {% for filename in webpack_entry(entrypoint) -%}
+                {% if filename.endswith(".css") -%}
+                    <link href="{{ filename }}" rel="stylesheet" {% if csp_nonce %}nonce="{{ csp_nonce }}"{% endif %} />
+                {% elif filename.endswith(".js") -%}
+                    <script src="{{ filename }}" defer crossorigin="anonymous" {% if csp_nonce %}nonce="{{ csp_nonce }}"{% endif %}></script>
+                {% endif -%}
+            {% endfor %}
+        {% endblock %}
+
+        {% block customhead %}
+        {% endblock %}
+    </head>
+
+    <body>
+        {% block content %}
+        {% endblock %}
+
+        {% set all_page_params = default_page_params.copy() %}
+        {% set _ = all_page_params.update(page_params|default({})) %}
+        <div hidden id="page-params" data-params='{{ all_page_params|tojson }}'></div>
+    </body>
+
+</html>
+
+{% set entrypoint = entrypoint|default("common") %}

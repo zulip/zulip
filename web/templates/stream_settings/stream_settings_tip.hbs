@@ -1,0 +1,9 @@
+{{#unless can_change_stream_permissions_requiring_metadata_access}}
+    {{> ../components/banner
+      label=(t "Only channel administrators can edit these settings.")
+      intent="info"
+      custom_classes="admin-permissions-banner"
+      close_button=false
+      process=false
+      }}
+{{/unless}}

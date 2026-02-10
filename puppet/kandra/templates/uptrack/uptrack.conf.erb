@@ -1,0 +1,66 @@
+[Auth]
+accesskey = <%= @ksplice_access_key %>
+
+[Network]
+# Proxy to use when accessing the Uptrack server, of the form
+# [protocol://][username:password@]<host>[:port], where
+# * protocol is the protocol to connect to the proxy (http or https)
+# * the username and password are the authentication
+#   information needed to use your proxy (if any).
+# * host and port are the hostname/ip address and port number used to
+#   connect to the proxy
+#
+# The proxy must support making HTTPS connections. If this is unset,
+# Uptrack will look for the https_proxy, HTTPS_PROXY, and http_proxy
+# environment variables in that order, and then finally look for a
+# proxy setting in the system-wide GConf database, if available and
+# enabled below.
+#
+# You can also set this to "None" to force Uptrack not to use a proxy,
+# even if one is set in the environment.
+https_proxy =
+
+# Look for proxy setting in the system-wide GConf database, if it's
+# not set in the above variable or in an environment variable.
+#
+# This is broken in later versions of Ubuntu (and other distros too)
+# so we disable this by default. See LP: #812940.
+gconf_proxy_lookup = no
+
+### Uptrack Local Server options ###
+
+# The path to the CA certificate file used to verify the Uptrack
+# server.
+#ssl_ca_cert_file =
+
+# The directory for CA certificate files used to verify the Uptrack
+# server.
+#ssl_ca_cert_dir =
+
+# The location of the Uptrack updates repository.
+#update_repo_url=
+
+### End of Uptrack Local Server options ###
+
+[Settings]
+# Automatically install updates at boot time. If this is set, on
+# reboot into the same kernel, Uptrack will re-install the same set of
+# updates that were present before the reboot.
+install_on_reboot = yes
+
+# Automatically install all available updates at boot time, even if
+# rebooted into a different kernel.
+#upgrade_on_reboot = yes
+
+# Uptrack runs in a cron job every few hours to check for and download
+# new updates. You can can configure this cron job to automatically
+# install new updates as they become available.
+#
+# Enable this option to make the cron job automatically install new
+# updates.
+#
+# Please note that enabling autoinstall does not mean the Uptrack
+# client itself is automatically upgraded. You will be notified via
+# e-mail when a new Uptrack client is available, and it can be
+# upgraded through your package manager.
+autoinstall = yes

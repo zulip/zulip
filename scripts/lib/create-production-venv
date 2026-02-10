@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import sys
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if ZULIP_PATH not in sys.path:
+    sys.path.append(ZULIP_PATH)
+
+from scripts.lib.setup_venv import get_venv_dependencies
+from scripts.lib.zulip_tools import os_families, parse_os_release, run
+
+parser = argparse.ArgumentParser(description="Create a production virtualenv with caching")
+parser.add_argument("deploy_path")
+args = parser.parse_args()
+
+# install dependencies for setting up the virtualenv
+distro_info = parse_os_release()
+vendor = distro_info["ID"]
+os_version = distro_info["VERSION_ID"]
+VENV_DEPENDENCIES = get_venv_dependencies(vendor, os_version)
+if "debian" in os_families():
+    run(["apt-get", "-y", "install", "--no-install-recommends", *VENV_DEPENDENCIES])
+elif "fedora" in os_families():
+    run(["yum", "-y", "install", *VENV_DEPENDENCIES])
+else:
+    print("Unsupported platform: {}".format(distro_info["ID"]))
+    sys.exit(1)
+
+os.chdir(ZULIP_PATH)
+run(["scripts/lib/install-uv"])
+run(
+    ["uv", "sync", "--frozen", "--only-group=prod"],
+    env={k: v for k, v in os.environ.items() if k not in {"PYTHONDEVMODE", "PYTHONWARNINGS"}},
+)

@@ -1,0 +1,445 @@
+{
+    "action": "time_entry:created",
+    "time_entry": {
+        "_type": "TimeEntry",
+        "id": 2,
+        "ongoing": false,
+        "comment": {
+            "format": "plain",
+            "raw": "",
+            "html": ""
+        },
+        "spentOn": "2025-01-02",
+        "hours": "XX",
+        "createdAt": "2025-01-01T21:20:58.333Z",
+        "updatedAt": "2025-01-01T21:20:58.333Z",
+        "_embedded": {
+            "project": {
+                "_type": "Project",
+                "id": 3,
+                "identifier": "project1",
+                "name": "Project1",
+                "active": true,
+                "public": false,
+                "description": {
+                    "format": "markdown",
+                    "raw": "1.  nucxdswssdfdsf\\_hb\\_xcddsfjsxczxchkxvcxvyuguygyujijdgrfcxbcfxbcgfjhkhksf",
+                    "html": "<ol class=\"op-uc-list\">\n<li class=\"op-uc-list--item\">nucxdswssdfdsf_hb_xcddsfjsxczxchkxvcxvyuguygyujijdgrfcxbcfxbcgfjhkhksf</li>\n</ol>"
+                },
+                "createdAt": "2024-12-31T18:07:24.546Z",
+                "updatedAt": "2025-01-01T20:41:55.823Z",
+                "statusExplanation": {
+                    "format": "markdown",
+                    "raw": "",
+                    "html": ""
+                },
+                "_links": {
+                    "self": {
+                        "href": "/api/v3/projects/3",
+                        "title": "Project1"
+                    },
+                    "createWorkPackage": {
+                        "href": "/api/v3/projects/3/work_packages/form",
+                        "method": "post"
+                    },
+                    "createWorkPackageImmediately": {
+                        "href": "/api/v3/projects/3/work_packages",
+                        "method": "post"
+                    },
+                    "workPackages": {
+                        "href": "/api/v3/projects/3/work_packages"
+                    },
+                    "storages": [],
+                    "categories": {
+                        "href": "/api/v3/projects/3/categories"
+                    },
+                    "versions": {
+                        "href": "/api/v3/projects/3/versions"
+                    },
+                    "memberships": {
+                        "href": "/api/v3/memberships?filters=%5B%7B%22project%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%223%22%5D%7D%7D%5D"
+                    },
+                    "types": {
+                        "href": "/api/v3/projects/3/types"
+                    },
+                    "update": {
+                        "href": "/api/v3/projects/3/form",
+                        "method": "post"
+                    },
+                    "updateImmediately": {
+                        "href": "/api/v3/projects/3",
+                        "method": "patch"
+                    },
+                    "delete": {
+                        "href": "/api/v3/projects/3",
+                        "method": "delete"
+                    },
+                    "schema": {
+                        "href": "/api/v3/projects/schema"
+                    },
+                    "ancestors": [
+                        {
+                            "href": "/api/v3/projects/1",
+                            "title": "Demo project"
+                        }
+                    ],
+                    "projectStorages": {
+                        "href": "/api/v3/project_storages?filters=%5B%7B%22projectId%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%223%22%5D%7D%7D%5D"
+                    },
+                    "parent": {
+                        "href": "/api/v3/projects/1",
+                        "title": "Demo project"
+                    },
+                    "status": {
+                        "href": null
+                    }
+                }
+            },
+            "workPackage": {
+                "_type": "WorkPackage",
+                "id": 40,
+                "lockVersion": 0,
+                "subject": "kl",
+                "description": {
+                    "format": "markdown",
+                    "raw": "",
+                    "html": ""
+                },
+                "scheduleManually": false,
+                "startDate": null,
+                "dueDate": null,
+                "derivedStartDate": null,
+                "derivedDueDate": null,
+                "estimatedTime": null,
+                "derivedEstimatedTime": null,
+                "derivedRemainingTime": null,
+                "duration": null,
+                "ignoreNonWorkingDays": false,
+                "spentTime": "PT0S",
+                "percentageDone": null,
+                "derivedPercentageDone": null,
+                "createdAt": "2025-01-01T20:45:21.718Z",
+                "updatedAt": "2025-01-01T20:45:21.759Z",
+                "readonly": false,
+                "laborCosts": "0.00 EUR",
+                "materialCosts": "0.00 EUR",
+                "overallCosts": "0.00 EUR",
+                "_links": {
+                    "attachments": {
+                        "href": "/api/v3/work_packages/40/attachments"
+                    },
+                    "prepareAttachment": {
+                        "href": "/api/v3/work_packages/40/attachments/prepare",
+                        "method": "post"
+                    },
+                    "addAttachment": {
+                        "href": "/api/v3/work_packages/40/attachments",
+                        "method": "post"
+                    },
+                    "fileLinks": {
+                        "href": "/api/v3/work_packages/40/file_links"
+                    },
+                    "addFileLink": {
+                        "href": "/api/v3/work_packages/40/file_links",
+                        "method": "post"
+                    },
+                    "self": {
+                        "href": "/api/v3/work_packages/40",
+                        "title": "kl"
+                    },
+                    "update": {
+                        "href": "/api/v3/work_packages/40/form",
+                        "method": "post"
+                    },
+                    "schema": {
+                        "href": "/api/v3/work_packages/schemas/3-1"
+                    },
+                    "updateImmediately": {
+                        "href": "/api/v3/work_packages/40",
+                        "method": "patch"
+                    },
+                    "delete": {
+                        "href": "/api/v3/work_packages/40",
+                        "method": "delete"
+                    },
+                    "logTime": {
+                        "href": "/api/v3/time_entries",
+                        "title": "Log time on work package 'kl'"
+                    },
+                    "move": {
+                        "href": "/work_packages/40/move/new",
+                        "type": "text/html",
+                        "title": "Move work package 'kl'"
+                    },
+                    "copy": {
+                        "href": "/work_packages/40/copy",
+                        "type": "text/html",
+                        "title": "Copy work package 'kl'"
+                    },
+                    "pdf": {
+                        "href": "/work_packages/40.pdf",
+                        "type": "application/pdf",
+                        "title": "Export as PDF"
+                    },
+                    "atom": {
+                        "href": "/work_packages/40.atom",
+                        "type": "application/rss+xml",
+                        "title": "Atom feed"
+                    },
+                    "availableRelationCandidates": {
+                        "href": "/api/v3/work_packages/40/available_relation_candidates",
+                        "title": "Potential work packages to relate to"
+                    },
+                    "customFields": {
+                        "href": "/projects/project1/settings/custom_fields",
+                        "type": "text/html",
+                        "title": "Custom fields"
+                    },
+                    "configureForm": {
+                        "href": "/types/1/edit?tab=form_configuration",
+                        "type": "text/html",
+                        "title": "Configure form"
+                    },
+                    "activities": {
+                        "href": "/api/v3/work_packages/40/activities"
+                    },
+                    "availableWatchers": {
+                        "href": "/api/v3/work_packages/40/available_watchers"
+                    },
+                    "relations": {
+                        "href": "/api/v3/work_packages/40/relations"
+                    },
+                    "revisions": {
+                        "href": "/api/v3/work_packages/40/revisions"
+                    },
+                    "watchers": {
+                        "href": "/api/v3/work_packages/40/watchers"
+                    },
+                    "addWatcher": {
+                        "href": "/api/v3/work_packages/40/watchers",
+                        "method": "post",
+                        "payload": {
+                            "user": {
+                                "href": "/api/v3/users/{user_id}"
+                            }
+                        },
+                        "templated": true
+                    },
+                    "removeWatcher": {
+                        "href": "/api/v3/work_packages/40/watchers/{user_id}",
+                        "method": "delete",
+                        "templated": true
+                    },
+                    "addRelation": {
+                        "href": "/api/v3/work_packages/40/relations",
+                        "method": "post",
+                        "title": "Add relation"
+                    },
+                    "addChild": {
+                        "href": "/api/v3/projects/project1/work_packages",
+                        "method": "post",
+                        "title": "Add child of kl"
+                    },
+                    "changeParent": {
+                        "href": "/api/v3/work_packages/40",
+                        "method": "patch",
+                        "title": "Change parent of kl"
+                    },
+                    "addComment": {
+                        "href": "/api/v3/work_packages/40/activities",
+                        "method": "post",
+                        "title": "Add comment"
+                    },
+                    "previewMarkup": {
+                        "href": "/api/v3/render/markdown?context=/api/v3/work_packages/40",
+                        "method": "post"
+                    },
+                    "timeEntries": {
+                        "href": "/api/v3/time_entries?filters=%5B%7B%22work_package_id%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%2240%22%5D%7D%7D%5D",
+                        "title": "Time entries"
+                    },
+                    "ancestors": [],
+                    "category": {
+                        "href": null
+                    },
+                    "type": {
+                        "href": "/api/v3/types/1",
+                        "title": "Task"
+                    },
+                    "priority": {
+                        "href": "/api/v3/priorities/8",
+                        "title": "Normal"
+                    },
+                    "project": {
+                        "href": "/api/v3/projects/3",
+                        "title": "Project1"
+                    },
+                    "status": {
+                        "href": "/api/v3/statuses/1",
+                        "title": "New"
+                    },
+                    "author": {
+                        "href": "/api/v3/users/4",
+                        "title": "Nirved Mishra"
+                    },
+                    "responsible": {
+                        "href": null
+                    },
+                    "assignee": {
+                        "href": null
+                    },
+                    "version": {
+                        "href": null
+                    },
+                    "parent": {
+                        "href": null,
+                        "title": null
+                    },
+                    "customActions": [],
+                    "logCosts": {
+                        "href": "/work_packages/40/cost_entries/new",
+                        "type": "text/html",
+                        "title": "Log costs on kl"
+                    },
+                    "showCosts": {
+                        "href": "/projects/3/cost_reports?fields%5B%5D=WorkPackageId&operators%5BWorkPackageId%5D=%3D&set_filter=1&values%5BWorkPackageId%5D=40",
+                        "type": "text/html",
+                        "title": "Show cost entries"
+                    },
+                    "costsByType": {
+                        "href": "/api/v3/work_packages/40/summarized_costs_by_type"
+                    },
+                    "meetings": {
+                        "href": "/work_packages/40/tabs/meetings",
+                        "title": "meetings"
+                    },
+                    "github": {
+                        "href": "/work_packages/40/tabs/github",
+                        "title": "github"
+                    },
+                    "github_pull_requests": {
+                        "href": "/api/v3/work_packages/40/github_pull_requests",
+                        "title": "GitHub pull requests"
+                    },
+                    "gitlab": {
+                        "href": "/work_packages/40/tabs/gitlab",
+                        "title": "gitlab"
+                    },
+                    "gitlab_merge_requests": {
+                        "href": "/api/v3/work_packages/40/gitlab_merge_requests",
+                        "title": "Gitlab merge requests"
+                    },
+                    "gitlab_issues": {
+                        "href": "/api/v3/work_packages/40/gitlab_issues",
+                        "title": "Gitlab Issues"
+                    },
+                    "convertBCF": {
+                        "href": "/api/bcf/2.1/projects/project1/topics",
+                        "title": "Convert to BCF",
+                        "payload": {
+                            "reference_links": [
+                                "/api/v3/work_packages/40"
+                            ]
+                        },
+                        "method": "post"
+                    }
+                }
+            },
+            "user": {
+                "_type": "User",
+                "id": 4,
+                "name": "Nirved Mishra",
+                "createdAt": "2024-12-31T12:52:44.786Z",
+                "updatedAt": "2025-01-01T18:28:20.852Z",
+                "login": "nirved431@gmail.com",
+                "admin": true,
+                "firstName": "Nirved",
+                "lastName": "Mishra",
+                "email": "nirved431@gmail.com",
+                "avatar": "https://secure.gravatar.com/avatar/aef06c318f044c985140e4ecae344c4a?default=404&secure=true",
+                "status": "active",
+                "identityUrl": null,
+                "language": "en",
+                "_links": {
+                    "self": {
+                        "href": "/api/v3/users/4",
+                        "title": "Nirved Mishra"
+                    },
+                    "memberships": {
+                        "href": "/api/v3/memberships?filters=%5B%7B%22principal%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%224%22%5D%7D%7D%5D",
+                        "title": "Memberships"
+                    },
+                    "showUser": {
+                        "href": "/users/4",
+                        "type": "text/html"
+                    },
+                    "updateImmediately": {
+                        "href": "/api/v3/users/4",
+                        "title": "Update nirved431@gmail.com",
+                        "method": "patch"
+                    },
+                    "lock": {
+                        "href": "/api/v3/users/4/lock",
+                        "title": "Set lock on nirved431@gmail.com",
+                        "method": "post"
+                    },
+                    "delete": {
+                        "href": "/api/v3/users/4",
+                        "title": "Delete nirved431@gmail.com",
+                        "method": "delete"
+                    }
+                }
+            },
+            "activity": {
+                "_type": "TimeEntriesActivity",
+                "id": 1,
+                "name": "Management",
+                "position": 1,
+                "default": true,
+                "_links": {
+                    "self": {
+                        "href": "/api/v3/time_entries/activities/1",
+                        "title": "Management"
+                    },
+                    "projects": []
+                }
+            }
+        },
+        "_links": {
+            "self": {
+                "href": "/api/v3/time_entries/2"
+            },
+            "updateImmediately": {
+                "href": "/api/v3/time_entries/2",
+                "method": "patch"
+            },
+            "update": {
+                "href": "/api/v3/time_entries/2/form",
+                "method": "post"
+            },
+            "delete": {
+                "href": "/api/v3/time_entries/2",
+                "method": "delete"
+            },
+            "schema": {
+                "href": "/api/v3/time_entries/schema"
+            },
+            "project": {
+                "href": "/api/v3/projects/3",
+                "title": "Project1"
+            },
+            "workPackage": {
+                "href": "/api/v3/work_packages/40",
+                "title": "kl"
+            },
+            "user": {
+                "href": "/api/v3/users/4",
+                "title": "Nirved Mishra"
+            },
+            "activity": {
+                "href": "/api/v3/time_entries/activities/1",
+                "title": "Management"
+            }
+        }
+    }
+}

@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
+sys.path.append(BASE_DIR)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
+
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+import bmemcached
+from django.conf import settings
+
+cache = settings.CACHES["default"]
+match cache["BACKEND"]:
+    case "django.core.cache.backends.locmem.LocMemCache":
+        pass
+    case "zerver.lib.singleton_bmemcached.SingletonBMemcached":
+        client = bmemcached.Client((cache["LOCATION"],), **cache["OPTIONS"])
+        try:
+            client.flush_all()
+        finally:
+            client.disconnect_all()
+    case _:
+        raise ValueError(f"Unrecognized cache backend {cache['BACKEND']}")

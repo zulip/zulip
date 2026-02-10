@@ -1,0 +1,17 @@
+[
+    {
+        "text": "message body text",
+        "user": "U061A5N1G",
+        "ts": "1434139102.000002",
+        "thread_ts": "1434139102.000002",
+        "channel_name": "random"
+    },
+    {
+        "text": "random",
+        "user": "U061A5N1G",
+        "ts": "1439868294.000007",
+        "parent_user_id": "U061A5N1G",
+        "thread_ts": "1434139102.000002",
+        "channel_name": "random"
+    }
+]

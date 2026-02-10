@@ -1,0 +1,30 @@
+<div class="overlay-modal hide" id="message-formatting" tabindex="-1" role="dialog"
+  aria-label="{{t 'Message formatting' }}">
+    <div class="overlay-scroll-container" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+        <div id="markdown-instructions">
+            <table class="table table-striped table-rounded table-bordered help-table">
+                <thead>
+                    <tr>
+                        <th id="message-formatting-first-header">{{t "You type" }}</th>
+                        <th>{{t "You get" }}</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {{#each markdown_help_rows}}
+                        <tr>
+                            {{#if note_html}}
+                            <td colspan="2">{{{note_html}}}</td>
+                            {{else}}
+                            <td><div class="preserve_spaces">{{markdown}}</div> {{#if usage_html}}{{{usage_html}}}{{/if}}</td>
+                            <td class="rendered_markdown">{{{output_html}}} {{#if effect_html}}{{{effect_html}}}{{/if}}</td>
+                            {{/if}}
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+        <hr />
+        <a href="/help/format-your-message-using-markdown" target="_blank" rel="noopener noreferrer">{{t "Detailed message formatting documentation" }}</a>
+    </div>
+</div>

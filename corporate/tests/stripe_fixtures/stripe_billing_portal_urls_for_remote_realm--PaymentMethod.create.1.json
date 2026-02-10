@@ -1,0 +1,51 @@
+{
+  "allow_redisplay": "unspecified",
+  "billing_details": {
+    "address": {
+      "city": "San Francisco",
+      "country": "US",
+      "line1": "123 Main St",
+      "line2": null,
+      "postal_code": "12345",
+      "state": "CA"
+    },
+    "email": null,
+    "name": "John Doe",
+    "phone": null,
+    "tax_id": null
+  },
+  "card": {
+    "brand": "visa",
+    "checks": {
+      "address_line1_check": "unchecked",
+      "address_postal_code_check": "unchecked",
+      "cvc_check": "unchecked"
+    },
+    "country": "US",
+    "display_brand": "visa",
+    "exp_month": 1,
+    "exp_year": 9999,
+    "fingerprint": "NORMALIZED",
+    "funding": "credit",
+    "generated_from": null,
+    "last4": "4242",
+    "networks": {
+      "available": [
+        "visa"
+      ],
+      "preferred": null
+    },
+    "regulated_status": "unregulated",
+    "three_d_secure_usage": {
+      "supported": true
+    },
+    "wallet": null
+  },
+  "created": 1000000000,
+  "customer": null,
+  "id": "stripe_billing_portal_urls_for_remote_realm--Customer.retrieve.1.json",
+  "livemode": false,
+  "metadata": {},
+  "object": "payment_method",
+  "type": "card"
+}

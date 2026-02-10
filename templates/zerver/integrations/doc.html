@@ -1,0 +1,49 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "integrations" %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block hello_page_container %} hello-main{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/marketing_nav.html' %}
+{% include 'zerver/gradients.html' %}
+{% import 'zerver/integrations/macros.html' as integration_macros %}
+
+<div class="portico-landing integrations">
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+                <div id="integration-instructions-group">
+                    <div id="integration-instruction-block" class="integration-instruction-block">
+                        {% if integration_categories %}
+                        <div class="categories">
+                            {% for slug, display_name in integration_categories %}
+                            <a href="/integrations/category/{{ slug }}">
+                                <h3 class="integration-category" data-category="{{ slug }}">
+                                    {{ display_name }}
+                                </h3>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {{ integration_macros.render_integration_lozenge(selected_integration, is_doc_view=true) }}
+                        <a href="/integrations/{% if return_category_slug != 'all' %}category/{{ return_category_slug }}{% endif %}" id="integration-list-link" class="no-underline">
+                            <i class="fa fa-arrow-circle-left" aria-hidden="true"></i><span class="integrations-back-to-list-label">Back to list</span>
+                        </a>
+                    </div>
+
+                    <div id="{{ selected_integration.name }}" class="integration-instructions markdown show">
+                        <div class="help-content">{{ integration_doc_html|safe }}</div>
+                        {{ integration_macros.render_logos_disclaimer() }}
+                    </div>
+                </div>
+            </div> <!-- .inner-content -->
+        </div> <!-- .padded-content -->
+    </div> <!-- .main -->
+</div> <!-- .portico-landing -->
+
+{% endblock %}

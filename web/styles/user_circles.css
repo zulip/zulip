@@ -1,0 +1,21 @@
+.user-circle-active {
+    color: var(--color-user-circle-active);
+}
+
+.user-circle-idle {
+    background: var(--gradient-user-circle-idle);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.with_avatar .user-circle-idle {
+    background: var(--gradient-user-circle-idle-avatar);
+}
+
+.user-circle-offline {
+    color: var(--color-user-circle-offline);
+}
+
+.user-circle-deactivated {
+    color: var(--color-user-circle-deactivated);
+}

@@ -1,0 +1,16 @@
+<div class="edit-notifications"></div>
+{{#if modified}}
+    {{#unless (eq msg/local_edit_timestamp undefined)}}
+        <div class="message_edit_notice">
+            {{t "SAVING"}}
+        </div>
+    {{else if edited}}
+        <div class="message_edit_notice">
+            {{t "EDITED"}}
+        </div>
+    {{else}}
+        <div class="message_edit_notice">
+            {{t "MOVED"}}
+        </div>
+    {{/unless}}
+{{/if}}

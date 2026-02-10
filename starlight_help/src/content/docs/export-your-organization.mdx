@@ -1,0 +1,148 @@
+---
+title: Export your organization
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+import ExportAllPublicAndPrivateDataRequirements from "../include/_ExportAllPublicAndPrivateDataRequirements.mdx";
+import NotHumanExportFormat from "../include/_NotHumanExportFormat.mdx";
+import OwnerOnly from "../include/_OwnerOnly.mdx";
+
+<ZulipNote>
+  If you're self-hosting Zulip, you may want to check out the
+  documentation on [server export and import][export-and-import] or
+  [server backups][production-backups].
+</ZulipNote>
+
+Zulip has high quality export tools that can be used to migrate between the
+hosted Zulip Cloud service and your own servers. Zulip offers the following
+options for exporting data in an importable format:
+
+* [**Public data
+  only**](#export-data-in-an-importable-format):
+  Complete data for your organization *other than* [private
+  channel](/help/channel-permissions#private-channels) messages and [direct
+  messages](/help/direct-messages). This export includes user settings and
+  channel subscriptions.
+* [**Public and private data (with
+  consent)**](#export-data-in-an-importable-format):
+  Everything in the export of public data, plus all the [private
+  channel](/help/channel-permissions#private-channels) messages and [direct
+  messages](/help/direct-messages) that members who have
+  [allowed](#configure-whether-administrators-can-export-your-private-data)
+  administrators to export their private data can access.
+* [**All public and private data**](#export-of-all-public-and-private-data).
+  This option is only available to **corporate** [Zulip Cloud Standard][plans]
+  and [Zulip Cloud Plus][plans] customers.
+
+In addition, [Zulip Cloud Standard][plans] and [Zulip Cloud Plus][plans]
+customers can request a compliance export:
+
+* [**Compliance export**](#compliance-export): A targeted, human-readable export
+  of messages matching some combination of criteria (e.g., sender, recipient,
+  message keyword, or timestamp).
+
+[plans]: https://zulip.com/plans/
+
+## Export data in an importable format
+
+<AdminOnly />
+
+<NotHumanExportFormat />
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/data-exports-admin" />
+
+      1. Click **Start export**.
+      1. Select the desired **Export type**.
+      1. Click **Start export** to begin the export process. After a few minutes,
+         you'll be able to download the exported data from the list of
+         data exports.
+      1. Use [Zulip's logical data import tool][import-only] to import your data into
+         a self-hosted server. For Zulip Cloud imports, contact
+         [support@zulip.com](mailto:support@zulip.com).
+    </FlattenedSteps>
+
+    <ZulipNote>
+      Generating the export can take up to an hour for organizations
+      with a large number of messages or uploaded files.
+    </ZulipNote>
+  </TabItem>
+</Tabs>
+
+### Export of all public and private data
+
+<OwnerOnly />
+
+<ExportAllPublicAndPrivateDataRequirements />
+
+Contact [support@zulip.com](mailto:support@zulip.com) to request access to this export
+type, then follow the export instructions above.
+
+If you self-host Zulip, an export of all public and private data can be performed
+[by your server's administrator][export-and-import].
+
+## Compliance export
+
+<OwnerOnly />
+
+This type of export is recommended if you plan to work with the exported data
+directly (e.g., reading messages or processing them with a script), rather than
+importing the export into a new Zulip organization.
+
+<ExportAllPublicAndPrivateDataRequirements />
+
+<Steps>
+  1. Email [support@zulip.com](mailto:support@zulip.com) asking for a **compliance
+     export**. Please send the email from the same address that you use to sign in
+     to Zulip, so that Zulip Support can verify that you are an owner of the
+     organization. You will need to specify:
+     1. The `zulipchat.com` URL for your organization
+     1. What limits you would like on the export.  Currently, compliance
+        exports can apply any combination of the following filters:
+        * Message sender
+        * Message recipient
+        * Message contents, by specific keywords
+        * Sent timestamp before, after, or between dates
+          If you need other limits, please ask.
+     1. Your preferred format for the export: CSV or JSON.
+     1. Whether or not you want to receive copies of all attachments referenced in
+        the exported messages.
+  1. You will receive the requested information once your authority to request the
+     export has been verified.
+</Steps>
+
+If you self-host Zulip, a compliance export can be performed [by your server's
+administrator][compliance-exports-self-hosted].
+
+## Configure whether administrators can export your private data
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/account-and-privacy" />
+
+  1. Under **Privacy**, toggle **Let administrators export my private data**.
+</FlattenedSteps>
+
+## Related articles
+
+* [Move from Zulip Cloud to self-hosting](/help/cloud-to-self-hosting)
+* [Move from self-hosting to Zulip Cloud](/help/move-to-zulip-cloud)
+* [Change organization URL](/help/change-organization-url)
+* [Deactivate your organization](/help/deactivate-your-organization)
+* [Import organization into a self-hosted Zulip server][import-only]
+* [Data export for self-hosted organizations][export-and-import]
+* [Compliance exports for self-hosted organizations][compliance-exports-self-hosted]
+
+[production-backups]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
+
+[export-and-import]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#data-export
+
+[import-only]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#import-into-a-new-zulip-server
+
+[compliance-exports-self-hosted]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#compliance-exports

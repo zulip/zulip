@@ -1,0 +1,10 @@
+{{#tr}}
+    Because you are not subscribed to <z-streams></z-streams>, messages in this channel were not marked as unread.
+    {{#*inline "z-streams" ~}}
+    <strong>
+        {{~#list_each streams as |stream| ~}}
+        {{> inline_decorated_channel_name stream}}
+        {{~/list_each ~}}
+    </strong>
+    {{~/inline}}
+{{/tr}}

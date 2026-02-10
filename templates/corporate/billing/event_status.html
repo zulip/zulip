@@ -1,0 +1,53 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "billing-event-status" %}
+
+{% block title %}
+<title>{{ _("Billing status") }} | Zulip</title>
+{% endblock %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block content %}
+
+<div class="app portico-page">
+    <div class="billing-upgrade-page">
+        <div class="hero small-hero"></div>
+
+        <div class="page-content">
+            <div class="main">
+                <br />
+                <div id="data" data-stripe-session-id="{{ stripe_session_id}}" data-stripe-invoice-id="{{ stripe_invoice_id }}" data-billing-base-url="{{ billing_base_url }}"></div>
+                <div class="alert alert-success" id="webhook-success"></div>
+                <div class="alert alert-danger" id="webhook-error"></div>
+                <div id="webhook-loading">
+                    <div class="zulip-loading-logo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                            <circle cx="386.56" cy="386.56" r="386.56"/>
+                            <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
+                        </svg>
+                    </div>
+                    <div id="webhook_loading_indicator"></div>
+                </div>
+
+                <form id="restartsession-form">
+                    <input type="hidden" name="stripe_invoice_id" value="{{ stripe_invoice_id }}" />
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
+                </form>
+                <div class="alert alert-success" id="restartsession-success">Redirecting to Stripe Checkout</div>
+                <div class="alert alert-danger" id="restartsession-error"></div>
+                <div id="restartsession-loading">
+                    <div class="zulip-loading-logo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                            <circle cx="386.56" cy="386.56" r="386.56"/>
+                            <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"/>
+                        </svg>
+                    </div>
+                    <div id="restartsession_loading_indicator"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "zerver/config_error/container.html" %}
+
+{% block error_content %}
+    <p>
+        Authentication via the REMOTE_USER header is
+        disabled in `/etc/zulip/settings.py`.
+    </p>
+{% endblock %}

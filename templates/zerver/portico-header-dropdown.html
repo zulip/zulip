@@ -1,0 +1,24 @@
+<div class="portico-header-dropdown">
+    <div class="portico-header-dropdown-pill">
+        <img class="header-realm-icon" src="{{ realm_icon }}" alt="{{ _('Go to Zulip') }}"/>
+        <div class="realm-name">{{ realm_name }}<i class="fa fa-chevron-down"></i></div>
+    </div>
+    <ul>
+        <li>
+            <a href="/">
+                <i class="fa fa-home"></i>
+                Go to app
+            </a>
+        </li>
+        <li class="logout">
+            <div class="hidden">
+                <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
+                </form>
+            </div>
+            <a href="#logout">
+                <i class="fa fa-sign-out"></i>
+                Log out
+            </a>
+        </li>
+    </ul>
+</div>

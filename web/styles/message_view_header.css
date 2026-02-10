@@ -1,0 +1,172 @@
+#message_view_header {
+    color: var(--color-text-message-view-header);
+    z-index: 2;
+    float: left;
+    height: var(--header-height);
+    width: 100%;
+    line-height: var(--header-height);
+    display: flex;
+    align-items: baseline;
+    white-space: nowrap;
+    cursor: default;
+
+    .hidden {
+        display: none;
+    }
+
+    /* TODO: Remove the `.navbar_title` span from the `message_view_header.hbs`
+       template. That span predates the use of flexbox, and makes it so that
+       elements like the `.narrow_description` have different line-height and
+       sizing contexts depending on whether it's a view or a narrow being shown. */
+
+    .message-header-stream-settings-button,
+    .navbar_title {
+        padding: 0 2px 0 6px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: inherit;
+        text-decoration: none;
+        /* Create a flex container for the icon and
+           stream name. */
+        display: flex;
+        /* We want to use baseline alignment so that the
+           stream name and narrow description sit on
+           the same invisible line. */
+        align-items: baseline;
+
+        .zulip-icon {
+            /* Pull the icon out of baseline alignment,
+               and center with stream name. */
+            align-self: center;
+        }
+
+        .zulip-icon-inbox {
+            /* 16px at 16px em, inherited from .navbar_title */
+            font-size: 1em;
+        }
+
+        @media (height < $short_navbar_cutoff_height) {
+            padding: 0 3.5px; /* based on having ~41.66% decrease */
+        }
+
+        .navbar-icon {
+            margin: 0 6px 0 5px;
+            /* Align all icons to center. */
+            align-self: center;
+        }
+    }
+
+    .message-header-navbar-title {
+        font-weight: 600;
+        /* 16px at 14px em */
+        font-size: 1.1429em;
+        /* Allow long navbar titles (e.g., stream names) to collapse. */
+        flex: 0 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .channel-privacy-type-icon {
+            width: auto;
+        }
+    }
+
+    .message-header-archived {
+        color: var(--color-text-message-header-archived);
+        cursor: default;
+        padding-left: 5px;
+    }
+
+    .narrow_description {
+        /* Flexbox's baseline alignment is responsible for
+           matching the description's baseline to the title.
+           Here, normal just ensures a comfortable, i18n-friendly
+           line height for the description. */
+        line-height: normal;
+        background: none;
+        color: inherit;
+        font-weight: 400;
+        /* Padding to the left separates the description from the
+           view label or channel name; padding to the right keeps
+           the description from getting too close to the closed
+           search box--with a pleasing equidistant space in both
+           places. */
+        padding: 0 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        /* The very last element in the navbar is the search icon, the second
+        last element is the narrow description (even if it is empty when a
+        channel contains no description). The flex-grow property ensures this
+        element takes up the entirety of the white space, while flex-shrink
+        accommodates narrower viewports. Setting flex-basis 0 enables an
+        ellipsis to be displayed, as the 0 takes the place of the max-content
+        default that would otherwise run titles under the search box. */
+        flex: 1 1 0;
+        margin: 0;
+
+        .help_link_widget,
+        .fa {
+            margin: 0;
+        }
+
+        .fa-question-circle-o {
+            /* Override relative position for sake of
+               Chrome paint bug that keeps the circle
+               visible when ellipses are showing. */
+            position: static;
+        }
+
+        .help_link_widget {
+            /* With relative positioning no longer
+               in effect, we vertically align the
+               help icon with an inline-block assist,
+               which is present on the .fa class. */
+            vertical-align: middle;
+        }
+    }
+
+    .view-description-extended {
+        overflow-wrap: break-word;
+        hyphens: auto;
+        overflow: hidden;
+        white-space: normal;
+        background-color: var(--color-background-navbar);
+        border-radius: 5px;
+        animation: expand-extended-description 100ms ease-in both;
+
+        &.leaving-extended-view-description {
+            animation: contract-extended-description 100ms ease-in both !important;
+        }
+    }
+}
+
+/* Media Queries */
+@media only screen and (width <= 620px) {
+    .view-description-extended {
+        padding-top: 0.5em !important;
+    }
+}
+
+/* stylelint-disable plugin/no-low-performance-animation-properties */
+@keyframes expand-extended-description {
+    from {
+        max-height: var(--header-height);
+        padding-bottom: 0;
+    }
+
+    to {
+        max-height: 1000px;
+        padding-bottom: 5px;
+    }
+}
+
+@keyframes contract-extended-description {
+    from {
+        max-height: 1000px;
+        padding-bottom: 5px;
+    }
+
+    to {
+        max-height: var(--header-height);
+        padding-bottom: 0;
+    }
+}

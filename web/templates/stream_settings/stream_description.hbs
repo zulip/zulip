@@ -1,0 +1,9 @@
+{{#if rendered_description}}
+<span class="sub-stream-description rendered_markdown">
+    {{rendered_markdown rendered_description}}
+</span>
+{{else}}
+<span class="sub-stream-description no-description">
+    {{t "This channel does not yet have a description." }}
+</span>
+{{/if}}

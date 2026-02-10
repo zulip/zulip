@@ -1,0 +1,26 @@
+<div id="channel-folder-settings" class="settings-section" data-name="channel-folders">
+    <div class="settings_panel_list_header">
+        <h3>{{t "Channel folders"}}</h3>
+        <div class="alert-notification" id="admin-channel-folder-status"></div>
+        {{#if is_admin}}
+            {{> ../components/action_button
+              custom_classes="add-channel-folder-button"
+              label=(t "Add a new channel folder")
+              variant="subtle"
+              intent="brand"
+              }}
+        {{/if}}
+    </div>
+    <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
+        <table class="table table-striped admin_channel_folders_table">
+            <thead>
+                <tr>
+                    <th>{{t "Name" }}</th>
+                    <th>{{t "Description" }}</th>
+                    <th class="actions">{{t "Actions" }}</th>
+                </tr>
+            </thead>
+            <tbody id="admin_channel_folders_table" data-empty="{{t 'No channel folders configured.' }}"></tbody>
+        </table>
+    </div>
+</div>

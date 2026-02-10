@@ -1,0 +1,18 @@
+<li class="group-list-item" role="presentation" data-group-id="{{group_id}}">
+    <a class="user-profile-group-row hidden-remove-button-row" href="{{group_edit_url}}">
+        <span class="user-group-name">
+            {{name}}
+        </span>
+        {{#if can_remove_members }}
+            <div class="remove-button-wrapper">
+                {{#if is_direct_member}}
+                    {{> components/icon_button icon="close" custom_classes="hidden-remove-button remove-member-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Remove") data-tippy-content=(t "Remove") }}
+                {{else}}
+                    <span class="tippy-zulip-tooltip" data-tippy-content="{{#if is_me}}{{t 'You are a member of {name} because you are a member of a subgroup ({subgroups_name}).'}} {{else}}{{t 'This user is a member of {name} because they are a member of a subgroup ({subgroups_name}).'}}{{/if}}">
+                        {{> components/icon_button icon="close" custom_classes="hidden-remove-button remove-member-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Remove") data-tippy-content=(t "Remove") disabled="disabled" }}
+                    </span>
+                {{/if}}
+            </div>
+        {{/if}}
+    </a>
+</li>

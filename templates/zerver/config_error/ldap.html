@@ -1,0 +1,9 @@
+{% extends "zerver/config_error/container.html" %}
+
+{% block error_content %}
+    {% trans %}
+        You are trying to log in using LDAP without creating an
+        organization first. Please use EmailAuthBackend to create
+        your organization and then try again.
+    {% endtrans %}
+{% endblock %}

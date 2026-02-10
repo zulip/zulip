@@ -1,0 +1,79 @@
+{
+   "finished_at":1514527802.89439,
+   "variables":{
+
+   },
+   "agent":null,
+   "team_id":"541c9408-2d06-4fa2-a453-eb595d32f20d",
+   "result":"fail",
+   "team_name":"Zulip",
+   "started_at":1514527800.321657,
+   "agent_expired":null,
+   "environment_uuid":"e6a5d189-4179-4854-b3d2-43cc44028d41",
+   "environment_name":"Test Settings",
+   "test_run_url":"https://www.runscope.com/radar/pmsim6ddzfaw/2ed4267a-6338-44ff-9d5e-400465080ab5/results/20be1051-4f09-4261-8a6e-254d3413e6c0",
+   "test_run_id":"20be1051-4f09-4261-8a6e-254d3413e6c0",
+   "bucket_key":"pmsim6ddzfaw",
+   "region_name":"US Virginia - None",
+   "bucket_name":"Wooly Snow",
+   "test_name":"Zulip Integration",
+   "test_id":"2ed4267a-6338-44ff-9d5e-400465080ab5",
+   "region":"us1",
+   "initial_variables":{
+
+   },
+   "test_url":"https://www.runscope.com/radar/pmsim6ddzfaw/2ed4267a-6338-44ff-9d5e-400465080ab5",
+   "trigger_url":"https://api.runscope.com/radar/26206a81-360f-476e-9c93-ffa8bc79f7e8/trigger",
+   "requests":[
+      {
+         "response_size_bytes":-1,
+         "url":"https://efuihaefiuhed.com",
+         "variables":{
+            "fail":0,
+            "total":0,
+            "pass":0
+         },
+         "step_type":"request",
+         "note":"",
+         "result":"fail",
+         "response_status_code":"None",
+         "scripts":{
+            "fail":0,
+            "total":0,
+            "pass":0
+         },
+         "method":"GET",
+         "response_time_ms":-1,
+         "assertions":{
+            "fail":1,
+            "total":1,
+            "pass":0
+         }
+      },
+      {
+         "response_size_bytes":194,
+         "url":"https://yourapihere.com/",
+         "variables":{
+            "fail":0,
+            "total":0,
+            "pass":0
+         },
+         "step_type":"request",
+         "note":"",
+         "result":"pass",
+         "response_status_code":"200",
+         "scripts":{
+            "fail":0,
+            "total":0,
+            "pass":0
+         },
+         "method":"GET",
+         "response_time_ms":10,
+         "assertions":{
+            "fail":0,
+            "total":1,
+            "pass":1
+         }
+      }
+   ]
+}

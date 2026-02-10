@@ -1,0 +1,25 @@
+<%
+
+acls = []
+acls.concat(@allow_addresses.map {|a| "--allow-address #{a}"})
+acls.concat(@allow_ranges.map {|a| "--allow-range #{a}"})
+acls.concat(@deny_addresses.map {|a| "--deny-address #{a}"})
+acls.concat(@deny_ranges.map {|a| "--deny-range #{a}"})
+
+if acls.empty?
+  acl = ""
+else
+  acl = " " + acls.join(" ")
+end
+
+-%>
+[program:smokescreen]
+command=<%= @bin %> --listen-ip <%= @listen_address %> --expose-prometheus-metrics --prometheus-port 4760<%= acl %>
+priority=15
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/zulip/smokescreen.log
+stdout_logfile_maxbytes=0
+stdout_logfile_backups=0

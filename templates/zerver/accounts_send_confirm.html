@@ -1,0 +1,50 @@
+{% extends "zerver/portico_signup.html" %}
+{# Displayed after a user attempts to sign up. #}
+
+{% block title %}
+<title>{{ _("Confirm your email address") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<!-- The following empty tag has unique data-page-id so that this
+page can be easily identified in it's respective JavaScript file -->
+<div data-page-id="accounts-send-confirm"></div>
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation account-email-confirm-container new-style">
+        <div class="inline-block">
+
+            <div class="get-started">
+                <h1>{{ _("Confirm your email address") }}</h1>
+            </div>
+
+            <div class="white-box">
+                <p>{% trans %}To complete your registration, check your email account (<span class="user_email semi-bold">{{ email }}</span>) for a confirmation email from Zulip.{% endtrans %}</p>
+
+                {% include 'zerver/dev_env_email_access_details.html' %}
+
+                <p>{% trans %}If you don't see a confirmation email in your Inbox or Spam folder, we can <a href="#" id="resend_email_link">resend it</a>.{% endtrans %}
+                </p>
+                {% if realm_creation %}
+                <form class="resend_confirm" action="/new/" method="post" style="position: absolute;">
+                    {{ csrf_input }}
+                    <input type="hidden" class="email" id="email" value="{{ email }}" name="email"/>&nbsp;
+                    <input type="hidden" class="realm_name" value="{{ new_realm_name }}" name="realm_name"/>&nbsp;
+                    <input type="hidden" class="realm_type" value="{{ realm_type }}" name="realm_type"/>&nbsp;
+                    <input type="hidden" class="realm_default_language" value="{{ realm_default_language }}" name="realm_default_language"/>&nbsp;
+                    <input type="hidden" class="realm_subdomain" value="{{ realm_subdomain }}" name="realm_subdomain"/>&nbsp;
+                </form>
+                {% else %}
+                <form class="resend_confirm" action="/accounts/home/" method="post" style="position: absolute;">
+                    {{ csrf_input }}
+                    <input type="hidden" class="email" id="email" value="{{ email }}" name="email"/>&nbsp;
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+{% endblock %}

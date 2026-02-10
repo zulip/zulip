@@ -1,0 +1,265 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "app" %}
+{# The app itself. #}
+{# Includes some other templates as tabs. #}
+
+{% set PAGE_TITLE = _("Public view of {org_name} | Zulip team chat").format(org_name=realm_name) %}
+{% set PAGE_DESCRIPTION = _("Browse the publicly accessible channels in {org_name} without logging in.").format(org_name=realm_name)  %}
+
+{% block meta_viewport %}
+<!--
+From version 132, Firefox now defaults to not resize the viewport
+content but only the visual viewport. While this works well in
+Chrome Android, it creates a buggy experience in Firefox Android
+where the compose box is hidden under keyboard. To fix it, we rollback
+to resizing content when keyboard is shown on Firefox Android.
+TODO: Remove this when Firefox Android fixes the bug -
+https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no{% if is_firefox_android %}, interactive-widget=resizes-content{% endif %}" />
+{% endblock %}
+
+{% block customhead %}
+{% if enable_gravatar %}<link rel="dns-prefetch" href="https://secure.gravatar.com" />
+{% endif -%}
+{% if s3_avatar_public_url_prefix %}<link rel="dns-prefetch" href="{{ s3_avatar_public_url_prefix }}" />
+{% endif -%}
+<meta name="mobile-web-app-capable" content="yes" />
+<link href="{{ static('images/logo/apple-touch-icon-precomposed.png') }}" rel="apple-touch-icon-precomposed" />
+<style>
+    #app-loading {
+    font-size: 16px;
+    background-color: hsl(0, 0%, 94%);
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+    top: 0px;
+    left: 0px;
+    z-index: 200;
+    }
+    #app-loading-middle-content, #app-loading-bottom-content {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    }
+    #app-loading-middle-content h3 {
+    text-align: center;
+    }
+    @keyframes showAtEnd {
+    99% {
+    visibility: hidden;
+    }
+    100% {
+    visibility: visible;
+    }
+    }
+    #app-loading-unsupported-browser, #app-loading-unsupported-desktop-app {
+        margin-top: 25px;
+    }
+    #app-loading-bottom-content {
+    top: unset;
+    bottom: 20px;
+    animation: 7s showAtEnd;
+    animation-fill-mode: forwards;
+    visibility: hidden;
+    }
+    #app-loading-error {
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    }
+    :root.dark-theme #app-loading {
+    background-color: hsl(0, 0%, 11%);
+    color: hsl(236, 33%, 90%);
+    }
+    @media (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic #app-loading {
+    background-color: hsl(0, 0%, 11%);
+    color: hsl(236, 33%, 90%);
+    }
+    }
+
+    .app-loading-spinner-container {
+    position: relative;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    }
+    .app-loading-logo {
+    height: 64px;
+    padding: 10px;
+    }
+    @keyframes zspinner {
+    to {transform: rotate(360deg);}
+    }
+    .app-loading-spinner:before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    border: 4px solid hsl(0,0%,94%);
+    border-top-color: hsl(0,0%,52%);
+    animation: zspinner 1s linear infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="feedback_container">
+</div>
+
+<div id="app-loading">
+    <div id="app-loading-middle-content">
+        <div class="app-loading-spinner-container">
+            <div class="app-loading-spinner"></div>
+            <svg class="app-loading-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 774 774"><linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#50adff"/><stop offset="1" stop-color="#7877fc"/></linearGradient><circle cx="387" cy="387" r="370" fill="url(#a)"/><path d="M567.32 527.81c0 33.07-24.26 60.11-53.91 60.11H260.59c-29.65 0-53.91-27.04-53.91-60.11 0-20.24 9.10-38.25 22.95-49.14l134.50-120.12c2.50-2.14 5.75 1.31 3.94 4.20l-49.34 98.79c-1.38 2.76.41 6.17 3.25 6.17h191.42c29.65 0 53.91 27.04 53.91 60.11zm0-281.75c0 20.24-9.10 38.25-22.95 49.14l-134.50 120.12c-2.50 2.14-5.75-1.31-3.94-4.20l49.34-98.79c1.38-2.76-.41-6.17-3.25-6.17H260.59c-29.65 0-53.91-27.04-53.91-60.11s24.26-60.11 53.91-60.11h252.81c29.65 0 53.91 27.04 53.91 60.11z" fill="#fff"/></svg>
+        </div>
+        <div id="app-loading-unsupported-browser" hidden>
+            <p>{% trans %}Because you're using an unsupported or very old browser, Zulip may not load.{% endtrans %}</p>
+        </div>
+        <div id="app-loading-unsupported-desktop-app" hidden>
+            <p>
+                {% trans %}Because you're using a very old version of the desktop app, Zulip may not load.
+                <a href="https://zulip.com/apps/" target="_blank" rel="noopener noreferrer">Download the latest version.</a>
+                {% endtrans %}
+            </p>
+        </div>
+    </div>
+    <div id="app-loading-bottom-content">
+        <p>{% trans %}If this message does not go away, try <a class="reload-lnk">reloading</a> the page.{% endtrans %}</p>
+    </div>
+    <div id="app-loading-error">
+        <p>{% trans %}Error loading Zulip. Try <a class="reload-lnk">reloading</a> the page.{% endtrans %}</p>
+    </div>
+    <script nonce="{{ csp_nonce }}">
+        document.addEventListener('DOMContentLoaded', function () {
+            function reload() {
+                window.location.reload(true);
+            }
+            document.querySelectorAll('.reload-lnk').forEach(lnk => lnk.addEventListener('click', reload));
+        });
+    </script>
+</div>
+
+<div id="tooltip-templates-container"></div>
+<div id="channels_overlay_container"></div>
+<div id="groups_overlay_container"></div>
+<div id="drafts_table"></div>
+<div id="scheduled_messages_overlay_container"></div>
+<div id="reminders-overlay-container"></div>
+<div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
+</div>
+<div id="message-edit-history-overlay-container"></div>
+<div class="informational-overlays overlay" data-overlay="informationalOverlays" aria-hidden="true">
+    <div class="overlay-content overlay-container">
+        <div class="overlay-tabs">
+            <span class="exit">&times;</span>
+        </div>
+        <div class="overlay-body">
+        </div>
+    </div>
+</div>
+
+<div id="user-profile-modal-holder"></div>
+
+<div id="about-zulip-modal-container"></div>
+
+<div id="read-receipts-modal-container"></div>
+
+<audio id="user-notification-sound-audio"></audio>
+<audio id="realm-default-notification-sound-audio"></audio>
+
+<div id="alert-popup-container">
+    <div id="popup_banners_wrapper" class="banner-wrapper alert-box">
+        <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
+    </div>
+</div>
+
+<div class="blueslip-error-container"></div>
+
+<div id="navbar-fixed-container">
+    <div id="navbar_alerts_wrapper" class="banner-wrapper"></div>
+    <div id="header-container"></div>
+</div>
+
+<div class="app">
+    <div class="app-main">
+        <div class="column-left" id="left-sidebar-container">
+        </div>
+        <div class="column-middle">
+            <div class="column-middle-inner">
+                <div id="recent_view">
+                    <div class="recent_view_container">
+                        <div id="recent_view_table"></div>
+                    </div>
+                    <table id="recent-view-content-table">
+                        <tbody data-empty="{{ _('No conversations match your filters.') }}" id="recent-view-content-tbody"></tbody>
+                    </table>
+                    <div id="recent_view_bottom_whitespace">
+                        <div class="bottom-messages-logo">
+                            <svg class="messages-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 774 774">
+                                <circle cx="387" cy="387" r="370"/>
+                                <path d="M567.32 527.81c0 33.07-24.26 60.11-53.91 60.11H260.59c-29.65 0-53.91-27.04-53.91-60.11 0-20.24 9.10-38.25 22.95-49.14l134.50-120.12c2.50-2.14 5.75 1.31 3.94 4.20l-49.34 98.79c-1.38 2.76.41 6.17 3.25 6.17h191.42c29.65 0 53.91 27.04 53.91 60.11zm0-281.75c0 20.24-9.10 38.25-22.95 49.14l-134.50 120.12c-2.50 2.14-5.75-1.31-3.94-4.20l49.34-98.79c1.38-2.76-.41-6.17-3.25-6.17H260.59c-29.65 0-53.91-27.04-53.91-60.11s24.26-60.11 53.91-60.11h252.81c29.65 0 53.91 27.04 53.91 60.11z"/>
+                            </svg>
+                        </div>
+                        <div id="recent_view_loading_messages_indicator"></div>
+                    </div>
+                    <!-- Don't show the banner until we have some messages loaded. -->
+                    <div class="recent-view-load-more-container main-view-banner info notvisible">
+                        <div class="last-fetched-message banner_content">{{ _('This view is still loading messages.') }}</div>
+                        <button class="fetch-messages-button main-view-banner-action-button right_edge notvisible">
+                            <span class="loading-indicator"></span>
+                            <span class="button-label">{{ _('Load more') }}</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="inbox-view" class="no-visible-focus-outlines">
+                    <div class="inbox-container">
+                        <div id="inbox-pane"></div>
+                    </div>
+                </div>
+                <div id="message_feed_container">
+                    <div class="message-feed" id="main_div">
+                        <div class="top-messages-logo">
+                            <svg class="messages-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 774 774">
+                                <circle cx="387" cy="387" r="370"/>
+                                <path d="M567.32 527.81c0 33.07-24.26 60.11-53.91 60.11H260.59c-29.65 0-53.91-27.04-53.91-60.11 0-20.24 9.10-38.25 22.95-49.14l134.50-120.12c2.50-2.14 5.75 1.31 3.94 4.20l-49.34 98.79c-1.38 2.76.41 6.17 3.25 6.17h191.42c29.65 0 53.91 27.04 53.91 60.11zm0-281.75c0 20.24-9.10 38.25-22.95 49.14l-134.50 120.12c-2.50 2.14-5.75-1.31-3.94-4.20l49.34-98.79c1.38-2.76-.41-6.17-3.25-6.17H260.59c-29.65 0-53.91-27.04-53.91-60.11s24.26-60.11 53.91-60.11h252.81c29.65 0 53.91 27.04 53.91 60.11z"/>
+                            </svg>
+                        </div>
+                        <div id="loading_older_messages_indicator"></div>
+                        <div id="page_loading_indicator"></div>
+                        <div id="message_feed_errors_container"></div>
+                        <div id="message-lists-container"></div>
+                        <div id="scheduled_message_indicator">
+                        </div>
+                        <div id="mark_read_on_scroll_state_banner">
+                        </div>
+                        <div id="typing_notifications">
+                        </div>
+                        <div id="mark_read_on_scroll_state_banner_place_holder">
+                        </div>
+                        <div id="bottom_whitespace">
+                        </div>
+                    </div>
+                </div>
+                <div id="compose" {% if embedded %}data-embedded{% endif %}>
+                    <div id="compose-container"></div>
+                </div>
+            </div>
+        </div>
+        <div class="column-right" id="right-sidebar-container">
+        </div><!--/right sidebar-->
+    </div>
+</div>
+
+<div class="hidden">
+    <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
+    </form>
+</div>
+{% endblock %}

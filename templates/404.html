@@ -1,0 +1,20 @@
+{% extends "zerver/portico_error_pages/portico_error_page.html" %}
+
+{% block title %}
+<title>{{ _("Error") }} | Zulip</title>
+{% endblock %}
+
+{% block error_page_content %}
+<img src="{{ static('images/errors/400art.svg') }}" alt=""/>
+<div class="errorbox">
+    <div class="errorcontent">
+        <h1 class="lead">{{ _("Page not found (404)") }}</h1>
+        <p>
+            {% trans %}
+            If this error is unexpected, you can
+            <a href="mailto:{{ support_email }}">contact support</a>.
+            {% endtrans %}
+        </p>
+    </div>
+</div>
+{% endblock %}

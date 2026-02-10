@@ -1,0 +1,568 @@
+{% extends "zerver/marketing_page.html" %}
+
+{% set PAGE_TITLE = "Why engineers love Zulip" %}
+{% set PAGE_DESCRIPTION = "Learn why engineers love Zulip organized team chat." %}
+
+
+{% block marketing_content %}
+
+<div
+  id="engineers-love-zulip-page"
+  class="portico-landing why-page solutions-page self-hosting-page zulip-cloud-page"
+  >
+    <div class="hero bg-pycon programmer">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Why engineers love Zulip</h1>
+        </div>
+        <div class="hero-buttons center">
+            <a href="/for/business/" class="button">
+                {{ _('Zulip for business') }}
+            </a>
+            <a href="/for/open-source/" class="button">
+                {{ _('Zulip for open source') }}
+            </a>
+        </div>
+    </div>
+
+    <div class="alternative-features">
+        <!-- Chat that helps engineers focus -->
+        <div class="feature-container">
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h1>Chat that helps engineers focus (really!)</h1>
+                    <p>
+                        Rather than task-switching each time a new message comes
+                        in, <a href="/why-zulip/">Zulip's threading model</a>
+                        lets you focus on your work for a few hours, and then
+                        <strong>respond asynchronously</strong>. Your messages
+                        won’t interrupt newer discussions or get missed in a
+                        side thread.
+                    </p>
+                    <p>
+                        You can have
+                        <strong>substantive conversations over chat</strong>,
+                        instead of interrupting your flow with meetings.
+                    </p>
+                    <p>
+                        <a
+                          href="/help/mention-a-user-or-group#silently-mention-a-user"
+                          >
+                            Silent mentions
+                        </a>
+                        <b>tune down the noise</b> for non-urgent matters, and you can
+                        <a href="/help/follow-a-topic">follow</a>
+                        particular topics to get notified just where your timely
+                        attention is needed.
+                    </p>
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-icon">
+                    <img
+                      class="image man-mobile-image grey-border"
+                      alt='{{ _("Dog in glasses with a laptop") }}'
+                      src="{{ static('images/landing-page/engineers/focus.jpg') }}"
+                      />
+                </div>
+            </div>
+        </div>
+
+        <!-- Understand the context behind decisions -->
+        <div class="feature-container alternate-grid">
+            <div class="feature-half md-hide">
+                <div class="feature-icon">
+                    <img
+                      class="image grey-border"
+                      alt='{{ _("Screenshot of Zulip conversation") }}'
+                      src="{{ static('images/landing-page/engineers/context.png') }}"
+                      />
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h1>
+                        Understand the context behind technical and product
+                        decisions
+                    </h1>
+                    <p>
+                        <b>Context is right at hand</b> when you
+                        <a
+                          href="/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere"
+                          >
+                            link to Zulip conversations
+                        </a>
+                        from your issue tracker, design docs, emails, code
+                        comments, etc.
+                    </p>
+                    <p>
+                        With conversations
+                        <a href="/help/introduction-to-topics"
+                          >organized by topic</a
+                        >, you can ask <b>follow-up questions in the same space</b>,
+                        even months later.
+                    </p>
+                    <div class="intro_quote quote-in-feature-text">
+                        <blockquote>
+                            Zulip organizes ideas in such a clean and simple
+                            way. You get <b>easy readability over months</b>, not just
+                            hours like in other apps.
+                            <div class="author">
+                                &mdash; Nathan Kaplan, Head of Global Launch
+                                Operations at <a
+                                href="/case-studies/windborne/">WindBorne</a>
+                            </div>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-half md-display">
+                <div class="feature-icon">
+                    <img
+                      class="image grey-border"
+                      alt='{{ _("Screenshot of Zulip conversation") }}'
+                      src="{{ static('images/landing-page/engineers/context.png') }}"
+                      />
+                </div>
+            </div>
+        </div>
+
+        <!-- Monitor production systems -->
+        <div class="feature-container">
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h1>
+                        Monitor production systems (without making your chat a
+                        mess)
+                    </h1>
+                    <p>
+                        Zulip’s native
+                        <a href="/integrations/category/monitoring">
+                            monitoring tool integrations
+                        </a>
+                        give you the updates you need <b>without disrupting human
+                        conversations</b>.
+                    </p>
+                    <p>
+                        High-volume automations can send messages to a
+                        <strong>dedicated topic</strong> in your team’s channel.
+                        (Your PM and designer can
+                        <a href="/help/mute-a-topic">mute</a> this one. 😉)
+                        There's no separate channel to keep track of.
+                    </p>
+                    <p>
+                        Or use a
+                        <strong>separate topic for each error or incident</strong>,
+                        automatically creating a lightweight discussion space
+                        for each problem your team needs to solve.
+                    </p>
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="message-screenshot">
+                    <img
+                      class="image"
+                      alt='{{ _("Screenshot of Zulip conversation with sentry bot") }}'
+                      src="{{ static('images/landing-page/engineers/exceptions.png') }}"
+                      />
+                </div>
+            </div>
+        </div>
+
+        <!-- Stop stressing about missing important messages -->
+        <div class="feature-container alternate-grid">
+            <div class="feature-half md-hide">
+                <div class="feature-icon">
+                    <img
+                      class="image grey-border"
+                      alt='{{ _("Screenshot of Zulip inbox") }}'
+                      src="{{ static('images/landing-page/engineers/inbox.png') }}"
+                      />
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h1>Stop stressing about missing important messages</h1>
+                    <p>
+                        Ever miss a message because it got buried or lost in a
+                        side thread? 🤦
+                    </p>
+                    <p>
+                        In Zulip, new messages will pop their thread to the top,
+                        making <b>updates easy to keep track of</b> in your
+                        <a href="/help/inbox">inbox</a>,
+                        <a href="/help/recent-conversations"
+                          >recent conversations</a
+                        >, and <a href="/help/left-sidebar">sidebar</a>.
+                    </p>
+                    <div class="intro_quote quote-in-feature-text">
+                        <blockquote>
+                            Literally the day we moved to Zulip, all the
+                            anxiety and stress of keeping up… was gone.
+                            <div class="author">
+                                &mdash; Dan Allen, <a
+                                href="/case-studies/asciidoctor/">Asciidoctor</a>
+                                project lead
+                            </div>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-half md-display">
+                <div class="feature-icon">
+                    <img
+                      class="image grey-border"
+                      alt='{{ _("Screenshot of Zulip inbox") }}'
+                      src="{{ static('images/landing-page/engineers/inbox.png') }}"
+                      />
+                </div>
+            </div>
+        </div>
+
+        <!-- Team chat as an organized knowledge base -->
+        <div class="feature-container">
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h1>Team chat becomes an organized knowledge base</h1>
+                    <p>
+                        With conversations organized by topic, it’s easy to
+                        <a href="/help/search-for-messages">find</a> discussions
+                        that help you <b>understand past work</b>, expert
+                        opinions, and decisions, and to <b>onboard</b> new team
+                        members.
+                    </p>
+                    <div class="intro_quote quote-in-feature-text">
+                        <blockquote>
+                            Using Zulip in a way that feels natural creates an
+                            organized repository of knowledge as a side effect.
+                            <div class="author">
+                                &mdash; Max McCrea, Co-founder of
+                                <a
+                                  href="https://monadical.com/posts/how-to-make-remote-work-part-two-zulip.html"
+                                  >
+                                    Monadical
+                                </a>
+                            </div>
+                        </blockquote>
+                    </div>
+                    <p>
+                        Zulip lets you <b>keep discussions organized</b> by
+                        <a href="/help/move-content-to-another-channel">moving</a> or
+                        <a href="/help/move-content-to-another-topic"
+                          >splitting</a
+                        >
+                        topics when conversations digress.
+                    </p>
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-icon">
+                    <img
+                      class="mirror-image man-mobile-image grey-border"
+                      alt='{{ _("Open laptop with book inside") }}'
+                      src="{{ static('images/landing-page/engineers/knowledge-base.jpg') }}"
+                      />
+                </div>
+            </div>
+        </div>
+
+        <!-- Open-source platform you can help make better -->
+        <div class="feature-container alternate-grid">
+            <div class="feature-half md-hide">
+                <div class="feature-icon">
+                    <img
+                      class="image grey-border"
+                      alt='{{ _("Two hands assembling puzzle") }}'
+                      src="{{ static('images/landing-page/hands.jpg') }}"
+                      />
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h1>
+                        Open-source platform <em>you</em> can help make even better
+                    </h1>
+                    <p>
+                        We are a <a href="/values/">values-focused</a> startup,
+                        not a faceless mega-corporation.
+                    </p>
+                    <p>
+                        You can
+                        <a
+                          href="https://zulip.readthedocs.io/en/stable/contributing/reporting-bugs.html"
+                          >
+                            report bugs
+                        </a>
+                        and
+                        <a
+                          href="https://zulip.readthedocs.io/en/stable/contributing/suggesting-features.html"
+                          >
+                            give product feedback
+                        </a>
+                        <b>directly to the product and engineering team</b> in
+                        the
+                        <a href="/development-community/">
+                            Zulip development community </a
+                        >.
+                    </p>
+                    <p>
+                        <a
+                          href="https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html"
+                          >
+                            Submit a pull request
+                        </a>
+                        or
+                        <a
+                          href="https://zulip.readthedocs.io/en/latest/production/modify.html"
+                          >
+                            run a fork
+                        </a>
+                        to <b>fix anything</b> that’s bugging you.
+                    </p>
+                    <p>
+                        Our support is staffed by
+                        <em>thoughtful people</em> whose job is to actually
+                        <b>solve your problems.</b>
+                    </p>
+                </div>
+            </div>
+            <div class="feature-half md-display">
+                <div class="feature-icon">
+                    <img
+                      class="image grey-border"
+                      alt='{{ _("Two hands assembling puzzle") }}'
+                      src="{{ static('images/landing-page/hands.jpg') }}"
+                      />
+                </div>
+            </div>
+        </div>
+
+        <div class="quote">
+            <div class="triangle"></div>
+            <blockquote>
+                I don’t like going back to Slack now. It’s just not as efficient
+                a way to organize communication.
+                <div class="author">
+                    &mdash; James van Lommel, Director of Engineering at Semsee /
+                    <a href="/case-studies/semsee/">Case study</a>
+                </div>
+            </blockquote>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-end">
+                <h1>
+                    Fan favorite features:
+                </h1>
+            </div>
+            <div class="feature-row">
+                <!-- Powerful Markdown formatting -->
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <img
+                          src="{{ static('images/landing-page/engineers/message-square-code.svg') }}"
+                          alt='{{ _("Message with code") }}'
+                          />
+                    </div>
+                    <div class="feature-text">
+                        <h1>Powerful Markdown formatting</h1>
+                        <ul>
+                            <li>
+                                <a href="/help/code-blocks"
+                                  >Zulip code blocks</a
+                                >
+                                come with <b>syntax highlighting</b> for over 250
+                                languages, and integrated
+                                <a href="/help/code-blocks#code-playgrounds"
+                                  ><b>code playgrounds</b></a
+                                >.
+                            </li>
+                            <li>
+                                Code spans, media uploads, spoilers, GIFs,
+                                lists, and more — <b>you control</b> how your
+                                message looks.
+                            </li>
+                            <li>
+                                Type
+                                <a
+                                  href="/help/format-your-message-using-markdown#latex"
+                                  ><b>LaTeX</b></a
+                                >
+                                directly into messages, and see it beautifully
+                                rendered.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Lightning fast -->
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <img
+                          src="{{ static('images/landing-page/engineers/zap.svg') }}"
+                          alt='{{ _("Lightning") }}'
+                          />
+                    </div>
+                    <div class="feature-text list-content">
+                        <h1>Lightning fast</h1>
+                        <ul>
+                            <li>
+                                Zulip is engineered to make every interaction
+                                <b>snappy</b>.
+                            </li>
+                            <li>
+                                Dozens of
+                                <a href="/help/keyboard-shortcuts"
+                                  ><b>keyboard shortcuts</b></a
+                                >
+                                let you add and upvote emoji reactions, jump to
+                                the next unread conversation, reply, and more.
+                            </li>
+                            <li>
+                                Adjust
+                                <a href="/help/font-size">font size</a> and
+                                <a href="/help/line-spacing">line spacing</a> to
+                                <b>make reading feel pleasant</b>, and <b>fit as much
+                                information</b> as you like.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-row">
+                <div class="intro_quote quote-in-feature-text">
+                    <blockquote>
+                        The app is extremely fast — you click, and messages
+                        show up instantly.
+                        <div class="author">
+                            — Erik Dittert, Head of IT at GUT contact / <a href="/case-studies/gut-contact/">Case study</a>
+                        </div>
+                    </blockquote>
+                </div>
+            </div>
+
+            <div class="feature-row">
+                <!-- Connect with other tools -->
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <img
+                          src="{{ static('images/landing-page/engineers/link.svg') }}"
+                          alt='{{ _("Link") }}'
+                          />
+                    </div>
+                    <div class="feature-text">
+                        <h1>Connect with other tools</h1>
+                        <ul>
+                            <li>
+                                <a href="/help/add-a-custom-linkifier"><b>Configure
+                                linkifiers</b></a> for issues (e.g, “JIRA-1234”
+                                or “#1234”), documentation pages, websites, and
+                                more.
+                            </li>
+                            <li>
+                                <b>Native integrations</b> for GitHub, Jira, and
+                                <a href="/integrations/"
+                                  >hundreds of other tools</a
+                                >
+                                can initiate new topics, creating lightweight
+                                discussion spaces for each issue.
+                            </li>
+                            <li>
+                                For a <b>smooth transition</b>, integrations
+                                written for Slack can post into Zulip via the
+                                <a href="/integrations/slack_incoming"
+                                  >Slack compatible webhook</a
+                                >.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- You've got control -->
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <img
+                          src="{{ static('images/landing-page/engineers/ship-wheel.svg') }}"
+                          alt='{{ _("Ship wheel") }}'
+                          />
+                    </div>
+                    <div class="feature-text">
+                        <h1>You've got control</h1>
+                        <ul>
+                            <li>
+                                Make Zulip <b>suit your preferences</b> with
+                                flexible settings for <a
+                                href="/help/channel-notifications">notifications</a>,
+                                <a
+                                  href="/help/review-your-settings#review-your-privacy-settings">privacy</a>,
+                                and <a
+                                href="/help/review-your-settings">more</a>. You
+                                can <a
+                                href="/help/configure-default-new-user-settings">configure
+                                default settings</a> for new users.
+                            </li>
+                            <li>
+                                Easily write <a
+                                href="/api/integrations-overview"><b>custom
+                                integrations</b></a> with simple, intuitive and
+                                stable <a href="/api/">APIs</a>. Pull message
+                                history into an LLM without arbitrary API use
+                                restrictions.
+                            </li>
+                            <li>
+                                Keep full control of your data when you <a
+                                href="/self-hosting/">self-host</a>.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-row">
+                <div class="intro_quote quote-in-feature-text">
+                    <blockquote>
+                        If you integrate an LLM bot into Slack, you can't
+                        manage its context window — off-topic messages can
+                        poison the context. With Zulip, you can always just
+                        start a new topic, and move messages around as needed.
+                        <div class="author">
+                            — John Dean, Co-founder and CEO of WindBorne / <a href="/case-studies/windborne/">Case study</a>
+                        </div>
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-end">
+            <p>
+                Learn how engineers at
+                <a href="/case-studies/end-point/">End Point Dev</a>,
+                <a href="/case-studies/atolio">Atolio</a>, and
+                <a href="/case-studies/rust/">the Rust language community</a>
+                are using Zulip. Please reach out to
+                <a href="mailto:sales@zulip.com">sales@zulip.com</a> with any
+                questions, or drop by our
+                <a href="/development-community/"
+                  >friendly development community</a
+                >.
+            </p>
+
+            <div class="bottom-register-buttons">
+                <h1>Join other engineers who love using Zulip!</h1>
+                <div class="hero-buttons center">
+                    <a href="/new/" class="button">
+                        {{ _('Create organization') }}
+                    </a>
+                    <a href="/for/business/" class="button">
+                        {{ _('Zulip for business') }}
+                    </a>
+                    <a href="/self-hosting/" class="button">
+                        {{ _('Self-host Zulip') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

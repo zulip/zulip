@@ -1,0 +1,10 @@
+# libarrow1600 is missing on Debian 12
+Package: libgroonga0
+Pin: version 14.0.3-1
+Pin-Priority: 499
+
+
+# On bookworm, pull libheif1 from backports
+Package: libheif1
+Pin: release n=bookworm-backports
+Pin-Priority: 500

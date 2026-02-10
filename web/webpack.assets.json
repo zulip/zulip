@@ -1,0 +1,140 @@
+{
+    "activity": [
+        "./third/bootstrap/css/bootstrap.portico.css",
+        "./src/bundles/common.ts",
+        "sorttable",
+        "./styles/portico/activity.css"
+    ],
+    "billing": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/billing/helpers.ts",
+        "./src/billing/billing.ts",
+        "./styles/portico/billing.css"
+    ],
+    "sponsorship": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "jquery-validation",
+        "./src/portico/signup.ts",
+        "./src/billing/sponsorship.ts",
+        "./styles/portico/billing.css"
+    ],
+    "billing_auth": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/billing/helpers.ts",
+        "jquery-validation",
+        "./src/billing/remote_billing_auth.ts",
+        "./src/billing/deactivate_server.ts",
+        "./styles/portico/billing.css"
+    ],
+    "upgrade": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/billing/helpers.ts",
+        "./src/billing/upgrade.ts",
+        "jquery-validation",
+        "./styles/portico/billing.css"
+    ],
+    "billing-event-status": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/billing/event_status.ts",
+        "./src/billing/helpers.ts",
+        "./styles/portico/billing.css"
+    ],
+    "portico": ["./src/bundles/legacy_portico_bundle.ts"],
+    "error-styles": [
+        "./third/bootstrap/css/bootstrap.portico.css",
+        "./styles/portico/legacy_portico_styles_bundle.css"
+    ],
+    "common": ["./src/bundles/common.ts"],
+    "help": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "simplebar/dist/simplebar.css",
+        "simplebar",
+        "./src/portico/help.ts"
+    ],
+    "marketing-page": [
+        "./src/bundles/marketing_page_bundle.ts",
+        "./src/portico/legacy_landing_page.ts",
+        "./styles/portico/portico_variables.css",
+        "./styles/portico/marketing_page.css",
+        "./styles/portico/pricing_plans.css"
+    ],
+    "landing-page-hello": [
+        "./src/bundles/hello.ts",
+        "./src/portico/hello.ts",
+        "./src/portico/legacy_landing_page.ts",
+        "./src/portico/header.ts",
+        "./styles/portico/svg_icons.css",
+        "./styles/portico/hello.css",
+        "./styles/portico/navbar.css",
+        "./styles/portico/footer.css"
+    ],
+    "plans-page": [
+        "./src/bundles/hello.ts",
+        "./src/portico/legacy_landing_page.ts",
+        "./src/portico/header.ts",
+        "./styles/portico/portico_variables.css",
+        "./styles/portico/hello.css",
+        "./styles/portico/navbar.css",
+        "./styles/portico/footer.css",
+        "./styles/portico/plans_pages.css",
+        "./styles/portico/pricing_plans.css",
+        "./styles/portico/comparison_table.css"
+    ],
+    "integrations": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/portico/integrations.ts",
+        "./styles/portico/legacy_landing_page.css",
+        "./styles/portico/integrations.css",
+        "./src/portico/help.ts"
+    ],
+    "communities": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/portico/communities.ts",
+        "./styles/portico/legacy_landing_page.css",
+        "./styles/portico/integrations.css"
+    ],
+    "signup": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "jquery-validation",
+        "./src/portico/signup.ts"
+    ],
+    "register": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "jquery-validation",
+        "./src/portico/signup.ts"
+    ],
+    "slack-import": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "jquery-validation",
+        "./src/portico/signup.ts",
+        "@uppy/core/css/style.min.css",
+        "@uppy/dashboard/css/style.min.css",
+        "./src/portico/slack-import.ts"
+    ],
+    "redirect-to-post": [
+        "./third/bootstrap/css/bootstrap.portico.css",
+        "./src/bundles/common.ts",
+        "./src/portico/redirect-to-post.ts"
+    ],
+    "support": [
+        "./third/bootstrap/css/bootstrap.portico.css",
+        "./src/bundles/common.ts",
+        "sorttable",
+        "./styles/portico/activity.css",
+        "./src/support/support.ts",
+        "./src/portico/tippyjs.ts",
+        "tippy.js/dist/tippy.css"
+    ],
+    "desktop-login": ["./src/bundles/legacy_portico_bundle.ts", "./src/portico/desktop-login.ts"],
+    "desktop-redirect": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/portico/desktop-redirect.ts"
+    ],
+    "stats": [
+        "./src/bundles/legacy_portico_bundle.ts",
+        "./styles/portico/stats.css",
+        "./src/stats/stats.ts"
+    ],
+    "app": ["./src/bundles/app.ts"],
+    "digest": ["./src/bundles/legacy_portico_bundle.ts"]
+}

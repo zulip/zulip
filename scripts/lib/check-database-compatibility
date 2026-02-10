@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+import logging
+import os
+import subprocess
+import sys
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, ZULIP_PATH)
+
+from scripts.lib.setup_path import setup_path
+from scripts.lib.zulip_tools import (
+    DEPLOYMENTS_DIR,
+    assert_not_running_as_root,
+    get_config,
+    get_config_file,
+    parse_version_from,
+)
+from version import ZULIP_VERSION as NEW_VERSION
+
+assert_not_running_as_root()
+setup_path()
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+
+import django
+from django.db import connection
+from django.db.migrations.loader import MigrationLoader
+
+from zerver.lib.migration_status import STALE_MIGRATIONS
+
+django.setup()
+
+django_pg_version = connection.cursor().connection.server_version // 10000
+if os.path.exists("/etc/init.d/postgresql") and os.path.exists("/etc/zulip/zulip.conf"):
+    postgresql_version = int(get_config(get_config_file(), "postgresql", "version", "0"))
+    if postgresql_version == 0:
+        postgresql_version = django_pg_version
+        subprocess.check_call(
+            [
+                "crudini",
+                "--set",
+                "/etc/zulip/zulip.conf",
+                "postgresql",
+                "version",
+                str(postgresql_version),
+            ]
+        )
+    elif postgresql_version != django_pg_version:
+        logging.critical(
+            "PostgreSQL version mismatch: %d (running) vs %d (configured)",
+            django_pg_version,
+            postgresql_version,
+        )
+        logging.info(
+            "/etc/zulip/zulip.conf claims that Zulip is running PostgreSQL\n"
+            "%d, but the server is connected to a PostgreSQL running\n"
+            "version %d.  Check the output from pg_lsclusters to verify\n"
+            "which clusters are running, and update /etc/zulip/zulip.conf to match.\n"
+            "\n"
+            "In general, this results from manually upgrading PostgreSQL; you\n"
+            "should follow our instructions for using our tool to do so:\n"
+            "https://zulip.readthedocs.io/en/stable/production/upgrade.html#upgrading-postgresql",
+            postgresql_version,
+            django_pg_version,
+        )
+        sys.exit(1)
+
+if django_pg_version < 14:
+    logging.critical("Unsupported PostgreSQL version: %d", postgresql_version)
+    logging.info(
+        "Please upgrade to PostgreSQL 14 or newer first.\n"
+        "See https://zulip.readthedocs.io/en/stable/production/"
+        "upgrade.html#upgrading-postgresql"
+    )
+    sys.exit(1)
+
+loader = MigrationLoader(connection)
+missing = set(loader.applied_migrations)
+
+missing.difference_update(STALE_MIGRATIONS)
+
+for key, migration in loader.disk_migrations.items():
+    missing.discard(key)
+    missing.difference_update(migration.replaces)
+if not missing:
+    sys.exit(0)
+
+print("Migrations which are currently applied, but missing in the new version:")
+for app, migration_name in sorted(missing):
+    print(f"  {app} - {migration_name}")
+
+current_version = parse_version_from(os.path.join(DEPLOYMENTS_DIR, "current"))
+logging.error(
+    "This is not an upgrade -- the current deployment (version %s) "
+    "contains %s database migrations which %s (version %s) does not.",
+    current_version,
+    len(missing),
+    ZULIP_PATH,
+    NEW_VERSION,
+)
+sys.exit(1)

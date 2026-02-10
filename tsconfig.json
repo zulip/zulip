@@ -1,0 +1,52 @@
+{
+    "compilerOptions": {
+        /* Type Checking */
+        "exactOptionalPropertyTypes": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedIndexedAccess": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "strict": true,
+
+        /* Modules */
+        "allowImportingTsExtensions": true,
+        "module": "preserve",
+        "moduleResolution": "bundler",
+        "paths": {
+            "*": ["./web/src/types/*"],
+        },
+        "resolveJsonModule": true,
+        "types": ["@types/jquery.validation", "flatpickr/dist/types/globals"],
+
+        /* Emit */
+        "noEmit": true,
+
+        /* JavaScript support */
+        "allowJs": true,
+
+        /* Interop Constraints */
+        "erasableSyntaxOnly": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "verbatimModuleSyntax": true,
+
+        /* Language and Environment */
+        "target": "ESNext",
+
+        /* Projects */
+        "composite": true,
+    },
+    "exclude": [
+        // This is a separate package with its own TypeScript configuration.
+        "starlight_help",
+
+        // Skip walking large generated directories.
+        ".venv",
+        "docs/_build",
+        "static/webpack-bundles",
+        "var",
+    ],
+}

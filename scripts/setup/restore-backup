@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import re
+import subprocess
+import sys
+import tempfile
+from typing import IO
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(BASE_DIR)
+from scripts.lib.zulip_tools import assert_running_as_root, get_postgres_pwent, run, su_to_zulip
+
+POSTGRES_PWENT = get_postgres_pwent()
+
+parser = argparse.ArgumentParser()
+parser.add_argument("tarball", help="Filename of input tarball")
+parser.add_argument(
+    "--keep-settings", help="Do not overwrite local /etc/zulip/settings.py", action="store_true"
+)
+parser.add_argument(
+    "--keep-zulipconf", help="Do not overwrite local /etc/zulip/zulip.conf", action="store_true"
+)
+
+
+def restore_backup(tarball_file: IO[bytes], keep_settings: bool, keep_zulipconf: bool) -> None:
+    assert_running_as_root()
+    su_to_zulip(save_suid=True)
+
+    from scripts.lib.setup_path import setup_path
+
+    setup_path()
+
+    # First, we unpack the /etc/zulip configuration, so we know how
+    # this server is supposed to be configured (and can import
+    # /etc/zulip/settings.py via `from django.conf import settings`,
+    # next).  Ignore errors if zulip-backup/settings is not present
+    # (E.g. because this is a development backup).
+    tarball_file.seek(0, 0)
+    excludes = []
+    if keep_settings:
+        excludes += ["--exclude=settings.py"]
+    if keep_zulipconf:
+        excludes += ["--exclude=zulip.conf"]
+    run(
+        [
+            "tar",
+            "--directory=/etc/zulip",
+            *excludes,
+            "--strip-components=2",
+            "-xz",
+            "zulip-backup/settings",
+        ],
+        stdin=tarball_file,
+    )
+
+    os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+    from django.conf import settings
+
+    paths = [
+        # zproject will only be present for development environment backups.
+        ("zproject", os.path.join(settings.DEPLOY_ROOT, "zproject")),
+    ]
+    if settings.LOCAL_UPLOADS_DIR is not None:
+        # We only need to restore LOCAL_UPLOADS_DIR if the system is
+        # configured to locally host uploads.
+        paths.append(("uploads", os.path.join(settings.DEPLOY_ROOT, settings.LOCAL_UPLOADS_DIR)))
+
+    with tempfile.TemporaryDirectory(prefix="zulip-restore-backup-") as tmp:
+        uid = os.getuid()
+        gid = os.getgid()
+        os.setresuid(0, 0, 0)
+        for name, path in paths:
+            os.makedirs(path, exist_ok=True)
+            os.chown(path, uid, gid)
+        os.setresuid(uid, uid, 0)
+
+        assert not any("|" in name or "|" in path for name, path in paths)
+        transform_args = [
+            r"--transform=s|^zulip-backup/{}(/.*)?$|{}\1|x".format(
+                re.escape(name),
+                path.replace("\\", r"\\"),
+            )
+            for name, path in paths
+        ]
+
+        os.mkdir(os.path.join(tmp, "zulip-backup"))
+        tarball_file.seek(0, 0)
+        run(["tar", "-C", tmp, *transform_args, "-xPz"], stdin=tarball_file)
+
+        # Now, extract the database backup, destroy the old
+        # database, and create a new, empty database.
+        db = settings.DATABASES["default"]
+        assert isinstance(db["NAME"], str)
+        db_dir = os.path.join(tmp, "zulip-backup", "database")
+        os.setresuid(0, 0, 0)
+        run(["chown", "-R", POSTGRES_PWENT.pw_name, "--", tmp])
+        os.setresuid(POSTGRES_PWENT.pw_uid, POSTGRES_PWENT.pw_uid, 0)
+
+        postgresql_env = dict(os.environ)
+        if db["HOST"] not in ["", "localhost"]:
+            postgresql_env["PGHOST"] = db["HOST"]
+            if "PORT" in db:
+                postgresql_env["PGPORT"] = db["PORT"]
+            postgresql_env["PGUSER"] = db["USER"]
+            if "PASSWORD" in db:
+                postgresql_env["PGPASSWORD"] = db["PASSWORD"]
+
+        run(
+            [
+                os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "terminate-psql-sessions"),
+                db["NAME"],
+            ],
+            env=postgresql_env,
+        )
+        run(["dropdb", "--if-exists", "--", db["NAME"]], cwd="/", env=postgresql_env)
+        run(
+            ["createdb", "--owner=zulip", "--template=template0", "--", db["NAME"]],
+            cwd="/",
+            env=postgresql_env,
+        )
+        os.setresuid(0, 0, 0)
+
+        if settings.PRODUCTION:
+            # In case we are restoring a backup from an older Zulip
+            # version, there may be new secrets to generate.
+            run(
+                [
+                    os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "generate_secrets.py"),
+                    "--production",
+                ]
+            )
+
+            # If there is a local RabbitMQ, we need to reconfigure it
+            # to ensure the RabbitMQ password matches the value in the
+            # restored zulip-secrets.conf.  We need to be careful to
+            # only do this if RabbitMQ is configured to run locally on
+            # the system.
+            rabbitmq_host = subprocess.check_output(
+                [
+                    os.path.join(settings.DEPLOY_ROOT, "scripts", "get-django-setting"),
+                    "RABBITMQ_HOST",
+                ],
+                text=True,
+            ).strip()
+            if rabbitmq_host in ["127.0.0.1", "::1", "localhost", "localhost6"]:
+                run([os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "configure-rabbitmq")])
+
+            # In production, we also need to do a `zulip-puppet-apply`
+            # in order to apply any configuration from
+            # /etc/zulip/zulip.conf to this system, since it was
+            # originally installed without the restored copy of that
+            # file.
+            run([os.path.join(settings.DEPLOY_ROOT, "scripts", "zulip-puppet-apply"), "-f"])
+
+        # Now, restore the database backup using pg_restore.  This
+        # needs to run after zulip-puppet-apply to ensure full-text
+        # search extensions are available and installed.
+        os.setresuid(POSTGRES_PWENT.pw_uid, POSTGRES_PWENT.pw_uid, 0)
+        run(["pg_restore", "--dbname=" + db["NAME"], "--", db_dir], cwd="/", env=postgresql_env)
+        os.setresuid(0, 0, 0)
+        run(["chown", "-R", str(uid), "--", tmp])
+        os.setresuid(uid, uid, 0)
+
+        if settings.PRODUCTION:
+            run([os.path.join(settings.DEPLOY_ROOT, "scripts", "restart-server")])
+
+        run([os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "flush-memcached")])
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+
+    with open(args.tarball, "rb") as tarball_file:
+        restore_backup(tarball_file, args.keep_settings, args.keep_zulipconf)

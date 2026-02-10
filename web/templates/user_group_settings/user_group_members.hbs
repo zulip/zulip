@@ -1,0 +1,25 @@
+<div class="member_list_settings_container">
+    <div class="membership-status">
+        {{> user_group_membership_status .}}
+    </div>
+    <h4 class="user_group_setting_subsection_title">
+        {{t "Add members" }}
+    </h4>
+    <div class="user_group_subscription_request_result banner-wrapper"></div>
+    <div class="member_list_settings">
+        <div class="member_list_add float-left">
+            {{> add_members_form .}}
+        </div>
+        <div class="clear-float"></div>
+    </div>
+    <div>
+        <h4 class="inline-block user_group_setting_subsection_title">{{t "Members"}}</h4>
+        <span class="member-search float-right">
+            <input type="text" class="search filter_text_input" placeholder="{{t 'Filter' }}" />
+        </span>
+    </div>
+    <div class="add-group-member-loading-spinner"></div>
+    <div class="member-list-box">
+        {{> user_group_members_table .}}
+    </div>
+</div>

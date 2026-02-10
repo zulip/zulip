@@ -1,0 +1,186 @@
+{
+  "timestamp": 1485797534721,
+  "webhookEvent": "jira:issue_updated",
+  "issue_event_type_name": "issue_generic",
+  "user": {
+    "self": "https://zulipp.atlassian.net/rest/api/2/user?username=admin",
+    "name": "admin",
+    "key": "admin",
+    "emailAddress": "kolaszek@tlen.pl",
+    "avatarUrls": {
+      "48x48": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=48",
+      "24x24": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=24",
+      "16x16": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=16",
+      "32x32": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=32"
+    },
+    "displayName": "Leonardo Franchi [Administrator]",
+    "active": true,
+    "timeZone": "Europe/Berlin"
+  },
+  "issue": {
+    "id": "10000",
+    "self": "https://zulipp.atlassian.net/rest/api/2/issue/10000",
+    "key": "TEST-1",
+    "fields": {
+      "issuetype": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/issuetype/10101",
+        "id": "10101",
+        "description": "A task that needs to be done.",
+        "iconUrl": "https://zulipp.atlassian.net/secure/viewavatar?size=xsmall&avatarId=10318&avatarType=issuetype",
+        "name": "Task",
+        "subtask": false,
+        "avatarId": 10318
+      },
+      "timespent": null,
+      "project": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/project/10000",
+        "id": "10000",
+        "key": "ABC",
+        "name": "Fix That",
+        "avatarUrls": {
+          "48x48": "https://zulipp.atlassian.net/secure/projectavatar?avatarId=10324",
+          "24x24": "https://zulipp.atlassian.net/secure/projectavatar?size=small&avatarId=10324",
+          "16x16": "https://zulipp.atlassian.net/secure/projectavatar?size=xsmall&avatarId=10324",
+          "32x32": "https://zulipp.atlassian.net/secure/projectavatar?size=medium&avatarId=10324"
+        }
+      },
+      "fixVersions": [],
+      "customfield_10110": null,
+      "customfield_10111": null,
+      "aggregatetimespent": null,
+      "resolution": null,
+      "customfield_10112": "Not started",
+      "customfield_10113": null,
+      "customfield_10114": null,
+      "customfield_10104": null,
+      "customfield_10105": null,
+      "customfield_10106": null,
+      "customfield_10107": null,
+      "customfield_10108": null,
+      "customfield_10109": null,
+      "resolutiondate": null,
+      "workratio": -1,
+      "lastViewed": "2017-01-30T18:32:14.694+0100",
+      "watches": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/issue/TEST-1/watchers",
+        "watchCount": 1,
+        "isWatching": true
+      },
+      "created": "2017-01-30T18:30:41.962+0100",
+      "priority": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/priority/3",
+        "iconUrl": "https://zulipp.atlassian.net/images/icons/priorities/medium.svg",
+        "name": "Medium",
+        "id": "3"
+      },
+      "customfield_10100": null,
+      "customfield_10101": null,
+      "customfield_10102": null,
+      "labels": [],
+      "customfield_10103": null,
+      "timeestimate": null,
+      "aggregatetimeoriginalestimate": null,
+      "versions": [],
+      "issuelinks": [],
+      "assignee": null,
+      "updated": "2017-01-30T18:32:14.716+0100",
+      "status": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/status/3",
+        "description": "This issue is being actively worked on at the moment by the assignee.",
+        "iconUrl": "https://zulipp.atlassian.net/images/icons/statuses/inprogress.png",
+        "name": "In Progress",
+        "id": "3",
+        "statusCategory": {
+          "self": "https://zulipp.atlassian.net/rest/api/2/statuscategory/4",
+          "id": 4,
+          "key": "indeterminate",
+          "colorName": "yellow",
+          "name": "In Progress"
+        }
+      },
+      "components": [],
+      "timeoriginalestimate": null,
+      "description": "Fix That",
+      "timetracking": {},
+      "customfield_10005": null,
+      "attachment": [],
+      "aggregatetimeestimate": null,
+      "summary": "Fix That",
+      "creator": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/user?username=admin",
+        "name": "admin",
+        "key": "admin",
+        "emailAddress": "kolaszek@tlen.pl",
+        "avatarUrls": {
+          "48x48": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=48",
+          "24x24": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=24",
+          "16x16": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=16",
+          "32x32": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=32"
+        },
+        "displayName": "Leonardo Franchi [Administrator]",
+        "active": true,
+        "timeZone": "Europe/Berlin"
+      },
+      "subtasks": [],
+      "reporter": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/user?username=admin",
+        "name": "admin",
+        "key": "admin",
+        "emailAddress": "kolaszek@tlen.pl",
+        "avatarUrls": {
+          "48x48": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=48",
+          "24x24": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=24",
+          "16x16": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=16",
+          "32x32": "https://secure.gravatar.com/avatar/d832c4f48fb6bc323411fbbcd25079ad?d=mm&s=32"
+        },
+        "displayName": "Leonardo Franchi [Administrator]",
+        "active": true,
+        "timeZone": "Europe/Berlin"
+      },
+      "customfield_10000": "{}",
+      "aggregateprogress": {
+        "progress": 0,
+        "total": 0
+      },
+      "customfield_10001": null,
+      "customfield_10115": null,
+      "customfield_10116": "0|hzzzzz:",
+      "environment": null,
+      "duedate": null,
+      "progress": {
+        "progress": 0,
+        "total": 0
+      },
+      "comment": {
+        "comments": [],
+        "maxResults": 0,
+        "total": 0,
+        "startAt": 0
+      },
+      "votes": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/issue/TEST-1/votes",
+        "votes": 0,
+        "hasVoted": false
+      },
+      "worklog": {
+        "startAt": 0,
+        "maxResults": 20,
+        "total": 0,
+        "worklogs": []
+      }
+    }
+  },
+  "changelog": {
+    "id": "10000",
+    "items": [
+      {
+        "field": "status",
+        "fieldtype": "jira",
+        "from": "10000",
+        "fromString": "To Do",
+        "to": "3",
+        "toString": "In Progress"
+      }
+    ]
+  }
+}

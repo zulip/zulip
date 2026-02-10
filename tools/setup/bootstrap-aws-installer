@@ -1,0 +1,81 @@
+#!/bin/env bash
+
+# Prepended to this automatically are the following:
+#SERVER=
+#HOSTNAME=
+#FULL_ROLES=
+#REPO_URL=
+#BRANCH=
+
+export RUNNING_IN_CLOUD_INIT=1
+if ! curl -fLs -m 5 -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 10" >/dev/null; then
+    echo "This should be run on AWS instances, not locally."
+    exit 1
+fi
+
+set -e
+set -x
+
+# Set the hostname early
+echo "$HOSTNAME" >/etc/hostname
+hostname "$HOSTNAME"
+sed -i "s/localhost$/localhost $HOSTNAME $SERVER/" /etc/hosts
+
+# Make sure root doesn't have a password
+passwd -d root
+
+# Allow root logins
+sed -i 's/disable_root: true/disable_root: false/' /etc/cloud/cloud.cfg
+
+# Ensure all apt updates (here and in the installer) are non-interactive
+export DEBIAN_FRONTEND=noninteractive
+
+# Dependencies to install AWS CLI
+(
+    apt-get -qy update
+    apt-get -qy --with-new-pkgs -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
+    apt-get -qy install jq unzip curl
+    apt-get -qy autoclean
+)
+
+# The following line gets subbed in by a call to pack-local-script,
+# which will make $AWS_INSTALLER the path to a local copy of install-aws-cli
+AWS_INSTALLER="inline!puppet/kandra/files/install-aws-cli"
+
+# We then call it, to install the AWS CLI
+"$AWS_INSTALLER"
+
+# Set up a bare-bones AWS configuration
+mkdir -p /root/.aws
+cat >/root/.aws/config <<EOF
+[default]
+region = us-east-1
+output = text
+# Credentials are from the IAM role attached to the EC2 instance
+EOF
+
+# The following line gets replaced by pack-local-script output, which
+# smuggles the install-ssh-keys binary into this one.
+# install-ssh-keys, in turn, pulls key data from AWS' secret manager.
+INSTALL_SSH_KEYS="inline!puppet/kandra/files/install-ssh-keys"
+"$INSTALL_SSH_KEYS" root prod/ssh/keys/internal-read-only-deploy-key
+
+# Provide GitHub known_hosts setup; you can verify against fingerprints at
+# https://docs.github.com/en/github/authenticating-to-github/githubs-ssh-key-fingerprints
+# via `ssh-keygen -lf`
+GITHUB_KEYS="inline!puppet/kandra/files/github.keys"
+cat "$GITHUB_KEYS" >>/root/.ssh/known_hosts
+
+cd /root
+git clone "$REPO_URL" zulip -b "$BRANCH"
+git -C zulip checkout "$BRANCH"
+
+(
+    export APT_OPTIONS="-o Dpkg::Options::=--force-confnew"
+    /root/zulip/scripts/setup/install --puppet-classes "$FULL_ROLES" --postgresql-version=17
+)
+
+# Delete the ubuntu user
+userdel ubuntu
+
+reboot

@@ -1,0 +1,33 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "desktop-login" %}
+
+{% block title %}
+<title>{{ _("Finish desktop app login") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="flex new-style">
+    <div class="desktop-redirect-box">
+        <h1>{% trans %}Finish desktop login{% endtrans %}</h1>
+
+        <div class="white-box">
+            <p class="copy-token-info">{% trans %}Use your web browser to finish logging in, then come back here to paste in your login token.{% endtrans %}</p>
+
+            <form id="form" action="blob:">
+                <span class="input-box">
+                    <input id="token" placeholder="{% trans %}Paste token here{% endtrans %}" type="text"/>
+                </span>
+                <button id="submit" disabled>{% trans %}Finish{% endtrans %}</button>
+            </form>
+
+            <p id="bad-token" hidden>
+                {% trans %}Incorrect token.{% endtrans %}
+            </p>
+
+            <p id="done" hidden>
+                {% trans %}Token accepted.  Logging you in…{% endtrans %}
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+# Webhooks for external integrations.
+
+from datetime import datetime
+
+from django.http import HttpRequest, HttpResponse
+
+from zerver.decorator import webhook_view
+from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
+from zerver.lib.webhooks.common import OptionalUserSpecifiedTopicStr, check_send_webhook_message
+from zerver.models import UserProfile
+
+
+@webhook_view("Canarytokens")
+@typed_endpoint
+def api_canarytoken_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    message: JsonBodyPayload[WildValue],
+    user_specified_topic: OptionalUserSpecifiedTopicStr = None,
+) -> HttpResponse:
+    """
+    Construct a response to a webhook event from a Thinkst canarytoken from
+    canarytokens.org. Canarytokens from Thinkst's paid product have a different
+    schema and should use the "thinkst" integration. See linked documentation
+    below for a schema:
+
+    https://help.canary.tools/hc/en-gb/articles/360002426577-How-do-I-configure-notifications-for-a-Generic-Webhook-
+    """
+    topic_name = "canarytoken alert"
+    time = message["time"].tame(check_string)
+    formatted_time = datetime_to_global_time(
+        datetime.fromisoformat(time.replace("(UTC)", "").strip() + "+00:00")
+    )
+    body = (
+        f"**:alert: Canarytoken has been triggered on {formatted_time}!**\n\n"
+        f"{message['memo'].tame(check_string)} \n\n"
+        f"[Manage this canarytoken]({message['manage_url'].tame(check_string)})"
+    )
+
+    if user_specified_topic:
+        topic_name = user_specified_topic
+
+    check_send_webhook_message(request, user_profile, topic_name, body)
+    return json_success(request)

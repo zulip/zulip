@@ -1,0 +1,13 @@
+<p id="allow_private_data_export_banner_container"></p>
+<form class="modal-form" id="start-export-form">
+    <div class="input-group">
+        <label for="export_type" class="modal-field-label">{{t "Data to export" }} {{> help_link_widget link="/help/export-your-organization" }}</label>
+        <select id="export_type" class="modal_select bootstrap-focus-style">
+            {{#each export_type_values}}
+                <option {{#if this.default }}selected{{/if}} value="{{this.slug}}">{{this.description}}</option>
+            {{/each}}
+        </select>
+    </div>
+    <p id="allow_private_data_export_stats"></p>
+    <div id="unusable-user-accounts-warning"></div>
+</form>

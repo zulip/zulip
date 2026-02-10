@@ -1,0 +1,13 @@
+diff --git a/dist/tippy.esm.js b/dist/tippy.esm.js
+index 55346f57874b0af79fec3b6f9f0253f9d55bfee2..c7a4e1549dcc3e1815c908825d914d44467e60f3 100644
+--- a/dist/tippy.esm.js
++++ b/dist/tippy.esm.js
+@@ -1907,7 +1907,7 @@
+   var normalizedReturnValue = normalizeToArray(returnValue);
+ 
+   function onTrigger(event) {
+-    if (!event.target || disabled) {
++    if (!isElement(event.target) || disabled) {
+       return;
+     }
+ 

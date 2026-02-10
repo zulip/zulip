@@ -1,0 +1,332 @@
+@import url("flatpickr/dist/themes/dark.css");
+
+%dark-theme {
+    color-scheme: dark;
+
+    kbd {
+        text-shadow: none;
+    }
+
+    /************************* MODAL DARK THEME *******************/
+
+    #message-formatting,
+    #keyboard-shortcuts {
+        & kbd {
+            border: 1px solid var(--color-hotkey-hint);
+            border-radius: 3px;
+            color: var(--color-hotkey-hint);
+            opacity: 0.8;
+        }
+    }
+
+    .enter_sends_choices {
+        color: hsl(236deg 33% 90%);
+
+        .enter_sends_minor {
+            color: hsl(0deg 0% 80%);
+        }
+    }
+
+    .dropdown-list-delete {
+        /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
+        color: color-mix(
+            in oklch,
+            hsl(7deg 100% 74%) 70%,
+            transparent
+        ) !important;
+
+        &:hover {
+            color: hsl(7deg 100% 74%) !important;
+        }
+    }
+
+    /* this one is because in the app we have blue and in dark-theme it should be white. */
+    .popover a {
+        color: inherit;
+    }
+
+    /* these are converting grey things to "new grey".
+       :disabled rules are exploded for CSS selector performance reasons. */
+    button:disabled:not(.action-button, .icon-button, .info-density-button),
+    option:disabled,
+    select:disabled,
+    input:disabled:not(.modal_text_input),
+    input:not([type="radio"], .modal_text_input):read-only,
+    #organization-permissions .dropdown-widget-button:disabled,
+    #organization-settings .dropdown-widget-button:disabled {
+        color: inherit;
+        opacity: 0.5;
+    }
+
+    button.info-density-button:disabled {
+        color: inherit;
+        opacity: 0.4;
+    }
+
+    select,
+    .user-status-content-wrapper,
+    .custom-time-input-value,
+    #organization-permissions .dropdown-widget-button,
+    #organization-settings .dropdown-widget-button {
+        background-color: hsl(0deg 0% 0% / 20%);
+        border-color: hsl(0deg 0% 0% / 60%);
+    }
+
+    .popover-filter-input-wrapper .popover-filter-input:focus {
+        background-color: hsl(225deg 6% 7%);
+        border: 1px solid hsl(0deg 0% 100% / 50%);
+        box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);
+    }
+
+    & select option {
+        background-color: var(--color-background);
+        color: hsl(236deg 33% 90%);
+    }
+
+    .pill-container.not-editable-by-user {
+        opacity: 0.5;
+    }
+
+    #searchbox {
+        /* Light theme shows hover mostly through box-shadow,
+          and dark theme shows it mostly through changing color
+          of the search button. */
+        .navbar-search:not(.expanded)
+            #searchbox-input-container:hover
+            .search_icon {
+            opacity: 0.75;
+        }
+    }
+
+    textarea.schedule-reminder-note:focus {
+        border-color: hsl(0deg 0% 0% / 90%);
+    }
+
+    .popover hr,
+    hr {
+        opacity: 0.2;
+    }
+
+    .zoom-in {
+        #topics_header {
+            background-color: var(--color-background);
+        }
+    }
+
+    #recent_view_table {
+        .zulip-icon-user {
+            opacity: 0.7;
+        }
+    }
+
+    #recent_view
+        .change_visibility_policy
+        .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
+        filter: invert(1);
+    }
+
+    .drafts-container .header-body .delete-drafts-group > *:focus {
+        background-color: hsl(228deg 11% 17%);
+    }
+
+    .table-striped tbody tr:nth-child(even) td {
+        border-color: hsl(0deg 0% 0% / 20%);
+        background-color: color-mix(
+            in srgb,
+            hsl(0deg 0% 0%) 20%,
+            var(--color-background-modal)
+        );
+    }
+
+    .overlay-message-row
+        .message_header_private_message
+        .message_label_clickable {
+        padding: 4px 6px 3px;
+        color: inherit;
+    }
+
+    & time {
+        background: hsl(0deg 0% 0% / 20%);
+        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
+    }
+
+    .tip,
+    .invite-stream-notice {
+        color: inherit;
+    }
+
+    .alert.home-error-bar {
+        color: hsl(236deg 33% 90%);
+        background-color: hsl(35deg 84% 62% / 25%);
+        border: 1px solid hsl(11deg 46% 54%);
+    }
+
+    .alert.alert-success {
+        color: inherit;
+        background-color: hsl(161deg 60% 46% / 20%);
+        border-color: hsl(165deg 68% 37%);
+    }
+
+    .alert.alert-info {
+        color: hsl(205deg 58% 80%);
+        background-color: hsl(204deg 100% 12%);
+        border-color: hsl(205deg 58% 69% / 40%);
+    }
+
+    .alert.alert-error,
+    .alert.alert-danger {
+        background-color: hsl(318deg 12% 21%);
+        color: inherit;
+        border: 1px solid hsl(0deg 75% 65%);
+    }
+
+    .alert-box .alert,
+    .alert-box .stacktrace,
+    .alert.alert-error {
+        background-color: hsl(318deg 12% 21%);
+        color: inherit;
+        border: 1px solid hsl(0deg 75% 65%);
+    }
+
+    .alert-box {
+        .alert.alert-error::before {
+            color: hsl(0deg 75% 65%);
+        }
+    }
+
+    .stacktrace {
+        color: hsl(314deg 22% 85%);
+        background-color: hsl(318deg 12% 21%);
+        border: 1px solid hsl(0deg 75% 65%);
+
+        .expand {
+            color: hsl(318deg 14% 36%);
+        }
+
+        .subtle {
+            color: hsl(314deg 19% 63%);
+        }
+
+        .stacktrace-more-info {
+            background-color: hsl(312deg 7% 14%);
+        }
+
+        .code-context {
+            color: hsl(314deg 27% 82%);
+            background-color: hsl(312deg 7% 14%);
+            box-shadow:
+                inset 0 11px 10px -10px hsl(0deg 0% 6%),
+                inset 0 -11px 10px -10px hsl(0deg 0% 6%);
+
+            .line-number {
+                color: hsl(318deg 14% 44%);
+            }
+
+            .focus-line {
+                background-color: hsl(307deg 9% 19%);
+            }
+        }
+    }
+
+    .top-messages-logo {
+        opacity: 0.7;
+    }
+
+    .history-limited-box,
+    .all-messages-search-caution {
+        background-color: hsl(0deg 0% 0% / 20%);
+    }
+
+    /* Search highlight used in both topics and rendered_markdown */
+    .highlight {
+        background-color: hsl(51deg 100% 23%);
+    }
+
+    .searching-for-more-topics img {
+        filter: invert(100%);
+    }
+
+    .simplebar-track .simplebar-scrollbar::before {
+        background-color: hsl(0deg 0% 100%);
+        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 33%);
+    }
+
+    .collapse-settings-button:hover {
+        color: hsl(200deg 79% 66%);
+    }
+
+    #loading_older_messages_indicator,
+    #recent_view_loading_messages_indicator {
+        & path {
+            fill: hsl(0deg 0% 100%);
+        }
+    }
+
+    & a:not(:active):focus,
+    button:not(.action-button, .icon-button):focus-visible,
+    i.fa:focus,
+    i.zulip-icon:focus,
+    [role="button"]:focus {
+        outline-color: hsl(0deg 0% 67%);
+    }
+
+    .color_animated_button {
+        .zulip-icon {
+            color: hsl(0deg 0% 100%);
+        }
+    }
+
+    .panel_user_list > .pill-container,
+    .creator_details > .display_only_pill {
+        &:hover {
+            color: inherit;
+        }
+
+        > .pill {
+            &:focus,
+            &:hover {
+                color: inherit;
+            }
+        }
+    }
+
+    .help_link_widget:hover {
+        color: inherit;
+    }
+
+    #uppy-editor .uppy-ImageCropper {
+        /* Uppy cropper canvas has some CSS properties set for the background that
+        do not look good for dark theme. When using Uppy Dashboard, this can be
+        solved by passing `theme` field with value as true in config options.
+        However we are not using that plugin so we need to provide our own dark
+        theme CSS for this detail.
+
+        Link for source from where the CSS properties are taken -
+        https://github.com/transloadit/uppy/blob/b7605df9402e4db9b02828bf24558e21eae76637/packages/%40uppy/image-editor/src/style.scss#L123
+        and https://github.com/transloadit/uppy/blob/b7605df9402e4db9b02828bf24558e21eae76637/packages/%40uppy/image-editor/src/style.scss#L133 */
+        .cropper-modal {
+            opacity: 0.7;
+            background-color: hsl(0deg 0% 0%);
+        }
+
+        .cropper-view-box {
+            background: repeating-conic-gradient(
+                    hsl(0deg 1.18% 16.67%) 0% 25%,
+                    hsl(0deg 0% 0%) 0% 50%
+                )
+                50%/16px 16px;
+        }
+    }
+}
+
+@media screen {
+    :root.dark-theme {
+        @extend %dark-theme;
+    }
+}
+
+@media screen and (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic {
+        @extend %dark-theme;
+    }
+}

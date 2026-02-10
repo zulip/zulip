@@ -1,0 +1,10 @@
+<p id="guest_visible_users_message">
+    {{#tr}}
+        Guests will be able to see <z-user-count></z-user-count> users in their channels when they join.
+        {{#*inline "z-user-count"}}
+        <span class="guest-visible-users-count" aria-hidden="true"></span>
+        <span class="guest_visible_users_loading"></span>
+        {{/inline}}
+    {{/tr}}
+    {{> help_link_widget link="/help/guest-users#configure-whether-guests-can-see-all-other-users" }}
+</p>

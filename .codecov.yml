@@ -1,0 +1,12 @@
+comment: off
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        # Codecov has the tendency to report a lot of false negatives,
+        # so we basically suppress comments completely.
+        threshold: 50%
+        base: auto
+    patch: off

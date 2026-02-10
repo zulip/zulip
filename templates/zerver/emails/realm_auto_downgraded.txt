@@ -1,0 +1,8 @@
+Your organization, {{ realm_url }}, has been downgraded to the Zulip Cloud
+Free plan because of unpaid invoices. The unpaid invoices have been voided.
+
+To continue on the Zulip Cloud Standard plan, please upgrade again by going
+to {{ upgrade_url }}.
+
+If you think this was a mistake or need more details, please reach out
+to us at support@zulip.com.

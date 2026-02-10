@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+import os
+import signal
+import subprocess
+import sys
+import time
+import types
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+# TODO: Convert this to use scripts/lib/queue_workers.py
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+successful_worker_launch = "[process_queue] 15 queue worker threads were launched\n"
+
+
+def check_worker_launch(run_dev: "subprocess.Popen[str]") -> bool:
+    failed = False
+    i = 0
+
+    def on_timer(signum: int, frame: types.FrameType | None) -> None:
+        nonlocal failed, i
+        sys.stdout.write(".")
+        sys.stdout.flush()
+        i += 1
+        if i == 200:
+            failed = True
+            run_dev.send_signal(signal.SIGINT)
+            signal.setitimer(signal.ITIMER_REAL, 0, 0)
+
+    log_output = []
+    print("Polling run-dev", end="")
+    # Attempt to poll the log file for 60 sec. to see if all worker threads are launched.
+    old_handler = signal.signal(signal.SIGALRM, on_timer)
+    signal.setitimer(signal.ITIMER_REAL, 0.3, 0.3)
+    assert run_dev.stdout is not None
+    for line in run_dev.stdout:
+        log_output.append(line)
+        if line.endswith(successful_worker_launch):
+            break
+    else:
+        failed = True
+    signal.setitimer(signal.ITIMER_REAL, 0, 0)
+    signal.signal(signal.SIGALRM, old_handler)
+    sys.stdout.write("\n")
+
+    if not failed:
+        print("Worker threads launched successfully")
+    else:
+        print("Error in server startup. Dumping logs")
+        print("".join(log_output))
+
+    return failed
+
+
+if __name__ == "__main__":
+    print("\nStarting development server")
+    args = [f"{TOOLS_DIR}/run-dev"]
+    run_dev = subprocess.Popen(
+        args,
+        bufsize=1,  # line buffered
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    failed = check_worker_launch(run_dev)
+
+    if failed:
+        run_dev.send_signal(signal.SIGINT)
+        run_dev.wait()
+        sys.exit(1)
+
+    # In dev. environment, queues are run through Django's autoreload code. The
+    # autoreload code of Django works by looping over the files associated with
+    # all the loaded modules. This loop is run after every 1 second. If the
+    # file is found for the first time by the loop, it is assumed that the
+    # file is new and is not modified between the time it is loaded and is
+    # checked by the loop. This assumption is the source of a race condition.
+
+    # We can either implement a more sensitive version of the loop or we can
+    # just allow enough time to the Django loop to touch every file at least
+    # once.
+    time.sleep(1.3)
+
+    print("Attempting to modify a file")
+    os.utime("zerver/models/__init__.py")
+    failed = check_worker_launch(run_dev)
+
+    run_dev.send_signal(signal.SIGINT)
+    run_dev.wait()
+    if failed:
+        sys.exit(1)

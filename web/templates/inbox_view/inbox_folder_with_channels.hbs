@@ -1,0 +1,25 @@
+{{> inbox_folder_row
+  name=name
+  header_id=header_id
+  is_header_visible=is_header_visible
+  is_dm_header=false
+  is_collapsed=is_collapsed
+  has_unread_mention=has_unread_mention
+  unread_count=unread_count
+  }}
+<div class="inbox-streams-container inbox-folder-components">
+    {{#each (map_entries topics_dict) as |key_value_list|}}
+        {{#each (map_entries ../streams_dict) as |stream_key_value|}}
+            {{#if (and (eq stream_key_value.[1].folder_id ../../id) (eq stream_key_value.[0] key_value_list.[0]))}}
+            <div id="{{key_value_list.[0]}}" class="inbox-folder-channel">
+                {{> inbox_row stream_key_value.[1]}}
+                <div class="inbox-topic-container">
+                    {{#each (map_entries key_value_list.[1])}}
+                        {{> inbox_row this.[1]}}
+                    {{/each}}
+                </div>
+            </div>
+            {{/if}}
+        {{/each}}
+    {{/each}}
+</div>

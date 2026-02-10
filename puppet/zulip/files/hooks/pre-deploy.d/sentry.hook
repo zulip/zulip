@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+
+source "$(dirname "$0")/../common/sentry.sh"
+
+echo "$sentry_release" >./sentry-release
+
+echo "sentry: Creating release $sentry_release"
+
+# sentry-cli only supports passing one project when making a new
+# release, and we want to possibly create more than once at once.  Use
+# curl to make the API request.
+json=$(jq -nc '{version: $ARGS.named.version,
+                projects: $ARGS.positional | map(select( . != ""))}' \
+    --arg version "$sentry_release" \
+    --args "$sentry_project" "$sentry_frontend_project")
+curl "https://sentry.io/api/0/organizations/$sentry_org/releases/" \
+    -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
+    -H 'Content-Type: application/json' \
+    -d "$json" \
+    --silent -o /dev/null
+
+merge_base="${ZULIP_NEW_MERGE_BASE_COMMIT:-}"
+if [ -n "$merge_base" ]; then
+    old_merge_base="$ZULIP_OLD_MERGE_BASE_COMMIT"
+    echo "sentry: Setting commit range based on merge-base to upstream of $merge_base"
+    sentry-cli releases --org="$sentry_org" set-commits "$sentry_release" --commit="zulip/zulip@$old_merge_base..$merge_base"
+fi
+
+if [ -n "$sentry_frontend_project" ]; then
+    echo "sentry: Uploading sourcemaps"
+    sentry-cli releases --org="$sentry_org" --project="$sentry_frontend_project" files "$sentry_release" upload-sourcemaps static/webpack-bundles/
+fi

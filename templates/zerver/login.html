@@ -1,0 +1,173 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "signup" %}
+
+{% block title %}
+<title>{{ _("Log in") }} | Zulip</title>
+{% endblock %}
+
+{# Login page. #}
+
+{% block portico_content %}
+
+<!-- The following empty tag has unique data-page-id so that this
+page can be easily identified in it's respective JavaScript file. -->
+<div data-page-id="login-page"></div>
+<div class="app login-page split-view new-style flex full-page">
+    <div class="inline-block">
+        <div class="lead">
+            <h1 class="get-started">{{ _("Log in to Zulip") }}</h1>
+        </div>
+
+        <div class="app-main login-page-container white-box inline-block">
+            {% if realm_name %}
+            <div class="left-side">
+                <div class="org-header">
+                    <img class="avatar" src="{{ realm_icon }}" alt="" />
+                    <div class="info-box">
+                        <div class="organization-name">{{ realm_name }}</div>
+                        <div class="organization-path">{{ realm_url }}</div>
+                    </div>
+                </div>
+                <div class="description">
+                    {{ realm_description|safe }}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="right-side">
+                {% if realm_web_public_access_enabled %}
+                    <div class="login-social">
+                        <form class="anonymous_access_form form-inline" action="/" method="post">
+                            {{ csrf_input }}
+                            <input type="hidden" name="next" value="{{ next }}" />
+                            <button class="full-width">
+                                {{ _('View without an account') }}
+                            </button>
+                        </form>
+                    </div>
+                    {% if no_auth_enabled %}
+                    {% else %}
+                    <div class="or"><span>{{ _('OR') }}</span></div>
+                    {% endif %}
+                {% endif %}
+                {% if no_auth_enabled %}
+                    <div class="alert">
+                        <p>
+                            No authentication backends are enabled on this
+                            server yet, so it is impossible to log in!
+                        </p>
+
+                        <p>
+                            See the <a href="https://zulip.readthedocs.io/en/latest/production/install.html#step-3-configure-zulip">
+                            Zulip authentication documentation</a> to learn how to configure authentication backends.
+                        </p>
+                    </div>
+                {% else %}
+
+                    {% if already_registered %}
+                    <div class="alert">
+                        {{ _("You've already registered with this email address. Please log in below.") }}
+                    </div>
+                    {% endif %}
+
+                    {% if deactivated_account_error %}
+                    <div class="alert">
+                        {{ deactivated_account_error }}
+                    </div>
+                    {% endif %}
+
+                    {% if password_auth_enabled %}
+                        <form name="login_form" id="login_form" method="post" class="login-form"
+                          action="{{ url('login') }}">
+                            <input type="hidden" name="next" value="{{ next }}" />
+
+                            {% if two_factor_authentication_enabled %}
+                            {{ wizard.management_form }}
+                            {% endif %}
+                            {{ csrf_input }}
+
+                            {% if not two_factor_authentication_enabled or wizard.steps.current == 'auth' %}
+                            <div class="input-box">
+                                <input id="id_username" type="{% if not require_email_format_usernames %}text{% else %}email{% endif %}"
+                                  name="username" class="{% if require_email_format_usernames %}email {% endif %}required"
+                                  {% if email %} value="{{ email }}" {% else %} value="" autofocus {% endif %}
+                                  maxlength="72" required />
+                                <label for="id_username">
+                                    {% if not require_email_format_usernames and email_auth_enabled %}
+                                    {{ _('Email or username') }}
+                                    {% elif not require_email_format_usernames %}
+                                    {{ _('Username') }}
+                                    {% else %}
+                                    {{ _('Email') }}
+                                    {% endif %}
+                                </label>
+                            </div>
+
+                            <div class="input-box password-div">
+                                <input id="id_password" name="password" class="required" type="password" autocomplete="off"
+                                  {% if email %} autofocus {% endif %}
+                                  required />
+                                <label for="id_password">{{ _('Password') }}</label>
+                                <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>
+                            </div>
+
+                            <div class="actions forgot-password-container">
+                                {% if email_auth_enabled %}
+                                <a class="forgot-password" href="/accounts/password/reset/">{{ _('Forgot your password?') }}</a>
+                                {% endif %}
+                            </div>
+
+                            {% else %}
+                            {% include "two_factor/_wizard_forms.html" %}
+                            {% endif %}
+
+                            {% if form.errors %}
+                            <div class="alert alert-error">
+                                {% for error in form.errors.values() %}
+                                <div>{{ error | striptags }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <button type="submit" name="button" class="full-width">
+                                <img class="loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
+                                <span class="text">{{ _("Log in") }}</span>
+                            </button>
+                        </form>
+
+                        {% if external_authentication_methods|length > 0 %}
+                        <div class="or"><span>{{ _('OR') }}</span></div>
+                        {% endif %}
+
+                    {% endif %} <!-- if password_auth_enabled -->
+
+                    {% for backend in external_authentication_methods %}
+                    <div class="login-social">
+                        <form class="social_login_form form-inline" action="{{ backend.login_url }}" method="get">
+                            <input type="hidden" name="next" value="{{ next }}" />
+                            <button id="login_auth_button_{{ backend.name }}" class="login-social-button"
+                              {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}> {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+
+                    <div class="actions signup-link-wrapper">
+                        {{ _("Don't have an account?")}}
+                        {% if not register_link_disabled %}
+                        <a class="register-link float-right" href="/register/">{{ _('Sign up') }}</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if realm_invite_required %}
+        <div class="contact-admin">
+            <p class="invite-hint">{{ _("Don't have an account yet? You need to be invited to join this organization.") }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

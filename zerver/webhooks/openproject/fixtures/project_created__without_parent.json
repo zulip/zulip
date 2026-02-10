@@ -1,0 +1,84 @@
+{
+    "action": "project:created",
+    "project": {
+        "_type": "Project",
+        "id": 3,
+        "identifier": "ai backend",
+        "name": "AI Backend",
+        "active": true,
+        "public": false,
+        "description": {
+            "format": "markdown",
+            "raw": "",
+            "html": ""
+        },
+        "createdAt": "2024-12-31T18:07:24.546Z",
+        "updatedAt": "2024-12-31T18:07:24.609Z",
+        "statusExplanation": {
+            "format": "markdown",
+            "raw": "",
+            "html": ""
+        },
+        "_links": {
+            "self": {
+                "href": "/api/v3/projects/3",
+                "title": "AI Backend"
+            },
+            "createWorkPackage": {
+                "href": "/api/v3/projects/3/work_packages/form",
+                "method": "post"
+            },
+            "createWorkPackageImmediately": {
+                "href": "/api/v3/projects/3/work_packages",
+                "method": "post"
+            },
+            "workPackages": {
+                "href": "/api/v3/projects/3/work_packages"
+            },
+            "storages": [],
+            "categories": {
+                "href": "/api/v3/projects/3/categories"
+            },
+            "versions": {
+                "href": "/api/v3/projects/3/versions"
+            },
+            "memberships": {
+                "href": "/api/v3/memberships?filters=%5B%7B%22project%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%223%22%5D%7D%7D%5D"
+            },
+            "types": {
+                "href": "/api/v3/projects/3/types"
+            },
+            "update": {
+                "href": "/api/v3/projects/3/form",
+                "method": "post"
+            },
+            "updateImmediately": {
+                "href": "/api/v3/projects/3",
+                "method": "patch"
+            },
+            "delete": {
+                "href": "/api/v3/projects/3",
+                "method": "delete"
+            },
+            "schema": {
+                "href": "/api/v3/projects/schema"
+            },
+            "ancestors": [
+                {
+                    "href": "/api/v3/projects/1",
+                    "title": "Demo project"
+                }
+            ],
+            "projectStorages": {
+                "href": "/api/v3/project_storages?filters=%5B%7B%22projectId%22%3A%7B%22operator%22%3A%22%3D%22%2C%22values%22%3A%5B%223%22%5D%7D%7D%5D"
+            },
+            "parent": {
+                "href": "/api/v3/projects/1",
+                "title": "Demo project"
+            },
+            "status": {
+                "href": null
+            }
+        }
+    }
+}

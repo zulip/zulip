@@ -1,0 +1,6 @@
+{{#if failed}}
+<div class="error-icon-message-recipient">
+    <i class="zulip-icon zulip-icon-exclamation-circle" data-tippy-content="{{t 'This message could not be sent at the scheduled time.' }}"></i>
+</div>
+{{/if}}
+<div class="recipient_row_date">{{ formatted_send_at_time }}</div>

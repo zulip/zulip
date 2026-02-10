@@ -1,0 +1,37 @@
+{{#> modal_banner . }}
+    <p class="banner_message">
+        {{#if (eq selected_propagate_mode "change_one")}}
+            {{#tr}}
+                Message sender <z-user-names></z-user-names> is not subscribed to <z-stream></z-stream>.
+                {{#*inline "z-user-names" ~}}
+                    (
+                    {{~#list_each unsubscribed_participant_names as |name| ~}}
+                    <b class="highlighted-element">{{name}}</b>
+                    {{~/list_each ~}}
+                    )
+                {{~/inline}}
+                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
+            {{/tr}}
+
+        {{else if few_unsubscribed_participants}}
+            {{#tr}}
+                Some topic participants <z-user-names></z-user-names> are not subscribed to <z-stream></z-stream>.
+                {{#*inline "z-user-names" ~}}
+                    (
+                    {{~#list_each unsubscribed_participant_names as |name| ~}}
+                    <b class="highlighted-element">{{name}}</b>
+                    {{~/list_each ~}}
+                    )
+                {{~/inline}}
+                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
+            {{/tr}}
+
+        {{else}}
+            {{#tr}}
+                {unsubscribed_participants_count} topic participants are not subscribed to <z-stream></z-stream>.
+                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
+            {{/tr}}
+        {{/if}}
+    </p>
+
+{{/modal_banner}}

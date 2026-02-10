@@ -1,0 +1,15 @@
+{{#> compose_banner . }}
+    <p class="banner_message">
+        {{#if wildcard_mention_string}}
+            {{#tr}}
+            You do not have permission to use <z-highlight>@{wildcard_mention_string}</z-highlight> mentions in this channel.
+            {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+            {{/tr}}
+        {{else}}
+            {{#tr}}
+            You do not have permission to use <z-highlight>@topic</z-highlight> mentions in this topic.
+            {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+            {{/tr}}
+        {{/if}}
+    </p>
+{{/compose_banner}}

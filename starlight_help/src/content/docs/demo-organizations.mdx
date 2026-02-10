@@ -1,0 +1,84 @@
+---
+title: Demo organizations
+---
+
+import {Steps} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import CreateADemoOrganization from "../include/_CreateADemoOrganization.mdx";
+import DemoOrgsConversion from "../include/_DemoOrgsConversion.mdx";
+import DemoOrgsIntro from "../include/_DemoOrgsIntro.mdx";
+import OwnerOnly from "../include/_OwnerOnly.mdx";
+import ZulipCloudOnly from "../include/_ZulipCloudOnly.mdx";
+
+<ZulipCloudOnly />
+
+<DemoOrgsIntro />
+
+<DemoOrgsConversion />
+
+## Create a demo organization
+
+<CreateADemoOrganization />
+
+## Configure an email for your account
+
+To take certain administrative actions, like [inviting other
+users](/help/invite-new-users) or converting a demo organization to a permanent
+organization, you'll need to configure an email for your account.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/account-and-privacy" />
+
+  1. Under **Account**, click **Add email**, and fill out the required
+     information. Click **Add**.
+  1. You will receive a confirmation email within a few minutes. Open
+     it and click **Confirm and set password**.
+  1. Configure a password, and click **Submit**.
+</FlattenedSteps>
+
+## Convert a demo organization to a permanent organization
+
+<OwnerOnly />
+
+If you'd like to keep your demo organization's message history and user
+accounts, you can convert it to a permanent Zulip organization. You'll be able
+to choose a new subdomain for your organization's URL.
+
+Everyone will be logged out of existing sessions on the web, mobile and desktop
+apps, and will need to log in again at the new URL. Any [API clients](/api/) or
+[integrations](/integrations/) will need to be updated to point to the new
+organization URL.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-profile" />
+
+  1. Click the **Convert** button in the banner at the top.
+  1. Enter your new **Organization URL**, and click **Convert**.
+</FlattenedSteps>
+
+## Deactivate a demo organization
+
+<OwnerOnly />
+
+Demo organizations are automatically deleted after 30 days, but you can
+also manually deactivate your organization.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-profile" />
+
+  1. Under **Deactivate organization**, click **Deactivate organization**.
+  1. Select when the organization's data (users, channels, messages, etc.)
+     should be permanently deleted. If you haven't configured an email for your
+     account, data will be deleted immediately.
+  1. Approve by clicking **Confirm**.
+</FlattenedSteps>
+
+## Related articles
+
+* [Getting started with Zulip](/help/getting-started-with-zulip)
+* [Trying out Zulip](/help/trying-out-zulip)
+* [Moving to Zulip](/help/moving-to-zulip)
+* [Invite users to join](/help/invite-users-to-join)

@@ -1,0 +1,26 @@
+{{#unless is_archived}}
+    {{#if msg/sent_by_me}}
+        <div class="edit_content message_control_button">
+            <i class="message-controls-icon zulip-icon zulip-icon-edit edit_content_button edit_message_button" role="button" tabindex="0" aria-label="{{t 'Edit message' }} (e)"></i>
+            <i class="message-controls-icon zulip-icon zulip-icon-move-alt move_message_button edit_message_button" role="button" tabindex="0" aria-label="{{t 'Move message' }} (m)"></i>
+        </div>
+    {{/if}}
+
+    {{#unless msg/sent_by_me}}
+        <div class="reaction_button message_control_button" data-tooltip-template-id="add-emoji-tooltip-template">
+            <div class="emoji-message-control-button-container">
+                <i class="message-controls-icon zulip-icon zulip-icon-smile" aria-label="{{t 'Add emoji reaction' }} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
+            </div>
+        </div>
+    {{/unless}}
+{{/unless}}
+
+<div class="actions_hover message_control_button" data-tooltip-template-id="message-actions-tooltip-template" >
+    <i class="message-controls-icon message-actions-menu-button zulip-icon zulip-icon-more-vertical-spread" role="button" aria-haspopup="true" tabindex="0" aria-label="{{t 'Message actions' }}"></i>
+</div>
+
+<div class="star_container message_control_button {{#if msg/starred}}{{else}}empty-star{{/if}}" data-tooltip-template-id="{{#if msg/starred}}unstar{{else}}star{{/if}}-message-tooltip-template">
+    {{#unless msg/locally_echoed}}
+    <i role="button" tabindex="0" class="message-controls-icon star zulip-icon {{#if msg/starred}}zulip-icon-star-filled{{else}}zulip-icon-star{{/if}}"></i>
+    {{/unless}}
+</div>

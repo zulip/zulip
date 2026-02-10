@@ -1,0 +1,17 @@
+[
+    {
+        "text": "<@U061A1R2R> please reply to this message",
+        "user": "U061A5N1G",
+        "ts": "1437139200.000002",
+        "thread_ts": "1437139200.000002",
+        "channel_name": "random"
+    },
+    {
+        "text": "Yes?",
+        "user": "U061A1R2R",
+        "ts": "1440869295.000008",
+        "parent_user_id": "U061A5N1G",
+        "thread_ts": "1437139200.000002",
+        "channel_name": "random"
+    }
+]

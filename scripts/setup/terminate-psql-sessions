@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+cd /
+
+tables="$(printf "'%s'," "${@//\'/\'\'}")"
+tables="${tables%,}"
+
+psql postgres -v ON_ERROR_STOP=1 <<EOF
+SELECT pg_terminate_backend(s.pid)
+    FROM pg_stat_activity s, pg_roles r
+    WHERE
+        s.datname IN ($tables)
+        AND r.rolname = CURRENT_USER
+        AND (s.usename = r.rolname OR r.rolsuper = 't')
+        AND s.pid <> pg_backend_pid();
+EOF

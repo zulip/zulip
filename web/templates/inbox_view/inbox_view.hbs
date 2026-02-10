@@ -1,0 +1,50 @@
+<div id="inbox-main">
+    {{#if unknown_channel}}
+    <div id="inbox-unknown-channel-view" class="empty-list-message">
+        {{t "This channel doesn't exist, or you are not allowed to view it."}}
+    </div>
+    {{else}}
+    <div class="search_group" id="inbox-filters" role="group">
+        {{> ../dropdown_widget widget_name="inbox-filter"}}
+        {{#> ../components/input_wrapper . input_type="filter-input" custom_classes="inbox-search-wrapper" icon="search" input_button_icon="close"}}
+            <input type="text" id="{{INBOX_SEARCH_ID}}" class="input-element" value="{{search_val}}" autocomplete="off" placeholder="{{t 'Filter' }}" />
+        {{/../components/input_wrapper}}
+        {{#if show_channel_folder_toggle}}
+        <span class="sidebar-menu-icon channel-folders-inbox-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-label="{{t 'Show channel folders'}}"></i></span>
+        {{/if}}
+    </div>
+    <div id="inbox-empty-with-search" class="inbox-empty-text empty-list-message">
+        {{t "No conversations match your filters."}}
+    </div>
+    <div id="inbox-empty-channel-view-with-search" class="inbox-empty-text empty-list-message">
+        {{t "No topics match your filters."}}
+    </div>
+    <div id="inbox-empty-channel-view-without-search" class="inbox-empty-text empty-list-message">
+        {{t "There are no topics in this view."}}
+    </div>
+    {{#if normal_view}}
+        {{> inbox_no_unreads}}
+    {{/if}}
+    <div id="inbox-list">
+        {{#if normal_view}}
+            {{> inbox_list .}}
+        {{/if}}
+    </div>
+    <div id="inbox-collapsed-note">
+        <div class="inbox-collapsed-note-and-button-wrapper">
+            <span class="inbox-collapsed-note-span">
+                {{t "All unread conversations are hidden. Click on a section, folder, or channel to expand it."}}
+            </span>
+            <button id="inbox-expand-all-button" class="action-button action-button-subtle-neutral" tabindex="0">
+                <span class="action-button-label">{{t "Show all"}}</span>
+            </button>
+        </div>
+    </div>
+    <div id="inbox-animation-extra-content-blocker" class="collapse-expand-animation-extra-content-blocker"></div>
+    <div id="inbox-loading-indicator">
+        {{#unless normal_view}}
+        {{> ../view_bottom_loading_indicator}}
+        {{/unless}}
+    </div>
+    {{/if}}
+</div>

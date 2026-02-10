@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+import json
+import os
+
+from pygments.lexers import get_all_lexers
+
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
+# The current priorities data set is based on StackOverflow's 2020 survey.
+# We also prioritize text, quote, math, spoiler over others to enhance UX.
+DATA_PATH = os.path.join(ZULIP_PATH, "tools", "setup", "lang.json")
+OUT_PATH = os.path.join(ZULIP_PATH, "web", "generated", "pygments_data.json")
+
+with open(DATA_PATH) as f:
+    pygments_data = json.load(f)
+    priorities = dict(
+        **pygments_data["default"], **pygments_data["custom"], **pygments_data["aliases"]
+    )
+
+excluded_aliases = {"🔥"}
+lexers = get_all_lexers()
+langs = {
+    alias: {
+        "priority": priorities.get(alias, 0),
+        "pretty_name": longname,
+    }
+    for longname, aliases, filename_patterns, mimetypes in lexers
+    for alias in aliases
+    if alias not in excluded_aliases
+}
+
+langs |= {
+    name: {
+        "priority": priority,
+        "pretty_name": name,
+    }
+    for name, priority in priorities.items()
+    if name not in langs
+}
+
+with open(OUT_PATH, "w") as f:
+    json.dump({"langs": langs}, f)

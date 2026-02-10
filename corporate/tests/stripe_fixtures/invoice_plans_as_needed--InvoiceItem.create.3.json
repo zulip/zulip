@@ -1,0 +1,32 @@
+{
+  "amount": 5600,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED",
+  "date": 1000000000,
+  "description": "Zulip Basic - renewal",
+  "discountable": false,
+  "discounts": [],
+  "id": "invoice_plans_as_needed--InvoiceItem.create.3.json",
+  "invoice": "in_NORMALIZED",
+  "livemode": false,
+  "metadata": {},
+  "net_amount": 5600,
+  "object": "invoiceitem",
+  "parent": null,
+  "period": {
+    "end": 1330657445,
+    "start": 1328151845
+  },
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "350"
+  },
+  "proration": false,
+  "quantity": 16,
+  "tax_rates": [],
+  "test_clock": null
+}

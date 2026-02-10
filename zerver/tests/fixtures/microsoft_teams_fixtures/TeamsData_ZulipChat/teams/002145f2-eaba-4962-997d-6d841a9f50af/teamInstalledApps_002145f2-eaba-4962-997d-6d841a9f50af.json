@@ -1,0 +1,542 @@
+[
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMxNGQ2OTYyZC02ZWViLTRmNDgtODg5MC1kZTU1NDU0YmIxMzY=",
+    "TeamsAppDefinition": {
+      "Id": "MTRkNjk2MmQtNmVlYi00ZjQ4LTg4OTAtZGU1NTQ1NGJiMTM2IyMxLjAjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "14d6962d-6eeb-4f48-8890-de55454bb136",
+      "AzureADAppId": null,
+      "DisplayName": "Activity"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMyMGMzNDQwZC1jNjdlLTQ0MjAtOWY4MC0wZTUwYzM5NjkzZGY=",
+    "TeamsAppDefinition": {
+      "Id": "MjBjMzQ0MGQtYzY3ZS00NDIwLTlmODAtMGU1MGMzOTY5M2RmIyMxLjAjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "20c3440d-c67e-4420-9f80-0e50c39693df",
+      "AzureADAppId": null,
+      "DisplayName": "Calling"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMyYTg0OTE5Zi01OWQ4LTQ0NDEtYTk3NS0yYThjMjY0M2I3NDE=",
+    "TeamsAppDefinition": {
+      "Id": "MmE4NDkxOWYtNTlkOC00NDQxLWE5NzUtMmE4YzI2NDNiNzQxIyMxLjAuNSMjUHVibGlzaGVk",
+      "TeamsAppId": "2a84919f-59d8-4441-a975-2a8c2643b741",
+      "AzureADAppId": null,
+      "DisplayName": "Teams"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMzNGIwMTg1MS1jMTNkLTQ2MDQtYmIzYi01ZGUxZWNiZjAyODg=",
+    "TeamsAppDefinition": {
+      "Id": "MzRiMDE4NTEtYzEzZC00NjA0LWJiM2ItNWRlMWVjYmYwMjg4IyMxLjAjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "34b01851-c13d-4604-bb3b-5de1ecbf0288",
+      "AzureADAppId": null,
+      "DisplayName": "Saved"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM4NmZjZDQ5Yi02MWEyLTQ3MDEtYjc3MS01NDcyOGNkMjkxZmI=",
+    "TeamsAppDefinition": {
+      "Id": "ODZmY2Q0OWItNjFhMi00NzAxLWI3NzEtNTQ3MjhjZDI5MWZiIyMxLjAjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "86fcd49b-61a2-4701-b771-54728cd291fb",
+      "AzureADAppId": null,
+      "DisplayName": "Chat"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNhMmRhODc2OC05NWQ1LTQxOWUtOTQ0MS0zYjUzOTg2NWIxMTg=",
+    "TeamsAppDefinition": {
+      "Id": "YTJkYTg3NjgtOTVkNS00MTllLTk0NDEtM2I1Mzk4NjViMTE4IyMxLjAjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "a2da8768-95d5-419e-9441-3b539865b118",
+      "AzureADAppId": null,
+      "DisplayName": "Search"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNhNjNmNzAxMi04Y2M5LTQyZDUtOTljMy1lMzVmNTI2ZmFiMTc=",
+    "TeamsAppDefinition": {
+      "Id": "YTYzZjcwMTItOGNjOS00MmQ1LTk5YzMtZTM1ZjUyNmZhYjE3IyMxLjIuNCMjUHVibGlzaGVk",
+      "TeamsAppId": "a63f7012-8cc9-42d5-99c3-e35f526fab17",
+      "AzureADAppId": null,
+      "DisplayName": "Meet"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNlZjU2YzBkZS0zNmZjLTRlZjgtYjQxNy0zZDgyYmE5ZDA3M2M=",
+    "TeamsAppDefinition": {
+      "Id": "ZWY1NmMwZGUtMzZmYy00ZWY4LWI0MTctM2Q4MmJhOWQwNzNjIyMxLjIuMjUjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "ef56c0de-36fc-4ef8-b417-3d82ba9d073c",
+      "AzureADAppId": null,
+      "DisplayName": "Calendar"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMwMDAwMTAxNi1kZTA1LTQ5MmUtOTEwNi00ODI4ZmM4YTg2ODc=",
+    "TeamsAppDefinition": {
+      "Id": "MDAwMDEwMTYtZGUwNS00OTJlLTkxMDYtNDgyOGZjOGE4Njg3IyMxLjAuMiMjUHVibGlzaGVk",
+      "TeamsAppId": "00001016-de05-492e-9106-4828fc8a8687",
+      "AzureADAppId": null,
+      "DisplayName": "Power Automate Actions"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMwNDA4ODBmNC0wYzY4LTRjMzgtODgyMS1kNWVmZDJiNmRkYmU=",
+    "TeamsAppDefinition": {
+      "Id": "MDQwODgwZjQtMGM2OC00YzM4LTg4MjEtZDVlZmQyYjZkZGJlIyMxLjAuMiMjUHVibGlzaGVk",
+      "TeamsAppId": "040880f4-0c68-4c38-8821-d5efd2b6ddbe",
+      "AzureADAppId": null,
+      "DisplayName": "Milestones"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMwYWUzNWIzNi0wZmQ3LTQyMmUtODA1Yi1kNTNhZjE1NzkwOTM=",
+    "TeamsAppDefinition": {
+      "Id": "MGFlMzViMzYtMGZkNy00MjJlLTgwNWItZDUzYWYxNTc5MDkzIyMxLjIuNCMjUHVibGlzaGVk",
+      "TeamsAppId": "0ae35b36-0fd7-422e-805b-d53af1579093",
+      "AzureADAppId": null,
+      "DisplayName": "SharePoint Pages"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMwZDgyMGVjZC1kZWYyLTQyOTctYWRhZC03ODA1NmNkZTdjNzg=",
+    "TeamsAppDefinition": {
+      "Id": "MGQ4MjBlY2QtZGVmMi00Mjk3LWFkYWQtNzgwNTZjZGU3Yzc4IyMyLjAuMTEjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "0d820ecd-def2-4297-adad-78056cde7c78",
+      "AzureADAppId": null,
+      "DisplayName": "OneNote"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMxYzI1NmE2NS04M2E2LTRiNWMtOWNjZi03OGY4YWZiNmYxZTg=",
+    "TeamsAppDefinition": {
+      "Id": "MWMyNTZhNjUtODNhNi00YjVjLTljY2YtNzhmOGFmYjZmMWU4IyMxLjIuMCMjUHVibGlzaGVk",
+      "TeamsAppId": "1c256a65-83a6-4b5c-9ccf-78f8afb6f1e8",
+      "AzureADAppId": null,
+      "DisplayName": "Excel"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMxYzQzNDBkZS0yYTg1LTQwZTUtOGViMC00ZjI5NTM2ODk3OGI=",
+    "TeamsAppDefinition": {
+      "Id": "MWM0MzQwZGUtMmE4NS00MGU1LThlYjAtNGYyOTUzNjg5NzhiIyMxLjE5LjUjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "1c4340de-2a85-40e5-8eb0-4f295368978b",
+      "AzureADAppId": null,
+      "DisplayName": "Power BI"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMyNmJjMjg3My02MDIzLTQ4MGMtYTExYi03NmI2NjYwNWNlOGM=",
+    "TeamsAppDefinition": {
+      "Id": "MjZiYzI4NzMtNjAyMy00ODBjLWExMWItNzZiNjY2MDVjZThjIyMxLjUuMyMjUHVibGlzaGVk",
+      "TeamsAppId": "26bc2873-6023-480c-a11b-76b66605ce8c",
+      "AzureADAppId": null,
+      "DisplayName": "Lists"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMyOGRiOTM5Zi1iMzlkLTRjODEtODg5OS02MjJmOTE3Y2IxYzY=",
+    "TeamsAppDefinition": {
+      "Id": "MjhkYjkzOWYtYjM5ZC00YzgxLTg4OTktNjIyZjkxN2NiMWM2IyMxLjAuNCMjUHVibGlzaGVk",
+      "TeamsAppId": "28db939f-b39d-4c81-8899-622f917cb1c6",
+      "AzureADAppId": null,
+      "DisplayName": "Inspection"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMyOWFlODdjZi02NTQ1LTRlNzktODA5My05MjVkOTFlNDE1MGU=",
+    "TeamsAppDefinition": {
+      "Id": "MjlhZTg3Y2YtNjU0NS00ZTc5LTgwOTMtOTI1ZDkxZTQxNTBlIyMxLjAuMiMjUHVibGlzaGVk",
+      "TeamsAppId": "29ae87cf-6545-4e79-8093-925d91e4150e",
+      "AzureADAppId": null,
+      "DisplayName": "Bulletins"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMyYTUyNzcwMy0xZjZmLTQ1NTktYTMzMi1kOGE3ZDI4OGNkODg=",
+    "TeamsAppDefinition": {
+      "Id": "MmE1Mjc3MDMtMWY2Zi00NTU5LWEzMzItZDhhN2QyODhjZDg4IyMxLjAuMiMjUHVibGlzaGVk",
+      "TeamsAppId": "2a527703-1f6f-4559-a332-d8a7d288cd88",
+      "AzureADAppId": null,
+      "DisplayName": "SharePoint"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMzYmYyZTI1NC1kNmM5LTRlMGMtYjI2OS0xYzgwYzEyMjBkYzQ=",
+    "TeamsAppDefinition": {
+      "Id": "M2JmMmUyNTQtZDZjOS00ZTBjLWIyNjktMWM4MGMxMjIwZGM0IyMxLjAuMyMjUHVibGlzaGVk",
+      "TeamsAppId": "3bf2e254-d6c9-4e0c-b269-1c80c1220dc4",
+      "AzureADAppId": null,
+      "DisplayName": "Speaker coach"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMzZTBhNGZlYy00OTliLTQxMzgtOGU3Yy03MWE5ZDg4YTYyZWQ=",
+    "TeamsAppDefinition": {
+      "Id": "M2UwYTRmZWMtNDk5Yi00MTM4LThlN2MtNzFhOWQ4OGE2MmVkIyMxLjIuMCMjUHVibGlzaGVk",
+      "TeamsAppId": "3e0a4fec-499b-4138-8e7c-71a9d88a62ed",
+      "AzureADAppId": null,
+      "DisplayName": "PowerPoint"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyMzZWQ1YjMzNy1jMmM5LTRkNWQtYjdiNC04NGZmMDlhOGZjMWM=",
+    "TeamsAppDefinition": {
+      "Id": "M2VkNWIzMzctYzJjOS00ZDVkLWI3YjQtODRmZjA5YThmYzFjIyMxLjAuNCMjUHVibGlzaGVk",
+      "TeamsAppId": "3ed5b337-c2c9-4d5d-b7b4-84ff09a8fc1c",
+      "AzureADAppId": null,
+      "DisplayName": "FileBrowser"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM0MDUxNzQ4NS0yMjYyLTQxMzUtYjE3NC00MDFkYTRhYTZmMGY=",
+    "TeamsAppDefinition": {
+      "Id": "NDA1MTc0ODUtMjI2Mi00MTM1LWIxNzQtNDAxZGE0YWE2ZjBmIyMxLjAjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "40517485-2262-4135-b174-401da4aa6f0f",
+      "AzureADAppId": null,
+      "DisplayName": "Share conversation"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM0MWFmNWNmZC1jMjQ5LTQyNGItYTNlYS01YzRiMTE1YzNkYzY=",
+    "TeamsAppDefinition": {
+      "Id": "NDFhZjVjZmQtYzI0OS00MjRiLWEzZWEtNWM0YjExNWMzZGM2IyMxLjAuMCMjUHVibGlzaGVk",
+      "TeamsAppId": "41af5cfd-c249-424b-a3ea-5c4b115c3dc6",
+      "AzureADAppId": null,
+      "DisplayName": "Share to Teams"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM0YTY1MjBkNi05NGE4LTQ3MzAtOTE4NC0yNDk5N2I5YjM0MDE=",
+    "TeamsAppDefinition": {
+      "Id": "NGE2NTIwZDYtOTRhOC00NzMwLTkxODQtMjQ5OTdiOWIzNDAxIyMyLjEuNSMjUHVibGlzaGVk",
+      "TeamsAppId": "4a6520d6-94a8-4730-9184-24997b9b3401",
+      "AzureADAppId": null,
+      "DisplayName": "Loop"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM0YzBjMWY5Yi03NTAwLTRlYWMtOGQ0OC0zZmZmZTY5YjNiOTE=",
+    "TeamsAppDefinition": {
+      "Id": "NGMwYzFmOWItNzUwMC00ZWFjLThkNDgtM2ZmZmU2OWIzYjkxIyMxLjEuMCMjUHVibGlzaGVk",
+      "TeamsAppId": "4c0c1f9b-7500-4eac-8d48-3fffe69b3b91",
+      "AzureADAppId": null,
+      "DisplayName": "Meeting attendance report"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM1YWY2YTc2Yi00MGZjLTRiYTEtYWYyOS04ZjQ5YjA4ZTQ0ZmQ=",
+    "TeamsAppDefinition": {
+      "Id": "NWFmNmE3NmItNDBmYy00YmExLWFmMjktOGY0OWIwOGU0NGZkIyMxLjEuMyMjUHVibGlzaGVk",
+      "TeamsAppId": "5af6a76b-40fc-4ba1-af29-8f49b08e44fd",
+      "AzureADAppId": null,
+      "DisplayName": "OneDrive"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM1ZGI1NmRkMC01MzRkLTQ2N2ItYWVkYS1kNjIyYmVlMjU3NGE=",
+    "TeamsAppDefinition": {
+      "Id": "NWRiNTZkZDAtNTM0ZC00NjdiLWFlZGEtZDYyMmJlZTI1NzRhIyMxLjEuMTUjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "5db56dd0-534d-467b-aeda-d622bee2574a",
+      "AzureADAppId": null,
+      "DisplayName": "Q\u0026A"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM3YTBjMWQ1My1mNjQ3LTRkNzYtYWIyYy1mYmMwZDczYzhiYjA=",
+    "TeamsAppDefinition": {
+      "Id": "N2EwYzFkNTMtZjY0Ny00ZDc2LWFiMmMtZmJjMGQ3M2M4YmIwIyMwLjEuMiMjUHVibGlzaGVk",
+      "TeamsAppId": "7a0c1d53-f647-4d76-ab2c-fbc0d73c8bb0",
+      "AzureADAppId": null,
+      "DisplayName": "Broadcast QnA"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM3YTc4ZmRlOC03YzVjLTQ0NWQtOTQ1ZS05MzU0NjQ5Zjk1NjI=",
+    "TeamsAppDefinition": {
+      "Id": "N2E3OGZkZTgtN2M1Yy00NDVkLTk0NWUtOTM1NDY0OWY5NTYyIyMwLjIuMTkjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "7a78fde8-7c5c-445d-945e-9354649f9562",
+      "AzureADAppId": null,
+      "DisplayName": "Organization"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM3ZDcxYzRhNS1kZDQ0LTQ1MjUtYjIxYi04NjdkN2IyZDZlOTQ=",
+    "TeamsAppDefinition": {
+      "Id": "N2Q3MWM0YTUtZGQ0NC00NTI1LWIyMWItODY3ZDdiMmQ2ZTk0IyMxLjAuMSMjUHVibGlzaGVk",
+      "TeamsAppId": "7d71c4a5-dd44-4525-b21b-867d7b2d6e94",
+      "AzureADAppId": null,
+      "DisplayName": "Loop component mentions"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM4MWZlZjNhNi03MmFhLTQ2NDgtYTc2My1kZTgyNGFlYWZiN2Q=",
+    "TeamsAppDefinition": {
+      "Id": "ODFmZWYzYTYtNzJhYS00NjQ4LWE3NjMtZGU4MjRhZWFmYjdkIyMxLjEuOSMjUHVibGlzaGVk",
+      "TeamsAppId": "81fef3a6-72aa-4648-a763-de824aeafb7d",
+      "AzureADAppId": null,
+      "DisplayName": "Forms"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM4NjU4ZmU3MC01NDBhLTQ5MzAtYjAyYi02NWFlMjUzMTkzZmY=",
+    "TeamsAppDefinition": {
+      "Id": "ODY1OGZlNzAtNTQwYS00OTMwLWIwMmItNjVhZTI1MzE5M2ZmIyMxLjAuMiMjUHVibGlzaGVk",
+      "TeamsAppId": "8658fe70-540a-4930-b02b-65ae253193ff",
+      "AzureADAppId": null,
+      "DisplayName": "Meeting Sensitivity Alert"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM4ZTE0ZTg3My0zNWJhLTQ3MjAtYjc4Ny0wYmVkOTQzNzBiMTc=",
+    "TeamsAppDefinition": {
+      "Id": "OGUxNGU4NzMtMzViYS00NzIwLWI3ODctMGJlZDk0MzcwYjE3IyMxLjAjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "8e14e873-35ba-4720-b787-0bed94370b17",
+      "AzureADAppId": null,
+      "DisplayName": "Tags"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM5NWRlNjMzYS0wODNlLTQyZjUtYjQ0NC1hNDI5NWQ4ZTkzMTQ=",
+    "TeamsAppDefinition": {
+      "Id": "OTVkZTYzM2EtMDgzZS00MmY1LWI0NDQtYTQyOTVkOGU5MzE0IyMxLjEuMCMjUHVibGlzaGVk",
+      "TeamsAppId": "95de633a-083e-42f5-b444-a4295d8e9314",
+      "AzureADAppId": null,
+      "DisplayName": "Whiteboard"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM5NzgxYmM3ZC01YjJlLTRjZDctYTE3OS00NmRlOWE2ZjAyNDc=",
+    "TeamsAppDefinition": {
+      "Id": "OTc4MWJjN2QtNWIyZS00Y2Q3LWExNzktNDZkZTlhNmYwMjQ3IyMxLjAuNSMjUHVibGlzaGVk",
+      "TeamsAppId": "9781bc7d-5b2e-4cd7-a179-46de9a6f0247",
+      "AzureADAppId": null,
+      "DisplayName": "Bookable desks "
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM5OWU0NjMzNS01MjUwLTRhNjgtODQ5OS0zZTRmNTVlNmYzZjY=",
+    "TeamsAppDefinition": {
+      "Id": "OTllNDYzMzUtNTI1MC00YTY4LTg0OTktM2U0ZjU1ZTZmM2Y2IyMzLjMuMCMjUHVibGlzaGVk",
+      "TeamsAppId": "99e46335-5250-4a68-8499-3e4f55e6f3f6",
+      "AzureADAppId": null,
+      "DisplayName": "Updates"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyM5ZjFhNGFlMC02YWUyLTQ3NWQtOTczZC1jODk2ODdkMDM3NTM=",
+    "TeamsAppDefinition": {
+      "Id": "OWYxYTRhZTAtNmFlMi00NzVkLTk3M2QtYzg5Njg3ZDAzNzUzIyMxLjEuMCMjUHVibGlzaGVk",
+      "TeamsAppId": "9f1a4ae0-6ae2-475d-973d-c89687d03753",
+      "AzureADAppId": null,
+      "DisplayName": "GCP"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNhYTM5YjJmOC0zYzhkLTRjZTEtOGI4Yi03ZmUwMmM1OWFlM2U=",
+    "TeamsAppDefinition": {
+      "Id": "YWEzOWIyZjgtM2M4ZC00Y2UxLThiOGItN2ZlMDJjNTlhZTNlIyMxLjAjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "aa39b2f8-3c8d-4ce1-8b8b-7fe02c59ae3e",
+      "AzureADAppId": null,
+      "DisplayName": "Outgoing Webhook"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNiN2ZhZDZjZS0yZTIzLTRhYmEtYjIwOS04NTlhNTljYTIzMGU=",
+    "TeamsAppDefinition": {
+      "Id": "YjdmYWQ2Y2UtMmUyMy00YWJhLWIyMDktODU5YTU5Y2EyMzBlIyMxLjAuMyMjUHVibGlzaGVk",
+      "TeamsAppId": "b7fad6ce-2e23-4aba-b209-859a59ca230e",
+      "AzureADAppId": null,
+      "DisplayName": "Employee ideas"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjMWExNzY0Yy02MjcyLTRkMDMtODQ5NS03ZGE5Njk4YWQ0MGE=",
+    "TeamsAppDefinition": {
+      "Id": "YzFhMTc2NGMtNjI3Mi00ZDAzLTg0OTUtN2RhOTY5OGFkNDBhIyMxLjAuMyMjUHVibGlzaGVk",
+      "TeamsAppId": "c1a1764c-6272-4d03-8495-7da9698ad40a",
+      "AzureADAppId": null,
+      "DisplayName": "Issue reporting"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjYWUzYThhOC0xYmE5LTQ1MTctYTcwOC00ZTBhYjdmYWI3ZWU=",
+    "TeamsAppDefinition": {
+      "Id": "Y2FlM2E4YTgtMWJhOS00NTE3LWE3MDgtNGUwYWI3ZmFiN2VlIyMxLjAuMiMjUHVibGlzaGVk",
+      "TeamsAppId": "cae3a8a8-1ba9-4517-a708-4e0ab7fab7ee",
+      "AzureADAppId": null,
+      "DisplayName": "Room Remote"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0LnRlYW1zcGFjZS50YWIuZmlsZS5zdGF0aWN2aWV3ZXIuZXhjZWw=",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdC50ZWFtc3BhY2UudGFiLmZpbGUuc3RhdGljdmlld2VyLmV4Y2VsIyMwLjEjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "com.microsoft.teamspace.tab.file.staticviewer.excel",
+      "AzureADAppId": null,
+      "DisplayName": "Excel"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0LnRlYW1zcGFjZS50YWIuZmlsZS5zdGF0aWN2aWV3ZXIucGRm",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdC50ZWFtc3BhY2UudGFiLmZpbGUuc3RhdGljdmlld2VyLnBkZiMjMC4wLjEjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "com.microsoft.teamspace.tab.file.staticviewer.pdf",
+      "AzureADAppId": null,
+      "DisplayName": "PDF"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0LnRlYW1zcGFjZS50YWIuZmlsZS5zdGF0aWN2aWV3ZXIucG93ZXJwb2ludA==",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdC50ZWFtc3BhY2UudGFiLmZpbGUuc3RhdGljdmlld2VyLnBvd2VycG9pbnQjIzAuMSMjUHVibGlzaGVk",
+      "TeamsAppId": "com.microsoft.teamspace.tab.file.staticviewer.powerpoint",
+      "AzureADAppId": null,
+      "DisplayName": "PowerPoint"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0LnRlYW1zcGFjZS50YWIuZmlsZS5zdGF0aWN2aWV3ZXIudmlzaW8=",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdC50ZWFtc3BhY2UudGFiLmZpbGUuc3RhdGljdmlld2VyLnZpc2lvIyMwLjEjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "com.microsoft.teamspace.tab.file.staticviewer.visio",
+      "AzureADAppId": null,
+      "DisplayName": "Visio"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0LnRlYW1zcGFjZS50YWIuZmlsZS5zdGF0aWN2aWV3ZXIud29yZA==",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdC50ZWFtc3BhY2UudGFiLmZpbGUuc3RhdGljdmlld2VyLndvcmQjIzAuMSMjUHVibGlzaGVk",
+      "TeamsAppId": "com.microsoft.teamspace.tab.file.staticviewer.word",
+      "AzureADAppId": null,
+      "DisplayName": "Word"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0LnRlYW1zcGFjZS50YWIuZmlsZXMuc2hhcmVwb2ludA==",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdC50ZWFtc3BhY2UudGFiLmZpbGVzLnNoYXJlcG9pbnQjIzAuMSMjUHVibGlzaGVk",
+      "TeamsAppId": "com.microsoft.teamspace.tab.files.sharepoint",
+      "AzureADAppId": null,
+      "DisplayName": "Document Library"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0LnRlYW1zcGFjZS50YWIubm90ZXM=",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdC50ZWFtc3BhY2UudGFiLm5vdGVzIyMwLjEjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "com.microsoft.teamspace.tab.notes",
+      "AzureADAppId": null,
+      "DisplayName": "OneNote (Legacy)"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0LnRlYW1zcGFjZS50YWIucGxhbm5lcg==",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdC50ZWFtc3BhY2UudGFiLnBsYW5uZXIjIzEuMy4xNiMjUHVibGlzaGVk",
+      "TeamsAppId": "com.microsoft.teamspace.tab.planner",
+      "AzureADAppId": null,
+      "DisplayName": "Planner"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0LnRlYW1zcGFjZS50YWIucG93ZXJiaQ==",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdC50ZWFtc3BhY2UudGFiLnBvd2VyYmkjIzAuMSMjUHVibGlzaGVk",
+      "TeamsAppId": "com.microsoft.teamspace.tab.powerbi",
+      "AzureADAppId": null,
+      "DisplayName": "Power BI (Legacy)"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0LnRlYW1zcGFjZS50YWIud2Vi",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdC50ZWFtc3BhY2UudGFiLndlYiMjMC4yLjAjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "com.microsoft.teamspace.tab.web",
+      "AzureADAppId": null,
+      "DisplayName": "Website"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0LnRlYW1zcGFjZS50YWIud2lraQ==",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdC50ZWFtc3BhY2UudGFiLndpa2kjIzEuMC4zIyNQdWJsaXNoZWQ=",
+      "TeamsAppId": "com.microsoft.teamspace.tab.wiki",
+      "AzureADAppId": null,
+      "DisplayName": "Wiki"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNjb20ubWljcm9zb2Z0c3RyZWFtLmVtYmVkLnNreXBldGVhbXN0YWI=",
+    "TeamsAppDefinition": {
+      "Id": "Y29tLm1pY3Jvc29mdHN0cmVhbS5lbWJlZC5za3lwZXRlYW1zdGFiIyMyLjAuMTUjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "com.microsoftstream.embed.skypeteamstab",
+      "AzureADAppId": null,
+      "DisplayName": "Clipchamp"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNkNTMwNTgwMS1kOWM0LTRkZDEtYWFkZi1kM2NkYjBkOWQ4OTM=",
+    "TeamsAppDefinition": {
+      "Id": "ZDUzMDU4MDEtZDljNC00ZGQxLWFhZGYtZDNjZGIwZDlkODkzIyMwLjAuMjEjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "d5305801-d9c4-4dd1-aadf-d3cdb0d9d893",
+      "AzureADAppId": null,
+      "DisplayName": "Camera"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNkNzk1OGFkZi1mNDE5LTQ2ZmEtOTQxYi0xYjk0NjQ5N2VmODQ=",
+    "TeamsAppDefinition": {
+      "Id": "ZDc5NThhZGYtZjQxOS00NmZhLTk0MWItMWI5NDY0OTdlZjg0IyMxLjIuMCMjUHVibGlzaGVk",
+      "TeamsAppId": "d7958adf-f419-46fa-941b-1b946497ef84",
+      "AzureADAppId": null,
+      "DisplayName": "Word"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNkNzk1OGFkZi1mNDE5LTQ2ZmEtOTQxYi0xYjk0NjQ5N2VmOTU=",
+    "TeamsAppDefinition": {
+      "Id": "ZDc5NThhZGYtZjQxOS00NmZhLTk0MWItMWI5NDY0OTdlZjk1IyMxLjAuOCMjUHVibGlzaGVk",
+      "TeamsAppId": "d7958adf-f419-46fa-941b-1b946497ef95",
+      "AzureADAppId": null,
+      "DisplayName": "Visio"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNkODMyYTMzZi0yOGMyLTQ5NjktOGFkMC00ZmVlNjgxZGM1YjQ=",
+    "TeamsAppDefinition": {
+      "Id": "ZDgzMmEzM2YtMjhjMi00OTY5LThhZDAtNGZlZTY4MWRjNWI0IyMxLjIuMTIjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "d832a33f-28c2-4969-8ad0-4fee681dc5b4",
+      "AzureADAppId": null,
+      "DisplayName": "Praise"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNlYjYyZDA4Mi0yYzBhLTQ2NzItOTI1Mi1lOGU0NTZmMTkyYjE=",
+    "TeamsAppDefinition": {
+      "Id": "ZWI2MmQwODItMmMwYS00NjcyLTkyNTItZThlNDU2ZjE5MmIxIyMxLjAuOCMjUHVibGlzaGVk",
+      "TeamsAppId": "eb62d082-2c0a-4672-9252-e8e456f192b1",
+      "AzureADAppId": null,
+      "DisplayName": "Recommendations"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNhMTk5ZDQ1Yy1hNjQ2LTRhZDMtYjRhOS1jYTI4ODA0NmJiMTc=",
+    "TeamsAppDefinition": {
+      "Id": "YTE5OWQ0NWMtYTY0Ni00YWQzLWI0YTktY2EyODgwNDZiYjE3IyMxLjAjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "a199d45c-a646-4ad3-b4a9-ca288046bb17",
+      "AzureADAppId": null,
+      "DisplayName": "Datadog (Legacy)"
+    }
+  },
+  {
+    "Id": "MDAyMTQ1ZjItZWFiYS00OTYyLTk5N2QtNmQ4NDFhOWY1MGFmIyNmYjI3OTZmYS0yNWY0LTRhZmMtOGU1NS02ODM2YWYyYzQ5MjE=",
+    "TeamsAppDefinition": {
+      "Id": "ZmIyNzk2ZmEtMjVmNC00YWZjLThlNTUtNjgzNmFmMmM0OTIxIyMxLjAjI1B1Ymxpc2hlZA==",
+      "TeamsAppId": "fb2796fa-25f4-4afc-8e55-6836af2c4921",
+      "AzureADAppId": null,
+      "DisplayName": "Asana (Legacy)"
+    }
+  }
+]

@@ -1,0 +1,37 @@
+<div class="popover-menu" data-simplebar data-simplebar-tab-index="-1">
+    <ul role="menu" class="popover-menu-list">
+        {{#if is_home_view}}
+        {{#if unread_messages_present}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="popover-menu-link mark_all_messages_as_read" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-read" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Mark messages as read" }}</span>
+            </a>
+        </li>
+        {{/if}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="popover-menu-link toggle_display_unread_message_count" tabindex="0">
+                {{#if show_unread_count}}
+                <i class="popover-menu-icon zulip-icon zulip-icon-hide" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Hide unread counter" }}</span>
+                {{else}}
+                <i class="popover-menu-icon zulip-icon zulip-icon-eye" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Show unread counter" }}</span>
+                {{/if}}
+            </a>
+        </li>
+        {{else}}
+        <li role="none" class="link-item popover-menu-list-item no-auto-hide-left-sidebar-overlay">
+            <a role="menuitem" class="set-home-view popover-menu-link" data-view-code="{{view_code}}" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-house" aria-hidden="true"></i>
+                <span class="popover-menu-label">
+                    {{#tr}}
+                        Make <z-highlight>recent conversations</z-highlight> my home view
+                        {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+                    {{/tr}}
+                </span>
+            </a>
+        </li>
+        {{/if}}
+    </ul>
+</div>

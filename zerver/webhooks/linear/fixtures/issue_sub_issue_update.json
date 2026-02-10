@@ -1,0 +1,47 @@
+{
+    "action": "update",
+    "createdAt": "2023-04-11T10:12:11.141Z",
+    "data": {
+        "id": "f9a37fcf-eb52-44be-a52c-0477f70e9952",
+        "createdAt": "2023-04-11T10:10:15.037Z",
+        "updatedAt": "2023-04-11T10:12:11.141Z",
+        "number": 46,
+        "title": "Thorough Impact Analysis and Cost Realization",
+        "priority": 0,
+        "boardOrder": 0,
+        "sortOrder": -29786,
+        "teamId": "9e383f51-2629-4f19-97ff-451cc2f0a0ad",
+        "previousIdentifiers": [],
+        "creatorId": "674c90c8-35ea-454d-8ca4-5548258fd795",
+        "stateId": "a19a64b3-1d56-4ecb-b40e-d14aee5e9368",
+        "parentId": "3443a709-f2b5-46f2-a136-a0445fd432be",
+        "subIssueSortOrder": 1102,
+        "priorityLabel": "No priority",
+        "subscriberIds": [
+            "674c90c8-35ea-454d-8ca4-5548258fd795"
+        ],
+        "labelIds": [],
+        "description": "Examining the extent of the outage, the affected systems or services, the number of users impacted, and any error messages or logs generated during the incident.",
+        "descriptionData": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"text\":\"Examining the extent of the outage, the affected systems or services, the number of users impacted, and any error messages or logs generated during the incident.\",\"type\":\"text\"}]}]}",
+        "state": {
+            "id": "a19a64b3-1d56-4ecb-b40e-d14aee5e9368",
+            "color": "#e2e2e2",
+            "name": "Todo",
+            "type": "unstarted"
+        },
+        "team": {
+            "id": "9e383f51-2629-4f19-97ff-451cc2f0a0ad",
+            "key": "WEB",
+            "name": "Webhooks"
+        },
+        "labels": []
+    },
+    "updatedFrom": {
+        "updatedAt": "2023-04-11T10:10:15.037Z",
+        "title": "Impact Analysis"
+    },
+    "url": "https://linear.app/webhooks/issue/WEB-46/thorough-impact-analysis-and-cost-realization",
+    "type": "Issue",
+    "organizationId": "7a661544-df08-4cd1-a1e3-5ec611898806",
+    "webhookTimestamp": 1681207931317
+}

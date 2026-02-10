@@ -1,0 +1,183 @@
+#custom_http_headers {
+    width: 100%;
+    height: 60px;
+    resize: vertical;
+}
+
+#dev-panel {
+    margin-left: 3%;
+    margin-right: 3%;
+    padding: 20px 10px 15px;
+    background-color: hsl(0deg 0% 100% / 48%);
+    box-shadow: 0 0 40px hsl(0deg 0% 0% / 6%);
+
+    & textarea {
+        color: hsl(0deg 0% 33%);
+        background-color: hsl(0deg 0% 100%);
+        border-radius: 4px;
+        vertical-align: middle;
+        border: 1px solid hsl(0deg 0% 80%);
+        padding: 4px 6px;
+        margin-bottom: 10px;
+
+        font-size: 14px;
+
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+        transition:
+            border-color linear 0.2s,
+            box-shadow linear 0.2s;
+
+        &:focus {
+            border-color: hsl(206.5deg 80% 62% / 80%);
+            outline: 0;
+
+            box-shadow:
+                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206.5deg 80% 62% / 60%);
+        }
+
+        &:read-only {
+            cursor: not-allowed;
+        }
+    }
+
+    & select,
+    textarea,
+    input {
+        font-family: inherit;
+    }
+
+    & select {
+        height: 30px;
+        padding: 0 6px;
+        width: 220px;
+        font-size: 14px;
+        color: hsl(0deg 0% 33%);
+        border-radius: 4px;
+        border: 1px solid hsl(0deg 0% 80%);
+        margin-bottom: 10px;
+        cursor: pointer;
+        background-color: hsl(0deg 0% 100%);
+        vertical-align: middle;
+    }
+
+    & input {
+        padding: 4px 6px;
+        color: hsl(0deg 0% 33%);
+        border-radius: 4px;
+        border: 1px solid hsl(0deg 0% 80%);
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+        transition:
+            border-color linear 0.2s,
+            box-shadow linear 0.2s;
+        margin-bottom: 10px;
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+            outline: 0;
+            box-shadow:
+                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206deg 80% 62% / 60%);
+        }
+    }
+}
+
+#fixture_body {
+    width: 90%;
+    height: 500px;
+    resize: vertical;
+}
+
+#idp-results {
+    width: 100%;
+    height: 500px;
+    resize: vertical;
+    background-color: hsl(0deg 0% 100%);
+}
+
+.top-navbar {
+    display: grid;
+    grid-template-columns: 1fr 5fr 1fr;
+}
+
+#URL {
+    width: 100%;
+}
+
+#stream_name,
+#topic_name {
+    width: 206px;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 92%;
+    margin-right: 2%;
+
+    button {
+        padding: 6px 12px;
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(208deg 56% 53%);
+        border: 1px solid hsl(208deg 56% 47%);
+
+        &:hover,
+        &:active,
+        &:focus {
+            background-color: hsl(208deg 56% 45%);
+            border-color: hsl(208deg 56% 36%);
+        }
+    }
+}
+
+.centerpiece {
+    font-size: 30px;
+    text-align: center;
+}
+
+.inline {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    margin-right: 10%;
+}
+
+.optional {
+    color: hsl(0deg 0% 50%);
+}
+
+.pad-small {
+    height: 100px;
+    width: 100%;
+}
+
+.row1 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.row2 {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.row3 {
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: flex-start;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.row4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-left: 2%;
+    margin-right: 2%;
+}

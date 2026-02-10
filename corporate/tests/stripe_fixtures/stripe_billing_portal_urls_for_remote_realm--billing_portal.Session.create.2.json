@@ -1,0 +1,13 @@
+{
+  "configuration": "bpc_NORMALIZED",
+  "created": 1000000000,
+  "customer": "cus_NORMALIZED",
+  "flow": null,
+  "id": "stripe_billing_portal_urls_for_remote_realm--billing_portal.Session.create.2.json",
+  "livemode": false,
+  "locale": null,
+  "object": "billing_portal.session",
+  "on_behalf_of": null,
+  "return_url": "http://selfhosting.testserver/realm/696c2d4f-86ba-44c0-9137-8d2908ba59b6/billing/",
+  "url": "https://billing.stripe.com/p/session/test_NORMALIZED"
+}

@@ -1,0 +1,42 @@
+{
+  "data": [
+    {
+      "api_version": "2025-11-17.clover",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "amount_paid": 51600,
+          "amount_requested": 51600,
+          "created": 1000000000,
+          "currency": "usd",
+          "id": "upgrade_server_user_to_monthly_basic_plan--Event.list.1.json",
+          "invoice": "in_NORMALIZED",
+          "is_default": true,
+          "livemode": false,
+          "object": "invoice_payment",
+          "payment": {
+            "payment_intent": "pi_NORMALIZED",
+            "type": "payment_intent"
+          },
+          "status": "paid",
+          "status_transitions": {
+            "canceled_at": null,
+            "paid_at": 1000000000
+          }
+        }
+      },
+      "id": "upgrade_server_user_to_monthly_basic_plan--Event.list.1.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": null
+      },
+      "type": "invoice_payment.paid"
+    }
+  ],
+  "has_more": true,
+  "object": "list",
+  "url": "/v1/events"
+}

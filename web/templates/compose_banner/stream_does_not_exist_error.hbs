@@ -1,0 +1,10 @@
+{{#> compose_banner . }}
+    <p class="banner_message">
+        {{#tr}}
+        The channel <z-highlight>#{channel_name}</z-highlight> does not exist. Manage your subscriptions
+        <z-link>on your Channels page</z-link>.
+        {{#*inline "z-link"}}<a href='#channels/all'>{{> @partial-block}}</a>{{/inline}}
+        {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+        {{/tr}}
+    </p>
+{{/compose_banner}}

@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -e
+set -x
+
+export DJANGO_SETTINGS_MODULE=zproject.test_settings
+
+create_zulip_test() {
+    psql -v ON_ERROR_STOP=1 -h localhost postgres zulip_test <<EOF
+DROP DATABASE IF EXISTS zulip_test;
+CREATE DATABASE zulip_test TEMPLATE zulip_test_base;
+EOF
+}
+
+create_zulip_test_template() {
+    psql -v ON_ERROR_STOP=1 -h localhost postgres zulip_test <<EOF
+DROP DATABASE IF EXISTS zulip_test_template;
+CREATE DATABASE zulip_test_template TEMPLATE zulip_test;
+EOF
+}
+
+mkdir -p zerver/tests/fixtures
+
+PGHOST=localhost PGUSER=zulip \
+    "$(dirname "$0")/../scripts/setup/terminate-psql-sessions" zulip_test zulip_test_base zulip_test_template
+
+create_zulip_test
+
+"$(dirname "$0")/../scripts/setup/flush-memcached"
+
+./manage.py migrate --noinput
+./manage.py get_migration_status --output="migration_status_test"
+
+# This next line can be simplified to "-n0" once we fix our app (and tests) with 0 messages.
+./manage.py populate_db --test-suite -n30 --threads=1 \
+    --max-topics=3 \
+    --direct-message-groups=0 --personals=0 --percent-direct-message-groups=0 --percent-personals=0
+
+./manage.py dumpdata \
+    zerver.UserProfile zerver.Stream zerver.Recipient \
+    zerver.Subscription zerver.Message zerver.DirectMessageGroup zerver.Realm \
+    zerver.UserMessage zerver.Client \
+    zerver.DefaultStream >zerver/tests/fixtures/messages.json
+
+# create pristine template database, for fast fixture restoration after tests are run.
+create_zulip_test_template

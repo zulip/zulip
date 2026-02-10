@@ -1,0 +1,23 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "desktop-redirect" %}
+
+{% block title %}
+<title>{{ _("Log in to desktop app") }} | Zulip</title>
+{% endblock %}
+
+{% block content %}
+<div class="flex new-style">
+    <div class="desktop-redirect-box white-box">
+        <img class="avatar desktop-redirect-image" src="{{ realm_icon_url }}" alt=""/><br />
+        <p class="copy-token-info">{% trans %}Copy this login token and return to your Zulip app to finish logging in:{% endtrans %}</p>
+        <p>
+            <span class="input-box">
+                <input id="desktop-data" value="{{ desktop_data }}" type="text" readonly />
+            </span>
+            <button id="copy" tabindex="0" data-clipboard-target="#desktop-data">{% trans %}Copy{% endtrans %}</button>
+        </p>
+        <p>{% trans %}You may then close this window.{% endtrans %}</p>
+        <p><a href="{{ browser_url }}">{% trans %}Or, continue in your browser.{% endtrans %}</a></p>
+    </div>
+</div>
+{% endblock %}

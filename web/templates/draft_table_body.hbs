@@ -1,0 +1,34 @@
+<div id="draft_overlay" class="overlay" data-overlay="drafts">
+    <div class="flex overlay-content">
+        <div class="drafts-container overlay-messages-container overlay-container">
+            <div class="overlay-messages-header">
+                <h1>{{t 'Drafts' }}</h1>
+                <div class="exit">
+                    <span class="exit-sign">&times;</span>
+                </div>
+                <div id="draft_overlay_banner_container" class="banner-container banner-wrapper"></div>
+                <div class="header-body">
+                    <div class="drafts-header-note">
+                        <div class="overlay-keyboard-shortcuts">
+                            {{#tr}}
+                                To restore a draft, click on it or press <z-shortcut></z-shortcut>.
+                                {{#*inline "z-shortcut"}}{{popover_hotkey_hints "Enter"}}{{/inline}}
+                            {{/tr}}
+                        </div>
+                        <div>{{t "Drafts are not synced to other devices and browsers." }}</div>
+                    </div>
+                    <div class="delete-drafts-group">
+                        <div class="delete-selected-drafts-button-container">
+                            {{> ./components/icon_button intent="danger" custom_classes="delete-selected-drafts-button" icon="trash" disabled=true  }}
+                        </div>
+                        <button class="action-button action-button-subtle-neutral select-drafts-button" role="checkbox" aria-checked="false">
+                            <span>{{t "Select all drafts" }}</span>
+                            <i class="fa fa-square-o select-state-indicator" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {{> drafts_list context }}
+        </div>
+    </div>
+</div>

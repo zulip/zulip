@@ -1,0 +1,269 @@
+:root {
+    /* Starlight base style headings are huge and distract from reading the text.
+       This is OK for some sites, but we are sparing with text and really want to
+       encourage users to read it. */
+    --sl-text-h1: 2rem;
+    --sl-text-h2: 1.4rem;
+    --sl-text-h3: 1.2rem;
+    --sl-text-h4: 1rem;
+    --sl-text-h5: 1rem;
+
+    /* Changed from 1.2 to 1 */
+    --sl-line-height-headings: 1;
+
+    /* Changed from 1.75 to make text easier to read. */
+    --sl-line-height: 1.5;
+
+    /* User circles */
+    /* stylelint-disable color-no-hex */
+    --color-user-circle-active: light-dark(#43a35e, #4cdc75);
+    --color-user-circle-idle: light-dark(#f5b266, #ae640a);
+    --color-user-circle-offline: light-dark(#c1c6d7, #454854);
+    --color-user-circle-deactivated: hsl(0deg 0% 50%);
+    /* stylelint-enable color-no-hex */
+
+    /* NOTE: These colors are also used in zulip web app for banner
+       colors. Do grep for these variables when changing them and
+       confirm on CZO on whether the colors there need to change as
+       well. */
+    /* Banners - Neutral Variant */
+    --color-text-neutral-banner: light-dark(
+        hsl(229deg 12% 25%),
+        hsl(231deg 11% 76%)
+    );
+    --color-border-neutral-banner: light-dark(
+        color-mix(in oklch, hsl(240deg 2% 30%) 40%, transparent),
+        color-mix(in oklch, hsl(240deg 7% 66%) 40%, transparent)
+    );
+    --color-background-neutral-banner: light-dark(
+        hsl(240deg 7% 93%),
+        hsl(240deg 7% 17%)
+    );
+    /* Banners - Brand Variant */
+    --color-text-brand-banner: light-dark(
+        hsl(264deg 95% 34%),
+        hsl(244deg 96% 82%)
+    );
+    --color-border-brand-banner: light-dark(
+        color-mix(in oklch, hsl(254deg 60% 50%) 40%, transparent),
+        color-mix(in oklch, hsl(253deg 70% 89%) 40%, transparent)
+    );
+    --color-background-brand-banner: light-dark(
+        hsl(254deg 42% 94%),
+        hsl(253deg 49% 16%)
+    );
+    /* Banners - Info Variant */
+    --color-text-info-banner: light-dark(
+        hsl(241deg 95% 25%),
+        hsl(221deg 93% 89%)
+    );
+    --color-border-info-banner: light-dark(
+        color-mix(in oklch, hsl(204deg 49% 29%) 40%, transparent),
+        color-mix(in oklch, hsl(205deg 58% 69%) 40%, transparent)
+    );
+    --color-background-info-banner: light-dark(
+        hsl(204deg 58% 92%),
+        hsl(204deg 100% 12%)
+    );
+
+    /* Keyboard shortcuts */
+    --color-keyboard-shortcuts: light-dark(
+        hsl(225deg 57.09% 42.9%),
+        hsl(225deg 100% 84%)
+    );
+}
+
+.non-clickable-sidebar-heading {
+    font-size: 1.15rem;
+    pointer-events: none;
+    cursor: default;
+}
+
+/* Eliminate the border inserted between the title and the rest of
+   the content. */
+.content-panel + .content-panel {
+    border-top: 0;
+}
+
+/* Decrease padding for the content panel from 1.5rem to 1rem since
+   the padding looked too big after removing the content panel border. */
+.content-panel {
+    padding: 1rem var(--sl-content-pad-x);
+}
+
+.zulip-unplugin-icon {
+    /* Make sure the icon does not occupy it's own row. */
+    display: inline;
+    vertical-align: text-bottom;
+
+    /* unplugin-icons sets height and width by itself.
+       It was setting the height to 1024 and 960 for some
+       icons. It is better to set the height explicitly. */
+    height: 1em;
+    width: 1em;
+
+    /* Some css rules in starlight insert these margins to tags
+       that fit certain criteria, e.g. if it's a first child of
+       an li item and similar cases, and the icon disturbs the
+       spacing of everything around it just because it was an
+       svg tag. We set this explicitly to zero to avoid those
+       issues. */
+    margin-bottom: 0;
+    margin-top: 0;
+
+    /* We need to specify this for dark mode. */
+    fill: currentcolor;
+}
+
+.navigation-step-relative-type .zulip-unplugin-icon {
+    /* There's no space between the icon and text for navigation
+    step labels because of any text decoration rules when these
+    steps have a relative link. So we add a right margin to the
+    icon to add the white space without any text decoration. */
+    margin-right: 4px;
+}
+
+.starlight-aside--tip {
+    --sl-color-asides-text-accent: var(--color-text-brand-banner);
+    --sl-color-asides-border: var(--color-border-brand-banner);
+    background-color: var(--color-background-brand-banner);
+}
+
+.starlight-aside--note {
+    --sl-color-asides-text-accent: var(--color-text-neutral-banner);
+    --sl-color-asides-border: var(--color-border-neutral-banner);
+    background-color: var(--color-background-neutral-banner);
+}
+
+.keyboard-tip {
+    --sl-color-asides-text-accent: var(--color-text-info-banner);
+    --sl-color-asides-border: var(--color-border-info-banner);
+    background-color: var(--color-background-info-banner);
+}
+
+.aside-icon-lightbulb {
+    /* We need to make the fill transparent for the bulb to look hollow
+       and the default vertical-align of text-bottom was not looking
+       good beside the `Tip` text. */
+    vertical-align: text-top;
+    fill: transparent;
+    stroke: currentcolor;
+    /* In cases where content spanned across multiple lines, the
+       icon and the content just below it did not look aligned. */
+    margin-left: -3px;
+    /* Using any of the default vertical-align did not give desired
+       results, text-top + this margin looked the best. */
+    margin-top: 2px;
+}
+
+.user-circle {
+    font-size: 0.7em;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.user-circle-active {
+    color: var(--color-user-circle-active);
+}
+
+.user-circle-idle {
+    color: var(--color-user-circle-idle);
+}
+
+.user-circle-offline {
+    color: var(--color-user-circle-offline);
+}
+
+.user-circle-deactivated {
+    color: var(--color-user-circle-deactivated);
+}
+
+.subscriber-check-icon {
+    /* This color is borrowed from subscriptions.css to make it look
+       the same as the web app. */
+    fill: hsl(240deg 96% 68%);
+}
+
+.subscriber-plus-icon {
+    /* This color is borrowed from subscriptions.css to make it look
+       the same as the web app. */
+    fill: hsl(0deg 0% 72%);
+}
+
+.sl-markdown-content {
+    img {
+        vertical-align: top;
+        box-shadow: 0 0 4px hsl(0deg 0% 0% / 5%);
+        border: 1px solid hsl(0deg 0% 87%);
+        border-radius: 4px;
+        margin-top: 0;
+
+        &.emoji-small {
+            display: inline-block;
+            width: 1.25em;
+            box-shadow: none;
+            border: none;
+            vertical-align: text-top;
+        }
+
+        &.emoji-big {
+            display: inline-block;
+            width: 1.5em;
+            box-shadow: none;
+            border: none;
+            vertical-align: text-top;
+        }
+
+        &.help-center-icon {
+            display: inline-block;
+            width: 1.25em;
+            box-shadow: none;
+            border: none;
+            vertical-align: text-top;
+        }
+    }
+
+    li > ul,
+    li > ol {
+        margin-top: 0.25rem;
+    }
+
+    & .sl-heading-wrapper:has(> :first-child:target) {
+        /* Increase the highlighted space around the text... */
+        /* We are trying to recreate `padding: 6px 0 6px 8px` below
+           using box-shadow since we don't want padding to affect the
+           layout. A spread of 6px will make sure of the 6px part of
+           the padding, and -2px will ensure a padding of 8px is
+           recreated on the left side.  */
+        box-shadow: -2px 0 0 6px var(--sl-color-accent-low);
+        background-color: var(--sl-color-accent-low);
+    }
+
+    & kbd {
+        font-size: 1.2em;
+        padding: 0.15em 0.4em 0.05em;
+        border: 1px solid var(--color-keyboard-shortcuts);
+        border-radius: 3px;
+        color: var(--color-keyboard-shortcuts);
+        text-align: center;
+        white-space: nowrap;
+    }
+}
+
+footer {
+    font-size: 0.85em;
+}
+
+.external-icon-sidebar {
+    display: inline-flex;
+    align-items: center;
+}
+
+.external-icon-sidebar::after {
+    content: "";
+    width: 1em;
+    height: 1em;
+    margin-left: 0.4em;
+    background: currentcolor;
+    mask: url("../../../web/icons/external-link.svg") no-repeat center / contain;
+}

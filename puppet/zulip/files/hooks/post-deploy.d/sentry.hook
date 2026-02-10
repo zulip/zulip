@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+
+source "$(dirname "$0")/../common/sentry.sh"
+
+deploy_environment=$(crudini --get /etc/zulip/zulip.conf machine deploy_type || echo "development")
+
+echo "sentry: Adding deploy of '$deploy_environment' and finalizing release"
+
+sentry-cli releases --org="$sentry_org" deploys "$sentry_release" new \
+    --env "$deploy_environment" \
+    --started "$(stat -c %Y ./sentry-release)" \
+    --finished "$(date +%s)" \
+    --name "$(hostname --fqdn)"
+sentry-cli releases --org="$sentry_org" finalize "$sentry_release"

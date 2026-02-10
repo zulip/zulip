@@ -1,0 +1,199 @@
+<div class="micromodal" id="user-profile-modal" data-user-id="{{user_id}}" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
+            <div class="modal__header">
+                <div class="modal__header-content">
+                    <h1 class="modal__title user-profile-name-heading" id="name">
+                        {{#unless is_bot}}
+                            {{#if is_active}}
+                                <span class="tippy-zulip-tooltip user-status-icon-wrapper" data-tippy-content="{{last_seen}}">
+                                    <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle user_profile_presence" data-presence-indicator-user-id="{{user_id}}"></span>
+                                </span>
+                            {{else}}
+                                <span>
+                                    <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="Deactivated user"></i>
+                                </span>
+                            {{/if}}
+                        {{/unless}}
+                        {{#if is_bot}}
+                            <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                        {{/if}}
+                        <span class="user-profile-name">{{> user_full_name name=full_name}}</span>
+                        <span class="user-profile-header-actions">
+                            {{> components/icon_button custom_classes="copy-link-to-user-profile tippy-zulip-delayed-tooltip" icon="link-alt" intent="neutral" data-tippy-content=(t "Copy link to profile") aria-label=(t "Copy link to profile") }}
+                            {{#if is_me}}
+                                {{#if can_manage_profile}}
+                                    {{> components/icon_button custom_classes="user-profile-update-user-tab-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Edit profile") aria-label=(t "Edit profile") }}
+                                {{else}}
+                                    {{> components/icon_button custom_classes="user-profile-profile-settings-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Edit profile") aria-label=(t "Edit profile") }}
+                                {{/if}}
+                            {{else if can_manage_profile}}
+                                {{#if is_bot}}
+                                    {{> components/icon_button custom_classes="user-profile-update-user-tab-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage bot") aria-label=(t "Manage bot") }}
+                                {{else}}
+                                    {{> components/icon_button custom_classes="user-profile-update-user-tab-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage user") aria-label=(t 'Manage user') }}
+                                {{/if}}
+                            {{/if}}
+                        </span>
+                    </h1>
+                </div>
+                <div class="modal__tab-switcher-container"></div>
+                {{> components/icon_button icon="close" intent="neutral" custom_classes="modal__close" aria-label=(t 'Close modal') data-micromodal-close=true }}
+            </div>
+            <main class="modal__content" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+                <div class="tab-data">
+                    <div class="tabcontent active" id="profile-tab">
+                        <div class="top">
+                            <div class="col-wrap col-left">
+                                <div id="default-section">
+                                    {{#if email}}
+                                    <div id="email" class="default-field">
+                                        <div class="name">{{t "Email" }}</div>
+                                        <div class="value">{{email}}</div>
+                                    </div>
+                                    {{/if}}
+                                    <div id="user-id" class="default-field">
+                                        <div class="name">{{t "User ID" }}</div>
+                                        <div class="value">{{user_id}}</div>
+                                    </div>
+                                    <div id="user-type" class="default-field">
+                                        <div class="name">{{t "Role" }}</div>
+                                        {{#if is_bot}}
+                                            {{#if is_system_bot}}
+                                            <div class="value">{{t "System bot" }}</div>
+                                            {{else}}
+                                            <div class="value">{{t "Bot" }}
+                                                <span class="lowercase">({{user_type}})</span>
+                                            </div>
+                                            {{/if}}
+                                        {{else}}
+                                            <div class="value">{{user_type}}</div>
+                                        {{/if}}
+                                    </div>
+                                    <div id="date-joined" class="default-field">
+                                        <div class="name">
+                                            {{#if is_bot}}
+                                                {{t "Created"}}
+                                            {{else}}
+                                                {{t "Joined"}}
+                                            {{/if}}
+                                        </div>
+                                        <div class="value">{{date_joined}}</div>
+                                    </div>
+                                    {{#if user_time}}
+                                    <div class="default-field">
+                                        <div class="name">{{t "Local time" }}</div>
+                                        <div class="value">{{user_time}}</div>
+                                    </div>
+                                    {{/if}}
+                                </div>
+                            </div>
+                            <div class="col-wrap col-right">
+                                <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
+                                  style="background-image: url('{{user_avatar}}');">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bottom">
+                            <div id="content">
+                                {{#if is_bot}}
+                                    <div class="field-section">
+                                        <div class="name">{{t "Bot type" }}</div>
+                                        <div class="bot_info_value">{{bot_type}}</div>
+                                    </div>
+                                    {{#if bot_owner}}
+                                    <div class="field-section bot_owner_user_field" data-field-id="{{bot_owner.user_id}}">
+                                        <div class="name">{{t "Owner" }}</div>
+                                        <div class="pill-container not-editable">
+                                            <div class="input" contenteditable="false" style="display: none;"></div>
+                                        </div>
+                                    </div>
+                                    {{/if}}
+                                {{else}}
+                                    {{> user_custom_profile_fields profile_fields=profile_data}}
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tabcontent" id="user-profile-streams-tab">
+                        <div class="stream_list_info banner-wrapper"></div>
+                        <div class="stream-list-top-section">
+                            <div class="header-section">
+                                <h3 class="stream-tab-element-header">{{t 'Subscribed channels' }}</h3>
+                            </div>
+                            <div class="stream-list-container">
+                                <div class="stream-search-container filter-input has-input-icon has-input-button input-element-wrapper">
+                                    <i class="input-icon zulip-icon zulip-icon-search" aria-hidden="true"></i>
+                                    <input type="text" class="input-element stream-search" placeholder="{{t 'Filter' }}" />
+                                    <button type="button" class="input-button input-close-filter-button icon-button icon-button-square icon-button-neutral">
+                                        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="stream-list-loader"></div>
+                                <div class="error-message"></div>
+                                <div class="subscription-stream-list" data-simplebar data-simplebar-tab-index="-1">
+                                    <ul class="user-stream-list" data-empty="{{t 'No channel subscriptions.' }}" data-search-results-empty="{{t 'No matching channels.' }}"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stream-list-bottom-section">
+                            <div class="header-section">
+                                <h3 class="stream-tab-element-header">{{t 'Subscribe {full_name} to channels'}}</h3>
+                            </div>
+                            {{> user_profile_subscribe_widget}}
+                        </div>
+                    </div>
+
+                    <div class="tabcontent" id="user-profile-groups-tab">
+                        <div class="user-profile-group-list-alert banner-wrapper"></div>
+                        <div class="group-list-top-section">
+                            <div class="header-section">
+                                <h3 class="group-tab-element-header">{{t 'Group membership' }}</h3>
+                            </div>
+                            <div class="group-list-container">
+                                <div class="group-search-container filter-input has-input-icon has-input-button input-element-wrapper">
+                                    <i class="input-icon zulip-icon zulip-icon-search"></i>
+                                    <input type="text" class="input-element group-search" placeholder="{{t 'Filter' }}" />
+                                    <button type="button" class="input-button input-close-filter-button icon-button icon-button-square icon-button-neutral">
+                                        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="subscription-group-list" data-simplebar data-simplebar-tab-index="-1">
+                                    <ul class="user-group-list" data-empty="{{t 'Not a member of any groups.' }}" data-search-results-empty="{{t 'No matching user groups' }}"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="group-list-bottom-section">
+                            <div class="header-section">
+                                <h3 class="group-tab-element-header">{{t 'Add {full_name} to groups'}}</h3>
+                            </div>
+                            <div id="groups-to-add" class="add-button-container">
+                                <div id="user-group-to-add">
+                                    <div class="add-user-group-container">
+                                        <div class="pill-container">
+                                            <div class="input" contenteditable="true"
+                                              data-placeholder="{{t 'Add user groups' }}">
+                                                {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{> components/action_button label=(t "Add") custom_classes="add-groups-button" variant="subtle" intent="brand" aria-label=(t "Add") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tabcontent" id="manage-profile-tab"></div>
+                </div>
+            </main>
+            <footer class="modal__footer manage-profile-tab-footer">
+                <div class="save-success"></div>
+                <button type="button" class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
+                <button type="button" class="modal__button dialog_submit_button">
+                    <span class="submit-button-text">{{t "Save changes"}}</span>
+                    <span class="modal__spinner"></span>
+                </button>
+            </footer>
+        </div>
+    </div>
+</div>

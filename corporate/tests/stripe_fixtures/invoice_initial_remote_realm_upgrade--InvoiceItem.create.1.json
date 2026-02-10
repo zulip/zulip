@@ -1,0 +1,32 @@
+{
+  "amount": 3850,
+  "currency": "usd",
+  "customer": "cus_NORMALIZED",
+  "date": 1000000000,
+  "description": "Zulip Basic",
+  "discountable": false,
+  "discounts": [],
+  "id": "invoice_initial_remote_realm_upgrade--Event.list.2.json",
+  "invoice": "in_NORMALIZED",
+  "livemode": false,
+  "metadata": {},
+  "net_amount": 3850,
+  "object": "invoiceitem",
+  "parent": null,
+  "period": {
+    "end": 1328151845,
+    "start": 1325473445
+  },
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "350"
+  },
+  "proration": false,
+  "quantity": 11,
+  "tax_rates": [],
+  "test_clock": null
+}

@@ -1,0 +1,19 @@
+<tr data-subscriber-id="{{user_id}}" class="hidden-remove-button-row">
+    <td class="subscriber-name panel_user_list">
+        {{> ../user_display_only_pill . display_value=name is_active=true}}
+    </td>
+    {{#if email}}
+    <td class="subscriber-email settings-email-column">{{email}}</td>
+    {{else}}
+    <td class="hidden-subscriber-email">{{t "(hidden)"}}</td>
+    {{/if}}
+    {{#if can_remove_subscribers}}
+    <td class="unsubscribe remove-button-wrapper remove-button-column">
+        {{#if for_user_group_members}}
+            {{> ../components/icon_button icon="close" custom_classes="hidden-remove-button remove-subscriber-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Remove") data-tippy-content=(t "Remove") }}
+        {{else}}
+            {{> ../components/icon_button icon="close" custom_classes="hidden-remove-button remove-subscriber-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Unsubscribe") data-tippy-content=(t "Unsubscribe") }}
+        {{/if}}
+    </td>
+    {{/if}}
+</tr>

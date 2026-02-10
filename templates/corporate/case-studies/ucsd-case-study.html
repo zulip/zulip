@@ -1,0 +1,31 @@
+{% extends "zerver/marketing_page.html" %}
+
+{% set PAGE_TITLE = "Case study: University of California San Diego | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "How do you teach graduate-level mathematics to
+  students across six continents? “I chose Zulip especially for the threaded model
+  and the TeX integration.”" %}
+
+
+{% block marketing_content %}
+
+<div class="portico-landing why-page solutions-page case-study-page">
+    <div class="hero bg-education">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Case study: University of California San Diego</h1>
+        </div>
+        <div class="hero-text">
+            Learn more about <a href="/for/education/">Zulip for Education</a>.
+        </div>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content markdown">
+                {{ render_markdown_path('corporate/case-studies/ucsd-case-study.md') }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,123 @@
+.informational-overlays {
+    .overlay-content {
+        width: var(--informational-overlay-max-width);
+        margin: 0 auto;
+        position: relative;
+        top: calc((30vh - 50px) / 2);
+        border-radius: 4px;
+        overflow: hidden;
+
+        background-color: var(--color-background-modal);
+    }
+
+    .overlay-tabs {
+        padding: 10px 0;
+        border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
+
+        .tab-switcher {
+            margin-left: 15px;
+        }
+
+        .exit {
+            float: right;
+            font-size: 1.5rem;
+            color: hsl(0deg 0% 67%);
+            font-weight: 600;
+            margin: 0 15px;
+            cursor: pointer;
+        }
+    }
+
+    .overlay-modal {
+        padding-bottom: 10px;
+
+        .overlay-scroll-container {
+            height: 70vh;
+            text-align: center;
+            outline: none;
+
+            .help-table {
+                table-layout: fixed;
+            }
+
+            & th {
+                font-weight: 400;
+            }
+        }
+    }
+
+    & td.operator {
+        font-size: 0.9em;
+    }
+
+    .poll-question-header {
+        display: inline;
+    }
+}
+
+.hotkeys_table {
+    table-layout: fixed;
+    width: 100%;
+    vertical-align: middle;
+    display: table;
+
+    & td.definition {
+        /* keeps dividing line at same width for all tables in model. */
+        width: calc(50% - 11px);
+        text-align: right;
+    }
+
+    .hotkey {
+        font-weight: normal;
+    }
+
+    .arrow-key {
+        font-size: 1.36em;
+        line-height: 1;
+        padding: 0 0.2em 0.2em;
+    }
+
+    & th {
+        width: 245px;
+        text-align: center;
+        /* aligns table name with dividing line */
+    }
+
+    & td:not(.definition) {
+        text-align: left;
+        white-space: normal;
+        font-weight: bold;
+    }
+}
+
+#keyboard-shortcuts table {
+    margin-bottom: 10px !important;
+}
+
+@media only screen and (width < $md_min) {
+    .informational-overlays {
+        .overlay-content {
+            width: calc(100% - 20px);
+            /* Constrain to same width as in larger viewports. */
+            max-width: var(--informational-overlay-max-width);
+        }
+
+        .tab-switcher {
+            display: flex;
+
+            &.large .ind-tab {
+                width: 100%;
+            }
+        }
+
+        .hotkeys_table {
+            width: 100%;
+            display: table;
+        }
+    }
+}
+
+#message-formatting-first-header,
+#search-operators-first-header {
+    width: 40%;
+}

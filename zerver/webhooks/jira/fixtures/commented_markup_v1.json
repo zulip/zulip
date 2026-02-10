@@ -1,0 +1,275 @@
+{
+  "webhookEvent": "jira:issue_updated",
+  "user": {
+    "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+    "name": "leo",
+    "emailAddress": "leo@zulip.com",
+    "avatarUrls": {
+      "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+      "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+      "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+      "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+    },
+    "displayName": "Leonardo Franchi [Administrator]",
+    "active": true
+  },
+  "issue": {
+    "id": "10100",
+    "self": "https://zulipp.atlassian.net/rest/api/2/issue/10100",
+    "key": "TEST-7",
+    "fields": {
+      "summary": "Testing of rich text",
+      "progress": {
+        "progress": 0,
+        "total": 0
+      },
+      "timetracking": {},
+      "issuetype": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/issuetype/2",
+        "id": "2",
+        "description": "A new feature of the product, which has yet to be developed.",
+        "iconUrl": "https://zulipp.atlassian.net/images/icons/issuetypes/newfeature.png",
+        "name": "New Feature",
+        "subtask": false
+      },
+      "timespent": null,
+      "reporter": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+        "name": "leo",
+        "emailAddress": "leo@zulip.com",
+        "avatarUrls": {
+          "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+          "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+          "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+          "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+        },
+        "displayName": "Leonardo Franchi [Administrator]",
+        "active": true
+      },
+      "created": "2013-10-01T16:08:48.446-0400",
+      "updated": "2013-10-01T16:16:47.821-0400",
+      "priority": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/priority/3",
+        "iconUrl": "https://zulipp.atlassian.net/images/icons/priorities/major.png",
+        "name": "Major",
+        "id": "3"
+      },
+      "description": "h1. So this is a heading\r\n\r\nAnd some *bold* **and _bold_?\r\n\r\n{quote}\r\nsome stuff goes here\r\n{quote}",
+      "customfield_10001": null,
+      "customfield_10002": null,
+      "customfield_10003": null,
+      "issuelinks": [],
+      "customfield_10000": null,
+      "subtasks": [],
+      "customfield_10008": null,
+      "customfield_10007": null,
+      "status": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/status/10001",
+        "description": "",
+        "iconUrl": "https://zulipp.atlassian.net/images/icons/statuses/open.png",
+        "name": "To Do",
+        "id": "10001"
+      },
+      "customfield_10006": "7",
+      "labels": [],
+      "workratio": -1,
+      "project": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/project/10000",
+        "id": "10000",
+        "key": "TEST",
+        "name": "TestProject",
+        "avatarUrls": {
+          "16x16": "https://zulipp.atlassian.net/secure/projectavatar?size=xsmall&pid=10000&avatarId=10011",
+          "24x24": "https://zulipp.atlassian.net/secure/projectavatar?size=small&pid=10000&avatarId=10011",
+          "32x32": "https://zulipp.atlassian.net/secure/projectavatar?size=medium&pid=10000&avatarId=10011",
+          "48x48": "https://zulipp.atlassian.net/secure/projectavatar?pid=10000&avatarId=10011"
+        }
+      },
+      "environment": null,
+      "customfield_10014": null,
+      "customfield_10015": null,
+      "lastViewed": "2013-10-01T16:16:48.075-0400",
+      "aggregateprogress": {
+        "progress": 0,
+        "total": 0
+      },
+      "customfield_10012": null,
+      "components": [],
+      "customfield_10013": null,
+      "comment": {
+        "startAt": 0,
+        "maxResults": 3,
+        "total": 3,
+        "comments": [
+          {
+            "self": "https://zulipp.atlassian.net/rest/api/2/issue/10100/comment/10000",
+            "id": "10000",
+            "author": {
+              "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+              "name": "leo",
+              "emailAddress": "leo@zulip.com",
+              "avatarUrls": {
+                "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+                "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+                "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+                "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+              },
+              "displayName": "Leonardo Franchi [Administrator]",
+              "active": true
+            },
+            "body": "Commenting that *this is important* and also _please italicize me_\r\n\r\nh2. Heading this all the way\r\n\r\nsome quote:\r\n\r\n{quote}\r\noh say can you see...\r\n{quote}",
+            "updateAuthor": {
+              "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+              "name": "leo",
+              "emailAddress": "leo@zulip.com",
+              "avatarUrls": {
+                "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+                "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+                "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+                "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+              },
+              "displayName": "Leonardo Franchi [Administrator]",
+              "active": true
+            },
+            "created": "2013-10-01T16:11:07.615-0400",
+            "updated": "2013-10-01T16:11:07.615-0400"
+          },
+          {
+            "self": "https://zulipp.atlassian.net/rest/api/2/issue/10100/comment/10001",
+            "id": "10001",
+            "author": {
+              "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+              "name": "leo",
+              "emailAddress": "leo@zulip.com",
+              "avatarUrls": {
+                "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+                "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+                "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+                "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+              },
+              "displayName": "Leonardo Franchi [Administrator]",
+              "active": true
+            },
+            "body": "*Rich Text* comment, with _italicized_ text,\r\n\r\nand including some\r\n\r\n{quote}\r\nquotations by yours truly\r\n{quote}",
+            "updateAuthor": {
+              "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+              "name": "leo",
+              "emailAddress": "leo@zulip.com",
+              "avatarUrls": {
+                "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+                "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+                "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+                "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+              },
+              "displayName": "Leonardo Franchi [Administrator]",
+              "active": true
+            },
+            "created": "2013-10-01T16:16:47.821-0400",
+            "updated": "2013-10-01T16:16:47.821-0400"
+          },
+          {
+            "self": "https://zulipp.atlassian.net/rest/api/2/issue/10100/comment/10002",
+            "id": "10002",
+            "author": {
+              "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+              "name": "leo",
+              "emailAddress": "leo@zulip.com",
+              "avatarUrls": {
+                "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+                "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+                "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+                "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+              },
+              "displayName": "Leonardo Franchi [Administrator]",
+              "active": true
+            },
+            "body": "This is a comment that likes to *exercise* a lot of _different_ {{conventions}} that {{jira uses}}.\r\n\r\n{noformat}\r\nthis code is not highlighted, but monospaced\r\n{noformat}\r\n\r\n{code:python}\r\ndef python():\r\n    print \"likes to be formatted\"\r\n{code}\r\n\r\n[http://www.google.com] is a bare link, and [Google|http://www.google.com] is given a title.\r\n\r\nThanks!\r\n\r\n{quote}\r\nSomeone said somewhere\r\n{quote}",
+            "updateAuthor": {
+              "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+              "name": "leo",
+              "emailAddress": "leo@zulip.com",
+              "avatarUrls": {
+                "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+                "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+                "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+                "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+              },
+              "displayName": "Leonardo Franchi [Administrator]",
+              "active": true
+            },
+            "created": "2013-10-01T17:03:00.964-0400",
+            "updated": "2013-10-01T17:03:00.964-0400"
+          }
+        ]
+      },
+      "timeoriginalestimate": null,
+      "customfield_10017": null,
+      "customfield_10016": null,
+      "customfield_10019": null,
+      "customfield_10018": null,
+      "votes": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/issue/TEST-7/votes",
+        "votes": 0,
+        "hasVoted": false
+      },
+      "fixVersions": [],
+      "resolution": null,
+      "resolutiondate": null,
+      "aggregatetimeoriginalestimate": null,
+      "duedate": null,
+      "customfield_10020": null,
+      "customfield_10021": "Not Started",
+      "watches": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/issue/TEST-7/watchers",
+        "watchCount": 1,
+        "isWatching": true
+      },
+      "worklog": {
+        "startAt": 0,
+        "maxResults": 20,
+        "total": 0,
+        "worklogs": []
+      },
+      "assignee": null,
+      "attachment": [],
+      "aggregatetimeestimate": null,
+      "versions": [],
+      "timeestimate": null,
+      "aggregatetimespent": null
+    }
+  },
+  "comment": {
+    "self": "https://zulipp.atlassian.net/rest/api/2/issue/10100/comment/10002",
+    "id": "10002",
+    "author": {
+      "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+      "name": "leo",
+      "emailAddress": "leo@zulip.com",
+      "avatarUrls": {
+        "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+        "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+        "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+        "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+      },
+      "displayName": "Leonardo Franchi [Administrator]",
+      "active": true
+    },
+    "body": "This is a comment that likes to *exercise* a lot of _different_ {{conventions}} that {{jira uses}}.\r\n\r\n{noformat}\r\nthis code is not highlighted, but monospaced\r\n{noformat}\r\n\r\n{code:python}\r\ndef python():\r\n    print \"likes to be formatted\"\r\n{code}\r\n\r\n[http://www.google.com] is a bare link, and [Google|http://www.google.com] is given a title.\r\n\r\nThanks!\r\n\r\n{quote}\r\nSomeone said somewhere\r\n{quote}",
+    "updateAuthor": {
+      "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
+      "name": "leo",
+      "emailAddress": "leo@zulip.com",
+      "avatarUrls": {
+        "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
+        "24x24": "https://zulipp.atlassian.net/secure/useravatar?size=small&avatarId=10122",
+        "32x32": "https://zulipp.atlassian.net/secure/useravatar?size=medium&avatarId=10122",
+        "48x48": "https://zulipp.atlassian.net/secure/useravatar?avatarId=10122"
+      },
+      "displayName": "Leonardo Franchi [Administrator]",
+      "active": true
+    },
+    "created": "2013-10-01T17:03:00.964-0400",
+    "updated": "2013-10-01T17:03:00.964-0400"
+  },
+  "timestamp": 1380661380969
+}

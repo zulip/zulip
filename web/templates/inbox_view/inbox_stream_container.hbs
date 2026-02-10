@@ -1,0 +1,14 @@
+{{#each (map_entries topics_dict) as |key_value_list|}}
+    <div id="{{key_value_list.[0]}}">
+        {{#each (map_entries ../streams_dict) as |stream_key_value|}}
+            {{#if (eq stream_key_value.[0] key_value_list.[0])}}
+                {{> inbox_row stream_key_value.[1]}}
+            {{/if}}
+        {{/each}}
+        <div class="inbox-topic-container">
+            {{#each (map_entries key_value_list.[1])}}
+                {{>inbox_row this.[1]}}
+            {{/each}}
+        </div>
+    </div>
+{{/each}}

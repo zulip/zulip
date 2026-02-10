@@ -1,0 +1,9 @@
+<p class="contributor-count">
+    {{contributor_count}} contributors
+    ({{hundred_plus_contributor_count}} with 100+ commits) to
+    {{#each repos as |repo|}}
+        <a href="{{repo.url}}" target="_blank" rel="noopener noreferrer">
+            zulip/{{repo.name}}{{#unless @last}}, {{/unless}}
+        </a>
+    {{/each}}
+</p>

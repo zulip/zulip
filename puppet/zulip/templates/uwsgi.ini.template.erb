@@ -1,0 +1,72 @@
+[uwsgi]
+# Catch typos in configuration options
+strict=true
+
+# Basic environment
+env=LANG=C.UTF-8
+uid=zulip
+gid=zulip
+
+# We run the main process in /, and chdir to the current "current"
+# directory in each forked process
+chdir=/
+hook-post-fork=chdir:/home/zulip/deployments/current
+
+# lazy-apps means that the application is loaded after forking (and
+# thus chdir'ing).  This lets us do rolling restarts into new
+# versions.
+# https://uwsgi-docs.readthedocs.io/en/latest/articles/TheArtOfGracefulReloading.html#preforking-vs-lazy-apps-vs-lazy
+lazy-apps=true
+
+# Entrypoint of the application
+module=zproject.wsgi:application
+
+
+
+
+# Start a master process listening on this socket
+master=true
+chmod-socket=700
+chown-socket=zulip:zulip
+socket=/home/zulip/deployments/uwsgi-socket
+listen=<%= @uwsgi_listen_backlog_limit %>
+
+# Create a control socket, allowing rolling restarts ("chain reloading").
+master-fifo=/home/zulip/deployments/uwsgi-control
+
+
+# Let threads run when processes aren't responding to requests;
+# required for Sentry background worker
+enable-threads=true
+
+# How many serving processes to fork
+processes=<%= @uwsgi_processes %>
+
+# Give the processes short process names
+auto-procname=true
+procname-prefix-spaced=zulip-django
+
+# Longest response allowed, in seconds, before killing the worker
+harakiri=55
+
+
+
+# Default buffer for client HTTP headers is 4k, and nginx gets a 502
+# if the client sends more.  Set this high; nginx limits headers to
+# 32k, and will 400 requests with more than that.
+buffer-size=65535
+
+# The master process will buffer requests with bodies longer than 4096
+# bytes, freeing up workers from hanging around waiting to read them.
+post-buffering=4096
+
+
+
+# Create a socket to serve very basic UWSGI stats
+stats=/home/zulip/deployments/uwsgi-stats
+
+
+# Silence warnings from clients closing their connection early
+ignore-sigpipe = true
+ignore-write-errors = true
+disable-write-exception = true

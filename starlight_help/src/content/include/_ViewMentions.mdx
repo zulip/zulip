@@ -1,0 +1,34 @@
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import MobileMenu from "../include/_MobileMenu.mdx";
+
+import AtSignIcon from "~icons/zulip-icon/at-sign";
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Click on <AtSignIcon /> **Mentions**
+         (or <AtSignIcon /> if the **views**
+         section is collapsed) in the left sidebar.
+      1. Browse your mentions. You can click on a message recipient bar to go
+         to the [conversation](/help/reading-conversations) where you were mentioned.
+    </Steps>
+
+    <ZulipTip>
+      You can also [search your mentions](/help/search-for-messages) using the
+      `is:mentioned` filter.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MobileMenu />
+
+      1. Tap <AtSignIcon /> **Mentions**.
+      1. Browse your mentions. You can tap on a message recipient bar to go
+         to the conversation where you were mentioned.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
