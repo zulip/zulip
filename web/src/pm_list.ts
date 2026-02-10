@@ -130,7 +130,10 @@ export function update_private_messages(): void {
         !all_conversations_shown ||
         // If there is no search term, always show the header.
         !search_term;
-    $("#direct-messages-section-header").toggleClass("hidden-by-filters", !is_header_visible);
+    $("#left_sidebar_scroll_container").toggleClass(
+        "direct-messages-hidden-by-filters",
+        !is_header_visible,
+    );
 
     if (!is_dm_section_expanded) {
         // In the collapsed state, we will still display the current
