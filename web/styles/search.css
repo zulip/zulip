@@ -84,6 +84,8 @@
             width: var(--search-box-width);
 
             @media (width < $md_min) {
+                /* Square off the icon-only presentation. */
+                width: var(--search-box-height);
                 grid-template:
                     "search-icon search-pills" var(--search-box-height)
                     / var(--search-box-height) 0;
