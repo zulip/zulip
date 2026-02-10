@@ -341,7 +341,9 @@ export function quote_message(opts: {
             // markdown, in case the request timed out or failed for another reason,
             // such as the client being offline.
             const message_html = message.content;
-            const md = compose_paste.paste_handler_converter(message_html);
+            // We try to access message.raw_content one last time here, just in case
+            // it was populated during the waiting time.
+            const md = message.raw_content ?? compose_paste.paste_handler_converter(message_html);
             replace_content(message, md);
         },
     });
