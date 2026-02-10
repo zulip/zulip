@@ -3652,6 +3652,8 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
     REDIS_EXPIRATION_SECONDS = DEFAULT_REDIS_EXPIRATION_SECONDS_FOR_TRANSIENT_STATE
 
+    available_for_cloud_plans = [Realm.PLAN_TYPE_PLUS]
+
     full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
