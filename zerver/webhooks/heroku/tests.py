@@ -15,3 +15,13 @@ class HerokuHookTests(WebhookTestCase):
     def test_only_failed_events_filters_non_failed(self) -> None:
         self.url = self.build_webhook_url(only_failed_events="true")
         self.check_webhook("build_create", expect_noop=True)
+
+    def test_release_create(self) -> None:
+        expected_topic_name = "zulip-test"
+        expected_message = "release(v3) was triggered by sampleuser@gmail.com."
+        self.check_webhook("release_create", expected_topic_name, expected_message)
+
+    def test_release_update(self) -> None:
+        expected_topic_name = "zulip-test"
+        expected_message = "The release(v3) triggered by sampleuser@gmail.com succeeded."
+        self.check_webhook("release_update", expected_topic_name, expected_message)
