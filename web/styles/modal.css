@@ -818,6 +818,7 @@
     cursor: pointer;
     background-color: hsl(0deg 0% 100%);
     max-width: 100%;
+    font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;

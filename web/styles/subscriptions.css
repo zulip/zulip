@@ -84,6 +84,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: inherit;
 
     &:hover {
         border: 1px solid hsl(0deg 0% 47%);
@@ -616,6 +617,7 @@ h4.user_group_setting_subsection_title {
             display: block;
             margin: 0 auto 10px;
             font-family: inherit;
+            font-size: inherit;
         }
 
         .main-view-banner.group_deactivated {

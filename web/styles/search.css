@@ -48,6 +48,7 @@
         color: var(--color-search-icons);
         padding: 0;
         outline: none;
+        font-size: inherit;
 
         &:hover {
             opacity: 1;

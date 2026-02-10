@@ -190,6 +190,7 @@
         display: flex;
         align-items: center;
         font-family: inherit;
+        font-size: inherit;
 
         &:hover {
             background-color: var(--color-background-zulip-button-hover);
