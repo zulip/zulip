@@ -361,6 +361,7 @@ h3,
     border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
     background-color: hsl(0deg 0% 100%);
+    font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;
@@ -2257,6 +2258,7 @@ label.preferences-radio-choice-label {
             border: none;
             outline: none;
             display: grid;
+            font-size: inherit;
 
             &:hover {
                 color: var(--color-text-clear-search-button-hover);

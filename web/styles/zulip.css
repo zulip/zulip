@@ -130,14 +130,6 @@ button {
     }
 }
 
-input,
-button,
-select {
-    /* Disable bootstrap size CSS; we want to use our default font size on
-       body for input elements. */
-    font-size: inherit;
-}
-
 blockquote p {
     font-weight: normal;
 }

@@ -16,6 +16,7 @@
         font-weight: 700;
         color: hsl(240deg 100% 50%);
         font-family: inherit;
+        font-size: inherit;
     }
 
     .widget-choices-heading {
@@ -233,6 +234,7 @@ button {
         padding-left: 14px;
         padding-right: 14px;
         font-family: inherit;
+        font-size: inherit;
 
         &:hover,
         &:focus {
@@ -286,6 +288,7 @@ input {
     border-radius: 3px;
     border: 1px solid var(--color-border-zulip-button);
     background-color: var(--color-background-zulip-button);
+    font-size: inherit;
 
     &:hover {
         border-color: var(--color-border-zulip-button-interactive);

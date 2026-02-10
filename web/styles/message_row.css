@@ -328,6 +328,7 @@
         overflow-wrap: normal;
         font-variant: all-small-caps;
         font-family: inherit;
+        font-size: inherit;
 
         &:hover {
             background-color: var(
@@ -836,6 +837,7 @@
     border: 0;
     line-height: 1;
     font-family: inherit;
+    font-size: inherit;
 
     &:focus {
         outline: none;
