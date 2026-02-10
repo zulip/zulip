@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 466**
+
+* [`POST /register`](/api/register-queue): Added `realm_uuid`
+  field to response. Used by clients that prefer to compute
+  Jdenticon avatars locally.
+
 **Feature level 465**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

@@ -642,6 +642,8 @@ def fetch_initial_state_data(
             realm.topics_policy == RealmTopicsPolicyEnum.disable_empty_topic.value
         )
 
+        state["realm_uuid"] = str(realm.uuid)
+
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}

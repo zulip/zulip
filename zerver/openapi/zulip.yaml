@@ -19553,6 +19553,18 @@ paths:
 
                           **Changes**: New in Zulip 9.0 (feature level 257), replacing the
                           deprecated `realm_uri`.
+                      realm_uuid:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          A unique identifier for the organization, expected to be stable
+                          even if the organization migrates between hosting environments.
+
+                          Used as the salt for Jdenticon avatars; Clients that prefer to compute
+                          Jdenticon avatars may use `{realm_uuid}:{user_id}` as the Jdenticon key.
+
+                          **Changes**: New in Zulip 12.0 (feature level 466).
                       realm_available_video_chat_providers:
                         type: object
                         description: |
