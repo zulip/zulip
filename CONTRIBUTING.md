@@ -605,3 +605,12 @@ more about participating in an outreach program with Zulip. Most of our program
 participants end up sticking around the project long-term, and many have become
 core team members, maintaining important parts of the project. We hope you
 apply!
+
+
+
+## Additional Resources
+
+For more information about contributing to Zulip, see:
+- [Zulip development community](https://chat.zulip.org)
+- [Code style guide](code-style.md)
+- [Testing guide](../testing/testing.md)
