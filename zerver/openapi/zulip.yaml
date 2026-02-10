@@ -562,6 +562,24 @@ paths:
                                         is_imported_stub:
                                           type: boolean
                                           description: This value is always `false`.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        Sent when the `date_joined` value is updated after an
+                                        imported stub user or a user created via the API logs
+                                        in for the first time.
+
+                                        **Changes**: New in Zulip 12.0 (feature level ZF-658515).
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        date_joined:
+                                          type: string
+                                          description: |
+                                            The time when the user logged in to their account
+                                            for the first time.
                               additionalProperties: false
                               example:
                                 {
@@ -11203,9 +11221,22 @@ paths:
                       date_joined:
                         type: string
                         description: |
-                          The time the requesting user's account was created.
+                          The time when the user joined. For users imported from other
+                          applications and users created via the API, this is set to the
+                          account creation time until the user logs in for the first time,
+                          after which it is updated to that login time.
 
-                          **Changes**: New in Zulip 3.0 (feature level 10).
+                          For imported users, clients can use the `is_imported_stub` flag
+                          to determine how to display this field: when `is_imported_stub`
+                          is `true`, the user has not yet logged in and this value is the
+                          account creation time during import; when `is_imported_stub` is
+                          `false`, this value reflects when the user first logged in.
+
+                          **Changes**: Starting with Zulip 12.0 (feature level ZF-658515),
+                          this field is updated when an imported stub user or a user created
+                          via the API logs in for the first time.
+
+                          New in Zulip 3.0 (feature level 10).
                         example: "2019-10-20T07:50:53.728864+00:00"
                       max_message_id:
                         type: integer
@@ -28465,7 +28496,20 @@ components:
         date_joined:
           type: string
           description: |
-            The time the user account was created.
+            The time when the user joined. For users imported from other
+            applications and users created via the API, this is set to the
+            account creation time until the user logs in for the first time,
+            after which it is updated to that login time.
+
+            For imported users, clients can use the `is_imported_stub` flag
+            to determine how to display this field: when `is_imported_stub`
+            is `true`, the user has not yet logged in and this value is the
+            account creation time during import; when `is_imported_stub` is
+            `false`, this value reflects when the user first logged in.
+
+            **Changes**: Starting with Zulip 12.0 (feature level ZF-658515),
+            this field is updated when an imported stub user or a user created
+            via the API logs in for the first time.
         is_active:
           type: boolean
           description: |

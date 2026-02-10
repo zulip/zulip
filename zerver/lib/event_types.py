@@ -765,6 +765,11 @@ class PersonIsImportedStub(BaseModel):
     is_imported_stub: bool
 
 
+class PersonDateJoined(BaseModel):
+    user_id: int
+    date_joined: str
+
+
 class EventRealmUserUpdate(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["update"]
@@ -772,6 +777,7 @@ class EventRealmUserUpdate(BaseEvent):
         PersonAvatarFields
         | PersonBotOwnerId
         | PersonCustomProfileField
+        | PersonDateJoined
         | PersonDeliveryEmail
         | PersonEmail
         | PersonFullName
