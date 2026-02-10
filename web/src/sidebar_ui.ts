@@ -799,11 +799,18 @@ export function set_event_handlers(): void {
             return;
         }
         switch (e.key) {
-            case "Enter":
-                $(e.currentTarget).trigger("click");
+            case "Enter": {
+                const $target = $(e.currentTarget);
+                $target.trigger("click");
+                // jQuery trigger doesn't follow <a> hrefs, so
+                // navigate manually for link elements.
+                if ($target.is("a")) {
+                    window.location.href = $target.attr("href")!;
+                }
                 e.preventDefault();
                 e.stopPropagation();
                 break;
+            }
             case "Escape":
                 $search_input.trigger("focus");
                 e.preventDefault();

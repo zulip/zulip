@@ -26,9 +26,7 @@ const buddy_list_presence = mock_esm("../src/buddy_list_presence");
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
-const popovers = mock_esm("../src/popovers");
 const settings_data = mock_esm("../src/settings_data");
-const sidebar_ui = mock_esm("../src/sidebar_ui");
 const scroll_util = mock_esm("../src/scroll_util");
 const background_task = mock_esm("../src/background_task");
 
@@ -209,8 +207,6 @@ test("handlers", ({override, override_rewire}) => {
     });
     override(scroll_util, "scroll_element_into_container", noop);
     override(padded_widget, "update_padding", noop);
-    override(popovers, "hide_all", noop);
-    override(sidebar_ui, "hide_all", noop);
 
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.

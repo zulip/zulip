@@ -17,7 +17,6 @@ import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
 import * as presence from "./presence.ts";
 import type {PresenceInfoFromEvent} from "./presence.ts";
-import * as sidebar_ui from "./sidebar_ui.ts";
 import {realm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import type {FullUnreadCountsData} from "./unread.ts";
@@ -264,8 +263,6 @@ function keydown_enter_key(): void {
     }
 
     narrow_for_user_id({user_id});
-    sidebar_ui.hide_all();
-    popovers.hide_all();
 }
 
 export let set_cursor_and_filter = (): void => {
@@ -334,9 +331,18 @@ export let set_cursor_and_filter = (): void => {
     });
 
     $(".buddy-list-section").on("keydown", ".user-list-sidebar-menu-icon", (e) => {
+        // When a popover is open, let the hotkey system handle
+        // arrow keys and Escape so they navigate the popover.
+        if (popovers.any_active() && e.key !== "Enter" && e.key !== "Tab") {
+            return;
+        }
         switch (e.key) {
             case "Enter":
-                $(e.currentTarget).trigger("click");
+                // Use native click so the delegated handler in
+                // user_card_popover.ts fires correctly.
+                if (e.currentTarget instanceof HTMLElement) {
+                    e.currentTarget.click();
+                }
                 e.preventDefault();
                 e.stopPropagation();
                 break;
