@@ -156,7 +156,7 @@ export function initialize(): void {
             // so that the tooltip always matches the link.
             if (
                 instance.reference.hasAttribute("href") &&
-                instance.reference.getAttribute("href")!.startsWith("#topics/")
+                instance.reference.getAttribute("href")?.startsWith("#topics/")
             ) {
                 instance.setContent(
                     parse_html(
