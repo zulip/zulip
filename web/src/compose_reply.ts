@@ -27,6 +27,16 @@ import * as sub_store from "./sub_store.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 
+type QuoteMessageOpts = {
+    message_id?: number;
+    quote_content?: string | undefined;
+    keep_composebox_empty?: boolean;
+    reply_type?: "personal";
+    trigger?: string;
+    forward_message?: boolean;
+};
+
+const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 export let respond_to_message = (opts: {
     keep_composebox_empty?: boolean;
     message_id?: number;
@@ -202,7 +212,10 @@ export function rewire_selection_within_message_id(
     selection_within_message_id = value;
 }
 
-function get_quote_target(opts: {message_id?: number; quote_content?: string | undefined}): {
+function get_quote_target_for_single_message(opts: {
+    message_id?: number;
+    quote_content?: string | undefined;
+}): {
     message_id: number;
     message: Message;
     quote_content: string | undefined;
@@ -241,159 +254,169 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string | u
     return {message_id, message, quote_content};
 }
 
-export function quote_message(opts: {
-    message_id?: number;
-    quote_content?: string | undefined;
-    keep_composebox_empty?: boolean;
-    reply_type?: "personal";
-    trigger?: string;
-    forward_message?: boolean;
-}): void {
-    const {message_id, message, quote_content} = get_quote_target(opts);
-    const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
-
+function get_textarea(forward_message?: boolean): JQuery<HTMLTextAreaElement> {
     // If the last compose type textarea focused on is still in the DOM, we add
     // the quote in that textarea, else we default to the compose box.
     const last_focused_compose_type_input = compose_state.get_last_focused_compose_type_input();
     const $textarea =
-        last_focused_compose_type_input?.isConnected && !opts.forward_message
+        last_focused_compose_type_input?.isConnected && !forward_message
             ? $(last_focused_compose_type_input)
             : $<HTMLTextAreaElement>("textarea#compose-textarea");
+    return $textarea;
+}
 
-    if (opts.forward_message) {
-        let topic = "";
-        let stream_id: number | undefined;
-        if (message.is_stream) {
-            topic = message.topic;
-            stream_id = message.stream_id;
-        }
-        compose_state.set_is_processing_forward_message(true);
-        compose_actions.start({
-            message_type: message.type,
-            topic,
-            keep_composebox_empty: opts.keep_composebox_empty,
-            content: quoting_placeholder,
-            stream_id,
-            private_message_recipient_ids: [],
+function setup_compose_to_forward_single_message(message: Message, opts: QuoteMessageOpts): void {
+    let topic = "";
+    let stream_id: number | undefined;
+    if (message.is_stream) {
+        topic = message.topic;
+        stream_id = message.stream_id;
+    }
+    compose_state.set_is_processing_forward_message(true);
+    compose_actions.start({
+        message_type: message.type,
+        topic,
+        keep_composebox_empty: opts.keep_composebox_empty,
+        content: quoting_placeholder,
+        stream_id,
+        private_message_recipient_ids: [],
+    });
+    compose_recipient.toggle_compose_recipient_dropdown();
+}
+
+function setup_compose_to_quote_single_message(message_id: number, opts: QuoteMessageOpts): void {
+    if (
+        get_textarea(opts.forward_message).attr("id") === "compose-textarea" &&
+        !compose_state.has_message_content()
+    ) {
+        // Whether or not the compose box is open, it's empty, so
+        // we start a new message replying to the quoted message.
+        respond_to_message({
+            ...opts,
+            // Critically, we pass the message_id of the message we
+            // just quoted, to avoid incorrectly replying to an
+            // unrelated selected message in interleaved views.
+            message_id,
+            keep_composebox_empty: true,
         });
-        compose_recipient.toggle_compose_recipient_dropdown();
-    } else {
-        if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
-            // Whether or not the compose box is open, it's empty, so
-            // we start a new message replying to the quoted message.
-            respond_to_message({
-                ...opts,
-                // Critically, we pass the message_id of the message we
-                // just quoted, to avoid incorrectly replying to an
-                // unrelated selected message in interleaved views.
-                message_id,
-                keep_composebox_empty: true,
-            });
-        }
+    }
+    compose_ui.insert_syntax_and_focus(
+        quoting_placeholder,
+        get_textarea(opts.forward_message),
+        "block",
+    );
+}
 
-        compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
+function replace_content(message: Message, raw_content: string, forward_message?: boolean): void {
+    let content;
+    const sender_mention = `@_**${message.sender_full_name}|${message.sender_id}**`;
+
+    if (!forward_message) {
+        // Final message looks like:
+        //     @_**Iago|5** [said](link to message):
+        //     ```quote
+        //     message content
+        //     ```
+        content = $t(
+            {defaultMessage: "{username} [said]({link_to_message}):"},
+            {
+                username: sender_mention,
+                link_to_message: hash_util.by_conversation_and_time_url(message),
+            },
+        );
+    } else if (message.type === "stream") {
+        const link = internal_url.by_stream_topic_url(
+            message.stream_id,
+            message.topic,
+            sub_store.maybe_get_stream_name,
+            message.id,
+        );
+        const channel_name = sub_store.maybe_get_stream_name(message.stream_id)!;
+        const topic_link_syntax = topic_link_util.get_stream_topic_link_syntax(
+            channel_name,
+            message.topic,
+            true,
+        );
+        // Final message looks like:
+        //     @_**Iago|5** [said](link to message) in [#channel > topic](link to topic):
+        //     ```quote
+        //     message content
+        //     ```
+        // Keep syntax in sync with channel message reminder format in zerver/lib/reminders.py
+        content = $t(
+            {
+                defaultMessage: "{username} [said]({link_to_message}) in {topic_link_syntax}:",
+            },
+            {
+                username: sender_mention,
+                link_to_message: hash_util.by_conversation_and_time_url(message),
+                topic_link_syntax: topic_link_util.as_markdown_link_syntax(topic_link_syntax, link),
+            },
+        );
+    } else {
+        const dm_user_ids = people.all_user_ids_in_pm(message)!;
+        const recipient_user_ids =
+            dm_user_ids.length > 1
+                ? dm_user_ids.filter((id) => id !== message.sender_id)
+                : [message.sender_id];
+        const recipient_users = recipient_user_ids.map((recipient_id) =>
+            people.get_by_user_id(recipient_id),
+        );
+        // Final message looks like:
+        //     @_**Iago|5** [said](link to message) to {direct message recipient mentions}:
+        //     ```quote
+        //     message content
+        //     ```
+        // Keep syntax in sync with direct message reminder format in zerver/lib/reminders.py
+        content = $t(
+            {
+                defaultMessage:
+                    "{username} [said]({link_to_message}) to {list_of_recipient_mentions}:",
+            },
+            {
+                username: sender_mention,
+                link_to_message: hash_util.by_conversation_and_time_url(message),
+                list_of_recipient_mentions: people.get_user_mentions_for_display(
+                    recipient_users,
+                    true,
+                ),
+            },
+        );
     }
 
-    function replace_content(
-        message: Message,
-        raw_content: string,
-        forward_message?: boolean,
-    ): void {
-        let content;
-        const sender_mention = `@_**${message.sender_full_name}|${message.sender_id}**`;
+    content += "\n";
+    const fence = fenced_code.get_unused_fence(raw_content);
+    content += `${fence}quote\n${raw_content}\n${fence}`;
 
-        if (!forward_message) {
-            // Final message looks like:
-            //     @_**Iago|5** [said](link to message):
-            //     ```quote
-            //     message content
-            //     ```
-            content = $t(
-                {defaultMessage: "{username} [said]({link_to_message}):"},
-                {
-                    username: sender_mention,
-                    link_to_message: hash_util.by_conversation_and_time_url(message),
-                },
-            );
-        } else if (message.type === "stream") {
-            const link = internal_url.by_stream_topic_url(
-                message.stream_id,
-                message.topic,
-                sub_store.maybe_get_stream_name,
-                message.id,
-            );
-            const channel_name = sub_store.maybe_get_stream_name(message.stream_id)!;
-            const topic_link_syntax = topic_link_util.get_stream_topic_link_syntax(
-                channel_name,
-                message.topic,
-                true,
-            );
-            // Final message looks like:
-            //     @_**Iago|5** [said](link to message) in [#channel > topic](link to topic):
-            //     ```quote
-            //     message content
-            //     ```
-            // Keep syntax in sync with channel message reminder format in zerver/lib/reminders.py
-            content = $t(
-                {
-                    defaultMessage: "{username} [said]({link_to_message}) in {topic_link_syntax}:",
-                },
-                {
-                    username: sender_mention,
-                    link_to_message: hash_util.by_conversation_and_time_url(message),
-                    topic_link_syntax: topic_link_util.as_markdown_link_syntax(
-                        topic_link_syntax,
-                        link,
-                    ),
-                },
-            );
-        } else {
-            const dm_user_ids = people.all_user_ids_in_pm(message)!;
-            const recipient_user_ids =
-                dm_user_ids.length > 1
-                    ? dm_user_ids.filter((id) => id !== message.sender_id)
-                    : [message.sender_id];
-            const recipient_users = recipient_user_ids.map((recipient_id) =>
-                people.get_by_user_id(recipient_id),
-            );
-            // Final message looks like:
-            //     @_**Iago|5** [said](link to message) to {direct message recipient mentions}:
-            //     ```quote
-            //     message content
-            //     ```
-            // Keep syntax in sync with direct message reminder format in zerver/lib/reminders.py
-            content = $t(
-                {
-                    defaultMessage:
-                        "{username} [said]({link_to_message}) to {list_of_recipient_mentions}:",
-                },
-                {
-                    username: sender_mention,
-                    link_to_message: hash_util.by_conversation_and_time_url(message),
-                    list_of_recipient_mentions: people.get_user_mentions_for_display(
-                        recipient_users,
-                        true,
-                    ),
-                },
-            );
-        }
+    compose_ui.replace_syntax(
+        quoting_placeholder,
+        content,
+        get_textarea(forward_message),
+        forward_message,
+    );
+    compose_ui.autosize_textarea(get_textarea(forward_message));
 
-        content += "\n";
-        const fence = fenced_code.get_unused_fence(raw_content);
-        content += `${fence}quote\n${raw_content}\n${fence}`;
+    if (!forward_message) {
+        return;
+    }
+    const select_recipient_widget: tippy.ReferenceElement | undefined = $(
+        "#compose_select_recipient_widget",
+    )[0];
+    if (select_recipient_widget !== undefined) {
+        void select_recipient_widget._tippy?.popperInstance?.update();
+    }
+}
 
-        compose_ui.replace_syntax(quoting_placeholder, content, $textarea, opts.forward_message);
-        compose_ui.autosize_textarea($textarea);
+export function quote_message(opts: QuoteMessageOpts): void {
+    quote_single_message(opts);
+}
 
-        if (!opts.forward_message) {
-            return;
-        }
-        const select_recipient_widget: tippy.ReferenceElement | undefined = $(
-            "#compose_select_recipient_widget",
-        )[0];
-        if (select_recipient_widget !== undefined) {
-            void select_recipient_widget._tippy?.popperInstance?.update();
-        }
+function quote_single_message(opts: QuoteMessageOpts): void {
+    const {message_id, message, quote_content} = get_quote_target_for_single_message(opts);
+    if (opts.forward_message) {
+        setup_compose_to_forward_single_message(message, opts);
+    } else {
+        setup_compose_to_quote_single_message(message_id, opts);
     }
 
     if (message && quote_content) {
