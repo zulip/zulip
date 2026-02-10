@@ -770,6 +770,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         callback(_name: string | undefined, key: string) {
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
+            $("#user-profile-modal").removeClass("prevent-user-modal-content-scrolling");
             $("#user-profile-modal .manage-profile-tab-footer").removeClass(
                 "manage-profile-tab-active",
             );
@@ -782,10 +783,12 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
                     break;
                 case "user-profile-groups-tab": {
                     render_or_update_user_groups_tab(user);
+                    $("#user-profile-modal").addClass("prevent-user-modal-content-scrolling");
                     break;
                 }
                 case "user-profile-streams-tab": {
                     void render_or_update_user_streams_tab(user);
+                    $("#user-profile-modal").addClass("prevent-user-modal-content-scrolling");
                     break;
                 }
                 case "manage-profile-tab":
