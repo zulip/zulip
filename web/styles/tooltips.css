@@ -101,6 +101,29 @@
         top: 0.5px;
     }
 
+    .message-link-tooltip {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .message-link-tooltip-avatar {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        flex-shrink: 0;
+        /* Align avatar with the first line of text. */
+        margin-top: 1px;
+    }
+
+    .message-link-tooltip-body {
+        min-width: 0;
+    }
+
+    .message-link-tooltip-preview {
+        font-weight: normal;
+    }
+
     /* If the reference of the tooltip is went offscreen while scrolling,
        the tooltip will be visible until the scrolling stops. Popper adds
        `data-reference-hidden` attribute to those tooltips whole reference is

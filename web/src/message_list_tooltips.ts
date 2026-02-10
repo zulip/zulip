@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
+import render_message_link_tooltip from "../templates/message_link_tooltip.hbs";
 import render_message_media_preview_tooltip from "../templates/message_media_preview_tooltip.hbs";
 import render_message_row_date_tooltip from "../templates/message_row_date_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
@@ -10,8 +11,11 @@ import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_li
 
 import * as compose_validate from "./compose_validate.ts";
 import * as flatpickr from "./flatpickr.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
+import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
 import * as rows from "./rows.ts";
@@ -484,6 +488,57 @@ export function initialize(): void {
             if (is_disabled) {
                 return false;
             }
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    // Tooltip for message links (e.g., #channel > topic @ 💬) showing
+    // a preview of the linked message with the sender's avatar and name.
+    message_list_tooltip(".rendered_markdown a.message-link", {
+        delay: LONG_HOVER_DELAY,
+        placement: "top",
+        maxWidth: "20em",
+        onShow(instance) {
+            const $link = $(instance.reference);
+            const href = $link.attr("href");
+            if (href === undefined) {
+                return false;
+            }
+
+            const channel_topic = hash_util.decode_stream_topic_from_url(href);
+            if (channel_topic === null || channel_topic.message_id === undefined) {
+                return false;
+            }
+
+            const message_id = Number.parseInt(channel_topic.message_id, 10);
+            const message = message_store.get(message_id);
+            if (message === undefined) {
+                return false;
+            }
+
+            const avatar_url = people.small_avatar_url(message);
+            const sender_name = message.sender_full_name;
+
+            // Strip HTML tags to get a plain text preview, and
+            // truncate to a reasonable length for a tooltip.
+            const div = document.createElement("div");
+            div.innerHTML = message.content;
+            const text_content = div.textContent ?? "";
+            const content_preview =
+                text_content.length > 200 ? text_content.slice(0, 200) + "…" : text_content;
+
+            instance.setContent(
+                parse_html(
+                    render_message_link_tooltip({
+                        avatar_url,
+                        sender_name,
+                        content_preview,
+                    }),
+                ),
+            );
             return undefined;
         },
         onHidden(instance) {
