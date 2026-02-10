@@ -597,11 +597,6 @@ ul.popover-group-menu-member-list {
             .channel-privacy-type-icon {
                 /* 13px at 16px/1em */
                 font-size: 0.8125em;
-                /* 13px at 13px/1em */
-                width: 1em;
-                height: 1em;
-                position: relative;
-                top: 2px;
             }
         }
 
