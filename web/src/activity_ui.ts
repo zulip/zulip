@@ -287,7 +287,13 @@ export let set_cursor_and_filter = (): void => {
 
     const $input = user_filter.input_field();
 
-    $input.on("blur", () => {
+    $input.on("blur", (e) => {
+        if (
+            e.relatedTarget instanceof HTMLElement &&
+            $(e.relatedTarget).closest(".user-list-sidebar-menu-icon").length > 0
+        ) {
+            return;
+        }
         user_cursor!.clear();
     });
 
@@ -306,7 +312,105 @@ export let set_cursor_and_filter = (): void => {
                 user_cursor!.next();
                 return true;
             },
+            Tab() {
+                const user_id = user_cursor!.get_key();
+                if (user_id === undefined) {
+                    return false;
+                }
+                const $li = buddy_list.find_li({key: user_id});
+                if ($li === undefined) {
+                    return false;
+                }
+                const $vdot = $li.find(".user-list-sidebar-menu-icon").first();
+                if ($vdot.length === 0) {
+                    // No vdot on this row (e.g., "show avatar" style).
+                    // Consume Tab to prevent browser default.
+                    return true;
+                }
+                $vdot.trigger("focus");
+                return true;
+            },
         },
+    });
+
+    $(".buddy-list-section").on("keydown", ".user-list-sidebar-menu-icon", (e) => {
+        switch (e.key) {
+            case "Enter":
+                $(e.currentTarget).trigger("click");
+                e.preventDefault();
+                e.stopPropagation();
+                break;
+            case "Escape":
+                $input.trigger("focus");
+                e.preventDefault();
+                e.stopPropagation();
+                break;
+            case "Tab": {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!e.shiftKey) {
+                    user_cursor!.next();
+                }
+                // Save cursor position before focusing search, since
+                // the search input's focus handler resets the cursor.
+                const target_key = user_cursor!.get_key();
+                $input.trigger("focus");
+                if (target_key !== undefined) {
+                    user_cursor!.go_to(target_key);
+                }
+                break;
+            }
+            case "ArrowDown": {
+                e.preventDefault();
+                e.stopPropagation();
+                const old_key = user_cursor!.get_key();
+                user_cursor!.next();
+                const new_key = user_cursor!.get_key();
+                if (new_key !== undefined && new_key !== old_key) {
+                    const $li = buddy_list.find_li({key: new_key});
+                    if ($li !== undefined) {
+                        const $vdot = $li.find(".user-list-sidebar-menu-icon").first();
+                        if ($vdot.length > 0) {
+                            $vdot.trigger("focus");
+                        }
+                    }
+                }
+                break;
+            }
+            case "ArrowUp": {
+                e.preventDefault();
+                e.stopPropagation();
+                const old_key = user_cursor!.get_key();
+                user_cursor!.prev();
+                const new_key = user_cursor!.get_key();
+                if (new_key !== undefined && new_key !== old_key) {
+                    const $li = buddy_list.find_li({key: new_key});
+                    if ($li !== undefined) {
+                        const $vdot = $li.find(".user-list-sidebar-menu-icon").first();
+                        if ($vdot.length > 0) {
+                            $vdot.trigger("focus");
+                            return;
+                        }
+                    }
+                }
+                $input.trigger("focus");
+                break;
+            }
+            default:
+                break;
+        }
+    });
+
+    $(".buddy-list-section").on("focusout", ".user-list-sidebar-menu-icon", (e) => {
+        // Don't clear if focus moves to the search input or another vdot.
+        if (
+            e.relatedTarget instanceof HTMLElement &&
+            ($(e.relatedTarget).closest(".user-list-filter").length > 0 ||
+                $(e.relatedTarget).closest(".user-list-sidebar-menu-icon").length > 0)
+        ) {
+            return;
+        }
+        user_cursor!.clear();
     });
 };
 

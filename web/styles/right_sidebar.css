@@ -148,7 +148,7 @@
         }
 
         &.narrow-filter:has(a.user-presence-link:focus-visible),
-        &.highlighted_user {
+        &.highlighted_user:not(:has(:focus)) {
             outline: 2px solid var(--color-outline-focus);
             outline-offset: -2px;
         }

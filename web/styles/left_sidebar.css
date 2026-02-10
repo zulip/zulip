@@ -328,7 +328,8 @@
 
     &.hover-over-dm-section,
     &.zoom-in,
-    &:hover {
+    &:hover,
+    &.highlighted_row {
         .compose-new-direct-message,
         .show-all-direct-messages {
             display: flex;
@@ -432,7 +433,8 @@
         visibility: visible;
     }
 
-    &:hover {
+    &:hover,
+    &.highlighted_row {
         background-color: var(--color-background-hover-narrow-filter);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
         /* We only set the border radius on the hover/popover states,
@@ -760,7 +762,7 @@
 }
 
 #stream_filters .narrow-filter:has(a.subscription_block:focus-visible),
-#stream_filters .narrow-filter.highlighted_row {
+#stream_filters .narrow-filter.highlighted_row:not(:has(:focus)) {
     &.active-filter > .bottom_left_row {
         background-color: var(--color-background-hover-narrow-filter);
     }
@@ -784,7 +786,7 @@
 .stream-list-subsection-header,
 .top_left_row,
 .bottom_left_row {
-    &.highlighted_row {
+    &.highlighted_row:not(:has(:focus)) {
         outline: 2px solid var(--color-outline-focus);
         outline-offset: -2px;
     }
@@ -1938,7 +1940,8 @@ li.active-sub-filter {
     }
 }
 
-.narrow-filter:hover {
+.narrow-filter:hover,
+.narrow-filter:has(.highlighted_row) {
     .channel-new-topic-button {
         display: flex;
     }

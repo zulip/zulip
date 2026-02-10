@@ -973,6 +973,14 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         return stream_settings_ui.switch_rows(event_name);
     }
 
+    // Handle our normal popovers that are basically vertical lists of menu items.
+    // This must be before the list_util checks, because when a popover is open
+    // (e.g., from a keyboard-focused vdot icon inside a sidebar list), arrow
+    // keys should navigate the popover, not the underlying list.
+    if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
+        return true;
+    }
+
     if (event_name === "up_arrow" && list_util.inside_list(e)) {
         list_util.go_up(e);
         return true;
@@ -1008,11 +1016,6 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             }
             return true;
         }
-    }
-
-    // Handle our normal popovers that are basically vertical lists of menu items.
-    if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
-        return true;
     }
 
     // Handle the left arrow and right arrow keys to make it easy to
