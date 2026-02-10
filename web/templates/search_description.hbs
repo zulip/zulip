@@ -24,6 +24,16 @@
         {{~ else ~}}
         {{this.prefix_for_operator}}
         {{~/if~}}
+    {{else if (eq this.type "reaction")}}
+        {{~!-- squash whitespace --~}}
+        {{this.verb}}messages with
+        {{~#if this.emoji_details.url~}}
+        &#32;<img src="{{this.emoji_details.url}}" class="emoji" alt="{{this.emoji_details.emoji_name}}" />
+        {{~else~}}
+        &#32;<span class="emoji emoji-{{this.emoji_details.emoji_code}}" role="img" aria-label="{{this.emoji_details.emoji_name}}"></span>
+        {{~/if~}}
+        &#32;reaction
+        {{~!-- squash whitespace --~}}
     {{else if (eq this.type "is_operator")}}
         {{#if (eq this.operand "mentioned")}}
             {{~!-- squash whitespace --~}}

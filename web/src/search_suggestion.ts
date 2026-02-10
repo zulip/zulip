@@ -4,6 +4,8 @@ import assert from "minimalistic-assert";
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
 import * as common from "./common.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
+import * as emoji from "./emoji.ts";
+import * as emoji_frequency_data from "./emoji_frequency_data.ts";
 import {Filter} from "./filter.ts";
 import * as filter_util from "./filter_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -21,6 +23,7 @@ import type {
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as stream_topic_history_util from "./stream_topic_history_util.ts";
+import * as typeahead from "./typeahead.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as util from "./util.ts";
 
@@ -59,6 +62,7 @@ const descriptions: Record<string, string> = {
     "has:image": "messages with images",
     "has:attachment": "messages with attachments",
     "has:reaction": "messages with reactions",
+    reaction: "messages with a specific reaction",
 };
 
 const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[]>> &
@@ -75,7 +79,8 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
         | "has:link"
         | "has:image"
         | "has:attachment"
-        | "has:reaction",
+        | "has:reaction"
+        | "reaction",
         TermPattern[]
     > = {
     channel: channel_incompatible_patterns,
@@ -140,7 +145,8 @@ const incompatible_patterns: Partial<Record<NarrowTerm["operator"], TermPattern[
     "has:link": [{operator: "has", operand: "link"}],
     "has:image": [{operator: "has", operand: "image"}],
     "has:attachment": [{operator: "has", operand: "attachment"}],
-    "has:reaction": [{operator: "has", operand: "reaction"}],
+    "has:reaction": [{operator: "has", operand: "reaction"}, {operator: "reaction"}],
+    reaction: [{operator: "has", operand: "reaction"}],
 };
 
 // TODO: We have stripped suggestion of all other attributes, we should now
@@ -878,6 +884,66 @@ function get_sent_by_me_suggestions(
     return [];
 }
 
+type EmojiCandidate = {
+    name: string;
+    canonical_name: string;
+};
+
+let emoji_candidates: EmojiCandidate[] | undefined;
+let emoji_candidates_source: typeof emoji.emojis_by_name | undefined;
+
+function get_reaction_suggestions(
+    last: NarrowCanonicalTermSuggestion,
+    _terms: NarrowCanonicalTerm[],
+): Suggestion[] {
+    if (last.operator !== "reaction") {
+        return [];
+    }
+
+    const query = last.operand;
+
+    // We cache the candidates to avoid rebuilding the list on every keystroke and also
+    // check the source to invalidate the cache if the underlying emoji data changes.
+    if (emoji_candidates === undefined || emoji_candidates_source !== emoji.emojis_by_name) {
+        emoji_candidates = [];
+        emoji_candidates_source = emoji.emojis_by_name;
+        for (const [name, emoji_dict] of emoji.emojis_by_name) {
+            emoji_candidates.push({name, canonical_name: name});
+            for (const alias of emoji_dict.aliases) {
+                emoji_candidates.push({name: alias, canonical_name: name});
+            }
+        }
+    }
+
+    const valid_emoji_candidates = typeahead.triage(query, emoji_candidates, (x) => x.name).matches;
+
+    const unique_emoji_names = [...new Set(valid_emoji_candidates.map((x) => x.canonical_name))];
+
+    const emojis_with_score = unique_emoji_names.map((name) => {
+        const details = emoji.get_emoji_details_by_name(name);
+        const id = [details.reaction_type, details.emoji_code].join(",");
+        const score = emoji_frequency_data.reaction_data.get(id)?.score ?? 0;
+        return {name, score};
+    });
+
+    emojis_with_score.sort((a, b) => b.score - a.score);
+
+    const suggestions: Suggestion[] = [];
+    for (const {name} of emojis_with_score) {
+        const emoji_name = name;
+        const term: NarrowTerm = {
+            operator: "reaction",
+            operand: emoji_name,
+            negated: last.negated,
+        };
+        suggestions.push(format_as_suggestion([term]));
+        if (suggestions.length >= max_num_of_search_results) {
+            break;
+        }
+    }
+    return suggestions;
+}
+
 function get_operator_suggestions(
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
@@ -908,6 +974,7 @@ function get_operator_suggestions(
             "near",
             "from",
             "pm-with",
+            "reaction",
             "streams",
             "stream",
         ];
@@ -1220,6 +1287,7 @@ export function get_search_result(
         get_people("dm-including"),
         get_topic_suggestions,
         get_has_filter_suggestions,
+        get_reaction_suggestions,
     ];
 
     if (page_params.is_spectator) {
