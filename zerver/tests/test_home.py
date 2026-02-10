@@ -763,6 +763,21 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.assertFalse(user.is_imported_stub)
 
+        # Test date_joined is set to the current date when user logs in for the
+        # first time.
+        user.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+        user.save()
+
+        now = timezone_now()
+        result = self.client_post("/accounts/accept_terms/", {"terms": True})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
+
+        user = self.example_user("hamlet")
+        # Check that date_joined is updated to the time when user accepts ToS when logging
+        # in for the first time.
+        self.assertGreater(user.date_joined, now)
+
     def test_set_email_address_visibility_without_terms_of_service(self) -> None:
         self.login("hamlet")
         user = self.example_user("hamlet")

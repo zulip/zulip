@@ -558,6 +558,21 @@ paths:
                                         is_imported_stub:
                                           type: boolean
                                           description: This value is always `false`.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        Sent when the `date_joined` value is updated after the user
+                                        logs in for the first time.
+
+                                        **Changes**: New in Zulip 12.0 (feature level ZF-658515).
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        date_joined:
+                                          type: string
+                                          description: The time when the user logged in to their account for the first time.
                               additionalProperties: false
                               example:
                                 {
@@ -11028,7 +11043,8 @@ paths:
                       date_joined:
                         type: string
                         description: |
-                          The time the requesting user's account was created.
+                          The time when the user joined. This is set to the account creation time until the first login,
+                          after which it is set to the time when user logged in for the first time.
 
                           **Changes**: New in Zulip 3.0 (feature level 10).
                         example: "2019-10-20T07:50:53.728864+00:00"
@@ -27898,7 +27914,8 @@ components:
         date_joined:
           type: string
           description: |
-            The time the user account was created.
+            The time when the user joined. This is set to the account creation time until the first login,
+            after which it is set to the time when user logged in for the first time.
         is_active:
           type: boolean
           description: |
