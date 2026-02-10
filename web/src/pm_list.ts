@@ -328,6 +328,9 @@ function zoom_in(): void {
 }
 
 function zoom_out(): void {
+    if (!zoomed) {
+        return;
+    }
     zoomed = false;
     ui_util.enable_left_sidebar_search();
     clear_search();

@@ -68,12 +68,18 @@ export function clear(): void {
 }
 
 export function close(): void {
-    zoomed = false;
     clear();
-    ui_util.enable_left_sidebar_search();
+    if (zoomed) {
+        zoomed = false;
+        ui_util.enable_left_sidebar_search();
+    }
 }
 
 export function zoom_out(): void {
+    if (!zoomed) {
+        return;
+    }
+
     zoomed = false;
     ui_util.enable_left_sidebar_search();
 
