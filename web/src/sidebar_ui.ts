@@ -659,6 +659,11 @@ export function focus_pm_search_filter(): void {
 export function set_event_handlers(): void {
     const $search_input = $(".left-sidebar-search-input").expectOne();
 
+    // Set during Enter key processing to prevent the focusout
+    // handler from clearing the cursor while the link click
+    // briefly moves focus away from the search input.
+    let navigating_from_sidebar = false;
+
     function keydown_enter_key(): void {
         const $row = left_sidebar_cursor.get_key();
 
@@ -683,6 +688,9 @@ export function set_event_handlers(): void {
         // Clear search input so that there is no confusion
         // about which search input is active.
         $search_input.val("");
+        // Prevent the focusout handler from clearing the cursor
+        // while the link click briefly steals focus.
+        navigating_from_sidebar = true;
         const $nearest_link = $row.find("a").first();
         if ($nearest_link.length > 0) {
             // If the row has a link, we click it.
@@ -695,7 +703,29 @@ export function set_event_handlers(): void {
         // Don't trigger `input` which confuses the search input
         // for zoomed in topic search.
         actually_update_left_sidebar_for_search();
-        $search_input.trigger("blur");
+        // Keep the cursor on the selected row so the user can
+        // continue keyboard-navigating without re-entering the
+        // sidebar. We defer the re-focus so it happens after the
+        // hashchange handler processes the navigation.
+        const $saved_row = $row;
+        setTimeout(() => {
+            navigating_from_sidebar = false;
+            left_sidebar_cursor.set_is_highlight_visible(true);
+            // Topic and DM rows get recreated during navigation,
+            // so the saved reference may be detached. Fall back to
+            // finding the newly-active row in the DOM.
+            if (document.contains($saved_row[0]!)) {
+                left_sidebar_cursor.go_to($saved_row);
+            } else {
+                const $active = $(
+                    ".active-sub-filter, .active-filter, .top-left-active-filter",
+                ).first();
+                if ($active.length > 0) {
+                    left_sidebar_cursor.go_to($active);
+                }
+            }
+            $search_input.trigger("focus");
+        }, 0);
     }
 
     keydown_util.handle({
@@ -751,6 +781,11 @@ export function set_event_handlers(): void {
             e.relatedTarget instanceof HTMLElement &&
             $(e.relatedTarget).closest(left_sidebar_tabbable_buttons()).length > 0
         ) {
+            return;
+        }
+        // Don't clear highlight during Enter key processing; the
+        // link click briefly steals focus before we restore it.
+        if (navigating_from_sidebar) {
             return;
         }
         left_sidebar_cursor.clear();
