@@ -354,6 +354,10 @@ DEFAULT_RATE_LIMITING_RULES = {
         # 10 demos per day
         (86400, 10),
     ],
+    "transfer_remote_server_registration_endpoint_by_ip": [
+        # 10 transfer registration requests per day per IP
+        (86400, 10),
+    ],
 }
 # Rate limiting defaults can be individually overridden by adding
 # entries in this object, which is merged with

@@ -275,6 +275,7 @@ RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {
     "email_change_by_user": [],
     "password_reset_form_by_email": [],
     "sends_email_by_remote_server": [],
+    "transfer_remote_server_registration_endpoint_by_ip": [],
 }
 
 CLOUD_FREE_TRIAL_DAYS: int | None = None

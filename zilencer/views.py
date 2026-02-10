@@ -69,7 +69,7 @@ from zerver.lib.push_notifications import (
     validate_token,
 )
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.rate_limiter import rate_limit_endpoint_absolute
+from zerver.lib.rate_limiter import rate_limit_endpoint_absolute, rate_limit_request_by_ip
 from zerver.lib.remote_server import (
     InstallationCountDataForAnalytics,
     RealmAuditLogDataForAnalytics,
@@ -178,6 +178,9 @@ def validate_hostname_or_raise_error(hostname: str) -> None:
 @require_post
 @typed_endpoint
 def transfer_remote_server_registration(request: HttpRequest, *, hostname: str) -> HttpResponse:
+    # We need to rate limit this endpoint to prevent hostname enumeration.
+    rate_limit_request_by_ip(request, domain="transfer_remote_server_registration_endpoint_by_ip")
+
     validate_hostname_or_raise_error(hostname)
 
     if not RemoteZulipServer.objects.filter(hostname=hostname, deactivated=False).exists():
