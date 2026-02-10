@@ -2038,17 +2038,23 @@ li.active-sub-filter {
 }
 
 /*
-    When you hover over list items, we hover
-    the vdots in light gray.
+    When you hover over or keyboard-highlight list
+    items, we show the vdots in light gray.
 
     The stream icon should always display when
-    any topic is hovered, which is why it gets
-    a more specific selector here.
+    any topic is hovered/highlighted, which is why
+    it gets a more specific selector here.
 */
 #stream_filters li:hover .stream-sidebar-menu-icon,
+#stream_filters li:has(.highlighted_row) .stream-sidebar-menu-icon,
 .top_left_row:hover .sidebar-menu-icon,
+.top_left_row.highlighted_row .sidebar-menu-icon,
 .bottom_left_row:hover .sidebar-menu-icon,
+.bottom_left_row.highlighted_row .sidebar-menu-icon,
 #stream_filters .stream-list-subsection-header:hover .sidebar-menu-icon,
+#stream_filters
+    .stream-list-subsection-header.highlighted_row
+    .sidebar-menu-icon,
 .app-main .column-left .left-sidebar .left_sidebar_menu_icon_visible {
     /* We push against `display: none` with
        `display: flex` because the sidebar vdots

@@ -125,7 +125,8 @@
         visibility: hidden;
     }
 
-    li:hover {
+    li:hover,
+    li.highlighted_user {
         .user-list-sidebar-menu-icon {
             visibility: visible;
         }
