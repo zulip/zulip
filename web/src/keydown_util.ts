@@ -2,16 +2,20 @@
     See hotkey.ts for handlers that are more app-wide.
 */
 
+import $ from "jquery";
+import assert from "minimalistic-assert";
+
 export const vim_left = "h";
 export const vim_down = "j";
 export const vim_up = "k";
 export const vim_right = "l";
 
 export function handle(opts: {
-    $elem: JQuery;
+    $elem?: JQuery;
     handlers: Record<string, ((e?: JQuery.KeyDownEvent) => boolean) | undefined>;
+    selector?: string;
 }): void {
-    opts.$elem.on("keydown", (e) => {
+    function keydown_event_handler(e: JQuery.KeyDownEvent): void {
         if (e.altKey || e.ctrlKey || e.shiftKey) {
             return;
         }
@@ -27,7 +31,14 @@ export function handle(opts: {
             e.preventDefault();
             e.stopPropagation();
         }
-    });
+    }
+
+    if (opts.selector) {
+        $("body").on("keydown", opts.selector, keydown_event_handler);
+    } else {
+        assert(opts.$elem !== undefined);
+        opts.$elem.on("keydown", keydown_event_handler);
+    }
 }
 
 export function is_enter_event(event: JQuery.KeyboardEventBase): boolean {

@@ -782,6 +782,7 @@
 #views-label-container,
 #direct-messages-section-header,
 .stream-list-subsection-header,
+#hide-more-direct-messages,
 .top_left_row,
 .bottom_left_row {
     &.highlighted_row {

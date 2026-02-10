@@ -471,27 +471,45 @@ export function initialize_right_sidebar(): void {
 }
 
 function get_header_rows_selectors(): string {
-    return (
-        // Views header.
-        "#left-sidebar-navigation-area:not(.hidden-by-filters) #views-label-container, " +
-        // DM Headers
-        "#direct-messages-section-header, " +
-        // All channel headers.
-        ".stream-list-section-container:not(.no-display) .stream-list-subsection-header"
-    );
+    // Views header
+    let selectors = "#left-sidebar-navigation-area:not(.hidden-by-filters) #views-label-container";
+
+    // All channel headers, which are only shown when zoomed out
+    if (!pm_list.is_zoomed_in() && !stream_list.is_zoomed_in()) {
+        selectors = `${selectors}, .stream-list-section-container:not(.no-display) .stream-list-subsection-header`;
+    }
+
+    // DM header, only show when zoomed out or when DMs are zoomed in
+    if (!stream_list.is_zoomed_in()) {
+        selectors = `${selectors}, #direct-messages-section-header`;
+    }
+
+    return selectors;
 }
 
 function all_rows(): JQuery {
     // NOTE: This function is designed to be used for keyboard navigation purposes.
     // This function returns all the rows in the left sidebar.
     // It is used to find the first key for the ListCursor.
-    const $all_rows = $(
-        // All left sidebar view rows.
-        ".top_left_row, " +
-            // All DM and channel rows.
-            ".bottom_left_row, " +
-            get_header_rows_selectors(),
-    ).not(".hidden-by-filters");
+    let selectors = `${get_header_rows_selectors()}, .top_left_row`;
+
+    if (pm_list.is_zoomed_in()) {
+        selectors = `${selectors}, #hide-more-direct-messages`;
+    }
+
+    if (stream_list.is_zoomed_in()) {
+        selectors = `${selectors}, .show-all-streams, .topic-list .bottom_left_row`;
+    }
+
+    if (!pm_list.is_zoomed_in() && !stream_list.is_zoomed_in()) {
+        selectors = `${selectors}, #streams_list .bottom_left_row, #subscribe-to-more-streams`;
+    }
+
+    if (!stream_list.is_zoomed_in()) {
+        selectors = `${selectors}, .dm-list .bottom_left_row`;
+    }
+
+    const $all_rows = $(selectors).not(".hidden-by-filters");
     // Remove rows hidden due to being inactive or muted.
     const $inactive_or_muted_rows = $(
         "#streams_list:not(.is_searching) .stream-list-section-container:not(.showing-inactive-or-muted)" +
@@ -514,12 +532,16 @@ function all_rows(): JQuery {
         "#streams_list.is_searching .stream-list-toggle-inactive-or-muted-channels.bottom_left_row",
     );
 
-    return $all_rows
-        .not($inactive_or_muted_rows)
-        .not($collapsed_views)
-        .not($collapsed_channels)
-        .not($hidden_topic_rows)
-        .not($toggle_inactive_or_muted_channels_row);
+    return (
+        $all_rows
+            .not($inactive_or_muted_rows)
+            .not($collapsed_views)
+            .not($collapsed_channels)
+            .not($hidden_topic_rows)
+            .not($toggle_inactive_or_muted_channels_row)
+            // DM header with search box
+            .not($(".dm-zoomed-in #direct-messages-section-header"))
+    );
 }
 
 class LeftSidebarListCursor extends ListCursor<JQuery> {
@@ -543,6 +565,14 @@ export function initialize_left_sidebar_cursor(): void {
                 const $all_rows = all_rows();
                 if ($all_rows.length === 0) {
                     return undefined;
+                }
+                if (pm_list.is_zoomed_in()) {
+                    const $first_conversation = $(".dm-list .bottom_left_row")
+                        .not(".hidden-by-filters")
+                        .first();
+                    if ($first_conversation.length > 0) {
+                        return $first_conversation;
+                    }
                 }
                 const $non_header_rows = $all_rows.not($(get_header_rows_selectors()));
                 return $non_header_rows.first();
@@ -670,7 +700,9 @@ export function set_event_handlers(): void {
         if (
             $row.hasClass("stream-list-toggle-inactive-or-muted-channels") ||
             $row[0]!.id === "direct-messages-section-header" ||
-            $row.hasClass("stream-list-subsection-header")
+            $row.hasClass("stream-list-subsection-header") ||
+            $row[0]!.id === "show-more-direct-messages" ||
+            $row[0]!.id === "hide-more-direct-messages"
         ) {
             $row.trigger("click");
             return;
@@ -716,6 +748,27 @@ export function set_event_handlers(): void {
         left_sidebar_cursor.clear();
     });
     $search_input.on("input", update_left_sidebar_for_search);
+
+    keydown_util.handle({
+        selector: ".direct-messages-list-filter",
+        handlers: {
+            Enter() {
+                keydown_enter_key();
+                return true;
+            },
+            ArrowUp() {
+                left_sidebar_cursor.prev();
+                return true;
+            },
+            ArrowDown() {
+                left_sidebar_cursor.next();
+                return true;
+            },
+        },
+    });
+    $("body").on("focus", ".direct-messages-list-filter", () => {
+        left_sidebar_cursor.reset();
+    });
 }
 
 export function initiate_search(): void {
