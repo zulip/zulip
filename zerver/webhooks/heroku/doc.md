@@ -9,14 +9,9 @@ is pushed to Heroku using the Zulip Heroku plugin!
 
 1. {!generate-webhook-url-basic.md!}
 
-1. In your project on Heroku, go to the **Resources** tab.
+1. From the Heroku dashboard page for your app, click the “More” menu at the top-right, and select **View Webhooks**.
 
-1. Add the **Deploy Hooks** add-on. Select the **HTTP Post Hook** plan,
-   and click **Provision**. Click on the **Deploy Hooks** add-on you
-   just added.
-
-1. Set **URL** to the URL generated above. Click **Save and Send Test**
-   to send a test message to your Zulip organization.
+1. Click **Create Webhook**, and set the **Payload URL** to the URL generated above. From **Event Types**, select the events that you want to receive notifications for, and click **Add Webhook**.
 
 {end_tabs}
 
@@ -24,6 +19,12 @@ is pushed to Heroku using the Zulip Heroku plugin!
 
 ![](/static/images/integrations/heroku/001.png)
 
+{!event-filtering-additional-feature.md!}
+
 ### Related documentation
 
 {!webhooks-url-specification.md!}
+
+- [Heroku App webhooks documentation][Heroku Webhooks Documentation]
+
+[Heroku Webhooks Documentation]: https://devcenter.heroku.com/articles/app-webhooks
