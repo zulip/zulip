@@ -11,7 +11,6 @@ from typing_extensions import override
 
 from analytics.models import BaseCount
 from zerver.lib.rate_limiter import RateLimitedObject
-from zerver.lib.rate_limiter import rules as rate_limiter_rules
 from zerver.models import (
     AbstractPushDevice,
     AbstractPushDeviceToken,
@@ -535,7 +534,7 @@ class RateLimitedRemoteZulipServer(RateLimitedObject):
 
     @override
     def rules(self) -> list[tuple[int, int]]:
-        return rate_limiter_rules[self.domain]
+        return settings.RATE_LIMITING_RULES[self.domain]
 
 
 @dataclass

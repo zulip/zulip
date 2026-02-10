@@ -25,7 +25,6 @@ from zerver.models import UserProfile
 # https://www.domaintools.com/resources/blog/rate-limiting-with-redis
 
 client = get_redis_client()
-rules: dict[str, list[tuple[int, int]]] = settings.RATE_LIMITING_RULES
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +138,7 @@ class RateLimitedUser(RateLimitedObject):
                 (seconds, requests) = limit.split(":", 2)
                 result.append((int(seconds), int(requests)))
             return result
-        return rules[self.domain]
+        return settings.RATE_LIMITING_RULES[self.domain]
 
 
 class RateLimitedIPAddr(RateLimitedObject):
@@ -174,7 +173,7 @@ class RateLimitedIPAddr(RateLimitedObject):
 
     @override
     def rules(self) -> list[tuple[int, int]]:
-        return rules[self.domain]
+        return settings.RATE_LIMITING_RULES[self.domain]
 
 
 class RateLimitedEndpoint(RateLimitedObject):
