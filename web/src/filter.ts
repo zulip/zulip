@@ -639,52 +639,6 @@ export class Filter {
         return term_types.toSorted(compare);
     }
 
-    static operator_to_prefix(operator: NarrowTerm["operator"], negated?: boolean): string {
-        operator = filter_util.canonicalize_operator(operator);
-
-        if (operator === "search") {
-            return negated ? "exclude" : "search for";
-        }
-
-        const verb = negated ? "exclude " : "";
-
-        switch (operator) {
-            case "channel":
-                return verb + "messages in a specific channel";
-            case "channels":
-                return verb + "channel type";
-            case "near":
-                return verb + "messages around";
-
-            // Note: We hack around using this in "describe" below.
-            case "has":
-                return verb + "messages with";
-
-            case "id":
-                return verb + "message ID";
-
-            case "topic":
-                return verb + "topic";
-
-            case "sender":
-                return verb + "sent by";
-
-            case "dm":
-                return verb + "direct messages with";
-
-            case "dm-including":
-                return verb + "direct messages including";
-
-            case "in":
-                return verb + "messages in";
-
-            // Note: We hack around using this in "describe" below.
-            case "is":
-                return verb + "messages that are";
-        }
-        return "";
-    }
-
     // Convert a list of terms to a human-readable description.
     static parts_for_describe(term: NarrowTermSuggestion, is_operator_suggestion: boolean): string {
         // Calling canonicalize_term on the terms is not easy here,
@@ -765,18 +719,43 @@ export class Filter {
                 content: verb + "topic",
             });
         }
-        const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
-        if (prefix_for_operator !== "") {
-            return render_search_description({
-                type: "prefix_for_operator",
-                prefix_for_operator,
-                operand: term.operand,
-            });
+        const operator = filter_util.canonicalize_operator(term.operator);
+        let operand = "";
+
+        if (term.operand !== "") {
+            operand = ` ${term.operand}`;
         }
-        return render_search_description({
-            type: "plain_text",
-            content: "unknown operator",
-        });
+
+        if (operator === "search") {
+            return term.negated ? "exclude" + operand : "search for" + operand;
+        }
+
+        switch (operator) {
+            case "channel":
+                return verb + "messages in a specific channel" + operand;
+            case "channels":
+                return verb + "channel type" + operand;
+            case "near":
+                return verb + "messages around" + operand;
+            case "has":
+                return verb + "messages with" + operand;
+            case "id":
+                return verb + "message ID" + operand;
+            case "topic":
+                return verb + "topic" + operand;
+            case "sender":
+                return verb + "sent by" + operand;
+            case "dm":
+                return verb + "direct messages with" + operand;
+            case "dm-including":
+                return verb + "direct messages including" + operand;
+            case "in":
+                return verb + "messages in" + operand;
+            // Note: We hack around using this above.
+            case "is":
+                return verb + "messages that are" + operand;
+        }
+        return "unknown operator";
     }
 
     static describe_channels_operator(negated: boolean, operand: string): string {
