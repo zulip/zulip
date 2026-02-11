@@ -541,6 +541,8 @@ function all_rows(): JQuery {
             .not($toggle_inactive_or_muted_channels_row)
             // DM header with search box
             .not($(".dm-zoomed-in #direct-messages-section-header"))
+            // topic list header with search box
+            .not($("#streams_list.zoom-in .stream-expanded > .bottom_left_row:first-child"))
     );
 }
 
@@ -568,6 +570,13 @@ export function initialize_left_sidebar_cursor(): void {
                 }
                 if (pm_list.is_zoomed_in()) {
                     const $first_conversation = $(".dm-list .bottom_left_row")
+                        .not(".hidden-by-filters")
+                        .first();
+                    if ($first_conversation.length > 0) {
+                        return $first_conversation;
+                    }
+                } else if (stream_list.is_zoomed_in()) {
+                    const $first_conversation = $(".topic-list .bottom_left_row")
                         .not(".hidden-by-filters")
                         .first();
                     if ($first_conversation.length > 0) {
@@ -702,7 +711,9 @@ export function set_event_handlers(): void {
             $row[0]!.id === "direct-messages-section-header" ||
             $row.hasClass("stream-list-subsection-header") ||
             $row[0]!.id === "show-more-direct-messages" ||
-            $row[0]!.id === "hide-more-direct-messages"
+            $row[0]!.id === "hide-more-direct-messages" ||
+            $row.hasClass("show-more-topics") ||
+            $row.hasClass("show-all-streams")
         ) {
             $row.trigger("click");
             return;
@@ -750,7 +761,7 @@ export function set_event_handlers(): void {
     $search_input.on("input", update_left_sidebar_for_search);
 
     keydown_util.handle({
-        selector: ".direct-messages-list-filter",
+        selector: ".direct-messages-list-filter, #topic_filter_query",
         handlers: {
             Enter() {
                 keydown_enter_key();
@@ -766,7 +777,7 @@ export function set_event_handlers(): void {
             },
         },
     });
-    $("body").on("focus", ".direct-messages-list-filter", () => {
+    $("body").on("focus", ".direct-messages-list-filter, #topic_filter_query", () => {
         left_sidebar_cursor.reset();
     });
 }

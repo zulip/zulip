@@ -783,6 +783,8 @@
 #direct-messages-section-header,
 .stream-list-subsection-header,
 #hide-more-direct-messages,
+#subscribe-to-more-streams,
+.show-all-streams,
 .top_left_row,
 .bottom_left_row {
     &.highlighted_row {
