@@ -770,6 +770,23 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="New Relic",
     ),
     IncomingWebhookIntegration(
+        "notion",
+        ["productivity"],
+        display_name="Notion",
+        url_options=[
+            WebhookUrlOption(
+                name="notion_token",
+                label="Notion API integration token",
+                validator=check_string,
+            ),
+            WebhookUrlOption(
+                name="map_pages_and_datasources_to_topics",
+                label="Send each Notion page/data source to a separate Zulip topic",
+                validator=check_bool,
+            ),
+        ],
+    ),
+    IncomingWebhookIntegration(
         "opencollective",
         ["financial"],
         [WebhookScreenshotConfig("one_time_donation.json")],
@@ -1119,7 +1136,7 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # so the screenshot config is commented out.
     {"beeminder"}
     # Disabled integrations that are in the process of being added or rewritten.
-    | {"intercom"}
+    | {"intercom", "notion"}
     # Integrations that call external API endpoints.
     | {"slack"}
     # Integrations that require screenshots of message threads - support is yet to be added
