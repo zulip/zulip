@@ -1,10 +1,10 @@
 <div class="selected-group-title">
-    <div class="selected-group">
+    <span class="selected-group">
+        <span class="large-icon">
+            <i class="zulip-icon zulip-icon-deactivated-circle deactivated-user-group-icon" aria-hidden="true"></i>
+        </span>
         <span class="selected-group-name" data-tippy-content="{{group_name}}">{{group_name}}</span>
-        <div class="large-icon">
-            <i class="zulip-icon zulip-icon-deactivated-circle deactivated-user-group-icon-right" aria-hidden="true"></i>
-        </div>
-    </div>
+    </span>
     {{#unless is_system_group}}
         <div class="button-group selected-group-buttons" data-group-id="{{group_id}}">
             <div class="join_leave_button_wrapper inline-block">
