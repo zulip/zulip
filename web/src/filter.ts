@@ -738,21 +738,23 @@ export class Filter {
                 content: this.describe_channels_operator(term.negated ?? false, term.operand),
             });
         }
+        if (term.operator === "channel") {
+            const verb = term.negated ? "exclude " : "";
+            if (!term.operand) {
+                return verb + "messages in a specific channel";
+            }
+            const stream = stream_data.get_sub_by_id_string(term.operand);
+            if (stream) {
+                return render_search_description({
+                    type: "plain_text",
+                    content: verb + "messages in #" + stream.name,
+                });
+            }
+            // Assume the operand is a partially formed name and return
+            // the operator as the channel name in the next block.
+        }
         const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
         if (prefix_for_operator !== "") {
-            if (term.operator === "channel") {
-                const stream = stream_data.get_sub_by_id_string(term.operand);
-                const verb = term.negated ? "exclude " : "";
-                if (stream) {
-                    return render_search_description({
-                        type: "channel",
-                        prefix_for_operator: verb + "messages in #",
-                        operand: stream.name,
-                    });
-                }
-                // Assume the operand is a partially formed name and return
-                // the operator as the channel name in the next block.
-            }
             if (term.operator === "topic" && !is_operator_suggestion) {
                 return render_search_description({
                     type: "prefix_for_operator",
