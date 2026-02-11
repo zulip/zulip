@@ -10,6 +10,7 @@ import marked from "../third/marked/lib/marked.cjs";
 import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
 
 import * as fenced_code from "./fenced_code.ts";
+import type {MarkdownProcessor} from "./markdown_processor.ts";
 import * as util from "./util.ts";
 
 // This contains zulip's frontend Markdown implementation; see
@@ -19,6 +20,9 @@ import * as util from "./util.ts";
 // modified from the original implementation.
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
+
+// When set, parse() will use the unified processor instead of marked.js.
+let unified_processor: MarkdownProcessor | undefined;
 
 // If we see preview-related syntax in our content, we will need the
 // backend to render it.
@@ -697,6 +701,10 @@ function handleTex(tex: string, fullmatch: string): string {
     }
 }
 
+export function set_unified_processor(processor: MarkdownProcessor | undefined): void {
+    unified_processor = processor;
+}
+
 export function parse({
     raw_content,
     helper_config,
@@ -707,6 +715,10 @@ export function parse({
     content: string;
     flags: string[];
 } {
+    if (unified_processor !== undefined) {
+        return unified_processor.process(raw_content, helper_config);
+    }
+
     function get_linkifier_regexes(): RegExp[] {
         return [...helper_config.get_linkifier_map().keys()];
     }
