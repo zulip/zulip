@@ -1764,7 +1764,7 @@ textarea.new_message_textarea {
             &.zulip-icon-lock {
                 /* The lock looks better centered without
                    a negative margin-top adjustment. */
-                margin-top: 0;
+                margin-top: 0 !important;
             }
         }
 
