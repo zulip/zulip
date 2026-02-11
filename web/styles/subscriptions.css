@@ -468,7 +468,6 @@ h4.user_group_setting_subsection_title {
             text-align: center;
             text-overflow: ellipsis;
             white-space: nowrap;
-            margin-left: 5px;
         }
 
         .stream-info-title,
@@ -495,7 +494,7 @@ h4.user_group_setting_subsection_title {
                 justify-content: space-between;
 
                 .selected-stream,
-                .selected-group-name {
+                .selected-group {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
@@ -519,16 +518,7 @@ h4.user_group_setting_subsection_title {
                     }
                 }
 
-                .selected-group {
-                    display: flex;
-                    align-items: center;
-                    overflow: hidden;
-                }
-
-                .deactivated-user-group-icon-right {
-                    margin-right: 5px;
-                    margin-left: 3px;
-                    opacity: 0.6;
+                .deactivated-user-group-icon {
                     font-size: var(--base-font-size-px);
                 }
             }
