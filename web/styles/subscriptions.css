@@ -485,10 +485,6 @@ h4.user_group_setting_subsection_title {
         .user-group-info-title {
             margin-left: 5px;
         }
-
-        .deactivated-user-group-icon-right {
-            margin-right: 5px;
-        }
     }
 }
 
@@ -729,8 +725,7 @@ h4.user_group_setting_subsection_title {
     opacity: 0.6;
 }
 
-.deactivated-user-group-icon-right {
-    margin-left: 3px;
+.deactivated-user-group-icon {
     opacity: 0.6;
 }
 

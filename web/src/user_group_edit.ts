@@ -1322,7 +1322,7 @@ export function handle_deleted_group(group_id: number): void {
 
     if (is_editing_group(group_id)) {
         const user_group = user_groups.get_user_group_from_id(group_id);
-        $("#groups_overlay .deactivated-user-group-icon-right").show();
+        $("#groups_overlay .deactivated-user-group-icon").show();
 
         update_group_deactivated_banner(user_group);
         update_deactivate_and_reactivate_buttons(user_group);
@@ -1340,7 +1340,7 @@ export function handle_reactivated_group(group_id: number): void {
 
     if (is_editing_group(group_id)) {
         const user_group = user_groups.get_user_group_from_id(group_id);
-        $("#groups_overlay .deactivated-user-group-icon-right").hide();
+        $("#groups_overlay .deactivated-user-group-icon").hide();
 
         update_group_deactivated_banner(user_group);
         update_deactivate_and_reactivate_buttons(user_group);
