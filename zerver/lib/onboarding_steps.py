@@ -56,6 +56,9 @@ ONE_TIME_NOTICES: list[OneTimeNotice] = [
         name="intro_resolve_topic",
     ),
     OneTimeNotice(
+        name="intro_go_to_conversation_tooltip",
+    ),
+    OneTimeNotice(
         name="navigation_tour_video",
     ),
 ]
