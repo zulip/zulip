@@ -16,6 +16,7 @@ import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
 import {type Message, single_message_content_schema} from "./message_store.ts";
+import * as message_store from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
@@ -328,7 +329,7 @@ export function quote_message(opts: {
         success(raw_data) {
             const data = single_message_content_schema.parse(raw_data);
             assert(data.message.content_type === "text/x-markdown");
-            message.raw_content = data.message.content;
+            message_store.maybe_update_raw_content(message, data.message.content);
             replace_content(message, data.message.content);
         },
         // We set a timeout here to trigger usage of the fallback markdown via the
