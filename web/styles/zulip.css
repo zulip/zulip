@@ -2356,7 +2356,6 @@ body:not(.spectator-view) {
 
 .inbox-filter-dropdown-list-container,
 .recent-view-filter-dropdown-list-container,
-.folder-filter-dropdown-list-container,
 .stream_settings_filter-dropdown-list-container,
 .user_group_visibility_settings-dropdown-list-container {
     overflow: visible;
@@ -2372,6 +2371,76 @@ body:not(.spectator-view) {
         &.current_user_setting {
             background-color: var(--background-color-active-dropdown-item);
             outline: none;
+        }
+    }
+}
+
+.folder-filter-dropdown-list-container {
+    --folder-filter-list-item-active-bg: color-mix(
+        in srgb,
+        var(--color-active-dropdown-item) 7%,
+        transparent
+    );
+    --folder-filter-list-item-selected-bg: color-mix(
+        in srgb,
+        var(--purple-500) 13%,
+        transparent
+    );
+    --folder-filter-list-item-selected-text: light-dark(
+        var(--purple-700),
+        var(--purple-300)
+    );
+
+    .simplebar-content {
+        padding: 4px;
+    }
+
+    .list-item {
+        border-radius: 4px;
+        background-color: transparent;
+        outline: none;
+        margin: 0 4px;
+
+        &:hover {
+            background-color: var(--background-color-active-dropdown-item);
+        }
+
+        &:active {
+            background-color: var(--folder-filter-list-item-active-bg);
+        }
+
+        &:focus,
+        &.current_selection {
+            background-color: var(--folder-filter-list-item-active-bg);
+            outline: none;
+        }
+
+        &.current_user_setting {
+            background-color: var(--folder-filter-list-item-selected-bg);
+            outline: none;
+        }
+
+        &.current_user_setting:hover,
+        &.current_user_setting:active,
+        &.current_user_setting:focus {
+            background-color: var(--folder-filter-list-item-selected-bg);
+        }
+
+        .dropdown-list-item-common-styles {
+            padding: 5px 6px;
+            border-radius: 4px;
+            background-color: transparent;
+        }
+
+        .dropdown-list-item-common-styles:hover,
+        .dropdown-list-item-common-styles:focus {
+            background-color: transparent;
+        }
+
+        &.current_user_setting .dropdown-list-text-selected,
+        &.current_user_setting .setting-disabled-option-text {
+            color: var(--folder-filter-list-item-selected-text);
+            font-weight: 400;
         }
     }
 }

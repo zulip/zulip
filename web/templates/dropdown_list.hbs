@@ -38,15 +38,15 @@
                 {{/if}}
                 {{#if show_disabled_option_name}}
                     {{#if bold_current_selection}}
-                        <span class="setting-disabled-option-text dropdown-list-text-selected">{{name}}</span>
+                        <span class="setting-disabled-option-text dropdown-list-text-selected{{#if make_italic}} italic{{/if}}">{{name}}</span>
                     {{else}}
-                        <span class="setting-disabled-option-text dropdown-list-text-neutral">{{name}}</span>
+                        <span class="setting-disabled-option-text dropdown-list-text-neutral{{#if make_italic}} italic{{/if}}">{{name}}</span>
                     {{/if}}
                 {{else}}
                     {{#if bold_current_selection}}
-                        <span class="setting-disabled-option-text dropdown-list-text-selected">{{t "Disable" }}</span>
+                        <span class="setting-disabled-option-text dropdown-list-text-selected{{#if make_italic}} italic{{/if}}">{{t "Disable" }}</span>
                     {{else}}
-                        <span class="setting-disabled-option-text dropdown-list-text-neutral">{{t "Disable" }}</span>
+                        <span class="setting-disabled-option-text dropdown-list-text-neutral{{#if make_italic}} italic{{/if}}">{{t "Disable" }}</span>
                     {{/if}}
                 {{/if}}
             {{else if (eq unique_id -2)}}
@@ -55,9 +55,9 @@
             {{else}}
                 <span class="dropdown-list-item-name">
                     {{#if bold_current_selection}}
-                        <span class="dropdown-list-text-selected">{{name}}</span>
+                        <span class="dropdown-list-text-selected{{#if make_italic}} italic{{/if}}">{{name}}</span>
                     {{else}}
-                        <span class="dropdown-list-text-neutral">{{name}}</span>
+                        <span class="dropdown-list-text-neutral{{#if make_italic}} italic{{/if}}">{{name}}</span>
                     {{/if}}
                     {{#if (or has_edit_icon has_manage_folder_icon has_delete_icon)}}
                     <span class="dropdown-list-buttons">
