@@ -223,6 +223,41 @@ class ZoomVideoCallTestUserAuth(ZulipTestCase):
         self.assert_json_success(response)
 
 
+class WebexVideoCallTestOAuth(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+
+    def test_register_webex_request_no_settings(self) -> None:
+        with self.settings(VIDEO_WEBEX_CLIENT_ID=None):
+            response = self.client_get("/calls/webex/register")
+            self.assert_json_error(
+                response,
+                "Webex credentials have not been configured",
+            )
+
+    def test_register_zoom_request(self) -> None:
+        response = self.client_get("/calls/webex/register")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].startswith("https://webexapis.com/v1/authorize"))
+
+    @responses.activate
+    def test_create_webex_access_token(self) -> None:
+        responses.add(
+            responses.POST,
+            "https://webexapis.com/v1/access_token",
+            json={"access_token": "oldtoken", "expires_in": -60},
+        )
+
+        response = self.client_get(
+            "/calls/webex/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+        self.assertEqual(response.status_code, 200)
+
+
 class ZoomVideoCallTestServerAuth(ZulipTestCase):
     @override
     def setUp(self) -> None:

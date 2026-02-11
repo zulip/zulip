@@ -979,6 +979,32 @@ paths:
                                 }
                             - type: object
                               description: |
+                                Event sent to a user's clients when the user completes the OAuth flow
+                                for the [Webex integration](/help/configure-call-provider). Clients need
+                                to know whether initiating Webex OAuth is required before creating a Webex
+                                call.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - has_webex_token
+                                value:
+                                  type: boolean
+                                  description: |
+                                    A boolean specifying whether the user has webex
+                                    token or not.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "has_webex_token",
+                                  "value": true,
+                                  "id": 2,
+                                }
+                            - type: object
+                              description: |
                                 A simple event sent when the set of invitations changes.
                                 This event is sent to organization administrators and the creator of
                                 the changed invitation; this tells clients they need to refetch
@@ -5490,9 +5516,13 @@ paths:
                                         - 3 = Zoom (User OAuth integration)
                                         - 4 = BigBlueButton
                                         - 5 = Zoom (Server to Server OAuth integration)
+                                        - 6 = Webex (User OAuth integration)
 
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
+
+                                        **Changes**: In Zulip 12.0 (feature level ZF-b08da1), added the Webex OAuth
+                                        option.
 
                                         **Changes**: In Zulip 10.0 (feature level 353), added the Zoom Server
                                         to Server OAuth option.
@@ -19196,9 +19226,13 @@ paths:
                           - 3 = Zoom (User OAuth integration)
                           - 4 = BigBlueButton
                           - 5 = Zoom (Server to Server OAuth integration)
+                          - 6 = Webex (User OAuth integration)
 
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
+
+                          **Changes**: In Zulip 12.0 (feature level ZF-b08da1), added the Webex OAuth
+                          option.
 
                           **Changes**: In Zulip 10.0 (feature level 353), added the Zoom Server
                           to Server OAuth option.
