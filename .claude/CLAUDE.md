@@ -94,12 +94,18 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
 
 - **Be consistent with existing code.** Look at surrounding code and follow
   the same patterns, as this is a thoughtfully crafted codebase.
+- **Use clear, greppable names** for functions, arguments, variables, and
+  tests. Future developers will `git grep` for relevant terms when
+  researching a problem, so names should communicate purpose clearly.
 - Keep everything well factored for maintainability. Avoid duplicating
   code, especially where access control or subtle correctness is involved.
 - Run `./tools/lint` to catch style issues before committing, including mypy issues.
 - JavaScript/TypeScript code must use `const` or `let`, never `var`.
 - Avoid lodash in favor of modern ECMAScript primitives where available,
   keeping in mind our browserlist.
+- Prefer writing code that is readable without explanation over heavily
+  commented code using clever tricks. Comments should explain "why" when
+  the reason isn't obvious, not narrate "what" the code does.
 - Comments should have a line to themself except for CSS px math.
 
 See: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
@@ -196,19 +202,56 @@ tests.
 ./tools/test-backend zerver/webhooks/<integration>
 ```
 
+### Manual Testing for UI Changes
+
+If a PR makes frontend changes, manually verify the affected UI. This
+catches issues that automated tests miss:
+
+**Visual appearance:**
+
+- Is the new UI consistent with similar elements (fonts, colors, sizes)?
+- Is alignment correct, both vertically and horizontally?
+- Do clickable elements have hover behavior consistent with similar UI?
+- If elements can be disabled, does the disabled state look right?
+- Did the change accidentally affect other parts of the UI? Use
+  `git grep` to check if modified CSS is used elsewhere.
+- Check all of the above in both light and dark themes.
+
+**Responsiveness and internationalization:**
+
+- Does the UI look good at different window sizes, including mobile?
+- Would the UI break if translated strings were 1.5x longer than English?
+
+**Functionality:**
+
+- Are live updates working as expected?
+- Is keyboard navigation, including tabbing to interactive elements, working?
+- If the feature affects the message view, try different narrows: topic,
+  channel, Combined feed, direct messages.
+- If the feature affects the compose box, test both channel messages and
+  direct messages, and both ways of resizing.
+- If the feature requires elevated permissions, test as both a user who
+  has permissions and one who does not.
+- Think about feature interactions: could banners overlap? What about
+  resolved/unresolved topics? Collapsed or muted messages?
+
 ## Self-Review Checklist
 
 Before finalizing, verify:
 
+- [ ] The PR addresses all points described in the issue
 - [ ] All relevant tests pass locally
 - [ ] Code follows existing patterns in the codebase
+- [ ] Names (functions, variables, tests) are clear and greppable
 - [ ] Commit messages, comments, and PR description are well done.
 - [ ] Each commit is a minimal coherent idea
 - [ ] No debugging code or unnecessary comments remain
 - [ ] Type annotations are complete and correct
 - [ ] User-facing strings are tagged for translation
+- [ ] User-facing error messages are clear and actionable
 - [ ] No secrets or credentials are hardcoded
 - [ ] Documentation is updated if behavior changes
+- [ ] Refactoring is complete (`git grep` for remaining occurrences)
 - [ ] Security audit of changes. Always check for XSS in UI changes
       and for incorrect access control in server changes.
 
@@ -346,6 +389,8 @@ Recommend pausing for discussion when:
 3. Propose the refactoring approach
 4. Implement in commits that each leave the codebase working
 5. No behavior changes unless explicitly discussed
+6. Verify completeness: use `git grep` to find all occurrences and
+   confirm nothing was missed
 
 ## Key Documentation Links
 
@@ -354,6 +399,7 @@ Recommend pausing for discussion when:
 - Commit discipline: https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html
 - Testing overview: https://zulip.readthedocs.io/en/latest/testing/testing.html
 - Backend tests: https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html
+- Code review: https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html
 - mypy guide: https://zulip.readthedocs.io/en/latest/testing/mypy.html
 
 ## Repository Structure Quick Reference
