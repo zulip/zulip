@@ -468,7 +468,6 @@ h4.user_group_setting_subsection_title {
             text-align: center;
             text-overflow: ellipsis;
             white-space: nowrap;
-            margin-left: 5px;
         }
 
         .stream-info-title,
@@ -519,16 +518,15 @@ h4.user_group_setting_subsection_title {
                     }
                 }
 
+                /* The gap between the large icon and stream title exists because the stream title
+                    uses an <a> tag (an inline element) to wrap them. Since the user group title
+                    doesn't use an <a> tag, this container must also be inline to match the
+                    spacing across both subheaders. */
                 .selected-group {
-                    display: flex;
-                    align-items: center;
-                    overflow: hidden;
+                    display: inline;
                 }
 
-                .deactivated-user-group-icon-right {
-                    margin-right: 5px;
-                    margin-left: 3px;
-                    opacity: 0.6;
+                .deactivated-user-group-icon {
                     font-size: var(--base-font-size-px);
                 }
             }
