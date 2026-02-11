@@ -10,7 +10,7 @@
                     {{~/list_each ~}}
                     )
                 {{~/inline}}
-                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
+                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../inline_decorated_channel_name stream=stream}}</strong>{{/inline}}
             {{/tr}}
 
         {{else if few_unsubscribed_participants}}
@@ -23,13 +23,13 @@
                     {{~/list_each ~}}
                     )
                 {{~/inline}}
-                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
+                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../inline_decorated_channel_name stream=stream}}</strong>{{/inline}}
             {{/tr}}
 
         {{else}}
             {{#tr}}
                 {unsubscribed_participants_count} topic participants are not subscribed to <z-stream></z-stream>.
-                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
+                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../inline_decorated_channel_name stream=stream}}</strong>{{/inline}}
             {{/tr}}
         {{/if}}
     </p>
