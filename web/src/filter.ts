@@ -806,16 +806,21 @@ export class Filter {
     }
 
     static describe_channels_operator(negated: boolean, operand: string): string {
-        const possible_prefix = negated ? "exclude " : "";
         assert(channels_operands.has(operand));
         if ((page_params.is_spectator || current_user.is_guest) && operand === "public") {
-            return possible_prefix + "all public channels that you can view";
+            return negated
+                ? $t({defaultMessage: "exclude all public channels that you can view"})
+                : $t({defaultMessage: "all public channels that you can view"});
         }
         switch (operand) {
             case "web-public":
-                return possible_prefix + "all web-public channels";
+                return negated
+                    ? $t({defaultMessage: "exclude all web-public channels"})
+                    : $t({defaultMessage: "all web-public channels"});
             default:
-                return possible_prefix + "all public channels";
+                return negated
+                    ? $t({defaultMessage: "exclude all public channels"})
+                    : $t({defaultMessage: "all public channels"});
         }
     }
 
