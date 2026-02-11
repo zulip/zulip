@@ -19,6 +19,11 @@ step is described in detail below, with links to additional resources:
 1. Carefully [review your own work](#review-your-own-work).
 1. [Submit your pull request](#submit-your-pull-request-for-review) for review.
 
+To learn more about putting together pull requests maintainers will love to
+review, check out [this FOSDEM
+talk](https://fosdem.org/2026/schedule/event/L7ERNP-prs-maintainers-will-love/)
+by a Zulip maintainer.
+
 See the [pull request review process](../contributing/review-process.md) guide
 for a detailed overview of what happens once your pull request is submitted.
 
