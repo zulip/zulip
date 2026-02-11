@@ -718,128 +718,91 @@ export class Filter {
     }
 
     // Convert a list of terms to a human-readable description.
-    static parts_for_describe(
-        terms: NarrowTermSuggestion[],
-        is_operator_suggestion: boolean,
-    ): Part[] {
+    static parts_for_describe(term: NarrowTermSuggestion, is_operator_suggestion: boolean): Part {
         // Calling canonicalize_term on the terms is not easy here,
         // and so it's expected that callers already do those conversions,
         // and the current only callpath (generate_pills_html) does.
-        const parts: Part[] = [];
-
-        if (terms.length === 0) {
-            parts.push({type: "plain_text", content: "combined feed"});
-            return parts;
-        }
-
-        if (terms[0] !== undefined && terms[1] !== undefined) {
-            const term_0 = terms[0];
-            const term_1 = terms[1];
-            if (
-                term_0.operator === "channel" &&
-                !term_0.negated &&
-                term_1.operator === "topic" &&
-                !term_1.negated
-            ) {
-                // `channel` might be undefined if it's coming from a text query
-                const channel = stream_data.get_sub_by_id_string(term_0.operand)?.name;
-                if (channel) {
-                    const topic = term_1.operand;
-                    parts.push({
-                        type: "channel_topic",
-                        channel,
-                        topic_display_name: util.get_final_topic_display_name(topic),
-                        is_empty_string_topic: topic === "",
-                    });
-                    terms = terms.slice(2);
-                }
-            }
-        }
-
-        const more_parts = terms.map((term): Part => {
-            if (term.operator === "is") {
-                // Some operands have their own negative words, like
-                // unresolved, rather than the default "exclude " prefix.
-                const custom_negated_operand_phrases: Record<string, string> = {
-                    resolved: "unresolved",
-                };
-                const negated_phrase = custom_negated_operand_phrases[term.operand];
-                if (term.negated && negated_phrase !== undefined) {
-                    return {
-                        type: "is_operator",
-                        verb: "",
-                        operand: negated_phrase,
-                    };
-                }
-
-                const verb = term.negated ? "exclude " : "";
+        if (term.operator === "is") {
+            // Some operands have their own negative words, like
+            // unresolved, rather than the default "exclude " prefix.
+            const custom_negated_operand_phrases: Record<string, string> = {
+                resolved: "unresolved",
+            };
+            const negated_phrase = custom_negated_operand_phrases[term.operand];
+            if (term.negated && negated_phrase !== undefined) {
                 return {
                     type: "is_operator",
-                    verb,
+                    verb: "",
+                    operand: negated_phrase,
+                };
+            }
+
+            const verb = term.negated ? "exclude " : "";
+            return {
+                type: "is_operator",
+                verb,
+                operand: term.operand,
+            };
+        }
+        if (term.operator === "has") {
+            // search_suggestion.get_suggestions takes care that this message will
+            // only be shown if the `has` operator is not at the last.
+            const valid_has_operands = [
+                "image",
+                "images",
+                "link",
+                "links",
+                "attachment",
+                "attachments",
+                "reaction",
+                "reactions",
+            ];
+            if (!valid_has_operands.includes(term.operand)) {
+                return {
+                    type: "invalid_has",
                     operand: term.operand,
                 };
             }
-            if (term.operator === "has") {
-                // search_suggestion.get_suggestions takes care that this message will
-                // only be shown if the `has` operator is not at the last.
-                const valid_has_operands = [
-                    "image",
-                    "images",
-                    "link",
-                    "links",
-                    "attachment",
-                    "attachments",
-                    "reaction",
-                    "reactions",
-                ];
-                if (!valid_has_operands.includes(term.operand)) {
+        }
+        if (term.operator === "channels" && channels_operands.has(term.operand)) {
+            return {
+                type: "plain_text",
+                content: this.describe_channels_operator(term.negated ?? false, term.operand),
+            };
+        }
+        const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
+        if (prefix_for_operator !== "") {
+            if (term.operator === "channel") {
+                const stream = stream_data.get_sub_by_id_string(term.operand);
+                const verb = term.negated ? "exclude " : "";
+                if (stream) {
                     return {
-                        type: "invalid_has",
-                        operand: term.operand,
+                        type: "channel",
+                        prefix_for_operator: verb + "messages in #",
+                        operand: stream.name,
                     };
                 }
+                // Assume the operand is a partially formed name and return
+                // the operator as the channel name in the next block.
             }
-            if (term.operator === "channels" && channels_operands.has(term.operand)) {
-                return {
-                    type: "plain_text",
-                    content: this.describe_channels_operator(term.negated ?? false, term.operand),
-                };
-            }
-            const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
-            if (prefix_for_operator !== "") {
-                if (term.operator === "channel") {
-                    const stream = stream_data.get_sub_by_id_string(term.operand);
-                    const verb = term.negated ? "exclude " : "";
-                    if (stream) {
-                        return {
-                            type: "channel",
-                            prefix_for_operator: verb + "messages in #",
-                            operand: stream.name,
-                        };
-                    }
-                    // Assume the operand is a partially formed name and return
-                    // the operator as the channel name in the next block.
-                }
-                if (term.operator === "topic" && !is_operator_suggestion) {
-                    return {
-                        type: "prefix_for_operator",
-                        prefix_for_operator,
-                        operand: util.get_final_topic_display_name(term.operand),
-                        is_empty_string_topic: term.operand === "",
-                    };
-                }
+            if (term.operator === "topic" && !is_operator_suggestion) {
                 return {
                     type: "prefix_for_operator",
                     prefix_for_operator,
-                    operand: term.operand,
+                    operand: util.get_final_topic_display_name(term.operand),
+                    is_empty_string_topic: term.operand === "",
                 };
             }
             return {
-                type: "plain_text",
-                content: "unknown operator",
+                type: "prefix_for_operator",
+                prefix_for_operator,
+                operand: term.operand,
             };
-        });
-        return [...parts, ...more_parts];
+        }
+        return {
+            type: "plain_text",
+            content: "unknown operator",
+        };
     }
 
     static describe_channels_operator(negated: boolean, operand: string): string {
@@ -857,12 +820,10 @@ export class Filter {
     }
 
     static search_description_as_html(
-        terms: NarrowTermSuggestion[],
+        term: NarrowTermSuggestion,
         is_operator_suggestion: boolean,
     ): string {
-        return render_search_description({
-            parts: Filter.parts_for_describe(terms, is_operator_suggestion),
-        });
+        return render_search_description(Filter.parts_for_describe(term, is_operator_suggestion));
     }
 
     static is_spectator_compatible(terms: NarrowTerm[]): boolean {
