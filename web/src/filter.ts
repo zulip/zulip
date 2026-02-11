@@ -34,38 +34,6 @@ type IconData = {
       }
 );
 
-type Part =
-    | {
-          type: "plain_text";
-          content: string;
-      }
-    | {
-          type: "channel_topic";
-          channel: string;
-          topic_display_name: string;
-          is_empty_string_topic: boolean;
-      }
-    | {
-          type: "channel";
-          prefix_for_operator: string;
-          operand: string;
-      }
-    | {
-          type: "is_operator";
-          verb: string;
-          operand: string;
-      }
-    | {
-          type: "invalid_has";
-          operand: string;
-      }
-    | {
-          type: "prefix_for_operator";
-          prefix_for_operator: string;
-          operand: string;
-          is_empty_string_topic?: boolean;
-      };
-
 const channels_operands = new Set(["public", "web-public"]);
 
 function message_in_home(message: Message): boolean {
@@ -718,7 +686,7 @@ export class Filter {
     }
 
     // Convert a list of terms to a human-readable description.
-    static parts_for_describe(term: NarrowTermSuggestion, is_operator_suggestion: boolean): Part {
+    static parts_for_describe(term: NarrowTermSuggestion, is_operator_suggestion: boolean): string {
         // Calling canonicalize_term on the terms is not easy here,
         // and so it's expected that callers already do those conversions,
         // and the current only callpath (generate_pills_html) does.
@@ -730,19 +698,19 @@ export class Filter {
             };
             const negated_phrase = custom_negated_operand_phrases[term.operand];
             if (term.negated && negated_phrase !== undefined) {
-                return {
+                return render_search_description({
                     type: "is_operator",
                     verb: "",
                     operand: negated_phrase,
-                };
+                });
             }
 
             const verb = term.negated ? "exclude " : "";
-            return {
+            return render_search_description({
                 type: "is_operator",
                 verb,
                 operand: term.operand,
-            };
+            });
         }
         if (term.operator === "has") {
             // search_suggestion.get_suggestions takes care that this message will
@@ -758,17 +726,17 @@ export class Filter {
                 "reactions",
             ];
             if (!valid_has_operands.includes(term.operand)) {
-                return {
+                return render_search_description({
                     type: "invalid_has",
                     operand: term.operand,
-                };
+                });
             }
         }
         if (term.operator === "channels" && channels_operands.has(term.operand)) {
-            return {
+            return render_search_description({
                 type: "plain_text",
                 content: this.describe_channels_operator(term.negated ?? false, term.operand),
-            };
+            });
         }
         const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
         if (prefix_for_operator !== "") {
@@ -776,33 +744,33 @@ export class Filter {
                 const stream = stream_data.get_sub_by_id_string(term.operand);
                 const verb = term.negated ? "exclude " : "";
                 if (stream) {
-                    return {
+                    return render_search_description({
                         type: "channel",
                         prefix_for_operator: verb + "messages in #",
                         operand: stream.name,
-                    };
+                    });
                 }
                 // Assume the operand is a partially formed name and return
                 // the operator as the channel name in the next block.
             }
             if (term.operator === "topic" && !is_operator_suggestion) {
-                return {
+                return render_search_description({
                     type: "prefix_for_operator",
                     prefix_for_operator,
                     operand: util.get_final_topic_display_name(term.operand),
                     is_empty_string_topic: term.operand === "",
-                };
+                });
             }
-            return {
+            return render_search_description({
                 type: "prefix_for_operator",
                 prefix_for_operator,
                 operand: term.operand,
-            };
+            });
         }
-        return {
+        return render_search_description({
             type: "plain_text",
             content: "unknown operator",
-        };
+        });
     }
 
     static describe_channels_operator(negated: boolean, operand: string): string {
@@ -828,7 +796,7 @@ export class Filter {
         term: NarrowTermSuggestion,
         is_operator_suggestion: boolean,
     ): string {
-        return render_search_description(Filter.parts_for_describe(term, is_operator_suggestion));
+        return Filter.parts_for_describe(term, is_operator_suggestion);
     }
 
     static is_spectator_compatible(terms: NarrowTerm[]): boolean {
