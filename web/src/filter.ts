@@ -690,6 +690,7 @@ export class Filter {
         // Calling canonicalize_term on the terms is not easy here,
         // and so it's expected that callers already do those conversions,
         // and the current only callpath (generate_pills_html) does.
+        const verb = term.negated ? "exclude " : "";
         if (term.operator === "is") {
             // Some operands have their own negative words, like
             // unresolved, rather than the default "exclude " prefix.
@@ -705,7 +706,6 @@ export class Filter {
                 });
             }
 
-            const verb = term.negated ? "exclude " : "";
             return render_search_description({
                 type: "is_operator",
                 verb,
@@ -715,22 +715,24 @@ export class Filter {
         if (term.operator === "has") {
             // search_suggestion.get_suggestions takes care that this message will
             // only be shown if the `has` operator is not at the last.
-            const valid_has_operands = [
-                "image",
-                "images",
-                "link",
-                "links",
-                "attachment",
-                "attachments",
-                "reaction",
-                "reactions",
-            ];
-            if (!valid_has_operands.includes(term.operand)) {
-                return render_search_description({
-                    type: "invalid_has",
-                    operand: term.operand,
-                });
+            switch(term.operand) {
+                case "link":
+                case "links":
+                    return verb + "messages with links";
+                case "image":
+                case "images":
+                    return verb + "messages with images";
+                case "attachment":
+                case "attachments":
+                    return verb + "messages with attachments";
+                case "reaction":
+                case "reactions":
+                    return verb + "messages with reactions";
             }
+            return render_search_description({
+                type: "invalid_has",
+                operand: term.operand,
+            });
         }
         if (term.operator === "channels" && channels_operands.has(term.operand)) {
             return render_search_description({
@@ -739,7 +741,6 @@ export class Filter {
             });
         }
         if (term.operator === "channel") {
-            const verb = term.negated ? "exclude " : "";
             if (!term.operand) {
                 return verb + "messages in a specific channel";
             }
@@ -750,16 +751,22 @@ export class Filter {
                 content: verb + "messages in #" + stream.name,
             });
         }
-        const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
-        if (prefix_for_operator !== "") {
-            if (term.operator === "topic" && !is_operator_suggestion) {
+        if (term.operator === "topic") {
+            if (!is_operator_suggestion) {
                 return render_search_description({
                     type: "prefix_for_operator",
-                    prefix_for_operator,
+                    prefix_for_operator: verb + "topic",
                     operand: util.get_final_topic_display_name(term.operand),
                     is_empty_string_topic: term.operand === "",
                 });
             }
+            return render_search_description({
+                type: "plain_text",
+                content: verb + "topic",
+            });
+        }
+        const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
+        if (prefix_for_operator !== "") {
             return render_search_description({
                 type: "prefix_for_operator",
                 prefix_for_operator,
