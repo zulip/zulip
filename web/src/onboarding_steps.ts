@@ -5,6 +5,7 @@ import type * as z from "zod/mini";
 import render_navigation_tour_video_modal from "../templates/navigation_tour_video_modal.hbs";
 
 import * as channel from "./channel.ts";
+// eslint-disable-next-line import/no-cycle
 import * as compose_recipient from "./compose_recipient.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";

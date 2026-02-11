@@ -724,6 +724,10 @@ export function initialize(): void {
             $compose_recipient.removeClass("recently-focused");
         }, 500);
         compose_recipient.update_recipient_row_attention_level();
+        // Show one-time tooltip when user confirms topic change
+        setTimeout(() => {
+            compose_recipient.show_go_to_conversation_button_intro_tooltip();
+        }, 0);
     });
 
     $(window).on("blur", () => {
