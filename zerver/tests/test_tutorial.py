@@ -131,7 +131,8 @@ class TutorialTests(ZulipTestCase):
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
-    def test_response_to_pm_for_help(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_response_to_pm_for_help_using_personal_recipient(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["help", "Help", "?"]
@@ -147,7 +148,6 @@ class TutorialTests(ZulipTestCase):
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_response_to_pm_for_help_using_direct_message_group(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
@@ -183,7 +183,8 @@ class TutorialTests(ZulipTestCase):
             self.assertEqual(message.content, content)
             self.assertEqual(message.sender, user)
 
-    def test_response_to_pm_for_undefined(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_response_to_pm_for_undefined_using_personal_recipient(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["Hello", "HAHAHA", "OKOK", "LalulaLapas"]
@@ -210,7 +211,6 @@ class TutorialTests(ZulipTestCase):
         )
         self.assertEqual(most_recent_message(user).content, expected_response)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_response_to_pm_for_undefined_using_direct_message_group(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)

@@ -40,4 +40,4 @@ It was down for 44 minutes and 37 seconds.
 
         msg = self.get_last_message()
         self.assertEqual(msg.content, expected_message)
-        self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(msg.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)

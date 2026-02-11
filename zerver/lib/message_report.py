@@ -5,7 +5,7 @@ from zerver.actions.message_send import internal_send_stream_message
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
-from zerver.lib.message import is_1_to_1_message, truncate_content
+from zerver.lib.message import is_1_to_1_message, is_message_to_self, truncate_content
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.topic_link_util import get_message_link_syntax
 from zerver.lib.url_encoding import pm_message_url
@@ -52,7 +52,7 @@ def send_message_report(
         else:
             # Clearly mention the direct message recipient if someone is
             # reporting their own message in a 1-on-1 direct message.
-            if reported_message.recipient.type_id != reporting_user.id:
+            if not is_message_to_self(reported_message):
                 recipient_user = next(
                     silent_mention_syntax_for_user(user)
                     for user in get_display_recipient(reported_message.recipient)

@@ -1,4 +1,5 @@
 import orjson
+from django.test import override_settings
 
 from zerver.actions.streams import do_deactivate_stream, do_unarchive_stream
 from zerver.lib.test_classes import ZulipTestCase
@@ -796,6 +797,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         self.assertNotIn(aaron.id, event_user_ids)
         self.assertIn(iago.id, event_user_ids)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_send_direct_message_edit_typing_notifications_setting(self) -> None:
         sender = self.example_user("hamlet")
         recipient_user = self.example_user("othello")

@@ -1178,6 +1178,29 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(user_ids_string=direct_message_group_string),
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_raw_unread_personal_using_personal_recipients(self) -> None:
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+
+        cordelia_pm_message_ids = [self.send_personal_message(cordelia, hamlet) for i in range(3)]
+        othello_pm_message_ids = [self.send_personal_message(othello, hamlet) for i in range(3)]
+
+        raw_unread_data = get_raw_unread_data(user_profile=hamlet)
+
+        pm_dict = raw_unread_data["pm_dict"]
+
+        self.assertEqual(
+            set(pm_dict.keys()),
+            set(cordelia_pm_message_ids) | set(othello_pm_message_ids),
+        )
+
+        self.assertEqual(
+            pm_dict[cordelia_pm_message_ids[0]],
+            dict(other_user_id=cordelia.id),
+        )
+
     def test_raw_unread_personal(self) -> None:
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
@@ -1203,7 +1226,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=cordelia.id),
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_raw_unread_personal_using_direct_message_group(self) -> None:
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
@@ -1235,6 +1257,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=othello.id),
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_raw_unread_personal_from_self(self) -> None:
         hamlet = self.example_user("hamlet")
 
@@ -1329,7 +1352,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=hamlet.id),
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_raw_unread_personal_from_self_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
 

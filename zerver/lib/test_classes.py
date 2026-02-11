@@ -115,6 +115,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.openapi.openapi import validate_test_request, validate_test_response
@@ -2381,6 +2382,13 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         a bit faster.
         """
         do_change_user_role(user, role, acting_user=None, notify=False)
+
+    def get_dm_group_recipient(self, sender: UserProfile, *other_users: UserProfile) -> Recipient:
+        direct_group_message = get_or_create_direct_message_group(
+            id_list=[sender.id] + [user.id for user in other_users],
+        )
+        assert direct_group_message.recipient is not None
+        return direct_group_message.recipient
 
     def set_user_setting(self, user: UserProfile, setting_name: str, value: bool) -> None:
         with self.captureOnCommitCallbacks(execute=True):

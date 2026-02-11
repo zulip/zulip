@@ -21,6 +21,7 @@ from zerver.lib.url_encoding import message_link_url
 from zerver.lib.users import add_service
 from zerver.models import Recipient, Service, UserProfile
 from zerver.models.realms import get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
 
 
@@ -145,7 +146,10 @@ The webhook got a response with status code *500*.""",
         )
 
         assert bot_user.bot_owner is not None
-        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
+        self.assertEqual(
+            bot_owner_notification.recipient_id,
+            self.get_dm_group_recipient(bot_user, bot_user.bot_owner).id,
+        )
 
     def test_bad_msg_type(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
@@ -212,7 +216,10 @@ The webhook got a response with status code *400*.""",
         )
 
         assert bot_user.bot_owner is not None
-        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
+        self.assertEqual(
+            bot_owner_notification.recipient_id,
+            self.get_dm_group_recipient(bot_user, bot_user.bot_owner).id,
+        )
 
     def test_headers(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
@@ -255,7 +262,10 @@ The webhook got a response with status code *400*.""",
             self.assertIn(error_text, bot_owner_notification.content)
             self.assertIn("triggered", bot_owner_notification.content)
             assert bot_user.bot_owner is not None
-            self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
+            self.assertEqual(
+                bot_owner_notification.recipient_id,
+                self.get_dm_group_recipient(bot_user, bot_user.bot_owner).id,
+            )
 
         with self.assertLogs(level="INFO") as i:
             helper(side_effect=timeout_error, error_text="Request timed out after")
@@ -300,7 +310,10 @@ I'm a generic exception :(
 ```""",
         )
         assert bot_user.bot_owner is not None
-        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
+        self.assertEqual(
+            bot_owner_notification.recipient_id,
+            self.get_dm_group_recipient(bot_user, bot_user.bot_owner).id,
+        )
 
     def test_jsonable_exception(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
@@ -329,7 +342,10 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
 > Widgets: API programmer sent invalid JSON content\nThe response contains the following payload:\n```\n'{"content": "whatever", "widget_content": "test"}'\n```""",
             )
         assert bot_user.bot_owner is not None
-        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
+        self.assertEqual(
+            bot_owner_notification.recipient_id,
+            self.get_dm_group_recipient(bot_user, bot_user.bot_owner).id,
+        )
 
     def test_invalid_response_format(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
@@ -356,7 +372,10 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
 > Invalid response format\nThe response contains the following payload:\n```\n'true'\n```""",
             )
         assert bot_user.bot_owner is not None
-        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
+        self.assertEqual(
+            bot_owner_notification.recipient_id,
+            self.get_dm_group_recipient(bot_user, bot_user.bot_owner).id,
+        )
 
     def test_invalid_json_in_response(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
@@ -385,7 +404,10 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
 > Invalid JSON in response\nThe response contains the following payload:\n```\n"this isn't valid json"\n```""",
             )
         assert bot_user.bot_owner is not None
-        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
+        self.assertEqual(
+            bot_owner_notification.recipient_id,
+            self.get_dm_group_recipient(bot_user, bot_user.bot_owner).id,
+        )
 
 
 class TestOutgoingWebhookMessaging(ZulipTestCase):
@@ -489,11 +511,11 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(last_message.sender_id, bot.id)
         self.assertEqual(
             last_message.recipient.type_id,
-            sender.id,
+            get_or_create_direct_message_group([bot.id, sender.id]).id,
         )
         self.assertEqual(
             last_message.recipient.type,
-            Recipient.PERSONAL,
+            Recipient.DIRECT_MESSAGE_GROUP,
         )
 
     @responses.activate
@@ -529,11 +551,11 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             self.assertEqual(last_message.sender_id, bot.id)
             self.assertEqual(
                 last_message.recipient.type_id,
-                bot_owner.id,
+                get_or_create_direct_message_group([bot.id, bot_owner.id]).id,
             )
             self.assertEqual(
                 last_message.recipient.type,
-                Recipient.PERSONAL,
+                Recipient.DIRECT_MESSAGE_GROUP,
             )
             self.assertTrue(mock_fail.called)
 
@@ -610,7 +632,9 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         )
         self.assertEqual(last_message.sender_id, bot.id)
         assert bot.bot_owner is not None
-        self.assertEqual(last_message.recipient_id, bot.bot_owner.recipient_id)
+        self.assertEqual(
+            last_message.recipient_id, self.get_dm_group_recipient(bot, bot.bot_owner).id
+        )
 
         stream_message = self.get_second_to_last_message()
         self.assertEqual(stream_message.content, "Failure! Bot is unavailable")

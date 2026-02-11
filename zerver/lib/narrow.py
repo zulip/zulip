@@ -568,12 +568,31 @@ class NarrowBuilder:
             raise BadNarrowOperatorError("unknown user in " + str(operand))
         except DirectMessageGroup.DoesNotExist:
             # Group DM where direct message group doesn't exist
-            return query.where(maybe_negate(false()))
+            # For 3+ person groups (len >= 2 in operand), no messages can exist
+            if len(user_profiles) >= 2:
+                return query.where(maybe_negate(false()))
+            # For 1:1 DMs, fall through to query PERSONAL recipients only
+            recipient = None
 
-        # Group direct message
-        if recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        # Group direct message (3+ participants)
+        if (
+            recipient is not None
+            and recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+            and len(user_profiles) > 2
+        ):
+            # This is a group DM with 3+ people, not a 1:1 DM using DM group
             cond = column("recipient_id", Integer) == recipient.id
             return query.where(maybe_negate(cond))
+
+        # During the migration period (PREFER_DIRECT_MESSAGE_GROUP=True), we need
+        # to handle both PERSONAL and DIRECT_MESSAGE_GROUP recipients for 1:1 DMs.
+        # Messages may exist with either recipient type.
+        # Note: recipient is None when the DM group doesn't exist yet
+        is_migration_in_progress = (
+            recipient is not None
+            and settings.PREFER_DIRECT_MESSAGE_GROUP
+            and recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+        )
 
         # 1:1 direct message
         other_participant = None
@@ -592,7 +611,10 @@ class NarrowBuilder:
             # complex query to get messages between these two users
             # with either of them as the sender.
             self_recipient_id = self.user_profile.recipient_id
-            cond = and_(
+            other_recipient_id = other_participant.recipient_id
+
+            # Build condition for PERSONAL recipients (bidirectional)
+            personal_cond = and_(
                 column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
                 column("realm_id", Integer) == self.realm.id,
                 or_(
@@ -602,19 +624,43 @@ class NarrowBuilder:
                     ),
                     and_(
                         column("sender_id", Integer) == self.user_profile.id,
-                        column("recipient_id", Integer) == recipient.id,
+                        column("recipient_id", Integer) == other_recipient_id,
                     ),
                 ),
             )
+
+            if is_migration_in_progress:
+                # Include messages from both PERSONAL and DM group recipients.
+                # This handles the migration period where messages may exist
+                # with either recipient type.
+                assert recipient is not None
+                cond = or_(
+                    personal_cond,
+                    column("recipient_id", Integer) == recipient.id,
+                )
+            else:
+                # No migration in progress, only query PERSONAL recipients
+                cond = personal_cond
             return query.where(maybe_negate(cond))
 
         # Direct message with self
-        cond = and_(
+        # Build condition for PERSONAL recipients (bidirectional)
+        personal_cond = and_(
             column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
             column("realm_id", Integer) == self.realm.id,
             column("sender_id", Integer) == self.user_profile.id,
-            column("recipient_id", Integer) == recipient.id,
+            column("recipient_id", Integer) == self.user_profile.recipient_id,
         )
+        if is_migration_in_progress:
+            # Include messages from both PERSONAL and DM group recipients
+            assert recipient is not None
+            cond = or_(
+                personal_cond,
+                column("recipient_id", Integer) == recipient.id,
+            )
+        else:
+            # No migration in progress, only query PERSONAL recipient
+            cond = personal_cond
         return query.where(maybe_negate(cond))
 
     def _get_direct_message_group_recipients(self, other_user: UserProfile) -> set[int]:

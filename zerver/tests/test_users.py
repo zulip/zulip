@@ -61,9 +61,11 @@ from zerver.lib.users import (
     Account,
     access_user_by_id,
     access_user_by_id_including_cross_realm,
+    check_can_access_user,
     get_accounts_for_email,
     get_cross_realm_dicts,
     get_inaccessible_user_ids,
+    get_users_involved_in_dms_with_target_users,
     user_ids_to_users,
 )
 from zerver.lib.utils import assert_is_not_none
@@ -432,7 +434,12 @@ class PermissionTest(ZulipTestCase):
 
         # Check that notification was sent
         message = most_recent_message(hamlet)
-        self.assertEqual(message.recipient.type_id, hamlet.id)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, hamlet.realm.id)
+        dm_group_recipient = self.get_dm_group_recipient(notification_bot, hamlet)
+        self.assertEqual(message.recipient, dm_group_recipient)
+
         self.assertIn(
             f"{silent_mention_syntax_for_user(iago)} has made the following changes to your account.",
             message.content,
@@ -540,6 +547,7 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid characters in name!")
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_access_user_by_id(self) -> None:
         iago = self.example_user("iago")
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
@@ -764,7 +772,12 @@ class PermissionTest(ZulipTestCase):
 
         # Test notification is sent
         message = most_recent_message(user_profile)
-        self.assertEqual(message.recipient.type_id, user_profile.id)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
+        dm_group_recipient = self.get_dm_group_recipient(notification_bot, user_profile)
+        self.assertEqual(message.recipient, dm_group_recipient)
+
         self.assertIn(
             f"{silent_mention_syntax_for_user(admin)} has made the following changes to your account.",
             message.content,
@@ -1095,7 +1108,7 @@ class PermissionTest(ZulipTestCase):
 
 
 class QueryCountTest(ZulipTestCase):
-    def test_create_user_with_multiple_streams(self) -> None:
+    def test_create_user_with_multiple_streams_with_personal_recipient(self) -> None:
         # add_new_user_history needs messages to be current
         Message.objects.all().update(date_sent=timezone_now())
 
@@ -1132,7 +1145,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(86),
+            self.assert_database_query_count(102),
             self.assert_memcached_count(23),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
@@ -1457,7 +1470,8 @@ class AdminCreateUserTest(ZulipTestCase):
 
         # Make sure the recipient field is set correctly.
         self.assertEqual(
-            new_user.recipient, Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user.id)
+            new_user.recipient,
+            Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user.id),
         )
 
         # we can't create the same user twice.
@@ -3532,6 +3546,7 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_restricted_access_to_users(self) -> None:
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
@@ -3679,6 +3694,7 @@ class GetProfileTest(ZulipTestCase):
             UserProfile.objects.filter(realm=hamlet.realm, is_bot=True).count() + 1,
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_get_inaccessible_user_ids(self) -> None:
         polonius = self.example_user("polonius")
         bot = self.example_user("default_bot")
@@ -3728,6 +3744,55 @@ class GetProfileTest(ZulipTestCase):
 
         inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id, othello.id], polonius)
         self.assertEqual(inaccessible_user_ids, {othello.id})
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_check_can_access_user_with_personal_message_history(self) -> None:
+        self.set_up_db_for_testing_user_access()
+
+        polonius = self.example_user("polonius")
+        prospero = self.example_user("prospero")
+        desdemona = self.example_user("desdemona")
+
+        # prospero and polonius had personal messages history
+        self.assertTrue(check_can_access_user(prospero, polonius))
+
+        # no personal messages history between desdemona and polonius
+        self.assertFalse(check_can_access_user(desdemona, polonius))
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_get_users_involved_in_dms_excludes_deactivated_users(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        realm = hamlet.realm
+
+        self.send_personal_message(hamlet, othello, "Hello othello!")
+        self.send_personal_message(hamlet, cordelia, "Hello cordelia!")
+        self.send_personal_message(othello, hamlet, "Hello back from othello!")
+
+        # Before deactivation, both users should be in DM participants
+        users_involved_before = get_users_involved_in_dms_with_target_users(
+            [hamlet], realm, include_deactivated_users=False
+        )
+        self.assertIn(othello.id, users_involved_before[hamlet.id])
+        self.assertIn(cordelia.id, users_involved_before[hamlet.id])
+
+        do_deactivate_user(othello, acting_user=None)
+
+        # After deactivation with include_deactivated_users=False,
+        # othello should be excluded (this hits line 940)
+        users_involved_after = get_users_involved_in_dms_with_target_users(
+            [hamlet], realm, include_deactivated_users=False
+        )
+        self.assertNotIn(othello.id, users_involved_after[hamlet.id])
+        self.assertIn(cordelia.id, users_involved_after[hamlet.id])
+
+        # With include_deactivated_users=True, othello should be included
+        users_involved_with_deactivated = get_users_involved_in_dms_with_target_users(
+            [hamlet], realm, include_deactivated_users=True
+        )
+        self.assertIn(othello.id, users_involved_with_deactivated[hamlet.id])
+        self.assertIn(cordelia.id, users_involved_with_deactivated[hamlet.id])
 
     def test_get_users_for_spectators(self) -> None:
         # Checks that spectators can fetch users data.
@@ -3783,7 +3848,7 @@ class DeleteUserTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        hamlet_personal_recipient = hamlet.recipient
+        hamlet_and_cordelia_recipient = self.get_dm_group_recipient(hamlet, cordelia)
         hamlet_user_id = hamlet.id
         hamlet_date_joined = hamlet.date_joined
 
@@ -3795,7 +3860,7 @@ class DeleteUserTest(ZulipTestCase):
         self.send_personal_message(hamlet, cordelia)
 
         personal_message_ids_to_hamlet = Message.objects.filter(
-            realm_id=realm.id, recipient=hamlet_personal_recipient
+            realm_id=realm.id, recipient=hamlet_and_cordelia_recipient
         ).values_list("id", flat=True)
         personal_message_ids_to_hamlet_original_count = len(personal_message_ids_to_hamlet)
         self.assertGreater(personal_message_ids_to_hamlet_original_count, 0)
@@ -3838,15 +3903,9 @@ class DeleteUserTest(ZulipTestCase):
         self.assertEqual(hamlet.is_active, False)
         self.assertEqual(hamlet.date_joined, hamlet_date_joined)
 
-        # Messages that were sent TO the user are preserved. They'll just appear
-        # to the senders as sent to a deleted dummy user.
-        self.assertEqual(
-            Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(),
-            personal_message_ids_to_hamlet_original_count,
-        )
-
         # Group direct messages from hamlet should have been deleted, but messages of other
         # participants should be kept.
+        self.assertEqual(Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(), 1)
         self.assertEqual(
             Message.objects.filter(id__in=group_direct_message_ids_from_hamlet).count(), 0
         )
@@ -3893,14 +3952,14 @@ class DeleteUserTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        hamlet_personal_recipient = hamlet.recipient
+        hamlet_and_cordelia_recipient = self.get_dm_group_recipient(hamlet, cordelia)
         hamlet_user_id = hamlet.id
 
         self.send_personal_message(cordelia, hamlet)
         self.send_personal_message(hamlet, cordelia)
 
         personal_message_ids_to_hamlet = Message.objects.filter(
-            realm_id=realm.id, recipient=hamlet_personal_recipient
+            realm_id=realm.id, recipient=hamlet_and_cordelia_recipient
         ).values_list("id", flat=True)
         self.assertGreater(len(personal_message_ids_to_hamlet), 0)
         self.assertTrue(Message.objects.filter(realm_id=realm.id, sender=hamlet).exists())

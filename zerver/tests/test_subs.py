@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -5141,6 +5142,7 @@ class SubscriptionAPITest(ZulipTestCase):
             expected_difference=0,
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_notification_bot_dm_on_subscription(self) -> None:
         desdemona = self.example_user("desdemona")
         realm = desdemona.realm

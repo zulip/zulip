@@ -187,7 +187,7 @@ def get_direct_message_group(id_list: list[int]) -> DirectMessageGroup | None:
     the DirectMessageGroup object does not yet exist, it will
     return None.
     """
-
+    assert len(id_list) == len(set(id_list))
     try:
         direct_message_group_hash = get_direct_message_group_hash(id_list)
         return DirectMessageGroup.objects.get(
