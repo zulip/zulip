@@ -19,6 +19,7 @@ class TestChecks(ZulipTestCase):
                 stack.enter_context(self.assertRaisesRegex(SystemCheckError, test))
             call_command("check", stdout=DEVNULL)
 
+    @override_settings(RUNNING_IN_DOCKER=False)
     def test_checks_required_setting(self) -> None:
         self.assert_check_with_error(
             "(zulip.E001) You must set ZULIP_ADMINISTRATOR in /etc/zulip/settings.py",
@@ -32,6 +33,23 @@ class TestChecks(ZulipTestCase):
 
         self.assert_check_with_error(
             "(zulip.E001) You must set ZULIP_ADMINISTRATOR in /etc/zulip/settings.py",
+            ZULIP_ADMINISTRATOR=None,
+        )
+
+    @override_settings(RUNNING_IN_DOCKER=True)
+    def test_checks_required_setting_docker(self) -> None:
+        self.assert_check_with_error(
+            "(zulip.E001) You must set SETTING_ZULIP_ADMINISTRATOR in your Docker environment configuration",
+            ZULIP_ADMINISTRATOR="zulip-admin@example.com",
+        )
+
+        self.assert_check_with_error(
+            "(zulip.E001) You must set SETTING_ZULIP_ADMINISTRATOR in your Docker environment configuration",
+            ZULIP_ADMINISTRATOR="",
+        )
+
+        self.assert_check_with_error(
+            "(zulip.E001) You must set SETTING_ZULIP_ADMINISTRATOR in your Docker environment configuration",
             ZULIP_ADMINISTRATOR=None,
         )
 
