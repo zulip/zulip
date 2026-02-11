@@ -158,7 +158,7 @@ run_test("generate_pill_html", () => {
         "<div class='pill 'data-user-group-id=\"102\" tabindex=0>\n" +
             '    <span class="pill-label">\n' +
             '        <span class="pill-value">\n' +
-            "            Testers\n" +
+            "Testers\n" +
             '        </span>&nbsp;<span class="group-members-count">(4)</span></span>\n' +
             '    <div class="exit">\n' +
             '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n' +
