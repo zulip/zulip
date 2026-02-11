@@ -824,8 +824,8 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
 
             const message_markdown_content = data.message.content;
             if (message_lists.current === msg_list) {
-                message.raw_content = message_markdown_content;
-                start_edit_with_content($row, message.raw_content, edit_box_open_callback);
+                message_store.maybe_update_raw_content(message, message_markdown_content);
+                start_edit_with_content($row, message_markdown_content, edit_box_open_callback);
             }
         },
     });

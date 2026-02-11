@@ -45,7 +45,7 @@ const alice = {
 people.add_active_user(alice);
 
 const denmark = {
-    subscribed: false,
+    subscribed: true,
     name: "Denmark",
     stream_id: 101,
 };
