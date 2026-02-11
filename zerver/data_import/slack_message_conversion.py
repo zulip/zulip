@@ -255,27 +255,14 @@ def convert_to_zulip_markdown(
 
 def render_block(block: WildValue) -> str:
     # https://api.slack.com/reference/block-kit/blocks
-    block_type = block["type"].tame(
-        check_string_in(
-            [
-                "actions",
-                "context",
-                "call",
-                "contact_card",
-                "condition",
-                "divider",
-                "file",
-                "header",
-                "image",
-                "input",
-                "section",
-                "table",
-                "rich_text",
-            ]
-        )
-    )
-
-    unhandled_types = [
+    supported_types = {
+        "context",
+        "divider",
+        "header",
+        "image",
+        "section",
+    }
+    unhandled_types = {
         # `call` is a block type we've observed in the wild in a Slack export,
         # despite not being documented in
         # https://docs.slack.dev/reference/block-kit/blocks/
@@ -290,6 +277,12 @@ def render_block(block: WildValue) -> str:
         # buttons and similar elements, which Zulip currently doesn't support.
         # https://docs.slack.dev/reference/block-kit/blocks/actions-block
         "actions",
+        "input",
+        "condition",
+    }
+    known_types = {
+        *supported_types,
+        *unhandled_types,
         # All user-sent messages contain at least a "block" component with a
         # "rich_text" block. This block contains the same string as the "text"
         # field. We're skipping this because the Slack import tool already
@@ -297,9 +290,9 @@ def render_block(block: WildValue) -> str:
         # overrides it.
         # https://docs.slack.dev/reference/block-kit/blocks/rich-text-block/
         "rich_text",
-        "input",
-        "condition",
-    ]
+    }
+    block_type = block["type"].tame(check_string_in(known_types))
+
     if block_type in unhandled_types:
         return ""
     elif block_type == "context" and block.get("elements"):
