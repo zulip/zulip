@@ -779,6 +779,22 @@ input.settings_text_input {
     margin-top: -0.2188em !important;
 }
 
+.modal__title,
+.modal__subtitle,
+.main-view-banner .banner_message,
+#feedback_container .feedback_content,
+.subscription-info-tooltip,
+#announce-new-stream,
+#first_stream_created_modal .modal__content {
+    .channel-privacy-type-icon {
+        /* In places where the decorated channel name is used
+           inline with text prefixing it, we add a small left
+           padding, enough to visually indicate that the privacy
+           icon and the channel name are cohesive. */
+        padding-left: var(--prefix-text-channel-privacy-icon-gap);
+    }
+}
+
 .dropdown-list-container
     .dropdown-list
     .dropdown-list-item-common-styles

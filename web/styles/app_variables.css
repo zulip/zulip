@@ -694,6 +694,7 @@
 
     /* Decorated channel privacy icon related values */
     --channel-privacy-icon-padding: 0.3125em; /* 5px at 16px/em */
+    --prefix-text-channel-privacy-icon-gap: 0.125em; /* 2px at 16px/em */
 
     /* Color picker popover values */
     --size-color-swatch: 1em;
