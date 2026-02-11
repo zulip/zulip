@@ -59,6 +59,13 @@ class InvalidVideoCallProviderTokenError(JsonableError):
         )
 
 
+class CreateVideoCallFailedError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Failed to create {provider_name} call").format(provider_name=provider_name)
+        )
+
+
 class UnknownZoomUserError(JsonableError):
     code = ErrorCode.UNKNOWN_ZOOM_USER
 
@@ -182,9 +189,7 @@ class OAuthVideoCallProvider(ABC):
             self.update_token(user, None)
             raise InvalidVideoCallProviderTokenError(self.provider_name)
         elif not response.ok:
-            raise JsonableError(
-                _("Failed to create {provider_name} call").format(provider_name=self.provider_name)
-            )
+            raise CreateVideoCallFailedError(self.provider_name)
 
         return self.get_meeting_details(request, response)
 
@@ -305,7 +310,7 @@ def get_zoom_server_to_server_call(
                 response_dict.get("message", str(response_dict)),
             )
             flush_zoom_server_access_token_cache(account_id)
-        raise JsonableError(_("Failed to create Zoom call"))
+        raise CreateVideoCallFailedError("Zoom")
     return response.json()["join_url"]
 
 
