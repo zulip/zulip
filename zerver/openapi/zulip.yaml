@@ -5318,6 +5318,12 @@ paths:
                                         via the Zulip UI in this organization. Typically disabled
                                         in organizations syncing this type of account information from
                                         an external user database like LDAP.
+                                    can_change_name_group:
+                                      type: integer
+                                      description: |
+                                        The ID of the user group whose members can change their name.
+
+                                        **Changes**: New in Zulip 12.0 (feature level 459).
                                     night_logo_source:
                                       type: string
                                       description: |
@@ -19110,6 +19116,14 @@ paths:
                           via the Zulip UI in this organization. Typically disabled
                           in organizations syncing this type of account information from
                           an external user database like LDAP.
+                      realm_can_change_name_group:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The ID of the user group whose members can change their name.
+
+                          **Changes**: New in Zulip 12.0 (feature level 459).
                       realm_avatar_changes_disabled:
                         type: boolean
                         description: |

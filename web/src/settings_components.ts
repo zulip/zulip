@@ -537,6 +537,10 @@ export function get_widget_for_dropdown_list_settings(
     return dropdown_widget;
 }
 
+export function init_dropdown_widget(property_name: string): void {
+    dropdown_widget_map.set(property_name, null);
+}
+
 export function set_dropdown_setting_widget(property_name: string, widget: DropdownWidget): void {
     if (dropdown_widget_map.get(property_name) === undefined) {
         blueslip.error("No dropdown list widget for property", {property_name});
@@ -866,6 +870,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_default_code_block_language":
         case "realm_default_language":
         case "realm_can_access_all_users_group":
+        case "realm_can_change_name_group":
         case "realm_can_create_web_public_channel_group":
             proposed_val = get_dropdown_list_widget_setting_value($elem);
             break;
@@ -1096,6 +1101,11 @@ export function populate_data_for_realm_settings_request(
     const properties_elements = get_subsection_property_elements($subsection_elem);
     for (const input_elem of properties_elements) {
         const $input_elem = $(input_elem);
+
+        if ($input_elem.hasClass("dropdown-widget-button")) {
+            continue;
+        }
+
         if (check_realm_settings_property_changed(input_elem)) {
             const input_value = get_input_element_value(input_elem);
             if (input_value !== undefined && input_value !== null) {
@@ -1136,6 +1146,7 @@ export function populate_data_for_realm_settings_request(
                     "can_create_private_channel_group",
                     "can_create_public_channel_group",
                     "can_create_web_public_channel_group",
+                    "can_change_name_group",
                     "can_create_write_only_bots_group",
                     "can_manage_all_groups",
                     "can_manage_billing_group",

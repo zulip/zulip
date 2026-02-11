@@ -601,6 +601,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_access_all_users_group: int | UserGroupMembersDict | None = None
     can_add_custom_emoji_group: int | UserGroupMembersDict | None = None
     can_add_subscribers_group: int | UserGroupMembersDict | None = None
+    can_change_name_group: int | UserGroupMembersDict | None = None
     can_create_bots_group: int | UserGroupMembersDict | None = None
     can_create_groups: int | UserGroupMembersDict | None = None
     can_create_public_channel_group: int | UserGroupMembersDict | None = None

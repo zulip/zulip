@@ -312,13 +312,6 @@
                   label=admin_settings_label.realm_require_unique_names}}
 
                 {{> settings_checkbox
-                  setting_name="realm_name_changes_disabled"
-                  prefix="id_"
-                  is_checked=(or realm_name_changes_disabled server_name_changes_disabled)
-                  label=admin_settings_label.realm_name_changes_disabled
-                  is_disabled=server_name_changes_disabled}}
-
-                {{> settings_checkbox
                   setting_name="realm_email_changes_disabled"
                   prefix="id_"
                   is_checked=realm_email_changes_disabled
@@ -331,6 +324,10 @@
                   label=admin_settings_label.realm_avatar_changes_disabled
                   is_disabled=server_avatar_changes_disabled}}
 
+                {{> ../dropdown_widget_with_label
+                  widget_name="realm_can_change_name_group"
+                  label=group_setting_labels.can_change_name_group
+                  value_type="number"}}
             </div>
         </div>
 

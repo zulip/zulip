@@ -201,7 +201,7 @@ class HomeTest(ZulipTestCase):
         "realm_move_messages_between_streams_limit_seconds",
         "realm_move_messages_within_stream_limit_seconds",
         "realm_name",
-        "realm_name_changes_disabled",
+        "realm_can_change_name_group",
         "realm_new_stream_announcements_stream_id",
         "realm_night_logo_source",
         "realm_night_logo_url",

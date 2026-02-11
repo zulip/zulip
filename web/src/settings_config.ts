@@ -753,6 +753,9 @@ export const all_group_setting_labels = {
         can_access_all_users_group: $t({
             defaultMessage: "Who can view all other users in the organization",
         }),
+        can_change_name_group: $t({
+            defaultMessage: "Who can change their name",
+        }),
         can_summarize_topics_group: $t({defaultMessage: "Who can use AI summaries"}),
         can_create_write_only_bots_group: $t({
             defaultMessage: "Who can create bots that send messages into Zulip",
@@ -861,6 +864,11 @@ export const realm_group_permission_settings: {
         subsection_heading: $t({defaultMessage: "Guests"}),
         subsection_key: "org-guests-permissions",
         settings: ["can_access_all_users_group"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "User identity"}),
+        subsection_key: "org-user-identity",
+        settings: ["can_change_name_group"],
     },
     {
         subsection_heading: $t({defaultMessage: "Other permissions"}),

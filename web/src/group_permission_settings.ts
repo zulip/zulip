@@ -70,6 +70,7 @@ export const realm_group_setting_name_schema = z.enum([
     ...realm_group_setting_names_supporting_anonymous_groups,
     "can_access_all_users_group",
     "can_create_web_public_channel_group",
+    "can_change_name_group",
 ]);
 export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_schema>;
 
@@ -143,6 +144,21 @@ export function get_realm_user_groups_for_dropdown_list_widget(
                 name: group.name,
                 unique_id: group.id,
             };
+        }
+
+        if (setting_name === "can_change_name_group") {
+            if (group.name === "role:everyone") {
+                return {
+                    name: $t({defaultMessage: "Everyone including guests"}),
+                    unique_id: group.id,
+                };
+            }
+            if (group.name === "role:administrators") {
+                return {
+                    name: $t({defaultMessage: "Administrators"}),
+                    unique_id: group.id,
+                };
+            }
         }
 
         const display_name = settings_config.system_user_groups_list.find(

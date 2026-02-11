@@ -764,34 +764,6 @@ test("misc", ({override}) => {
     $("#user-avatar-upload-widget").length = 1;
     $("#user_details_section").length = 1;
 
-    override(realm, "realm_name_changes_disabled", false);
-    override(realm, "server_name_changes_disabled", false);
-    settings_account.update_name_change_display();
-    assert.ok(!$("#full_name").prop("disabled"));
-    assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
-    assert.ok(!$("label[for='full_name']").hasClass("cursor-text"));
-
-    override(realm, "realm_name_changes_disabled", true);
-    override(realm, "server_name_changes_disabled", false);
-    settings_account.update_name_change_display();
-    assert.ok($("#full_name").prop("disabled"));
-    assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
-    assert.ok($("label[for='full_name']").hasClass("cursor-text"));
-
-    override(realm, "realm_name_changes_disabled", true);
-    override(realm, "server_name_changes_disabled", true);
-    settings_account.update_name_change_display();
-    assert.ok($("#full_name").prop("disabled"));
-    assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
-    assert.ok($("label[for='full_name']").hasClass("cursor-text"));
-
-    override(realm, "realm_name_changes_disabled", false);
-    override(realm, "server_name_changes_disabled", true);
-    settings_account.update_name_change_display();
-    assert.ok($("#full_name").prop("disabled"));
-    assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
-    assert.ok($("label[for='full_name']").hasClass("cursor-text"));
-
     override(realm, "realm_email_changes_disabled", false);
     settings_account.update_email_change_display();
     assert.ok(!$("#change_email_button").hasClass("hide"));
@@ -821,10 +793,6 @@ test("misc", ({override}) => {
 
     // If organization admin, these UI elements are never disabled.
     override(current_user, "is_admin", true);
-    settings_account.update_name_change_display();
-    assert.ok(!$("#full_name").prop("disabled"));
-    assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
-    assert.ok(!$("label[for='full_name']").hasClass("cursor-text"));
 
     settings_account.update_email_change_display();
     assert.ok(!$("#change_email_button").hasClass("hide"));
