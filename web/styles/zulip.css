@@ -2275,12 +2275,6 @@ body:not(.spectator-view) {
             grid-area: privacy-icon;
             line-height: 1.214;
             font-size: 0.93em;
-            /* We set only the width so that flexbox
-            can do its work to properly center,
-            regardless of the height. */
-            width: 0.93em;
-            padding-right: 5px;
-            padding-left: 0;
             /* Override the [data-tippy-root] style in
                `tooltips.css`.
                Because we are manually holding icon
@@ -2396,6 +2390,11 @@ body:not(.spectator-view) {
             .setting-disabled-option-text {
                 color: var(--color-current-setting-dropdown-item);
             }
+        }
+
+        .setting-disabled-option-text,
+        .decorated-dm-name {
+            padding-left: var(--decorated-channel-name-privacy-icon-gap);
         }
     }
 }

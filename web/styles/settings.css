@@ -544,6 +544,8 @@ input[type="checkbox"] {
         overflow-x: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        /* Eliminate inherited component styles. */
+        padding: 0;
     }
 }
 
@@ -656,14 +658,6 @@ input[type="checkbox"] {
                 visibility: visible;
             }
         }
-    }
-}
-
-#confirm_reset_stream_notifications_modal {
-    .channel-privacy-type-icon {
-        padding-left: 3px;
-        padding-right: 0;
-        width: auto;
     }
 }
 

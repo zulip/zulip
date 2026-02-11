@@ -753,11 +753,15 @@ input.settings_text_input {
     }
 }
 
+.decorated-channel-name {
+    padding-left: var(--decorated-channel-name-privacy-icon-gap);
+}
+
 .channel-privacy-type-icon {
     position: relative;
     top: 0.06rem;
-    padding-right: 1px;
-    width: 12px;
+    width: 1em;
+    height: 1em;
 
     &.zulip-icon-globe,
     &.zulip-icon-archive,

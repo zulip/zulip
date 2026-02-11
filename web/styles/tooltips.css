@@ -95,11 +95,6 @@
         white-space: nowrap;
     }
 
-    .channel-privacy-type-icon {
-        width: 9px;
-        padding-left: 2px;
-    }
-
     .view-channel-tooltip {
         /* This is needed so that the hotkey hints do not
         move to a new line after "View #{channel_name}". */

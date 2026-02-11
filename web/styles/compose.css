@@ -1778,15 +1778,17 @@ textarea.new_message_textarea {
             color: var(--privacy-icon-color-original);
             /* Eliminate inherited component styles. */
             position: static;
-            padding: 0;
-            width: 1em;
-            height: 1em;
 
             &.zulip-icon-lock {
                 /* The lock looks better centered without
                    a negative margin-top adjustment. */
                 margin-top: 0 !important;
             }
+        }
+
+        .decorated-channel-name {
+            /* Eliminate inherited component styles. */
+            padding: 0;
         }
 
         .select-channel-label,
