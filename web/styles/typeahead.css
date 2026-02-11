@@ -170,9 +170,6 @@
         align-items: baseline;
         font-weight: 500;
 
-        .channel-privacy-type-icon {
-            margin-right: 3px;
-        }
     }
 }
 

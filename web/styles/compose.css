@@ -1758,8 +1758,6 @@ textarea.new_message_textarea {
             /* Eliminate inherited component styles. */
             position: static;
             padding: 0;
-            width: 1em;
-            height: 1em;
 
             &.zulip-icon-lock {
                 /* The lock looks better centered without

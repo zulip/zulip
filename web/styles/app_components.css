@@ -755,8 +755,9 @@ input.settings_text_input {
 .channel-privacy-type-icon {
     position: relative;
     top: 0.06rem;
-    padding-right: 1px;
-    width: 12px;
+    padding-right: var(--channel-privacy-icon-padding);
+    width: 1em;
+    height: 1em;
 
     &.zulip-icon-globe,
     &.zulip-icon-archive,

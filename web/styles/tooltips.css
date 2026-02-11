@@ -95,11 +95,6 @@
         white-space: nowrap;
     }
 
-    .channel-privacy-type-icon {
-        width: 9px;
-        padding-left: 2px;
-    }
-
     /* If the reference of the tooltip is went offscreen while scrolling,
        the tooltip will be visible until the scrolling stops. Popper adds
        `data-reference-hidden` attribute to those tooltips whole reference is
