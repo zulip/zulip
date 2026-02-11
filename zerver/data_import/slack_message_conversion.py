@@ -298,6 +298,7 @@ def render_block(block: WildValue) -> str:
         # https://docs.slack.dev/reference/block-kit/blocks/rich-text-block/
         "rich_text",
         "input",
+        "condition",
     ]
     if block_type in unhandled_types:
         return ""
@@ -355,7 +356,7 @@ def render_block(block: WildValue) -> str:
 
         return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
-    return ""
+    return ""  # nocoverage
 
 
 class TextField(TypedDict):
