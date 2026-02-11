@@ -476,6 +476,7 @@ h4.user_group_setting_subsection_title {
                 display: inline-block;
                 margin-left: 5px;
 
+                .deactivated-user-icon,
                 .zulip-icon {
                     font-size: 0.75em; /* 18px at 24px/em */
                 }

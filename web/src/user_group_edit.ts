@@ -1548,9 +1548,8 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
         update_group_details(group);
         if (event.data.name !== undefined) {
             // update settings title
-            $("#groups_overlay .user-group-info-title")
-                .text(user_groups.get_display_group_name(group.name))
-                .addClass("showing-info-title");
+            $("#groups_overlay .user-group-name-title").text(group.name);
+            $("#groups_overlay .user-group-info-title").addClass("showing-info-title");
         }
 
         if (changed_group_settings.length > 0) {
