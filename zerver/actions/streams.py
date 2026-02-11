@@ -42,7 +42,6 @@ from zerver.lib.streams import (
     get_anonymous_group_membership_dict_for_streams,
     get_stream_permission_policy_key,
     get_stream_post_policy_value_based_on_group_setting,
-    get_user_ids_with_metadata_access_via_permission_groups,
     get_users_dict_with_metadata_access_to_streams_via_permission_groups,
     render_stream_description,
     send_stream_creation_event,
@@ -1277,6 +1276,10 @@ def do_change_stream_permission(
     old_history_public_to_subscribers_value = stream.history_public_to_subscribers
     old_is_web_public_value = stream.is_web_public
 
+    old_user_ids_with_metadata_access: set[int] = set()
+    if old_invite_only_value != invite_only or old_is_web_public_value != is_web_public:
+        old_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
+
     stream.is_web_public = is_web_public
     stream.invite_only = invite_only
     stream.history_public_to_subscribers = history_public_to_subscribers
@@ -1351,56 +1354,44 @@ def do_change_stream_permission(
             },
         )
 
-    notify_stream_creation_ids = set()
-    if old_invite_only_value and not stream.invite_only:
-        # We need to send stream creation event to users who can access the
-        # stream now but were not able to do so previously. So, we can exclude
-        # subscribers and realm admins from the non-guest user list.
-        stream_subscriber_user_ids = get_active_subscriptions_for_stream_id(
-            stream.id, include_deactivated_users=False
-        ).values_list("user_profile_id", flat=True)
+    current_user_ids_with_metadata_access = can_access_stream_metadata_user_ids(stream)
+    user_ids_gaining_metadata_access = set()
+    if (
+        old_invite_only_value != stream.invite_only
+        or old_is_web_public_value != stream.is_web_public
+    ):
+        user_ids_gaining_metadata_access = (
+            current_user_ids_with_metadata_access - old_user_ids_with_metadata_access
+        )
+        if user_ids_gaining_metadata_access:
+            recent_traffic = get_streams_traffic(realm, {stream.id})
+            anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
+            send_stream_creation_event(
+                realm,
+                stream,
+                list(user_ids_gaining_metadata_access),
+                recent_traffic,
+                anonymous_group_membership,
+            )
 
-        old_can_access_stream_metadata_user_ids = set(stream_subscriber_user_ids) | {
-            user.id for user in stream.realm.get_admin_users_and_bots()
-        }
-        user_ids_with_metadata_access_via_permission_groups = (
-            get_user_ids_with_metadata_access_via_permission_groups(stream)
-        )
-        non_guest_user_ids = set(active_non_guest_user_ids(stream.realm_id))
-        notify_stream_creation_ids = (
-            non_guest_user_ids
-            - old_can_access_stream_metadata_user_ids
-            - user_ids_with_metadata_access_via_permission_groups
-        )
+            # Add subscribers info to the stream object. We need to send peer_add
+            # events to users who did not have metadata access to the stream previously.
+            stream_subscriber_user_ids = get_active_subscriptions_for_stream_id(
+                stream.id, include_deactivated_users=False
+            ).values_list("user_profile_id", flat=True)
+            peer_add_event = dict(
+                type="subscription",
+                op="peer_add",
+                stream_ids=[stream.id],
+                user_ids=sorted(stream_subscriber_user_ids),
+            )
+            send_event_on_commit(stream.realm, peer_add_event, user_ids_gaining_metadata_access)
 
-        recent_traffic = get_streams_traffic(realm, {stream.id})
-        anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
-        send_stream_creation_event(
-            realm,
-            stream,
-            list(notify_stream_creation_ids),
-            recent_traffic,
-            anonymous_group_membership,
+        user_ids_losing_metadata_access = (
+            old_user_ids_with_metadata_access - current_user_ids_with_metadata_access
         )
-
-        # Add subscribers info to the stream object. We need to send peer_add
-        # events to users who were previously subscribed to the streams as
-        # they did not had subscribers data.
-        old_subscribers_access_user_ids = set(stream_subscriber_user_ids) | {
-            user.id for user in stream.realm.get_admin_users_and_bots()
-        }
-        peer_notify_user_ids = (
-            non_guest_user_ids
-            - old_subscribers_access_user_ids
-            - user_ids_with_metadata_access_via_permission_groups
-        )
-        peer_add_event = dict(
-            type="subscription",
-            op="peer_add",
-            stream_ids=[stream.id],
-            user_ids=sorted(stream_subscriber_user_ids),
-        )
-        send_event_on_commit(stream.realm, peer_add_event, peer_notify_user_ids)
+        if user_ids_losing_metadata_access:
+            send_stream_deletion_event(stream.realm, user_ids_losing_metadata_access, [stream])
 
     event = dict(
         op="update",
@@ -1415,7 +1406,7 @@ def do_change_stream_permission(
     # we do not need to send update events to the users who received creation event
     # since they already have the updated stream info.
     notify_stream_update_ids = (
-        can_access_stream_metadata_user_ids(stream) - notify_stream_creation_ids
+        current_user_ids_with_metadata_access - user_ids_gaining_metadata_access
     )
     send_event_on_commit(stream.realm, event, notify_stream_update_ids)
 

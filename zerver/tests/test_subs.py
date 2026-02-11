@@ -747,6 +747,172 @@ class StreamAdminTest(ZulipTestCase):
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+    def test_events_when_changing_stream_privacy(self) -> None:
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        polonius = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+
+        anonymous_group = UserGroupMembersData(
+            direct_members=[hamlet.id],
+            direct_subgroups=[],
+        )
+
+        realm = iago.realm
+        stream = self.make_stream("test_stream", realm)
+        self.subscribe(othello, stream.name)
+        self.subscribe(desdemona, stream.name)
+        do_change_stream_group_based_setting(
+            stream, "can_administer_channel_group", anonymous_group, acting_user=desdemona
+        )
+
+        # These users will always have metadata access to the stream - Iago (realm admin),
+        # Othello (subscriber) and Hamlet (member of can_administer_channel_group).
+        users_with_metadata_access_always = [othello.id, iago.id, hamlet.id]
+
+        # Test when changing stream from public to private.
+        params = {
+            "is_private": orjson.dumps(True).decode(),
+        }
+        self.login("desdemona")
+        with self.capture_send_event_calls(expected_num_events=3) as events:
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.invite_only, True)
+
+        delete_event = events[0]
+        self.assertEqual(delete_event["event"]["type"], "stream")
+        self.assertEqual(delete_event["event"]["op"], "delete")
+        update_event = events[1]
+        self.assertEqual(update_event["event"]["type"], "stream")
+        self.assertEqual(update_event["event"]["op"], "update")
+
+        # Cordelia loses access to the stream.
+        self.assertIn(cordelia.id, delete_event["users"])
+        self.assertNotIn(cordelia.id, update_event["users"])
+        # Polonius did not have access initially as well
+        # so does not receive any event.
+        self.assertNotIn(polonius.id, delete_event["users"])
+        self.assertNotIn(polonius.id, update_event["users"])
+
+        # Users having metadata access originally receive only
+        # update event.
+        for user_id in users_with_metadata_access_always:
+            self.assertNotIn(user_id, delete_event["users"])
+            self.assertIn(user_id, update_event["users"])
+
+        # Test when changing stream from private to public.
+        params = {
+            "is_private": orjson.dumps(False).decode(),
+        }
+        with self.capture_send_event_calls(expected_num_events=4) as events:
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+
+        create_event = events[0]
+        self.assertEqual(create_event["event"]["type"], "stream")
+        self.assertEqual(create_event["event"]["op"], "create")
+        peer_add_event = events[1]
+        self.assertEqual(peer_add_event["event"]["type"], "subscription")
+        self.assertEqual(peer_add_event["event"]["op"], "peer_add")
+        update_event = events[2]
+        self.assertEqual(update_event["event"]["type"], "stream")
+        self.assertEqual(update_event["event"]["op"], "update")
+
+        # Cordelia gains access to the stream and receives a peer_add
+        # event as well to obtain subscriber data, but does not
+        # receive the update event as they already receive the latest
+        # data from stream creation event.
+        self.assertIn(cordelia.id, create_event["users"])
+        self.assertIn(cordelia.id, peer_add_event["users"])
+        self.assertNotIn(cordelia.id, update_event["users"])
+        # Polonius still cannot access an unsubscribed public stream.
+        self.assertNotIn(polonius.id, create_event["users"])
+        self.assertNotIn(polonius.id, peer_add_event["users"])
+        self.assertNotIn(polonius.id, update_event["users"])
+
+        # Users having metadata access originally receive only
+        # update event.
+        for user_id in users_with_metadata_access_always:
+            self.assertNotIn(user_id, create_event["users"])
+            self.assertNotIn(user_id, peer_add_event["users"])
+            self.assertIn(user_id, update_event["users"])
+
+        # Test when changing stream from public to web-public.
+        params = {"is_web_public": orjson.dumps(True).decode()}
+        with self.capture_send_event_calls(expected_num_events=4) as events:
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.is_web_public, True)
+
+        create_event = events[0]
+        self.assertEqual(create_event["event"]["type"], "stream")
+        self.assertEqual(create_event["event"]["op"], "create")
+        peer_add_event = events[1]
+        self.assertEqual(peer_add_event["event"]["type"], "subscription")
+        self.assertEqual(peer_add_event["event"]["op"], "peer_add")
+        update_event = events[2]
+        self.assertEqual(update_event["event"]["type"], "stream")
+        self.assertEqual(update_event["event"]["op"], "update")
+
+        # Polonius gains access to the stream and receives a peer_add
+        # event as well to obtain subscriber data, but does not
+        # receive the update event as they already receive the latest
+        # data from stream creation event.
+        self.assertIn(polonius.id, create_event["users"])
+        self.assertIn(polonius.id, peer_add_event["users"])
+        self.assertNotIn(polonius.id, update_event["users"])
+
+        # Cordelia already had access to the stream so receives only
+        # update event.
+        self.assertNotIn(cordelia.id, create_event["users"])
+        self.assertNotIn(cordelia.id, peer_add_event["users"])
+        self.assertIn(cordelia.id, update_event["users"])
+
+        # Users having metadata access originally receive only
+        # update event.
+        for user_id in users_with_metadata_access_always:
+            self.assertNotIn(user_id, create_event["users"])
+            self.assertNotIn(user_id, peer_add_event["users"])
+            self.assertIn(user_id, update_event["users"])
+
+        # Test when changing stream from web-public to private.
+        params = {
+            "is_web_public": orjson.dumps(False).decode(),
+            "is_private": orjson.dumps(True).decode(),
+        }
+        with self.capture_send_event_calls(expected_num_events=3) as events:
+            result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.is_web_public, False)
+        self.assertEqual(stream.invite_only, True)
+
+        delete_event = events[0]
+        self.assertEqual(delete_event["event"]["type"], "stream")
+        self.assertEqual(delete_event["event"]["op"], "delete")
+
+        update_event = events[1]
+        self.assertEqual(update_event["event"]["type"], "stream")
+        self.assertEqual(update_event["event"]["op"], "update")
+
+        # Both cordelia and polonius lose access to the stream.
+        self.assertIn(polonius.id, delete_event["users"])
+        self.assertIn(cordelia.id, delete_event["users"])
+        self.assertNotIn(polonius.id, update_event["users"])
+        self.assertNotIn(cordelia.id, update_event["users"])
+
+        # Users having metadata access originally receive only
+        # update event.
+        for user_id in users_with_metadata_access_always:
+            self.assertNotIn(user_id, create_event["users"])
+            self.assertNotIn(user_id, peer_add_event["users"])
+            self.assertIn(user_id, update_event["users"])
+
     def test_updating_protected_history_and_can_create_topic_group_for_streams(self) -> None:
         user_profile = self.example_user("iago")
         self.login_user(user_profile)
