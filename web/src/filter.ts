@@ -744,14 +744,11 @@ export class Filter {
                 return verb + "messages in a specific channel";
             }
             const stream = stream_data.get_sub_by_id_string(term.operand);
-            if (stream) {
-                return render_search_description({
-                    type: "plain_text",
-                    content: verb + "messages in #" + stream.name,
-                });
-            }
-            // Assume the operand is a partially formed name and return
-            // the operator as the channel name in the next block.
+            assert(stream !== undefined);
+            return render_search_description({
+                type: "plain_text",
+                content: verb + "messages in #" + stream.name,
+            });
         }
         const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
         if (prefix_for_operator !== "") {
