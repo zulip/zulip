@@ -90,7 +90,12 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import StreamTopicsPolicyEnum, get_default_stream_groups, get_stream
-from zerver.models.users import active_non_guest_user_ids, get_user, get_user_profile_by_id_in_realm
+from zerver.models.users import (
+    active_non_guest_user_ids,
+    active_user_ids,
+    get_user,
+    get_user_profile_by_id_in_realm,
+)
 from zerver.views.streams import compose_views
 
 if TYPE_CHECKING:
@@ -1496,10 +1501,10 @@ class StreamAdminTest(ZulipTestCase):
             notified_user_ids = set(event["users"])
             self.assertCountEqual(
                 notified_user_ids,
-                set(active_non_guest_user_ids(stream.realm_id)),
+                set(active_user_ids(stream.realm_id)),
             )
-            # Guest user should not be notified.
-            self.assertNotIn(self.example_user("polonius").id, notified_user_ids)
+            # Guest user should be notified.
+            self.assertIn(self.example_user("polonius").id, notified_user_ids)
 
         stream = Stream.objects.get(id=stream.id)
         self.assertFalse(stream.deactivated)
