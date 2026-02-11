@@ -34,9 +34,15 @@ def check_required_settings(
         ):
             continue
 
+        if settings.RUNNING_IN_DOCKER:
+            settings_location = "your Docker environment configuration"
+            setting_display_name = "SETTING_" + setting_name
+        else:
+            settings_location = "/etc/zulip/settings.py"
+            setting_display_name = setting_name
         errors.append(
             checks.Error(
-                f"You must set {setting_name} in /etc/zulip/settings.py",
+                f"You must set {setting_display_name} in {settings_location}",
                 obj=f"settings.{setting_name}",
                 id="zulip.E001",
             )
