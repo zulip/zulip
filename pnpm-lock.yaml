@@ -170,6 +170,9 @@ importers:
       handlebars-loader:
         specifier: ^1.7.1
         version: 1.7.3(handlebars@4.7.8(patch_hash=53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9))
+      hast-util-to-html:
+        specifier: ^9.0.5
+        version: 9.0.5
       html-webpack-plugin:
         specifier: ^5.3.2
         version: 5.6.6(webpack@5.105.0)
@@ -200,6 +203,30 @@ importers:
       lodash:
         specifier: ^4.17.19
         version: 4.17.23
+      mdast-util-from-markdown:
+        specifier: ^2.0.2
+        version: 2.0.2
+      mdast-util-gfm-strikethrough:
+        specifier: ^2.0.0
+        version: 2.0.0
+      mdast-util-gfm-table:
+        specifier: ^2.0.0
+        version: 2.0.0
+      mdast-util-newline-to-break:
+        specifier: ^2.0.0
+        version: 2.0.0
+      mdast-util-to-hast:
+        specifier: ^13.2.1
+        version: 13.2.1
+      micromark:
+        specifier: ^4.0.2
+        version: 4.0.2
+      micromark-extension-gfm-strikethrough:
+        specifier: ^2.1.0
+        version: 2.1.0
+      micromark-extension-gfm-table:
+        specifier: ^2.1.1
+        version: 2.1.1
       micromodal:
         specifier: ^0.6.1
         version: 0.6.1
@@ -6576,6 +6603,9 @@ packages:
 
   mdast-util-mdxjs-esm@2.0.1:
     resolution: {integrity: sha512-EcmOpxsZ96CvlP03NghtH1EsLtr0n9Tm4lPUJUBccV9RwUOneqSycg19n5HGzCf+10LozMRSObtVr3ee1WoHtg==}
+
+  mdast-util-newline-to-break@2.0.0:
+    resolution: {integrity: sha512-MbgeFca0hLYIEx/2zGsszCSEJJ1JSCdiY5xQxRcLDDGa8EPvlLPupJ4DSajbMPAnC0je8jfb9TiUATnxxrHUog==}
 
   mdast-util-phrasing@4.1.0:
     resolution: {integrity: sha512-TqICwyvJJpBwvGAMZjj4J2n0X8QWp21b9l0o7eXyVJ25YNWYbJDVIyD1bZXE6WtV6RmKJVYmQAKWa0zWOABz2w==}
@@ -17131,6 +17161,11 @@ snapshots:
       mdast-util-to-markdown: 2.1.2
     transitivePeerDependencies:
       - supports-color
+
+  mdast-util-newline-to-break@2.0.0:
+    dependencies:
+      '@types/mdast': 4.0.4
+      mdast-util-find-and-replace: 3.0.2
 
   mdast-util-phrasing@4.1.0:
     dependencies:
