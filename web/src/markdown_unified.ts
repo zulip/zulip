@@ -64,7 +64,7 @@ const micromark_extensions = [
     // become text nodes (auto-escaped by toHtml). Our own generated
     // HTML uses custom mdast node types + hast "raw" nodes instead.
     // Autolinks (<http://...>) use a separate construct, unaffected.
-    {disable: {null: ["htmlText", "htmlFlow"]}},
+    {disable: {null: ["htmlText", "htmlFlow", "definition"]}},
 ];
 const mdast_extensions = [
     gfmAutolinkLiteralFromMarkdown(),

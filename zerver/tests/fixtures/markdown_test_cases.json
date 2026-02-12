@@ -206,14 +206,12 @@
     {
       "name": "reference_links_disabled",
       "input": "Hello [world]\n\n[world]: https://google.com",
-      "expected_output": "<p>Hello [world]</p>\n<p>[world]: <a href=\"https://google.com\">https://google.com</a></p>",
-      "unified_expected_output": "<p>Hello <a href=\"https://google.com\">world</a></p>"
+      "expected_output": "<p>Hello [world]</p>\n<p>[world]: <a href=\"https://google.com\">https://google.com</a></p>"
     },
     {
       "name": "reference_links_disabled_2",
       "input": "Hello [world][ref-name]\n\n[ref-name]: https://google.com",
-      "expected_output": "<p>Hello [world][ref-name]</p>\n<p>[ref-name]: <a href=\"https://google.com\">https://google.com</a></p>",
-      "unified_expected_output": "<p>Hello <a href=\"https://google.com\">world</a></p>"
+      "expected_output": "<p>Hello [world][ref-name]</p>\n<p>[ref-name]: <a href=\"https://google.com\">https://google.com</a></p>"
     },
     {
       "name": "ulist_standard_1",
