@@ -1,40 +1,36 @@
 <tr id="recent_conversation:{{conversation_key}}" class="{{#unless (eq unread_count 0)}}unread_topic{{/unless}} {{#if is_private}}private_conversation_row{{/if}} recent-view-body-row recent_view_focusable"  data-col-index="{{ column_indexes.topic }}" tabindex="0">
     {{!-- TODO: Rename recent_topic_name to recent-view-conversation-column--}}
     <td class="recent_topic_name">
-        <div class="flex_container">
-            <div class="recent-view-conversation-wrapper">
-                <div class="recent-view-channel-icon-wrapper">
-                    {{#if is_private}}
-                    {{!-- For presence/group indicator --}}
-                    <span class="pm_status_icon {{#unless is_group}}show-tooltip{{/unless}}" data-tippy-placement="top" data-user-ids-string="{{user_ids_string}}">
-                        {{#if is_group}}
-                        <span class="conversation-partners-icon zulip-icon zulip-icon-dm-groups-3"></span>
-                        {{else if is_bot}}
-                        <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
-                        {{else}}
-                        <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle" data-presence-indicator-user-id="{{user_ids_string}}"></span>
-                        {{/if}}
-                    </span>
+        <div class="recent-view-conversation-with-unread-wrapper">
+            <div class="recent-view-conversation-type-wrapper">
+                {{#if is_private}}
+                {{!-- For presence/group indicator --}}
+                <span class="pm_status_icon {{#unless is_group}}show-tooltip{{/unless}}" data-tippy-placement="top" data-user-ids-string="{{user_ids_string}}">
+                    {{#if is_group}}
+                    <span class="conversation-partners-icon zulip-icon zulip-icon-dm-groups-3"></span>
+                    {{else if is_bot}}
+                    <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
                     {{else}}
-                    <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
-                        {{> stream_privacy . }}
-                    </span>
+                    <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle" data-presence-indicator-user-id="{{user_ids_string}}"></span>
                     {{/if}}
-                </div>
-                <div class="recent-view-topic-wrapper">
-                    {{#if is_private}}
-                    <a href="{{pm_url}}" class="recent-view-dm-name recent-view-table-link" tabindex="-1">{{t "DM" }}</a>
-                    {{else}}
-                    <a href="{{topic_url}}" class="recent-view-channel-name recent-view-table-link" data-tippy-content="{{stream_name}}" tabindex="-1">{{stream_name}}</a>
-                    {{/if}}
-                    <i class="zulip-icon zulip-icon-chevron-right"></i>
-                    {{#if is_private}}
-                    <a href="{{pm_url}}" class="recent-view-conversation-link recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}" tabindex="-1">{{{rendered_pm_with_html}}}</a>
-                    {{else}}
-                    <a class="recent-view-conversation-link recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" href="{{topic_url}}" tabindex="-1">{{topic_display_name}}</a>
-                    {{/if}}
-                </div>
+                </span>
+                {{else}}
+                <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
+                    {{> stream_privacy . }}
+                </span>
+                {{/if}}
+                {{#if is_private}}
+                <a href="{{pm_url}}" class="recent-view-dm-name recent-view-table-link" tabindex="-1">{{t "DM" }}</a>
+                {{else}}
+                <a href="{{topic_url}}" class="recent-view-channel-name recent-view-table-link" data-tippy-content="{{stream_name}}" tabindex="-1">{{stream_name}}</a>
+                {{/if}}
             </div>
+            <i class="zulip-icon zulip-icon-chevron-right"></i>
+            {{#if is_private}}
+            <a href="{{pm_url}}" class="recent-view-conversation-link recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}" tabindex="-1">{{{rendered_pm_with_html}}}</a>
+            {{else}}
+            <a class="recent-view-conversation-link recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" href="{{topic_url}}" tabindex="-1">{{topic_display_name}}</a>
+            {{/if}}
             <div class="recent-view-unread-mention-and-count-wrapper">
                 {{#if is_private}}
                 <span class="unread_mention_info tippy-zulip-tooltip {{#unless has_unread_mention}}unread_hidden{{/unless}}"

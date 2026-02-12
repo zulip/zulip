@@ -468,53 +468,57 @@
     .recent_topic_name {
         padding-left: 0.625em; /* 10px at 16px/1em */
 
-        .recent-view-conversation-wrapper {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
+        .recent-view-conversation-with-unread-wrapper {
+            display: grid;
+            grid-template-areas:
+                "conversation-type chevron-right conversation-name unread-mention-and-count"
+                ".                 .             conversation-name .";
             width: 100%;
-            box-sizing: border-box;
+            /* We add 1em for the privacy icon and 8px for the flexbox
+               gap between the icon and the channel name. */
+            grid-template-columns:
+                min(
+                    calc(
+                        var(--longest-subscribed-channel-name-width) + 1em + 8px
+                    ),
+                    33.3%
+                )
+                auto 1fr auto;
+            align-items: center;
+        }
+
+        .recent-view-conversation-type-wrapper {
+            grid-area: conversation-type;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .stream-privacy {
+                height: 1em;
+            }
+        }
+
+        .recent-view-conversation-link {
+            grid-area: conversation-name;
+        }
+
+        .recent-view-unread-mention-and-count-wrapper {
+            grid-area: unread-mention-and-count;
         }
 
         .zulip-icon-chevron-right {
+            grid-area: chevron-right;
             font-size: 0.9375em; /* 15px at 16px/1em */
-            vertical-align: middle;
             color: hsl(0deg 0% 60%);
             padding: 0 0.125em; /* 2px at 16px/1em */
-        }
-
-        .recent-view-channel-icon-wrapper {
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 0.1875em; /* 3px at 16px/1em */
-            padding-right: 0.4375em;
         }
 
         .recent-view-dm-name,
         .recent-view-channel-name {
             opacity: 0.8;
-            display: inline-block;
-            width: min(var(--longest-subscribed-channel-name-width), 33.3%);
-            vertical-align: bottom;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-        }
-
-        .recent-view-topic-wrapper {
-            /* Start at 0 width and grow to take remaining space.
-               Without this, long topic names push unread count
-               below the participant avatars.
-               See: https://css-tricks.com/flex-grow-is-weird/
-            */
-            width: 0;
-            flex-grow: 1;
-        }
-
-        .recent-view-conversation-link {
-            display: inline;
         }
     }
 
