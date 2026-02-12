@@ -644,105 +644,78 @@ export class Filter {
         // Calling canonicalize_term on the terms is not easy here,
         // and so it's expected that callers already do those conversions,
         // and the current only callpath (generate_pills_html) does.
-        const verb = term.negated ? "exclude " : "";
-        if (term.operator === "is") {
-            // Some operands have their own negative words, like
-            // unresolved, rather than the default "exclude " prefix.
-            const custom_negated_operand_phrases: Record<string, string> = {
-                resolved: "unresolved",
-            };
-            const negated_phrase = custom_negated_operand_phrases[term.operand];
-            if (term.negated && negated_phrase !== undefined) {
-                return render_search_description({
-                    type: "is_operator",
-                    verb: "",
-                    operand: negated_phrase,
-                });
-            }
-
-            return render_search_description({
-                type: "is_operator",
-                verb,
-                operand: term.operand,
-            });
-        }
-        if (term.operator === "has") {
-            // search_suggestion.get_suggestions takes care that this message will
-            // only be shown if the `has` operator is not at the last.
-            switch(term.operand) {
-                case "link":
-                case "links":
-                    return verb + "messages with links";
-                case "image":
-                case "images":
-                    return verb + "messages with images";
-                case "attachment":
-                case "attachments":
-                    return verb + "messages with attachments";
-                case "reaction":
-                case "reactions":
-                    return verb + "messages with reactions";
-            }
-            return render_search_description({
-                type: "invalid_has",
-                operand: term.operand,
-            });
-        }
-        if (term.operator === "channels" && channels_operands.has(term.operand)) {
-            return render_search_description({
-                type: "plain_text",
-                content: this.describe_channels_operator(term.negated ?? false, term.operand),
-            });
-        }
-        if (term.operator === "channel") {
-            if (!term.operand) {
-                return verb + "messages in a specific channel";
-            }
-            const stream = stream_data.get_sub_by_id_string(term.operand);
-            assert(stream !== undefined);
-            return render_search_description({
-                type: "plain_text",
-                content: verb + "messages in #" + stream.name,
-            });
-        }
-        if (term.operator === "topic") {
-            if (!is_operator_suggestion) {
-                return render_search_description({
-                    type: "prefix_for_operator",
-                    prefix_for_operator: verb + "topic",
-                    operand: util.get_final_topic_display_name(term.operand),
-                    is_empty_string_topic: term.operand === "",
-                });
-            }
-            return render_search_description({
-                type: "plain_text",
-                content: verb + "topic",
-            });
-        }
         const operator = filter_util.canonicalize_operator(term.operator);
+        const verb = term.negated ? "exclude " : "";
         let operand = "";
 
         if (term.operand !== "") {
             operand = ` ${term.operand}`;
         }
 
-        if (operator === "search") {
-            return term.negated ? "exclude" + operand : "search for" + operand;
-        }
-
         switch (operator) {
-            case "channel":
-                return verb + "messages in a specific channel" + operand;
-            case "channels":
+            case "channel": {
+                if (!term.operand) {
+                    return verb + "messages in a specific channel";
+                }
+                const stream = stream_data.get_sub_by_id_string(term.operand);
+                assert(stream !== undefined);
+                return render_search_description({
+                    type: "plain_text",
+                    content: verb + "messages in #" + stream.name,
+                });
+            }
+            case "channels": {
+                if (channels_operands.has(term.operand)) {
+                    return render_search_description({
+                        type: "plain_text",
+                        content: this.describe_channels_operator(
+                            term.negated ?? false,
+                            term.operand,
+                        ),
+                    });
+                }
                 return verb + "channel type" + operand;
+            }
             case "near":
                 return verb + "messages around" + operand;
-            case "has":
-                return verb + "messages with" + operand;
+            case "has": {
+                // search_suggestion.get_suggestions takes care that this message will
+                // only be shown if the `has` operator is not at the last.
+                switch (term.operand) {
+                    case "link":
+                    case "links":
+                        return verb + "messages with links";
+                    case "image":
+                    case "images":
+                        return verb + "messages with images";
+                    case "attachment":
+                    case "attachments":
+                        return verb + "messages with attachments";
+                    case "reaction":
+                    case "reactions":
+                        return verb + "messages with reactions";
+                }
+                return render_search_description({
+                    type: "invalid_has",
+                    operand: term.operand,
+                });
+            }
             case "id":
                 return verb + "message ID" + operand;
-            case "topic":
-                return verb + "topic" + operand;
+            case "topic": {
+                if (!is_operator_suggestion) {
+                    return render_search_description({
+                        type: "prefix_for_operator",
+                        prefix_for_operator: verb + "topic",
+                        operand: util.get_final_topic_display_name(term.operand),
+                        is_empty_string_topic: term.operand === "",
+                    });
+                }
+                return render_search_description({
+                    type: "plain_text",
+                    content: verb + "topic",
+                });
+            }
             case "sender":
                 return verb + "sent by" + operand;
             case "dm":
@@ -751,9 +724,30 @@ export class Filter {
                 return verb + "direct messages including" + operand;
             case "in":
                 return verb + "messages in" + operand;
-            // Note: We hack around using this above.
-            case "is":
-                return verb + "messages that are" + operand;
+            case "is": {
+                // Some operands have their own negative words, like
+                // unresolved, rather than the default "exclude " prefix.
+                const custom_negated_operand_phrases: Record<string, string> = {
+                    resolved: "unresolved",
+                };
+                const negated_phrase = custom_negated_operand_phrases[term.operand];
+                if (term.negated && negated_phrase !== undefined) {
+                    return render_search_description({
+                        type: "is_operator",
+                        verb: "",
+                        operand: negated_phrase,
+                    });
+                }
+
+                return render_search_description({
+                    type: "is_operator",
+                    verb,
+                    operand: term.operand,
+                });
+            }
+            case "search": {
+                return term.negated ? "exclude" + operand : "search for" + operand;
+            }
         }
         return "unknown operator";
     }
