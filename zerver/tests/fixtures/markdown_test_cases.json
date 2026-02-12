@@ -336,8 +336,7 @@
       "name": "strikthrough_link",
       "input": "~~test http://xx.xx link~~",
       "expected_output": "<p><del>test <a href=\"http://xx.xx\">http://xx.xx</a> link</del></p>",
-      "text_content": "test http://xx.xx link",
-      "unified_expected_output": "<p><del>test http://xx.xx link</del></p>"
+      "text_content": "test http://xx.xx link"
     },
     {
       "name": "underscore_disabled",
@@ -479,8 +478,7 @@
     {
       "name": "only_non_image_link",
       "input": "https://github.com",
-      "expected_output": "<p><a href=\"https://github.com\">https://github.com</a></p>",
-      "unified_expected_output": "<p>https://github.com</p>"
+      "expected_output": "<p><a href=\"https://github.com\">https://github.com</a></p>"
     },
     {
       "name": "only_inline_video",
@@ -820,13 +818,15 @@
       "name": "safe_html_unclosed_tag",
       "input": "<script src=http://xx.com/xss.js<b>",
       "expected_output": "<p>&lt;script src=http://xx.com/xss.js&lt;b&gt;</p>",
-      "marked_expected_output": "<p>&lt;script src=http://xx.com/xss.js&lt;b&gt;\n\n</p>"
+      "marked_expected_output": "<p>&lt;script src=http://xx.com/xss.js&lt;b&gt;\n\n</p>",
+      "unified_expected_output": "<p>&lt;script src=<a href=\"http://xx.com/xss.js\">http://xx.com/xss.js</a>&lt;b&gt;</p>"
     },
     {
       "name": "safe_html_unclosed_tag_and_quotes",
       "input": "<script src=\"http://xx.com/xss.js\"<b>",
       "expected_output": "<p>&lt;script src=\"http://xx.com/xss.js\"&lt;b&gt;</p>",
-      "marked_expected_output": "<p>&lt;script src=&quot;http://xx.com/xss.js&quot;&lt;b&gt;\n\n</p>"
+      "marked_expected_output": "<p>&lt;script src=&quot;http://xx.com/xss.js&quot;&lt;b&gt;\n\n</p>",
+      "unified_expected_output": "<p>&lt;script src=\"<a href=\"http://xx.com/xss.js\">http://xx.com/xss.js</a>\"&lt;b&gt;</p>"
     },
     {
       "name": "safe_html_in_code",
@@ -1053,7 +1053,7 @@
       "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://example.com/image.png\"><img src=\"https://external-content.zulipcdn.net/external_content/25fef3bfd3a93e0266153205ea66a83c53d310b4/687474703a2f2f6578616d706c652e636f6d2f696d6167652e706e67\"></a></div></div></div>",
       "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n</div></div>",
       "text_content": "header (…)\n",
-      "unified_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content http://example.com/image.png</p>\n</div></div>"
+      "unified_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n</div></div>"
     },
     {
       "name": "embedded_link_inside_Bold",

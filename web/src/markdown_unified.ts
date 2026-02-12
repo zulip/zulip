@@ -1,10 +1,12 @@
 import {toHtml} from "hast-util-to-html";
 import type {Root} from "mdast";
 import {fromMarkdown} from "mdast-util-from-markdown";
+import {gfmAutolinkLiteralFromMarkdown} from "mdast-util-gfm-autolink-literal";
 import {gfmStrikethroughFromMarkdown} from "mdast-util-gfm-strikethrough";
 import {gfmTableFromMarkdown} from "mdast-util-gfm-table";
 import {newlineToBreak} from "mdast-util-newline-to-break";
 import {toHast} from "mdast-util-to-hast";
+import {gfmAutolinkLiteral} from "micromark-extension-gfm-autolink-literal";
 import {gfmStrikethrough} from "micromark-extension-gfm-strikethrough";
 import {gfmTable} from "micromark-extension-gfm-table";
 
@@ -57,13 +59,18 @@ function encode_gt_in_text(html: string): string {
 const micromark_extensions = [
     gfmTable(),
     gfmStrikethrough(),
+    gfmAutolinkLiteral(),
     // Disable all HTML parsing so user-authored <b>, <script>, etc.
     // become text nodes (auto-escaped by toHtml). Our own generated
     // HTML uses custom mdast node types + hast "raw" nodes instead.
     // Autolinks (<http://...>) use a separate construct, unaffected.
     {disable: {null: ["htmlText", "htmlFlow"]}},
 ];
-const mdast_extensions = [gfmTableFromMarkdown(), gfmStrikethroughFromMarkdown()];
+const mdast_extensions = [
+    gfmAutolinkLiteralFromMarkdown(),
+    gfmTableFromMarkdown(),
+    gfmStrikethroughFromMarkdown(),
+];
 
 /**
  * Parse markdown content into an mdast tree with structural transforms

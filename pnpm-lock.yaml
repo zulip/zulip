@@ -209,6 +209,9 @@ importers:
       mdast-util-from-markdown:
         specifier: ^2.0.2
         version: 2.0.2
+      mdast-util-gfm-autolink-literal:
+        specifier: ^2.0.1
+        version: 2.0.1
       mdast-util-gfm-strikethrough:
         specifier: ^2.0.0
         version: 2.0.0
@@ -224,6 +227,9 @@ importers:
       micromark:
         specifier: ^4.0.2
         version: 4.0.2
+      micromark-extension-gfm-autolink-literal:
+        specifier: ^2.1.0
+        version: 2.1.0
       micromark-extension-gfm-strikethrough:
         specifier: ^2.1.0
         version: 2.1.0
