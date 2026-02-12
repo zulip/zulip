@@ -576,6 +576,25 @@ const members = user_group_item(
         deactivated: false,
     }),
 );
+const full_members = user_group_item(
+    make_user_group({
+        name: "role:fullmembers",
+        id: 7,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Full members",
+        members: new Set([100, 101, 104]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
 
 const sweden_stream = stream_item({
     name: "Sweden",
@@ -701,6 +720,7 @@ function test(label, f) {
         user_groups.add(support);
         user_groups.add(admins);
         user_groups.add(members);
+        user_groups.add(full_members);
 
         muted_users.set_muted_users([]);
 
@@ -2702,6 +2722,16 @@ test("message people", ({override, override_rewire}) => {
     override_rewire(ct, "max_group_size_for_dm", 4);
     results = ct.get_person_suggestions("rs", opts);
     assert.deepEqual(results, [hamletcharacters, admins]);
+
+    // Test that full members group is only included if
+    // waiting_period_threshold is not 0.
+    override(realm, "realm_waiting_period_threshold", 10);
+    results = ct.get_person_suggestions("fu", opts);
+    assert.deepEqual(results, [full_members]);
+
+    override(realm, "realm_waiting_period_threshold", 0);
+    results = ct.get_person_suggestions("fu", opts);
+    assert.deepEqual(results, []);
 });
 
 test("person suggestion for unique full name syntax", () => {
