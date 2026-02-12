@@ -1230,7 +1230,11 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             return true;
         case "open_inbox":
             // Focus search if already in (non-channel) inbox view.
-            if (!inbox_util.is_channel_view() && !inbox_ui.is_search_focused()) {
+            if (
+                inbox_util.is_visible() &&
+                !inbox_util.is_channel_view() &&
+                !inbox_ui.is_search_focused()
+            ) {
                 inbox_ui.focus_inbox_search();
                 return true;
             }
