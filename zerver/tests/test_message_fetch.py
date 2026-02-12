@@ -17,6 +17,7 @@ from analytics.models import RealmCount
 from zerver.actions.message_edit import build_message_edit_request, do_update_message
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_deactivate_user
@@ -5553,6 +5554,27 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
             )
             mocked_get_base_query_for_search.assert_not_called()
             self.assert_length(result["messages"], 0)
+
+    def test_deactivated_channel_access_narrow(self) -> None:
+        """Test that access_narrow works with deactivated channels."""
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        self.send_stream_message(hamlet, "Verona", topic_name="test", content="test message")
+
+        realm = hamlet.realm
+        stream = get_stream("Verona", realm)
+        do_deactivate_stream(stream, acting_user=hamlet)
+
+        narrow = [{"operator": "channel", "operand": "Verona"}]
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=LARGER_THAN_MAX_MESSAGE_ID,
+            ),
+            expected_status=200,
+        )
+        self.assertGreater(len(result["messages"]), 0)
 
 
 class MessageHasKeywordsTest(ZulipTestCase):
