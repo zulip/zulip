@@ -9,9 +9,10 @@
 
 import katex from "katex";
 import _ from "lodash";
-import type {Parents} from "mdast";
+import type {Code, Parents} from "mdast";
 import type {Handler, Handlers, State} from "mdast-util-to-hast";
 
+import {wrap_code} from "./fenced_code.ts";
 import {
     handleStream,
     handleStreamTopic,
@@ -174,6 +175,23 @@ export function create_zulip_hast_handlers(helpers: MarkdownHelpers): Handlers {
             _parent: Parents | undefined,
         ): RawHastNode {
             return raw(handleTex(node.tex, node.full_match));
+        },
+
+        code(_state: State, node: Code, _parent: Parents | undefined): RawHastNode {
+            // Normalize language: strip {.LANG} notation
+            let lang = node.lang ?? undefined;
+            if (lang) {
+                lang = lang.replace(/^\{?\.?/, "").replace(/\}?$/, "");
+                if (lang === "") {
+                    lang = undefined;
+                }
+            }
+            // Trim trailing whitespace per line (legacy behavior)
+            const content = node.value
+                .split("\n")
+                .map((line) => line.trimEnd())
+                .join("\n");
+            return raw(wrap_code(content, lang));
         },
 
         zulipDisplayMath(

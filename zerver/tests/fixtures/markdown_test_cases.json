@@ -12,14 +12,13 @@
       "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\" data-code-language=\"Python\"><pre><span></span><code><span class=\"k\">def</span><span class=\"w\"> </span><span class=\"nf\">speak</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"p\">):</span>\n    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>\n</code></pre></div>",
       "marked_expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\" data-code-language=\"Python\"><pre><span></span><code>def speak(self):\n    x = 1\n</code></pre></div>",
       "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n",
-      "unified_expected_output": "<p>Hamlet said:</p>\n<pre><code class=\"language-.python\">def speak(self):\n    x = 1\n</code></pre>"
+      "unified_expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\" data-code-language=\"Python\"><pre><span></span><code>def speak(self):\n    x = 1\n</code></pre></div>"
     },
     {
       "name": "codeblock_hilite_invented_language",
       "input": "``` inventedlanguage\ndef speak(self):\n    x = 1\n```",
       "expected_output": "<div class=\"codehilite\" data-code-language=\"inventedlanguage\"><pre><span></span><code>def speak(self):\n    x = 1\n</code></pre></div>",
-      "text_content": "def speak(self):\n    x = 1\n",
-      "unified_expected_output": "<pre><code class=\"language-inventedlanguage\">def speak(self):\n    x = 1\n</code></pre>"
+      "text_content": "def speak(self):\n    x = 1\n"
     },
     {
       "name": "codeblock_canonicalize_lang_alias",
@@ -27,13 +26,12 @@
       "expected_output": "<div class=\"codehilite\" data-code-language=\"Python 2.x\"><pre><span></span><code><span class=\"k\">def</span><span class=\"w\"> </span><span class=\"nf\">speak</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"p\">):</span>\n    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\" data-code-language=\"Python 2.x\"><pre><span></span><code>def speak(self):\n    x = 1\n</code></pre></div>",
       "text_content": "def speak(self):\n    x = 1\n",
-      "unified_expected_output": "<pre><code class=\"language-py2\">def speak(self):\n    x = 1\n</code></pre>"
+      "unified_expected_output": "<div class=\"codehilite\" data-code-language=\"Python 2.x\"><pre><span></span><code>def speak(self):\n    x = 1\n</code></pre></div>"
     },
     {
       "name": "ampampamp",
       "input": "& &amp; &amp;amp;\n~~~~\n& &amp; &amp;amp;\n~~~~\n    & &amp; &amp;amp;",
-      "expected_output": "<p>&amp; &amp; &amp;amp;</p>\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>",
-      "unified_expected_output": "<p>&amp; &amp; &amp;amp;</p>\n<pre><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre>\n<pre><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre>"
+      "expected_output": "<p>&amp; &amp; &amp;amp;</p>\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>\n<div class=\"codehilite\"><pre><span></span><code>&amp; &amp;amp; &amp;amp;amp;\n</code></pre></div>"
     },
     {
       "name": "basic_paragraph",
@@ -45,8 +43,7 @@
       "name": "codeblock_multiline",
       "input": "Hamlet once said\n~~~~\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n~~~~\nAnd all was good.",
       "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre><span></span><code>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</code></pre></div>\n<p>And all was good.</p>",
-      "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\nAnd all was good.",
-      "unified_expected_output": "<p>Hamlet once said</p>\n<pre><code>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</code></pre>\n<p>And all was good.</p>"
+      "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\nAnd all was good."
     },
     {
       "name": "normal_text_test",
@@ -57,8 +54,7 @@
       "name": "codeblock_trailing_whitespace",
       "input": "Hamlet once said\n~~~~\ndef func():\n    x = 1\n\n    y = 2\t\t\n\n    z = 3       \n~~~~\nAnd all was good.",
       "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre><span></span><code>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</code></pre></div>\n<p>And all was good.</p>",
-      "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\nAnd all was good.",
-      "unified_expected_output": "<p>Hamlet once said</p>\n<pre><code>def func():\n    x = 1\n\n    y = 2\t\t\n\n    z = 3       \n</code></pre>\n<p>And all was good.</p>"
+      "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\nAnd all was good."
     },
     {
       "name": "inline_code_spaces",
@@ -77,15 +73,13 @@
       "name": "codeblock_backticks",
       "input": "\n```\nfenced code\n```\n\n```inline code```\n",
       "expected_output": "<div class=\"codehilite\"><pre><span></span><code>fenced code\n</code></pre></div>\n<p><code>inline code</code></p>",
-      "text_content": "fenced code\n\ninline code",
-      "unified_expected_output": "<pre><code>fenced code\n</code></pre>\n<p><code>inline code</code></p>"
+      "text_content": "fenced code\n\ninline code"
     },
     {
       "name": "hanging_multi_codeblock",
       "input": "Hamlet said:\n~~~~\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n~~~~\n\nThen he mentioned ````y = 4 + x**2```` and\n~~~~\ndef foobar(self):\n    return self.baz()",
       "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span><code>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</code></pre></div>\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<div class=\"codehilite\"><pre><span></span><code>def foobar(self):\n    return self.baz()\n</code></pre></div>",
-      "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n\nThen he mentioned y = 4 + x**2 and\ndef foobar(self):\n    return self.baz()\n",
-      "unified_expected_output": "<p>Hamlet said:</p>\n<pre><code>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</code></pre>\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<pre><code>def foobar(self):\n    return self.baz()\n</code></pre>"
+      "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n\nThen he mentioned y = 4 + x**2 and\ndef foobar(self):\n    return self.baz()\n"
     },
     {
       "name": "fenced_normal_quote",
@@ -104,13 +98,13 @@
       "input": "I heard about this second hand...\n~~~ quote\n\nHe said:\n~~~ quote\nThe customer is complaining.\n\nThey looked at this code:\n``` \ndef hello(): print 'hello\n```\nThey would prefer:\n~~~\ndef hello()\n  puts 'hello'\nend\n~~~\n\nPlease advise.\n~~~\n\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n~~~",
       "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span><code>def hello(): print &#39;hello\n</code></pre></div>\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span><code>She said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</code></pre></div>",
       "text_content": "I heard about this second hand...\n[…]Please advise.\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n",
-      "unified_expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<pre><code>def hello(): print 'hello\n</code></pre>\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\nputs 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<pre><code>\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n</code></pre>"
+      "unified_expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span><code>def hello(): print &#39;hello\n</code></pre></div>\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\nputs 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span><code>She said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</code></pre></div>"
     },
     {
       "name": "fenced_quotes_inside_mathblock",
       "input": "```math\n````js\nvar x;\n````\n```",
       "expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi>j</mi><mi>s</mi><mi>v</mi><mi>a</mi><mi>r</mi><mi>x</mi><mo separator=\"true\">;</mo><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi></mrow><annotation encoding=\"application/x-tex\">````js\nvar x;\n````</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mord\">‘‘‘‘</span><span class=\"mord mathnormal\" style=\"margin-right:0.05724em;\">j</span><span class=\"mord mathnormal\">s</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">v</span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">r</span><span class=\"mord mathnormal\">x</span><span class=\"mpunct\">;</span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord\">‘‘‘‘</span></span></span></span></span></p>",
-      "unified_expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi>j</mi><mi>s</mi><mi>v</mi><mi>a</mi><mi>r</mi><mi>x</mi><mo separator=\"true\">;</mo></mrow><annotation encoding=\"application/x-tex\">````js\nvar x;</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mord\">‘‘‘‘</span><span class=\"mord mathnormal\" style=\"margin-right:0.05724em;\">j</span><span class=\"mord mathnormal\">s</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">v</span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">r</span><span class=\"mord mathnormal\">x</span><span class=\"mpunct\">;</span></span></span></span></span></p>\n<pre><code></code></pre>"
+      "unified_expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi>j</mi><mi>s</mi><mi>v</mi><mi>a</mi><mi>r</mi><mi>x</mi><mo separator=\"true\">;</mo></mrow><annotation encoding=\"application/x-tex\">````js\nvar x;</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mord\">‘‘‘‘</span><span class=\"mord mathnormal\" style=\"margin-right:0.05724em;\">j</span><span class=\"mord mathnormal\">s</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">v</span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">r</span><span class=\"mord mathnormal\">x</span><span class=\"mpunct\">;</span></span></span></span></span></p>\n<div class=\"codehilite\"><pre><span></span><code>\n</code></pre></div>"
     },
     {
       "name": "empty_single_blockquote",
@@ -169,14 +163,13 @@
       "input": "``` one ```\n\n``` two ```\n\n~~~~\nx = 1",
       "expected_output": "<p><code> one </code></p>\n<p><code> two </code></p>\n<div class=\"codehilite\"><pre><span></span><code>x = 1\n</code></pre></div>",
       "text_content": " one \n two \nx = 1\n",
-      "unified_expected_output": "<p><code>one</code></p>\n<p><code>two</code></p>\n<pre><code>x = 1\n</code></pre>"
+      "unified_expected_output": "<p><code>one</code></p>\n<p><code>two</code></p>\n<div class=\"codehilite\"><pre><span></span><code>x = 1\n</code></pre></div>"
     },
     {
       "name": "four_space_code_block",
       "input": "    def foo(): pass",
       "expected_output": "<div class=\"codehilite\"><pre><span></span><code>def foo(): pass\n</code></pre></div>",
-      "text_content": "def foo(): pass\n",
-      "unified_expected_output": "<pre><code>def foo(): pass\n</code></pre>"
+      "text_content": "def foo(): pass\n"
     },
     {
       "name": "two_space_not_code_block",
@@ -249,8 +242,7 @@
     {
       "name": "list_codeblock_interference",
       "input": "para:\n\n    1. list-1\n    2. list-2\n      1. list-2a\n    3. list-3\n",
-      "expected_output": "<p>para:</p>\n<div class=\"codehilite\"><pre><span></span><code>1. list-1\n2. list-2\n  1. list-2a\n3. list-3\n</code></pre></div>",
-      "unified_expected_output": "<p>para:</p>\n<pre><code>1. list-1\n2. list-2\n  1. list-2a\n3. list-3\n</code></pre>"
+      "expected_output": "<p>para:</p>\n<div class=\"codehilite\"><pre><span></span><code>1. list-1\n2. list-2\n  1. list-2a\n3. list-3\n</code></pre></div>"
     },
     {
       "name": "ulist_mixed_bullets",
@@ -312,15 +304,14 @@
       "name": "ulist_codeblock",
       "input": "~~~\nint x = 3\n* 4;\n~~~",
       "expected_output": "<div class=\"codehilite\"><pre><span></span><code>int x = 3\n* 4;\n</code></pre></div>",
-      "text_content": "int x = 3\n* 4;\n",
-      "unified_expected_output": "<pre><code>int x = 3\n* 4;\n</code></pre>"
+      "text_content": "int x = 3\n* 4;\n"
     },
     {
       "name": "malformed_fence",
       "input": "~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~",
       "expected_output": "<p>~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~</p>",
       "text_content": "~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~",
-      "unified_expected_output": "<pre><code class=\"language-xxxxxxxxx:\"></code></pre>"
+      "unified_expected_output": "<div class=\"codehilite\" data-code-language=\"xxxxxxxxx:\"><pre><span></span><code>\n</code></pre></div>"
     },
     {
       "name": "strikthrough_basic",
@@ -841,8 +832,7 @@
       "name": "safe_html_in_code",
       "input": "~~~\n<h1>stay normal</h1>",
       "expected_output": "<div class=\"codehilite\"><pre><span></span><code>&lt;h1&gt;stay normal&lt;/h1&gt;\n</code></pre></div>",
-      "text_content": "<h1>stay normal</h1>\n",
-      "unified_expected_output": "<pre><code>&lt;h1&gt;stay normal&lt;/h1&gt;\n</code></pre>"
+      "text_content": "<h1>stay normal</h1>\n"
     },
     {
       "name": "ulist_with_inline_code",
@@ -946,14 +936,14 @@
       "input": "```tex\n\n\\pi \\textbf{ is not } 3.14\n```",
       "expected_output": "<div class=\"codehilite\" data-code-language=\"TeX\"><pre><span></span><code><span class=\"k\">\\pi</span> <span class=\"k\">\\textbf</span><span class=\"nb\">{</span> is not <span class=\"nb\">}</span> 3.14\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\" data-code-language=\"TeX\"><pre><span></span><code>\\pi \\textbf{ is not } 3.14\n</code></pre></div>",
-      "unified_expected_output": "<pre><code class=\"language-tex\">\n\\pi \\textbf{ is not } 3.14\n</code></pre>"
+      "unified_expected_output": "<div class=\"codehilite\" data-code-language=\"TeX\"><pre><span></span><code>\\pi \\textbf{ is not } 3.14\n</code></pre></div>"
     },
     {
       "name": "tex_fenced_latex",
       "input": "```latex\n\n\\pi \\textbf{ is not } 3.14\n```",
       "expected_output": "<div class=\"codehilite\" data-code-language=\"TeX\"><pre><span></span><code><span class=\"k\">\\pi</span> <span class=\"k\">\\textbf</span><span class=\"nb\">{</span> is not <span class=\"nb\">}</span> 3.14\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\" data-code-language=\"TeX\"><pre><span></span><code>\\pi \\textbf{ is not } 3.14\n</code></pre></div>",
-      "unified_expected_output": "<pre><code class=\"language-latex\">\n\\pi \\textbf{ is not } 3.14\n</code></pre>"
+      "unified_expected_output": "<div class=\"codehilite\" data-code-language=\"TeX\"><pre><span></span><code>\\pi \\textbf{ is not } 3.14\n</code></pre></div>"
     },
     {
       "name": "tex_money",
@@ -1097,28 +1087,28 @@
       "input": "```\n#!python\nprint(\"Hello World\")\n```",
       "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"ch\">#!python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">&quot;Hello World&quot;</span><span class=\"p\">)</span>\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>#!python\nprint(&quot;Hello World&quot;)\n</code></pre></div>",
-      "unified_expected_output": "<pre><code>#!python\nprint(\"Hello World\")\n</code></pre>"
+      "unified_expected_output": "<div class=\"codehilite\"><pre><span></span><code>#!python\nprint(&quot;Hello World&quot;)\n</code></pre></div>"
     },
     {
       "name": "codeblock_hilite_shebang_feature_no_path_2",
       "input": "```\n:::python\nprint(\"Hello World\")\n```",
       "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"p\">:::</span><span class=\"n\">python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">&quot;Hello World&quot;</span><span class=\"p\">)</span>\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>:::python\nprint(&quot;Hello World&quot;)\n</code></pre></div>",
-      "unified_expected_output": "<pre><code>:::python\nprint(\"Hello World\")\n</code></pre>"
+      "unified_expected_output": "<div class=\"codehilite\"><pre><span></span><code>:::python\nprint(&quot;Hello World&quot;)\n</code></pre></div>"
     },
     {
       "name": "codeblock_hilite_shebang_feature_with_path",
       "input": "```\n#!/usr/bin/python\nprint(\"Hello World\")\n```",
       "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"ch\">#!/usr/bin/python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">&quot;Hello World&quot;</span><span class=\"p\">)</span>\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>#!/usr/bin/python\nprint(&quot;Hello World&quot;)\n</code></pre></div>",
-      "unified_expected_output": "<pre><code>#!/usr/bin/python\nprint(\"Hello World\")\n</code></pre>"
+      "unified_expected_output": "<div class=\"codehilite\"><pre><span></span><code>#!/usr/bin/python\nprint(&quot;Hello World&quot;)\n</code></pre></div>"
     },
     {
       "name": "codeblock_hilite_startinline_php",
       "input": "```php\n  $var = function($var, 'string');\n```\nPHP\n```css+php\n  $var = function($var, 'string');\n```\nCSS + PHP\n```html+php\n  $var = function($var, 'string');\n```\nHTML + PHP\n```javascript+php\n  $var = function($var, 'string');\n```\nJAVASCRIPT + PHP\n```xml+php\n  $var = function($var, 'string');\n```\nXML + PHP\n```php\n  <?php\n  $var = function($var, 'string');\n```\nWITH MARKER",
       "expected_output": "<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>PHP</p>\n<div class=\"codehilite\" data-code-language=\"CSS+PHP\"><pre><span></span><code>  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>CSS + PHP</p>\n<div class=\"codehilite\" data-code-language=\"HTML+PHP\"><pre><span></span><code>  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>HTML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"JavaScript+PHP\"><pre><span></span><code>  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>JAVASCRIPT + PHP</p>\n<div class=\"codehilite\" data-code-language=\"XML+PHP\"><pre><span></span><code>  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>XML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  <span class=\"o\">&lt;?</span><span class=\"nx\">php</span>\n  <span class=\"nv\">$var</span> <span class=\"o\">=</span> <span class=\"k\">function</span><span class=\"p\">(</span><span class=\"nv\">$var</span><span class=\"p\">,</span> <span class=\"s1\">'string'</span><span class=\"p\">);</span>\n</code></pre></div>\n<p>WITH MARKER</p>",
       "marked_expected_output": "<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>PHP</p>\n<div class=\"codehilite\" data-code-language=\"CSS+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>CSS + PHP</p>\n<div class=\"codehilite\" data-code-language=\"HTML+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>HTML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"JavaScript+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>JAVASCRIPT + PHP</p>\n<div class=\"codehilite\" data-code-language=\"XML+PHP\"><pre><span></span><code>  $var = function($var, 'string');\n</code></pre></div>\n<p>XML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  &lt;?php\n  $var = function($var, 'string');\n</code></pre></div>\n<p>WITH MARKER</p>",
-      "unified_expected_output": "<pre><code class=\"language-php\">  $var = function($var, 'string');\n</code></pre>\n<p>PHP</p>\n<pre><code class=\"language-css+php\">  $var = function($var, 'string');\n</code></pre>\n<p>CSS + PHP</p>\n<pre><code class=\"language-html+php\">  $var = function($var, 'string');\n</code></pre>\n<p>HTML + PHP</p>\n<pre><code class=\"language-javascript+php\">  $var = function($var, 'string');\n</code></pre>\n<p>JAVASCRIPT + PHP</p>\n<pre><code class=\"language-xml+php\">  $var = function($var, 'string');\n</code></pre>\n<p>XML + PHP</p>\n<pre><code class=\"language-php\">  &lt;?php\n  $var = function($var, 'string');\n</code></pre>\n<p>WITH MARKER</p>"
+      "unified_expected_output": "<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  $var = function($var, &#39;string&#39;);\n</code></pre></div>\n<p>PHP</p>\n<div class=\"codehilite\" data-code-language=\"CSS+PHP\"><pre><span></span><code>  $var = function($var, &#39;string&#39;);\n</code></pre></div>\n<p>CSS + PHP</p>\n<div class=\"codehilite\" data-code-language=\"HTML+PHP\"><pre><span></span><code>  $var = function($var, &#39;string&#39;);\n</code></pre></div>\n<p>HTML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"JavaScript+PHP\"><pre><span></span><code>  $var = function($var, &#39;string&#39;);\n</code></pre></div>\n<p>JAVASCRIPT + PHP</p>\n<div class=\"codehilite\" data-code-language=\"XML+PHP\"><pre><span></span><code>  $var = function($var, &#39;string&#39;);\n</code></pre></div>\n<p>XML + PHP</p>\n<div class=\"codehilite\" data-code-language=\"PHP\"><pre><span></span><code>  &lt;?php\n  $var = function($var, &#39;string&#39;);\n</code></pre></div>\n<p>WITH MARKER</p>"
     },
     {
       "name": "normal_quote_message",
