@@ -397,6 +397,15 @@ def get_configured_fixed_price_plan_offer(
     return None
 
 
+def standardize_datetime_for_stripe(datetime: datetime | None = None) -> datetime:
+    # Everything in Stripe is stored as timestamps with 1 second resolution,
+    # so standardize on 1 second resolution.
+    # TODO talk about leap seconds?
+    if datetime is None:
+        return timezone_now().replace(microsecond=0)
+    return datetime.replace(microsecond=0)
+
+
 class BillingError(JsonableError):
     data_fields = ["error_description"]
     # error messages
@@ -1919,7 +1928,7 @@ class BillingSession(ABC):
                 plan_params["invoicing_status"] = (
                     CustomerPlan.INVOICING_STATUS_INITIAL_INVOICE_TO_BE_SENT
                 )
-                event_time = timezone_now().replace(microsecond=0)
+                event_time = standardize_datetime_for_stripe()
 
                 # Schedule switching to the new paid plan for the complimentary
                 # access plan's end date.
@@ -2320,8 +2329,8 @@ class BillingSession(ABC):
                             .first()
                         )
                         assert last_renewal_ledger_entry is not None
-                        last_renewal_ledger_entry.event_time = next_billing_cycle.replace(
-                            microsecond=0
+                        last_renewal_ledger_entry.event_time = standardize_datetime_for_stripe(
+                            next_billing_cycle
                         )
                         last_renewal_ledger_entry.save(update_fields=["event_time"])
                         # Since we are skipping over processing license ledger
@@ -2342,7 +2351,7 @@ class BillingSession(ABC):
                         return None, None
 
                 plan.invoiced_through = last_ledger_entry
-                plan.billing_cycle_anchor = next_billing_cycle.replace(microsecond=0)
+                plan.billing_cycle_anchor = standardize_datetime_for_stripe(next_billing_cycle)
                 plan.status = CustomerPlan.ACTIVE
                 plan.save(update_fields=["invoiced_through", "billing_cycle_anchor", "status"])
                 return None, LicenseLedger.objects.create(
@@ -3172,7 +3181,7 @@ class BillingSession(ABC):
             new_plan_tier, current_plan.billing_schedule, current_plan.customer
         )
 
-        new_plan_billing_cycle_anchor = current_plan.end_date.replace(microsecond=0)
+        new_plan_billing_cycle_anchor = standardize_datetime_for_stripe(current_plan.end_date)
 
         new_plan = CustomerPlan.objects.create(
             customer=current_plan.customer,
@@ -5496,12 +5505,8 @@ def compute_plan_parameters(
     is_self_hosted_billing: bool = False,
     upgrade_when_complimentary_access_plan_ends: bool = False,
 ) -> tuple[datetime, datetime, datetime, int]:
-    # Everything in Stripe is stored as timestamps with 1 second resolution,
-    # so standardize on 1 second resolution.
-    # TODO talk about leap seconds?
     if billing_cycle_anchor is None:
-        billing_cycle_anchor = timezone_now().replace(microsecond=0)
-
+        billing_cycle_anchor = standardize_datetime_for_stripe()
     if billing_schedule == CustomerPlan.BILLING_SCHEDULE_ANNUAL:
         period_end = add_months(billing_cycle_anchor, 12)
     elif billing_schedule == CustomerPlan.BILLING_SCHEDULE_MONTHLY:
