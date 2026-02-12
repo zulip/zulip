@@ -4,8 +4,8 @@ const assert = require("node:assert/strict");
 
 const Template = require("uri-template-lite");
 
-const {zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const { zrequire } = require("./lib/namespace.cjs");
+const { run_test } = require("./lib/test.cjs");
 
 const markdown = zrequire("markdown");
 const linkifiers = zrequire("linkifiers");
@@ -82,8 +82,8 @@ function stream_topic_hash(stream_id, topic) {
 
 function get_emoticon_translations() {
     return [
-        {regex: /(:\))/g, replacement_text: ":smile:"},
-        {regex: /(<3)/g, replacement_text: ":heart:"},
+        { regex: /(:\))/g, replacement_text: ":smile:" },
+        { regex: /(<3)/g, replacement_text: ":heart:" },
     ];
 }
 
@@ -119,7 +119,7 @@ const linkifier_map = new Map([
         regex,
         {
             url_template: new Template("http://foo.com/{id}"),
-            group_number_to_name: {1: "id"},
+            group_number_to_name: { 1: "id" },
         },
     ],
 ]);
@@ -159,7 +159,7 @@ const helper_config = {
 };
 
 function assert_parse(raw_content, expected_content) {
-    const {content} = markdown.parse({raw_content, helper_config});
+    const { content } = markdown.parse({ raw_content, helper_config });
     assert.equal(content, expected_content);
 }
 
@@ -206,15 +206,15 @@ run_test("stream links", () => {
 run_test("emojis", () => {
     assert_parse(
         "yup :)",
-        '<p>yup <span aria-label="smile" class="emoji emoji-1f604" role="img" title="smile">:smile:</span></p>',
+        '<p>yup <span aria-label="smile" class="emoji emoji-1f604" data-tippy-content=":smile:" role="img" title="smile">:smile:</span></p>',
     );
     assert_parse(
         "I <3 JavaScript",
-        '<p>I <img alt=":heart:" class="emoji" src="/images/emoji/heart.bmp" title="heart"> JavaScript</p>',
+        '<p>I <img alt=":heart:" class="emoji" data-tippy-content=":heart:" src="/images/emoji/heart.bmp" title="heart"> JavaScript</p>',
     );
     assert_parse(
         "Mars Attacks! \uD83D\uDC7D",
-        '<p>Mars Attacks! <span aria-label="alien" class="emoji emoji-1f47d" role="img" title="alien">:alien:</span></p>',
+        '<p>Mars Attacks! <span aria-label="alien" class="emoji emoji-1f47d" data-tippy-content=":alien:" role="img" title="alien">:alien:</span></p>',
     );
 });
 
@@ -231,7 +231,7 @@ function assert_topic_links(topic, expected_links) {
 }
 
 run_test("topic links", () => {
-    linkifiers.initialize([{pattern: "#foo(?P<id>\\d+)", url_template: "http://foo.com/{id}"}]);
+    linkifiers.initialize([{ pattern: "#foo(?P<id>\\d+)", url_template: "http://foo.com/{id}" }]);
     markdown.initialize({
         get_linkifier_map: linkifiers.get_linkifier_map,
     });
@@ -251,7 +251,7 @@ run_test("topic links repeated", () => {
     // Links generated from repeated patterns should preserve the order.
     const topic =
         "#foo101 https://google.com #foo102 #foo103 https://google.com #foo101 #foo102 #foo103";
-    linkifiers.initialize([{pattern: "#foo(?P<id>\\d+)", url_template: "http://foo.com/{id}"}]);
+    linkifiers.initialize([{ pattern: "#foo(?P<id>\\d+)", url_template: "http://foo.com/{id}" }]);
     assert_topic_links(topic, [
         {
             text: "#foo101",
@@ -290,10 +290,10 @@ run_test("topic links repeated", () => {
 
 run_test("topic links overlapping", () => {
     linkifiers.initialize([
-        {pattern: "[a-z]+(?P<id>1\\d+) #[a-z]+", url_template: "http://a.com/{id}"},
-        {pattern: "[a-z]+(?P<id>1\\d+)", url_template: "http://b.com/{id}"},
-        {pattern: ".+#(?P<id>[a-z]+)", url_template: "http://wildcard.com/{id}"},
-        {pattern: "#(?P<id>[a-z]+)", url_template: "http://c.com/{id}"},
+        { pattern: "[a-z]+(?P<id>1\\d+) #[a-z]+", url_template: "http://a.com/{id}" },
+        { pattern: "[a-z]+(?P<id>1\\d+)", url_template: "http://b.com/{id}" },
+        { pattern: ".+#(?P<id>[a-z]+)", url_template: "http://wildcard.com/{id}" },
+        { pattern: "#(?P<id>[a-z]+)", url_template: "http://c.com/{id}" },
     ]);
     // b.com's pattern should be matched while it overlaps with c.com's.
     assert_topic_links("#foo100", [
@@ -350,13 +350,13 @@ run_test("topic links overlapping", () => {
 run_test("topic links ordering by priority", () => {
     // The same test case is also implemented in zerver/tests/test_markdown.py
     linkifiers.initialize([
-        {pattern: "http", url_template: "http://example.com/"},
-        {pattern: "b#(?P<id>[a-z]+)", url_template: "http://example.com/b/{id}"},
+        { pattern: "http", url_template: "http://example.com/" },
+        { pattern: "b#(?P<id>[a-z]+)", url_template: "http://example.com/b/{id}" },
         {
             pattern: "a#(?P<aid>[a-z]+) b#(?P<bid>[a-z]+)",
             url_template: "http://example.com/a/{aid}/b/%(bid)",
         },
-        {pattern: "a#(?P<id>[a-z]+)", url_template: "http://example.com/a/{id}"},
+        { pattern: "a#(?P<id>[a-z]+)", url_template: "http://example.com/a/{id}" },
     ]);
 
     // There should be 5 link matches in the topic, if ordered from the most prioritized to the least:

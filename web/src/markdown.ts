@@ -1,4 +1,4 @@
-import {getUnixTime, isValid} from "date-fns";
+import { getUnixTime, isValid } from "date-fns";
 import katex from "katex";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -7,7 +7,7 @@ import type Template from "uri-template-lite";
 import render_channel_message_link from "../templates/channel_message_link.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 import marked from "../third/marked/lib/marked.cjs";
-import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
+import type { LinkifierMatch, ParseOptions, RegExpOrStub } from "../third/marked/lib/marked.cjs";
 
 import * as fenced_code from "./fenced_code.ts";
 import * as util from "./util.ts";
@@ -47,7 +47,7 @@ export type AbstractMap<K, V> = {
 
 export type AbstractLinkifierMap = AbstractMap<
     RegExp,
-    {url_template: Template; group_number_to_name: Record<number, string>}
+    { url_template: Template; group_number_to_name: Record<number, string> }
 >;
 
 type GetLinkifierMap = () => AbstractLinkifierMap;
@@ -61,11 +61,11 @@ export type MarkdownHelpers = {
     is_valid_user_id: (user_id: number) => boolean;
 
     // user groups
-    get_user_group_from_name: (name: string) => {id: number; name: string} | undefined;
+    get_user_group_from_name: (name: string) => { id: number; name: string } | undefined;
     is_member_of_user_group: (user_group_id: number, user_id: number) => boolean;
 
     // stream hashes
-    get_stream_by_name: (stream_name: string) => {stream_id: number; name: string} | undefined;
+    get_stream_by_name: (stream_name: string) => { stream_id: number; name: string } | undefined;
     stream_hash: (stream_id: number) => string;
     stream_topic_hash: (stream_id: number, topic: string) => string;
 
@@ -75,7 +75,7 @@ export type MarkdownHelpers = {
     // emojis
     get_emoji_name: (codepoint: string) => string | undefined;
     get_emoji_codepoint: (emoji_name: string) => string | undefined;
-    get_emoticon_translations: () => {regex: RegExp; replacement_text: string}[];
+    get_emoticon_translations: () => { regex: RegExp; replacement_text: string }[];
     get_realm_emoji_url: (emoji_name: string) => string | undefined;
 
     // linkifiers
@@ -87,7 +87,7 @@ export function translate_emoticons_to_names({
     get_emoticon_translations,
 }: {
     src: string;
-    get_emoticon_translations: () => {regex: RegExp; replacement_text: string}[];
+    get_emoticon_translations: () => { regex: RegExp; replacement_text: string }[];
 }): string {
     // Translates emoticons in a string to their colon syntax.
     let translated = src;
@@ -385,7 +385,7 @@ function parse_with_options(
         flags.push("topic_wildcard_mentioned");
     }
 
-    return {content, flags};
+    return { content, flags };
 }
 
 function is_x_between(x: number, start: number, length: number): boolean {
@@ -406,7 +406,7 @@ type Link = {
     precedence: number | null;
 };
 
-type TopicLink = {url: string; text: string};
+type TopicLink = { url: string; text: string };
 
 export function get_topic_links(topic: string): TopicLink[] {
     // We export this for testing purposes, and mobile may want to
@@ -418,7 +418,7 @@ export function get_topic_links(topic: string): TopicLink[] {
     assert(web_app_helpers !== undefined);
     const get_linkifier_map = web_app_helpers.get_linkifier_map;
 
-    for (const [pattern, {url_template, group_number_to_name}] of get_linkifier_map().entries()) {
+    for (const [pattern, { url_template, group_number_to_name }] of get_linkifier_map().entries()) {
         let match;
         while ((match = pattern.exec(topic)) !== null) {
             const template_context = Object.fromEntries(
@@ -429,7 +429,7 @@ export function get_topic_links(topic: string): TopicLink[] {
             const link_url = url_template.expand(template_context);
             // We store the starting index as well, to sort the order of occurrence of the links
             // in the topic, similar to the logic implemented in zerver/lib/markdown/__init__.py
-            links.push({url: link_url, text: match[0], index: match.index, precedence});
+            links.push({ url: link_url, text: match[0], index: match.index, precedence });
         }
         precedence += 1;
     }
@@ -452,7 +452,7 @@ export function get_topic_links(topic: string): TopicLink[] {
     const url_re = /\b(https?:\/\/[^\s<]+[^\s"'),.:;<\]])/g; // Slightly modified from third/marked.js
     let match;
     while ((match = url_re.exec(topic)) !== null) {
-        links.push({url: match[0], text: match[0], index: match.index, precedence: null});
+        links.push({ url: match[0], text: match[0], index: match.index, precedence: null });
     }
     // The following removes overlapping intervals depending on the precedence of linkifier patterns.
     // This uses the same algorithm implemented in zerver/lib/markdown/__init__.py.
@@ -475,7 +475,7 @@ export function get_topic_links(topic: string): TopicLink[] {
     // We need to sort applied_matches again because the links were previously ordered by precedence,
     // so that the links are displayed in the order their patterns are matched.
     applied_matches.sort((a, b) => a.index - b.index);
-    return applied_matches.map((match) => ({url: match.url, text: match.text}));
+    return applied_matches.map((match) => ({ url: match.url, text: match.text }));
 }
 
 export function is_status_message(raw_content: string): boolean {
@@ -485,7 +485,9 @@ export function is_status_message(raw_content: string): boolean {
 function make_emoji_span(codepoint: string, title: string, alt_text: string): string {
     return `<span aria-label="${_.escape(title)}" class="emoji emoji-${_.escape(
         codepoint,
-    )}" role="img" title="${_.escape(title)}">${_.escape(alt_text)}</span>`;
+    )}" data-tippy-content="${_.escape(alt_text)}" role="img" title="${_.escape(title)}">${_.escape(
+        alt_text,
+    )}</span>`;
 }
 
 function handleUnicodeEmoji(
@@ -540,9 +542,9 @@ function handleEmoji({
     const emoji_url = get_realm_emoji_url(emoji_name);
 
     if (emoji_url) {
-        return `<img alt="${_.escape(alt_text)}" class="emoji" src="${_.escape(
-            emoji_url,
-        )}" title="${_.escape(title)}">`;
+        return `<img alt="${_.escape(alt_text)}" class="emoji" data-tippy-content="${_.escape(
+            alt_text,
+        )}" src="${_.escape(emoji_url)}" title="${_.escape(title)}">`;
     }
 
     const codepoint = get_emoji_codepoint(emoji_name);
@@ -564,7 +566,7 @@ function handleLinkifier({
 }): string {
     const item = get_linkifier_map().get(pattern);
     assert(item !== undefined);
-    const {url_template, group_number_to_name} = item;
+    const { url_template, group_number_to_name } = item;
     const template_context = Object.fromEntries(
         matches.map((match, i) => [group_number_to_name[i + 1]!, match]),
     );
@@ -607,9 +609,9 @@ function handleStream({
     stream_name: string;
     get_stream_by_name: (stream_name: string) =>
         | {
-              stream_id: number;
-              name: string;
-          }
+            stream_id: number;
+            name: string;
+        }
         | undefined;
     stream_hash: (stream_id: number) => string;
 }): string | undefined {
@@ -633,9 +635,9 @@ function handleStreamTopic({
     topic: string;
     get_stream_by_name: (stream_name: string) =>
         | {
-              stream_id: number;
-              name: string;
-          }
+            stream_id: number;
+            name: string;
+        }
         | undefined;
     stream_topic_hash: (stream_id: number, topic: string) => string;
 }): string | undefined {
@@ -665,9 +667,9 @@ function handleStreamTopicMessage({
     message_id: number;
     get_stream_by_name: (stream_name: string) =>
         | {
-              stream_id: number;
-              name: string;
-          }
+            stream_id: number;
+            name: string;
+        }
         | undefined;
     stream_topic_hash: (stream_id: number, topic: string) => string;
 }): string | undefined {
@@ -872,7 +874,7 @@ export function render(
     // This is generally only intended to be called by the web app. Most
     // other platforms should call parse().
     assert(web_app_helpers !== undefined);
-    const {content, flags} = parse({raw_content, helper_config: helper_config ?? web_app_helpers});
+    const { content, flags } = parse({ raw_content, helper_config: helper_config ?? web_app_helpers });
     return {
         content,
         flags,
@@ -891,5 +893,5 @@ export function parse_non_message(raw_content: string): string {
     // a message, but we want to convert it to HTML. Note that we parse
     // raw_content exactly as if it were a Zulip message, so we will
     // handle things like mentions, stream links, and linkifiers.
-    return parse({raw_content, helper_config: web_app_helpers}).content;
+    return parse({ raw_content, helper_config: web_app_helpers }).content;
 }

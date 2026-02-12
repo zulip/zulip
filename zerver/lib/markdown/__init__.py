@@ -1286,6 +1286,7 @@ def make_emoji(codepoint: str, display_string: str) -> Element:
     span.set("title", title)
     span.set("role", "img")
     span.set("aria-label", title)
+    span.set("data-tippy-content", display_string)
     span.text = markdown.util.AtomicString(display_string)
     return span
 
@@ -1296,6 +1297,7 @@ def make_realm_emoji(src: str, display_string: str) -> Element:
     elt.set("class", "emoji")
     elt.set("alt", display_string)
     elt.set("title", display_string[1:-1].replace("_", " "))
+    elt.set("data-tippy-content", display_string)
     return elt
 
 

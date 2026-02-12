@@ -6,11 +6,11 @@ const katex = require("katex");
 
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
 
-const {make_realm} = require("./lib/example_realm.cjs");
+const { make_realm } = require("./lib/example_realm.cjs");
 const markdown_assert = require("./lib/markdown_assert.cjs");
-const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
-const {page_params} = require("./lib/zpage_params.cjs");
+const { mock_esm, set_global, zrequire } = require("./lib/namespace.cjs");
+const { run_test } = require("./lib/test.cjs");
+const { page_params } = require("./lib/zpage_params.cjs");
 
 const example_realm_linkifiers = [
     {
@@ -42,7 +42,7 @@ const example_realm_linkifiers = [
     },
 ];
 
-set_global("document", {compatMode: "CSS1Compat"});
+set_global("document", { compatMode: "CSS1Compat" });
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => false,
@@ -56,18 +56,18 @@ const markdown_config = zrequire("markdown_config");
 const markdown = zrequire("markdown");
 const people = zrequire("people");
 const pygments_data = zrequire("pygments_data");
-const {set_realm} = zrequire("state_data");
+const { set_realm } = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
 const settings_config = zrequire("settings_config");
-const {initialize_user_settings} = zrequire("user_settings");
+const { initialize_user_settings } = zrequire("user_settings");
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
-set_realm(make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME}));
+set_realm(make_realm({ realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME }));
 const user_settings = {
     web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
 };
-initialize_user_settings({user_settings});
+initialize_user_settings({ user_settings });
 
 const emoji_params = {
     realm_emoji: {
@@ -271,7 +271,7 @@ test("markdown_detection", () => {
     }
 });
 
-test("marked_shared", ({override}) => {
+test("marked_shared", ({ override }) => {
     const tests = markdown_test_cases.regular_tests;
 
     for (const test of tests) {
@@ -281,7 +281,7 @@ test("marked_shared", ({override}) => {
             continue;
         }
 
-        let message = {raw_content: test.input};
+        let message = { raw_content: test.input };
         override(user_settings, "translate_emoticons", test.translate_emoticons || false);
         message = {
             ...message,
@@ -301,21 +301,21 @@ test("marked_shared", ({override}) => {
 });
 
 test("message_flags", () => {
-    let message = {raw_content: "@**Leo**"};
+    let message = { raw_content: "@**Leo**" };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
     };
     assert.ok(!message.flags.includes("mentioned"));
 
-    message = {raw_content: "@**Cordelia, Lear's daughter**"};
+    message = { raw_content: "@**Cordelia, Lear's daughter**" };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
     };
     assert.ok(message.flags.includes("mentioned"));
 
-    message = {raw_content: "@**all**"};
+    message = { raw_content: "@**all**" };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -323,7 +323,7 @@ test("message_flags", () => {
     assert.ok(message.flags.includes("stream_wildcard_mentioned"));
     assert.ok(!message.flags.includes("topic_wildcard_mentioned"));
 
-    message = {raw_content: "@**topic**"};
+    message = { raw_content: "@**topic**" };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -332,16 +332,16 @@ test("message_flags", () => {
     assert.ok(message.flags.includes("topic_wildcard_mentioned"));
 });
 
-test("marked", ({override}) => {
+test("marked", ({ override }) => {
     const test_cases = [
-        {input: "hello", expected: "<p>hello</p>"},
-        {input: "hello there", expected: "<p>hello there</p>"},
-        {input: "hello **bold** for you", expected: "<p>hello <strong>bold</strong> for you</p>"},
+        { input: "hello", expected: "<p>hello</p>" },
+        { input: "hello there", expected: "<p>hello there</p>" },
+        { input: "hello **bold** for you", expected: "<p>hello <strong>bold</strong> for you</p>" },
         {
             input: "hello ***foo*** for you",
             expected: "<p>hello <strong><em>foo</em></strong> for you</p>",
         },
-        {input: "__hello__", expected: "<p>__hello__</p>"},
+        { input: "__hello__", expected: "<p>__hello__</p>" },
         {
             input: "\n```\nfenced code\n```\n\nand then after\n",
             expected:
@@ -392,7 +392,7 @@ test("marked", ({override}) => {
             input: "These # #**** are not mentions",
             expected: "<p>These # #<em>**</em> are not mentions</p>",
         },
-        {input: "These @* are not mentions", expected: "<p>These @* are not mentions</p>"},
+        { input: "These @* are not mentions", expected: "<p>These @* are not mentions</p>" },
         {
             input: "These #* #*** are also not mentions",
             expected: "<p>These #* #*** are also not mentions</p>",
@@ -441,17 +441,17 @@ test("marked", ({override}) => {
         {
             input: "mmm...:burrito:s",
             expected:
-                '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/generated/emoji/images/emoji/burrito.png" title="burrito">s</p>',
+                '<p>mmm...<img alt=":burrito:" class="emoji" data-tippy-content=":burrito:" src="/static/generated/emoji/images/emoji/burrito.png" title="burrito">s</p>',
         },
         {
             input: "This is an :poop: message",
             expected:
-                '<p>This is an <span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span> message</p>',
+                '<p>This is an <span aria-label="poop" class="emoji emoji-1f4a9" data-tippy-content=":poop:" role="img" title="poop">:poop:</span> message</p>',
         },
         {
             input: "\uD83D\uDCA9",
             expected:
-                '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
+                '<p><span aria-label="poop" class="emoji emoji-1f4a9" data-tippy-content=":poop:" role="img" title="poop">:poop:</span></p>',
         },
         {
             input: "Silent mention: @_**Cordelia, Lear's daughter**",
@@ -521,7 +521,7 @@ test("marked", ({override}) => {
             expected:
                 '<p>This is a complicated linkifier <a href="https://zone_e.zulip.net/ticket/luxembourg/abcde?name=foo&amp;chapter=23#testi" title="https://zone_e.zulip.net/ticket/luxembourg/abcde?name=foo&amp;chapter=23#testi">FOO_abcde;e;zulip;luxembourg;foo;23;testing</a> with text after it</p>',
         },
-        {input: "#1234is not a linkifier.", expected: "<p>#1234is not a linkifier.</p>"},
+        { input: "#1234is not a linkifier.", expected: "<p>#1234is not a linkifier.</p>" },
         {
             input: "A pattern written as #1234is not a linkifier.",
             expected: "<p>A pattern written as #1234is not a linkifier.</p>",
@@ -531,7 +531,7 @@ test("marked", ({override}) => {
             expected:
                 '<p>This is a linkifier with <a href="https://zone_45.zulip.net/ticket/123" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>',
         },
-        {input: "Test *italic*", expected: "<p>Test <em>italic</em></p>"},
+        { input: "Test *italic*", expected: "<p>Test <em>italic</em></p>" },
         {
             input: "T\n#**Denmark**",
             expected:
@@ -547,7 +547,7 @@ test("marked", ({override}) => {
             expected:
                 '<p><span class="user-mention" data-user-id="104">@Mark Twin</span> and <span class="user-mention" data-user-id="105">@Mark Twin</span> are out to confuse you.</p>',
         },
-        {input: "@**Invalid User|1234**", expected: "<p>@**Invalid User|1234**</p>"},
+        { input: "@**Invalid User|1234**", expected: "<p>@**Invalid User|1234**</p>" },
         {
             input: "@**Cordelia, Lear's daughter|103** has a wrong user_id.",
             expected: "<p>@**Cordelia, Lear&#39;s daughter|103** has a wrong user_id.</p>",
@@ -579,30 +579,30 @@ test("marked", ({override}) => {
             input: "@**Unknown user|108** mention inaccessible user using name and ID.",
             expected: "<p>@**Unknown user|108** mention inaccessible user using name and ID.</p>",
         },
-        {input: "@**|1234** invalid id.", expected: "<p>@**|1234** invalid id.</p>"},
-        {input: "T\n@hamletcharacters", expected: "<p>T<br>\n@hamletcharacters</p>"},
+        { input: "@**|1234** invalid id.", expected: "<p>@**|1234** invalid id.</p>" },
+        { input: "T\n@hamletcharacters", expected: "<p>T<br>\n@hamletcharacters</p>" },
         {
             input: "T\n@*hamletcharacters*",
             expected:
                 '<p>T<br>\n<span class="user-group-mention" data-user-group-id="1">@hamletcharacters</span></p>',
         },
-        {input: "T\n@*notagroup*", expected: "<p>T<br>\n@*notagroup*</p>"},
+        { input: "T\n@*notagroup*", expected: "<p>T<br>\n@*notagroup*</p>" },
         {
             input: "T\n@*backend*",
             expected:
                 '<p>T<br>\n<span class="user-group-mention" data-user-group-id="2">@Backend</span></p>',
         },
-        {input: "@*notagroup*", expected: "<p>@*notagroup*</p>"},
+        { input: "@*notagroup*", expected: "<p>@*notagroup*</p>" },
         {
             input: "This is a linkifier `hello` with text after it",
             expected: "<p>This is a linkifier <code>hello</code> with text after it</p>",
         },
         // Test the emoticon conversion
-        {input: ":)", expected: "<p>:)</p>"},
+        { input: ":)", expected: "<p>:)</p>" },
         {
             input: ":)",
             expected:
-                '<p><span aria-label="slight smile" class="emoji emoji-1f642" role="img" title="slight smile">:slight_smile:</span></p>',
+                '<p><span aria-label="slight smile" class="emoji emoji-1f642" data-tippy-content=":slight_smile:" role="img" title="slight smile">:slight_smile:</span></p>',
             translate_emoticons: true,
         },
         // Test HTML escaping in custom Zulip rules
@@ -618,7 +618,7 @@ test("marked", ({override}) => {
             input: ":<h1>The Rogue One</h1>:",
             expected: "<p>:&lt;h1&gt;The Rogue One&lt;/h1&gt;:</p>",
         },
-        {input: "@**O'Connell**", expected: "<p>@**O&#39;Connell**</p>"},
+        { input: "@**O'Connell**", expected: "<p>@**O&#39;Connell**</p>" },
         {
             input: "@*Bobby <h1>Tables</h1>*",
             expected:
@@ -670,11 +670,11 @@ test("marked", ({override}) => {
 });
 
 test("topic_links", () => {
-    let message = {type: "stream", topic: "No links here"};
+    let message = { type: "stream", topic: "No links here" };
     message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 0);
 
-    message = {type: "stream", topic: "One #123 link here"};
+    message = { type: "stream", topic: "One #123 link here" };
     message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 1);
     assert.deepEqual(message.topic_links[0], {
@@ -682,7 +682,7 @@ test("topic_links", () => {
         text: "#123",
     });
 
-    message = {type: "stream", topic: "Two #123 #456 link here"};
+    message = { type: "stream", topic: "Two #123 #456 link here" };
     message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 2);
     assert.deepEqual(message.topic_links[0], {
@@ -694,7 +694,7 @@ test("topic_links", () => {
         text: "#456",
     });
 
-    message = {type: "stream", topic: "New ZBUG_123 link here"};
+    message = { type: "stream", topic: "New ZBUG_123 link here" };
     message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 1);
     assert.deepEqual(message.topic_links[0], {
@@ -702,7 +702,7 @@ test("topic_links", () => {
         text: "ZBUG_123",
     });
 
-    message = {type: "stream", topic: "New ZBUG_123 with #456 link here"};
+    message = { type: "stream", topic: "New ZBUG_123 with #456 link here" };
     message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 2);
     assert.deepEqual(message.topic_links[0], {
@@ -714,7 +714,7 @@ test("topic_links", () => {
         text: "#456",
     });
 
-    message = {type: "stream", topic: "One ZGROUP_123:45 link here"};
+    message = { type: "stream", topic: "One ZGROUP_123:45 link here" };
     message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 1);
     assert.deepEqual(message.topic_links[0], {
@@ -722,7 +722,7 @@ test("topic_links", () => {
         text: "ZGROUP_123:45",
     });
 
-    message = {type: "stream", topic: "Hello https://google.com"};
+    message = { type: "stream", topic: "Hello https://google.com" };
     message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 1);
     assert.deepEqual(message.topic_links[0], {
@@ -730,7 +730,7 @@ test("topic_links", () => {
         text: "https://google.com",
     });
 
-    message = {type: "stream", topic: "#456 https://google.com https://github.com"};
+    message = { type: "stream", topic: "#456 https://google.com https://github.com" };
     message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 3);
     assert.deepEqual(message.topic_links[0], {
@@ -746,11 +746,11 @@ test("topic_links", () => {
         text: "https://github.com",
     });
 
-    message = {type: "not-stream"};
+    message = { type: "not-stream" };
     message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 0);
 
-    message = {type: "stream", topic: "FOO_abcde;e;zulip;luxembourg;foo;23;testing"};
+    message = { type: "stream", topic: "FOO_abcde;e;zulip;luxembourg;foo;23;testing" };
     message.topic_links = markdown.get_topic_links(message.topic);
     assert.equal(message.topic_links.length, 1);
     assert.deepEqual(message.topic_links[0], {
@@ -761,7 +761,7 @@ test("topic_links", () => {
 
 test("message_flags", () => {
     let input = "/me is testing this";
-    let message = {topic: "No links here", raw_content: input};
+    let message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -771,7 +771,7 @@ test("message_flags", () => {
     assert.ok(!message.unread);
 
     input = "/me is testing\nthis";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -780,7 +780,7 @@ test("message_flags", () => {
     assert.equal(message.is_me_message, true);
 
     input = "testing this @**all** @**Cordelia, Lear's daughter**";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -791,7 +791,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("topic_wildcard_mentioned"), false);
 
     input = "test @**everyone**";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -802,7 +802,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @**stream**";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -813,7 +813,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @**channel**";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -824,7 +824,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @**topic**";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -835,7 +835,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @all";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -845,7 +845,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @everyone";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -855,7 +855,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @topic";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -865,7 +865,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @any";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -875,7 +875,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @alleycat.com";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -885,7 +885,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @*hamletcharacters*";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -895,7 +895,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), true);
 
     input = "test @*backend*";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -905,7 +905,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @**invalid_user**";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -915,7 +915,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @_**all**";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -925,7 +925,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "> test @**all**";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -935,7 +935,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @_**topic**";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -945,7 +945,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "> test @**topic**";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -955,7 +955,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @_*hamletcharacters*";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -965,7 +965,7 @@ test("message_flags", () => {
     assert.equal(message.flags.includes("mentioned"), false);
 
     input = "> test @*hamletcharacters*";
-    message = {topic: "No links here", raw_content: input};
+    message = { topic: "No links here", raw_content: input };
     message = {
         ...message,
         ...markdown.render(message.raw_content),
@@ -989,7 +989,7 @@ test("translate_emoticons_to_names", () => {
     const get_emoticon_translations = emoji.get_emoticon_translations;
 
     function translate_emoticons_to_names(src) {
-        return markdown.translate_emoticons_to_names({src, get_emoticon_translations});
+        return markdown.translate_emoticons_to_names({ src, get_emoticon_translations });
     }
 
     // Simple test
@@ -1002,17 +1002,17 @@ test("translate_emoticons_to_names", () => {
     // The following code loops over the test cases and each emoticon conversion
     // to generate multiple test cases.
     for (const [shortcut, full_name] of Object.entries(emoji_codes.emoticon_conversions)) {
-        for (const {original, expected} of [
-            {name: `only emoticon`, original: shortcut, expected: full_name},
-            {name: `space at start`, original: ` ${shortcut}`, expected: ` ${full_name}`},
-            {name: `space at end`, original: `${shortcut} `, expected: `${full_name} `},
-            {name: `symbol at end`, original: `${shortcut}!`, expected: `${full_name}!`},
+        for (const { original, expected } of [
+            { name: `only emoticon`, original: shortcut, expected: full_name },
+            { name: `space at start`, original: ` ${shortcut}`, expected: ` ${full_name}` },
+            { name: `space at end`, original: `${shortcut} `, expected: `${full_name} ` },
+            { name: `symbol at end`, original: `${shortcut}!`, expected: `${full_name}!` },
             {
                 name: `symbol at start`,
                 original: `Hello,${shortcut}`,
                 expected: `Hello,${full_name}`,
             },
-            {name: `after a word`, original: `Hello${shortcut}`, expected: `Hello${shortcut}`},
+            { name: `after a word`, original: `Hello${shortcut}`, expected: `Hello${shortcut}` },
             {
                 name: `between words`,
                 original: `Hello${shortcut}World`,
@@ -1044,8 +1044,8 @@ test("parse_non_message", () => {
     assert.equal(markdown.parse_non_message("type `/day`"), "<p>type <code>/day</code></p>");
 });
 
-test("missing unicode emojis", ({override}) => {
-    let message = {raw_content: "\u{1F6B2}"};
+test("missing unicode emojis", ({ override }) => {
+    let message = { raw_content: "\u{1F6B2}" };
 
     message = {
         ...message,
@@ -1053,7 +1053,7 @@ test("missing unicode emojis", ({override}) => {
     };
     assert.equal(
         message.content,
-        '<p><span aria-label="bike" class="emoji emoji-1f6b2" role="img" title="bike">:bike:</span></p>',
+        '<p><span aria-label="bike" class="emoji emoji-1f6b2" data-tippy-content=":bike:" role="img" title="bike">:bike:</span></p>',
     );
 
     // Now simulate that we don't know this emoji name.
@@ -1067,8 +1067,8 @@ test("missing unicode emojis", ({override}) => {
     assert.equal(message.content, "<p>\u{1F6B2}</p>");
 });
 
-test("katex_throws_unexpected_exceptions", ({override}) => {
-    const message = {raw_content: "$$a$$"};
+test("katex_throws_unexpected_exceptions", ({ override }) => {
+    const message = { raw_content: "$$a$$" };
     override(katex, "renderToString", () => {
         throw new Error("some-exception");
     });

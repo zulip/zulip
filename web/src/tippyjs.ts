@@ -11,14 +11,15 @@ import render_topics_not_allowed_error from "../templates/topics_not_allowed_err
 
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
-import {$t} from "./i18n.ts";
+import * as emoji from "./emoji.ts";
+import { $t } from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as people from "./people.ts";
 import * as settings_config from "./settings_config.ts";
-import {realm} from "./state_data.ts";
+import { realm } from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as ui_util from "./ui_util.ts";
-import {user_settings} from "./user_settings.ts";
+import { user_settings } from "./user_settings.ts";
 import * as util from "./util.ts";
 
 // For tooltips without data-tippy-content, we use the HTML content of
@@ -39,6 +40,150 @@ export function get_tooltip_content(reference: Element): string | Element | Docu
         }
     }
     return "";
+}
+
+function handle_emoji_tooltip_show(instance: tippy.Instance): false | undefined {
+    const $elt = $(instance.reference);
+    let emoji_name = $elt.attr("data-tippy-content") ?? $elt.attr("title");
+
+    // Remove title to prevent browser default tooltip
+    const title = $elt.attr("title");
+    if (title) {
+        $elt.attr("data-original-title", title);
+        $elt.removeAttr("title");
+    }
+
+    if (!emoji_name) {
+        return false;
+    }
+
+    if (emoji_name.startsWith(":") && emoji_name.endsWith(":")) {
+        emoji_name = emoji_name.slice(1, -1);
+    } else {
+        // If the emoji name comes from the title attribute, it might contain spaces.
+        // We replace them with underscores to match the standard emoji name format.
+        emoji_name = emoji_name.replaceAll(" ", "_");
+    }
+
+    let url = $elt.attr("data-animated-url");
+    url ??= $elt.attr("src");
+
+    if (!url) {
+        if ($elt.is("img")) {
+            url = $elt.attr("src");
+        } else {
+            const classes = $elt.attr("class")?.split(" ") ?? [];
+            const emoji_class = classes.find((c) => c.startsWith("emoji-"));
+            if (emoji_class) {
+                const codepoint = emoji_class.split("-")[1];
+                const emojiset = user_settings.emojiset;
+                const set_to_use = emojiset === "text" ? "google" : emojiset;
+                url = `/static/generated/emoji/images-${set_to_use}-64/${codepoint}.png`;
+            }
+        }
+    }
+
+    if (!url) {
+        try {
+            const details = emoji.get_emoji_details_by_name(emoji_name);
+            url = details.url;
+        } catch {
+            // Ignore
+        }
+    }
+
+    if (!url) {
+        return false;
+    }
+
+    // Validate URL to prevent XSS (e.g. javascript: URIs)
+    if (!url.startsWith("/")) {
+        try {
+            const parsed = new URL(url);
+            if (!["http:", "https:"].includes(parsed.protocol)) {
+                return false;
+            }
+        } catch {
+            return false;
+        }
+    }
+
+    const fragment = ui_util.parse_html($("template#emoji-tooltip-template").html());
+    const $content = $(fragment).find(".emoji-tooltip-container");
+
+    if (user_settings.emojiset === "text" && url.startsWith("/static/generated/emoji")) {
+        // We only want to show the native emoji if the user has selected "text" as their emojiset
+        // AND the emoji is a standard Unicode emoji (which we can infer from the generated URL pattern).
+        // Custom emojis (which don't match that pattern) should still show the image.
+
+        // Extract codepoint from the generated URL
+        // URL format: /static/generated/emoji/images-google-64/1f600.png
+        const match = /\/([0-9a-f-]+)\.png$/.exec(url);
+        if (match?.[1]) {
+            const codepoint = match[1];
+            const code_points = codepoint.split("-").map((hex) => Number.parseInt(hex, 16));
+            const emoji_char = String.fromCodePoint(...code_points);
+
+            $content.find(".emoji-native").text(emoji_char).show();
+            const $img = $content.find("img");
+            // We need to support both existing class names during migration/testing
+            if ($img.hasClass("emoji")) {
+                $img.hide();
+            } else {
+                $content.find(".emoji-image").hide();
+            }
+        } else {
+            // Fallback to image if regex fails for some reason
+            const $img = $content.find("img");
+            if ($img.hasClass("emoji")) {
+                const img = $img[0];
+                if (img instanceof HTMLImageElement) {
+                    img.src = url;
+                    $img.show();
+                }
+            } else {
+                const $emoji_img = $content.find(".emoji-image");
+                const img = $emoji_img[0];
+                if (img instanceof HTMLImageElement) {
+                    img.src = url;
+                    $emoji_img.show();
+                }
+            }
+            $content.find(".emoji-native").hide();
+        }
+    } else {
+        // Show image
+        const $img = $content.find("img");
+        if ($img.hasClass("emoji")) {
+            const img = $img[0];
+            if (img instanceof HTMLImageElement) {
+                img.src = url;
+                $img.show();
+            }
+        } else {
+            const $emoji_img = $content.find(".emoji-image");
+            const img = $emoji_img[0];
+            if (img instanceof HTMLImageElement) {
+                img.src = url;
+                $emoji_img.show();
+            }
+        }
+        $content.find(".emoji-native").hide();
+    }
+
+    $content.find(".emoji-name").text(":" + emoji_name + ":");
+
+    instance.setContent(fragment);
+    return undefined;
+}
+
+function handle_emoji_tooltip_hidden(instance: tippy.Instance): void {
+    const $elt = $(instance.reference);
+    const original_title = $elt.attr("data-original-title");
+    if (original_title) {
+        $elt.attr("title", original_title);
+        $elt.removeAttr("data-original-title");
+    }
 }
 
 // We use different delay settings for tooltips. The default "instant"
@@ -219,10 +364,10 @@ export function initialize(): void {
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onShow(instance) {
-            let content = $t({defaultMessage: "Select draft"});
+            let content = $t({ defaultMessage: "Select draft" });
             const $elem = $(instance.reference);
             if ($($elem).parent().find(".draft-selection-checkbox").hasClass("fa-check-square")) {
-                content = $t({defaultMessage: "Deselect draft"});
+                content = $t({ defaultMessage: "Deselect draft" });
             }
             instance.setContent(content);
         },
@@ -232,10 +377,10 @@ export function initialize(): void {
         target: ".delete-selected-drafts-button-container",
         appendTo: () => document.body,
         onShow(instance) {
-            let content = $t({defaultMessage: "Delete all selected drafts"});
+            let content = $t({ defaultMessage: "Delete all selected drafts" });
             const $elem = $(instance.reference);
             if ($($elem).find(".delete-selected-drafts-button").is(":disabled")) {
-                content = $t({defaultMessage: "No drafts selected"});
+                content = $t({ defaultMessage: "No drafts selected" });
             }
             instance.setContent(content);
         },
@@ -245,7 +390,7 @@ export function initialize(): void {
         target: "#add-poll-modal .dialog_submit_button_container",
         appendTo: () => document.body,
         onShow(instance) {
-            const content = $t({defaultMessage: "Please enter a question."});
+            const content = $t({ defaultMessage: "Please enter a question." });
             const $elem = $(instance.reference);
             // Show tooltip to enter question only if submit button is disabled
             // (due to question field being empty).
@@ -344,7 +489,7 @@ export function initialize(): void {
             if (title !== filename) {
                 // If the image title is the same as the filename, there's no reason
                 // to show this next line.
-                const second_line = $t({defaultMessage: "File name: {filename}"}, {filename});
+                const second_line = $t({ defaultMessage: "File name: {filename}" }, { filename });
                 $markup.append($("<br>"), $("<span>").text(second_line));
             }
             instance.setContent(util.the($markup));
@@ -406,7 +551,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: "#email_field_container.disabled_setting_tooltip",
-        content: $t({defaultMessage: "Email address changes are disabled in this organization."}),
+        content: $t({ defaultMessage: "Email address changes are disabled in this organization." }),
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
@@ -607,16 +752,16 @@ export function initialize(): void {
         trigger: "mouseenter",
         onShow(instance) {
             if ($(instance.reference).closest("span").hasClass("deactivate-user-tooltip")) {
-                instance.setContent($t({defaultMessage: "Deactivate user"}));
+                instance.setContent($t({ defaultMessage: "Deactivate user" }));
                 return undefined;
             } else if ($(instance.reference).closest("span").hasClass("reactivate-user-tooltip")) {
-                instance.setContent($t({defaultMessage: "Reactivate user"}));
+                instance.setContent($t({ defaultMessage: "Reactivate user" }));
                 return undefined;
             } else if ($(instance.reference).closest("span").hasClass("deactivate-bot-tooltip")) {
-                instance.setContent($t({defaultMessage: "Deactivate bot"}));
+                instance.setContent($t({ defaultMessage: "Deactivate bot" }));
                 return undefined;
             } else if ($(instance.reference).closest("span").hasClass("reactivate-bot-tooltip")) {
-                instance.setContent($t({defaultMessage: "Reactivate bot"}));
+                instance.setContent($t({ defaultMessage: "Reactivate bot" }));
                 return undefined;
             }
             return false;
@@ -634,25 +779,33 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".user-card-status-area .status-emoji",
         appendTo: () => document.body,
+        onShow: handle_emoji_tooltip_show,
+        onHidden: handle_emoji_tooltip_hidden,
     });
 
-    tippy.delegate("body", {
+    tippy.delegate(document.body, {
         target: ".status-emoji-name:not(.typeahead-item .status-emoji-name)",
         placement: "top",
         delay: INSTANT_HOVER_DELAY,
         appendTo: () => document.body,
 
-        /*
-            Status emoji tooltips for most locations in the app. This
-            basic tooltip logic is overridden by separate logic in
-            click_handlers.ts for the left and right sidebars, to
-            avoid problematic interactions with the main tooltips for
-            those regions.
-        */
+        onShow: handle_emoji_tooltip_show,
 
         onHidden(instance) {
+            handle_emoji_tooltip_hidden(instance);
             instance.destroy();
         },
+    });
+
+    tippy.delegate(document.body, {
+        target: ".rendered_markdown .emoji",
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        appendTo: () => document.body,
+
+        onShow: handle_emoji_tooltip_show,
+
+        onHidden: handle_emoji_tooltip_hidden,
     });
 
     tippy.delegate("body", {
@@ -731,7 +884,7 @@ export function initialize(): void {
         onShow(instance) {
             const total_user_count = people.get_active_human_count();
             instance.setContent(
-                ui_util.parse_html(render_buddy_list_title_tooltip({total_user_count})),
+                ui_util.parse_html(render_buddy_list_title_tooltip({ total_user_count })),
             );
         },
     });
@@ -764,7 +917,7 @@ export function initialize(): void {
                 settings_config.web_home_view_values[user_settings.web_home_view].description;
             instance.setContent(
                 ui_util.parse_html(
-                    render_org_logo_tooltip({home_view, escape_navigates_to_home_view}),
+                    render_org_logo_tooltip({ home_view, escape_navigates_to_home_view }),
                 ),
             );
         },
@@ -810,7 +963,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: ".saved_snippets-dropdown-list-container .dropdown-list-delete",
-        content: $t({defaultMessage: "Delete snippet"}),
+        content: $t({ defaultMessage: "Delete snippet" }),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {
@@ -820,7 +973,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: ".saved_snippets-dropdown-list-container .dropdown-list-edit",
-        content: $t({defaultMessage: "Edit snippet"}),
+        content: $t({ defaultMessage: "Edit snippet" }),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {
@@ -830,7 +983,7 @@ export function initialize(): void {
 
     tippy.delegate("body", {
         target: ".folder_id-dropdown-list-container .dropdown-list-delete, .new_channel_folder_id-dropdown-list-container .dropdown-list-delete",
-        content: $t({defaultMessage: "Delete folder"}),
+        content: $t({ defaultMessage: "Delete folder" }),
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {
@@ -842,9 +995,9 @@ export function initialize(): void {
         target: ".folder_id-dropdown-list-container .dropdown-list-manage-folder, .new_channel_folder_id-dropdown-list-container .dropdown-list-manage-folder",
         content(reference) {
             if (reference.querySelector(".zulip-icon-preview")) {
-                return $t({defaultMessage: "View details"});
+                return $t({ defaultMessage: "View details" });
             }
-            return $t({defaultMessage: "Manage folder"});
+            return $t({ defaultMessage: "Manage folder" });
         },
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
@@ -886,7 +1039,7 @@ export function initialize(): void {
             /* Ensure the tooltip remains visible even when data-reference-hidden is set. */
             $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
 
-            instance.setContent($t({defaultMessage: "Delete"}));
+            instance.setContent($t({ defaultMessage: "Delete" }));
         },
         onHidden(instance) {
             instance.destroy();
@@ -927,7 +1080,7 @@ export function initialize(): void {
         onShow(instance) {
             const $elem = $(instance.reference);
             if ($($elem).find("#send_test_welcome_bot_custom_message").prop("disabled")) {
-                const content = $t({defaultMessage: "Welcome Bot message text is required."});
+                const content = $t({ defaultMessage: "Welcome Bot message text is required." });
                 instance.setContent(content);
                 return undefined;
             }
@@ -1029,9 +1182,9 @@ export function initialize(): void {
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
             const stream_id = compose_state.stream_id();
-            let content = $t({defaultMessage: "New topic"});
+            let content = $t({ defaultMessage: "New topic" });
             if (stream_id && !stream_data.can_create_new_topics_in_stream(stream_id)) {
-                content = $t({defaultMessage: "Clear topic"});
+                content = $t({ defaultMessage: "Clear topic" });
             }
             instance.setContent(content);
         },

@@ -46,19 +46,19 @@
             line-height: 1.2143em;
         }
 
-        &[data-placement^="top"] > .tippy-arrow::before {
+        &[data-placement^="top"]>.tippy-arrow::before {
             border-top-color: var(--color-background-tippy-box);
         }
 
-        &[data-placement^="bottom"] > .tippy-arrow::before {
+        &[data-placement^="bottom"]>.tippy-arrow::before {
             border-bottom-color: var(--color-background-tippy-box);
         }
 
-        &[data-placement^="left"] > .tippy-arrow::before {
+        &[data-placement^="left"]>.tippy-arrow::before {
             border-left-color: var(--color-background-tippy-box);
         }
 
-        &[data-placement^="right"] > .tippy-arrow::before {
+        &[data-placement^="right"]>.tippy-arrow::before {
             border-right-color: var(--color-background-tippy-box);
         }
     }
@@ -72,6 +72,7 @@
          */
         height: 0 !important;
     }
+
     /* If the text in the tooltips stretches to multiple lines,
      * we want the lines to be left-indented and not right-indented
      * by default.
@@ -116,4 +117,26 @@
     [data-reference-hidden]:not(.show-when-reference-hidden) {
         display: none;
     }
+}
+
+.emoji-tooltip-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.emoji-tooltip-container .emoji,
+.emoji-tooltip-container .emoji-image {
+    height: 3.5em;
+    width: 3.5em;
+    object-fit: contain;
+}
+
+.emoji-tooltip-container .emoji-native {
+    font-size: 3.5em;
+    line-height: 1;
+}
+
+.emoji-tooltip-container .emoji-name {
+    font-weight: 600;
 }
