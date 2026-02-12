@@ -9,6 +9,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import AnomalousWebhookPayloadError, UnsupportedWebhookEventTypeError
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string
@@ -86,7 +87,7 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
         # Try to look up username
         user_profile = guess_zulip_user_from_jira(username, realm)
         if user_profile:
-            replacement = f"**{user_profile.full_name}**"
+            replacement = silent_mention_syntax_for_user(user_profile)
         else:
             replacement = f"**{username}**"
 
@@ -130,15 +131,31 @@ def get_issue_string(
 def get_assignee_mention(assignee_email: str, realm: Realm) -> str:
     if assignee_email != "":
         try:
-            assignee_name = get_user_by_delivery_email(assignee_email, realm).full_name
+            zulip_user = get_user_by_delivery_email(assignee_email, realm)
+            return silent_mention_syntax_for_user(zulip_user)
         except UserProfile.DoesNotExist:
             assignee_name = assignee_email
         return f"**{assignee_name}**"
     return ""
 
 
-def get_issue_author(payload: WildValue) -> str:
-    return get_in(payload, ["user", "displayName"]).tame(check_string)
+def get_user_mention(realm: Realm, user_payload: WildValue) -> str:
+    # Try to find a Zulip user by email (Jira Cloud)
+    if "emailAddress" in user_payload:
+        email = user_payload["emailAddress"].tame(check_string)
+        try:
+            zulip_user = get_user_by_delivery_email(email, realm)
+            return silent_mention_syntax_for_user(zulip_user)
+        except UserProfile.DoesNotExist:
+            pass
+
+    # Fallback to display name
+    return user_payload["displayName"].tame(check_string)
+
+
+def get_issue_author(payload: WildValue, realm: Realm) -> str:
+    user_payload = payload.get("user")
+    return get_user_mention(realm, user_payload)
 
 
 def get_issue_id(payload: WildValue) -> str:
@@ -226,9 +243,9 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
             verb = "deleted a comment from"
 
         if payload.get("webhookEvent").tame(check_none_or(check_string)) == "comment_created":
-            author = payload["comment"]["author"]["displayName"].tame(check_string)
+            author = get_comment_author(payload["comment"], user_profile.realm)
         else:
-            author = get_issue_author(payload)
+            author = get_issue_author(payload, user_profile.realm)
 
         content = f"{author} {verb} {issue}{assignee_blurb}"
         comment = get_in(payload, ["comment", "body"]).tame(check_string)
@@ -238,7 +255,9 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
         else:
             content = f"{content}."
     else:
-        content = f"{get_issue_author(payload)} updated {issue}{assignee_blurb}:\n\n"
+        content = (
+            f"{get_issue_author(payload, user_profile.realm)} updated {issue}{assignee_blurb}:\n\n"
+        )
         changelog = payload.get("changelog")
 
         if changelog:
@@ -281,7 +300,7 @@ def handle_created_issue_event(payload: WildValue, user_profile: UserProfile) ->
 """.strip()
 
     return template.format(
-        author=get_issue_author(payload),
+        author=get_issue_author(payload, user_profile.realm),
         issue_string=get_issue_string(payload, with_title=True),
         priority=get_in(payload, ["issue", "fields", "priority", "name"]).tame(check_string),
         assignee=get_in(payload, ["issue", "fields", "assignee", "displayName"], "no one").tame(
@@ -295,7 +314,7 @@ def handle_deleted_issue_event(payload: WildValue, user_profile: UserProfile) ->
     title = get_issue_title(payload)
     punctuation = "." if title[-1] not in string.punctuation else ""
     return template.format(
-        author=get_issue_author(payload),
+        author=get_issue_author(payload, user_profile.realm),
         issue_string=get_issue_string(payload, with_title=True),
         punctuation=punctuation,
     )
@@ -309,10 +328,15 @@ def normalize_comment(comment: str) -> str:
     return normalized_comment
 
 
+def get_comment_author(comment_payload: WildValue, realm: Realm) -> str:
+    author_payload = comment_payload.get("author")
+    return get_user_mention(realm, author_payload)
+
+
 def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) -> str:
     return "{author} commented on {issue_string}\
 \n``` quote\n{comment}\n```\n".format(
-        author=payload["comment"]["author"]["displayName"].tame(check_string),
+        author=get_comment_author(payload["comment"], user_profile.realm),
         issue_string=get_issue_string(payload, with_title=True),
         comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
     )
@@ -321,7 +345,7 @@ def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) 
 def handle_comment_updated_event(payload: WildValue, user_profile: UserProfile) -> str:
     return "{author} updated their comment on {issue_string}\
 \n``` quote\n{comment}\n```\n".format(
-        author=payload["comment"]["author"]["displayName"].tame(check_string),
+        author=get_comment_author(payload["comment"], user_profile.realm),
         issue_string=get_issue_string(payload, with_title=True),
         comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
     )
@@ -330,7 +354,7 @@ def handle_comment_updated_event(payload: WildValue, user_profile: UserProfile) 
 def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) -> str:
     return "{author} deleted their comment on {issue_string}\
 \n``` quote\n~~{comment}~~\n```\n".format(
-        author=payload["comment"]["author"]["displayName"].tame(check_string),
+        author=get_comment_author(payload["comment"], user_profile.realm),
         issue_string=get_issue_string(payload, with_title=True),
         comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
     )
