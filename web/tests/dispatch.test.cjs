@@ -43,6 +43,9 @@ const message_events = mock_esm("../src/message_events", {
     update_current_view_for_topic_visibility: noop,
 });
 const message_lists = mock_esm("../src/message_lists");
+mock_esm("../src/thumbnail", {
+    set_image_thumbnail_size_css_variable: noop,
+});
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");
 const narrow_title = mock_esm("../src/narrow_title");
@@ -127,6 +130,7 @@ initialize_user_settings({user_settings});
 message_lists.update_recipient_bar_background_color = noop;
 message_lists.current = {
     get_row: noop,
+    rerender: noop,
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
@@ -135,6 +139,7 @@ message_lists.current = {
 };
 const cached_message_list = {
     get_row: noop,
+    rerender: noop,
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],

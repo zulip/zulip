@@ -368,6 +368,9 @@
     --user-card-popover-min-width: 200px;
     --stream-card-popover-min-width: 16.4285em;
 
+    /* Image and video thumbnail sizing; updated via JavaScript */
+    --image-thumbnail-max-height: 10em;
+
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */
     --base-font-size-px: 14px;

@@ -470,6 +470,7 @@ export async function initialize_everything(state_data) {
         theme.initialize_theme_for_spectator();
     }
     thumbnail.initialize();
+    thumbnail.set_image_thumbnail_size_css_variable();
     widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();

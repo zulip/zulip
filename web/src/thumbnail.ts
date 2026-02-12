@@ -1,3 +1,4 @@
+import $ from "jquery";
 import type * as z from "zod/mini";
 
 import {realm} from "./state_data.ts";
@@ -9,6 +10,21 @@ export const thumbnail_formats: ThumbnailFormat[] = [];
 
 export let preferred_format: ThumbnailFormat;
 export let animated_format: ThumbnailFormat;
+
+const IMAGE_THUMBNAIL_SIZE_EM: Record<"small" | "medium" | "large", number> = {
+    small: 10,
+    medium: 15,
+    large: 20,
+};
+
+export function set_image_thumbnail_size_css_variable(): void {
+    const size_em = IMAGE_THUMBNAIL_SIZE_EM[realm.realm_image_thumbnail_size];
+    $(":root").css("--image-thumbnail-max-height", `${size_em}em`);
+}
+
+export function get_image_thumbnail_size(): number {
+    return IMAGE_THUMBNAIL_SIZE_EM[realm.realm_image_thumbnail_size];
+}
 
 export function initialize(): void {
     // Go looking for the size closest to 840px wide.  We assume all browsers
