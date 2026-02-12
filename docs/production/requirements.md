@@ -31,7 +31,7 @@ The installer expects Zulip to be the **only thing** running on the
 system; it will install system packages with `apt` (like nginx,
 PostgreSQL, and Redis) and configure them for its own use. We strongly
 recommend using either a fresh machine instance in a cloud provider, a
-fresh VM, [our Docker image][docker-zulip-homepage], or a dedicated
+fresh VM, {doc}`our Docker image <docker:index>`, or a dedicated
 machine. If you decide to disregard our advice and use a server that
 hosts other services, we can't support you, but [we do have some notes
 on issues you'll encounter](install-existing-server.md).
@@ -41,7 +41,7 @@ on issues you'll encounter](install-existing-server.md).
 Ubuntu 22.04, Ubuntu 24.04, Debian 12, and Debian 13
 are supported for running Zulip in production. You can also
 run Zulip on other platforms that support Docker using
-[docker-zulip][docker-zulip-homepage].
+{doc}`our Docker image <docker:index>`.
 
 We recommend installing on the newest supported OS release you're
 comfortable with, to save a bit of future work [upgrading the
@@ -56,7 +56,6 @@ sudo add-apt-repository universe
 sudo apt update
 ```
 
-[docker-zulip-homepage]: https://github.com/zulip/docker-zulip#readme
 [upgrade-os]: upgrade.md#upgrading-the-operating-system
 [ubuntu-repositories]: https://help.ubuntu.com/community/Repositories/Ubuntu
 [enable-universe]: https://help.ubuntu.com/community/Repositories/CommandLine#Adding_the_Universe_and_Multiverse_Repositories
@@ -172,11 +171,11 @@ In the following, we discuss a configuration with at most two types of
 servers: application servers (running Django, Tornado, RabbitMQ,
 Redis, Memcached, etc.) and database servers. Of the application
 server services, Django dominates the resource requirements. One can
-run every service on its own system (as
-[docker-zulip](https://github.com/zulip/docker-zulip) does) but for
-most use cases, there's little scalability benefit to doing so. See
-[deployment options](deployment.md) for details on
-installing Zulip with a dedicated database server.
+run every service on its own system (as {doc}`our Docker deployment
+<docker:index>` does) but for most use cases, there's little
+scalability benefit to doing so. See [deployment
+options](deployment.md) for details on installing Zulip with a
+dedicated database server.
 
 - **Dedicated database**. For installations with hundreds of daily
   active users, we recommend using a [remote PostgreSQL
