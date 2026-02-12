@@ -1,5 +1,5 @@
 import {toHtml} from "hast-util-to-html";
-import type {Root} from "mdast";
+import type {InlineCode, Root} from "mdast";
 import {fromMarkdown} from "mdast-util-from-markdown";
 import {gfmAutolinkLiteralFromMarkdown} from "mdast-util-gfm-autolink-literal";
 import {gfmStrikethroughFromMarkdown} from "mdast-util-gfm-strikethrough";
@@ -123,6 +123,30 @@ function parse_to_mdast(content: string): Root {
         extensions: micromark_extensions,
         mdastExtensions: mdast_extensions,
     });
+
+    // Restore math placeholders inside inlineCode nodes. These nodes
+    // have a `value` string (not children), so findAndReplace (used by
+    // restore_inline_math_placeholders) won't touch them. We must
+    // restore the original $$...$$ text here so code spans display
+    // their literal content, not the placeholder.
+    if (math_spans.size > 0) {
+        const placeholder_re = /ZULIPMATHPLACEHOLDER\d+/g;
+        function walk_inline_code(node: {type: string; children?: {type: string}[]}): void {
+            if (node.type === "inlineCode") {
+                const code_node = node as unknown as InlineCode;
+                code_node.value = code_node.value.replace(placeholder_re, (match) => {
+                    const span = math_spans.get(match);
+                    return span ? span.full_match : match;
+                });
+            }
+            if (node.children) {
+                for (const child of node.children) {
+                    walk_inline_code(child);
+                }
+            }
+        }
+        walk_inline_code(mdast);
+    }
 
     // Transform code fences with lang=math/spoiler into custom nodes.
     // These must run before other transforms so the code hast handler
