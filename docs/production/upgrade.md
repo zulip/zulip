@@ -124,7 +124,7 @@ To upgrade to a branch from Git, simply run:
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git zulip-cloud-current
 
 # Upgrade to the `main` branch
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 9.4
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git main
 ```
 
 Zulip will automatically fetch the relevant Git commit and upgrade to
