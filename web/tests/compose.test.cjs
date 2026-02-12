@@ -616,6 +616,28 @@ test_ui("initialize", ({override}) => {
     })();
 });
 
+test_ui("update_draft_if_composing", ({override_rewire}) => {
+    let update_draft_call_count = 0;
+    override_rewire(drafts, "update_draft", (opts) => {
+        assert.deepEqual(opts, {no_notify: true});
+        update_draft_call_count += 1;
+        return "draft-id";
+    });
+
+    // Autosave does nothing once the compose box has closed, so a
+    // delayed call can't resurrect a draft the user is done with.
+    compose_state.set_message_type(undefined);
+    assert.ok(!compose_state.composing());
+    compose_setup.update_draft_if_composing();
+    assert.equal(update_draft_call_count, 0);
+
+    // While the user is still composing, autosave persists the draft.
+    compose_state.set_message_type("stream");
+    assert.ok(compose_state.composing());
+    compose_setup.update_draft_if_composing();
+    assert.equal(update_draft_call_count, 1);
+});
+
 test_ui("update_fade", ({override, override_rewire}) => {
     mock_banners();
     initialize_handlers({override});

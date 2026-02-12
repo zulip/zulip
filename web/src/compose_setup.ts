@@ -48,6 +48,8 @@ import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 import * as widget_modal from "./widget_modal.ts";
 
+const AUTOSAVE_DRAFT_THROTTLE_IN_MILLISECONDS = 60 * 1000;
+
 export function abort_xhr(): void {
     upload.compose_upload_cancel();
 }
@@ -62,6 +64,30 @@ function setup_compose_actions_hooks(): void {
         compose_call_session_manager.abandon_session("");
     });
 }
+
+// This autosave callback does not track the compose_draft_id that was
+// active when scheduled; it simply calls update_draft() on whatever
+// compose state is current when it fires, as long as compose is still
+// open.
+//
+// This is safe because compose context transitions (send, close,
+// switching/restoring drafts) already perform explicit draft saves, and
+// compose_draft_id is only changed through those controlled flows.
+//
+// At worst, a delayed call results in an extra save of the current draft,
+// which is harmless. Adding draft_id tracking here would introduce
+// significant complexity without meaningful benefit.
+export function update_draft_if_composing(): void {
+    if (compose_state.composing()) {
+        drafts.update_draft({no_notify: true});
+    }
+}
+
+const throttled_update_draft = _.throttle(
+    update_draft_if_composing,
+    AUTOSAVE_DRAFT_THROTTLE_IN_MILLISECONDS,
+    {leading: false, trailing: true},
+);
 
 export function initialize(): void {
     // Register hooks for compose_actions.
@@ -125,6 +151,9 @@ export function initialize(): void {
             if (compose_state.get_is_content_unedited_restored_draft()) {
                 compose_state.set_is_content_unedited_restored_draft(false);
             }
+
+            // We occasionally update the saved draft while the user is typing to minimize data loss risk.
+            throttled_update_draft();
         }, 25),
     );
 
