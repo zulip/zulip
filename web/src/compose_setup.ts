@@ -62,20 +62,25 @@ function setup_compose_actions_hooks(): void {
     });
 }
 
-// This throttled callback does not track the compose_draft_id that was
-// active when scheduled; it simply calls update_draft() on whatever
-// compose state is current when it fires.
-//
+// This throttled callback does not track the compose_draft_id that
+// was active when scheduled; it simply calls update_draft() if we are
+// still composing, and updates whichever draft is currently active.
+
 // This is safe because compose context transitions (send, close,
-// switching/restoring drafts) already perform explicit draft saves, and
-// compose_draft_id is only changed through those controlled flows.
-//
-// At worst, a delayed call results in an extra save of the current draft,
-// which is harmless. Adding draft_id tracking here would introduce
-// significant complexity without meaningful benefit.
+// switching/restoring drafts) already perform explicit draft saves,
+// and compose_draft_id is only changed through those
+// controlled flows.
+
+// At worst, a delayed call results in an extra save of the
+// current draft if compose is still open.
 const throttled_update_draft = _.throttle(
     () => {
-        drafts.update_draft({no_notify: true});
+        if (compose_state.composing()) {
+            // Drafts count is not incremented as you are drafting, despite of the
+            // autosave happening for that draft, but is only incremented if you
+            // either close the compose box or open the drafts modal.
+            drafts.update_draft({no_notify: true, update_count: false});
+        }
     },
     60000,
     {leading: false, trailing: true},
