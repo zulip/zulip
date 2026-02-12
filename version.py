@@ -25,15 +25,13 @@ LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/zulip-server-11-0"
 DESKTOP_MINIMUM_VERSION = "5.4.3"
 DESKTOP_WARNING_VERSION = "5.9.3"
 
-# Bump the API_FEATURE_LEVEL whenever an API change is made
-# that clients might want to condition on.  If we forget at
-# the time we make the change, then bump it later as soon
-# as we notice; clients using API_FEATURE_LEVEL will just not
-# use the new feature/API until the bump.
-#
-# Changes should be accompanied by documentation explaining what the
-# new level means in api_docs/changelog.md, as well as "**Changes**"
-# entries in the endpoint's documentation in `zulip.yaml`.
+# API_FEATURE_LEVEL is bumped exclusively by tools/merge-api-changelogs, run by
+# maintainers when an API change is merged to the main branch. When writing an
+# API change, you run `tools/create-api-changelog`, which creates a special API
+# changelog file and unique random ID for you to use when documentating your API
+# change. For full process, see:
+# https://zulip.readthedocs.io/en/latest/documentation/api.html#step-by-step-guide
+# Also available at docs/documentation/api.md.
 
 API_FEATURE_LEVEL = 460
 
