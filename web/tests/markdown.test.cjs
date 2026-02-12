@@ -54,6 +54,7 @@ const linkifiers = zrequire("linkifiers");
 const fenced_code = zrequire("fenced_code");
 const markdown_config = zrequire("markdown_config");
 const markdown = zrequire("markdown");
+const {create_unified_processor} = zrequire("markdown_unified");
 const people = zrequire("people");
 const pygments_data = zrequire("pygments_data");
 const {set_realm} = zrequire("state_data");
@@ -298,6 +299,59 @@ test("marked_shared", ({override}) => {
             markdown_assert.equal(test.expected_output, output, error_message);
         }
     }
+});
+
+test("unified_processor_shared", ({override}) => {
+    // Dual-test harness: runs all shared markdown test fixtures through the
+    // new unified/mdast processor. Tests with unified_expected_output have
+    // known divergences from the marked.js output -- as we implement Zulip
+    // extensions in later phases, we delete unified_expected_output entries
+    // so they fall through to the standard expected_output assertion.
+    //
+    // To regenerate unified_expected_output after processor changes:
+    //   ./tools/test-js-with-node generate_unified_expected_output
+    const tests = markdown_test_cases.regular_tests;
+    const unified = create_unified_processor();
+    markdown.set_unified_processor(unified);
+
+    let fully_passing = 0;
+    let known_divergent = 0;
+    let skipped = 0;
+
+    for (const test of tests) {
+        if (test.ignore === true || test.backend_only_rendering) {
+            skipped += 1;
+            continue;
+        }
+
+        override(user_settings, "translate_emoticons", test.translate_emoticons || false);
+
+        const message = markdown.render(test.input);
+        const output = message.content;
+        const error_message = `Unified processor failure in test: ${test.name}`;
+
+        if (test.unified_expected_output !== undefined) {
+            // Known divergence: verify the unified processor still produces
+            // its expected (divergent) output, so we catch regressions.
+            markdown_assert.equal(test.unified_expected_output, output, error_message);
+            known_divergent += 1;
+        } else {
+            // No divergence: unified output should match the canonical
+            // expected output from the Python backend.
+            const expected = test.expected_output;
+            markdown_assert.equal(expected, output, error_message);
+            fully_passing += 1;
+        }
+    }
+
+    // Restore the legacy processor
+    markdown.set_unified_processor(undefined);
+
+    // Log the scoreboard
+    console.info(
+        `\n[Unified processor scoreboard] Fully passing: ${fully_passing}, ` +
+            `Known divergent: ${known_divergent}, Skipped: ${skipped}`,
+    );
 });
 
 test("message_flags", () => {
