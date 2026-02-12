@@ -70,10 +70,11 @@ server as follows:
    su zulip -c '/home/zulip/deployments/current/manage.py register_server'
    ```
 
-   Or if you're using Docker, run:
+   Or if you're {doc}`using Docker <docker:index>`, run:
 
    ```
-   docker exec -it -u zulip <container_name> /home/zulip/deployments/current/manage.py register_server
+   cd docker-zulip
+   ./manage.py register_server
    ```
 
    This command will print the registration data it would send to the Mobile
@@ -434,10 +435,11 @@ registration.
    su zulip -c '/home/zulip/deployments/current/manage.py register_server --deactivate'
    ```
 
-   Or if you're using Docker, run:
+   Or if you're {doc}`using Docker <docker:index>`, run:
 
    ```
-   docker exec -it -u zulip <container_name> /home/zulip/deployments/current/manage.py register_server --deactivate
+   cd docker-zulip
+   ./manage.py register_server --deactivate
    ```
 
 1. Comment out the

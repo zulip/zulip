@@ -39,7 +39,7 @@ our next major release has a reliable install experience.
 ## Zulip in Docker
 
 In addition to the [standard installer](./install.md), Zulip has an
-[official Docker image](https://github.com/zulip/docker-zulip).
+{doc}`official Docker image <docker:index>`.
 
 We recommend using the Docker image only if your organization has a
 preference for deploying services using Docker. Deploying with Docker
