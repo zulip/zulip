@@ -251,6 +251,26 @@ export function clear_for_testing(): void {
 export function get(message_id: number): Message | undefined {
     return stored_messages.get(message_id)?.message;
 }
+
+export function does_message_pass_predicate(
+    msg_id: number,
+    predicate: (message: Message) => boolean,
+): boolean {
+    const message = get(msg_id);
+
+    if (message === undefined) {
+        return false;
+    }
+
+    return predicate(message);
+}
+
+// Required by callers like the ones in filter.ts that we are sure won't be
+// mutating the message struct.
+export function get_message_for_performant_code(message_id: number): Message | undefined {
+    return stored_messages.get(message_id)?.message;
+}
+
 export function add_messages_for_tests(messages: ProcessedMessage[]): void {
     stored_messages.clear();
     for (const message of messages) {

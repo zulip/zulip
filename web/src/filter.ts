@@ -1707,17 +1707,9 @@ export class Filter {
 
     first_valid_id_from(msg_ids: number[]): number | undefined {
         const predicate = this.predicate();
-
-        const first_id = msg_ids.find((msg_id) => {
-            const message = message_store.get(msg_id);
-
-            if (message === undefined) {
-                return false;
-            }
-
-            return predicate(message);
-        });
-
+        const first_id = msg_ids.find((msg_id) =>
+            message_store.does_message_pass_predicate(msg_id, predicate),
+        );
         return first_id;
     }
 
@@ -1849,7 +1841,7 @@ export class Filter {
 
         if (!message) {
             const message_id = Number.parseInt(this.terms_with_operator("with")[0]!.operand, 10);
-            message = message_store.get(message_id);
+            message = message_store.get_message_for_performant_code(message_id);
         }
 
         if (!message) {
