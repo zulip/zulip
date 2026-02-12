@@ -962,23 +962,32 @@ class OpenAPIAttributesTest(ZulipTestCase):
                             assert validate_against_openapi_schema(
                                 content, path, method, status_code
                             )
+                    media_type = response["content"]["application/json"]
                     if "oneOf" in schema:
                         for subschema in schema["oneOf"]:
                             validate_schema(subschema)
-                            assert validate_against_openapi_schema(
-                                subschema["example"],
-                                path,
-                                method,
-                                status_code,
-                            )
+                        if "examples" in media_type:
+                            # Examples at the media type level alongside
+                            # oneOf schemas.
+                            for example in media_type["examples"].values():
+                                assert validate_against_openapi_schema(
+                                    example["value"], path, method, status_code
+                                )
+                        else:
+                            for subschema in schema["oneOf"]:
+                                assert validate_against_openapi_schema(
+                                    subschema["example"],
+                                    path,
+                                    method,
+                                    status_code,
+                                )
                         continue
                     validate_schema(schema)
                     if "example" not in schema:
-                        assert "examples" in response["content"]["application/json"]
-                        examples = response["content"]["application/json"]["examples"]
-                        for example in examples:
+                        assert "examples" in media_type
+                        for example in media_type["examples"].values():
                             assert validate_against_openapi_schema(
-                                examples[example]["value"], path, method, status_code
+                                example["value"], path, method, status_code
                             )
                     else:
                         assert validate_against_openapi_schema(

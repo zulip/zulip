@@ -181,27 +181,22 @@ openapi_spec = OpenAPISpec(OPENAPI_SPEC_PATH)
 
 
 def get_schema(endpoint: str, method: str, status_code: str) -> dict[str, Any]:
-    if len(status_code) == 3 and (
-        "oneOf"
-        in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-            "content"
-        ]["application/json"]["schema"]
-    ):
-        # Currently at places where multiple schemas are defined they only
-        # differ in example so either can be used.
-        status_code += "_0"
     if len(status_code) == 3:
-        schema = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
+        media_type = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
             status_code
-        ]["content"]["application/json"]["schema"]
-        return schema
-    else:
-        subschema_index = int(status_code[4])
-        status_code = status_code[0:3]
-        schema = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
-            status_code
-        ]["content"]["application/json"]["schema"]["oneOf"][subschema_index]
-        return schema
+        ]["content"]["application/json"]
+        if "oneOf" in media_type["schema"] and "examples" not in media_type:
+            # When oneOf subschemas carry their own examples (legacy
+            # pattern), pick the first subschema by default.
+            status_code += "_0"
+        else:
+            return media_type["schema"]
+    subschema_index = int(status_code[4])
+    status_code = status_code[0:3]
+    schema = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
+        "content"
+    ]["application/json"]["schema"]["oneOf"][subschema_index]
+    return schema
 
 
 def get_openapi_fixture(
@@ -209,15 +204,17 @@ def get_openapi_fixture(
 ) -> list[dict[str, Any]]:
     """Fetch a fixture from the full spec object."""
     if "example" not in get_schema(endpoint, method, status_code):
-        return openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-            "content"
-        ]["application/json"]["examples"].values()
-    return [
-        {
-            "description": get_schema(endpoint, method, status_code)["description"],
-            "value": get_schema(endpoint, method, status_code)["example"],
-        }
-    ]
+        base_status_code = status_code[:3]
+        return list(
+            openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
+                base_status_code
+            ]["content"]["application/json"]["examples"].values()
+        )
+    schema = get_schema(endpoint, method, status_code)
+    fixture: dict[str, Any] = {"value": schema["example"]}
+    if "description" in schema:
+        fixture["description"] = schema["description"]
+    return [fixture]
 
 
 def get_curl_include_exclude(endpoint: str, method: str) -> list[dict[str, Any]]:
@@ -266,17 +263,26 @@ def generate_openapi_fixture(endpoint: str, method: str) -> list[str]:
     for status_code in sorted(
         openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]
     ):
-        if (
-            "oneOf"
-            in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-                "content"
-            ]["application/json"]["schema"]
-        ):
-            subschema_count = len(
-                openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-                    "content"
-                ]["application/json"]["schema"]["oneOf"]
-            )
+        media_type = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
+            status_code
+        ]["content"]["application/json"]
+
+        # If examples are defined at the media type level, use those
+        # directly regardless of whether the schema uses oneOf.
+        if "examples" in media_type:
+            for example in media_type["examples"].values():
+                fixture_json = json.dumps(
+                    example["value"], indent=4, sort_keys=True, separators=(",", ": ")
+                )
+                if "description" in example:
+                    fixture.extend(example["description"].strip().splitlines())
+                fixture.append("``` json")
+                fixture.extend(fixture_json.splitlines())
+                fixture.append("```")
+            continue
+
+        if "oneOf" in media_type["schema"]:
+            subschema_count = len(media_type["schema"]["oneOf"])
         else:
             subschema_count = 1
         for subschema_index in range(subschema_count):
