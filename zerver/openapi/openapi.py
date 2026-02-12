@@ -474,14 +474,31 @@ def validate_test_response(request: Request, response: Response) -> bool:
     # Return true for endpoints with only response documentation remaining
     if (endpoint, method) in EXCLUDE_DOCUMENTED_ENDPOINTS:  # nocoverage
         return True
-    # Code is not declared but appears in various 400 responses. If
-    # common, it can be added to 400 response schema
-    if status_code.startswith("4") or status_code == "502":
-        # This return statement should ideally be not here. But since
-        # we have not defined 400 responses for various paths this has
-        # been added as all 400 have the same schema.  When all 400
-        # response have been defined this should be removed.
+    # If the method is not documented for this endpoint, skip validation.
+    if method not in openapi_spec.openapi()["paths"][endpoint]:
+        return False
+    # Skip validation for error responses that are not documented in
+    # the OpenAPI spec. Documented error responses are validated.
+    if (
+        status_code.startswith("4") or status_code == "502"
+    ) and status_code not in openapi_spec.openapi()["paths"][endpoint][method]["responses"]:
         return True
+
+    # Framework error codes that can appear on any endpoint due to
+    # generic request parsing/validation logic.  These are documented
+    # at /rest-error-handling rather than per-endpoint.
+    if status_code.startswith("4") or status_code == "502":
+        try:
+            content = orjson.loads(response.data or b"")
+        except orjson.JSONDecodeError:
+            content = {}
+        if content.get("code") in {
+            "REQUEST_VARIABLE_MISSING",
+            "REQUEST_VARIABLE_INVALID",
+            "REQUEST_CONFUSING_VAR",
+            "EXPECTATION_MISMATCH",
+        }:
+            return True
 
     try:
         openapi_spec.spec().validate_response(request, response)
