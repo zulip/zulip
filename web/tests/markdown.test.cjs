@@ -64,7 +64,12 @@ const settings_config = zrequire("settings_config");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
-set_realm(make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME}));
+set_realm(
+    make_realm({
+        realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME,
+        realm_url: "http://zulip.testserver",
+    }),
+);
 const user_settings = {
     web_channel_default_view: settings_config.web_channel_default_view_values.channel_feed.code,
 };

@@ -23,6 +23,7 @@ import {
     transform_emoji,
     transform_inline_math,
     transform_linkifiers,
+    transform_links,
     transform_mentions,
     transform_spoilers,
     transform_stream_links,
@@ -139,12 +140,14 @@ export function create_unified_processor(): MarkdownProcessor {
             const mdast = parse_to_mdast(content);
 
             // AST transforms for Zulip inline extensions.
-            // Order matters: mentions/streams use sibling-pattern detection,
-            // so they run first. Timestamps and math run before emoji because
-            // the unicode emoji regex matches digits, which would split text
-            // nodes and prevent later patterns from matching.
+            // Order matters: links run first (fragment rewriting, empty text
+            // fallback). Mentions/streams use sibling-pattern detection.
+            // Timestamps and math run before emoji because the unicode emoji
+            // regex matches digits, which would split text nodes and prevent
+            // later patterns from matching.
             // These transforms walk the entire tree, including spoiler bodies
             // that were spliced in by transform_spoilers.
+            transform_links(mdast, helper_config);
             transform_mentions(mdast, helper_config);
             transform_stream_links(mdast, helper_config);
             transform_timestamps(mdast);

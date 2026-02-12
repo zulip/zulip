@@ -488,6 +488,46 @@ function resolve_stream_link(
     };
 }
 
+// ---- Link transforms: fragment rewriting and empty text fallback -----------
+// Mirrors backend logic from rewrite_local_links_to_relative() and
+// zulip_specific_link_changes() in zerver/lib/markdown/__init__.py.
+
+export function transform_links(tree: Root, helpers: MarkdownHelpers): void {
+    const realm_url = helpers.realm_url;
+    if (!realm_url) {
+        return;
+    }
+    const realm_url_prefix = realm_url + "/";
+
+    walk_tree(tree, (node, ancestors) => {
+        if (node.type !== "link" || !("url" in node)) {
+            return;
+        }
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const link = node as {type: string; url: string; children: PhrasingContent[]};
+
+        // Rewrite local links to be relative (strip realm_url prefix)
+        if (
+            link.url.startsWith(realm_url_prefix + "#") ||
+            link.url.startsWith(realm_url_prefix + "user_uploads/")
+        ) {
+            link.url = link.url.slice(realm_url_prefix.length);
+        }
+
+        // Empty link text fallback: [](url) → display the URL as text
+        const has_text = link.children.some(
+            (child) => child.type !== "text" || child.value.trim() !== "",
+        );
+        if (!has_text) {
+            link.children = [{type: "text", value: link.url}];
+        }
+
+        // Prevent further transforms from splitting the link text
+        // (not strictly needed here, but matches backend behavior)
+        void ancestors;
+    });
+}
+
 // ---- Inline math: $$...$$ --------------------------------------------------
 
 export function transform_inline_math(tree: Root): void {

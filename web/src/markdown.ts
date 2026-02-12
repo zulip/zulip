@@ -84,6 +84,9 @@ export type MarkdownHelpers = {
 
     // linkifiers
     get_linkifier_map: GetLinkifierMap;
+
+    // realm
+    realm_url: string;
 };
 
 export function translate_emoticons_to_names({
