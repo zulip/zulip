@@ -5604,7 +5604,6 @@ class BillingHelpersTest(ZulipTestCase):
             self.assertEqual(next_month(anchor, last), next_)
 
     def test_compute_plan_parameters(self) -> None:
-        # TODO: test rounding down microseconds
         anchor = datetime(2019, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
         month_later = datetime(2020, 1, 31, 1, 2, 3, tzinfo=timezone.utc)
         year_later = datetime(2020, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
@@ -5689,7 +5688,8 @@ class BillingHelpersTest(ZulipTestCase):
                 (anchor, month_later, month_later, 1200),
             ),
         ]
-        with time_machine.travel(anchor, tick=False):
+        # compute_plan_parameters truncates microseconds in the anchor datetime.
+        with time_machine.travel(anchor + timedelta(microseconds=654321), tick=False):
             for (tier, billing_schedule, customer), output in test_cases:
                 output_ = compute_plan_parameters(
                     tier,
