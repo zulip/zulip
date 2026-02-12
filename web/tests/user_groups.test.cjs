@@ -652,7 +652,7 @@ run_test("get_display_group_name", () => {
     assert.equal(user_groups.get_display_group_name(students.name), "Students");
 });
 
-run_test("get_potential_subgroups", () => {
+run_test("get_potential_subgroups", ({override}) => {
     // Remove existing groups.
     user_groups.init();
 
@@ -691,9 +691,16 @@ run_test("get_potential_subgroups", () => {
         is_system_group: false,
         direct_subgroup_ids: new Set(),
     });
+    const full_members = make_user_group({
+        name: "role:fullmembers",
+        id: 6,
+        members: new Set([5, 6, 7, 8, 9]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
 
     user_groups.initialize({
-        realm_user_groups: [admins, all, students, teachers, science],
+        realm_user_groups: [admins, all, students, teachers, science, full_members],
     });
 
     function get_potential_subgroup_ids(group_id) {
@@ -713,6 +720,22 @@ run_test("get_potential_subgroups", () => {
         students.id,
         teachers.id,
     ]);
+
+    override(realm, "realm_waiting_period_threshold", 100);
+    assert.deepEqual(get_potential_subgroup_ids(all.id), [
+        teachers.id,
+        science.id,
+        full_members.id,
+    ]);
+    assert.deepEqual(get_potential_subgroup_ids(science.id), [
+        admins.id,
+        all.id,
+        students.id,
+        teachers.id,
+        full_members.id,
+    ]);
+
+    override(realm, "realm_waiting_period_threshold", 0);
 
     user_groups.add_subgroups(all.id, [teachers.id]);
     user_groups.add_subgroups(teachers.id, [science.id]);
