@@ -173,6 +173,30 @@ Fixes #123.
 - `Fixes part of #123.` - Does not close (for partial fixes)
 - Never: `Partially fixes #123.` (GitHub ignores "partially")
 
+### Rebasing Commits (Non-Interactive)
+
+Since `git rebase -i` requires an interactive editor, use
+`GIT_SEQUENCE_EDITOR` to supply the todo list via a script:
+
+1. **Squashing fixups into existing commits:** Create fixup commits with
+   `git commit --fixup=<target-hash>`, then write a shell script that
+   outputs the desired todo (with `pick` and `fixup` lines in order)
+   and run:
+
+   ```bash
+   GIT_SEQUENCE_EDITOR=/path/to/todo-script.sh git rebase -i <base>
+   ```
+
+   Note: `--autosquash` alone without `-i` does **not** reorder or
+   squash anything.
+
+2. **Rewording commit messages:** In the todo script, use `exec` lines:
+   ```
+   pick <hash> Original message
+   exec GIT_EDITOR=/path/to/new-msg-script.sh git commit --amend
+   ```
+   where the message script writes the new commit message to `$1`.
+
 ## Testing Requirements
 
 Zulip server takes pride in its ~98% test coverage. All server changes
