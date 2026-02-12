@@ -230,6 +230,18 @@ export type Message = (
 
 export function update_message_cache(message_data: ProcessedMessage): void {
     // You should only call this from message_helper (or in tests).
+    const existing_message_data = stored_messages.get(message_data.message.id);
+    
+    // Clear raw_content cache when message content is being refreshed
+    // This prevents stale Markdown when the message was edited
+    // but we're not subscribed to receive edit events
+    if (existing_message_data !== undefined && 
+        existing_message_data.message.content !== message_data.message.content) {
+        if (message_data.message.raw_content !== undefined) {
+            delete message_data.message.raw_content;
+        }
+    }
+    
     stored_messages.set(message_data.message.id, message_data);
 }
 
@@ -427,13 +439,32 @@ export function reify_message_id({old_id, new_id}: {old_id: number; new_id: numb
         }
         server_message.id = new_id;
         server_message.locally_echoed = false;
+        
+        // Clear raw_content when converting local echo to server message
+        // The server version may have different content
+        if (server_message.raw_content !== undefined) {
+            delete server_message.raw_content;
+        }
+        
         stored_messages.set(new_id, {type: "server_message", message: server_message});
         stored_messages.delete(old_id);
     }
 }
 
-export function update_message_content(message: Message, new_content: string): void {
+export function update_message_content(message_id: number, new_content: string): void {
+    const message = get(message_id);  // Fix: use local get() function, not message_store.get()
+    if (message === undefined) {
+        return;
+    }
+    
     message.content = new_content;
+    
+    // Clear raw_content cache when content is updated
+    // This prevents stale Markdown when the message was edited
+    // but we're not subscribed to receive edit events
+    if (message.raw_content !== undefined) {
+        delete message.raw_content;
+    }
 }
 
 export function remove(message_ids: number[]): void {
