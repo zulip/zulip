@@ -14,33 +14,29 @@ html[lang="ur"] {
 
     /* Set RTL direction for Urdu */
     direction: rtl;
-}
 
-/* Ensure Nastaliq applies to all text content areas */
-html[lang="ur"] {
+    /* ============================================
+       Ensure Nastaliq applies to all text content areas
+       ============================================ */
+
     /* Message content */
     .message_content,
     .rendered_markdown,
     .messagebox,
-
     /* Compose textarea */
     #compose-textarea,
     textarea,
-
     /* Sidebars */
     .left-sidebar,
     .right-sidebar,
     #left-sidebar,
     #buddy_list_wrapper,
-
     /* Settings pages */
     .settings-page,
     .settings-section,
-
     /* Popovers */
     .tippy-content,
     .popover-menu,
-
     /* Input fields */
     input[type="text"],
     input[type="search"] {
@@ -50,16 +46,10 @@ html[lang="ur"] {
             "Urdu Typesetting",
             serif;
     }
-}
 
-/* ============================================
-   PART 2: RTL Layout Mirroring
-   ============================================ */
-
-/* Convert physical properties to logical properties for RTL support */
-
-/* Message Row Layout */
-html[lang="ur"] {
+    /* ============================================
+       PART 2: RTL Layout Mirroring
+       ============================================ */
 
     /* Message box padding */
     .messagebox {
@@ -67,15 +57,13 @@ html[lang="ur"] {
     }
 
     .messagebox-content {
-        padding-inline-start: 10px;
-        padding-inline-end: 0;
+        padding-inline: 10px 0;
     }
 
     /* Timestamp alignment - use logical properties */
     .message-time {
         justify-self: start;
-        padding-inline-end: 0;
-        padding-inline-start: 5px;
+        padding-inline: 5px 0;
         text-align: start;
     }
 
@@ -91,14 +79,12 @@ html[lang="ur"] {
 
     /* Reveal hidden message button */
     .reveal-hidden-message {
-        margin-inline-start: 0.1em;
-        margin-inline-end: 0;
+        margin-inline: 0.1em 0;
     }
 
     /* Inline hide button spacing */
     .inline-hide-button-space-wrapper {
-        margin-inline-end: 0;
-        margin-inline-start: 0.2em;
+        margin-inline: 0.2em 0;
     }
 
     /* Compose Box RTL */
@@ -124,40 +110,34 @@ html[lang="ur"] {
 
     /* Emoji picker alignment */
     .emoji-picker {
-        inset-inline-end: auto;
-        inset-inline-start: 0;
+        inset-inline: 0 auto;
     }
 
     /* Left Sidebar RTL */
     #stream_filters,
     #left-sidebar-navigation-list {
-        margin-inline-end: 0;
-        margin-inline-start: var(--left-sidebar-right-margin);
+        margin-inline: var(--left-sidebar-right-margin) 0;
     }
 
     /* Unread indicators */
     .unread_count {
-        margin-inline-start: 0;
-        margin-inline-end: auto;
+        margin-inline: 0 auto;
     }
 
     /* Stream/topic indentation */
     .stream-row,
     .topic-row {
-        padding-inline-start: 0;
-        padding-inline-end: 10px;
+        padding-inline: 0 10px;
     }
 
     /* Collapse arrows */
     .stream-sidebar-arrow {
-        margin-inline-end: 0;
-        margin-inline-start: 5px;
+        margin-inline: 5px 0;
     }
 
     /* Right Sidebar RTL */
     .right-sidebar-items {
-        padding-inline-start: 0;
-        padding-inline-end: var(--right-sidebar-padding-left);
+        padding-inline: 0 var(--right-sidebar-padding-left);
     }
 
     /* User list items */
@@ -167,15 +147,13 @@ html[lang="ur"] {
 
     /* User status positioning */
     .user-status-emoji {
-        margin-inline-start: 0;
-        margin-inline-end: 5px;
+        margin-inline: 0 5px;
     }
 
     /* Popovers RTL */
     .tippy-box[data-placement^="left"] {
         >.tippy-arrow {
-            inset-inline-end: auto;
-            inset-inline-start: 0;
+            inset-inline: 0 auto;
 
             &::before {
                 border-inline-start-color: var(--color-background-popover);
@@ -186,8 +164,7 @@ html[lang="ur"] {
 
     .tippy-box[data-placement^="right"] {
         >.tippy-arrow {
-            inset-inline-start: auto;
-            inset-inline-end: 0;
+            inset-inline: auto 0;
 
             &::before {
                 border-inline-end-color: var(--color-background-popover);
@@ -199,26 +176,22 @@ html[lang="ur"] {
     /* Popover menu items */
     .popover-menu-item {
         text-align: right;
-        padding-inline-start: 10px;
-        padding-inline-end: 10px;
+        padding-inline: 10px;
     }
 
     /* Message action menu positioning */
     .message_control_button {
-        margin-inline-start: 0;
-        margin-inline-end: 4px;
+        margin-inline: 0 4px;
     }
 
     .actions_hover {
-        inset-inline-end: auto;
-        inset-inline-start: 5px;
+        inset-inline: 5px auto;
     }
 
     /* Bullet lists align right */
     #compose-textarea ul,
     #compose-textarea ol {
-        padding-inline-start: 0;
-        padding-inline-end: 20px;
+        padding-inline: 0 20px;
     }
 
     /* Mentions dropdown */
@@ -229,14 +202,12 @@ html[lang="ur"] {
 
     /* Emoji picker positioning */
     .emoji-picker-popover {
-        inset-inline-end: auto;
-        inset-inline-start: 0;
+        inset-inline: 0 auto;
     }
 
     /* Compose control buttons */
     .compose_control_button {
-        margin-inline-start: 0;
-        margin-inline-end: 5px;
+        margin-inline: 0 5px;
     }
 
     /* Message formatting toolbar */
@@ -254,29 +225,23 @@ html[lang="ur"] {
     /* Compose textarea margins */
     #compose-textarea,
     #preview_message_area {
-        margin-inline-end: calc(var(--composebox-buttons-width) * -1);
-        margin-inline-start: 0;
-        padding-inline-end: var(--composebox-buttons-width);
-        padding-inline-start: 0;
+        margin-inline: 0 calc(var(--composebox-buttons-width) * -1);
+        padding-inline: 0 var(--composebox-buttons-width);
     }
 
     /* Left bar compose button */
     #left_bar_compose_reply_button_big {
         text-align: right;
     }
-}
 
-/* ============================================
-   PART 3: Directional Icon Mirroring
-   ============================================ */
+    /* ============================================
+       PART 3: Directional Icon Mirroring
+       ============================================ */
 
-/* Flip directional icons in RTL for Urdu */
-html[lang="ur"] .icon-directional {
-    transform: scaleX(-1);
-}
-
-/* Apply to specific directional icons */
-html[lang="ur"] {
+    /* Flip directional icons in RTL for Urdu */
+    &.icon-directional {
+        transform: scaleX(-1);
+    }
 
     /* Reply arrow */
     .zulip-icon-reply,
@@ -316,10 +281,8 @@ html[lang="ur"] {
             rotate: 0deg;
         }
     }
-}
 
-/* Do NOT flip these icons */
-html[lang="ur"] {
+    /* Do NOT flip these icons */
 
     /* Emoji - never flip */
     .emoji,
