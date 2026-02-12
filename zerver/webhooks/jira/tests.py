@@ -15,7 +15,7 @@ class JiraHookTests(WebhookTestCase):
             content_type="application/json",
         )
         expected_content = """
-Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
 
 * **Priority**: Major
 * **Assignee**: no one
@@ -30,7 +30,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
     def test_created(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = """
-Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
 
 * **Priority**: Major
 * **Assignee**: no one
@@ -60,7 +60,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
     def test_created_with_unicode(self) -> None:
         expected_topic_name = "BUG-15: New bug with à hook"
         expected_message = """
-Leo Franchià created [BUG-15: New bug with à hook](http://lfranchi.com:8080/browse/BUG-15):
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with à hook](http://lfranchi.com:8080/browse/BUG-15):
 
 * **Priority**: Major
 * **Assignee**: no one
@@ -79,14 +79,14 @@ Leonardo Franchi [Administrator] created [TEST-4: Test Created Assignee](https:/
 
     def test_deleted(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
-        expected_message = "Leo Franchi deleted [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)."
+        expected_message = "@_**Othello, the Moor of Venice|12** deleted [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)."
         self.check_webhook("issue_deleted", expected_topic_name, expected_message)
 
     def test_reassigned(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
-        expected_message = """Leo Franchi updated [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
+        expected_message = """@_**Othello, the Moor of Venice|12** updated [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to @_**Othello, the Moor of Venice|12**):
 
-* Changed assignee to **Othello, the Moor of Venice**"""
+* Changed assignee to @_**Othello, the Moor of Venice|12**"""
         self.check_webhook("issue_updated__reassigned", expected_topic_name, expected_message)
 
     def test_priority_updated(self) -> None:
@@ -98,7 +98,7 @@ Leonardo Franchi [Administrator] created [TEST-4: Test Created Assignee](https:/
 
     def test_status_changed(self) -> None:
         expected_topic_name = "TEST-1: Fix That"
-        expected_message = """Leonardo Franchi [Administrator] updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1):
+        expected_message = """@_**Othello, the Moor of Venice|12** updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1):
 
 * Changed status from **To Do** to **In Progress**"""
         self.check_webhook("issue_updated__status", expected_topic_name, expected_message)
