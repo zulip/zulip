@@ -85,28 +85,26 @@
       "input": "Hamlet said:\n~~~~\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n~~~~\n\nThen he mentioned ````y = 4 + x**2```` and\n~~~~\ndef foobar(self):\n    return self.baz()",
       "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span><code>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</code></pre></div>\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<div class=\"codehilite\"><pre><span></span><code>def foobar(self):\n    return self.baz()\n</code></pre></div>",
       "text_content": "Hamlet said:\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n\nThen he mentioned y = 4 + x**2 and\ndef foobar(self):\n    return self.baz()\n",
-      "unified_expected_output": "<p>Hamlet said:</p>\n<pre><code>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</code></pre>\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<pre><code>def foobar(self):\n    return self.baz()\n\n</code></pre>"
+      "unified_expected_output": "<p>Hamlet said:</p>\n<pre><code>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</code></pre>\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<pre><code>def foobar(self):\n    return self.baz()\n</code></pre>"
     },
     {
       "name": "fenced_normal_quote",
       "input": "Hamlet said:\n~~~ quote\nTo be or **not** to be.\n\nThat is the question\n~~~",
       "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>To be or <strong>not</strong> to be.</p>\n<p>That is the question</p>\n</blockquote>",
-      "text_content": "Hamlet said:\n[…]",
-      "unified_expected_output": "<p>Hamlet said:</p>\n<pre><code class=\"language-quote\">To be or **not** to be.\n\nThat is the question\n</code></pre>"
+      "text_content": "Hamlet said:\n[…]"
     },
     {
       "name": "fenced_nested_quote",
       "input": "Hamlet said:\n~~~ quote\nPolonius said:\n> This above all: to thine ownself be true,\nAnd it must follow, as the night the day,\nThou canst not then be false to any man.\n\nWhat good advice!\n~~~",
       "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>Polonius said:</p>\n<blockquote>\n<p>This above all: to thine ownself be true,<br>\nAnd it must follow, as the night the day,<br>\nThou canst not then be false to any man.</p>\n</blockquote>\n<p>What good advice!</p>\n</blockquote>",
-      "text_content": "Hamlet said:\n[…]",
-      "unified_expected_output": "<p>Hamlet said:</p>\n<pre><code class=\"language-quote\">Polonius said:\n&gt; This above all: to thine ownself be true,\nAnd it must follow, as the night the day,\nThou canst not then be false to any man.\n\nWhat good advice!\n</code></pre>"
+      "text_content": "Hamlet said:\n[…]"
     },
     {
       "name": "fenced_complexly_nested_quote",
       "input": "I heard about this second hand...\n~~~ quote\n\nHe said:\n~~~ quote\nThe customer is complaining.\n\nThey looked at this code:\n``` \ndef hello(): print 'hello\n```\nThey would prefer:\n~~~\ndef hello()\n  puts 'hello'\nend\n~~~\n\nPlease advise.\n~~~\n\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n~~~",
       "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span><code>def hello(): print &#39;hello\n</code></pre></div>\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span><code>She said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</code></pre></div>",
       "text_content": "I heard about this second hand...\n[…]Please advise.\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n",
-      "unified_expected_output": "<p>I heard about this second hand...</p>\n<pre><code class=\"language-quote\">\nHe said:\n~~~ quote\nThe customer is complaining.\n\nThey looked at this code:\n``` \ndef hello(): print 'hello\n```\nThey would prefer:\n</code></pre>\n<p>def hello()<br>\nputs 'hello'<br>\nend</p>\n<pre><code>\nPlease advise.\n</code></pre>\n<p>She said:</p>\n<pre><code class=\"language-quote\">Just send them this:\n```\necho \"hello\n\"\n```\n</code></pre>"
+      "unified_expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<pre><code>def hello(): print 'hello\n</code></pre>\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\nputs 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<pre><code>\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n</code></pre>"
     },
     {
       "name": "fenced_quotes_inside_mathblock",
@@ -140,29 +138,25 @@
     {
       "name": "multiple_blockquote_with_backticks_and_angular_bracket",
       "input": "```quote\nText in\nmultiple lines.\n```\n\n> Text in a single line.",
-      "expected_output": "<blockquote>\n<p>Text in<br>\nmultiple lines.</p>\n</blockquote>\n<blockquote>\n<p>Text in a single line.</p>\n</blockquote>",
-      "unified_expected_output": "<pre><code class=\"language-quote\">Text in\nmultiple lines.\n</code></pre>\n<blockquote>\n<p>Text in a single line.</p>\n</blockquote>"
+      "expected_output": "<blockquote>\n<p>Text in<br>\nmultiple lines.</p>\n</blockquote>\n<blockquote>\n<p>Text in a single line.</p>\n</blockquote>"
     },
     {
       "name": "multiple_blockquote_with_quote_message",
       "input": "Hamlet said:\n~~~quote\nCan we talk ?\n~~~\n> Yes !!\n\nWelcome to Open Source.",
       "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>Can we talk ?</p>\n</blockquote>\n<blockquote>\n<p>Yes !!</p>\n</blockquote>\n<p>Welcome to Open Source.</p>",
-      "text_content": "Hamlet said:\n[…]\nWelcome to Open Source.",
-      "unified_expected_output": "<p>Hamlet said:</p>\n<pre><code class=\"language-quote\">Can we talk ?\n</code></pre>\n<blockquote>\n<p>Yes !!</p>\n</blockquote>\n<p>Welcome to Open Source.</p>"
+      "text_content": "Hamlet said:\n[…]\nWelcome to Open Source."
     },
     {
       "name": "fenced_quote_with_hashtag",
       "input": "```quote\n# line 1\n#line 2\n```",
       "expected_output": "<blockquote>\n<h1>line 1</h1>\n<p>#line 2</p>\n</blockquote>",
-      "text_content": "> line 1\n> #line 2\n",
-      "unified_expected_output": "<pre><code class=\"language-quote\"># line 1\n#line 2\n</code></pre>"
+      "text_content": "> line 1\n> #line 2\n"
     },
     {
       "name": "fenced_quote_and_list",
       "input": "Before:\n* One.\n* Two.\n\n```quote\nLists should work after a quote\n```\n\nAfter:\n* One.\n* Two.",
       "expected_output": "<p>Before:</p>\n<ul>\n<li>One.</li>\n<li>Two.</li>\n</ul>\n<blockquote>\n<p>Lists should work after a quote</p>\n</blockquote>\n<p>After:</p>\n<ul>\n<li>One.</li>\n<li>Two.</li>\n</ul>",
-      "text_content": "Before:\n\nOne.\nTwo.\n\n[…]After:\n\nOne.\nTwo.\n",
-      "unified_expected_output": "<p>Before:</p>\n<ul>\n<li>One.</li>\n<li>Two.</li>\n</ul>\n<pre><code class=\"language-quote\">Lists should work after a quote\n</code></pre>\n<p>After:</p>\n<ul>\n<li>One.</li>\n<li>Two.</li>\n</ul>"
+      "text_content": "Before:\n\nOne.\nTwo.\n\n[…]After:\n\nOne.\nTwo.\n"
     },
     {
       "name": "dangerous_block_having_x",
@@ -175,7 +169,7 @@
       "input": "``` one ```\n\n``` two ```\n\n~~~~\nx = 1",
       "expected_output": "<p><code> one </code></p>\n<p><code> two </code></p>\n<div class=\"codehilite\"><pre><span></span><code>x = 1\n</code></pre></div>",
       "text_content": " one \n two \nx = 1\n",
-      "unified_expected_output": "<p><code>one</code></p>\n<p><code>two</code></p>\n<pre><code>x = 1\n\n</code></pre>"
+      "unified_expected_output": "<p><code>one</code></p>\n<p><code>two</code></p>\n<pre><code>x = 1\n</code></pre>"
     },
     {
       "name": "four_space_code_block",
@@ -297,8 +291,7 @@
       "name": "ulist_hanging_quoted",
       "input": "```quote\nSome text with a hanging list inside quote:\n* one\n* two\n* three\n```",
       "expected_output": "<blockquote>\n<p>Some text with a hanging list inside quote:</p>\n<ul>\n<li>one</li>\n<li>two</li>\n<li>three</li>\n</ul>\n</blockquote>",
-      "text_content": "> Some text with a hanging list inside quote:\n> one\n> two\n> three\n",
-      "unified_expected_output": "<pre><code class=\"language-quote\">Some text with a hanging list inside quote:\n* one\n* two\n* three\n</code></pre>"
+      "text_content": "> Some text with a hanging list inside quote:\n> one\n> two\n> three\n"
     },
     {
       "name": "ulist_nested_ulist_two_space_indent",
@@ -881,7 +874,7 @@
       "input": "~~~\n<h1>stay normal</h1>",
       "expected_output": "<div class=\"codehilite\"><pre><span></span><code>&lt;h1&gt;stay normal&lt;/h1&gt;\n</code></pre></div>",
       "text_content": "<h1>stay normal</h1>\n",
-      "unified_expected_output": "<pre><code>&lt;h1&gt;stay normal&lt;/h1&gt;\n\n</code></pre>"
+      "unified_expected_output": "<pre><code>&lt;h1&gt;stay normal&lt;/h1&gt;\n</code></pre>"
     },
     {
       "name": "ulist_with_inline_code",
@@ -1100,7 +1093,7 @@
       "input": "~~~quote\n```spoiler header\ncontent\n```\noutside spoiler\n~~~\noutside quote",
       "expected_output": "<blockquote>\n<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>\n<p>outside spoiler</p>\n</blockquote>\n<p>outside quote</p>",
       "text_content": "[…]outside quote",
-      "unified_expected_output": "<pre><code class=\"language-quote\">```spoiler header\ncontent\n```\noutside spoiler\n</code></pre>\n<p>outside quote</p>"
+      "unified_expected_output": "<blockquote>\n<pre><code class=\"language-spoiler\">content\n</code></pre>\n<p>outside spoiler</p>\n</blockquote>\n<p>outside quote</p>"
     },
     {
       "name": "spoilers_with_header_markdown",
@@ -1178,7 +1171,7 @@
       "expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
       "marked_expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
       "text_content": "[…]\nGreat",
-      "unified_expected_output": "<p>@_<strong>Zoe|7</strong> <a href=\"http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<pre><code class=\"language-quote\">How are you?\n</code></pre>\n<p>Great</p>"
+      "unified_expected_output": "<p>@_<strong>Zoe|7</strong> <a href=\"http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>"
     },
     {
       "name": "user_mention_with_no_message_link",

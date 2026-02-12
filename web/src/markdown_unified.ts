@@ -9,6 +9,7 @@ import {gfmTable} from "micromark-extension-gfm-table";
 
 import type {MarkdownHelpers} from "./markdown.ts";
 import {translate_emoticons_to_names} from "./markdown.ts";
+import {preprocess_fenced_blocks} from "./markdown_fenced_blocks.ts";
 import type {MarkdownProcessor} from "./markdown_processor.ts";
 
 /**
@@ -69,6 +70,12 @@ export function create_unified_processor(): MarkdownProcessor {
                     get_emoticon_translations: helper_config.get_emoticon_translations,
                 });
             }
+
+            // Preprocess fenced block extensions (~~~quote) before micromark
+            // parsing. ~~~math and ~~~spoiler blocks pass through as regular
+            // code fences for micromark to parse, then get transformed in the
+            // mdast phase.
+            content = preprocess_fenced_blocks(content);
 
             // Our Python-Markdown processor appends two \n\n to input
             content = content + "\n\n";
