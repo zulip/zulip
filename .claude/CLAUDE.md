@@ -60,9 +60,17 @@ Before writing code, explain the plan:
 
 Structure changes as clean commits:
 
-- Backend and API changes (with tests and API doc changes documented fully using
-  the `tools/create-api-changelog` double-entry changelog system)
-- Frontend UI changes (with tests and user-facing documentation updates)
+- Backend and API changes (with tests and API doc changes documented
+  fully using our double-entry changelog system). When starting an API
+  change, reread `docs/documentation/api.md` to review the process for
+  documenting an API change. You'll run `tools/create-api-changelog`
+  to create an `api_docs/unmerged.d/ZF-RANDOM.md` file. Never update
+  `API_FEATURE_LEVEL` manually. **Changes** entries should use the
+  "New in Zulip 12.0 (Feature level RANDOM)" pattern, which will be
+  replaced with the final feature level when the changes are merged.
+- Frontend UI changes (with tests and user-facing documentation
+  updates). Remember to plan to use your visual test skill to check
+  your work whenever you change web app code (HTML, CSS, JS).
 
 Each commit should be self-contained, highly readable and reviewable
 using `git show --color-moved`, and pass lint/tests independently. If
