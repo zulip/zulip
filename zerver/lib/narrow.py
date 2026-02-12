@@ -1735,6 +1735,7 @@ def access_narrow(
             maybe_user_profile,
             channel,
             error="",
+            require_active_channel=False,
             require_content_access=True,
         )
         return True
