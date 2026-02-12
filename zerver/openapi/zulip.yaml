@@ -28329,6 +28329,8 @@ components:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
+          required:
+            - stream
           properties:
             result: {}
             msg: {}
@@ -28348,6 +28350,8 @@ components:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
+          required:
+            - stream_id
           properties:
             result: {}
             msg: {}
@@ -28380,6 +28384,11 @@ components:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
+          required:
+            - errors
+            - sent_invitations
+            - daily_limit_reached
+            - license_limit_reached
           properties:
             result: {}
             msg: {}
@@ -28415,6 +28424,8 @@ components:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
+          required:
+            - var_name
           description: |
             ### Missing request parameter
 
@@ -28441,6 +28452,8 @@ components:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
+          required:
+            - parameters
           description: |
             ### Incompatible request parameters
 
@@ -28464,6 +28477,148 @@ components:
               "msg": "Unsupported parameter combination: object_id, object_name",
               "result": "error",
               "parameters": "object_id, object_name",
+            }
+    MoveMessagesTimeLimitExceededError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          required:
+            - first_message_id_allowed_to_move
+            - total_messages_in_topic
+            - total_messages_allowed_to_move
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            first_message_id_allowed_to_move:
+              type: integer
+              nullable: true
+              description: |
+                The oldest message ID in this topic that the user has
+                permission to move. `null` if the user does not have
+                permission to move any messages.
+            total_messages_in_topic:
+              type: integer
+              description: |
+                Total number of messages in the topic.
+            total_messages_allowed_to_move:
+              type: integer
+              description: |
+                Total number of messages the user has permission to move
+                (the most recent ones in the topic).
+          example:
+            {
+              "code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED",
+              "first_message_id_allowed_to_move": 123,
+              "msg": "You only have permission to move the 2/5 most recent messages in this topic.",
+              "result": "error",
+              "total_messages_allowed_to_move": 2,
+              "total_messages_in_topic": 5,
+            }
+    ChannelAlreadyExistsError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          required:
+            - channel_name
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            channel_name:
+              type: string
+              description: |
+                The name of the channel that already exists.
+          example:
+            {
+              "code": "CHANNEL_ALREADY_EXISTS",
+              "msg": "Channel 'discussions' already exists",
+              "channel_name": "discussions",
+              "result": "error",
+            }
+    TopicConfigurationError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          required:
+            - empty_topic_display_name
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            empty_topic_display_name:
+              type: string
+              description: |
+                The display name of the empty/general chat topic.
+          example:
+            {
+              "code": "BAD_REQUEST",
+              "msg": "To enable this configuration, all messages in this channel must be in the general chat topic. Consider renaming or deleting other topics.",
+              "empty_topic_display_name": "general chat",
+              "result": "error",
+            }
+    CannotDeactivateGroupInUseError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          required:
+            - objections
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            objections:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    description: |
+                      The type of object using the group. One of `"realm"`,
+                      `"channel"`, `"user_group"`, or `"subgroup"`.
+                  settings:
+                    type: array
+                    items:
+                      type: string
+                    description: |
+                      The setting names that reference the group. Present for
+                      `"realm"`, `"channel"`, and `"user_group"` types.
+                  channel_id:
+                    type: integer
+                    description: |
+                      The ID of the channel using the group. Present when
+                      `type` is `"channel"`.
+                  group_id:
+                    type: integer
+                    description: |
+                      The ID of the user group using the group. Present when
+                      `type` is `"user_group"`.
+                  supergroup_ids:
+                    type: array
+                    items:
+                      type: integer
+                    description: |
+                      The IDs of groups that include this group as a subgroup.
+                      Present when `type` is `"subgroup"`.
+                required:
+                  - type
+                additionalProperties: false
+              description: |
+                An array of objects describing why the group cannot be
+                deactivated.
+          example:
+            {
+              "code": "CANNOT_DEACTIVATE_GROUP_IN_USE",
+              "msg": "Cannot deactivate user group in use.",
+              "objections":
+                [
+                  {
+                    "type": "realm",
+                    "settings": ["can_create_public_channel_group"],
+                  },
+                ],
+              "result": "error",
             }
     UserNotAuthorizedError:
       allOf:
@@ -28519,7 +28674,7 @@ components:
             msg: {}
             code: {}
             retry-after:
-              type: integer
+              type: number
               description: |
                 How many seconds the client must wait before making
                 additional requests.
