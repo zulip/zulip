@@ -1,0 +1,355 @@
+/* Urdu Language Support - Nastaliq Typography and RTL Layout */
+
+/* ============================================
+   PART 1: Urdu Nastaliq Typography
+   ============================================ */
+
+/* Apply Nastaliq font stack only when page language is Urdu */
+html[lang="ur"] {
+    font-family:
+        "Noto Nastaliq Urdu",
+        "Jameel Noori Nastaleeq",
+        "Urdu Typesetting",
+        serif;
+
+    /* Set RTL direction for Urdu */
+    direction: rtl;
+}
+
+/* Ensure Nastaliq applies to all text content areas */
+html[lang="ur"] {
+    /* Message content */
+    .message_content,
+    .rendered_markdown,
+    .messagebox,
+
+    /* Compose textarea */
+    #compose-textarea,
+    textarea,
+
+    /* Sidebars */
+    .left-sidebar,
+    .right-sidebar,
+    #left-sidebar,
+    #buddy_list_wrapper,
+
+    /* Settings pages */
+    .settings-page,
+    .settings-section,
+
+    /* Popovers */
+    .tippy-content,
+    .popover-menu,
+
+    /* Input fields */
+    input[type="text"],
+    input[type="search"] {
+        font-family:
+            "Noto Nastaliq Urdu",
+            "Jameel Noori Nastaleeq",
+            "Urdu Typesetting",
+            serif;
+    }
+}
+
+/* ============================================
+   PART 2: RTL Layout Mirroring
+   ============================================ */
+
+/* Convert physical properties to logical properties for RTL support */
+
+/* Message Row Layout */
+html[lang="ur"] {
+
+    /* Message box padding */
+    .messagebox {
+        padding: 0 3px 0 5px;
+    }
+
+    .messagebox-content {
+        padding-inline-start: 10px;
+        padding-inline-end: 0;
+    }
+
+    /* Timestamp alignment - use logical properties */
+    .message-time {
+        justify-self: start;
+        padding-inline-end: 0;
+        padding-inline-start: 5px;
+        text-align: start;
+    }
+
+    /* Sender info */
+    .sender_name {
+        text-align: start;
+    }
+
+    /* Message reactions bar */
+    .message_reactions {
+        direction: rtl;
+    }
+
+    /* Reveal hidden message button */
+    .reveal-hidden-message {
+        margin-inline-start: 0.1em;
+        margin-inline-end: 0;
+    }
+
+    /* Inline hide button spacing */
+    .inline-hide-button-space-wrapper {
+        margin-inline-end: 0;
+        margin-inline-start: 0.2em;
+    }
+
+    /* Compose Box RTL */
+    #compose-textarea {
+        direction: rtl;
+        text-align: right;
+    }
+
+    #compose-content {
+        direction: rtl;
+    }
+
+    /* Compose buttons */
+    .compose_control_buttons_container {
+        flex-direction: row-reverse;
+    }
+
+    /* Mentions dropdown */
+    .typeahead {
+        text-align: right;
+        direction: rtl;
+    }
+
+    /* Emoji picker alignment */
+    .emoji-picker {
+        inset-inline-end: auto;
+        inset-inline-start: 0;
+    }
+
+    /* Left Sidebar RTL */
+    #stream_filters,
+    #left-sidebar-navigation-list {
+        margin-inline-end: 0;
+        margin-inline-start: var(--left-sidebar-right-margin);
+    }
+
+    /* Unread indicators */
+    .unread_count {
+        margin-inline-start: 0;
+        margin-inline-end: auto;
+    }
+
+    /* Stream/topic indentation */
+    .stream-row,
+    .topic-row {
+        padding-inline-start: 0;
+        padding-inline-end: 10px;
+    }
+
+    /* Collapse arrows */
+    .stream-sidebar-arrow {
+        margin-inline-end: 0;
+        margin-inline-start: 5px;
+    }
+
+    /* Right Sidebar RTL */
+    .right-sidebar-items {
+        padding-inline-start: 0;
+        padding-inline-end: var(--right-sidebar-padding-left);
+    }
+
+    /* User list items */
+    .user_sidebar_entry {
+        direction: rtl;
+    }
+
+    /* User status positioning */
+    .user-status-emoji {
+        margin-inline-start: 0;
+        margin-inline-end: 5px;
+    }
+
+    /* Popovers RTL */
+    .tippy-box[data-placement^="left"] {
+        >.tippy-arrow {
+            inset-inline-end: auto;
+            inset-inline-start: 0;
+
+            &::before {
+                border-inline-start-color: var(--color-background-popover);
+                border-inline-end-color: transparent;
+            }
+        }
+    }
+
+    .tippy-box[data-placement^="right"] {
+        >.tippy-arrow {
+            inset-inline-start: auto;
+            inset-inline-end: 0;
+
+            &::before {
+                border-inline-end-color: var(--color-background-popover);
+                border-inline-start-color: transparent;
+            }
+        }
+    }
+
+    /* Popover menu items */
+    .popover-menu-item {
+        text-align: right;
+        padding-inline-start: 10px;
+        padding-inline-end: 10px;
+    }
+
+    /* Message action menu positioning */
+    .message_control_button {
+        margin-inline-start: 0;
+        margin-inline-end: 4px;
+    }
+
+    .actions_hover {
+        inset-inline-end: auto;
+        inset-inline-start: 5px;
+    }
+
+    /* Bullet lists align right */
+    #compose-textarea ul,
+    #compose-textarea ol {
+        padding-inline-start: 0;
+        padding-inline-end: 20px;
+    }
+
+    /* Mentions dropdown */
+    .typeahead.dropdown-menu {
+        text-align: right;
+        direction: rtl;
+    }
+
+    /* Emoji picker positioning */
+    .emoji-picker-popover {
+        inset-inline-end: auto;
+        inset-inline-start: 0;
+    }
+
+    /* Compose control buttons */
+    .compose_control_button {
+        margin-inline-start: 0;
+        margin-inline-end: 5px;
+    }
+
+    /* Message formatting toolbar */
+    .message-control-toolbar {
+        direction: rtl;
+    }
+
+    /* Compose recipient inputs */
+    #stream_message_recipient_topic,
+    #private_message_recipient {
+        direction: rtl;
+        text-align: right;
+    }
+
+    /* Compose textarea margins */
+    #compose-textarea,
+    #preview_message_area {
+        margin-inline-end: calc(var(--composebox-buttons-width) * -1);
+        margin-inline-start: 0;
+        padding-inline-end: var(--composebox-buttons-width);
+        padding-inline-start: 0;
+    }
+
+    /* Left bar compose button */
+    #left_bar_compose_reply_button_big {
+        text-align: right;
+    }
+}
+
+/* ============================================
+   PART 3: Directional Icon Mirroring
+   ============================================ */
+
+/* Flip directional icons in RTL for Urdu */
+html[lang="ur"] .icon-directional {
+    transform: scaleX(-1);
+}
+
+/* Apply to specific directional icons */
+html[lang="ur"] {
+
+    /* Reply arrow */
+    .zulip-icon-reply,
+    .icon-vector-reply {
+        transform: scaleX(-1);
+    }
+
+    /* Back/forward navigation */
+    .zulip-icon-arrow-left,
+    .zulip-icon-arrow-right,
+    .icon-vector-chevron-left,
+    .icon-vector-chevron-right {
+        transform: scaleX(-1);
+    }
+
+    /* Stream collapse arrows */
+    .zulip-icon-chevron-right,
+    .stream-sidebar-arrow {
+        transform: scaleX(-1);
+    }
+
+    /* Navigation chevrons */
+    .zulip-icon-heading-triangle-right {
+        transform: scaleX(-1);
+    }
+
+    /* Buddy list section toggle */
+    .buddy-list-section-toggle.zulip-icon-heading-triangle-right {
+        transform: scaleX(-1);
+
+        &.rotate-icon-down {
+            /* In RTL, we need to adjust the rotation */
+            rotate: 90deg;
+        }
+
+        &.rotate-icon-right {
+            rotate: 0deg;
+        }
+    }
+}
+
+/* Do NOT flip these icons */
+html[lang="ur"] {
+
+    /* Emoji - never flip */
+    .emoji,
+    .emoji-picker-emoji {
+        transform: none !important;
+    }
+
+    /* Checkmarks - never flip */
+    .zulip-icon-check,
+    .icon-vector-check {
+        transform: none !important;
+    }
+
+    /* Avatars - never flip */
+    .message-avatar,
+    .user-avatar,
+    img[class*="avatar"] {
+        transform: none !important;
+    }
+
+    /* Logos - never flip */
+    .brand-logo,
+    .zulip-logo {
+        transform: none !important;
+    }
+
+    /* Symmetric icons - never flip */
+    .zulip-icon-plus,
+    .zulip-icon-more-vertical,
+    .zulip-icon-x {
+        transform: none !important;
+    }
+}
