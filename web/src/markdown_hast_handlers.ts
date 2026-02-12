@@ -166,7 +166,22 @@ export function create_zulip_hast_handlers(helpers: MarkdownHelpers): Handlers {
             node: ZulipTimestamp,
             _parent: Parents | undefined,
         ): RawHastNode {
-            return raw(handleTimestamp(node.time_string));
+            // Reject Unix timestamps beyond year ~9999 (matches Python
+            // datetime.fromtimestamp limit).
+            const time_num = Number(node.time_string);
+            if (!Number.isNaN(time_num) && Math.abs(time_num) > 253402300799) {
+                return raw("&lt;time:" + _.escape(node.time_string) + "&gt;");
+            }
+
+            const html = handleTimestamp(node.time_string);
+
+            // When handleTimestamp returns a <span> fallback (invalid date),
+            // the backend produces literal escaped text instead. Match that.
+            if (html.startsWith("<span>")) {
+                return raw("&lt;time:" + _.escape(node.time_string) + "&gt;");
+            }
+
+            return raw(html);
         },
 
         zulipInlineMath(

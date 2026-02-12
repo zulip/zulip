@@ -600,7 +600,7 @@ export function transform_timestamps(tree: Root): void {
     // literal text (not autolinks). Use findAndReplace on text nodes.
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const pattern = [
-        /<time:([^>]+)>/g,
+        /<time:([^<>]+)>/g,
         (_match: string, time_string: string) => as_phrasing({type: "zulipTimestamp", time_string}),
     ] as FindAndReplaceTuple;
     findAndReplace(tree, [pattern]);

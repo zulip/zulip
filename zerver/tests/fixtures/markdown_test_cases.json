@@ -842,7 +842,7 @@
       "expected_output": "<p><time datetime=\"2017-06-05T22:30:00Z\">Jun 5th 2017, 10:30PM</time></p>",
       "marked_expected_output": "<p><span>Jun 5th 2017, 10:30PM</span></p>",
       "text_content": "Jun 5th 2017, 10:30PM",
-      "unified_expected_output": "<p><span>Jun 5th 2017, 10:30PM</span></p>"
+      "unified_expected_output": "<p>&lt;time:Jun 5th 2017, 10:30PM&gt;</p>"
     },
     {
       "name": "timestamp_backend_markdown_and_marked",
@@ -855,8 +855,7 @@
       "input": "<time:<alert(1)>>",
       "expected_output": "<p>&lt;time:&lt;alert(1)&gt;&gt;</p>",
       "marked_expected_output": "<p><span>&lt;alert(1)</span>&gt;</p>",
-      "text_content": "<time:<alert(1)>>",
-      "unified_expected_output": "<p><span>&lt;alert(1)</span>&gt;</p>"
+      "text_content": "<time:<alert(1)>>"
     },
     {
       "name": "timestamp_timezone",
@@ -864,7 +863,7 @@
       "expected_output": "<p><time datetime=\"2017-12-31T00:00:00Z\">31 Dec 2017 5:30 am IST</time></p>",
       "marked_expected_output": "<p><span>31 Dec 2017 5:30 am IST</span></p>",
       "text_content": "31 Dec 2017 5:30 am IST",
-      "unified_expected_output": "<p><span>31 Dec 2017 5:30 am IST</span></p>"
+      "unified_expected_output": "<p>&lt;time:31 Dec 2017 5:30 am IST&gt;</p>"
     },
     {
       "name": "timestamp_incorrect",
@@ -879,16 +878,14 @@
       "input": "<time:1969-12-31T00:00:00+32:00>",
       "expected_output": "<p>&lt;time:1969-12-31T00:00:00+32:00&gt;</p>",
       "marked_expected_output": "<p><span>1969-12-31T00:00:00+32:00</span></p>",
-      "text_content": "<time:1969-12-31T00:00:00+32:00>",
-      "unified_expected_output": "<p><span>1969-12-31T00:00:00+32:00</span></p>"
+      "text_content": "<time:1969-12-31T00:00:00+32:00>"
     },
     {
       "name": "timestamp_overflow",
       "input": "<time:0001-01-01T01:00:00+02:00>",
       "expected_output": "<p>&lt;time:0001-01-01T01:00:00+02:00&gt;</p>",
       "marked_expected_output": "<p><span>0001-01-01T01:00:00+02:00</span></p>",
-      "text_content": "<time:0001-01-01T01:00:00+02:00>",
-      "unified_expected_output": "<p><span>0001-01-01T01:00:00+02:00</span></p>"
+      "text_content": "<time:0001-01-01T01:00:00+02:00>"
     },
     {
       "name": "timestamp_unix",
@@ -901,8 +898,7 @@
       "input": "Let's meet at <time:1234567890123>.",
       "expected_output": "<p>Let's meet at &lt;time:1234567890123&gt;.</p>",
       "marked_expected_output": "<p>Let's meet at <time datetime=\"+041091-11-25T05:02:03Z\">1234567890123</time>.</p>",
-      "text_content": "Let's meet at <time:1234567890123>.",
-      "unified_expected_output": "<p>Let's meet at <time datetime=\"+041091-11-25T05:02:03Z\">1234567890123</time>.</p>"
+      "text_content": "Let's meet at <time:1234567890123>."
     },
     {
       "name": "tex_inline",
