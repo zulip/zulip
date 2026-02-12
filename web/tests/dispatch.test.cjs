@@ -736,6 +736,10 @@ run_test("realm settings", ({override, override_rewire}) => {
     dispatch(event);
     assert_same(realm.realm_enable_spectator_access, true);
 
+    event = event_fixtures.realm__update__image_thumbnail_size;
+    dispatch(event);
+    assert_same(realm.realm_image_thumbnail_size, "medium");
+
     event = event_fixtures.realm__update_dict__default;
     override(realm, "realm_create_multiuse_invite_group", 1);
     override(realm, "realm_allow_message_editing", false);

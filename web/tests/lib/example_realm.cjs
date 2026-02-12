@@ -89,6 +89,7 @@ exports.make_realm = (opts = {}) => {
         realm_icon_source: "",
         realm_icon_url: "",
         realm_incoming_webhook_bots: [],
+        realm_image_thumbnail_size: "small",
         realm_inline_image_preview: false,
         realm_inline_url_embed_preview: false,
         realm_invite_required: false,
