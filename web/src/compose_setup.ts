@@ -71,7 +71,7 @@ function setup_compose_actions_hooks(): void {
 // significant complexity without meaningful benefit.
 const throttled_update_draft = _.throttle(
     () => {
-        drafts.update_draft({no_notify: true});
+        drafts.update_draft({no_notify: true, update_count: false});
     },
     60000,
     {leading: false, trailing: true},
