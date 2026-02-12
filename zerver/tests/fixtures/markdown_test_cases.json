@@ -914,8 +914,7 @@
     {
       "name": "tex_escaped",
       "input": "`$$a$$`",
-      "expected_output": "<p><code>$$a$$</code></p>",
-      "unified_expected_output": "<p><code>ZULIPMATHPLACEHOLDER0</code></p>"
+      "expected_output": "<p><code>$$a$$</code></p>"
     },
     {
       "name": "tex_fenced_math",

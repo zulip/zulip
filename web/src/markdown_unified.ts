@@ -1,5 +1,5 @@
 import {toHtml} from "hast-util-to-html";
-import type {InlineCode, Root} from "mdast";
+import type {Root} from "mdast";
 import {fromMarkdown} from "mdast-util-from-markdown";
 import {gfmAutolinkLiteralFromMarkdown} from "mdast-util-gfm-autolink-literal";
 import {gfmStrikethroughFromMarkdown} from "mdast-util-gfm-strikethrough";
@@ -131,10 +131,13 @@ function parse_to_mdast(content: string): Root {
     // their literal content, not the placeholder.
     if (math_spans.size > 0) {
         const placeholder_re = /ZULIPMATHPLACEHOLDER\d+/g;
-        function walk_inline_code(node: {type: string; children?: {type: string}[]}): void {
-            if (node.type === "inlineCode") {
-                const code_node = node as unknown as InlineCode;
-                code_node.value = code_node.value.replace(placeholder_re, (match) => {
+        function walk_inline_code(node: {
+            type: string;
+            value?: string;
+            children?: {type: string}[];
+        }): void {
+            if (node.type === "inlineCode" && node.value !== undefined) {
+                node.value = node.value.replaceAll(placeholder_re, (match) => {
                     const span = math_spans.get(match);
                     return span ? span.full_match : match;
                 });
