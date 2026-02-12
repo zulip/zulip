@@ -529,22 +529,31 @@ export function transform_links(tree: Root, helpers: MarkdownHelpers): void {
 }
 
 // ---- Inline math: $$...$$ --------------------------------------------------
+// Inline math is pre-processed before micromark parsing (replacing $$...$$
+// with alphanumeric placeholders) so that content inside math spans isn't
+// parsed as markdown. This function restores placeholders to zulipInlineMath
+// nodes after structural transforms.
 
-export function transform_inline_math(tree: Root): void {
-    // We use findAndReplace rather than micromark-extension-math because
-    // Zulip uses $$...$$ for inline math, while that extension uses $...$
-    // for inline and $$...$$ for display math.
-    //
-    // - First char: not newline, underscore, or dollar (prevents $$_$$ matching)
-    // - Rest: either escaped dollar (\$) or any non-newline, non-dollar char
-    // - Negative lookahead prevents matching $$$
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const pattern = [
-        /\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$)/g,
-        (match: string, tex: string) =>
-            as_phrasing({type: "zulipInlineMath", tex, full_match: match}),
-    ] as FindAndReplaceTuple;
-    findAndReplace(tree, [pattern]);
+export type InlineMathSpan = {
+    tex: string;
+    full_match: string;
+};
+
+export function restore_inline_math_placeholders(
+    tree: Root,
+    math_spans: Map<string, InlineMathSpan>,
+): void {
+    const patterns: FindAndReplaceTuple[] = [];
+    for (const [placeholder, span] of math_spans) {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        const tuple = [
+            new RegExp(placeholder, "g"),
+            () =>
+                as_phrasing({type: "zulipInlineMath", tex: span.tex, full_match: span.full_match}),
+        ] as FindAndReplaceTuple;
+        patterns.push(tuple);
+    }
+    findAndReplace(tree, patterns);
 }
 
 // ---- Emoji: :name: and unicode emoji ----------------------------------------

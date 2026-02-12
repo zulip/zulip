@@ -16,12 +16,13 @@ import {preprocess_fenced_blocks} from "./markdown_fenced_blocks.ts";
 import {create_zulip_hast_handlers} from "./markdown_hast_handlers.ts";
 import type {MarkdownProcessor} from "./markdown_processor.ts";
 import {
+    type InlineMathSpan,
     disable_underscore_emphasis,
     extract_flags,
+    restore_inline_math_placeholders,
     silence_mentions_in_blockquotes,
     transform_display_math,
     transform_emoji,
-    transform_inline_math,
     transform_linkifiers,
     transform_links,
     transform_mentions,
@@ -73,16 +74,51 @@ const mdast_extensions = [
     gfmStrikethroughFromMarkdown(),
 ];
 
+// Same regex as transform_inline_math: $$...$$ with escaped-dollar support.
+const INLINE_MATH_RE = /\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$)/g;
+
+/**
+ * Pre-process $$...$$ inline math spans BEFORE micromark parsing.
+ * Replaces each span with an alphanumeric placeholder so that
+ * content inside math (e.g. **bold** markers, \$ escapes) isn't
+ * parsed as markdown. Returns the processed string and a map of
+ * placeholder → math span data for later restoration.
+ */
+function preprocess_inline_math(content: string): {
+    processed: string;
+    math_spans: Map<string, InlineMathSpan>;
+} {
+    const math_spans = new Map<string, InlineMathSpan>();
+    let counter = 0;
+    const processed = content.replaceAll(INLINE_MATH_RE, (full_match, tex: string) => {
+        const placeholder = `ZULIPMATHPLACEHOLDER${counter}`;
+        counter += 1;
+        math_spans.set(placeholder, {tex, full_match});
+        return placeholder;
+    });
+    return {processed, math_spans};
+}
+
 /**
  * Parse markdown content into an mdast tree with structural transforms
  * applied. Used both at the top level and recursively for spoiler body
  * content. Each parse level runs its own newlineToBreak and
  * disable_underscore_emphasis since those depend on source positions
  * that are relative to each parse context.
+ *
+ * Each parse context pre-processes $$...$$ inline math into placeholders
+ * (so micromark doesn't parse content inside math) and restores them
+ * after all structural transforms.
  */
 function parse_to_mdast(content: string): Root {
     const preprocessed = preprocess_fenced_blocks(content);
-    const source = preprocessed + "\n\n";
+
+    // Pre-process inline math after fenced blocks (so $$...$$ inside code
+    // blocks isn't matched) but before micromark parsing (so content inside
+    // math spans isn't parsed as markdown).
+    const {processed: math_processed, math_spans} = preprocess_inline_math(preprocessed);
+
+    const source = math_processed + "\n\n";
     const mdast = fromMarkdown(source, {
         extensions: micromark_extensions,
         mdastExtensions: mdast_extensions,
@@ -104,6 +140,12 @@ function parse_to_mdast(content: string): Root {
     // Spoiler bodies are parsed recursively via parse_to_mdast,
     // so each level gets its own newlineToBreak and underscore disable.
     transform_spoilers(mdast, parse_to_mdast);
+
+    // Restore inline math placeholders → zulipInlineMath nodes.
+    // Each parse context (top-level, spoiler body) has its own map.
+    if (math_spans.size > 0) {
+        restore_inline_math_placeholders(mdast, math_spans);
+    }
 
     return mdast;
 }
@@ -151,7 +193,8 @@ export function create_unified_processor(): MarkdownProcessor {
             transform_mentions(mdast, helper_config);
             transform_stream_links(mdast, helper_config);
             transform_timestamps(mdast);
-            transform_inline_math(mdast);
+            // Inline math is handled by preprocess_inline_math /
+            // restore_inline_math_placeholders in parse_to_mdast.
             transform_linkifiers(mdast, helper_config);
             transform_emoji(mdast, helper_config);
             silence_mentions_in_blockquotes(mdast);
