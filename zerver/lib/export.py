@@ -1557,11 +1557,20 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
 
     recipient_filter = Q()
     if export_type != RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
-        # First we find the set of recipient ids of DirectMessageGroups which can be exported.
-        # A DirectMessageGroup can be exported only if at least one of its users is consenting
-        # to the export of private data.
-        # We can find this set by gathering all the Subscriptions of consenting users to
-        # DirectMessageGroups and collecting the set of recipient_ids from those Subscriptions.
+        # First we find the set of recipient ids of DirectMessageGroups which
+        # can be exported.  A DirectMessageGroup can be exported only if at
+        # least one of its users is consenting to the export of private data.
+        #
+        # When that condition is met, all messages in the conversation are
+        # included, not just those sent by the consenting user -- the consent
+        # model is per-conversation, not per-message, matching the user-facing
+        # documentation: "direct messages that [consenting] members can
+        # access". This is necessary because exporting partial conversations
+        # would produce unusable data.
+        #
+        # We can find this set by gathering all the Subscriptions of consenting
+        # users to DirectMessageGroups and collecting the set of recipient_ids
+        # from those Subscriptions.
         exportable_direct_message_group_recipient_ids = set(
             Subscription.objects.filter(
                 recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__in=consented_user_ids
@@ -1793,6 +1802,12 @@ def export_partial_message_files(
     #        OR
     #   - received by someone in your exportable_user_ids (which
     #     equates to a recipient object we are exporting)
+    #
+    # This means the consent model is per-conversation, not per-message:
+    # for EXPORT_FULL_WITH_CONSENT, a consenting user's DMs include both
+    # messages they sent and messages they received -- matching the help
+    # center documentation ("direct messages that [consenting] members
+    # can access").
     #
     # TODO: In theory, you should be able to export messages in
     # cross-realm direct message threads; currently, this only
