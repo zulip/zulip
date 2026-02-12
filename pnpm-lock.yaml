@@ -203,6 +203,9 @@ importers:
       lodash:
         specifier: ^4.17.19
         version: 4.17.23
+      mdast-util-find-and-replace:
+        specifier: ^3.0.2
+        version: 3.0.2
       mdast-util-from-markdown:
         specifier: ^2.0.2
         version: 2.0.2
@@ -393,6 +396,9 @@ importers:
       '@types/lodash':
         specifier: ^4.14.172
         version: 4.17.23
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
       '@types/micromodal':
         specifier: ^0.3.3
         version: 0.3.5

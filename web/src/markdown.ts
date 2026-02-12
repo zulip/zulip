@@ -486,13 +486,13 @@ export function is_status_message(raw_content: string): boolean {
     return raw_content.startsWith("/me ");
 }
 
-function make_emoji_span(codepoint: string, title: string, alt_text: string): string {
+export function make_emoji_span(codepoint: string, title: string, alt_text: string): string {
     return `<span aria-label="${_.escape(title)}" class="emoji emoji-${_.escape(
         codepoint,
     )}" role="img" title="${_.escape(title)}">${_.escape(alt_text)}</span>`;
 }
 
-function handleUnicodeEmoji(
+export function handleUnicodeEmoji(
     unicode_emoji: string,
     get_emoji_name: (codepoint: string) => string | undefined,
 ): string {
@@ -522,7 +522,7 @@ function handleUnicodeEmoji(
     return unicode_emoji;
 }
 
-function handleEmoji({
+export function handleEmoji({
     emoji_name,
     get_realm_emoji_url,
     get_emoji_codepoint,
@@ -575,7 +575,7 @@ function handleLinkifier({
     return url_template.expand(template_context);
 }
 
-function handleTimestamp(time_string: string): string {
+export function handleTimestamp(time_string: string): string {
     let timeobject;
     const time = Number(time_string);
 
@@ -603,7 +603,7 @@ function handleTimestamp(time_string: string): string {
     return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
 }
 
-function handleStream({
+export function handleStream({
     stream_name,
     get_stream_by_name,
     stream_hash,
@@ -627,7 +627,7 @@ function handleStream({
     )}" href="/${_.escape(href)}">#${_.escape(stream.name)}</a>`;
 }
 
-function handleStreamTopic({
+export function handleStreamTopic({
     stream_name,
     topic,
     get_stream_by_name,
@@ -657,7 +657,7 @@ function handleStreamTopic({
     });
 }
 
-function handleStreamTopicMessage({
+export function handleStreamTopicMessage({
     stream_name,
     topic,
     message_id,
@@ -688,7 +688,7 @@ function handleStreamTopicMessage({
     });
 }
 
-function handleTex(tex: string, fullmatch: string): string {
+export function handleTex(tex: string, fullmatch: string): string {
     try {
         return katex.renderToString(tex);
     } catch (error) {

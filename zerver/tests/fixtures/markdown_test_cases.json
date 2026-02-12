@@ -110,7 +110,7 @@
       "name": "fenced_quotes_inside_mathblock",
       "input": "```math\n````js\nvar x;\n````\n```",
       "expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi>j</mi><mi>s</mi><mi>v</mi><mi>a</mi><mi>r</mi><mi>x</mi><mo separator=\"true\">;</mo><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi></mrow><annotation encoding=\"application/x-tex\">````js\nvar x;\n````</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mord\">‘‘‘‘</span><span class=\"mord mathnormal\" style=\"margin-right:0.05724em;\">j</span><span class=\"mord mathnormal\">s</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">v</span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">r</span><span class=\"mord mathnormal\">x</span><span class=\"mpunct\">;</span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord\">‘‘‘‘</span></span></span></span></span></p>",
-      "unified_expected_output": "<pre><code class=\"language-math\">````js\nvar x;\n</code></pre>\n<pre><code></code></pre>"
+      "unified_expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi mathvariant=\"normal\">‘</mi><mi>j</mi><mi>s</mi><mi>v</mi><mi>a</mi><mi>r</mi><mi>x</mi><mo separator=\"true\">;</mo></mrow><annotation encoding=\"application/x-tex\">````js\nvar x;</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8889em;vertical-align:-0.1944em;\"></span><span class=\"mord\">‘‘‘‘</span><span class=\"mord mathnormal\" style=\"margin-right:0.05724em;\">j</span><span class=\"mord mathnormal\">s</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">v</span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">r</span><span class=\"mord mathnormal\">x</span><span class=\"mpunct\">;</span></span></span></span></span></p>\n<pre><code></code></pre>"
     },
     {
       "name": "empty_single_blockquote",
@@ -351,8 +351,7 @@
     {
       "name": "underscore_disabled",
       "input": "_foo_",
-      "expected_output": "<p>_foo_</p>",
-      "unified_expected_output": "<p><em>foo</em></p>"
+      "expected_output": "<p>_foo_</p>"
     },
     {
       "name": "emphasis_text",
@@ -379,8 +378,7 @@
     {
       "name": "underscore_strong_disabled",
       "input": "__foo__",
-      "expected_output": "<p>__foo__</p>",
-      "unified_expected_output": "<p><strong>foo</strong></p>"
+      "expected_output": "<p>__foo__</p>"
     },
     {
       "name": "star_strong",
@@ -392,8 +390,7 @@
       "name": "star_emoji",
       "input": "**:smile:**",
       "expected_output": "<p><strong><span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span></strong></p>",
-      "text_content": "😄",
-      "unified_expected_output": "<p><strong>:smile:</strong></p>"
+      "text_content": "😄"
     },
     {
       "name": "star_strong_em",
@@ -573,8 +570,7 @@
       "name": "many_emoji",
       "input": "test :smile: again :poop:\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:",
       "expected_output": "<p>test <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span> again <span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span><br>\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>",
-      "text_content": "test 😄 again 💩\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:",
-      "unified_expected_output": "<p>test :smile: again :poop:<br>\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>"
+      "text_content": "test 😄 again 💩\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:"
     },
     {
       "name": "translate_emoticons_not_enabled",
@@ -588,16 +584,14 @@
       "input": ":)",
       "expected_output": "<p><span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span></p>",
       "text_content": "🙂",
-      "translate_emoticons": true,
-      "unified_expected_output": "<p>:slight_smile:</p>"
+      "translate_emoticons": true
     },
     {
       "name": "translate_emoticons",
       "input": ":) foo :( bar <3 with space : ) real emoji :smile:",
       "expected_output": "<p><span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span> foo <span aria-label=\"frown\" class=\"emoji emoji-1f641\" role=\"img\" title=\"frown\">:frown:</span> bar <span aria-label=\"heart\" class=\"emoji emoji-2764\" role=\"img\" title=\"heart\">:heart:</span> with space : ) real emoji <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span></p>",
       "text_content": "🙂 foo 🙁 bar ❤ with space : ) real emoji 😄",
-      "translate_emoticons": true,
-      "unified_expected_output": "<p>:slight_smile: foo :frown: bar :heart: with space : ) real emoji :smile:</p>"
+      "translate_emoticons": true
     },
     {
       "name": "translate_emoticons_whitespace",
@@ -611,8 +605,7 @@
       "input": ":) test\n:) test",
       "expected_output": "<p><span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span> test<br>\n<span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span> test</p>",
       "text_content": "🙂 test\n🙂 test",
-      "translate_emoticons": true,
-      "unified_expected_output": "<p>:slight_smile: test<br>\n:slight_smile: test</p>"
+      "translate_emoticons": true
     },
     {
       "name": "translate_emoticons_in_code",
@@ -626,8 +619,7 @@
       "input": "Translate this :).",
       "expected_output": "<p>Translate this <span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span>.</p>",
       "text_content": "Translate this 🙂.",
-      "translate_emoticons": true,
-      "unified_expected_output": "<p>Translate this :slight_smile:.</p>"
+      "translate_emoticons": true
     },
     {
       "name": "translate_emoticons_between_symbols",
@@ -641,51 +633,43 @@
     {
       "name": "random_emoji_1",
       "input": ":airplane:",
-      "expected_output": "<p><span aria-label=\"airplane\" class=\"emoji emoji-2708\" role=\"img\" title=\"airplane\">:airplane:</span></p>",
-      "unified_expected_output": "<p>:airplane:</p>"
+      "expected_output": "<p><span aria-label=\"airplane\" class=\"emoji emoji-2708\" role=\"img\" title=\"airplane\">:airplane:</span></p>"
     },
     {
       "name": "zulip_emoji",
       "input": ":zulip:",
       "expected_output": "<p><img alt=\":zulip:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/zulip.png\" title=\"zulip\"></p>",
-      "text_content": ":zulip:",
-      "unified_expected_output": "<p>:zulip:</p>"
+      "text_content": ":zulip:"
     },
     {
       "name": "random_emoji_2",
       "input": ":poop:",
-      "expected_output": "<p><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>",
-      "unified_expected_output": "<p>:poop:</p>"
+      "expected_output": "<p><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>"
     },
     {
       "name": "emoji_sequence_one",
       "input": "🤷‍♀️",
-      "expected_output": "<p><span aria-label=\"woman shrugging\" class=\"emoji emoji-1f937-200d-2640\" role=\"img\" title=\"woman shrugging\">:woman_shrugging:</span></p>",
-      "unified_expected_output": "<p>🤷‍♀️</p>"
+      "expected_output": "<p><span aria-label=\"woman shrugging\" class=\"emoji emoji-1f937-200d-2640\" role=\"img\" title=\"woman shrugging\">:woman_shrugging:</span></p>"
     },
     {
       "name": "emoji_sequence_two",
       "input": "👁‍🗨 #️⃣",
-      "expected_output": "<p><span aria-label=\"eye in speech bubble\" class=\"emoji emoji-1f441-200d-1f5e8\" role=\"img\" title=\"eye in speech bubble\">:eye_in_speech_bubble:</span> <span aria-label=\"hash\" class=\"emoji emoji-0023-20e3\" role=\"img\" title=\"hash\">:hash:</span></p>",
-      "unified_expected_output": "<p>👁‍🗨 #️⃣</p>"
+      "expected_output": "<p><span aria-label=\"eye in speech bubble\" class=\"emoji emoji-1f441-200d-1f5e8\" role=\"img\" title=\"eye in speech bubble\">:eye_in_speech_bubble:</span> <span aria-label=\"hash\" class=\"emoji emoji-0023-20e3\" role=\"img\" title=\"hash\">:hash:</span></p>"
     },
     {
       "name": "emoji_sequence_three",
       "input": "phoenix bird from 15.1: 🐦‍🔥",
-      "expected_output": "<p>phoenix bird from 15.1: <span aria-label=\"phoenix\" class=\"emoji emoji-1f426-200d-1f525\" role=\"img\" title=\"phoenix\">:phoenix:</span></p>",
-      "unified_expected_output": "<p>phoenix bird from 15.1: 🐦‍🔥</p>"
+      "expected_output": "<p>phoenix bird from 15.1: <span aria-label=\"phoenix\" class=\"emoji emoji-1f426-200d-1f525\" role=\"img\" title=\"phoenix\">:phoenix:</span></p>"
     },
     {
       "name": "emoji_sequence_four",
       "input": "lime from 15.1: 🍋‍🟩",
-      "expected_output": "<p>lime from 15.1: <span aria-label=\"lime\" class=\"emoji emoji-1f34b-200d-1f7e9\" role=\"img\" title=\"lime\">:lime:</span></p>",
-      "unified_expected_output": "<p>lime from 15.1: 🍋‍🟩</p>"
+      "expected_output": "<p>lime from 15.1: <span aria-label=\"lime\" class=\"emoji emoji-1f34b-200d-1f7e9\" role=\"img\" title=\"lime\">:lime:</span></p>"
     },
     {
       "name": "unrecognized_emoji_sequence_three",
       "input": "normal lemon 🍋, purple lemon? 🍋‍🟪",
-      "expected_output": "<p>normal lemon <span aria-label=\"lemon\" class=\"emoji emoji-1f34b\" role=\"img\" title=\"lemon\">:lemon:</span>, purple lemon? 🍋‍🟪</p>",
-      "unified_expected_output": "<p>normal lemon 🍋, purple lemon? 🍋‍🟪</p>"
+      "expected_output": "<p>normal lemon <span aria-label=\"lemon\" class=\"emoji emoji-1f34b\" role=\"img\" title=\"lemon\">:lemon:</span>, purple lemon? 🍋‍🟪</p>"
     },
     {
       "name": "unrecognized_emoji_sequence_four",
@@ -701,15 +685,13 @@
       "name": "emojis_without_space",
       "input": ":cat:hello:dog::rabbit:",
       "expected_output": "<p><span aria-label=\"cat\" class=\"emoji emoji-1f408\" role=\"img\" title=\"cat\">:cat:</span>hello<span aria-label=\"dog\" class=\"emoji emoji-1f415\" role=\"img\" title=\"dog\">:dog:</span><span aria-label=\"rabbit\" class=\"emoji emoji-1f407\" role=\"img\" title=\"rabbit\">:rabbit:</span></p>",
-      "text_content": "🐈hello🐕🐇",
-      "unified_expected_output": "<p>:cat:hello:dog::rabbit:</p>"
+      "text_content": "🐈hello🐕🐇"
     },
     {
       "name": "emojis_newline",
       "input": ":cat:\n:dog:",
       "expected_output": "<p><span aria-label=\"cat\" class=\"emoji emoji-1f408\" role=\"img\" title=\"cat\">:cat:</span><br>\n<span aria-label=\"dog\" class=\"emoji emoji-1f415\" role=\"img\" title=\"dog\">:dog:</span></p>",
-      "text_content": "🐈\n🐕",
-      "unified_expected_output": "<p>:cat:<br>\n:dog:</p>"
+      "text_content": "🐈\n🐕"
     },
     {
       "name": "not_emoji",
@@ -721,78 +703,66 @@
       "name": "unicode_emoji",
       "input": "💩",
       "expected_output": "<p><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>",
-      "text_content": "💩",
-      "unified_expected_output": "<p>💩</p>"
+      "text_content": "💩"
     },
     {
       "name": "two_unicode_emoji",
       "input": "💩💩",
       "expected_output": "<p><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>",
-      "text_content": "💩💩",
-      "unified_expected_output": "<p>💩💩</p>"
+      "text_content": "💩💩"
     },
     {
       "name": "two_unicode_emoji_separated_by_text",
       "input": "💩 word 💩",
       "expected_output": "<p><span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span> word <span aria-label=\"poop\" class=\"emoji emoji-1f4a9\" role=\"img\" title=\"poop\">:poop:</span></p>",
-      "text_content": "💩 word 💩",
-      "unified_expected_output": "<p>💩 word 💩</p>"
+      "text_content": "💩 word 💩"
     },
     {
       "name": "miscellaneous_symbols_and_pictographs",
       "input": "Merry Christmas!!🎄",
       "expected_output": "<p>Merry Christmas!!<span aria-label=\"holiday tree\" class=\"emoji emoji-1f384\" role=\"img\" title=\"holiday tree\">:holiday_tree:</span></p>",
-      "text_content": "Merry Christmas!!🎄",
-      "unified_expected_output": "<p>Merry Christmas!!🎄</p>"
+      "text_content": "Merry Christmas!!🎄"
     },
     {
       "name": "miscellaneous_and_dingbats_emoji",
       "input": "⚓➗",
-      "expected_output": "<p><span aria-label=\"anchor\" class=\"emoji emoji-2693\" role=\"img\" title=\"anchor\">:anchor:</span><span aria-label=\"division\" class=\"emoji emoji-2797\" role=\"img\" title=\"division\">:division:</span></p>",
-      "unified_expected_output": "<p>⚓➗</p>"
+      "expected_output": "<p><span aria-label=\"anchor\" class=\"emoji emoji-2693\" role=\"img\" title=\"anchor\">:anchor:</span><span aria-label=\"division\" class=\"emoji emoji-2797\" role=\"img\" title=\"division\">:division:</span></p>"
     },
     {
       "name": "supplemental_symbols_and_pictographs",
       "input": "I am a robot 🤖.",
-      "expected_output": "<p>I am a robot <span aria-label=\"robot\" class=\"emoji emoji-1f916\" role=\"img\" title=\"robot\">:robot:</span>.</p>",
-      "unified_expected_output": "<p>I am a robot 🤖.</p>"
+      "expected_output": "<p>I am a robot <span aria-label=\"robot\" class=\"emoji emoji-1f916\" role=\"img\" title=\"robot\">:robot:</span>.</p>"
     },
     {
       "name": "miscellaneous_symbols_and_arrows",
       "input": "Black upward arrow ⬆️",
-      "expected_output": "<p>Black upward arrow <span aria-label=\"up\" class=\"emoji emoji-2b06\" role=\"img\" title=\"up\">:up:</span></p>",
-      "unified_expected_output": "<p>Black upward arrow ⬆️</p>"
+      "expected_output": "<p>Black upward arrow <span aria-label=\"up\" class=\"emoji emoji-2b06\" role=\"img\" title=\"up\">:up:</span></p>"
     },
     {
       "name": "unicode_emoji_without_space",
       "input": "Extra👽Terrestrial",
-      "expected_output": "<p>Extra<span aria-label=\"alien\" class=\"emoji emoji-1f47d\" role=\"img\" title=\"alien\">:alien:</span>Terrestrial</p>",
-      "unified_expected_output": "<p>Extra👽Terrestrial</p>"
+      "expected_output": "<p>Extra<span aria-label=\"alien\" class=\"emoji emoji-1f47d\" role=\"img\" title=\"alien\">:alien:</span>Terrestrial</p>"
     },
     {
       "name": "unicode_emojis_new_line",
       "input": "👽\n👽",
       "expected_output": "<p><span aria-label=\"alien\" class=\"emoji emoji-1f47d\" role=\"img\" title=\"alien\">:alien:</span><br>\n<span aria-label=\"alien\" class=\"emoji emoji-1f47d\" role=\"img\" title=\"alien\">:alien:</span></p>",
-      "text_content": "👽\n👽",
-      "unified_expected_output": "<p>👽<br>\n👽</p>"
+      "text_content": "👽\n👽"
     },
     {
       "name": "emoji_alongside_punctuation",
       "input": ":smile:, :smile:; :smile:",
-      "expected_output": "<p><span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span>, <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span>; <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span></p>",
-      "unified_expected_output": "<p>:smile:, :smile:; :smile:</p>"
+      "expected_output": "<p><span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span>, <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span>; <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span></p>"
     },
     {
       "name": "new_emoji_test",
       "input": ":avocado:, :kiwi:, :selfie:, :gear:, :comet:, :gold:",
-      "expected_output": "<p><span aria-label=\"avocado\" class=\"emoji emoji-1f951\" role=\"img\" title=\"avocado\">:avocado:</span>, <span aria-label=\"kiwi\" class=\"emoji emoji-1f95d\" role=\"img\" title=\"kiwi\">:kiwi:</span>, <span aria-label=\"selfie\" class=\"emoji emoji-1f933\" role=\"img\" title=\"selfie\">:selfie:</span>, <span aria-label=\"gear\" class=\"emoji emoji-2699\" role=\"img\" title=\"gear\">:gear:</span>, <span aria-label=\"comet\" class=\"emoji emoji-2604\" role=\"img\" title=\"comet\">:comet:</span>, <span aria-label=\"gold\" class=\"emoji emoji-1f947\" role=\"img\" title=\"gold\">:gold:</span></p>",
-      "unified_expected_output": "<p>:avocado:, :kiwi:, :selfie:, :gear:, :comet:, :gold:</p>"
+      "expected_output": "<p><span aria-label=\"avocado\" class=\"emoji emoji-1f951\" role=\"img\" title=\"avocado\">:avocado:</span>, <span aria-label=\"kiwi\" class=\"emoji emoji-1f95d\" role=\"img\" title=\"kiwi\">:kiwi:</span>, <span aria-label=\"selfie\" class=\"emoji emoji-1f933\" role=\"img\" title=\"selfie\">:selfie:</span>, <span aria-label=\"gear\" class=\"emoji emoji-2699\" role=\"img\" title=\"gear\">:gear:</span>, <span aria-label=\"comet\" class=\"emoji emoji-2604\" role=\"img\" title=\"comet\">:comet:</span>, <span aria-label=\"gold\" class=\"emoji emoji-1f947\" role=\"img\" title=\"gold\">:gold:</span></p>"
     },
     {
       "name": "emoji_pipeline_newline",
       "input": "The winner is:\nsmiley:smiley:",
-      "expected_output": "<p>The winner is:<br>\nsmiley<span aria-label=\"smiley\" class=\"emoji emoji-1f603\" role=\"img\" title=\"smiley\">:smiley:</span></p>",
-      "unified_expected_output": "<p>The winner is:<br>\nsmiley:smiley:</p>"
+      "expected_output": "<p>The winner is:<br>\nsmiley<span aria-label=\"smiley\" class=\"emoji emoji-1f603\" role=\"img\" title=\"smiley\">:smiley:</span></p>"
     },
     {
       "name": "emoji_pipeline_emphasis",
@@ -802,8 +772,7 @@
     {
       "name": "emoji_pipeline_link",
       "input": "Visit https:smiley://google.com.",
-      "expected_output": "<p>Visit https<span aria-label=\"smiley\" class=\"emoji emoji-1f603\" role=\"img\" title=\"smiley\">:smiley:</span>//google.com.</p>",
-      "unified_expected_output": "<p>Visit https:smiley://google.com.</p>"
+      "expected_output": "<p>Visit https<span aria-label=\"smiley\" class=\"emoji emoji-1f603\" role=\"img\" title=\"smiley\">:smiley:</span>//google.com.</p>"
     },
     {
       "name": "skin_tones_are_banned",
@@ -824,8 +793,7 @@
     {
       "name": "valid_emoji_preceded_by_invalid_emoji",
       "input": "This is :invalidemoji: which should not prevent rendering :smile:",
-      "expected_output": "<p>This is :invalidemoji: which should not prevent rendering <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span></p>",
-      "unified_expected_output": "<p>This is :invalidemoji: which should not prevent rendering :smile:</p>"
+      "expected_output": "<p>This is :invalidemoji: which should not prevent rendering <span aria-label=\"smile\" class=\"emoji emoji-1f604\" role=\"img\" title=\"smile\">:smile:</span></p>"
     },
     {
       "name": "safe_html",
@@ -889,21 +857,21 @@
       "expected_output": "<p><time datetime=\"2017-06-05T22:30:00Z\">Jun 5th 2017, 10:30PM</time></p>",
       "marked_expected_output": "<p><span>Jun 5th 2017, 10:30PM</span></p>",
       "text_content": "Jun 5th 2017, 10:30PM",
-      "unified_expected_output": "<p>&lt;time:Jun 5th 2017, 10:30PM&gt;</p>"
+      "unified_expected_output": "<p><span>Jun 5th 2017, 10:30PM</span></p>"
     },
     {
       "name": "timestamp_backend_markdown_and_marked",
       "input": "<time:31 Dec 2017>",
       "expected_output": "<p><time datetime=\"2017-12-31T00:00:00Z\">31 Dec 2017</time></p>",
-      "text_content": "31 Dec 2017",
-      "unified_expected_output": "<p>&lt;time:31 Dec 2017&gt;</p>"
+      "text_content": "31 Dec 2017"
     },
     {
       "name": "timestamp_invalid_input",
       "input": "<time:<alert(1)>>",
       "expected_output": "<p>&lt;time:&lt;alert(1)&gt;&gt;</p>",
       "marked_expected_output": "<p><span>&lt;alert(1)</span>&gt;</p>",
-      "text_content": "<time:<alert(1)>>"
+      "text_content": "<time:<alert(1)>>",
+      "unified_expected_output": "<p><span>&lt;alert(1)</span>&gt;</p>"
     },
     {
       "name": "timestamp_timezone",
@@ -911,7 +879,7 @@
       "expected_output": "<p><time datetime=\"2017-12-31T00:00:00Z\">31 Dec 2017 5:30 am IST</time></p>",
       "marked_expected_output": "<p><span>31 Dec 2017 5:30 am IST</span></p>",
       "text_content": "31 Dec 2017 5:30 am IST",
-      "unified_expected_output": "<p>&lt;time:31 Dec 2017 5:30 am IST&gt;</p>"
+      "unified_expected_output": "<p><span>31 Dec 2017 5:30 am IST</span></p>"
     },
     {
       "name": "timestamp_incorrect",
@@ -927,7 +895,7 @@
       "expected_output": "<p>&lt;time:1969-12-31T00:00:00+32:00&gt;</p>",
       "marked_expected_output": "<p><span>1969-12-31T00:00:00+32:00</span></p>",
       "text_content": "<time:1969-12-31T00:00:00+32:00>",
-      "unified_expected_output": "<p><a href=\"time:1969-12-31T00:00:00+32:00\">time:1969-12-31T00:00:00+32:00</a></p>"
+      "unified_expected_output": "<p><span>1969-12-31T00:00:00+32:00</span></p>"
     },
     {
       "name": "timestamp_overflow",
@@ -935,14 +903,13 @@
       "expected_output": "<p>&lt;time:0001-01-01T01:00:00+02:00&gt;</p>",
       "marked_expected_output": "<p><span>0001-01-01T01:00:00+02:00</span></p>",
       "text_content": "<time:0001-01-01T01:00:00+02:00>",
-      "unified_expected_output": "<p><a href=\"time:0001-01-01T01:00:00+02:00\">time:0001-01-01T01:00:00+02:00</a></p>"
+      "unified_expected_output": "<p><span>0001-01-01T01:00:00+02:00</span></p>"
     },
     {
       "name": "timestamp_unix",
       "input": "Let's meet at <time:1496701800>.",
       "expected_output": "<p>Let's meet at <time datetime=\"2017-06-05T22:30:00Z\">1496701800</time>.</p>",
-      "text_content": "Let's meet at 1496701800.",
-      "unified_expected_output": "<p>Let's meet at <a href=\"time:1496701800\">time:1496701800</a>.</p>"
+      "text_content": "Let's meet at 1496701800."
     },
     {
       "name": "timestamp_unix_overflow",
@@ -950,20 +917,18 @@
       "expected_output": "<p>Let's meet at &lt;time:1234567890123&gt;.</p>",
       "marked_expected_output": "<p>Let's meet at <time datetime=\"+041091-11-25T05:02:03Z\">1234567890123</time>.</p>",
       "text_content": "Let's meet at <time:1234567890123>.",
-      "unified_expected_output": "<p>Let's meet at <a href=\"time:1234567890123\">time:1234567890123</a>.</p>"
+      "unified_expected_output": "<p>Let's meet at <time datetime=\"+041091-11-25T05:02:03Z\">1234567890123</time>.</p>"
     },
     {
       "name": "tex_inline",
       "input": "$$1 \\oplus 0 = 1$$",
       "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.7278em;vertical-align:-0.0833em;\"></span><span class=\"mord\">1</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">⊕</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">0</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">1</span></span></span></span></p>",
-      "text_content": "$$1 \\oplus 0 = 1$$",
-      "unified_expected_output": "<p>$$1 \\oplus 0 = 1$$</p>"
+      "text_content": "$$1 \\oplus 0 = 1$$"
     },
     {
       "name": "tex_complex",
       "input": "$$\\Phi_E = \\oint E \\cdot dA$$",
-      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msub><mi mathvariant=\"normal\">Φ</mi><mi>E</mi></msub><mo>=</mo><mo>∮</mo><mi>E</mi><mo>⋅</mo><mi>d</mi><mi>A</mi></mrow><annotation encoding=\"application/x-tex\">\\Phi_E = \\oint E \\cdot dA</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8333em;vertical-align:-0.15em;\"></span><span class=\"mord\"><span class=\"mord\">Φ</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.3283em;\"><span style=\"top:-2.55em;margin-left:0em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mathnormal mtight\" style=\"margin-right:0.05764em;\">E</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.15em;\"><span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.1111em;vertical-align:-0.3061em;\"></span><span class=\"mop op-symbol small-op\" style=\"margin-right:0.19445em;position:relative;top:-0.0006em;\">∮</span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.05764em;\">E</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">⋅</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">d</span><span class=\"mord mathnormal\">A</span></span></span></span></p>",
-      "unified_expected_output": "<p>$$\\Phi_E = \\oint E \\cdot dA$$</p>"
+      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><msub><mi mathvariant=\"normal\">Φ</mi><mi>E</mi></msub><mo>=</mo><mo>∮</mo><mi>E</mi><mo>⋅</mo><mi>d</mi><mi>A</mi></mrow><annotation encoding=\"application/x-tex\">\\Phi_E = \\oint E \\cdot dA</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8333em;vertical-align:-0.15em;\"></span><span class=\"mord\"><span class=\"mord\">Φ</span><span class=\"msupsub\"><span class=\"vlist-t vlist-t2\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.3283em;\"><span style=\"top:-2.55em;margin-left:0em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mathnormal mtight\" style=\"margin-right:0.05764em;\">E</span></span></span></span><span class=\"vlist-s\">​</span></span><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.15em;\"><span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.1111em;vertical-align:-0.3061em;\"></span><span class=\"mop op-symbol small-op\" style=\"margin-right:0.19445em;position:relative;top:-0.0006em;\">∮</span><span class=\"mspace\" style=\"margin-right:0.1667em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.05764em;\">E</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">⋅</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6944em;\"></span><span class=\"mord mathnormal\">d</span><span class=\"mord mathnormal\">A</span></span></span></span></p>"
     },
     {
       "name": "tex_escaped",
@@ -974,8 +939,7 @@
       "name": "tex_fenced_math",
       "input": "```math\na^2 = b^2 + c^2\n```",
       "expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>=</mo><msup><mi>b</mi><mn>2</mn></msup><mo>+</mo><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">a^2 = b^2 + c^2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8641em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8641em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.9474em;vertical-align:-0.0833em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">b</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8641em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.8641em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">c</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8641em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span></span></p>",
-      "text_content": "$$a^2 = b^2 + c^2$$",
-      "unified_expected_output": "<pre><code class=\"language-math\">a^2 = b^2 + c^2\n</code></pre>"
+      "text_content": "$$a^2 = b^2 + c^2$$"
     },
     {
       "name": "tex_fenced_tex",
@@ -1000,8 +964,7 @@
     {
       "name": "tex_inline_permissive_spacing",
       "input": "$$    x =  7   $$",
-      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>x</mi><mo>=</mo><mn>7</mn></mrow><annotation encoding=\"application/x-tex\">    x =  7   </annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">7</span></span></span></span></p>",
-      "unified_expected_output": "<p>$$    x =  7   $$</p>"
+      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mi>x</mi><mo>=</mo><mn>7</mn></mrow><annotation encoding=\"application/x-tex\">    x =  7   </annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.4306em;\"></span><span class=\"mord mathnormal\">x</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">7</span></span></span></span></p>"
     },
     {
       "name": "tex_inline_prohibited_newline",
@@ -1026,14 +989,13 @@
     {
       "name": "tex_safe_script_tag",
       "input": "$$<script type='text/javascript'>alert('xss');</script>$$\n\n~~~math\n<script type='text/javascript'>alert('xss');</script>\n~~~",
-      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo>&lt;</mo><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><mi>t</mi><mi>t</mi><mi>y</mi><mi>p</mi><mi>e</mi><msup><mo>=</mo><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mi>t</mi><mi>e</mi><mi>x</mi><mi>t</mi><mi mathvariant=\"normal\">/</mi><mi>j</mi><mi>a</mi><mi>v</mi><mi>a</mi><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><msup><mi>t</mi><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mo>&gt;</mo><mi>a</mi><mi>l</mi><mi>e</mi><mi>r</mi><mi>t</mi><msup><mo stretchy=\"false\">(</mo><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mi>x</mi><mi>s</mi><msup><mi>s</mi><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mo stretchy=\"false\">)</mo><mo separator=\"true\">;</mo><mo>&lt;</mo><mi mathvariant=\"normal\">/</mi><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><mi>t</mi><mo>&gt;</mo></mrow><annotation encoding=\"application/x-tex\">&lt;script type=&#x27;text/javascript&#x27;&gt;alert(&#x27;xss&#x27;);&lt;/script&gt;</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.5782em;vertical-align:-0.0391em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.9463em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">ptt</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">y</span><span class=\"mord mathnormal\">p</span><span class=\"mord mathnormal\">e</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\"><span class=\"mrel\">=</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.0019em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\">t</span><span class=\"mord mathnormal\">e</span><span class=\"mord mathnormal\">x</span><span class=\"mord mathnormal\">t</span><span class=\"mord\">/</span><span class=\"mord mathnormal\">ja</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">v</span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">p</span><span class=\"mord\"><span class=\"mord mathnormal\">t</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&gt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.0019em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.01968em;\">l</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">er</span><span class=\"mord mathnormal\">t</span><span class=\"mopen\"><span class=\"mopen\">(</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mord mathnormal\">x</span><span class=\"mord mathnormal\">s</span><span class=\"mord\"><span class=\"mord mathnormal\">s</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mclose\">)</span><span class=\"mpunct\">;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">/</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">pt</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&gt;</span></span></span></span></p>\n<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo>&lt;</mo><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><mi>t</mi><mi>t</mi><mi>y</mi><mi>p</mi><mi>e</mi><msup><mo>=</mo><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mi>t</mi><mi>e</mi><mi>x</mi><mi>t</mi><mi mathvariant=\"normal\">/</mi><mi>j</mi><mi>a</mi><mi>v</mi><mi>a</mi><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><msup><mi>t</mi><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mo>&gt;</mo><mi>a</mi><mi>l</mi><mi>e</mi><mi>r</mi><mi>t</mi><msup><mo stretchy=\"false\">(</mo><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mi>x</mi><mi>s</mi><msup><mi>s</mi><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mo stretchy=\"false\">)</mo><mo separator=\"true\">;</mo><mo>&lt;</mo><mi mathvariant=\"normal\">/</mi><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><mi>t</mi><mo>&gt;</mo></mrow><annotation encoding=\"application/x-tex\">&lt;script type=&#x27;text/javascript&#x27;&gt;alert(&#x27;xss&#x27;);&lt;/script&gt;</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.5782em;vertical-align:-0.0391em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.9963em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">ptt</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">y</span><span class=\"mord mathnormal\">p</span><span class=\"mord mathnormal\">e</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\"><span class=\"mrel\">=</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8019em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.0519em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\">t</span><span class=\"mord mathnormal\">e</span><span class=\"mord mathnormal\">x</span><span class=\"mord mathnormal\">t</span><span class=\"mord\">/</span><span class=\"mord mathnormal\">ja</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">v</span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">p</span><span class=\"mord\"><span class=\"mord mathnormal\">t</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8019em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&gt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.0519em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.01968em;\">l</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">er</span><span class=\"mord mathnormal\">t</span><span class=\"mopen\"><span class=\"mopen\">(</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8019em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mord mathnormal\">x</span><span class=\"mord mathnormal\">s</span><span class=\"mord\"><span class=\"mord mathnormal\">s</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8019em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mclose\">)</span><span class=\"mpunct\">;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">/</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">pt</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&gt;</span></span></span></span></span></p>",
-      "unified_expected_output": "<p>$$&lt;script type='text/javascript'&gt;alert('xss');&lt;/script&gt;$$</p>\n<pre><code class=\"language-math\">&lt;script type='text/javascript'&gt;alert('xss');&lt;/script&gt;\n</code></pre>"
+      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo>&lt;</mo><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><mi>t</mi><mi>t</mi><mi>y</mi><mi>p</mi><mi>e</mi><msup><mo>=</mo><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mi>t</mi><mi>e</mi><mi>x</mi><mi>t</mi><mi mathvariant=\"normal\">/</mi><mi>j</mi><mi>a</mi><mi>v</mi><mi>a</mi><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><msup><mi>t</mi><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mo>&gt;</mo><mi>a</mi><mi>l</mi><mi>e</mi><mi>r</mi><mi>t</mi><msup><mo stretchy=\"false\">(</mo><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mi>x</mi><mi>s</mi><msup><mi>s</mi><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mo stretchy=\"false\">)</mo><mo separator=\"true\">;</mo><mo>&lt;</mo><mi mathvariant=\"normal\">/</mi><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><mi>t</mi><mo>&gt;</mo></mrow><annotation encoding=\"application/x-tex\">&lt;script type=&#x27;text/javascript&#x27;&gt;alert(&#x27;xss&#x27;);&lt;/script&gt;</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.5782em;vertical-align:-0.0391em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.9463em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">ptt</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">y</span><span class=\"mord mathnormal\">p</span><span class=\"mord mathnormal\">e</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\"><span class=\"mrel\">=</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.0019em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\">t</span><span class=\"mord mathnormal\">e</span><span class=\"mord mathnormal\">x</span><span class=\"mord mathnormal\">t</span><span class=\"mord\">/</span><span class=\"mord mathnormal\">ja</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">v</span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">p</span><span class=\"mord\"><span class=\"mord mathnormal\">t</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&gt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.0019em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.01968em;\">l</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">er</span><span class=\"mord mathnormal\">t</span><span class=\"mopen\"><span class=\"mopen\">(</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mord mathnormal\">x</span><span class=\"mord mathnormal\">s</span><span class=\"mord\"><span class=\"mord mathnormal\">s</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mclose\">)</span><span class=\"mpunct\">;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">/</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">pt</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&gt;</span></span></span></span></p>\n<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mo>&lt;</mo><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><mi>t</mi><mi>t</mi><mi>y</mi><mi>p</mi><mi>e</mi><msup><mo>=</mo><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mi>t</mi><mi>e</mi><mi>x</mi><mi>t</mi><mi mathvariant=\"normal\">/</mi><mi>j</mi><mi>a</mi><mi>v</mi><mi>a</mi><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><msup><mi>t</mi><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mo>&gt;</mo><mi>a</mi><mi>l</mi><mi>e</mi><mi>r</mi><mi>t</mi><msup><mo stretchy=\"false\">(</mo><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mi>x</mi><mi>s</mi><msup><mi>s</mi><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mo stretchy=\"false\">)</mo><mo separator=\"true\">;</mo><mo>&lt;</mo><mi mathvariant=\"normal\">/</mi><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><mi>t</mi><mo>&gt;</mo></mrow><annotation encoding=\"application/x-tex\">&lt;script type=&#x27;text/javascript&#x27;&gt;alert(&#x27;xss&#x27;);&lt;/script&gt;</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.5782em;vertical-align:-0.0391em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.9963em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">ptt</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">y</span><span class=\"mord mathnormal\">p</span><span class=\"mord mathnormal\">e</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\"><span class=\"mrel\">=</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8019em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.0519em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\">t</span><span class=\"mord mathnormal\">e</span><span class=\"mord mathnormal\">x</span><span class=\"mord mathnormal\">t</span><span class=\"mord\">/</span><span class=\"mord mathnormal\">ja</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">v</span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">p</span><span class=\"mord\"><span class=\"mord mathnormal\">t</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8019em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&gt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.0519em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.01968em;\">l</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">er</span><span class=\"mord mathnormal\">t</span><span class=\"mopen\"><span class=\"mopen\">(</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8019em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mord mathnormal\">x</span><span class=\"mord mathnormal\">s</span><span class=\"mord\"><span class=\"mord mathnormal\">s</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8019em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mclose\">)</span><span class=\"mpunct\">;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">/</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">pt</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&gt;</span></span></span></span></span></p>"
     },
     {
       "name": "tex_error_safe_script_tag",
       "input": "$$\\<script type='text/javascript'>alert('xss');</script>$$\n\n~~~math\n\\<script type='text/javascript'>alert('xss');</script>\n~~~",
       "expected_output": "<p><span class=\"tex-error\">$$\\&lt;script type='text/javascript'&gt;alert('xss');&lt;/script&gt;$$</span></p>\n<p><span class=\"tex-error\">\\&lt;script type=&#x27;text/javascript&#x27;&gt;alert(&#x27;xss&#x27;);&lt;/script&gt;</span></p>",
-      "unified_expected_output": "<p>$$&lt;script type='text/javascript'&gt;alert('xss');&lt;/script&gt;$$</p>\n<pre><code class=\"language-math\">\\&lt;script type='text/javascript'&gt;alert('xss');&lt;/script&gt;\n</code></pre>"
+      "unified_expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mo>&lt;</mo><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><mi>t</mi><mi>t</mi><mi>y</mi><mi>p</mi><mi>e</mi><msup><mo>=</mo><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mi>t</mi><mi>e</mi><mi>x</mi><mi>t</mi><mi mathvariant=\"normal\">/</mi><mi>j</mi><mi>a</mi><mi>v</mi><mi>a</mi><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><msup><mi>t</mi><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mo>&gt;</mo><mi>a</mi><mi>l</mi><mi>e</mi><mi>r</mi><mi>t</mi><msup><mo stretchy=\"false\">(</mo><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mi>x</mi><mi>s</mi><msup><mi>s</mi><mo mathvariant=\"normal\" lspace=\"0em\" rspace=\"0em\">′</mo></msup><mo stretchy=\"false\">)</mo><mo separator=\"true\">;</mo><mo>&lt;</mo><mi mathvariant=\"normal\">/</mi><mi>s</mi><mi>c</mi><mi>r</mi><mi>i</mi><mi>p</mi><mi>t</mi><mo>&gt;</mo></mrow><annotation encoding=\"application/x-tex\">&lt;script type=&#x27;text/javascript&#x27;&gt;alert(&#x27;xss&#x27;);&lt;/script&gt;</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.5782em;vertical-align:-0.0391em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.9463em;vertical-align:-0.1944em;\"></span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">ptt</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">y</span><span class=\"mord mathnormal\">p</span><span class=\"mord mathnormal\">e</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\"><span class=\"mrel\">=</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.0019em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\">t</span><span class=\"mord mathnormal\">e</span><span class=\"mord mathnormal\">x</span><span class=\"mord mathnormal\">t</span><span class=\"mord\">/</span><span class=\"mord mathnormal\">ja</span><span class=\"mord mathnormal\" style=\"margin-right:0.03588em;\">v</span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">p</span><span class=\"mord\"><span class=\"mord mathnormal\">t</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&gt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1.0019em;vertical-align:-0.25em;\"></span><span class=\"mord mathnormal\">a</span><span class=\"mord mathnormal\" style=\"margin-right:0.01968em;\">l</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">er</span><span class=\"mord mathnormal\">t</span><span class=\"mopen\"><span class=\"mopen\">(</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mord mathnormal\">x</span><span class=\"mord mathnormal\">s</span><span class=\"mord\"><span class=\"mord mathnormal\">s</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.7519em;\"><span style=\"top:-3.063em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\"><span class=\"mord mtight\">′</span></span></span></span></span></span></span></span></span><span class=\"mclose\">)</span><span class=\"mpunct\">;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&lt;</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:1em;vertical-align:-0.25em;\"></span><span class=\"mord\">/</span><span class=\"mord mathnormal\" style=\"margin-right:0.02778em;\">scr</span><span class=\"mord mathnormal\">i</span><span class=\"mord mathnormal\">pt</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">&gt;</span></span></span></span></p>\n<p><span class=\"tex-error\">\\&lt;script type=&#39;text/javascript&#39;&gt;alert(&#39;xss&#39;);&lt;/script&gt;</span></p>"
     },
     {
       "name": "tex_inline_no_markdown_inside",
@@ -1044,8 +1006,7 @@
     {
       "name": "tex_display_no_markdown_inside",
       "input": "~~~math\n\\text{**a**}\n~~~",
-      "expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mtext>**a**</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{**a**}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.75em;\"></span><span class=\"mord text\"><span class=\"mord\">**a**</span></span></span></span></span></span></p>",
-      "unified_expected_output": "<pre><code class=\"language-math\">\\text{**a**}\n</code></pre>"
+      "expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><mtext>**a**</mtext></mrow><annotation encoding=\"application/x-tex\">\\text{**a**}</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.75em;\"></span><span class=\"mord text\"><span class=\"mord\">**a**</span></span></span></span></span></span></p>"
     },
     {
       "name": "tex_inline_error_no_markdown_inside",
@@ -1056,8 +1017,7 @@
     {
       "name": "tex_display_error_no_markdown_inside",
       "input": "~~~math\n\\error{**a**}\n~~~",
-      "expected_output": "<p><span class=\"tex-error\">\\error{**a**}</span></p>",
-      "unified_expected_output": "<pre><code class=\"language-math\">\\error{**a**}\n</code></pre>"
+      "expected_output": "<p><span class=\"tex-error\">\\error{**a**}</span></p>"
     },
     {
       "name": "auto_renumbered_list_blankline",
@@ -1070,37 +1030,32 @@
       "name": "spoilers_fenced_spoiler",
       "input": "```spoiler header\ncontent\n```\noutside spoiler\n",
       "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>\n<p>outside spoiler</p>",
-      "text_content": "header (…)\noutside spoiler",
-      "unified_expected_output": "<pre><code class=\"language-spoiler\">content\n</code></pre>\n<p>outside spoiler</p>"
+      "text_content": "header (…)\noutside spoiler"
     },
     {
       "name": "spoilers_empty_header",
       "input": "```spoiler\ncontent\n```\noutside spoiler\n",
       "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>\n<p>outside spoiler</p>",
-      "text_content": "(…)\noutside spoiler",
-      "unified_expected_output": "<pre><code class=\"language-spoiler\">content\n</code></pre>\n<p>outside spoiler</p>"
+      "text_content": "(…)\noutside spoiler"
     },
     {
       "name": "spoilers_script_tags",
       "input": "```spoiler <script>alert(1)</script>\n<script>alert(1)</script>\n```",
       "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>\n</div></div>",
       "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;\n\n</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>&lt;script&gt;alert(1)&lt;/script&gt;\n\n</p>\n</div></div>",
-      "text_content": "<script>alert(1)</script> (…)\n",
-      "unified_expected_output": "<pre><code class=\"language-spoiler\">&lt;script&gt;alert(1)&lt;/script&gt;\n</code></pre>"
+      "text_content": "<script>alert(1)</script> (…)\n"
     },
     {
       "name": "spoilers_block_quote",
       "input": "~~~quote\n```spoiler header\ncontent\n```\noutside spoiler\n~~~\noutside quote",
       "expected_output": "<blockquote>\n<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>\n<p>outside spoiler</p>\n</blockquote>\n<p>outside quote</p>",
-      "text_content": "[…]outside quote",
-      "unified_expected_output": "<blockquote>\n<pre><code class=\"language-spoiler\">content\n</code></pre>\n<p>outside spoiler</p>\n</blockquote>\n<p>outside quote</p>"
+      "text_content": "[…]outside quote"
     },
     {
       "name": "spoilers_with_header_markdown",
       "input": "```spoiler [Header](https://example.com) :slight_smile:\ncontent\n```",
       "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p><a href=\"https://example.com\">Header</a> <span aria-label=\"slight smile\" class=\"emoji emoji-1f642\" role=\"img\" title=\"slight smile\">:slight_smile:</span></p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>",
-      "text_content": "Header 🙂 (…)\n",
-      "unified_expected_output": "<pre><code class=\"language-spoiler\">content\n</code></pre>"
+      "text_content": "Header 🙂 (…)\n"
     },
     {
       "name": "spoiler_with_inline_image",
@@ -1108,7 +1063,7 @@
       "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://example.com/image.png\"><img src=\"https://external-content.zulipcdn.net/external_content/25fef3bfd3a93e0266153205ea66a83c53d310b4/687474703a2f2f6578616d706c652e636f6d2f696d6167652e706e67\"></a></div></div></div>",
       "marked_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n</div></div>",
       "text_content": "header (…)\n",
-      "unified_expected_output": "<pre><code class=\"language-spoiler\">Content http://example.com/image.png\n</code></pre>"
+      "unified_expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content http://example.com/image.png</p>\n</div></div>"
     },
     {
       "name": "embedded_link_inside_Bold",
@@ -1171,7 +1126,7 @@
       "expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
       "marked_expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>",
       "text_content": "[…]\nGreat",
-      "unified_expected_output": "<p>@_<strong>Zoe|7</strong> <a href=\"http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>"
+      "unified_expected_output": "<p><span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> <a href=\"http://zulip.testserver/#narrow/channel/13-social/topic/party/near/103\">said</a>:</p>\n<blockquote>\n<p>How are you?</p>\n</blockquote>\n<p>Great</p>"
     },
     {
       "name": "user_mention_with_no_message_link",
@@ -1179,14 +1134,13 @@
       "expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"#narrow/search/database\">this</a>.</p>",
       "marked_expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"http://zulip.testserver/#narrow/search/database\">this</a>.</p>",
       "text_content": "Hello Zoe see this.",
-      "unified_expected_output": "<p>Hello @_<strong>Zoe|7</strong> see <a href=\"http://zulip.testserver/#narrow/search/database\">this</a>.</p>"
+      "unified_expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"http://zulip.testserver/#narrow/search/database\">this</a>.</p>"
     },
     {
       "name": "user_mention_with_no_narrow_link",
       "input": "Hello @_**Zoe|7** see [this](https://google.com).",
       "expected_output": "<p>Hello <span class=\"user-mention silent\" data-user-id=\"7\">Zoe</span> see <a href=\"https://google.com\">this</a>.</p>",
-      "text_content": "Hello Zoe see this.",
-      "unified_expected_output": "<p>Hello @_<strong>Zoe|7</strong> see <a href=\"https://google.com\">this</a>.</p>"
+      "text_content": "Hello Zoe see this."
     },
     {
       "name": "RFC2392 mid links (markdown syntax)",

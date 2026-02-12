@@ -1,4 +1,5 @@
 import {toHtml} from "hast-util-to-html";
+import type {Root} from "mdast";
 import {fromMarkdown} from "mdast-util-from-markdown";
 import {gfmStrikethroughFromMarkdown} from "mdast-util-gfm-strikethrough";
 import {gfmTableFromMarkdown} from "mdast-util-gfm-table";
@@ -10,7 +11,21 @@ import {gfmTable} from "micromark-extension-gfm-table";
 import type {MarkdownHelpers} from "./markdown.ts";
 import {translate_emoticons_to_names} from "./markdown.ts";
 import {preprocess_fenced_blocks} from "./markdown_fenced_blocks.ts";
+import {create_zulip_hast_handlers} from "./markdown_hast_handlers.ts";
 import type {MarkdownProcessor} from "./markdown_processor.ts";
+import {
+    disable_underscore_emphasis,
+    extract_flags,
+    silence_mentions_in_blockquotes,
+    transform_display_math,
+    transform_emoji,
+    transform_inline_math,
+    transform_linkifiers,
+    transform_mentions,
+    transform_spoilers,
+    transform_stream_links,
+    transform_timestamps,
+} from "./markdown_zulip_transforms.ts";
 
 /**
  * Encode `>` as `&gt;` in text content. hast-util-to-html only encodes
@@ -51,12 +66,52 @@ const micromark_extensions = [
 const mdast_extensions = [gfmTableFromMarkdown(), gfmStrikethroughFromMarkdown()];
 
 /**
- * Skeleton unified/mdast processor for Zulip markdown.
+ * Parse markdown content into an mdast tree with structural transforms
+ * applied. Used both at the top level and recursively for spoiler body
+ * content. Each parse level runs its own newlineToBreak and
+ * disable_underscore_emphasis since those depend on source positions
+ * that are relative to each parse context.
+ */
+function parse_to_mdast(content: string): Root {
+    const preprocessed = preprocess_fenced_blocks(content);
+    const source = preprocessed + "\n\n";
+    const mdast = fromMarkdown(source, {
+        extensions: micromark_extensions,
+        mdastExtensions: mdast_extensions,
+    });
+
+    // Transform code fences with lang=math/spoiler into custom nodes.
+    // These must run before other transforms so the code hast handler
+    // doesn't try to syntax-highlight them.
+    transform_display_math(mdast);
+
+    // Soft newlines → <br> tags
+    newlineToBreak(mdast);
+
+    // Disable _emphasis_ and __strong__ (only * triggers emphasis).
+    // Must use the source string from this parse context since it
+    // checks character offsets in the source.
+    disable_underscore_emphasis(mdast, source);
+
+    // Spoiler bodies are parsed recursively via parse_to_mdast,
+    // so each level gets its own newlineToBreak and underscore disable.
+    transform_spoilers(mdast, parse_to_mdast);
+
+    return mdast;
+}
+
+/**
+ * Unified/mdast processor for Zulip markdown.
  *
- * This is the initial scaffolding for the migration from marked.js to
- * the unified/mdast ecosystem. It currently handles standard CommonMark
- * + GFM tables/strikethrough. Zulip-specific extensions (mentions,
- * emoji, stream links, etc.) will be added in subsequent commits.
+ * Handles CommonMark + GFM tables/strikethrough, plus all Zulip-specific
+ * inline syntax via AST transforms:
+ * - User/group mentions (@**name**, @*group*)
+ * - Stream/topic links (#**channel**, #**channel>topic**)
+ * - Emoji (:name: and unicode)
+ * - Inline/display math ($$...$$ and ~~~math)
+ * - Timestamps (<time:...>)
+ * - Linkifiers (realm-configured regex patterns)
+ * - Spoilers (~~~spoiler)
  */
 export function create_unified_processor(): MarkdownProcessor {
     return {
@@ -71,26 +126,31 @@ export function create_unified_processor(): MarkdownProcessor {
                 });
             }
 
-            // Preprocess fenced block extensions (~~~quote) before micromark
-            // parsing. ~~~math and ~~~spoiler blocks pass through as regular
-            // code fences for micromark to parse, then get transformed in the
-            // mdast phase.
-            content = preprocess_fenced_blocks(content);
+            // Parse markdown to mdast (includes fenced block preprocessing,
+            // display math, spoiler, newline-to-break, and underscore
+            // emphasis transforms — each applied recursively to spoiler bodies)
+            const mdast = parse_to_mdast(content);
 
-            // Our Python-Markdown processor appends two \n\n to input
-            content = content + "\n\n";
+            // AST transforms for Zulip inline extensions.
+            // Order matters: mentions/streams use sibling-pattern detection,
+            // so they run first. Timestamps and math run before emoji because
+            // the unicode emoji regex matches digits, which would split text
+            // nodes and prevent later patterns from matching.
+            // These transforms walk the entire tree, including spoiler bodies
+            // that were spliced in by transform_spoilers.
+            transform_mentions(mdast, helper_config);
+            transform_stream_links(mdast, helper_config);
+            transform_timestamps(mdast);
+            transform_inline_math(mdast);
+            transform_linkifiers(mdast, helper_config);
+            transform_emoji(mdast, helper_config);
+            silence_mentions_in_blockquotes(mdast);
 
-            // Parse markdown to mdast
-            const mdast = fromMarkdown(content, {
-                extensions: micromark_extensions,
-                mdastExtensions: mdast_extensions,
-            });
+            const mention_flags = extract_flags(mdast, helper_config);
 
-            // Soft newlines → <br> tags
-            newlineToBreak(mdast);
-
-            // Convert mdast to hast (HTML AST)
-            const hast = toHast(mdast);
+            // Convert mdast to hast with custom handlers for Zulip nodes
+            const handlers = create_zulip_hast_handlers(helper_config);
+            const hast = toHast(mdast, {handlers, allowDangerousHtml: true});
 
             // Serialize hast to HTML string
             const html = encode_gt_in_text(
@@ -101,8 +161,17 @@ export function create_unified_processor(): MarkdownProcessor {
                 }),
             );
 
-            // Flags are not yet computed by this processor
+            // Compute flags from mention analysis
             const flags = ["read"];
+            if (mention_flags.mentioned || mention_flags.mentioned_group) {
+                flags.push("mentioned");
+            }
+            if (mention_flags.mentioned_stream_wildcard) {
+                flags.push("stream_wildcard_mentioned");
+            }
+            if (mention_flags.mentioned_topic_wildcard) {
+                flags.push("topic_wildcard_mentioned");
+            }
 
             return {content: html.trim(), flags};
         },
