@@ -251,6 +251,12 @@ export function clear_for_testing(): void {
 export function get(message_id: number): Message | undefined {
     return stored_messages.get(message_id)?.message;
 }
+export function add_messages_for_tests(messages: ProcessedMessage[]): void {
+    stored_messages.clear();
+    for (const message of messages) {
+        stored_messages.set(message.message.id, message);
+    }
+}
 
 export function get_pm_emails(
     message: Message | MessageWithBooleans | LocalMessageWithBooleans,
