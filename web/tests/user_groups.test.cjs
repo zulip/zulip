@@ -660,7 +660,7 @@ run_test("get_display_group_name", () => {
     assert.equal(user_groups.get_display_group_name(students.name), "Students");
 });
 
-run_test("get_potential_subgroups", () => {
+run_test("get_potential_subgroups", ({override}) => {
     // Remove existing groups.
     user_groups.init();
 
@@ -699,9 +699,16 @@ run_test("get_potential_subgroups", () => {
         is_system_group: false,
         direct_subgroup_ids: new Set(),
     });
+    const full_members = make_user_group({
+        name: "role:fullmembers",
+        id: 6,
+        members: new Set([5, 6, 7, 8, 9]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
 
     user_groups.initialize({
-        realm_user_groups: [admins, all, students, teachers, science],
+        realm_user_groups: [admins, all, students, teachers, science, full_members],
     });
 
     function get_potential_subgroup_ids(group_id) {
@@ -721,6 +728,22 @@ run_test("get_potential_subgroups", () => {
         students.id,
         teachers.id,
     ]);
+
+    override(realm, "realm_waiting_period_threshold", 100);
+    assert.deepEqual(get_potential_subgroup_ids(all.id), [
+        teachers.id,
+        science.id,
+        full_members.id,
+    ]);
+    assert.deepEqual(get_potential_subgroup_ids(science.id), [
+        admins.id,
+        all.id,
+        students.id,
+        teachers.id,
+        full_members.id,
+    ]);
+
+    override(realm, "realm_waiting_period_threshold", 0);
 
     user_groups.add_subgroups(all.id, [teachers.id]);
     user_groups.add_subgroups(teachers.id, [science.id]);
@@ -1190,4 +1213,104 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         setting_name,
         can_edit: true,
     });
+});
+
+run_test("get_all_realm_user_groups", ({override}) => {
+    const {nobody, owners, admins, moderators, members, everyone, full_members, internet} =
+        set_up_system_groups_for_test();
+
+    const students = make_user_group({
+        description: "Students group",
+        name: "Students",
+        id: 9,
+        members: new Set([1, 2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set([4, 5]),
+    });
+
+    const deactivated = make_user_group({
+        description: "Deactivated group",
+        name: "Deactivated",
+        id: 10,
+        members: new Set([1, 2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        deactivated: true,
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [
+            nobody,
+            owners,
+            admins,
+            moderators,
+            members,
+            everyone,
+            full_members,
+            internet,
+            students,
+            deactivated,
+        ],
+    });
+
+    override(
+        realm,
+        "server_supported_permission_settings",
+        example_settings.server_supported_permission_settings,
+    );
+    override(realm, "realm_waiting_period_threshold", 0);
+    // By default deactivated groups and internet group is not included.
+    // Full members group is not included since waiting period is 0.
+    let expected_groups_list = [nobody, owners, admins, moderators, members, everyone, students];
+
+    assert.deepEqual(user_groups.get_all_realm_user_groups(), expected_groups_list);
+
+    // deactivated group is included if include_deactivated_group is true.
+    expected_groups_list = [
+        nobody,
+        owners,
+        admins,
+        moderators,
+        members,
+        everyone,
+        students,
+        deactivated,
+    ];
+    assert.deepEqual(user_groups.get_all_realm_user_groups(true), expected_groups_list);
+
+    // internet group is included if include_internet_group is true.
+    expected_groups_list = [
+        nobody,
+        owners,
+        admins,
+        moderators,
+        members,
+        everyone,
+        internet,
+        students,
+    ];
+    assert.deepEqual(user_groups.get_all_realm_user_groups(false, true), expected_groups_list);
+
+    // Full members group is included by default if waiting period
+    // is not 0.
+    override(realm, "realm_waiting_period_threshold", 10);
+    expected_groups_list = [
+        nobody,
+        owners,
+        admins,
+        moderators,
+        members,
+        everyone,
+        full_members,
+        students,
+    ];
+    assert.deepEqual(user_groups.get_all_realm_user_groups(), expected_groups_list);
+
+    // Full members group is included even if waiting period is 0
+    // if force_include_full_members_group is true.
+    override(realm, "realm_waiting_period_threshold", 0);
+    assert.deepEqual(
+        user_groups.get_all_realm_user_groups(false, false, true),
+        expected_groups_list,
+    );
 });
