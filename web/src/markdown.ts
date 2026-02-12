@@ -166,6 +166,14 @@ function contains_topic_wildcard_mention(content: string): boolean {
     return content.includes("@**topic**");
 }
 
+function contains_human_readable_timestamp(content: string): boolean {
+    // Human-readable date formats like <time:Jun 5th 2017, 10:30PM> can
+    // be parsed by Python's dateutil but not by JavaScript's Date. Gate
+    // these for backend rendering. Unix timestamps (<time:12345>) are
+    // fine for local echo since JS handles them.
+    return /<time:(?!\d+>)[^<>]+>/.test(content);
+}
+
 function content_contains_backend_only_syntax(
     content: string,
     get_linkifier_map: GetLinkifierMap,
@@ -176,7 +184,8 @@ function content_contains_backend_only_syntax(
     return (
         contains_preview_link(content) ||
         contains_problematic_linkifier(content, get_linkifier_map) ||
-        contains_topic_wildcard_mention(content)
+        contains_topic_wildcard_mention(content) ||
+        contains_human_readable_timestamp(content)
     );
 }
 
