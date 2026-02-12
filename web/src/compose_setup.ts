@@ -16,6 +16,7 @@ import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
@@ -598,6 +599,7 @@ export function initialize(): void {
 
     $("#compose").on("click", ".narrow_to_compose_recipients", (e) => {
         e.preventDefault();
+        compose_tooltips.dismiss_intro_go_to_conversation_tooltip();
         message_view.to_compose_target();
     });
 

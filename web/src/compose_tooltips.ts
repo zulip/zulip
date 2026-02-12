@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_drafts_tooltip from "../templates/drafts_tooltip.hbs";
+import render_intro_go_to_conversation_tooltip from "../templates/intro_go_to_conversation_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -12,6 +13,7 @@ import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import {pick_empty_narrow_banner} from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -92,6 +94,48 @@ export function initialize_compose_tooltips(context: SingletonContext, selector:
             singleton_instance,
         });
     });
+}
+
+let intro_go_to_conversation_tooltip_instance: tippy.Instance | null = null;
+
+export function maybe_show_intro_go_to_conversation_tooltip(): void {
+    if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_go_to_conversation_tooltip")) {
+        return;
+    }
+
+    const $button = $(".conversation-arrow");
+    if (!$button.hasClass("narrow_to_compose_recipients")) {
+        return;
+    }
+
+    if ($("#compose_banners .main-view-banner").length > 0) {
+        return;
+    }
+
+    if (intro_go_to_conversation_tooltip_instance !== null) {
+        return;
+    }
+
+    intro_go_to_conversation_tooltip_instance = tippy.default($button[0]!, {
+        content: parse_html(render_intro_go_to_conversation_tooltip()),
+        placement: "top",
+        trigger: "manual",
+        showOnCreate: true,
+        hideOnClick: false,
+        appendTo: () => document.body,
+        onHidden(inst) {
+            inst.destroy();
+            intro_go_to_conversation_tooltip_instance = null;
+        },
+    });
+
+    onboarding_steps.post_onboarding_step_as_read("intro_go_to_conversation_tooltip");
+}
+
+export function dismiss_intro_go_to_conversation_tooltip(): void {
+    if (intro_go_to_conversation_tooltip_instance !== null) {
+        intro_go_to_conversation_tooltip_instance.hide();
+    }
 }
 
 export function initialize(): void {
@@ -309,6 +353,13 @@ export function initialize(): void {
         target: ".narrow_to_compose_recipients",
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
+        onShow() {
+            // Suppress the hover tooltip while the intro tooltip is showing.
+            if (intro_go_to_conversation_tooltip_instance !== null) {
+                return false;
+            }
+            return undefined;
+        },
         content() {
             const narrow_filter = narrow_state.filter();
             let display_current_view;

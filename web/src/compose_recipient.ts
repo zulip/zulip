@@ -11,6 +11,7 @@ import * as compose_banner from "./compose_banner.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -19,9 +20,11 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as pm_conversations from "./pm_conversations.ts";
 import {realm} from "./state_data.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
@@ -115,6 +118,15 @@ export let update_narrow_to_recipient_visibility = (): void => {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            const stream_id = compose_state.stream_id();
+            if (
+                stream_id !== undefined &&
+                stream_topic_history
+                    .get_recent_topic_names(stream_id)
+                    .includes(compose_state.topic())
+            ) {
+                compose_tooltips.maybe_show_intro_go_to_conversation_tooltip();
+            }
             return;
         }
     } else if (message_type === "private") {
@@ -125,9 +137,13 @@ export let update_narrow_to_recipient_visibility = (): void => {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            if (pm_conversations.recent.has_conversation(recipients.join(","))) {
+                compose_tooltips.maybe_show_intro_go_to_conversation_tooltip();
+            }
             return;
         }
     }
+    compose_tooltips.dismiss_intro_go_to_conversation_tooltip();
     $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
 };
 
