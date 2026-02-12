@@ -16,7 +16,7 @@ class JiraHookTests(WebhookTestCase):
             content_type="application/json",
         )
         expected_content = """
-Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
 
 * **Priority**: Major
 * **Assignee**: no one
@@ -31,7 +31,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
     def test_created(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = """
-Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
 
 * **Priority**: Major
 * **Assignee**: no one
@@ -71,7 +71,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
 
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = """
-Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
 
 * **Priority**: Major
 * **Assignee**: no one
@@ -92,7 +92,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
 
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = """
-Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
 
 * **Priority**: Major
 * **Assignee**: no one
@@ -105,7 +105,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
         self.url = self.build_webhook_url(topic=quote(quote("alerts test")))
         expected_topic_name = "alerts test"
         expected_message = """
-Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
 
 * **Priority**: Major
 * **Assignee**: no one
@@ -115,7 +115,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
     def test_created_with_unicode(self) -> None:
         expected_topic_name = "BUG-15: New bug with à hook"
         expected_message = """
-Leo Franchià created [BUG-15: New bug with à hook](http://lfranchi.com:8080/browse/BUG-15):
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with à hook](http://lfranchi.com:8080/browse/BUG-15):
 
 * **Priority**: Major
 * **Assignee**: no one
@@ -137,7 +137,7 @@ Leonardo Franchi [Administrator] created [TEST-4: Test Created Assignee](https:/
     def test_commented(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = """
-Leo Franchi commented on [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
+@_**Othello, the Moor of Venice|12** commented on [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to @_**Othello, the Moor of Venice|12**):
 
 ``` quote
 Adding a comment. Oh, what a comment it is!
@@ -149,7 +149,7 @@ Adding a comment. Oh, what a comment it is!
     def test_commented_with_two_full_links(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = """
-Leo Franchi commented on [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
+@_**Othello, the Moor of Venice|12** commented on [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to @_**Othello, the Moor of Venice|12**):
 
 ``` quote
 This is the [first link](https://google.com) and this is the [second link](https://google.com) and this is the end.
@@ -162,7 +162,7 @@ This is the [first link](https://google.com) and this is the [second link](https
     def test_comment_edited(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = """
-Leo Franchi edited a comment on [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
+@_**Othello, the Moor of Venice|12** edited a comment on [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to @_**Othello, the Moor of Venice|12**):
 
 ``` quote
 Adding a comment. Oh, what a comment it is!
@@ -184,15 +184,15 @@ Adding a comment. Oh, what a comment it is!
 
     def test_deleted(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
-        expected_message = "Leo Franchi deleted [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)."
+        expected_message = "@_**Othello, the Moor of Venice|12** deleted [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)."
         self.check_webhook("deleted_v1", expected_topic_name, expected_message)
         self.check_webhook("deleted_v2", expected_topic_name, expected_message)
 
     def test_reassigned(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
-        expected_message = """Leo Franchi updated [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
+        expected_message = """@_**Othello, the Moor of Venice|12** updated [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to @_**Othello, the Moor of Venice|12**):
 
-* Changed assignee to **Othello, the Moor of Venice**"""
+* Changed assignee to @_**Othello, the Moor of Venice|12**"""
         self.check_webhook("reassigned_v1", expected_topic_name, expected_message)
         self.check_webhook("reassigned_v2", expected_topic_name, expected_message)
 
@@ -206,7 +206,7 @@ Adding a comment. Oh, what a comment it is!
 
     def test_status_changed(self) -> None:
         expected_topic_name = "TEST-1: Fix That"
-        expected_message = """Leonardo Franchi [Administrator] updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1):
+        expected_message = """@_**Othello, the Moor of Venice|12** updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1):
 
 * Changed status from **To Do** to **In Progress**"""
         self.check_webhook("change_status_v1", expected_topic_name, expected_message)
