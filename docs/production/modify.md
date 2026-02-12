@@ -115,18 +115,15 @@ branch, as before.
 
 ### Making changes with docker-zulip
 
-If you are using [docker-zulip][], there are two things that are
-different from the above:
+If you are using {doc}`our Docker image <docker:index>`, there are two
+things that are different from the above:
 
 - Because of how container images work, editing files directly is even
-  more precarious, because Docker is designed for working with
-  container images and may lose your changes.
+  more precarious, because Docker "boots" from fixed images every
+  time, and restarting the container will your changes.
 - Instead of running `upgrade-zulip-from-git`, you will need to use
-  the [docker upgrade workflow][docker-zulip-upgrade] to build a
-  container image based on your modified version of Zulip.
-
-[docker-zulip]: https://github.com/zulip/docker-zulip
-[docker-zulip-upgrade]: https://github.com/zulip/docker-zulip#upgrading-from-a-git-repository
+  the {doc}`Docker upgrade workflow <docker:how-to/compose-upgrading>`
+  to build a container image based on your modified version of Zulip.
 
 ## Applying changes from `main`
 

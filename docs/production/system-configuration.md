@@ -132,10 +132,12 @@ memory (currently 3.5GiB) to run a single-server Zulip installation in
 the multiprocess mode.
 
 Set explicitly to true or false to override the automatic
-calculation. This override is useful both Docker systems (where the
-above algorithm might see the host's memory, not the container's)
-and/or when using remote servers for postgres, memcached, redis, and
-RabbitMQ.
+calculation. This override is useful for Docker systems, where the
+above algorithm will see the host's memory size, not the container's,
+unless a [memory limit is set][docker-memory-limit], as well as when
+using remote servers for PostgreSQL, memcached, Redis, and RabbitMQ.
+
+[docker-memory-limit]: https://docs.docker.com/reference/compose-file/deploy/#memory
 
 #### `rolling_restart`
 
