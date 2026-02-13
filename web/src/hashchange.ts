@@ -24,11 +24,13 @@ import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as settings from "./settings.ts";
+import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as ui_report from "./ui_report.ts";
 import * as user_group_edit from "./user_group_edit.ts";
@@ -213,6 +215,21 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
                 const channel_id_string = hash[2];
                 if (channel_id_string) {
                     inbox_ui.show(new Filter(terms));
+                    return true;
+                }
+            }
+
+            // Redirect to #topics narrow for channels
+            // when default channel view is set to "list of topics",
+            // and the channel is not restricted to empty topic.
+            if (terms?.length === 1 && terms[0]?.operator === "channel") {
+                const channel_id = Number.parseInt(terms[0].operand, 10);
+                if (
+                    user_settings.web_channel_default_view ===
+                        web_channel_default_view_values.list_of_topics.code &&
+                    !stream_data.is_empty_topic_only_channel(channel_id)
+                ) {
+                    browser_history.go_to_location(hash_util.by_channel_topic_list_url(channel_id));
                     return true;
                 }
             }

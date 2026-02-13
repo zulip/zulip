@@ -1150,6 +1150,15 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     // We want to update channel view for inbox for the same reasons
     // we want to the topics list here.
     update_inbox_channel_view_callback(stream_id);
+    // Keep topics list collapsed for `#topics` channel views.
+    if (
+        user_settings.web_channel_default_view ===
+            web_channel_default_view_values.list_of_topics.code &&
+        stream_id !== topic_list.active_stream_id() &&
+        narrow_state.topic() === undefined
+    ) {
+        return $stream_li;
+    }
     topic_list.rebuild_left_sidebar($stream_li, stream_id);
     topic_list.topic_state_typeahead?.lookup(true);
 
@@ -1312,6 +1321,24 @@ export function on_sidebar_channel_click(
         user_settings.web_channel_default_view ===
         web_channel_default_view_values.list_of_topics.code
     ) {
+        if (current_narrow_stream_id === stream_id && current_topic === undefined) {
+            const $stream_li = get_stream_li(stream_id);
+            if (!$stream_li) {
+                // This is a sanity check.
+                blueslip.error("No stream_li for subscribed stream", {stream_id});
+            } else {
+                // Total topic-list states: 1.collapsed, 2.expanded 3.zoomed in
+                // Here, we toggle between the two states: expanded <-> collapsed
+                const is_topic_list_expanded = $stream_li.find(".topic-list").length > 0;
+                if (is_topic_list_expanded) {
+                    clear_topics();
+                } else {
+                    topic_list.rebuild_left_sidebar($stream_li, stream_id);
+                    topic_list.topic_state_typeahead?.lookup(true);
+                }
+            }
+        }
+
         browser_history.go_to_location(hash_util.by_channel_topic_list_url(stream_id));
         return;
     }
@@ -1429,6 +1456,15 @@ export function set_event_handlers({
             });
         },
     );
+
+    $("#stream_filters").on("mousedown", "li .subscription_block", (e) => {
+        // Prevent default behavior of text selection upon multiple clicks
+        // to allow toggling in #topics narrows.
+        // https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail
+        if (e.detail > 1) {
+            e.preventDefault();
+        }
+    });
 
     function toggle_pm_header_icon(): void {
         if (pm_list.is_private_messages_collapsed()) {
