@@ -21,14 +21,17 @@ from users:
 import os
 from collections.abc import Collection, Sequence
 from dataclasses import dataclass, field
+from typing import TypeAlias
 
 from django.conf import settings
+
+NarrowTermOperandT: TypeAlias = str | int | list[int]
 
 
 @dataclass
 class NarrowTerm:
     operator: str
-    operand: str | int | list[int]
+    operand: NarrowTermOperandT
     negated: bool
 
 

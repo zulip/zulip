@@ -625,6 +625,8 @@ export class Filter {
     }
 
     static sorted_term_types(term_types: string[]): string[] {
+        // Keep this algorithm in sync with the `sorted_terms` static method in
+        // `url_decoding.Filter` in the backend.
         const levels = [
             "in",
             "channels-public",
