@@ -202,7 +202,7 @@ export const draft_model = (function () {
         return id;
     }
 
-    function editDraft(id: string, draft: LocalStorageDraft): boolean {
+    function editDraft(id: string, draft: LocalStorageDraft, update_count = true): boolean {
         const drafts = get();
         let changed = false;
 
@@ -214,7 +214,7 @@ export const draft_model = (function () {
         if (old_draft !== undefined) {
             changed = !check_if_equal(old_draft, draft);
             drafts[id] = draft;
-            save(drafts);
+            save(drafts, update_count);
         }
         return changed;
     }
@@ -461,11 +461,12 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
 
     // Now that it's been updated, we consider it to be the most recent version.
     draft.drafts_version = CURRENT_DRAFT_VERSION;
+    const update_count = opts.update_count ?? true;
 
     if (draft_id !== undefined) {
         // We don't save multiple drafts of the same message;
         // just update the existing draft.
-        const changed = draft_model.editDraft(draft_id, draft);
+        const changed = draft_model.editDraft(draft_id, draft, update_count);
         if (changed) {
             maybe_notify(no_notify);
         }
@@ -473,7 +474,6 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
     }
 
     // We have never saved a draft for this message, so add one.
-    const update_count = opts.update_count ?? true;
     const new_draft_id = draft_model.addDraft(draft, update_count);
     compose_draft_id = new_draft_id;
     maybe_notify(no_notify);

@@ -58,6 +58,25 @@ function setup_compose_actions_hooks(): void {
     compose_actions.register_compose_cancel_hook(compose_call.abort_video_callbacks);
 }
 
+// This throttled callback does not track the compose_draft_id that was
+// active when scheduled; it simply calls update_draft() on whatever
+// compose state is current when it fires.
+//
+// This is safe because compose context transitions (send, close,
+// switching/restoring drafts) already perform explicit draft saves, and
+// compose_draft_id is only changed through those controlled flows.
+//
+// At worst, a delayed call results in an extra save of the current draft,
+// which is harmless. Adding draft_id tracking here would introduce
+// significant complexity without meaningful benefit.
+const throttled_update_draft = _.throttle(
+    () => {
+        drafts.update_draft({no_notify: true, update_count: false});
+    },
+    60000,
+    {leading: false, trailing: true},
+);
+
 export function initialize(): void {
     // Register hooks for compose_actions.
     setup_compose_actions_hooks();
@@ -117,6 +136,9 @@ export function initialize(): void {
             if (compose_state.get_is_content_unedited_restored_draft()) {
                 compose_state.set_is_content_unedited_restored_draft(false);
             }
+
+            // We occasionally update the saved draft while the user is typing to minimize data loss risk.
+            throttled_update_draft();
         }, 25),
     );
 
