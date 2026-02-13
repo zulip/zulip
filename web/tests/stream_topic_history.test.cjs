@@ -294,6 +294,29 @@ test("test_stream_has_topics", () => {
     assert.equal(stream_topic_history.stream_has_locally_available_named_topics(stream_id), true);
 });
 
+test("test_stream_has_empty_string_topic", () => {
+    const stream_id = 90;
+
+    assert.equal(stream_topic_history.stream_has_empty_string_topic(stream_id), false);
+
+    stream_topic_history.find_or_create(stream_id);
+    assert.equal(stream_topic_history.stream_has_empty_string_topic(stream_id), false);
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 900,
+        topic_name: "some topic",
+    });
+    assert.equal(stream_topic_history.stream_has_empty_string_topic(stream_id), false);
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 901,
+        topic_name: "",
+    });
+    assert.equal(stream_topic_history.stream_has_empty_string_topic(stream_id), true);
+});
+
 test("test_stream_has_resolved_topics", () => {
     const stream_id = 89;
 

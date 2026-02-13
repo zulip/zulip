@@ -33,6 +33,17 @@ export function stream_has_topics(stream_id: number): boolean {
     return history.has_topics();
 }
 
+export function stream_has_empty_string_topic(stream_id: number): boolean {
+    if (!stream_dict.has(stream_id)) {
+        return false;
+    }
+
+    const history = stream_dict.get(stream_id);
+    assert(history !== undefined);
+
+    return history.topics.has("");
+}
+
 export function stream_has_locally_available_named_topics(stream_id: number): boolean {
     if (!stream_dict.has(stream_id)) {
         return false;

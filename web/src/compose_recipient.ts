@@ -395,6 +395,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     const recipient_widget_hidden =
         $(".compose_select_recipient-dropdown-list-container").length === 0;
     const $topic_not_mandatory_placeholder = $("#topic-not-mandatory-placeholder");
+    const stream_id = compose_state.stream_id();
 
     // reset
     $input.prop("disabled", false);
@@ -404,7 +405,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     $topic_not_mandatory_placeholder.hide();
     $("#compose-channel-recipient").removeClass("disabled");
 
-    if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
+    if (!stream_data.can_use_empty_topic(stream_id)) {
         $input.attr("placeholder", $t({defaultMessage: "Topic"}));
         // When topics are mandatory, no additional adjustments are needed.
         // Also, if the recipient in the compose box is not selected, the
@@ -412,9 +413,15 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         return;
     }
 
+    assert(stream_id !== undefined);
+    if (!stream_data.should_display_empty_string_topic(stream_id)) {
+        $input.attr("placeholder", $t({defaultMessage: "Topic"}));
+        return;
+    }
+
     // If `topics_policy` is set to `empty_topic_only`, disable the topic input
     // and empty the input box.
-    if (stream_data.is_empty_topic_only_channel(compose_state.stream_id())) {
+    if (stream_data.is_empty_topic_only_channel(stream_id)) {
         compose_state.topic("");
         $input.prop("disabled", true);
         $input.addClass("empty-topic-only");
