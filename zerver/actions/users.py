@@ -29,7 +29,7 @@ from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields, flush_user_profile
 from zerver.lib.create_user import create_user_profile
-from zerver.lib.event_types import BotServicesOutgoing
+from zerver.lib.event_types import BotServicesEmbedded, BotServicesOutgoing
 from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
@@ -54,11 +54,13 @@ from zerver.lib.user_groups import (
     get_system_user_group_for_user,
 )
 from zerver.lib.users import (
+    add_service,
     get_active_bots_owned_by_user,
     get_user_ids_who_can_access_user,
     get_users_involved_in_dms_with_target_users,
     user_access_restricted_in_realm,
 )
+from zerver.lib.utils import generate_api_key
 from zerver.models import (
     Draft,
     GroupGroupMembership,
@@ -788,6 +790,57 @@ def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> 
 
 
 @transaction.atomic(durable=True)
+def do_add_service(
+    service_name: str,
+    bot_profile: UserProfile,
+    bot_type: int,
+    service_payload_url: str,
+    service_interface: int,
+) -> None:
+    if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+        service_token = generate_api_key()
+
+        new_service: dict[str, str | int] = BotServicesOutgoing(
+            base_url=service_payload_url,
+            interface=service_interface,
+            token=service_token,
+        ).model_dump()
+    else:
+        # Service token is currently unused for Embedded bots.
+        service_token = ""
+        try:
+            config_data = get_bot_config(bot_profile)
+        except ConfigError:
+            config_data = {}
+
+        new_service = BotServicesEmbedded(
+            service_name=service_name,
+            config_data=config_data,
+        ).model_dump()
+
+    add_service(
+        name=service_name,
+        user_profile=bot_profile,
+        base_url=service_payload_url,
+        interface=service_interface,
+        token=service_token,
+    )
+
+    send_event_on_commit(
+        bot_profile.realm,
+        dict(
+            type="realm_bot",
+            op="update",
+            bot=dict(
+                user_id=bot_profile.id,
+                services=[new_service],
+            ),
+        ),
+        bot_owner_user_ids(bot_profile),
+    )
+
+
+@transaction.atomic(durable=True)
 def do_update_outgoing_webhook_service(
     bot_profile: UserProfile,
     *,
@@ -840,6 +893,59 @@ def do_update_outgoing_webhook_service(
 
 
 @transaction.atomic(durable=True)
+def do_update_embedded_bot_service(
+    bot_profile: UserProfile,
+    *,
+    name: str | None = None,
+    acting_user: UserProfile | None,
+) -> None:
+    update_fields: dict[str, str | int] = {}
+    if name is not None:
+        update_fields["name"] = name
+
+    if len(update_fields) < 1:
+        return
+
+    # TODO: First service is chosen because currently one bot can only
+    # have one service. Update this once multiple services are supported.
+    service = get_bot_services(bot_profile.id)[0]
+    updated_fields = []
+    for field, new_value in update_fields.items():
+        if getattr(service, field) != new_value:
+            setattr(service, field, new_value)
+            updated_fields.append(field)
+
+    if len(updated_fields) < 1:
+        return
+
+    service.save(update_fields=updated_fields)
+
+    try:
+        config_data = get_bot_config(bot_profile)
+    except ConfigError:
+        config_data = {}
+
+    # Keep the event payload of the updated bot service in sync with the
+    # schema expected by `bot_data.update()` method.
+    updated_service: dict[str, str | int] = BotServicesEmbedded(
+        service_name=service.name,
+        config_data=config_data,
+    ).model_dump()
+    send_event_on_commit(
+        bot_profile.realm,
+        dict(
+            type="realm_bot",
+            op="update",
+            bot=dict(
+                user_id=bot_profile.id,
+                services=[updated_service],
+            ),
+        ),
+        bot_owner_user_ids(bot_profile),
+    )
+
+
+@transaction.atomic(durable=True)
 def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, str]) -> None:
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
@@ -855,6 +961,41 @@ def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, s
             ),
         ),
         bot_owner_user_ids(bot_profile),
+    )
+
+
+@transaction.atomic(durable=True)
+def do_update_bot_type(
+    bot_profile: UserProfile, bot_type: int, *, acting_user: UserProfile | None
+) -> None:
+    previous_bot_type = bot_profile.bot_type
+
+    bot_profile.bot_type = bot_type
+    bot_profile.save(update_fields=["bot_type"])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=bot_profile.realm,
+        acting_user=acting_user,
+        modified_user=bot_profile,
+        event_type=AuditLogEventType.USER_BOT_TYPE_CHANGED,
+        event_time=event_time,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: previous_bot_type,
+            RealmAuditLog.NEW_VALUE: bot_type,
+        },
+    )
+
+    payload = dict(user_id=bot_profile.id, bot_type=bot_type)
+    send_event_on_commit(
+        bot_profile.realm,
+        dict(type="realm_bot", op="update", bot=payload),
+        bot_owner_user_ids(bot_profile),
+    )
+    send_event_on_commit(
+        bot_profile.realm,
+        dict(type="realm_user", op="update", person=payload),
+        get_user_ids_who_can_access_user(bot_profile),
     )
 
 
@@ -913,13 +1054,14 @@ def get_service_dicts_for_bots(
                 }
                 for service in services
             ]
-        elif bot_type == UserProfile.EMBEDDED_BOT and bot_profile_id in embedded_bot_configs:
+        elif bot_type == UserProfile.EMBEDDED_BOT:
             bot_config = embedded_bot_configs[bot_profile_id]
             service_dicts = [
                 {
                     "config_data": bot_config,
-                    "service_name": services[0].name,
+                    "service_name": service.name,
                 }
+                for service in services
             ]
         service_dicts_by_uid[bot_profile_id] = service_dicts
     return service_dicts_by_uid

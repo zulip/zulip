@@ -32,9 +32,12 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
 )
 from zerver.actions.users import (
+    do_add_service,
     do_change_user_role,
     do_deactivate_user,
     do_update_bot_config_data,
+    do_update_bot_type,
+    do_update_embedded_bot_service,
     do_update_outgoing_webhook_service,
 )
 from zerver.context_processors import get_valid_realm_from_request
@@ -96,6 +99,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key
 from zerver.models import Service, Stream, UserProfile
+from zerver.models.bots import get_bot_services
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -122,6 +126,11 @@ RoleParamType: TypeAlias = Annotated[
 def check_last_owner(user_profile: UserProfile) -> bool:
     owners = set(user_profile.realm.get_human_owner_users())
     return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
+
+
+def check_valid_embedded_bot_service_name(service_name: str) -> None:
+    if service_name not in [bot.name for bot in EMBEDDED_BOTS]:
+        raise JsonableError(_("Invalid embedded_bot_service_name."))
 
 
 @typed_endpoint
@@ -473,6 +482,7 @@ def patch_bot_backend(
     user_profile: UserProfile,
     *,
     bot_id: PathOnly[int],
+    bot_type: Json[int] | None = None,
     bot_owner_id: Json[int] | None = None,
     config_data: Json[dict[str, str]] | None = None,
     default_all_public_streams: Json[bool] | None = None,
@@ -481,6 +491,7 @@ def patch_bot_backend(
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
     service_interface: Json[int] = 1,
+    embedded_bot_service_name: Json[str] | None = None,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     short_name: str | None = None,
 ) -> HttpResponse:
@@ -554,17 +565,73 @@ def patch_bot_backend(
             bot, default_all_public_streams, acting_user=user_profile
         )
 
-    if service_payload_url is not None:
-        check_valid_interface_type(service_interface)
-        assert service_interface is not None
-        do_update_outgoing_webhook_service(
-            bot,
-            interface=service_interface,
-            base_url=service_payload_url,
-            acting_user=user_profile,
-        )
+    bot_type_changed = bot_type is not None and bot.bot_type != bot_type
+    if bot_type_changed:
+        assert bot_type is not None  # Type narrowing for mypy
+        check_valid_bot_type(user_profile, bot_type)
+        service_name: str | None = None
+        if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+            # Outgoing webhook bots' `service_name` is their short_name,
+            # which we can decode from their email.
+            service_name = bot.email.split("-bot@")[0]
+            if service_payload_url is None:
+                raise JsonableError(_("Missing service_payload_url."))
+            check_valid_interface_type(service_interface)
+        elif bot_type == UserProfile.EMBEDDED_BOT:
+            if embedded_bot_service_name is None:
+                raise JsonableError(_("Missing embedded_bot_service_name."))
+            check_valid_embedded_bot_service_name(embedded_bot_service_name)
+            service_name = embedded_bot_service_name
+            # service_payload_url is unused for embedded bots
+            service_payload_url = ""
+            service_interface = Service.GENERIC
+
+        existing_services = get_bot_services(bot.id)
+
+        if existing_services:
+            for service in existing_services:
+                service.delete()
+
+        if bot_type in UserProfile.SERVICE_BOT_TYPES:
+            assert service_name is not None
+            assert service_payload_url is not None
+            do_add_service(
+                service_name=service_name,
+                bot_profile=bot,
+                bot_type=bot_type,
+                service_payload_url=service_payload_url,
+                service_interface=service_interface,
+            )
+            services = get_bot_services(bot.id)
+
+        do_update_bot_type(bot, bot_type, acting_user=user_profile)
+
+    else:
+        if bot.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT and service_payload_url is not None:
+            check_valid_interface_type(service_interface)
+            assert service_interface is not None
+            do_update_outgoing_webhook_service(
+                bot,
+                interface=service_interface,
+                base_url=service_payload_url,
+                acting_user=user_profile,
+            )
+            services = get_bot_services(bot.id)
+
+        if bot.bot_type == UserProfile.EMBEDDED_BOT and embedded_bot_service_name is not None:
+            check_valid_embedded_bot_service_name(embedded_bot_service_name)
+            do_update_embedded_bot_service(
+                bot,
+                name=embedded_bot_service_name,
+                acting_user=user_profile,
+            )
+            services = get_bot_services(bot.id)
 
     if config_data is not None:
+        if bot_type in UserProfile.SERVICE_BOT_TYPES:
+            assert bot.bot_type is not None
+            services = get_bot_services(bot.id)
+            check_valid_bot_config(bot.bot_type, services[0].name, config_data)
         do_update_bot_config_data(bot, config_data)
 
     if len(request.FILES) == 0:
@@ -586,6 +653,7 @@ def patch_bot_backend(
         service_payload_url=service_payload_url,
         config_data=config_data,
         default_sending_stream=get_stream_name(bot.default_sending_stream),
+        bot_type=bot_type,
         default_events_register_stream=get_stream_name(bot.default_events_register_stream),
         default_all_public_streams=bot.default_all_public_streams,
     )
