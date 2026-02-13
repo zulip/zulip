@@ -248,6 +248,10 @@ class ImmutableMessage {
         assert(this.message.type === "stream");
         return this.message.topic;
     }
+
+    get_reply_to(): string {
+        return this.message.reply_to;
+    }
 }
 
 export function maybe_get_immutable_message(message_id: number): ImmutableMessage | undefined {
