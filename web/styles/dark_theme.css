@@ -110,6 +110,8 @@
     .zoom-in {
         #topics_header {
             background-color: var(--color-background);
+            /* Ensure full background coverage in dark theme */
+            box-shadow: 0 1px 0 0 var(--color-background);
         }
     }
 

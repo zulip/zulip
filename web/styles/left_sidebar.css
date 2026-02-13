@@ -2230,7 +2230,7 @@ li.topic-list-item {
     display: grid;
     position: sticky;
     top: 0;
-    z-index: 2;
+    z-index: 3;
     grid-template-columns:
         [topics-content-area-start] var(--left-sidebar-toggle-width-offset)
         0 0 minmax(0, 1fr) 0
@@ -2242,6 +2242,8 @@ li.topic-list-item {
     padding-top: var(--left-sidebar-sections-vertical-gutter);
     color: hsl(0deg 0% 43%);
     background-color: var(--color-background);
+    /* Ensure full background coverage to prevent content peeking through */
+    box-shadow: 0 1px 0 0 var(--color-background);
     /* With quiet unreads, we want the BACK TO CHANNELS
        and unread count to share a common baseline. */
     line-height: var(--line-height-sidebar-row);
