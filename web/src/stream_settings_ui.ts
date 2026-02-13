@@ -1182,6 +1182,11 @@ function show_right_section(): void {
     $(".right").addClass("show");
     $("#subscription_overlay .two-pane-settings-header").addClass("slide-left");
     resize.resize_stream_subscribers_list();
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            scroll_util.force_scrollbar($("#stream_settings"));
+        });
+    });
 }
 
 export function change_state(
