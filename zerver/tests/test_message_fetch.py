@@ -604,7 +604,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="search", operand='"french fries"')
         self._do_add_term_test(
             term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
+            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (NOT (EXISTS (SELECT 1 \nFROM fts_update_log \nWHERE fts_update_log.message_id = id)) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s)) OR ((EXISTS (SELECT 1 \nFROM fts_update_log \nWHERE fts_update_log.message_id = id)) AND to_tsvector(%(to_tsvector_1)s, subject || rendered_content) @@ plainto_tsquery(%(param_4)s, %(param_5)s)))",
         )
 
     @override_settings(USING_PGROONGA=False)
@@ -612,19 +612,23 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
         self._do_add_term_test(
             term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
+            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (NOT (EXISTS (SELECT 1 \nFROM fts_update_log \nWHERE fts_update_log.message_id = id)) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s)) OR ((EXISTS (SELECT 1 \nFROM fts_update_log \nWHERE fts_update_log.message_id = id)) AND to_tsvector(%(to_tsvector_1)s, subject || rendered_content) @@ plainto_tsquery(%(param_4)s, %(param_5)s)))",
         )
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_pgroonga(self) -> None:
         term = NarrowParameter(operator="search", operand='"french fries"')
-        self._do_add_term_test(term, "WHERE search_pgroonga &@~ escape_html(%(escape_html_1)s)")
+        self._do_add_term_test(
+            term,
+            "WHERE NOT (EXISTS (SELECT 1 \nFROM fts_update_log \nWHERE fts_update_log.message_id = id)) AND (search_pgroonga &@~ escape_html(%(escape_html_1)s)) OR (EXISTS (SELECT 1 \nFROM fts_update_log \nWHERE fts_update_log.message_id = id)) AND (escape_html(subject) || %(param_1)s || rendered_content &@~ escape_html(%(escape_html_1)s))",
+        )
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
         term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
         self._do_add_term_test(
-            term, "WHERE NOT (search_pgroonga &@~ escape_html(%(escape_html_1)s))"
+            term,
+            "WHERE NOT (NOT (EXISTS (SELECT 1 \nFROM fts_update_log \nWHERE fts_update_log.message_id = id)) AND (search_pgroonga &@~ escape_html(%(escape_html_1)s)) OR (EXISTS (SELECT 1 \nFROM fts_update_log \nWHERE fts_update_log.message_id = id)) AND (escape_html(subject) || %(param_1)s || rendered_content &@~ escape_html(%(escape_html_1)s)))",
         )
 
     def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
@@ -5359,7 +5363,11 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (NOT (EXISTS (SELECT 1 \n\
+FROM fts_update_log \n\
+WHERE fts_update_log.message_id = id)) AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) OR ((EXISTS (SELECT 1 \n\
+FROM fts_update_log \n\
+WHERE fts_update_log.message_id = id)) AND to_tsvector('zulip.english_us_search', subject || rendered_content) @@ plainto_tsquery('zulip.english_us_search', 'jumping'))) ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -5375,7 +5383,11 @@ FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_cont
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
 FROM zerver_message \n\
-WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY zerver_message.id ASC \n\
+WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND (NOT (EXISTS (SELECT 1 \n\
+FROM fts_update_log \n\
+WHERE fts_update_log.message_id = id)) AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) OR ((EXISTS (SELECT 1 \n\
+FROM fts_update_log \n\
+WHERE fts_update_log.message_id = id)) AND to_tsvector('zulip.english_us_search', subject || rendered_content) @@ plainto_tsquery('zulip.english_us_search', 'jumping'))) ORDER BY zerver_message.id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)
@@ -5401,7 +5413,11 @@ WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (
 FROM zerver_stream \n\
 WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
 FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (content ILIKE '%jumping%' OR subject ILIKE '%jumping%' AND is_channel_message) AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly')) ORDER BY message_id ASC \n\
+WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (content ILIKE '%jumping%' OR subject ILIKE '%jumping%' AND is_channel_message) AND (NOT (EXISTS (SELECT 1 \n\
+FROM fts_update_log \n\
+WHERE fts_update_log.message_id = id)) AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly')) OR ((EXISTS (SELECT 1 \n\
+FROM fts_update_log \n\
+WHERE fts_update_log.message_id = id)) AND to_tsvector('zulip.english_us_search', subject || rendered_content) @@ plainto_tsquery('zulip.english_us_search', '"jumping" quickly'))) ORDER BY message_id ASC \n\
  LIMIT 10) AS anon_1 ORDER BY message_id ASC\
 """
         sql = sql_template.format(**query_ids)

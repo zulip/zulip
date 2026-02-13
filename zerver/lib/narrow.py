@@ -18,6 +18,7 @@ from sqlalchemy.sql import (
     Select,
     and_,
     column,
+    exists,
     false,
     func,
     literal,
@@ -766,7 +767,24 @@ class NarrowBuilder:
                 func.escape_html(topic_column_sa(), type_=Text), keywords
             ).label("topic_matches"),
         )
-        condition = column("search_pgroonga", Text).op("&@~")(operand_escaped)
+        fts_table = table("fts_update_log", column("message_id", Integer))
+
+        fts_unindexed = exists(
+            select(literal_column("1"))
+            .select_from(fts_table)
+            .where(fts_table.c.message_id == column("id"))
+        )
+        condition = or_(
+            and_(~fts_unindexed, column("search_pgroonga", Text).op("&@~")(operand_escaped)),
+            and_(
+                fts_unindexed,
+                (
+                    func.escape_html(topic_column_sa(), type_=Text)
+                    + literal(" ")
+                    + column("rendered_content")
+                ).op("&@~")(operand_escaped),
+            ),
+        )
         return query.where(maybe_negate(condition))
 
     def _by_search_tsearch(
@@ -802,7 +820,22 @@ class NarrowBuilder:
                 )
                 query = query.where(maybe_negate(cond))
 
-        cond = column("search_tsvector", postgresql.TSVECTOR).op("@@")(tsquery)
+        fts_table = table("fts_update_log", column("message_id", Integer))
+
+        fts_unindexed = exists(
+            select(literal_column("1"))
+            .select_from(fts_table)
+            .where(fts_table.c.message_id == column("id"))
+        )
+        cond = or_(
+            and_(~fts_unindexed, column("search_tsvector", postgresql.TSVECTOR).op("@@")(tsquery)),
+            and_(
+                fts_unindexed,
+                func.to_tsvector(
+                    "zulip.english_us_search", topic_column_sa() + column("rendered_content", Text)
+                ),
+            ).op("@@")(tsquery),
+        )
         return query.where(maybe_negate(cond))
 
 
