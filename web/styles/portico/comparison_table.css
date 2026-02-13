@@ -261,6 +261,19 @@
     .comparison-table .competitor-cell {
         padding: 12px 10px 10px;
         font-weight: normal;
+
+        /* Use gray color on competitor cells for
+           checkmarks and warnings (language counts). */
+        &.comparison-value-positive,
+        &.comparison-value-warning {
+            color: hsl(224deg 8% 50% / 100%);
+        }
+
+        /* Use red color on competitor cells for
+           X marks. */
+        &.comparison-value-negative {
+            color: hsl(0deg 36% 58%);
+        }
     }
 
     .comparison-table th .icon {
