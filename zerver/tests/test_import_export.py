@@ -3467,6 +3467,7 @@ class SingleUserExportTest(ExportFile):
             realm,
             "Favorite city",
             CustomProfileField.SHORT_TEXT,
+            acting_user=self.example_user("iago"),
         )
 
         def set_favorite_city(user: UserProfile, city: str) -> None:

@@ -680,11 +680,24 @@ def do_reactivate_realm(realm: Realm) -> None:
         realm.save(update_fields=["deactivated", "scheduled_deletion_date"])
 
         event_time = timezone_now()
+        last_deactivation_log = (
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=AuditLogEventType.REALM_DEACTIVATED,
+            )
+            .order_by("-event_time")
+            .first()
+        )
+
+        acting_user = None
+        if last_deactivation_log is not None:
+            acting_user = last_deactivation_log.acting_user
+
         RealmAuditLog.objects.create(
             # We hardcode acting_user=None, since realm reactivation
             # uses an email authentication mechanism that will never
             # know which user initiated the change.
-            acting_user=None,
+            acting_user=acting_user,
             realm=realm,
             event_type=AuditLogEventType.REALM_REACTIVATED,
             event_time=event_time,

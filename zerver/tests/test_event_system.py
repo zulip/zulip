@@ -615,7 +615,10 @@ class GetEventsTest(ZulipTestCase):
 
             with self.captureOnCommitCallbacks(execute=True):
                 try_update_realm_custom_profile_field(
-                    realm=user_profile.realm, field=profile_field, name=new_name
+                    realm=user_profile.realm,
+                    field=profile_field,
+                    name=new_name,
+                    acting_user=user_profile,
                 )
 
             result = self.tornado_call(
