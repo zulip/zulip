@@ -1,21 +1,29 @@
 <div class="empty_feed_notice">
-    <h4 class="empty-feed-notice-title"> {{ title }} </h4>
+    <h4 class="empty-feed-notice-title">{{ title }}</h4>
+    <div class="empty-feed-notice-description">
+        <div class="search-all-channels-button">
+            <button class="empty-search-shared-history action-button action-button-quiet-neutral" type="button">
+                Search all public channels
+            </button>
+        </div>
+    </div>
+    {{#if notice_html}}
+    <div class="empty-feed-notice-description">
+        {{{notice_html}}}
+    </div>
+    {{/if}}
     {{#if search_data}}
         {{#if search_data.has_stop_word}}
         <div class="empty-feed-notice-description">
-            {{t "Common words were excluded from your search:" }} <br/>
+            Common words were excluded from your search:<br/>
             {{#each search_data.query_words}}
-                {{#if is_stop_word}}
-                <del>{{query_word}}</del>
+                {{#if this.is_stop_word}}
+                    <del>{{this.query_word}}</del>
                 {{else}}
-                <span class="search-query-word">{{query_word}}</span>
+                    <span class="search-query-word">{{this.query_word}}</span>
                 {{/if}}
             {{/each}}
         </div>
         {{/if}}
-    {{else if notice_html}}
-        <div class="empty-feed-notice-description">
-            {{{ notice_html }}}
-        </div>
     {{/if}}
 </div>

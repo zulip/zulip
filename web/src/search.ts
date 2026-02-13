@@ -452,3 +452,27 @@ export function close_search_bar_and_open_narrow_description(): void {
         $(".app").trigger("focus");
     }
 }
+
+$("body").on("click", ".search-public-channels-btn", (): void => {
+    const search_regex = /search\/(.+)$/;
+    const search_match = search_regex.exec(window.location.hash);
+
+    if (search_match?.[1]) {
+        const search_term = decodeURIComponent(search_match[1]);
+        window.location.hash = `#narrow/channels/public/search/${encodeURIComponent(search_term)}`;
+    }
+});
+
+$("body").on("click", ".empty-search-shared-history", function (): void {
+    const $button = $(this);
+    const search_regex = /search\/(.+)$/;
+    const search_match = search_regex.exec(window.location.hash);
+
+    if (search_match?.[1]) {
+        const search_term = decodeURIComponent(search_match[1]);
+
+        $button.remove();
+
+        window.location.hash = `#narrow/channels/public/search/${encodeURIComponent(search_term)}`;
+    }
+});

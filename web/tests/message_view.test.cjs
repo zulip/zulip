@@ -125,7 +125,14 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <h4 class="empty-feed-notice-title">This is a title</h4>
+    <div class="empty-feed-notice-description">
+        <div class="search-all-channels-button">
+            <button class="empty-search-shared-history action-button action-button-quiet-neutral" type="button">
+                Search all public channels
+            </button>
+        </div>
+    </div>
 </div>
 `,
     );
@@ -135,11 +142,18 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4 class="empty-feed-notice-title"> This is a title </h4>
-        <div class="empty-feed-notice-description">
-            <h1> This is the html </h1>
+    <h4 class="empty-feed-notice-title">This is a title</h4>
+    <div class="empty-feed-notice-description">
+        <div class="search-all-channels-button">
+            <button class="empty-search-shared-history action-button action-button-quiet-neutral" type="button">
+                Search all public channels
+            </button>
         </div>
     </div>
+    <div class="empty-feed-notice-description">
+        <h1> This is the html </h1>
+    </div>
+</div>
 `,
     );
 
@@ -155,7 +169,14 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <h4 class="empty-feed-notice-title">This is a title</h4>
+    <div class="empty-feed-notice-description">
+        <div class="search-all-channels-button">
+            <button class="empty-search-shared-history action-button action-button-quiet-neutral" type="button">
+                Search all public channels
+            </button>
+        </div>
+    </div>
         <div class="empty-feed-notice-description">
             translated: Common words were excluded from your search: <br/>
                 <del>a</del>
@@ -178,7 +199,14 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <h4 class="empty-feed-notice-title">This is a title</h4>
+    <div class="empty-feed-notice-description">
+        <div class="search-all-channels-button">
+            <button class="empty-search-shared-history action-button action-button-quiet-neutral" type="button">
+                Search all public channels
+            </button>
+        </div>
+    </div>
         <div class="empty-feed-notice-description">
             translated: Common words were excluded from your search: <br/>
                 <del>a</del>
@@ -198,7 +226,14 @@ run_test("empty_narrow_html", ({mock_template}) => {
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
-    <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <h4 class="empty-feed-notice-title">This is a title</h4>
+    <div class="empty-feed-notice-description">
+        <div class="search-all-channels-button">
+            <button class="empty-search-shared-history action-button action-button-quiet-neutral" type="button">
+                Search all public channels
+            </button>
+        </div>
+    </div>
 </div>
 `,
     );
