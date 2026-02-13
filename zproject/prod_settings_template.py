@@ -824,10 +824,6 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##
 ##   https://zulip.readthedocs.io/en/latest/production/upload-backends.html
 ##
-## If you change LOCAL_UPLOADS_DIR to a different path, you will also
-## need to manually edit Zulip's nginx configuration to use the new
-## path.  For that reason, we recommend replacing /home/zulip/uploads
-## with a symlink instead of changing LOCAL_UPLOADS_DIR.
 LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 # S3_AUTH_UPLOADS_BUCKET = ""
 # S3_AVATAR_BUCKET = ""
