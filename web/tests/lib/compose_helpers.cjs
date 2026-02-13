@@ -165,4 +165,51 @@ class FakeComposeBox {
     }
 }
 
-module.exports = {FakeComposeBox};
+function quote_message_template(opts) {
+    const {channel_object, selected_message, fence, content} = opts;
+
+    const {stream_id, name} = channel_object;
+    const channel_name = name;
+    const {sender_full_name, sender_id, id, topic} = selected_message;
+    const near_url = `http://zulip.zulipdev.com/#narrow/channel/${stream_id}-${channel_name}/topic/${topic}/near/${id}`;
+    return `translated: @_**${sender_full_name}|${sender_id}** [said](${near_url}):
+${fence}quote
+${content}
+${fence}`;
+}
+
+function forward_channel_message_template(opts) {
+    const {channel_object, selected_message, fence, content} = opts;
+
+    const {stream_id, name} = channel_object;
+    const channel_name = name;
+    const {sender_full_name, sender_id, id, topic} = selected_message;
+    const near_url = `http://zulip.zulipdev.com/#narrow/channel/${stream_id}-${channel_name}/topic/${topic}/near/${id}`;
+    const with_url = `#narrow/channel/${stream_id}-${channel_name}/topic/${topic}/with/${id}`;
+    const topic_link_syntax = `[#**${channel_name}>${topic}**](${with_url})`;
+    return `translated: @_**${sender_full_name}|${sender_id}** [said](${near_url}) in ${topic_link_syntax}:
+${fence}quote
+${content}
+${fence}`;
+}
+
+function forward_direct_message_template(opts) {
+    const {direct_message, dm_recipient_string, fence, content} = opts;
+
+    const {sender_full_name, sender_id, id: message_id, display_recipient} = direct_message;
+    const encoding_prefix = display_recipient.length > 2 ? "group" : "dm";
+    const dm_recipient_ids_string = display_recipient.map((user) => user.id).join(",");
+    const near_url = `http://zulip.zulipdev.com/#narrow/dm/${dm_recipient_ids_string}-${encoding_prefix}/near/${message_id}`;
+
+    return `translated: @_**${sender_full_name}|${sender_id}** [said](${near_url}) to ${dm_recipient_string}:
+${fence}quote
+${content}
+${fence}`;
+}
+
+module.exports = {
+    FakeComposeBox,
+    quote_message_template,
+    forward_channel_message_template,
+    forward_direct_message_template,
+};
