@@ -72,6 +72,7 @@ import * as markdown_config from "./markdown_config.ts";
 import * as message_actions_popover from "./message_actions_popover.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_fetch from "./message_fetch.ts";
+import * as message_flags from "./message_flags.ts";
 import * as message_list_hover from "./message_list_hover.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
@@ -761,6 +762,7 @@ export async function initialize_everything(state_data) {
         show_message_view: message_view.show,
     });
     typing.initialize();
+    message_flags.send_flag_update_for_untracked_messages();
     starred_messages_ui.initialize();
     user_status_ui.initialize();
     fenced_code.initialize(pygments_data);

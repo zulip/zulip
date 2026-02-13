@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {make_stub} = require("./lib/stub.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const channel = mock_esm("../src/channel");
@@ -277,6 +278,8 @@ run_test("read", ({override}) => {
             op: "add",
             flag: "read",
         },
+        success: channel_post_opts.success,
+        error: channel_post_opts.error,
     });
 });
 
@@ -327,6 +330,8 @@ run_test("collapse_and_uncollapse", ({override}) => {
             op: "add",
             flag: "collapsed",
         },
+        success: channel_post_opts.success,
+        error: channel_post_opts.error,
     });
 
     message_flags.save_uncollapsed(msg);
@@ -338,6 +343,8 @@ run_test("collapse_and_uncollapse", ({override}) => {
             op: "remove",
             flag: "collapsed",
         },
+        success: channel_post_opts.success,
+        error: channel_post_opts.error,
     });
 });
 
@@ -359,5 +366,148 @@ run_test("mark_as_unread", ({override}) => {
             op: "remove",
             flag: "read",
         },
+        success: channel_post_opts.success,
+        error: channel_post_opts.error,
     });
+});
+
+run_test("local_untracked_flag_entries", ({override}) => {
+    const test_flag = "test_flag";
+    let channel_post_opts;
+    override(channel, "post", (opts) => {
+        channel_post_opts = opts;
+    });
+    let cb_called = false;
+    message_flags.mutate_all_local_untracked_flag_changes((all_changes) => {
+        cb_called = true;
+        assert.deepEqual(all_changes, {});
+    });
+    assert.equal(cb_called, true);
+
+    message_flags.send_flag_update_for_messages([1, 2, 3], test_flag, "add");
+    // simulate failure
+    channel_post_opts.error();
+
+    message_flags.mutate_all_local_untracked_flag_changes((all_changes) => {
+        assert.deepEqual(all_changes, {
+            [test_flag]: {
+                add_ids: new Set([1, 2, 3]),
+                remove_ids: new Set(),
+            },
+        });
+    });
+    cb_called = false;
+    message_flags.mutate_local_untracked_flag_changes(test_flag, (changes) => {
+        assert.deepEqual(changes, {
+            add_ids: new Set([1, 2, 3]),
+            remove_ids: new Set(),
+        });
+        cb_called = true;
+    });
+    assert.equal(cb_called, true);
+
+    // Duplicates should be ignored.
+    message_flags.send_flag_update_for_messages([1, 2, 3], test_flag, "add");
+    channel_post_opts.error();
+    message_flags.mutate_all_local_untracked_flag_changes((all_changes) => {
+        assert.deepEqual(all_changes, {
+            [test_flag]: {
+                add_ids: new Set([1, 2, 3]),
+                remove_ids: new Set(),
+            },
+        });
+    });
+
+    // Opposite operations should cancel out.
+    message_flags.send_flag_update_for_messages([1, 2, 3], test_flag, "remove");
+    channel_post_opts.error();
+    message_flags.mutate_local_untracked_flag_changes(test_flag, (changes) => {
+        assert.deepEqual(changes, {
+            add_ids: new Set(),
+            remove_ids: new Set(),
+        });
+    });
+
+    // Success should clear existing pending updates.
+    message_flags.send_flag_update_for_messages([1, 2, 3], test_flag, "add");
+    channel_post_opts.error();
+    message_flags.send_flag_update_for_messages([1, 2, 3], test_flag, "add");
+    channel_post_opts.success();
+    message_flags.mutate_local_untracked_flag_changes(test_flag, (changes) => {
+        assert.deepEqual(changes, {
+            add_ids: new Set(),
+            remove_ids: new Set(),
+        });
+    });
+
+    // ...This should work partially too.
+    message_flags.send_flag_update_for_messages([1, 2, 3], test_flag, "add");
+    channel_post_opts.error();
+    message_flags.send_flag_update_for_messages([1], test_flag, "add");
+    channel_post_opts.success();
+    message_flags.mutate_local_untracked_flag_changes(test_flag, (changes) => {
+        assert.deepEqual(changes, {
+            add_ids: new Set([2, 3]),
+            remove_ids: new Set(),
+        });
+    });
+
+    // All this should work with POST failures too.
+    message_flags.send_flag_update_for_messages([1, 2, 3], test_flag, "add");
+    channel_post_opts.error();
+    message_flags.send_flag_update_for_messages([1], test_flag, "add");
+    const delayed_success_response = channel_post_opts.success;
+    message_flags.send_flag_update_for_messages([2], test_flag, "remove");
+    channel_post_opts.success();
+    delayed_success_response();
+    message_flags.mutate_local_untracked_flag_changes(test_flag, (changes) => {
+        assert.deepEqual(changes, {
+            add_ids: new Set([3]),
+            remove_ids: new Set(),
+        });
+    });
+
+    window.localStorage.clear();
+    message_flags.send_flag_update_for_messages([4, 5, 6], test_flag, "remove");
+    channel_post_opts.error();
+    message_flags.send_flag_update_for_messages([4], test_flag, "add");
+    channel_post_opts.error();
+    message_flags.mutate_local_untracked_flag_changes(test_flag, (changes) => {
+        assert.deepEqual(changes, {
+            add_ids: new Set(),
+            remove_ids: new Set([5, 6]),
+        });
+    });
+
+    message_flags.send_flag_update_for_messages([1, 2, 3], test_flag, "add");
+    channel_post_opts.error();
+    override(channel, "post", (opts) => {
+        opts.success();
+    });
+    message_flags.send_flag_update_for_untracked_messages();
+    message_flags.mutate_local_untracked_flag_changes(test_flag, (changes) => {
+        assert.deepEqual(changes, {
+            add_ids: new Set(),
+            remove_ids: new Set(),
+        });
+    });
+
+    override(channel, "post", (opts) => {
+        channel_post_opts = opts;
+    });
+    message_flags.send_flag_update_for_messages([1, 2], test_flag, "remove");
+    channel_post_opts.error();
+    message_flags.send_flag_update_for_messages([2, 3], test_flag, "add");
+    channel_post_opts.error();
+    message_flags.mutate_local_untracked_flag_changes(test_flag, (changes) => {
+        assert.deepEqual(changes, {
+            add_ids: new Set([3]),
+            remove_ids: new Set([1]),
+        });
+    });
+
+    override(window, "localStorage", undefined);
+    const stub = make_stub();
+    message_flags.mutate_all_local_untracked_flag_changes(stub.f);
+    assert.equal(stub.num_calls, 0);
 });
