@@ -3157,7 +3157,7 @@ class SAMLResponse(SAMLDocument):
                 settings=saml_settings, response=self.encoded_saml_message
             )
             return resp.get_session_index()
-        except self.SAML_PARSING_EXCEPTIONS as e:
+        except self.SAML_PARSING_EXCEPTIONS as e:  # nocoverage
             self.logger.error("Error parsing SAMLResponse: %s", str(e))
             return None
 
@@ -3470,10 +3470,19 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             self.logger.info(error_msg, saml_document.document_type(), relayed_params)
             return None
 
+        if not saml_document.get_issuers():
+            self.logger.info(
+                "/complete/saml/: No IdP issuers in %s (parse failure?)",
+                saml_document.document_type(),
+            )
+            return None
+
         idp_name = saml_document.get_issuing_idp()
         if idp_name is None:
             self.logger.info(
-                "/complete/saml/: No valid IdP as issuer of the %s.", saml_document.document_type()
+                "/complete/saml/: No valid IdP found as issuer of the %s; got %s",
+                saml_document.document_type(),
+                sorted(saml_document.get_issuers()),
             )
             return None
 
@@ -3541,7 +3550,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
             # Call the auth_complete method of SocialAuthMixIn
             result = super().auth_complete(*args, **kwargs)
-        except SAMLResponse.SAML_PARSING_EXCEPTIONS:
+        except SAMLResponse.SAML_PARSING_EXCEPTIONS:  # nocoverage
             # These can be raised if SAMLResponse is missing or badly formatted.
             self.logger.info("/complete/saml/: error while parsing SAMLResponse:", exc_info=True)
             # Fall through to returning None.
