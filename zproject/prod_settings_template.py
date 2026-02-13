@@ -692,6 +692,22 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## can also be disabled in a realm's organization settings.
 # INLINE_URL_EMBED_PREVIEW = True
 
+########
+## Github previews.
+##
+## Zulip has a feature to display Github issues and Pull requests previews
+## when a related url is linked in a message. The initial limit of 60 requests per hour does not require
+## authentication, but if more requests or access to private repositories are needed, a Personal Access Token
+## is required. We can use any type of personal access token, but you may want to use a fine-grained token as
+## Fine-grained personal access tokens have several security advantages over classic personal access tokens.
+## To create a token, follow the steps provided by Github :
+## https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-fine-grained-personal-access-token
+## If you decide to provide access to one or more private repos, you will need to add the "Issues" and "Pull requests"
+## permissions while configuring the access token.
+## Note that, configuring the personal access token to access private repos allows anyone,
+## including guest users, to see the previews of the linked issues and pull requests associated with those repos.
+## After creating the token, add its value as "github_api_auth_token" in the /etc/zulip/zulip-secrets.conf file.
+
 
 ################
 ## Logging and error reporting.

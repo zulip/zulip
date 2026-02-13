@@ -274,6 +274,7 @@ export function is_channels_synonym(text: string): boolean {
 export function prefix_match({value, search_term}: {value: string; search_term: string}): boolean {
     return filter_by_word_prefix_match([value], search_term, (s) => s).length === 1;
 }
+
 export function filter_by_word_prefix_match<T>(
     items: T[],
     search_term: string,
