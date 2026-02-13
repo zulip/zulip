@@ -2193,7 +2193,7 @@ body:not(.spectator-view) {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
         /* 200px/14px */
-        min-width: 14.285em;
+        min-width: max-content;
 
         .dropdown-list {
             list-style: none;
@@ -2230,7 +2230,7 @@ body:not(.spectator-view) {
     .no-dropdown-items {
         color: hsl(0deg 0% 60%);
         display: none;
-        padding: 3px 10px 3px 8px;
+        padding: 3px 10px;
         font-weight: 400;
         line-height: 20px;
         white-space: normal;
@@ -2246,13 +2246,15 @@ body:not(.spectator-view) {
             )
             minmax(0, 1fr);
         color: var(--color-dropdown-item);
-        padding: 3px 10px 3px 8px;
+        padding: 3px 10px;
         font-weight: 400;
         white-space: normal;
         /* Keep the line-height stable, instead of using the
            user-set line-height, so that the icon is always
            vertically centered properly. */
         line-height: 1.214;
+        min-height: 2.125em;
+        align-content: center;
 
         .channel-privacy-type-icon,
         .zulip-icon-deactivated-circle {
