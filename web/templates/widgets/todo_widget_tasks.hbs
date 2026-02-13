@@ -2,16 +2,22 @@
     <li>
         <label class="checkbox">
             <span class="todo-checkbox">
-                <input type="checkbox" class="task" data-key="{{ key }}" {{#if completed}}checked{{/if}}/>
+                <input type="checkbox" class="task" data-key="{{ key }}" {{#if completed}}checked{{/if}} />
                 <span class="custom-checkbox"></span>
             </span>
-            <span class="todo-task">
+
+            <span class="todo-task" data-key="{{ key }}">
                 {{#if completed}}
                 <s><strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}</s>
                 {{else}}
                 <strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}
                 {{/if}}
             </span>
+            {{#if ../is_my_task_list}}
+            <button class="todo-edit-task icon-button" data-key="{{ key }}">
+                <i class="zulip-icon zulip-icon-edit"></i>
+            </button>
+            {{/if }}
         </label>
     </li>
 {{/each}}

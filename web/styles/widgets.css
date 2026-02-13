@@ -40,7 +40,11 @@
         flex-flow: row wrap;
         gap: 5px;
     }
-
+    /* Styling for inline task editing inputs */
+    .todo-edit-task-input,
+    .todo-edit-desc-input {
+        margin-right: 5px; /* Add space between the two input fields */
+    }
     /* For the box-shadow to be visible on the left */
     .add-task,
     .add-desc {
@@ -340,4 +344,13 @@ input {
     &:hover {
         cursor: not-allowed;
     }
+}
+
+.todo-edit-task {
+    position: relative;
+    top: 3px;
+}
+
+.no-checkbox-toggle {
+    pointer-events: auto;
 }

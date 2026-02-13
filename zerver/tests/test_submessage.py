@@ -232,3 +232,104 @@ class TestBasics(ZulipTestCase):
             sender_id=cordelia.id,
         )
         self.assertEqual(submessage, expected_data)
+
+    def test_todo_edit_task_author_only(self) -> None:
+        """
+        Test that only the message author can edit tasks in a todo widget.
+        """
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        stream_name = "Verona"
+
+        message_id = self.send_stream_message(
+            sender=cordelia,
+            stream_name=stream_name,
+        )
+        # Create the widget metadata submessage so get_widget_type(message_id) returns "todo".
+        do_add_submessage(
+            realm=cordelia.realm,
+            sender_id=cordelia.id,
+            message_id=message_id,
+            msg_type="widget",
+            content='{"widget_type": "todo"}',
+        )
+
+        self.login_user(cordelia)
+
+        payload = dict(
+            message_id=message_id,
+            msg_type="widget",
+            content='{"type": "edit_task", "key": "1,1", "task": "Updated task", "desc": "New description"}',
+        )
+        result = self.client_post("/json/submessage", payload)
+        self.assert_json_success(result)
+
+        self.login_user(hamlet)
+        payload = dict(
+            message_id=message_id,
+            msg_type="widget",
+            content='{"type": "edit_task", "key": "1,1", "task": "Hamlet edit", "desc": "Should fail"}',
+        )
+        result = self.client_post("/json/submessage", payload)
+        self.assert_json_error(result, "You can't edit a task unless you are the author.")
+
+    def test_todo_edit_task_requires_all_fields(self) -> None:
+        """
+        Test that edit_task validation requires all necessary fields.
+        """
+        cordelia = self.example_user("cordelia")
+        stream_name = "Verona"
+
+        message_id = self.send_stream_message(
+            sender=cordelia,
+            stream_name=stream_name,
+        )
+        # Create the widget metadata submessage so get_widget_type(message_id) returns "todo".
+        do_add_submessage(
+            realm=cordelia.realm,
+            sender_id=cordelia.id,
+            message_id=message_id,
+            msg_type="widget",
+            content='{"widget_type": "todo"}',
+        )
+
+        self.login_user(cordelia)
+
+        payload = dict(
+            message_id=message_id,
+            msg_type="widget",
+            content='{"type": "edit_task", "key": "1,1", "task": "Updated task"}',
+        )
+        result = self.client_post("/json/submessage", payload)
+        self.assert_json_error_contains(result, "desc key is missing")
+
+    def test_todo_edit_task_valid_data(self) -> None:
+        """
+        Test that edit_task with valid data succeeds.
+        """
+        cordelia = self.example_user("cordelia")
+        stream_name = "Verona"
+
+        message_id = self.send_stream_message(
+            sender=cordelia,
+            stream_name=stream_name,
+        )
+        # Create the widget metadata submessage so get_widget_type(message_id) returns "todo".
+        do_add_submessage(
+            realm=cordelia.realm,
+            sender_id=cordelia.id,
+            message_id=message_id,
+            msg_type="widget",
+            content='{"widget_type": "todo"}',
+        )
+
+        self.login_user(cordelia)
+
+        payload = dict(
+            message_id=message_id,
+            msg_type="widget",
+            content='{"type": "edit_task", "key": "1,1", "task": "Updated task", "desc": "Updated desc"}',
+        )
+        with self.capture_send_event_calls(expected_num_events=1):
+            result = self.client_post("/json/submessage", payload)
+        self.assert_json_success(result)
