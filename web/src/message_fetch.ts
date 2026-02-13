@@ -105,6 +105,11 @@ const consts = {
     recent_view_load_more_increment_per_click: 25000,
 };
 
+const rate_limit_response_schema = z.object({
+    code: z.literal("RATE_LIMIT_HIT"),
+    "retry-after": z.number(),
+});
+
 export function load_messages_around_anchor(
     anchor: string,
     cont: () => void,
@@ -423,6 +428,26 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
             get_messages_success(data, opts);
         },
         error(xhr) {
+            const parsed = rate_limit_response_schema.safeParse(xhr.responseJSON);
+
+            if (xhr.status === 429 && parsed.success) {
+                const retry_delay_secs = Math.round(parsed.data["retry-after"]);
+
+                popup_banners.open_api_rate_limit_exceeded_banner({
+                    caller: "message_fetch",
+                    retry_delay_secs,
+                    on_retry_callback() {
+                        load_messages(opts, attempt + 1);
+                    },
+                });
+
+                load_messages_timeout = setTimeout(() => {
+                    load_messages(opts, attempt + 1);
+                }, retry_delay_secs * 1000);
+
+                return;
+            }
+
             if (xhr.status === 400) {
                 // Even though the request failed, we did reach the
                 // server, and can hide the connection error notice.
