@@ -221,9 +221,6 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
             found_oldest: data.found_oldest,
             history_limited: data.history_limited,
         });
-        if (opts.msg_list) {
-            message_feed_top_notices.update_top_of_narrow_notices(opts.msg_list);
-        }
     }
 
     if (opts.num_after > 0 || current_fetch_found_newest) {
@@ -254,6 +251,11 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
     }
 
     process_result(data, opts);
+
+    // Update the notice after the messages are updated inside the msg_list
+    if ((opts.num_before > 0 || current_fetch_found_oldest) && opts.msg_list) {
+        message_feed_top_notices.update_top_of_narrow_notices(opts.msg_list);
+    }
 }
 
 // This function modifies the narrow data to use integer IDs instead of

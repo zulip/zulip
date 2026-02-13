@@ -126,6 +126,13 @@ run_test("empty_narrow_html", ({mock_template}) => {
         actual_html,
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <a class="search-shared-history hidden-for-spectators" href="" hidden>
+        <button
+          class="action-button action-button-subtle-neutral"
+          type="button">
+            Search all public channels
+        </button>
+    </a>
 </div>
 `,
     );
@@ -139,7 +146,14 @@ run_test("empty_narrow_html", ({mock_template}) => {
         <div class="empty-feed-notice-description">
             <h1> This is the html </h1>
         </div>
-    </div>
+        <a class="search-shared-history hidden-for-spectators" href="" hidden>
+        <button
+          class="action-button action-button-subtle-neutral"
+          type="button">
+            Search all public channels
+        </button>
+    </a>
+</div>
 `,
     );
 
@@ -161,6 +175,13 @@ run_test("empty_narrow_html", ({mock_template}) => {
                 <del>a</del>
                 <span class="search-query-word">search</span>
         </div>
+    <a class="search-shared-history hidden-for-spectators" href="" hidden>
+        <button
+          class="action-button action-button-subtle-neutral"
+          type="button">
+            Search all public channels
+        </button>
+    </a>
 </div>
 `,
     );
@@ -186,6 +207,13 @@ run_test("empty_narrow_html", ({mock_template}) => {
                 <del>and</del>
                 <span class="search-query-word">return</span>
         </div>
+    <a class="search-shared-history hidden-for-spectators" href="" hidden>
+        <button
+          class="action-button action-button-subtle-neutral"
+          type="button">
+            Search all public channels
+        </button>
+    </a>
 </div>
 `,
     );
@@ -199,6 +227,13 @@ run_test("empty_narrow_html", ({mock_template}) => {
         actual_html,
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
+    <a class="search-shared-history hidden-for-spectators" href="" hidden>
+        <button
+          class="action-button action-button-subtle-neutral"
+          type="button">
+            Search all public channels
+        </button>
+    </a>
 </div>
 `,
     );
@@ -630,6 +665,12 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         ),
     );
 
+    current_filter = set_filter([["has", "images"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: No search results."),
+    );
     current_filter = set_filter([
         ["has", "reaction"],
         ["sender", me.user_id],
