@@ -7,6 +7,8 @@ import * as util from "./util.ts";
 
 let inertDocument: Document | undefined;
 
+const STANDARD_INTERNAL_URLS = new Set(["stream", "stream-topic", "message-link"]);
+
 export function postprocess_content(html: string): string {
     inertDocument ??= new DOMParser().parseFromString("", "text/html");
     const template = inertDocument.createElement("template");
@@ -110,6 +112,41 @@ export function postprocess_content(html: string): string {
                 "title",
                 ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
             );
+
+            if (
+                !elt.classList.contains("message_embed_image") &&
+                !elt.classList.contains("message-embed-title-link") &&
+                !elt.classList.contains("media-anchor-element")
+            ) {
+                const link_text = elt.textContent?.trim() ?? "";
+                const link_href = elt.href.replace(/\/$/, "");
+                const link_class = elt.getAttribute("class") ?? "";
+
+                const is_standard_internal = STANDARD_INTERNAL_URLS.has(link_class);
+                const text_matches_href = link_text === link_href;
+                const is_external_link = url.origin !== window.location.origin;
+                const is_user_upload =
+                    !is_external_link && url.pathname.startsWith("/user_uploads/");
+
+                if (is_external_link && !text_matches_href) {
+                    // TS4111 is enforced in CI but not locally, causing @ts-expect-error to be unused locally
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore - TS4111 in CI requires bracket notation, but ESLint requires dot notation
+                    elt.dataset.messageLinkType = "external_named_link";
+                } else if (is_external_link && text_matches_href) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore - TS4111 in CI requires bracket notation, but ESLint requires dot notation
+                    elt.dataset.messageLinkType = "external_plain_url";
+                } else if (is_user_upload) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore - TS4111 in CI requires bracket notation, but ESLint requires dot notation
+                    elt.dataset.messageLinkType = "user_upload";
+                } else if (!is_external_link && !is_standard_internal && !text_matches_href) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore - TS4111 in CI requires bracket notation, but ESLint requires dot notation
+                    elt.dataset.messageLinkType = "internal_named_link";
+                }
+            }
         }
     }
 
