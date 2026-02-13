@@ -2,9 +2,18 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
-from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
+from zerver.lib.attachments import (
+    get_old_unclaimed_attachments,
+    remove_attachment,
+    validate_attachment_request,
+)
 from zerver.lib.markdown import MessageRenderingResult
-from zerver.lib.thumbnail import StoredThumbnailFormat, get_image_thumbnail_path
+from zerver.lib.message import event_recipient_ids_for_action_on_messages
+from zerver.lib.thumbnail import (
+    StoredThumbnailFormat,
+    get_default_thumbnail_url,
+    get_image_thumbnail_path,
+)
 from zerver.lib.upload import claim_attachment, delete_message_attachments
 from zerver.models import (
     Attachment,
@@ -33,6 +42,55 @@ def notify_attachment_update(
         "upload_space_used": user_profile.realm.currently_used_upload_space_bytes(),
     }
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+
+def notify_image_attachment_deletion_to_recipients(
+    user_profile: UserProfile,
+    attachment_path_id: str,
+    attachment_message_ids: list[int],
+    image_attachment: ImageAttachment,
+    recipient_ids: set[int],
+) -> None:
+    thumbnail_url, is_animated = get_default_thumbnail_url(image_attachment)
+
+    send_event_on_commit(
+        user_profile.realm,
+        {
+            "type": "delete_message_image_attachment",
+            "attachment": {
+                "source_url": f"/user_uploads/{attachment_path_id}",
+                "thumbnail_url": thumbnail_url,
+                "thumbnail_is_animated": is_animated,
+                "message_ids": attachment_message_ids,
+            },
+        },
+        recipient_ids,
+    )
+
+
+def do_delete_attachment(attachment: Attachment, user_profile: UserProfile) -> None:
+    attachment_id = attachment.id
+    attachment_path_id = attachment.path_id
+    attachment_messages = list(attachment.messages.all())
+
+    attachment_message_ids = [msg.id for msg in attachment_messages]
+    image_attachment = ImageAttachment.objects.filter(path_id=attachment_path_id).first()
+    recipient_ids = set()
+
+    if image_attachment and len(attachment_messages) > 0:
+        recipient_ids = event_recipient_ids_for_action_on_messages(attachment_messages)
+
+    remove_attachment(user_profile, attachment)
+    notify_attachment_update(user_profile, "remove", {"id": attachment_id})
+
+    if image_attachment and len(recipient_ids) > 0:
+        notify_image_attachment_deletion_to_recipients(
+            user_profile,
+            attachment_path_id,
+            attachment_message_ids,
+            image_attachment,
+            recipient_ids,
+        )
 
 
 def do_claim_attachments(
