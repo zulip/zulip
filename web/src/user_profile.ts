@@ -410,6 +410,8 @@ function render_user_stream_list(streams: StreamSubscription[], user: User): voi
         },
         $simplebar_container: $("#user-profile-modal .modal__content"),
     });
+
+    $container.find(".remove-button").attr("tabindex", "0");
 }
 
 function render_or_update_user_groups_tab(user: User): void {
@@ -455,6 +457,8 @@ function render_user_group_list(groups: UserGroup[], user: User): void {
         },
         $simplebar_container: $("#user-profile-modal .modal__content"),
     });
+
+    $container.find(".remove-member-button").attr("tabindex", "0");
 }
 
 function render_manage_profile_content(user: User): void {
@@ -1656,6 +1660,62 @@ export function initialize(): void {
             hide_user_profile();
         },
     );
+
+    $("body").on("keydown", "#user-profile-modal .stream-row", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        const $row = $(e.currentTarget);
+        const $button = $row.find(".remove-button");
+
+        if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && $button.length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            $button.trigger("focus");
+        }
+    });
+
+    $("body").on("keydown", "#user-profile-modal .stream-row .remove-button", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+            e.preventDefault();
+            e.stopPropagation();
+            const $row = $(e.currentTarget).closest(".stream-row");
+            $row.trigger("focus");
+        }
+    });
+
+    $("body").on("keydown", "#user-profile-modal .user-profile-group-row", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        const $row = $(e.currentTarget);
+        const $button = $row.find(".remove-member-button:not(:disabled)");
+
+        if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && $button.length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            $button.trigger("focus");
+        }
+    });
+
+    $("body").on("keydown", "#user-profile-modal .remove-member-button", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+            e.preventDefault();
+            e.stopPropagation();
+            const $row = $(e.currentTarget).closest(".user-profile-group-row");
+            $row.trigger("focus");
+        }
+    });
 
     bot_helper.initialize_bot_click_handlers();
 
