@@ -80,7 +80,8 @@
     border: 1px solid var(--color-border-popover-menu);
     border-radius: 6px;
     box-shadow: var(--box-shadow-popover-menu);
-    font-size: 1.0714em; /* 15px at 14px em */
+    font-size: 1.0714em;
+    /* 15px at 14px em */
 
     > .tippy-content {
         padding: 0;
@@ -288,7 +289,8 @@
         line-height: 1.1;
         margin-top: 4px;
         white-space: pre-wrap;
-        min-width: 12.5em; /* 200px at 16px/1em */
+        min-width: 12.5em;
+        /* 200px at 16px/1em */
     }
 }
 
@@ -423,7 +425,7 @@ ul.popover-group-menu-member-list {
         left: 0 !important;
 
         width: 100vw;
-        height: 100vh;
+        height: var(--full-height-dynamic-viewport);
 
         display: flex !important;
         justify-content: center;
