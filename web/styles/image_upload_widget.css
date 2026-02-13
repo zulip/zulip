@@ -224,5 +224,31 @@
 
 /* CSS  related to upload widget's preview image */
 .upload_widget_image_preview {
-    object-fit: cover;
+    &.crop {
+        object-fit: cover;
+    }
+
+    &.pad {
+        object-fit: contain;
+    }
+}
+
+.add-custom-emoji-form-actions {
+    display: flex;
+
+    #resize-by-crop-button,
+    #resize-by-pad-button {
+        margin-left: 12px;
+    }
+}
+
+@media (max-width: $mm_min) {
+    .add-custom-emoji-form-actions {
+        display: block;
+
+        #resize-by-crop-button,
+        #resize-by-pad-button {
+            margin: 12px 0 0;
+        }
+    }
 }

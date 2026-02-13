@@ -170,6 +170,8 @@ export function add_custom_emoji_post_render(): void {
     const $input_error = $("#emoji_file_input_error");
     const $clear_button = $("#emoji_image_clear_button");
     const $upload_button = $("#emoji_upload_button");
+    const $resize_by_crop_button = $("#resize-by-crop-button");
+    const $resize_by_pad_button = $("#resize-by-pad-button");
     const $preview_text = $("#emoji_preview_text");
     const $preview_image = $("#emoji_preview_image");
     const $placeholder_icon = $("#emoji_placeholder_icon");
@@ -186,9 +188,26 @@ export function add_custom_emoji_post_render(): void {
         $preview_image,
     );
 
+    function get_filename(): string | undefined {
+        const input = get_file_input()[0];
+        if (!input?.files?.length) {
+            return undefined;
+        }
+
+        const filename = input.files[0]?.name.toLowerCase();
+        return filename;
+    }
+
     get_file_input().on("input", () => {
         $placeholder_icon.hide();
         $preview_image.show();
+
+        const filename = get_filename();
+        if (filename && !/\.(gif)$/.test(filename)) {
+            $resize_by_crop_button.show();
+        } else {
+            $preview_image.addClass("pad");
+        }
     });
 
     $preview_text.show();
@@ -198,9 +217,25 @@ export function add_custom_emoji_post_render(): void {
 
         $("#add-custom-emoji-modal .dialog_submit_button").prop("disabled", true);
 
-        $preview_image.hide();
+        $preview_image.removeClass("pad crop").hide();
+        $resize_by_crop_button.hide();
+        $resize_by_pad_button.hide();
         $placeholder_icon.show();
         $preview_text.show();
+    });
+
+    $resize_by_crop_button.on("click", (e) => {
+        e.preventDefault();
+        $resize_by_crop_button.hide();
+        $resize_by_pad_button.show();
+        $preview_image.removeClass("crop").addClass("pad");
+    });
+
+    $resize_by_pad_button.on("click", (e) => {
+        e.preventDefault();
+        $resize_by_crop_button.show();
+        $resize_by_pad_button.hide();
+        $preview_image.removeClass("pad").addClass("crop");
     });
 }
 
@@ -211,6 +246,7 @@ function show_modal(): void {
         dialog_widget.show_dialog_spinner();
 
         const $emoji_status = $("#dialog_error");
+        const $resize_by_crop_button = $("#resize-by-crop-button");
         const emoji: Record<string, string> = {};
 
         function submit_custom_emoji_request(formData: FormData): void {
@@ -263,6 +299,8 @@ function show_modal(): void {
         for (const [i, file] of [...files].entries()) {
             formData.append("file-" + i, file);
         }
+        const resize_method = $resize_by_crop_button.css("display") !== "none" ? "crop" : "fit";
+        formData.append("resize_method", resize_method);
 
         if (is_default_emoji(emoji["name"])) {
             if (!current_user.is_admin) {

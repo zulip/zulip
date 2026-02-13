@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, HttpResponse
@@ -8,7 +10,12 @@ from zerver.decorator import require_human_non_guest_user
 from zerver.lib.emoji import check_remove_custom_emoji, check_valid_emoji_name, name_to_codepoint
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint import (
+    INTENTIONALLY_UNDOCUMENTED,
+    ApiParamConfig,
+    PathOnly,
+    typed_endpoint,
+)
 from zerver.lib.upload import get_file_info
 from zerver.models import RealmEmoji, UserProfile
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
@@ -25,11 +32,19 @@ def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 @require_human_non_guest_user
 @typed_endpoint
 def upload_emoji(
-    request: HttpRequest, user_profile: UserProfile, *, emoji_name: PathOnly[str]
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    emoji_name: PathOnly[str],
+    resize_method: Annotated[
+        str,
+        ApiParamConfig(documentation_status=INTENTIONALLY_UNDOCUMENTED),
+    ] = "crop",
 ) -> HttpResponse:
     emoji_name = emoji_name.strip().replace(" ", "_")
     valid_built_in_emoji = name_to_codepoint.keys()
     check_valid_emoji_name(emoji_name)
+    resize_method = request.POST.get("resize_method", "crop")
 
     if not user_profile.can_add_custom_emoji():
         raise JsonableError(_("Insufficient permission"))
@@ -42,6 +57,9 @@ def upload_emoji(
         raise JsonableError(_("You must upload exactly one file."))
     if emoji_name in valid_built_in_emoji and not user_profile.is_realm_admin:
         raise JsonableError(_("Only administrators can override default emoji."))
+    if resize_method not in {"crop", "fit"}:  # nocoverage
+        raise JsonableError(_("Invalid resize method"))
+
     [emoji_file] = request.FILES.values()
     assert isinstance(emoji_file, UploadedFile)
     assert emoji_file.size is not None
@@ -53,7 +71,9 @@ def upload_emoji(
         )
 
     _filename, content_type = get_file_info(emoji_file)
-    check_add_realm_emoji(user_profile.realm, emoji_name, user_profile, emoji_file, content_type)
+    check_add_realm_emoji(
+        user_profile.realm, emoji_name, user_profile, emoji_file, content_type, resize_method
+    )
     return json_success(request)
 
 
