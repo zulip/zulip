@@ -257,6 +257,14 @@ class ImmutableMessage {
         assert(this.message.type === "private");
         return this.message.to_user_ids;
     }
+
+    is_stream(): boolean {
+        return this.message.is_stream;
+    }
+
+    is_private(): boolean {
+        return this.message.is_private;
+    }
 }
 
 export function maybe_get_immutable_message(message_id: number): ImmutableMessage | undefined {
