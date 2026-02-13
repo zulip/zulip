@@ -519,18 +519,14 @@ class WorkerTest(ZulipTestCase):
             worker = PushNotificationsWorker()
             worker.setup()
             with (
+                patch("zerver.lib.push_notifications.handle_push_notification") as mock_handle_new,
                 patch(
-                    "zerver.worker.missedmessage_mobile_notifications.handle_push_notification"
-                ) as mock_handle_new,
-                patch(
-                    "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification"
+                    "zerver.lib.push_notifications.handle_remove_push_notification"
                 ) as mock_handle_remove,
                 patch(
-                    "zerver.worker.missedmessage_mobile_notifications.handle_register_push_device_to_bouncer"
+                    "zerver.lib.push_registration.handle_register_push_device_to_bouncer"
                 ) as mock_handle_register,
-                patch(
-                    "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
-                ),
+                patch("zerver.lib.push_notifications.initialize_push_notifications"),
             ):
                 event_new = generate_new_message_notification()
                 event_remove = generate_remove_notification()
@@ -548,20 +544,18 @@ class WorkerTest(ZulipTestCase):
 
             with (
                 patch(
-                    "zerver.worker.missedmessage_mobile_notifications.handle_push_notification",
+                    "zerver.lib.push_notifications.handle_push_notification",
                     side_effect=PushNotificationBouncerRetryLaterError("test"),
                 ) as mock_handle_new,
                 patch(
-                    "zerver.worker.missedmessage_mobile_notifications.handle_remove_push_notification",
+                    "zerver.lib.push_notifications.handle_remove_push_notification",
                     side_effect=PushNotificationBouncerRetryLaterError("test"),
                 ) as mock_handle_remove,
                 patch(
-                    "zerver.worker.missedmessage_mobile_notifications.handle_register_push_device_to_bouncer",
+                    "zerver.lib.push_registration.handle_register_push_device_to_bouncer",
                     side_effect=PushNotificationBouncerRetryLaterError("test"),
                 ) as mock_handle_register,
-                patch(
-                    "zerver.worker.missedmessage_mobile_notifications.initialize_push_notifications"
-                ),
+                patch("zerver.lib.push_notifications.initialize_push_notifications"),
             ):
                 event_new = generate_new_message_notification()
                 event_remove = generate_remove_notification()

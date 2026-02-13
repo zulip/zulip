@@ -21,16 +21,13 @@ from django.db.models.functions import Lower
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from firebase_admin import App as FCMApp
-from firebase_admin import credentials as firebase_credentials
-from firebase_admin import exceptions as firebase_exceptions
-from firebase_admin import initialize_app as firebase_initialize_app
-from firebase_admin import messaging as firebase_messaging
-from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
 from nacl.encoding import Base64Encoder
 from nacl.secret import SecretBox
 from pydantic import TypeAdapter
 from typing_extensions import TypedDict, override
+
+if TYPE_CHECKING:
+    from firebase_admin import App as FCMApp
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.realm_settings import (
@@ -380,7 +377,12 @@ def send_apple_push_notification(
 FCM_REQUEST_TIMEOUT = 5
 
 
-def make_fcm_app() -> FCMApp:  # nocoverage
+def make_fcm_app() -> "FCMApp":  # nocoverage
+    # We lazily do this import as part of optimizing Zulip's base
+    # import time.
+    from firebase_admin import credentials as firebase_credentials
+    from firebase_admin import initialize_app as firebase_initialize_app
+
     if settings.ANDROID_FCM_CREDENTIALS_PATH is None:
         return None
 
@@ -475,6 +477,12 @@ def send_android_push_notification(
     options: Additional options to control the FCM message sent.
         For details, see `parse_fcm_options`.
     """
+    # We lazily do this import as part of optimizing Zulip's base
+    # import time.
+    from firebase_admin import exceptions as firebase_exceptions
+    from firebase_admin import messaging as firebase_messaging
+    from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
+
     if not devices:
         return 0
     if not fcm_app:

@@ -22,7 +22,6 @@ from dataclasses import dataclass
 from email.headerregistry import Address
 from typing import Any, TypedDict, TypeVar, cast
 
-import magic
 import orjson
 from decorator import decorator
 from django.conf import settings
@@ -70,7 +69,6 @@ from social_core.storage import UserProtocol
 from social_core.strategy import HttpResponseProtocol
 from social_django.utils import load_backend, load_strategy
 from typing_extensions import override
-from zxcvbn import zxcvbn
 
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
@@ -490,6 +488,9 @@ def check_password_strength(password: str) -> bool:
     Returns True if the password is strong enough,
     False otherwise.
     """
+    # Lazily imported to avoid ~30ms import time at startup.
+    from zxcvbn import zxcvbn
+
     if len(password) < settings.PASSWORD_MIN_LENGTH:
         return False
 
@@ -888,6 +889,9 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         # Structurally, to make the S3 backend happy, we need to
         # provide a Content-Type; since that isn't specified in
         # any metadata, we auto-detect it.
+        # Lazily imported to avoid ~9ms import time at startup.
+        import magic
+
         content_type = magic.from_buffer(ldap_avatar[:1024], mime=True)
         if content_type.startswith("image/"):
             upload_avatar_image(BytesIO(ldap_avatar), user, content_type=content_type)

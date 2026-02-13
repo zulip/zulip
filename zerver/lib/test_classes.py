@@ -3013,17 +3013,13 @@ class E2EEPushNotificationTestCase(BouncerTestCase):
         if for_legacy:
             with (
                 mock.patch("zerver.lib.push_notifications.fcm_app"),
-                mock.patch(
-                    "zerver.lib.push_notifications.firebase_messaging"
-                ) as mock_fcm_messaging,
+                mock.patch("firebase_admin.messaging") as mock_fcm_messaging,
             ):
                 yield mock_fcm_messaging
         else:
             with (
                 mock.patch("zilencer.lib.push_notifications.fcm_app"),
-                mock.patch(
-                    "zilencer.lib.push_notifications.firebase_messaging"
-                ) as mock_fcm_messaging,
+                mock.patch("firebase_admin.messaging") as mock_fcm_messaging,
             ):
                 yield mock_fcm_messaging
 

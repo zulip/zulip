@@ -111,7 +111,7 @@ if options.test:
     settings_module = "zproject.test_settings"
     # Don't auto-reload when running Puppeteer tests
     runserver_args = ["--noreload"]
-    runtornado_command = ["./manage.py", "runtornado"]
+    runtornado_command = ["./manage.py", "runtornado", "--skip-checks"]
 else:
     settings_module = "zproject.settings"
     runtornado_command = [
@@ -120,6 +120,7 @@ else:
         "--until-success",
         "./manage.py",
         "runtornado",
+        "--skip-checks",
         "--autoreload",
         "--immediate-reloads",
         "--automated",
@@ -176,6 +177,7 @@ def server_processes() -> list[list[str]]:
         [
             "./manage.py",
             "rundjangoserver",
+            "--skip-checks",
             *manage_args,
             *runserver_args,
             f"127.0.0.1:{django_port}",
