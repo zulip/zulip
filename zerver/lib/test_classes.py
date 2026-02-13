@@ -900,6 +900,7 @@ Output:
         enable_marketing_emails: bool | None = None,
         email_address_visibility: int | None = None,
         is_demo_organization: bool = False,
+        next: str = "",
         **extra: str,
     ) -> "TestHttpResponse":
         """
@@ -936,6 +937,8 @@ Output:
             payload["password"] = password
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain
+        if next:
+            payload["next"] = next
         return self.client_post(
             "/accounts/register/",
             payload,

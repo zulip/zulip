@@ -16,7 +16,7 @@ from django.template.response import TemplateResponse
 from django.test import Client, override_settings
 from django.utils import translation
 
-from confirmation.models import Confirmation, one_click_unsubscribe_link
+from confirmation.models import Confirmation, create_confirmation_link, one_click_unsubscribe_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import add_new_user_history, do_create_user
 from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
@@ -84,7 +84,11 @@ from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
-from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
+from zerver.views.auth import (
+    create_preregistration_user,
+    redirect_and_log_into_subdomain,
+    start_two_factor_auth,
+)
 from zerver.views.development.registration import confirmation_key
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult, email_auth_enabled
 
@@ -1806,6 +1810,39 @@ class UserSignUpTest(ZulipTestCase):
 
         result = self.verify_signup(email=email, password=password)
         assert isinstance(result, UserProfile)
+
+    def test_signup_redirects_to_next(self) -> None:
+        email = "nextuser@zulip.com"
+        next_url = "/#narrow/channel/7-test-here"
+        realm = get_realm("zulip")
+
+        prereg_user = create_preregistration_user(
+            email, realm, password_required=False, full_name="Next User"
+        )
+        confirmation_url = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        confirmation_key = confirmation_url.split("/")[-1]
+        result = self.client_post(
+            "/accounts/register/",
+            {
+                "key": confirmation_key,
+                "from_confirmation": "1",
+                "full_name": "Next User",
+                "next": next_url,
+            },
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(
+            [f'<input type="hidden" name="next" value="{next_url}" />'], result
+        )
+
+        result = self.submit_reg_form_for_user(
+            email, None, full_name="Next User", next=next_url, key=confirmation_key
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], realm.url + next_url)
 
     def test_signup_with_email_address_race(self) -> None:
         """
