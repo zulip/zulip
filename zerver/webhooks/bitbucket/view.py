@@ -7,6 +7,8 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
@@ -15,6 +17,7 @@ from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
     get_event_header,
+    guess_zulip_user_from_external_account,
 )
 from zerver.lib.webhooks.git import (
     TOPIC_WITH_BRANCH_TEMPLATE,
@@ -505,6 +508,23 @@ def get_user_info(request: HttpRequest, dct: WildValue) -> str:
     # See https://developer.atlassian.com/cloud/bitbucket/bitbucket-api-changes-gdpr/
     # Since GDPR, we don't get username; instead, we either get display_name
     # or nickname.
+    assert isinstance(request.user, UserProfile)
+    realm = request.user.realm
+
+    # Try to match a Zulip user by their Bitbucket UUID custom profile field
+    if "uuid" in dct:
+        bitbucket_uuid = dct["uuid"].tame(check_string)
+        external_account_field_name = str(DEFAULT_EXTERNAL_ACCOUNTS["bitbucket_uuid"].name)
+        zulip_user = guess_zulip_user_from_external_account(
+            realm,
+            bitbucket_uuid,
+            external_account_field_name,
+            external_username_case_insensitive=True,
+        )
+        if zulip_user is not None:
+            return silent_mention_syntax_for_user(zulip_user)
+
+    # Fall back to display_name or nickname
     if "display_name" in dct:
         return dct["display_name"].tame(check_string)
 

@@ -45,6 +45,12 @@ DEFAULT_EXTERNAL_ACCOUNTS = {
         name=gettext_lazy("Bitbucket username"),
         hint="",
     ),
+    "bitbucket_uuid": ExternalAccount(
+        text="Bitbucket UUID",
+        url_pattern="",
+        name=gettext_lazy("Bitbucket UUID"),
+        hint="Find it at bitbucket.org/!api/2.0/user while logged in",
+    ),
     "bluesky": ExternalAccount(
         text="Bluesky",
         url_pattern="https://bsky.app/profile/%(username)s",

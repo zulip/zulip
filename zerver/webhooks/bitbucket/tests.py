@@ -1,10 +1,13 @@
 from unittest.mock import MagicMock, patch
 
+from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.validator import wrap_wild_value
+from zerver.models import UserProfile
 from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
 from zerver.webhooks.bitbucket.view import get_user_info
 
 TOPIC = "Repository name"
@@ -455,3 +458,67 @@ class BitbucketHookTests(WebhookTestCase):
         del dct["nickname"]
 
         self.assertEqual(get_user_info(request, wrap_wild_value("request", dct)), "Unknown user")
+
+    def test_get_user_info_with_uuid_match(self) -> None:
+        realm = get_realm("zulip")
+        bitbucket_uuid_field = try_add_realm_default_custom_profile_field(realm, "bitbucket_uuid")
+
+        hamlet = self.example_user("hamlet")
+        test_uuid = "{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
+        self.set_user_custom_profile_data(
+            hamlet, [{"id": bitbucket_uuid_field.id, "value": test_uuid}]
+        )
+
+        request = HostRequestMock()
+        request.content_type = "application/json"
+        request.user = self.test_user
+        assert isinstance(request.user, UserProfile)
+        RequestNotes.get_notes(request).client = get_client("test")
+
+        dct = dict(
+            uuid=test_uuid,
+            display_name="Tomasz",
+            nickname="kolaszek",
+        )
+        result = get_user_info(request, wrap_wild_value("request", dct))
+        self.assertEqual(result, f"@_**{hamlet.full_name}|{hamlet.id}**")
+
+    def test_pull_request_silent_mention(self) -> None:
+        realm = get_realm("zulip")
+        bitbucket_uuid_field = try_add_realm_default_custom_profile_field(realm, "bitbucket_uuid")
+
+        hamlet = self.example_user("hamlet")
+        test_uuid = "{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
+        self.set_user_custom_profile_data(
+            hamlet, [{"id": bitbucket_uuid_field.id, "value": test_uuid}]
+        )
+        expected_message = f"@_**{hamlet.full_name}|{hamlet.id}** created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
+        self.check_webhook(
+            "pull_request_created_or_updated_without_username",
+            TOPIC_PR_EVENTS,
+            expected_message,
+            HTTP_X_EVENT_KEY="pullrequest:created",
+        )
+
+    def test_pull_request_silent_mention_with_multiple_matches(self) -> None:
+        realm = get_realm("zulip")
+        bitbucket_uuid_field = try_add_realm_default_custom_profile_field(realm, "bitbucket_uuid")
+
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        test_uuid = "{678ab31f-9f88-4d7a-b343-1bdf9f024917}"
+        self.set_user_custom_profile_data(
+            hamlet, [{"id": bitbucket_uuid_field.id, "value": test_uuid}]
+        )
+        self.set_user_custom_profile_data(
+            cordelia, [{"id": bitbucket_uuid_field.id, "value": test_uuid}]
+        )
+
+        expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
+        self.check_webhook(
+            "pull_request_created_or_updated_without_username",
+            TOPIC_PR_EVENTS,
+            expected_message,
+            HTTP_X_EVENT_KEY="pullrequest:created",
+        )
