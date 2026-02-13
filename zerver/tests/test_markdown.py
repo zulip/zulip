@@ -1178,6 +1178,14 @@ class MarkdownEmbedsTest(ZulipTestCase):
 <div class="message_inline_image message_inline_video"><a href="https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&amp;st=kjtkea8h&amp;dl=0&amp;raw=1"><video preload="metadata" src="https://external-content.zulipcdn.net/external_content/eca04355025c60f40334c9a03d220c3298d4df47/68747470733a2f2f7777772e64726f70626f782e636f6d2f73636c2f66692f78387a3031726f6471316e367067797a6e74316b682f53616d706c65566964656f5f31323830783732305f316d622e6d70343f726c6b65793d6669696273676e753036746d7330343176667a666f706d6f732673743d6b6a746b6561386826646c3d30267261773d31"></video></a></div>""",
         )
 
+    def test_inline_mov_video(self) -> None:
+        # Test that .mov (QuickTime) videos get inline preview support
+        msg = "Check out: https://example.com/video.mov"
+        converted = markdown_convert_wrapper(msg)
+        self.assertIn('class="message_inline_image message_inline_video"', converted)
+        self.assertIn("<video", converted)
+        self.assertIn('src="', converted)
+
     def test_inline_dropbox_preview(self) -> None:
         # Test photo album previews
         msg = "https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5"

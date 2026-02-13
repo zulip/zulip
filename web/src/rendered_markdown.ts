@@ -135,6 +135,14 @@ export const update_elements = ($content: JQuery): void => {
         });
     }
 
+    // Hide video preview for browsers that cannot play the format.
+    // The download link remains available.
+    $content.find<HTMLMediaElement>(".message_inline_video video").each((_index, video) => {
+        $(video).on("error", () => {
+            $(video).closest(".message_inline_video").addClass("video-format-unsupported");
+        });
+    });
+
     // personal and stream wildcard mentions
     $content.find(".user-mention").each(function (): void {
         const user_id = get_user_id_for_mention_button(this);

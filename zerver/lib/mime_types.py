@@ -10,6 +10,7 @@ EXTRA_MIME_TYPES = [
     ("audio/wav", ".wav"),
     ("audio/webm", ".weba"),
     ("image/apng", ".apng"),
+    ("video/quicktime", ".mov"),
 ]
 
 if sys.version_info < (3, 11):  # nocoverage
@@ -43,6 +44,7 @@ INLINE_MIME_TYPES = [
     "image/webp",
     "text/plain",
     "video/mp4",
+    "video/quicktime",
     "video/webm",
     # To avoid cross-site scripting attacks, DO NOT add types such
     # as application/xhtml+xml, application/x-shockwave-flash,

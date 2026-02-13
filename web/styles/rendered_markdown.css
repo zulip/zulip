@@ -697,6 +697,10 @@
         }
     }
 
+    .message_inline_video.video-format-unsupported {
+        display: none;
+    }
+
     .youtube-video .media-anchor-element {
         /* We display the youtube-video anchor
            as a grid, not inline grid, to avoid

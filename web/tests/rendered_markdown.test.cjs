@@ -100,8 +100,8 @@ stream_data.add_sub_for_tests(stream);
 
 const $array = (array) => {
     const each = (func) => {
-        for (const e of array) {
-            func.call(e);
+        for (const [index, e] of array.entries()) {
+            func.call(e, index, e);
         }
     };
     return {each};
@@ -200,10 +200,61 @@ run_test("message_inline_video", () => {
     };
 
     $content.set_find_results(".message_inline_video video", $array([$elem]));
+
+    // Test with GestureEvent undefined (non-Safari)
+    assert.equal(window.GestureEvent, undefined);
     window.GestureEvent = true;
     rm.update_elements($content);
     assert.equal(load_called, true);
-    window.GestureEvent = false;
+    // Restore: since original was undefined, delete the property
+    delete window.GestureEvent;
+    assert.equal(window.GestureEvent, undefined);
+
+    // Test with GestureEvent already defined (Safari-like environment)
+    load_called = false;
+    const fake_gesture_event = {fake: true};
+    window.GestureEvent = fake_gesture_event;
+    const $elem2 = $.create("message_inline_video_2");
+    $elem2.load = () => {
+        load_called = true;
+    };
+    $content.set_find_results(".message_inline_video video", $array([$elem2]));
+    const original_gesture_event = window.GestureEvent;
+    window.GestureEvent = true;
+    rm.update_elements($content);
+    assert.equal(load_called, true);
+    // Restore: since original was defined, assign it back
+    window.GestureEvent = original_gesture_event;
+    assert.deepEqual(window.GestureEvent, fake_gesture_event);
+    // Clean up for other tests
+    delete window.GestureEvent;
+});
+
+run_test("message_inline_video_unsupported_format", () => {
+    const $content = get_content_element();
+    const $video = $.create("video_element");
+    const $video_container = $.create("message_inline_video_container");
+
+    $video.closest = (selector) => {
+        assert.equal(selector, ".message_inline_video");
+        return $video_container;
+    };
+
+    let error_handler;
+    $video.on = (event, handler) => {
+        assert.equal(event, "error");
+        error_handler = handler;
+    };
+
+    $content.set_find_results(".message_inline_video video", $array([$video]));
+    rm.update_elements($content);
+
+    assert.ok(error_handler);
+
+    // Simulate video error (browser cannot play the format)
+    error_handler.call($video);
+
+    assert.ok($video_container.hasClass("video-format-unsupported"));
 });
 
 run_test("user-mention", ({override}) => {
