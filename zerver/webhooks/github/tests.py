@@ -299,7 +299,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__opened", expected_topic_name, expected_message)
 
     def test_pull_request_synchronized_msg(self) -> None:
-        expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        expected_message = "baxterthehacker updated the code in [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__synchronized", TOPIC_PR, expected_message)
 
     def test_pull_request_closed_msg(self) -> None:
@@ -454,7 +454,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__edited_with_body_change", TOPIC_PR, expected_message)
 
     def test_pull_request_synchronized_with_body(self) -> None:
-        expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        expected_message = "baxterthehacker updated the code in [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__synchronized_with_body", TOPIC_PR, expected_message)
 
     def test_pull_request_assigned_msg(self) -> None:
@@ -479,7 +479,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__unassigned", expected_topic_name, expected_message)
 
     def test_pull_request_ready_for_review_msg(self) -> None:
-        expected_message = "**Hypro999** has marked [PR #2](https://github.com/Hypro999/temp-test-github-webhook/pull/2) as ready for review."
+        expected_message = "Hypro999 marked [PR #2](https://github.com/Hypro999/temp-test-github-webhook/pull/2) as ready for review."
         self.check_webhook(
             "pull_request__ready_for_review",
             "temp-test-github-webhook / PR #2 Test",

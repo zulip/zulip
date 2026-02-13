@@ -85,7 +85,7 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
     pull_request = payload["pull_request"]
     action = payload["action"].tame(check_string)
     if action == "synchronize":
-        action = "updated"
+        action = "updated the code in"
     assignee = None
     if pull_request.get("assignee"):
         assignee = pull_request["assignee"]["login"].tame(check_string)
@@ -626,7 +626,7 @@ def get_pull_request_auto_merge_body(helper: Helper) -> str:
 def get_pull_request_ready_for_review_body(helper: Helper) -> str:
     payload = helper.payload
 
-    message = "**{sender}** has marked [PR #{pr_number}]({pr_url}) as ready for review."
+    message = "{sender} marked [PR #{pr_number}]({pr_url}) as ready for review."
     return message.format(
         sender=get_sender_name(helper),
         pr_number=payload["pull_request"]["number"].tame(check_int),
