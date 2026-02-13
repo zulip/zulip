@@ -3385,6 +3385,16 @@ paths:
                                           of the user.
 
                                           Present only if the message mentions the current user.
+                                      has_watched_phrase:
+                                        type: boolean
+                                        description: |
+                                          A flag which indicates whether the message contains one of
+                                          the user's configured watched phrases (alert words).
+
+                                          Present only if the message has a watched phrase (alert word) for
+                                          the current user.
+
+                                          **Changes**: New in Zulip 12.0 (feature level ZF-047e9d).
                                       user_ids:
                                         type: array
                                         items:
@@ -17743,6 +17753,15 @@ paths:
 
                               **Changes**: Before Zulip 8.0 (feature level 213), the unmute and follow
                               topic features were not handled correctly in calculating this field.
+                            items:
+                              type: integer
+                          watched_phrases:
+                            type: array
+                            description: |
+                              Array containing the IDs of all unread messages that contain one of the
+                              user's configured watched phrases (alert words).
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-047e9d).
                             items:
                               type: integer
                           old_unreads_missing:

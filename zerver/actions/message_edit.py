@@ -406,6 +406,23 @@ def get_mentions_for_message_updates(message: Message) -> set[int]:
     return set(mentioned_user_ids) & user_ids_having_message_access
 
 
+def get_watched_phrases_for_message_updates(message: Message) -> set[int]:
+    watched_phrase_user_ids = (
+        UserMessage.objects.filter(
+            message=message.id,
+            flags=~UserMessage.flags.historical,
+        )
+        .filter(flags__andnz=UserMessage.flags.has_alert_word)
+        .values_list("user_profile_id", flat=True)
+    )
+
+    user_ids_having_message_access = event_recipient_ids_for_action_on_messages(
+        [message.id], message.is_channel_message
+    )
+
+    return set(watched_phrase_user_ids) & user_ids_having_message_access
+
+
 def update_user_message_flags(
     rendering_result: MessageRenderingResult,
     ums: Iterable[UserMessage],
@@ -520,6 +537,7 @@ def update_message_content(
     content: str,
     rendering_result: MessageRenderingResult,
     prior_mention_user_ids: set[int],
+    prior_watched_phrase_user_ids: set[int],
     mention_data: MentionData,
     event: dict[str, Any],
     edit_history_event: EditHistoryEvent,
@@ -574,6 +592,7 @@ def update_message_content(
     event["followed_topic_email_user_ids"] = list(info.followed_topic_email_user_ids)
     event["muted_sender_user_ids"] = list(info.muted_sender_user_ids)
     event["prior_mention_user_ids"] = list(prior_mention_user_ids)
+    event["prior_watched_phrase_user_ids"] = list(prior_watched_phrase_user_ids)
     event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
     event["all_bot_user_ids"] = list(info.all_bot_user_ids)
     event["push_device_registered_user_ids"] = list(info.push_device_registered_user_ids)
@@ -599,6 +618,8 @@ def update_message_content(
 
     update_user_message_flags(rendering_result, ums, topic_participant_user_ids)
 
+    # Since we are not sending mobile push notifications for watched phrases (alert words)
+    # we don't need to update mobile push notifications for them.
     do_update_mobile_push_notification(
         target_message,
         prior_mention_user_ids,
@@ -653,6 +674,7 @@ def do_update_message(
     send_notification_to_new_thread: bool,
     rendering_result: MessageRenderingResult | None,
     prior_mention_user_ids: set[int],
+    prior_watched_phrase_user_ids: set[int],
     mention_data: MentionData | None = None,
 ) -> UpdateMessageResult:
     """
@@ -719,6 +741,7 @@ def do_update_message(
             message_edit_request.content,
             rendering_result,
             prior_mention_user_ids,
+            prior_watched_phrase_user_ids,
             mention_data,
             event,
             edit_history_event,
@@ -1621,6 +1644,7 @@ def check_update_message(
     rendering_result = None
     links_for_embed: set[str] = set()
     prior_mention_user_ids: set[int] = set()
+    prior_watched_phrase_user_ids: set[int] = set()
     mention_data: MentionData | None = None
     if message_edit_request.is_content_edited:
         mention_backend = MentionBackend(user_profile.realm_id)
@@ -1630,6 +1654,7 @@ def check_update_message(
             message_sender=message.sender,
         )
         prior_mention_user_ids = get_mentions_for_message_updates(message)
+        prior_watched_phrase_user_ids = get_watched_phrases_for_message_updates(message)
 
         # We render the message using the current user's realm; since
         # the cross-realm bots never edit messages, this should be
@@ -1721,6 +1746,7 @@ def check_update_message(
         send_notification_to_new_thread,
         rendering_result,
         prior_mention_user_ids,
+        prior_watched_phrase_user_ids,
         mention_data,
     )
 

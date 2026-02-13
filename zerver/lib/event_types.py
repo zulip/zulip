@@ -1112,6 +1112,7 @@ class MessageDetailsCore(BaseModel):
 class MessageDetails(MessageDetailsCore):
     # TODO: fix types to avoid optional fields
     mentioned: bool | None = None
+    has_watched_phrase: bool | None = None
     user_ids: list[int] | None = None
     stream_id: int | None = None
     topic: str | None = None

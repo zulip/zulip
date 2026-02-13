@@ -656,6 +656,7 @@ export const split_state_data_schema = z.object({
             streams: z.array(unread_stream_info_schema),
             huddles: z.array(unread_direct_message_group_info_schema),
             mentions: z.array(z.number()),
+            watched_phrases: z.array(z.number()),
             count: z.number(),
             old_unreads_missing: z.boolean(),
         }),

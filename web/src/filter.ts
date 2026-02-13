@@ -1224,6 +1224,9 @@ export class Filter {
         if (_.isEqual(term_types, ["is-mentioned"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["is-alerted"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
@@ -1309,6 +1312,8 @@ export class Filter {
                     return "/#narrow/is/starred";
                 case "is-mentioned":
                     return "/#narrow/is/mentioned";
+                case "is-alerted":
+                    return "/#narrow/is/alerted";
                 case "channels-public":
                     return "/#narrow/channels/public";
                 case "channels-web-public":
@@ -1396,6 +1401,9 @@ export class Filter {
                 break;
             case "is-mentioned":
                 zulip_icon = "at-sign";
+                break;
+            case "is-alerted":
+                zulip_icon = "exclamation-circle";
                 break;
             case "dm":
                 zulip_icon = "user";
@@ -1507,6 +1515,8 @@ export class Filter {
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
                     return $t({defaultMessage: "Mentions"});
+                case "is-alerted":
+                    return $t({defaultMessage: "Alert words"});
                 case "is-dm":
                     return $t({defaultMessage: "Direct message feed"});
                 case "not-is-dm":
@@ -1518,8 +1528,6 @@ export class Filter {
                 // These cases return false for is_common_narrow, and therefore are not
                 // formatted in the message view header. They are used in narrow.js to
                 // update the browser title.
-                case "is-alerted":
-                    return $t({defaultMessage: "Alerted messages"});
                 case "is-unread":
                     return $t({defaultMessage: "Unread messages"});
             }
@@ -1541,6 +1549,13 @@ export class Filter {
                 return {
                     description: $t({defaultMessage: "Messages where you are mentioned."}),
                     link: "/help/view-your-mentions",
+                };
+            case "is-alerted":
+                return {
+                    description: $t({
+                        defaultMessage: "Messages containing one of your alert words.",
+                    }),
+                    link: "/help/dm-mention-alert-notifications#alert-words",
                 };
             case "is-starred":
                 return {

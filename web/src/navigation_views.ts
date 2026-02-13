@@ -85,6 +85,23 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         home_view_code: "",
         prioritize_in_condensed_view: true,
     },
+    alert_words: {
+        fragment: "narrow/is/alerted",
+        name: $t({defaultMessage: "Alert words"}),
+        is_pinned: true,
+        // Temporary icon until we have a better icon
+        icon: "zulip-icon-exclamation-circle",
+        css_class_suffix: "alert_words",
+        tooltip_template_id: "alert-words-tooltip-template",
+        has_unread_count: true,
+        unread_count_type: "normal-count",
+        supports_masked_unread: false,
+        hidden_for_spectators: true,
+        menu_icon_class: "alert-words-sidebar-menu-icon",
+        menu_aria_label: $t({defaultMessage: "Alert words options"}),
+        home_view_code: "",
+        prioritize_in_condensed_view: false,
+    },
     my_reactions: {
         fragment: "narrow/has/reaction/sender/me",
         name: $t({defaultMessage: "Reactions"}),

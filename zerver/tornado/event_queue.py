@@ -1347,6 +1347,7 @@ def process_message_update_event(
     # belong in the actual events.
     event_template = dict(orig_event)
     prior_mention_user_ids = set(event_template.pop("prior_mention_user_ids", []))
+    prior_watched_phrase_user_ids = set(event_template.pop("prior_watched_phrase_user_ids", []))
     presence_idle_user_ids = set(event_template.pop("presence_idle_user_ids", []))
 
     # TODO/compatibility: Translation code for the rename of
@@ -1464,6 +1465,7 @@ def process_message_update_event(
                 private_message=stream_name is None,
                 presence_idle=user_profile_id in presence_idle_user_ids,
                 prior_mentioned=user_profile_id in prior_mention_user_ids,
+                prior_watched_phrase=user_profile_id in prior_watched_phrase_user_ids,
             )
 
         for client in get_client_descriptors_for_user(user_profile_id):
@@ -1518,6 +1520,7 @@ def maybe_enqueue_notifications_for_message_update(
     private_message: bool,
     presence_idle: bool,
     prior_mentioned: bool,
+    prior_watched_phrase: bool,
 ) -> None:
     if user_notifications_data.sender_is_muted:
         # Never send notifications if the sender has been muted
@@ -1529,9 +1532,9 @@ def maybe_enqueue_notifications_for_message_update(
         # message.
         return
 
-    if prior_mentioned:
-        # Don't spam people with duplicate mentions.  This is
-        # especially important considering that most message
+    if prior_mentioned or prior_watched_phrase:
+        # Don't spam people with duplicate mentions or watched phrases.
+        # This is especially important considering that most message
         # edits are simple typo corrections.
         #
         # Note that prior_mention_user_ids contains users who received

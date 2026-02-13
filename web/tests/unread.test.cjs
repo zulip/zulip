@@ -47,6 +47,7 @@ function assert_zero_counts(counts) {
     assert.equal(counts.direct_message_count, 0);
     assert.equal(counts.home_unread_messages, 0);
     assert.equal(counts.mentioned_message_count, 0);
+    assert.equal(counts.alert_word_message_count, 0);
     assert.equal(counts.stream_count.size, 0);
     assert.equal(counts.pm_count.size, 0);
 }
@@ -672,6 +673,125 @@ test("mentions", () => {
     assert.equal(counts.mentioned_message_count, 0);
 });
 
+test("alert_words", () => {
+    let counts = unread.get_counts();
+    assert.equal(counts.alert_word_message_count, 0);
+    assert.deepEqual(unread.get_msg_ids_for_alert_words(), []);
+
+    const muted_stream_id = 900;
+    const muted_stream_name = "muted stream for testing unread alert words";
+    const unmuted_stream_id = 901;
+
+    sub_store.add_hydrated_sub(muted_stream_id, {
+        muted_stream_id,
+        name: muted_stream_name,
+        subscribed: true,
+        is_muted: true,
+    });
+    sub_store.add_hydrated_sub(unmuted_stream_id, {
+        unmuted_stream_id,
+        name: "unmuted stream for testing unread alert words",
+        subscribed: true,
+        is_muted: false,
+    });
+
+    user_topics.update_user_topics(
+        muted_stream_id,
+        muted_stream_name,
+        "lunch",
+        user_topics.all_visibility_policies.MUTED,
+    );
+
+    const already_read_message = {
+        id: 14,
+        type: "stream",
+        stream_id: unmuted_stream_id,
+        topic: "lunch",
+        alerted: true,
+        unread: false,
+    };
+
+    const alert_word_message = {
+        id: 15,
+        type: "stream",
+        stream_id: unmuted_stream_id,
+        topic: "lunch",
+        alerted: true,
+        unread: true,
+    };
+
+    const another_alert_word_message = {
+        id: 16,
+        type: "stream",
+        stream_id: unmuted_stream_id,
+        topic: "lunch",
+        alerted: true,
+        unread: true,
+    };
+
+    // This message shouldn't affect the unread alert word counts.
+    const muted_alert_word_message = {
+        id: 17,
+        type: "stream",
+        stream_id: muted_stream_id,
+        topic: "lunch",
+        alerted: true,
+        unread: true,
+    };
+
+    const muted_direct_alert_word_message = {
+        id: 18,
+        type: "stream",
+        stream_id: muted_stream_id,
+        topic: "lunch",
+        alerted: true,
+        unread: true,
+    };
+
+    const private_alert_word_message = {
+        id: 19,
+        type: "private",
+        display_recipient: [{id: anybody.user_id}],
+        alerted: true,
+        unread: true,
+    };
+
+    unread.process_loaded_messages([
+        already_read_message,
+        alert_word_message,
+        another_alert_word_message,
+        muted_alert_word_message,
+        muted_direct_alert_word_message,
+        private_alert_word_message,
+    ]);
+
+    counts = unread.get_counts();
+    assert.equal(counts.alert_word_message_count, 3);
+    assert.deepEqual(unread.get_msg_ids_for_alert_words(), [
+        alert_word_message.id,
+        another_alert_word_message.id,
+        private_alert_word_message.id,
+    ]);
+    assert.deepEqual(unread.get_all_msg_ids(), [
+        alert_word_message.id,
+        another_alert_word_message.id,
+        muted_alert_word_message.id,
+        muted_direct_alert_word_message.id,
+        private_alert_word_message.id,
+    ]);
+
+    unread.mark_as_read(alert_word_message.id);
+    unread.mark_as_read(another_alert_word_message.id);
+    unread.mark_as_read(private_alert_word_message.id);
+    counts = unread.get_counts();
+    assert.equal(counts.alert_word_message_count, 0);
+
+    // redundantly read a message to make sure nothing explodes
+    unread.mark_as_read(muted_direct_alert_word_message.id);
+    counts = unread.get_counts();
+    assert.equal(counts.alert_word_message_count, 0);
+});
+
 test("mention updates", () => {
     // Unread message in an unmuted stream.
     const message = {
@@ -697,6 +817,40 @@ test("mention updates", () => {
     test_counted(false);
 
     message.mentioned = true;
+    test_counted(true);
+
+    message.unread = false;
+    test_counted(false);
+
+    message.unread = true;
+    test_counted(true);
+});
+
+test("alert word updates", () => {
+    // Unread message in an unmuted stream.
+    const message = {
+        id: 17,
+        stream_id: 901,
+        unread: false,
+        type: "stream",
+        topic: "hello",
+    };
+
+    function test_counted(counted) {
+        unread.update_message_for_alert_word(message);
+        assert.equal(unread.unread_alert_words_counter.has(message.id), counted);
+    }
+
+    test_counted(false);
+
+    message.unread = true;
+    message.alerted = true;
+    test_counted(true);
+
+    message.alerted = false;
+    test_counted(false);
+
+    message.alerted = true;
     test_counted(true);
 
     message.unread = false;
@@ -836,6 +990,7 @@ test("server_counts", () => {
                 },
             ],
             mentions: [31, 34, 40, 41],
+            watched_phrases: [32, 36, 41, 42],
         },
     };
 
@@ -850,9 +1005,13 @@ test("server_counts", () => {
     assert.equal(unread.num_unread_for_topic(1, "test"), 3);
 
     assert.equal(unread.unread_mentions_counter.size, 4);
+    assert.equal(unread.unread_alert_words_counter.size, 4);
 
     unread.mark_as_read(40);
     assert.equal(unread.unread_mentions_counter.size, 3);
+
+    unread.mark_as_read(42);
+    assert.equal(unread.unread_alert_words_counter.size, 3);
 
     unread.mark_as_read(35);
     assert.equal(unread.num_unread_for_topic(1, "test"), 2);
