@@ -676,6 +676,30 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: "img.emoji",
+        placement: "top",
+        delay: INSTANT_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $emoji = $(instance.reference);
+            const animated_emoji_url = $emoji.attr("data-animated-url");
+            if (!animated_emoji_url) {
+                return false;
+            }
+            const $animated_emoji = $("<img>");
+            $animated_emoji.addClass("emoji tooltip-emoji");
+            $animated_emoji.attr("src", animated_emoji_url);
+
+            instance.setContent($animated_emoji[0]!);
+            return undefined;
+
+        },
+        onHidden(instance) {
+            instance.destroy();
+        }
+    })
+
+    tippy.delegate("body", {
         target: [
             ".custom-profile-field-value",
             ".copy-custom-profile-field-link",

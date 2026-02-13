@@ -367,6 +367,8 @@ export let insert_new_reaction = (
         clean_reaction_object.user_ids,
     );
 
+    const emoji_animation_setting = user_settings.web_animate_image_previews;
+
     const is_realm_emoji =
         emoji_details.reaction_type === "realm_emoji" ||
         emoji_details.reaction_type === "zulip_extra_emoji";
@@ -394,11 +396,12 @@ export let insert_new_reaction = (
             msg: {
                 message_reactions: [context],
             },
+            emoji_animation_setting,
         };
         const $msg_reaction_section = $(render_message_reactions(reaction_section_context));
         $rows.find(".messagebox-content").append($msg_reaction_section);
     } else {
-        const $new_reaction = $(render_message_reaction(context));
+        const $new_reaction = $(render_message_reaction({...context, emoji_animation_setting}));
         const $reaction_button_element = get_add_reaction_button(message.id);
         $new_reaction.insertBefore($reaction_button_element);
     }

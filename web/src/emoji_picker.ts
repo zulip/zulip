@@ -422,6 +422,7 @@ export function is_emoji_present_in_text(text: string, emoji_dict: EmojiDict): b
 function filter_emojis(): void {
     const $elt = $<HTMLInputElement>("input#emoji-popover-filter").expectOne();
     const query = $elt.val()!.trim().toLowerCase();
+    const emoji_animation_setting = user_settings.web_animate_image_previews;
     if (query !== "") {
         const categories = complete_emoji_catalog;
         const search_terms = query.split(" ");
@@ -452,6 +453,7 @@ function filter_emojis(): void {
         const sorted_search_results = typeahead.sort_emojis(search_results, query);
         const rendered_search_results = render_emoji_popover_search_results({
             search_results: sorted_search_results,
+            emoji_animation_setting,
         });
         $(".emoji-search-results").html(rendered_search_results);
         scroll_util.reset_scrollbar($(".emoji-search-results-container"));
@@ -822,6 +824,7 @@ function get_default_emoji_popover_options(
         },
         onMount(instance: tippy.Instance) {
             const $popover = $(instance.popper);
+            const emoji_animation_setting = user_settings.web_animate_image_previews;
             // Render the emojis after simplebar has been initialized which
             // saves us ~30% time rendering them.
             let emoji_catalog = complete_emoji_catalog;
@@ -830,7 +833,12 @@ function get_default_emoji_popover_options(
             }
             $popover
                 .find(".emoji-popover-emoji-map .simplebar-content")
-                .html(render_emoji_popover_emoji_map({emoji_categories: emoji_catalog}));
+                .html(
+                    render_emoji_popover_emoji_map({
+                        emoji_categories: emoji_catalog,
+                        emoji_animation_setting,
+                    }),
+                );
             refill_section_head_offsets($popover);
             show_emoji_catalog();
             register_popover_events($popover);

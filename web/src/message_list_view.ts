@@ -47,6 +47,7 @@ import type {TopicLink} from "./types.ts";
 import * as typing_data from "./typing_data.ts";
 import * as typing_events from "./typing_events.ts";
 import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -1094,12 +1095,14 @@ export class MessageListView {
             is_web_public = stream_data.is_web_public(stream_id);
             is_archived = stream_data.is_stream_archived_by_id(stream_id);
         }
+        const emoji_animation_setting = user_settings.web_animate_image_previews;
         const msg_to_render = {
             ...message_container,
             invite_only,
             is_web_public,
             is_archived,
             message_list_id: this.list.id,
+            emoji_animation_setting,
         };
         return render_single_message(msg_to_render);
     }
@@ -1107,12 +1110,14 @@ export class MessageListView {
     _render_group(opts: {message_groups: MessageGroup[]; use_match_properties: boolean}): JQuery {
         const message_groups = opts.message_groups;
         const use_match_properties = opts.use_match_properties;
+        const emoji_animation_setting = user_settings.web_animate_image_previews;
 
         return $(
             render_message_group({
                 message_groups,
                 use_match_properties,
                 message_list_id: this.list.id,
+                emoji_animation_setting,
             }),
         );
     }

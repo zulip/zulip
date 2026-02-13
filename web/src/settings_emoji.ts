@@ -21,6 +21,7 @@ import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload_widget from "./upload_widget.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 const meta = {
@@ -100,6 +101,7 @@ export function populate_emoji(): void {
 
     const emoji_data = emoji.get_server_realm_emoji_data();
     const active_emoji_data = Object.values(emoji_data).filter((emoji) => !emoji.deactivated);
+    const emoji_animation_setting = user_settings.web_animate_image_previews;
 
     for (const emoji of active_emoji_data) {
         // Add people.js data for the user here.
@@ -123,9 +125,11 @@ export function populate_emoji(): void {
                     name: item.name,
                     display_name: item.name.replaceAll("_", " "),
                     source_url: item.source_url,
+                    still_url: item.still_url,
                     author,
                     can_delete_emoji: can_delete_emoji(item),
                     is_overriding_default: is_default_emoji(item.name),
+                    emoji_animation_setting,
                 },
             });
         },

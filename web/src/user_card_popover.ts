@@ -223,7 +223,9 @@ type UserCardPopoverData = {
     user_type: string | undefined;
     status_content_available: boolean;
     status_text: string | undefined;
-    status_emoji_info: user_status.UserStatusEmojiInfo | undefined;
+    status_emoji_info:
+        | (user_status.UserStatusEmojiInfo & {emoji_animation_setting: string})
+        | undefined;
     show_placeholder_for_status_text: false | user_status.UserStatusEmojiInfo | undefined;
     user_mention_syntax: string;
     date_joined: string | undefined;
@@ -316,6 +318,7 @@ function get_user_card_popover_data(
     const is_system_bot = user.is_system_bot;
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
+    const emoji_animation_setting = user_settings.web_animate_image_previews;
     const spectator_view = page_params.is_spectator;
     const show_manage_section = !spectator_view && !is_me;
     const is_muted = muted_users.is_user_muted(user.user_id);
@@ -369,7 +372,10 @@ function get_user_card_popover_data(
         user_type: people.get_user_type(user.user_id),
         status_content_available: Boolean(status_text ?? status_emoji_info),
         status_text,
-        status_emoji_info,
+        status_emoji_info:
+            status_emoji_info !== undefined
+                ? {...status_emoji_info, emoji_animation_setting}
+                : undefined,
         show_placeholder_for_status_text: !status_text && status_emoji_info,
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id, !is_active),
         date_joined,

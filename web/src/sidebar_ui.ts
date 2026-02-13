@@ -372,25 +372,53 @@ export function initialize_right_sidebar(): void {
 
     update_invite_user_option();
 
-    $("#buddy-list-users-matching-view").on("mouseenter", ".user_sidebar_entry", (e) => {
-        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
-        if ($status_emoji.length > 0) {
-            const animated_url = $status_emoji.attr("data-animated-url");
-            if (animated_url) {
-                $status_emoji.attr("src", animated_url);
+    $("#buddy-list-users-matching-view, #buddy-list-participants, #buddy-list-other-users").on(
+        "mouseenter",
+        ".user_sidebar_entry",
+        (e) => {
+            if (
+                user_settings.web_animate_image_previews ===
+                    settings_config.web_animate_image_previews_values.always.code ||
+                user_settings.web_animate_image_previews ===
+                    settings_config.web_animate_image_previews_values.never.code
+            ) {
+                return;
             }
-        }
-    });
+            const $status_emoji = $(e.target)
+                .closest(".user_sidebar_entry")
+                .find("img.status-emoji");
+            if ($status_emoji.length > 0) {
+                const animated_url = $status_emoji.attr("data-animated-url");
+                if (animated_url) {
+                    $status_emoji.attr("src", animated_url);
+                }
+            }
+        },
+    );
 
-    $("#buddy-list-users-matching-view").on("mouseleave", ".user_sidebar_entry", (e) => {
-        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
-        if ($status_emoji.length > 0) {
-            const still_url = $status_emoji.attr("data-still-url");
-            if (still_url) {
-                $status_emoji.attr("src", still_url);
+    $("#buddy-list-users-matching-view, #buddy-list-participants, #buddy-list-other-users").on(
+        "mouseleave",
+        ".user_sidebar_entry",
+        (e) => {
+            if (
+                user_settings.web_animate_image_previews ===
+                    settings_config.web_animate_image_previews_values.always.code ||
+                user_settings.web_animate_image_previews ===
+                    settings_config.web_animate_image_previews_values.never.code
+            ) {
+                return;
             }
-        }
-    });
+            const $status_emoji = $(e.target)
+                .closest(".user_sidebar_entry")
+                .find("img.status-emoji");
+            if ($status_emoji.length > 0) {
+                const still_url = $status_emoji.attr("data-still-url");
+                if (still_url) {
+                    $status_emoji.attr("src", still_url);
+                }
+            }
+        },
+    );
 
     $("#buddy-list-users-matching-view-container").on(
         "click",

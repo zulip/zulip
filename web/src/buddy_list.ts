@@ -116,12 +116,18 @@ class BuddyListConf {
     compare_function = buddy_data.compare_function;
 
     items_to_html(opts: {items: BuddyUserInfo[]}): string {
-        const html = render_presence_rows({presence_rows: opts.items});
+        const animate_status_emoji =
+            user_settings.web_animate_image_previews ===
+            settings_config.web_animate_image_previews_values.always.code;
+        const html = render_presence_rows({presence_rows: opts.items, animate_status_emoji});
         return html;
     }
 
     item_to_html(opts: {item: BuddyUserInfo}): string {
-        const html = render_presence_row(opts.item);
+        const animate_status_emoji =
+            user_settings.web_animate_image_previews ===
+            settings_config.web_animate_image_previews_values.always.code;
+        const html = render_presence_row({...opts.item, animate_status_emoji});
         return html;
     }
 
