@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import SortableJS from "sortablejs";
 import * as z from "zod/mini";
@@ -23,10 +24,16 @@ type RealmLinkifiers = typeof realm.realm_linkifiers;
 
 const meta = {
     loaded: false,
+    is_reordering: false,
 };
+
+let current_linkifier_ids: number[] = [];
+const reorder_debounce_timeout = 100; // ms
 
 export function reset(): void {
     meta.loaded = false;
+    meta.is_reordering = false;
+    current_linkifier_ids = [];
 }
 
 export function maybe_disable_widgets(): void {
@@ -110,18 +117,77 @@ function open_linkifier_edit_form(linkifier_id: number): void {
     });
 }
 
-function update_linkifiers_order(): void {
-    const order: number[] = [];
-    $(".linkifier_row").each(function () {
-        order.push(Number.parseInt($(this).attr("data-linkifier-id")!, 10));
+function initialize_linkifier_state(): void {
+    current_linkifier_ids = $("#admin_linkifiers_table tr.linkifier_row")
+        .map(function () {
+            return Number.parseInt($(this).attr("data-linkifier-id")!, 10);
+        })
+        .get();
+}
+
+function reload_linkifiers(): void {
+    void channel.get({
+        url: "/json/realm/linkifiers",
+        success(data) {
+            const response = z
+                .object({
+                    linkifiers: z.array(
+                        z.object({
+                            id: z.number(),
+                            pattern: z.string(),
+                            url_template: z.string(),
+                        }),
+                    ),
+                })
+                .parse(data);
+            populate_linkifiers(response.linkifiers);
+        },
     });
+}
+
+const update_linkifiers_order = _.debounce((): void => {
+    if (meta.is_reordering) {
+        return;
+    }
+
+    meta.is_reordering = true;
+
+    // Get new order from DOM
+    const new_order = $(".linkifier_row")
+        .map(function () {
+            return Number.parseInt($(this).attr("data-linkifier-id")!, 10);
+        })
+        .get();
+
+    // Validate the new order
+    const unique_ids = new Set(new_order);
+    if (
+        unique_ids.size !== new_order.length ||
+        !current_linkifier_ids.every((id) => unique_ids.has(id)) ||
+        unique_ids.size !== current_linkifier_ids.length
+    ) {
+        meta.is_reordering = false;
+        reload_linkifiers();
+        return;
+    }
+
     settings_ui.do_settings_change(
         channel.patch,
         "/json/realm/linkifiers",
-        {ordered_linkifier_ids: JSON.stringify(order)},
+        {ordered_linkifier_ids: JSON.stringify(new_order)},
         $("#linkifier-field-status").expectOne(),
+        {
+            success_continuation() {
+                meta.is_reordering = false;
+                current_linkifier_ids = new_order;
+            },
+            error_continuation() {
+                meta.is_reordering = false;
+                reload_linkifiers();
+            },
+        },
     );
-}
+}, reorder_debounce_timeout);
 
 function handle_linkifier_api_error(
     errors: Record<string, string[] | undefined>,
@@ -194,11 +260,14 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
     });
 
     if (current_user.is_admin) {
+        initialize_linkifier_state();
         new SortableJS(util.the($linkifiers_table), {
             onUpdate: update_linkifiers_order,
             handle: ".move-handle",
             filter: "input",
             preventOnFilter: false,
+            delay: 50, // Add delay to improve drag accuracy
+            multiDrag: false, // Disable multiple drag operations
         });
     }
 }
