@@ -46,11 +46,13 @@ from zerver.lib.email_mirror_helpers import (
 )
 from zerver.lib.email_mirror_server import ZulipMessageHandler, send_to_postmaster
 from zerver.lib.email_notifications import convert_html_to_markdown
+from zerver.lib.message import truncate_topic
 from zerver.lib.send_email import FromAddress
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
 from zerver.models import Attachment, Recipient, Stream, UserProfile
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.messages import Message
 from zerver.models.realms import get_realm
@@ -1819,6 +1821,55 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         for subject in subject_list:
             stripped = strip_from_subject(subject["original_subject"])
             self.assertEqual(stripped, subject["stripped_subject"])
+
+    def test_subject_added_only_for_first_message(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+
+        stream = get_stream("Denmark", user_profile.realm)
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        long_subject = "S" * (MAX_TOPIC_NAME_LENGTH + 10)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+        incoming_valid_message["Subject"] = long_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message)
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(truncate_topic(long_subject), message.topic_name())
+
+        email_body = incoming_valid_message.get_content().strip()
+        self.assertIn(f"**Subject:** {long_subject}\n\n{email_body}", message.content)
+
+        email_token_with_sender = get_channel_email_token(
+            stream, creator=user_profile, sender=user_profile
+        )
+        stream_to_address_with_sender = encode_email_address(
+            stream.name, email_token_with_sender, show_sender=True
+        )
+
+        incoming_valid_message_with_sender = EmailMessage()
+        incoming_valid_message_with_sender.set_content("TestStreamEmailMessages body")
+        incoming_valid_message_with_sender["Subject"] = long_subject
+        incoming_valid_message_with_sender["From"] = self.example_email("hamlet")
+        incoming_valid_message_with_sender["To"] = stream_to_address_with_sender
+        incoming_valid_message_with_sender["Reply-to"] = self.example_email("othello")
+
+        process_message(incoming_valid_message_with_sender)
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(truncate_topic(long_subject), message.topic_name())
+
+        email_body = incoming_valid_message_with_sender.get_content().strip()
+        expected_content = f"**From:** {user_profile.delivery_email}\n**Subject:** {long_subject}\n\n\n{email_body}"
+        self.assertIn(expected_content, message.content)
 
 
 # If the Content-Type header didn't specify a charset, the text content
