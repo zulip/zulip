@@ -251,6 +251,10 @@ def resize_emoji(
     # 2) If it is animated, the still image data i.e. first frame of gif.
     with libvips_check_image(image_data) as source_image:
         if source_image.get_n_pages() == 1:
+            # This will crop the image to fit exactly within size x size pixels,
+            # using center cropping to preserve the most important part of the image.
+            # Unlike animated images below, static images are cropped rather
+            # than padded to achieve square dimensions.
             return (
                 pyvips.Image.thumbnail_buffer(
                     image_data,
@@ -260,12 +264,6 @@ def resize_emoji(
                 ).write_to_buffer(write_file_ext),
                 None,
             )
-        first_still = pyvips.Image.thumbnail_buffer(
-            image_data,
-            size,
-            height=size,
-            crop=pyvips.Interesting.CENTRE,
-        ).write_to_buffer(".png")
 
         animated = pyvips.Image.thumbnail_buffer(
             image_data,
@@ -291,6 +289,9 @@ def resize_emoji(
                 for frame in animated.pagesplit()
             ]
             animated = frames[0].pagejoin(frames[1:])
+            first_still = frames[0].write_to_buffer(".png")
+        else:
+            first_still = animated.pagesplit()[0].write_to_buffer(".png")
         return (animated.write_to_buffer(write_file_ext), first_still)
 
 
