@@ -24072,7 +24072,7 @@ paths:
       description: |
         Get the members of a [user group](/help/user-groups).
 
-        **Changes**: New in Zulip 6.0 (feature level 127).
+        **Changes**: Starting with Zulip 11.0 (feature level 461), this endpoint is accessible to bots.
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
         - $ref: "#/components/parameters/DirectMemberOnly"
@@ -24339,8 +24339,7 @@ paths:
                   description: |
                     Whether to include deactivated user groups in the response.
 
-                    **Changes**: In Zulip 10.0 (feature level 294), renamed
-                    `allow_deactivated` to `include_deactivated_groups`.
+                    **Changes**: Starting with Zulip 11.0 (feature level 461), this endpoint is accessible to bots.
 
                     New in Zulip 10.0 (feature level 290). Previously, deactivated
                     user groups did not exist and thus would never be included in
@@ -24600,7 +24599,7 @@ paths:
         **Changes**: Prior to Zulip 11.0 (feature level 391), subgroups
         could not be added or removed from a deactivated group.
 
-        **Changes**: New in Zulip 6.0 (feature level 127).
+        **Changes**: Starting with Zulip 11.0 (feature level 461), this endpoint is accessible to bots.
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -24687,8 +24686,7 @@ paths:
       description: |
         Check whether a user is member of user group.
 
-        **Changes**: Prior to Zulip 12.0 (feature level 458), this endpoint
-        did not support querying group membership of bot users.
+        **Changes**: Starting with Zulip 11.0 (feature level 461), this endpoint is accessible to bots.
 
         Prior to Zulip 10.0 (feature level 303),
         this would return true when passed a deactivated user
