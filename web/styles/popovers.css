@@ -1328,3 +1328,26 @@ ul.popover-menu-list {
     flex: 1;
     min-width: 0;
 }
+
+ul.reaction-popover-users {
+    list-style: none;
+    margin: 0;
+    padding: 5px;
+
+    li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        .reaction-popover-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+    }
+}
