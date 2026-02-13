@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 
 import render_navbar_banners_testing_popover from "../templates/popovers/navbar_banners_testing_popover.hbs";
 
+import {all_messages_data} from "./all_messages_data.ts";
 import * as banners from "./banners.ts";
 import type {AlertBanner} from "./banners.ts";
 import {is_browser_unsupported_old_version} from "./browser_support.ts";
@@ -15,6 +16,7 @@ import * as feedback_widget from "./feedback_widget.ts";
 import {$t} from "./i18n.ts";
 import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
+import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -24,6 +26,7 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
 function open_navbar_banner_and_resize(banner: AlertBanner): void {
@@ -431,6 +434,58 @@ const time_zone_update_offer_banner = (): AlertBanner => {
     };
 };
 
+const TOO_MANY_MUTED_MESSAGES_BANNER: AlertBanner = {
+    process: "too-many-muted-messages",
+    intent: "warning",
+    label: $t({
+        defaultMessage:
+            "You have a large number of muted messages. Zulip works best when most of the messages you receive are not muted.",
+    }),
+    buttons: [
+        {
+            // Note: This needs a click handler, defined below, since
+            // the buttons framework doesn't nicely support
+            // link-buttons yet.
+            variant: "subtle",
+            label: $t({defaultMessage: "Learn more"}),
+            custom_classes: "managing-muted-channels",
+        },
+    ],
+    close_button: true,
+    custom_classes: "navbar-alert-banner",
+};
+
+export function check_and_show_muted_messages_banner(): void {
+    if (all_messages_data.empty()) {
+        // If all_messages_data is empty, even after the initial
+        // backfill for all_messages_data is done, then there are
+        // no messages to check and the ratio calculation below
+        // would result in a division by zero.
+        return;
+    }
+
+    // We use all_messages_after_mute_filtering() here because all_messages_data
+    // is initialized with muting disabled (excludes_muted_topics: false,
+    // excludes_muted_users: false). Therefore, this method returns all messages,
+    // effectively ignoring muting.
+    const messages = all_messages_data.all_messages_after_mute_filtering();
+
+    const muted_messages = messages.filter(
+        (message) =>
+            muted_users.is_user_muted(message.sender_id) ||
+            (message.type === "stream" &&
+                !user_topics.is_topic_visible_in_home(message.stream_id, message.topic)),
+    );
+
+    if (muted_messages.length >= 5000 && muted_messages.length / messages.length > 0.5) {
+        // If more than 50% of the loaded messages are muted, and that quantity exceeds
+        // at least 5000 messages, show the banner. We use an absolute number threshold
+        // to avoid showing the banner when there are very few messages loaded to have
+        // any impact on the performance.
+        open_navbar_banner_and_resize(TOO_MANY_MUTED_MESSAGES_BANNER);
+    }
+}
+
 export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
@@ -543,6 +598,14 @@ export function initialize(): void {
 
     $("#navbar_alerts_wrapper").on("click", ".edit-profile-required-fields", () => {
         window.location.hash = "#settings/profile";
+    });
+
+    $("#navbar_alerts_wrapper").on("click", ".managing-muted-channels", () => {
+        window.open(
+            "/help/mute-a-channel#managing-muted-channels",
+            "_blank",
+            "noopener,noreferrer",
+        );
     });
 
     $("#navbar_alerts_wrapper").on("click", ".edit-organization-profile", () => {

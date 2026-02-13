@@ -21,6 +21,7 @@ import {raw_message_schema} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
+import * as navbar_alerts from "./navbar_alerts.ts";
 import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
@@ -686,6 +687,12 @@ export function set_initial_pointer_and_offset({
     initial_narrow_offset = narrow_offset;
 }
 
+function post_initial_backfill_for_all_messages_done(): void {
+    initial_backfill_for_all_messages_done = true;
+    emoji_frequency.initialize_frequently_used_emojis();
+    navbar_alerts.check_and_show_muted_messages_banner();
+}
+
 export function initialize(finished_initial_fetch: () => void): void {
     const fetch_target_day_timestamp =
         Date.now() / 1000 - consts.target_days_of_history * 24 * 60 * 60;
@@ -700,8 +707,7 @@ export function initialize(finished_initial_fetch: () => void): void {
         }
 
         if (data.found_oldest) {
-            initial_backfill_for_all_messages_done = true;
-            emoji_frequency.initialize_frequently_used_emojis();
+            post_initial_backfill_for_all_messages_done();
             return;
         }
 
@@ -714,14 +720,12 @@ export function initialize(finished_initial_fetch: () => void): void {
             all_messages_data.num_items() >= consts.minimum_initial_backfill_size &&
             latest_message.timestamp < fetch_target_day_timestamp
         ) {
-            initial_backfill_for_all_messages_done = true;
-            emoji_frequency.initialize_frequently_used_emojis();
+            post_initial_backfill_for_all_messages_done();
             return;
         }
 
         if (all_messages_data.num_items() >= consts.maximum_initial_backfill_size) {
-            initial_backfill_for_all_messages_done = true;
-            emoji_frequency.initialize_frequently_used_emojis();
+            post_initial_backfill_for_all_messages_done();
             return;
         }
 
