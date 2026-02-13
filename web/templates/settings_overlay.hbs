@@ -28,11 +28,10 @@
                         <div class="text">{{t "Notifications" }}</div>
                     </li>
                     {{#unless is_guest}}
-                        <li class="redirected-sidebar-item" tabindex="0">
-                            <a href="#organization/bots/your-bots" class="your-bots-link sidebar-item">
-                                <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
-                                <div class="text">{{t 'Bots'}}</div>
-                            </a>
+                        <li class="sidebar-item" tabindex="0" data-section="bots">
+                            <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                            <div class="text">{{t 'Bots'}}</div>
+                            <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if (or can_create_new_bots can_manage_bot)}}style="display: none;"{{/if}} data-tippy-content="{{t 'You do not have permission to create or manage bots.' }}"></i>
                         </li>
                     {{/unless}}
                     <li class="sidebar-item" tabindex="0" data-section="alert-words">
@@ -97,7 +96,7 @@
                     <li class="sidebar-item" tabindex="0" data-section="bots">
                         <i class="sidebar-item-icon zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                         <div class="text">{{t "Bots" }}</div>
-                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if can_create_new_bots}}style="display: none;"{{/if}} data-tippy-content="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        <i class="locked fa fa-lock tippy-zulip-tooltip" {{#if (or can_create_new_bots can_manage_bot)}}style="display: none;"{{/if}} data-tippy-content="{{t 'You do not have permission to create or manage bots.' }}"></i>
                     </li>
                     {{/unless}}
                     {{#if is_admin}}
