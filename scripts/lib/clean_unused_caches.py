@@ -1,13 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --only-group=prod --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import os
 import shutil
-import sys
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(ZULIP_PATH)
 from scripts.lib import clean_emoji_cache
 from scripts.lib.zulip_tools import parse_cache_script_args
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def main(args: argparse.Namespace) -> None:

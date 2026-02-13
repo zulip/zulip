@@ -1,26 +1,19 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --only-group=prod --preview-features=target-workspace-discovery --script  # -*-python-*-
 # This tools generates /etc/zulip/zulip-secrets.conf
-import json
-import os
-import sys
-from contextlib import suppress
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(BASE_DIR)
-from scripts.lib.setup_path import setup_path
-from scripts.lib.zulip_tools import get_config, get_config_file
-
-setup_path()
-
-os.environ["DISABLE_MANDATORY_SECRET_CHECK"] = "True"
-os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
-
 import argparse
 import configparser
+import json
+import os
 import uuid
+from contextlib import suppress
 
 from nacl.encoding import Base64Encoder
 from nacl.public import PrivateKey
+
+from scripts.lib.zulip_tools import get_config, get_config_file
+
+os.environ["DISABLE_MANDATORY_SECRET_CHECK"] = "True"
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 
 os.chdir(os.path.join(os.path.dirname(__file__), "..", ".."))
 

@@ -1,35 +1,15 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 """Create or update a message thread screenshot using a thread file."""
 
 import argparse
+import json
 import os
 import subprocess
-import sys
 from datetime import datetime, timezone
 
+import django
 from django.conf import settings
 from pydantic import BaseModel, ConfigDict
-
-SCREENSHOTS_DIR = os.path.abspath(os.path.dirname(__file__))
-TOOLS_DIR = os.path.abspath(os.path.dirname(SCREENSHOTS_DIR))
-ROOT_DIR = os.path.dirname(TOOLS_DIR)
-sys.path.insert(0, ROOT_DIR)
-
-# check for the venv
-from tools.lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
-from scripts.lib.setup_path import setup_path
-
-setup_path()
-
-os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
-import django
-
-django.setup()
-
-import json
 
 from tools.lib.test_script import prepare_puppeteer_run
 from zerver.actions.create_user import do_create_user
@@ -51,6 +31,11 @@ from zerver.models import Message, UserProfile
 from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
+
+SCREENSHOTS_DIR = os.path.abspath(os.path.dirname(__file__))
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+django.setup()
 
 realm = get_realm("zulip")
 realm.message_content_edit_limit_seconds = None

@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --only-group=prod --preview-features=target-workspace-discovery --script  # -*-python-*-
 import logging
 import os
 import subprocess
 import sys
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, ZULIP_PATH)
+import django
+from django.db import connection
+from django.db.migrations.loader import MigrationLoader
 
-from scripts.lib.setup_path import setup_path
 from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     assert_not_running_as_root,
@@ -16,17 +16,12 @@ from scripts.lib.zulip_tools import (
     parse_version_from,
 )
 from version import ZULIP_VERSION as NEW_VERSION
-
-assert_not_running_as_root()
-setup_path()
-os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
-
-import django
-from django.db import connection
-from django.db.migrations.loader import MigrationLoader
-
 from zerver.lib.migration_status import STALE_MIGRATIONS
 
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+assert_not_running_as_root()
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 django.setup()
 
 django_pg_version = connection.cursor().connection.server_version // 10000

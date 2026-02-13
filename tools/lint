@@ -1,20 +1,13 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import os
-import sys
-
-tools_dir = os.path.dirname(os.path.abspath(__file__))
-root_dir = os.path.join(tools_dir, "..")
-sys.path.insert(0, root_dir)
-
-# check for the venv
-from tools.lib import sanity_check
-
-sanity_check.check_venv(__file__)
 
 from zulint.command import LinterConfig, add_default_linter_arguments
 
 from tools.linter_lib.custom_check import non_py_rules, python_rules
+
+tools_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.join(tools_dir, "..")
 
 
 def run() -> None:

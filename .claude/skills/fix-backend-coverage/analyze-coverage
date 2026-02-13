@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 """Analyze backend test coverage and report missing lines with source context.
 
 Usage:
@@ -16,16 +16,11 @@ import glob
 import os
 import sys
 
+import coverage
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 os.chdir(ROOT_DIR)
-sys.path.insert(0, ROOT_DIR)
-
-from tools.lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
-import coverage
 
 # These lists are duplicated from tools/test-backend so that this script
 # can run independently.  Keep them in sync.

@@ -3,7 +3,7 @@ require "open3"
 Facter.add(:zulip_version) do
   setcode do
     Dir.chdir("/home/zulip/deployments/current") do
-      output, stderr, status = Open3.capture3("python3", "-c", "import version; print(version.ZULIP_VERSION_WITHOUT_COMMIT)")
+      output, stderr, status = Open3.capture3("uv", "run", "--frozen", "--only-group=install", "python", "-c", "import version; print(version.ZULIP_VERSION_WITHOUT_COMMIT)")
       if not status.success?
         Facter.debug("zulip_version error: #{stderr}")
         nil

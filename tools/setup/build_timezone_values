@@ -1,15 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 import json
 import os
-import sys
 import zoneinfo
 from datetime import datetime, timedelta
 
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
-sys.path.insert(0, ZULIP_PATH)
-
 from zerver.lib.timezone import get_canonical_timezone_map
 
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 OUT_PATH = os.path.join(ZULIP_PATH, "web", "generated", "timezones.json")
 
 

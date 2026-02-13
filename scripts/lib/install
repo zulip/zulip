@@ -511,6 +511,8 @@ elif [ "$package_system" = yum ]; then
     fi
 fi
 
+"$ZULIP_PATH"/scripts/lib/install-uv
+
 # We generate a self-signed cert even with certbot, so we can use the
 # webroot authenticator, which requires nginx be set up with a
 # certificate.

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 """Check the docs/THIRDPARTY file against the DEP-5 copyright format.
 
 https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
