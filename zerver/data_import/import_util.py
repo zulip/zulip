@@ -8,10 +8,14 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
+from email.errors import HeaderDefect
+from email.headerregistry import Address
 from typing import Any, Protocol, TypeAlias, TypeVar
+from urllib.parse import SplitResult
 
 import orjson
 import requests
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.forms.models import model_to_dict
@@ -93,6 +97,7 @@ class SubscriberHandler:
     def __init__(self) -> None:
         self.stream_info: dict[int, set[int]] = {}
         self.direct_message_group_info: dict[int, set[int]] = {}
+        self.mattermost_user_id_to_zulip_recipient_id: dict[frozenset[str], int] = {}
 
     def set_info(
         self,
@@ -106,6 +111,18 @@ class SubscriberHandler:
             self.direct_message_group_info[direct_message_group_id] = users
         else:
             raise AssertionError("stream_id or direct_message_group_id is required")
+
+    def add_mattermost_group_members_to_zulip_recipient_id(
+        self, direct_message_group_members: frozenset[str], group_recipient_id: int
+    ) -> None:
+        # TODO: Maybe combine this with self.set_info() once when we do a refactor for
+        # the Rocketchat importer to use this function.
+        self.mattermost_user_id_to_zulip_recipient_id[direct_message_group_members] = (
+            group_recipient_id
+        )
+
+    def get_zulip_recipient_id(self, direct_message_group_members: frozenset[str]) -> int | None:
+        return self.mattermost_user_id_to_zulip_recipient_id.get(direct_message_group_members)
 
     def get_users(
         self, stream_id: int | None = None, direct_message_group_id: int | None = None
@@ -929,3 +946,56 @@ def get_attachment_path_and_content(
     markdown_link = get_markdown_link_for_url(link_name, attachment_url)
 
     return AttachmentLinkResult(path_id=path_id, markdown_link=markdown_link)
+
+
+def get_domain_name_for_import() -> str:
+    hostname = SplitResult("", settings.EXTERNAL_HOST, "", "", "").hostname
+    assert hostname is not None
+    return hostname
+
+
+class ImportedBotEmail:
+    duplicate_email_count: dict[str, int] = {}
+    # Mapping of `bot_id` to final email assigned to the bot.
+    assigned_email: dict[str, str] = {}
+
+    @classmethod
+    def get_email(
+        cls,
+        user_profile: ZerverFieldsT,
+        domain_name: str,
+        bot_id: str,
+        bot_name_getter: Callable[[ZerverFieldsT], str],
+    ) -> str:
+        if bot_id in cls.assigned_email:
+            return cls.assigned_email[bot_id]
+
+        bot_name = bot_name_getter(user_profile)
+
+        email = Address(
+            username=bot_name.replace("Bot", "").replace(" ", "").lower() + "-bot",
+            domain=domain_name,
+        ).addr_spec
+        # The address formed above may not be a valid email format - e.g. containing
+        # non-ASCII characters in the local part, if the bot_name contains them.
+        # Only Address(addr_spec=...) triggers the necessary validation.
+        # Thus we call it here, and if issues are detected, we fall back to forming the
+        # email address in a safer way - using the bot id string.
+        try:
+            Address(addr_spec=email)
+        except HeaderDefect:
+            email = Address(
+                username=bot_id + "-bot",
+                domain=domain_name,
+            ).addr_spec
+
+        if email in cls.duplicate_email_count:
+            cls.duplicate_email_count[email] += 1
+            address = Address(addr_spec=email)
+            email_username = address.username + "-" + str(cls.duplicate_email_count[email])
+            email = Address(username=email_username, domain=address.domain).addr_spec
+        else:
+            cls.duplicate_email_count[email] = 1
+
+        cls.assigned_email[bot_id] = email
+        return email
