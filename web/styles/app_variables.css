@@ -1556,6 +1556,9 @@
     );
 
     /* Link colors */
+    /* NOTE: These variables are shared with the Starlight help center.
+       Before making any changes here, please confirm on CZO if the
+       same changes need to be carried over. */
     --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
     --color-text-link-decoration: light-dark(
         color-mix(in oklch, hsl(210deg 94% 42%) 20%, transparent),
