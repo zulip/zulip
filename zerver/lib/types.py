@@ -136,6 +136,50 @@ class FormattedEditHistoryEvent(TypedDict, total=False):
     content_html_diff: str
 
 
+class TopicMessageInfo(TypedDict, total=False):
+    topic: str
+    subject: str  # Legacy key, required for compatibility.
+
+
+class ReactionUserDict(TypedDict):
+    user_id: int
+    email: str
+    full_name: str
+
+
+class ReactionEvent(TypedDict):
+    type: str
+    op: str
+    user_id: int
+    user: ReactionUserDict
+    message_id: int
+    emoji_name: str
+    emoji_code: str
+    reaction_type: str
+
+
+class StreamUpdateEventBase(TypedDict):
+    type: str
+    op: str
+    stream_id: int
+    name: str
+    property: str
+    value: Any
+
+
+class StreamUpdateEvent(StreamUpdateEventBase, total=False):
+    rendered_description: str
+    history_public_to_subscribers: bool
+    is_web_public: bool
+
+
+class StreamCreateEvent(TypedDict):
+    type: str
+    op: str
+    streams: list["APIStreamDict"]
+    for_unarchiving: bool
+
+
 class UserTopicDict(TypedDict, total=False):
     """Dictionary containing fields fetched from the UserTopic model that
     are needed to encode the UserTopic object for the API.
