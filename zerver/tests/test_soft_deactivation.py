@@ -341,6 +341,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.assertEqual(long_term_idle_user.last_active_message_id, message_id)
 
     def test_add_missing_messages(self) -> None:
+        self.disable_channel_events_notifications()
         recipient_list = [self.example_user("hamlet"), self.example_user("iago")]
         for user_profile in recipient_list:
             self.subscribe(user_profile, "Denmark")

@@ -2396,6 +2396,15 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
     def set_full_name(self, user_profile: UserProfile, full_name: str) -> None:
         do_change_full_name(user_profile, full_name, acting_user=None, notify=False)
 
+    def disable_channel_events_notifications(self) -> None:
+        """
+        Disable the channel events notification feature for this test to
+        avoid side-effects (extra queries/messages) that break strict assertions.
+        """
+        realm = self.example_user("hamlet").realm
+        realm.send_channel_events_messages = False
+        realm.save(update_fields=["send_channel_events_messages"])
+
 
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)

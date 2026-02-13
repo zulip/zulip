@@ -3113,6 +3113,7 @@ class NormalActionsTest(BaseAction):
                 check_user_group_add_members("events[2]", events[2])
 
     def test_gain_access_through_metadata_groups(self) -> None:
+        self.disable_channel_events_notifications()
         reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that
@@ -5014,7 +5015,8 @@ class UserDisplayActionTest(BaseAction):
         check_subscription_peer_add("events[1]", events[1])
 
         self.user_profile = self.example_user("hamlet")
-        with self.verify_action(num_events=2) as events:
+        # num_events=3 includes the subscription notification message sent to the private stream.
+        with self.verify_action(num_events=3) as events:
             self.subscribe(self.example_user("hamlet"), "Private test stream", invite_only=True)
         check_stream_create("events[0]", events[0])
         check_subscription_add("events[1]", events[1])
@@ -5027,6 +5029,7 @@ class UserDisplayActionTest(BaseAction):
 
         # An admin user who is not subscribed to the private stream also
         # receives stream creation event.
+        self.disable_channel_events_notifications()
         self.user_profile = self.example_user("iago")
         with self.verify_action(num_events=2) as events:
             self.subscribe(self.example_user("hamlet"), "Private test stream 3", invite_only=True)
@@ -5240,7 +5243,7 @@ class SubscribeActionTest(BaseAction):
         stream.save(update_fields=["message_retention_days"])
 
         user_profile = self.example_user("hamlet")
-        with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
+        with self.verify_action(include_subscribers=include_subscribers, num_events=3) as events:
             bulk_add_subscriptions(user_profile.realm, [stream], [user_profile], acting_user=None)
         check_stream_create("events[0]", events[0])
         check_subscription_add("events[1]", events[1])
@@ -5255,7 +5258,7 @@ class SubscribeActionTest(BaseAction):
         self.subscribe(self.example_user("iago"), stream.name)
 
         # Unsubscribe from invite-only stream.
-        with self.verify_action(include_subscribers=include_subscribers, num_events=2) as events:
+        with self.verify_action(include_subscribers=include_subscribers, num_events=3) as events:
             bulk_remove_subscriptions(realm, [hamlet], [stream], acting_user=None)
         check_subscription_remove("events[0]", events[0])
         check_stream_delete("events[1]", events[1])

@@ -2204,6 +2204,8 @@ def maybe_send_channel_events_notice(
     archived_channel_notice: bool = False,
     acting_user: UserProfile | None = None,
 ) -> int | None:
+    if stream.deactivated and not archived_channel_notice:
+        return None
     if not stream.realm.send_channel_events_messages:
         return None
 
