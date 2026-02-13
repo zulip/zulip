@@ -406,6 +406,7 @@ export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string)
 
 export function decode_stream_topic_from_url(
     url_str: string,
+    discard_message_id_for_with = true,
 ): {stream_id: number; topic_name?: string; message_id?: string} | null {
     try {
         const url = new URL(url_str, window.location.origin);
@@ -440,8 +441,12 @@ export function decode_stream_topic_from_url(
             return {stream_id, topic_name: terms[1].operand};
         }
         if (terms[2]?.operator === "with") {
-            // For with operators, we currently discard the message ID.
-            return {stream_id, topic_name: terms[1].operand};
+            // For with operators, we currently discard the message ID unless
+            // otherwise specified.
+            if (discard_message_id_for_with) {
+                return {stream_id, topic_name: terms[1].operand};
+            }
+            return {stream_id, topic_name: terms[1].operand, message_id: terms[2].operand};
         }
         if (terms[2]?.operator !== "near") {
             return null;
