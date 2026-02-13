@@ -174,11 +174,11 @@ export function process_topic_edit(opts: {
     // the messages were moved to another stream or deleted.
 
     for (const message_id of message_ids) {
-        const message = message_store.get(message_id);
+        const message = message_store.maybe_get_immutable_message(message_id);
         if (!message) {
             continue;
         }
-        const sender_id = message.sender_id;
+        const sender_id = message.get_sender_id();
 
         remove_topic_message({stream_id: old_stream_id, topic: old_topic, sender_id, message_id});
         add_topic_message({stream_id: new_stream_id, topic: new_topic, sender_id, message_id});
@@ -189,14 +189,14 @@ export function process_topic_edit(opts: {
 
 export function update_topics_of_deleted_message_ids(message_ids: number[]): void {
     for (const message_id of message_ids) {
-        const message = message_store.get(message_id);
-        if (!message || message.type !== "stream") {
+        const message = message_store.maybe_get_immutable_message(message_id);
+        if (message?.get_type() !== "stream") {
             continue;
         }
 
-        const stream_id = message.stream_id;
-        const topic = message.topic;
-        const sender_id = message.sender_id;
+        const stream_id = message.get_stream_id();
+        const topic = message.get_topic_name();
+        const sender_id = message.get_sender_id();
 
         remove_topic_message({stream_id, topic, sender_id, message_id});
     }
