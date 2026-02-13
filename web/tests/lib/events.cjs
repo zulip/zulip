@@ -404,6 +404,13 @@ exports.fixtures = {
         value: true,
     },
 
+    realm__update__image_thumbnail_size: {
+        type: "realm",
+        op: "update",
+        property: "image_thumbnail_size",
+        value: "medium",
+    },
+
     realm__update__invite_required: {
         type: "realm",
         op: "update",

@@ -62,6 +62,7 @@ from zerver.models.realms import (
     DigestWeekdayEnum,
     MessageEditHistoryVisibilityPolicyEnum,
     OrgTypeEnum,
+    RealmImageThumbnailSizeEnum,
     RealmTopicsPolicyEnum,
 )
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
@@ -145,6 +146,16 @@ def update_realm(
     enable_read_receipts: Json[bool] | None = None,
     enable_spectator_access: Json[bool] | None = None,
     gif_rating_policy: Json[int] | None = None,
+    image_thumbnail_size: Annotated[
+        str | None,
+        AfterValidator(
+            lambda val: parse_enum_from_string_value(
+                val,
+                "image_thumbnail_size",
+                RealmImageThumbnailSizeEnum,
+            )
+        ),
+    ] = None,
     inline_image_preview: Json[bool] | None = None,
     inline_url_embed_preview: Json[bool] | None = None,
     invite_required: Json[bool] | None = None,

@@ -239,6 +239,13 @@
                   label=admin_settings_label.realm_enable_read_receipts
                   label_parens_text=admin_settings_label.realm_enable_read_receipts_parens_text}}
 
+                <div class="input-group">
+                    <label for="id_realm_image_thumbnail_size" class="settings-field-label">{{admin_settings_label.realm_image_thumbnail_size}}</label>
+                    <select name="realm_image_thumbnail_size" id="id_realm_image_thumbnail_size" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="string">
+                        {{> dropdown_options_widget option_values=(object_values realm_image_thumbnail_size_values)}}
+                    </select>
+                </div>
+
                 {{#if server_inline_image_preview}}
                 {{> settings_checkbox
                   setting_name="realm_inline_image_preview"

@@ -10,10 +10,11 @@ import ZulipNote from "../../components/ZulipNote.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
 
-Zulip displays previews of images, videos and websites in your message feed. To
-avoid disrupting the flow of conversation, these previews are small. You can
-configure how animated images are previewed, and organization administrators can
-also disable previews altogether.
+Zulip displays previews of images, videos and websites in your message feed. You
+can configure how animated images are previewed, and organization administrators
+can configure the [size of image and video
+previews](#configure-image-and-video-thumbnail-size) or disable previews
+altogether.
 
 ## Configure how animated images are played
 
@@ -42,6 +43,24 @@ viewer](/help/view-images-and-videos).
     </FlattenedSteps>
   </TabItem>
 </Tabs>
+
+## Configure image and video thumbnail size
+
+<AdminOnly />
+
+You can configure the size of image and video previews for users in your
+organization. Smaller previews avoid disrupting the flow of conversation, while
+larger ones reduce the need to open the [image
+viewer](/help/view-images-and-videos).
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Message feed settings**, select the desired option from the **Size
+     of images and videos in messages** dropdown.
+
+  <SaveChanges />
+</FlattenedSteps>
 
 ## Configure whether image and video previews are shown
 

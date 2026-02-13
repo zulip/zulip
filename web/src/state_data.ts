@@ -543,6 +543,7 @@ export const realm_schema = z.object({
             ),
         }),
     ),
+    realm_image_thumbnail_size: z.enum(["small", "medium", "large"]),
     realm_inline_image_preview: z.boolean(),
     realm_inline_url_embed_preview: z.boolean(),
     realm_invite_required: z.boolean(),

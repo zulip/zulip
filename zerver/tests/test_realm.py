@@ -2340,6 +2340,7 @@ class RealmAPITest(ZulipTestCase):
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200],
             topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
+            image_thumbnail_size=Realm.REALM_IMAGE_THUMBNAIL_SIZE_TYPES,
             default_avatar_source=["G", "J"],
         )
 
@@ -2738,6 +2739,13 @@ class RealmAPITest(ZulipTestCase):
             {"topics_policy": "invalid"},
         )
         self.assert_json_error(result, "Invalid topics_policy")
+
+    def test_invalid_image_thumbnail_size(self) -> None:
+        result = self.client_patch(
+            "/json/realm",
+            {"image_thumbnail_size": "invalid"},
+        )
+        self.assert_json_error(result, "Invalid image_thumbnail_size")
 
     def update_with_realm_default_api(self, name: str, val: Any) -> None:
         if not isinstance(val, str):

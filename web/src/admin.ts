@@ -38,6 +38,9 @@ const admin_settings_label = {
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
     realm_moderation_request_channel: $t({defaultMessage: "Moderation requests"}),
+    realm_image_thumbnail_size: $t({
+        defaultMessage: "Size of images and videos in messages",
+    }),
     realm_inline_image_preview: $t({
         defaultMessage: "Show previews of uploaded and linked images and videos",
     }),
@@ -207,6 +210,8 @@ export function build_page(): void {
         realm_logo_url: realm.realm_logo_url,
         realm_night_logo_source: realm.realm_night_logo_source,
         realm_night_logo_url,
+        realm_image_thumbnail_size: realm.realm_image_thumbnail_size,
+        realm_image_thumbnail_size_values: settings_config.realm_image_thumbnail_size_values,
         realm_topics_policy: realm.realm_topics_policy,
         realm_topics_policy_values: settings_config.get_realm_topics_policy_values(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),

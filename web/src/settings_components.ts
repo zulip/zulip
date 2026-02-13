@@ -246,6 +246,7 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 
 export const simple_dropdown_realm_settings_schema = z.pick(realm_schema, {
     realm_org_type: true,
+    realm_image_thumbnail_size: true,
     realm_message_edit_history_visibility_policy: true,
     realm_topics_policy: true,
 });

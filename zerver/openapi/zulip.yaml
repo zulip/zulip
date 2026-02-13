@@ -5148,6 +5148,17 @@ paths:
                                       type: string
                                       description: |
                                         The URL of the organization's [profile icon](/help/create-your-organization-profile).
+                                    image_thumbnail_size:
+                                      type: string
+                                      enum:
+                                        - small
+                                        - medium
+                                        - large
+                                      description: |
+                                        The organization's policy for the size of image and video
+                                        thumbnails in messages.
+
+                                        **Changes**: New in Zulip 12.0 (feature level ZF-0a352b).
                                     inline_image_preview:
                                       type: boolean
                                       description: |
@@ -19016,6 +19027,23 @@ paths:
                               to be of type integer and did not accept anonymous user groups.
 
                               New in Zulip 8.0 (feature level 209).
+                      realm_image_thumbnail_size:
+                        type: string
+                        enum:
+                          - small
+                          - medium
+                          - large
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The organization's policy for the size of image and video
+                          thumbnails in messages.
+
+                          - `"small"`: 10em height (the default).
+                          - `"medium"`: 15em height.
+                          - `"large"`: 20em height.
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-0a352b).
                       realm_inline_image_preview:
                         type: boolean
                         description: |

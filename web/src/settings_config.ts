@@ -302,6 +302,21 @@ type PolicyValue = {
     description: string;
 };
 
+export const realm_image_thumbnail_size_values = {
+    small: {
+        code: "small",
+        description: $t({defaultMessage: "Small"}),
+    },
+    medium: {
+        code: "medium",
+        description: $t({defaultMessage: "Medium"}),
+    },
+    large: {
+        code: "large",
+        description: $t({defaultMessage: "Large"}),
+    },
+};
+
 type RealmTopicsPolicyValues = {
     allow_empty_topic: PolicyValue;
     disable_empty_topic: PolicyValue;
