@@ -107,10 +107,10 @@ DEFAULT_EMOJIS = [
     ("+1", "1f44d"),
     ("smiley", "1f603"),
     ("eyes", "1f440"),
-    ("crying_cat_face", "1f63f"),
-    ("arrow_up", "2b06"),
-    ("confetti_ball", "1f38a"),
-    ("hundred_points", "1f4af"),
+    ("money", "1f4b0"),
+    ("high_five", "1f590"),
+    ("construction_worker", "1f477"),
+    ("ok_signal", "1f646"),
 ]
 
 
@@ -1141,6 +1141,26 @@ class Command(ZulipBaseCommand):
                     "アニメ",
                 ]
 
+                stream_description_urls = [
+                    ("Read the docs", "https://zulip.readthedocs.io/en/latest/"),
+                    ("Browser", "https://duckduckgo.com/"),
+                    ("Open Source", "https://opensource.org/"),
+                    ("Zulip Repo", "https://github.com/zulip/zulip"),
+                    ("Programmer", "https://en.wikipedia.org/wiki/Programmer"),
+                    ("CERN", "https://home.cern/"),
+                    ("Bicycling", "https://www.bicycling.com/training/"),
+                    ("Nvidia", "https://www.nvidia.com/"),
+                    ("Richard Feynman", "https://www.britannica.com/biography/Richard-Feynman"),
+                ]
+
+                MARKDOWNS = [
+                    "**",
+                    "~~",
+                    "***~~",
+                    "`",
+                    "``",
+                ]
+
                 # Add stream names and stream descriptions
                 for i in range(options["extra_streams"]):
                     extra_stream_name = random.choice(extra_stream_names) + " " + str(i)
@@ -1152,6 +1172,42 @@ class Command(ZulipBaseCommand):
                     zulip_stream_dict[extra_stream_name] = {
                         "description": "Auto-generated extra stream.",
                     }
+
+                for stream_name in zulip_stream_dict.keys():
+
+                    # Add Markdowns to Stream descriptions
+                    if random.random() <= 0.20:
+                        markdown = random.choice(MARKDOWNS)
+                        words_in_description = zulip_stream_dict[stream_name]["description"].split()
+                        random_word = random.choice(words_in_description)
+                        zulip_stream_dict[stream_name]["description"] = zulip_stream_dict[
+                            stream_name
+                        ]["description"].replace(
+                            random_word, str(markdown + random_word + markdown[::-1])
+                        )
+
+                    # Add Emojis to the stream descriptions
+                    if random.random() <= 0.20:
+
+                        if random.random() <= 50:
+                            # Add Emojis supported by zulip.
+                            emoji_name, emoji_code = random.choice(DEFAULT_EMOJIS)
+                            zulip_stream_dict[stream_name]["description"] += str(
+                                " :{}: ".format(emoji_name)
+                            )
+
+                        else:
+                            # Add general Emojis.
+                            zulip_stream_dict[stream_name]["description"] += random.choice(
+                                raw_emojis
+                            )
+
+                    # Add Urls to stream descriptions.
+                    if random.random() <= 0.10:
+                        hyperlink, url = random.choice(stream_description_urls)
+                        zulip_stream_dict[stream_name]["description"] += str(
+                            " [{0}]({1})".format(hyperlink, url)
+                        )
 
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
                 # Now that we've created the new_stream_announcements_stream, configure it properly.
