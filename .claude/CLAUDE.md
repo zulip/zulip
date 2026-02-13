@@ -14,7 +14,7 @@ more maintainable and easier to read.
 
 Before writing any code, you must understand:
 
-1. What the existing and code does and why, including the relevant help center or
+1. What the existing code does and why, including the relevant help center or
    developer-facing documentation.
 2. What problem you're solving, in its full scope.
 3. Why your approach is the right solution, and available alternatives.
@@ -160,7 +160,7 @@ Fixes #123.
 
 **Commit summary format:**
 
-- Before color is a lower-case brief gesture at subsystem (ex: "nginx" config) or
+- Before the colon is a lower-case brief gesture at subsystem (ex: "nginx" config) or
   feature (ex: "compose" for the compose box) being modified.
 - Use a period at the end of the summary
 - Example: `compose: Fix cursor position after emoji insertion.`
