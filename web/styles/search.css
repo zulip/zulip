@@ -208,7 +208,7 @@
 
         color: var(--color-text-search);
 
-        display: flex;
+        display: inline-block;
         align-items: center;
 
         &:empty::before {
