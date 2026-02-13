@@ -1,5 +1,3 @@
-from typing import Any
-
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
 from zerver.lib.exceptions import ReactionExistsError
@@ -12,6 +10,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.message_cache import update_message_cache
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.types import ReactionEvent, ReactionUserDict
 from zerver.lib.user_message import create_historical_user_messages
 from zerver.models import Message, Reaction, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
@@ -20,13 +19,13 @@ from zerver.tornado.django_api import send_event_on_commit
 def notify_reaction_update(
     user_profile: UserProfile, message: Message, reaction: Reaction, op: str
 ) -> None:
-    user_dict = {
+    user_dict: ReactionUserDict = {
         "user_id": user_profile.id,
         "email": user_profile.email,
         "full_name": user_profile.full_name,
     }
 
-    event: dict[str, Any] = {
+    event: ReactionEvent = {
         "type": "reaction",
         "op": op,
         "user_id": user_profile.id,
