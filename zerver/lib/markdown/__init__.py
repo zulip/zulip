@@ -576,6 +576,52 @@ class InlineVideoProcessor(markdown.treeprocessors.Treeprocessor):
             video.set("src", get_camo_url(url))
 
 
+class UnnestLinks(markdown.treeprocessors.Treeprocessor):
+    @override
+    def run(self, root: Element) -> None:
+        # Build a map from each element to its parent. This is necessary
+        # because the standard library ElementTree doesn't have a .parent attribute.
+        parent_map = {child: parent for parent in root.iter() for child in parent}
+
+        # Iterate over a static list of all <a> tags in the document.
+        for a_tag in list(root.iter("a")):
+            # Find any <a> tags that are descendants of the current one.
+            nested_a_tags = list(a_tag.iter("a"))
+
+            # The first element of iter('a') is a_tag itself. We only care about
+            # tags nested inside it, so we skip the first element.
+            for nested_a in nested_a_tags[1:]:
+                parent = parent_map.get(nested_a)
+                if parent is None:
+                    # This should not happen in a well-formed tree, but we check just in case.
+                    continue
+
+                # This is the "unwrapping" logic. We need to replace the nested_a
+                # element with its text content. The text needs to be carefully
+                # stitched back into the parent element's text or the tail of
+                # the preceding element.
+
+                # Combine the nested link's text and tail text.
+                text_to_insert = nested_a.text or ""
+                text_to_insert += nested_a.tail or ""
+
+                # Find the position of the nested_a tag within its parent.
+                for i, child in enumerate(parent):
+                    if child is nested_a:
+                        if i == 0:
+                            # If it's the first child, prepend its text to the parent's text.
+                            parent.text = (parent.text or "") + text_to_insert
+                        else:
+                            # Otherwise, append its text to the tail of the previous sibling.
+                            prev_sibling = parent[i - 1]
+                            prev_sibling.tail = (prev_sibling.tail or "") + text_to_insert
+
+                        # Finally, remove the nested_a tag from the tree.
+                        parent.remove(nested_a)
+                        # We found and processed it, so we can break the inner loop.
+                        break
+
+
 class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
     """Return a `<code>` element containing the matching text."""
 
@@ -2023,9 +2069,11 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         if not el.text or not el.text.strip():
             el.text = href
 
-        # Prevent linkifiers from running on the content of a Markdown link, breaking up the link.
-        # This is a monkey-patch, but it might be worth sending a version of this change upstream.
-        el.text = markdown.util.AtomicString(el.text)
+        # Prevent other linkifiers from running on the content of a Markdown link,
+        # which can result in nested links. We've removed this in favor of the
+        # `UnnestLinks` treeprocessor, which allows for other inline markdown
+        # to render (e.g. bold and italics) and cleans up any nested links later.
+        # el.text = markdown.util.AtomicString(el.text)
 
         return el
 
@@ -2399,6 +2447,7 @@ class ZulipMarkdown(markdown.Markdown):
         treeprocessors = markdown.util.Registry[markdown.treeprocessors.Treeprocessor]()
         # We get priority 30 from 'hilite' extension
         treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), "inline", 25)
+        treeprocessors.register(UnnestLinks(self), "unnest_links", 24)
         treeprocessors.register(markdown.treeprocessors.PrettifyTreeprocessor(self), "prettify", 20)
         treeprocessors.register(markdown.treeprocessors.UnescapeTreeprocessor(self), "unescape", 18)
         treeprocessors.register(
