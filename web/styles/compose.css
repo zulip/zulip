@@ -1138,6 +1138,10 @@ textarea.new_message_textarea {
         &.empty-topic-display::placeholder {
             color: var(--color-compose-recipient-box-text-color);
         }
+
+        &.shake {
+            animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
     }
 
     #topic-not-mandatory-placeholder {
