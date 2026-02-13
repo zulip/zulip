@@ -113,6 +113,10 @@ in the [API changelog](https://zulip.com/api/changelog), see
 Endpoints that only administrators can use should be tagged with the
 custom `x-requires-administrator` field in the OpenAPI definition.
 
+Endpoints that doesn't follow the typical `api/v1` pattern should be
+tagged with the custom `x-non-api-v1-path` field in the OpenAPI
+definition.
+
 All of this information is rendered via a Markdown preprocessor,
 specifically the `APIHeaderPreprocessor` class defined in
 `zerver/openapi/markdown_extension.py`.
