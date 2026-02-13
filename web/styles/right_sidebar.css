@@ -125,7 +125,8 @@
         visibility: hidden;
     }
 
-    li:hover {
+    li:hover,
+    li.highlighted_user {
         .user-list-sidebar-menu-icon {
             visibility: visible;
         }
@@ -147,7 +148,7 @@
         }
 
         &.narrow-filter:has(a.user-presence-link:focus-visible),
-        &.highlighted_user {
+        &.highlighted_user:not(:has(:focus)) {
             outline: 2px solid var(--color-outline-focus);
             outline-offset: -2px;
         }
@@ -268,7 +269,8 @@
     border-radius: 4px;
     margin-right: var(--width-simplebar-scroll-hover);
 
-    &:hover {
+    &:hover,
+    &.highlighted_section_header {
         background-color: var(--color-buddy-list-highlighted-user);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
 
@@ -276,6 +278,11 @@
         .buddy-list-heading {
             opacity: var(--opacity-sidebar-heading-hover);
         }
+    }
+
+    &.highlighted_section_header {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
     }
 }
 

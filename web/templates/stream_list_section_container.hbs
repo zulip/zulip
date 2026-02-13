@@ -5,7 +5,7 @@
             {{section_title}}
         </h4>
         {{#if plus_icon_url}}
-        <a href="{{plus_icon_url}}" class="add-stream-tooltip add-stream-icon-container hidden-for-spectators" data-tippy-content="{{t 'Create a channel' }}">
+        <a href="{{plus_icon_url}}" class="add-stream-tooltip add-stream-icon-container hidden-for-spectators" tabindex="-1" data-tippy-content="{{t 'Create a channel' }}">
             <i class="add_stream_icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
         </a>
         {{/if}}
@@ -17,7 +17,7 @@
             </span>
         </div>
         {{#if show_folder_action_icon}}
-        <span class="sidebar-menu-icon folder-section-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+        <span class="sidebar-menu-icon folder-section-sidebar-menu-icon" tabindex="-1"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
         {{/if}}
     </div>
     <ul id="stream-list-{{id}}" class="stream-list-section"></ul>
