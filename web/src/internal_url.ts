@@ -39,6 +39,26 @@ export function stream_id_to_slug(
     return `${stream_id}-${name}`;
 }
 
+export function encode_slug(stream_id: number, slug: string): string {
+    // When generating slugs for channels in URLs, we like to provide
+    // an encoding of the channel name in the URL along with the
+    // channel ID to have the link hint what channel it is. But we
+    // want to only do this when the hinting is useful and does not
+    // greatly lengthen the string as a whole.
+    const MAX_SLUG_LENGTH_DIFF_FROM_ENCODING = 10;
+    const MAX_SLUG_LENGTH_RATIO_FROM_ENCODING = 1.5;
+
+    const encoded_slug = encodeHashComponent(slug);
+    const length_diff = encoded_slug.length - slug.length;
+    if (
+        length_diff > Math.max(slug.length, MAX_SLUG_LENGTH_DIFF_FROM_ENCODING) ||
+        encoded_slug.length > slug.length * MAX_SLUG_LENGTH_RATIO_FROM_ENCODING
+    ) {
+        return String(stream_id);
+    }
+    return encoded_slug;
+}
+
 export function encode_stream_id(
     stream_id: number,
     maybe_get_stream_name: MaybeGetStreamName,
@@ -47,7 +67,7 @@ export function encode_stream_id(
     // URI encoding piece.
     const slug = stream_id_to_slug(stream_id, maybe_get_stream_name);
 
-    return encodeHashComponent(slug);
+    return encode_slug(stream_id, slug);
 }
 
 export function by_stream_url(
