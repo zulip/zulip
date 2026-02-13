@@ -785,7 +785,7 @@ class Command(ZulipBaseCommand):
             biography = try_add_realm_custom_profile_field(
                 zulip_realm,
                 "Biography",
-                CustomProfileField.LONG_TEXT,
+                CustomProfileField.PARAGRAPH,
                 hint="What are you known for?",
             )
             favorite_food = try_add_realm_custom_profile_field(
@@ -799,7 +799,7 @@ class Command(ZulipBaseCommand):
                 "1": {"text": "Emacs", "order": "2"},
             }
             favorite_editor = try_add_realm_custom_profile_field(
-                zulip_realm, "Favorite editor", CustomProfileField.SELECT, field_data=field_data
+                zulip_realm, "Favorite editor", CustomProfileField.DROPDOWN, field_data=field_data
             )
             birthday = try_add_realm_custom_profile_field(
                 zulip_realm, "Birthday", CustomProfileField.DATE

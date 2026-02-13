@@ -13913,9 +13913,9 @@ paths:
                     - **1**: Short text
                     - **2**: Paragraph
                     - **3**: Dropdown
-                    - **4**: Date picker
+                    - **4**: Date
                     - **5**: Link
-                    - **6**: Person picker
+                    - **6**: Users
                     - **7**: External account
                     - **8**: Pronouns
 
@@ -13947,7 +13947,7 @@ paths:
                     organization. The "Paragraph" [profile field types][profile-field-types]
                     profile field types cannot be selected to be displayed in profile summaries.
 
-                    The "Person picker" profile field is also not supported, but that is likely to
+                    The "Users" profile field is also not supported, but that is likely to
                     be temporary.
 
                     [profile-field-types]: /help/custom-profile-fields#profile-field-types
@@ -16834,9 +16834,9 @@ paths:
                             property itself. The current supported field types are as follows:
 
                             - `SHORT_TEXT`
-                            - `LONG_TEXT`
+                            - `PARAGRAPH`
                             - `DATE` for date-based fields.
-                            - `SELECT` for a list of options.
+                            - `DROPDOWN` for a list of options.
                             - `URL` for links.
                             - `EXTERNAL_ACCOUNT` for external accounts.
                             - `USER` for selecting a user for the field.
@@ -25968,9 +25968,9 @@ components:
             - **1**: Short text
             - **2**: Paragraph
             - **3**: Dropdown
-            - **4**: Date picker
+            - **4**: Date
             - **5**: Link
-            - **6**: Person picker
+            - **6**: Users
             - **7**: External account
             - **8**: Pronouns
 
@@ -26005,7 +26005,7 @@ components:
           description: |
             Whether the custom profile field, display or not on the user card.
 
-            Must be false for `Paragraph` and `Person picker`
+            Must be false for `Paragraph` and `Users`
             [profile field types](/help/custom-profile-fields#profile-field-types).
 
             This field is only included when its value is `true`.

@@ -63,7 +63,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["name"] = "Phone"
         data["hint"] = "Contact number"
-        data["field_type"] = CustomProfileField.LONG_TEXT
+        data["field_type"] = CustomProfileField.PARAGRAPH
         data["display_in_profile_summary"] = "true"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "Field type not supported for display in profile summary.")
@@ -100,7 +100,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["name"] = "Phone"
         data["hint"] = "Contact number"
-        data["field_type"] = CustomProfileField.LONG_TEXT
+        data["field_type"] = CustomProfileField.PARAGRAPH
         data["use_for_user_matching"] = "true"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "Field type not supported for use for user matching.")
@@ -109,7 +109,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.login("iago")
         data: dict[str, str | int] = {}
         data["name"] = "Favorite programming language"
-        data["field_type"] = CustomProfileField.SELECT
+        data["field_type"] = CustomProfileField.DROPDOWN
 
         data["field_data"] = "invalid"
         result = self.client_post("/json/realm/profile_fields", info=data)
