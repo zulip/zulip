@@ -2,11 +2,11 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 let next_id = 0;
-const messages = new Map();
+const message_store = zrequire("message_store");
 
 function make_stream_message({stream_id, topic, sender_id}) {
     next_id += 1;
@@ -18,14 +18,11 @@ function make_stream_message({stream_id, topic, sender_id}) {
         topic,
         sender_id,
     };
-    messages.set(message.id, message);
+    message_store.update_message_cache({message});
 
     return message;
 }
 
-mock_esm("../src/message_store", {
-    get: (message_id) => messages.get(message_id),
-});
 const people = zrequire("people");
 people.initialize_current_user(1);
 const rs = zrequire("recent_senders");
@@ -33,7 +30,7 @@ zrequire("message_util.ts");
 
 function test(label, f) {
     run_test(label, ({override}) => {
-        messages.clear();
+        message_store.clear_for_testing();
         next_id = 0;
         rs.clear_for_testing();
         f({override});
