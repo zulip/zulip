@@ -337,15 +337,34 @@ function open_custom_profile_field_creation_form_modal(): void {
     });
 
     function create_profile_field(): void {
+        const field_types = realm.custom_profile_field_types;
         let field_data: FieldData | undefined = {};
         const field_type = $<HTMLSelectOneElement>(
             "select:not([multiple])#profile_field_type",
         ).val()!;
-        field_data = settings_components.read_field_data_from_form(
-            Number.parseInt(field_type, 10),
-            $(".new-profile-field-form"),
-            undefined,
-        );
+        const field_type_id = Number.parseInt(field_type, 10);
+        const $form = $(".new-profile-field-form");
+
+        // Check for duplicate options in select fields before saving
+        if (field_type_id === field_types.SELECT.id) {
+            const duplicate_options = settings_components.get_select_field_duplicate_options($form);
+            if (duplicate_options.length > 0) {
+                ui_report.client_error(
+                    $t(
+                        {
+                            defaultMessage:
+                                "Cannot save because there are duplicate options: {options}",
+                        },
+                        {options: duplicate_options.join(", ")},
+                    ),
+                    $("#dialog_error"),
+                );
+                dialog_widget.hide_dialog_spinner();
+                return;
+            }
+        }
+
+        field_data = settings_components.read_field_data_from_form(field_type_id, $form, undefined);
         const data = {
             name: $("#profile_field_name").val(),
             hint: $("#profile_field_hint").val(),
@@ -705,29 +724,65 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
             dialog_widget.submit_api_request(channel.patch, url, data, opts);
         }
 
-        if (field.type === field_types.SELECT.id && data["field_data"] !== undefined) {
-            const new_values = new Set(
-                Object.keys(
-                    settings_components.select_field_data_schema.parse(
-                        JSON.parse(data["field_data"].toString()),
+        if (field.type === field_types.SELECT.id) {
+            // Check for duplicate options before saving
+            const duplicate_options =
+                settings_components.get_select_field_duplicate_options($profile_field_form);
+            if (duplicate_options.length > 0) {
+                ui_report.client_error(
+                    $t(
+                        {
+                            defaultMessage:
+                                "Cannot save because there are duplicate options: {options}",
+                        },
+                        {options: duplicate_options.join(", ")},
                     ),
-                ),
-            );
-            const deleted_values: Record<string, string> = {};
-            const select_field_data =
-                settings_components.select_field_data_schema.parse(field_data);
-            for (const [value, option] of Object.entries(select_field_data)) {
-                if (!new_values.has(value)) {
-                    deleted_values[value] = option.text;
-                }
+                    $("#dialog_error"),
+                );
+                dialog_widget.hide_dialog_spinner();
+                return;
             }
 
-            if (Object.keys(deleted_values).length > 0) {
-                const edit_select_field_modal_callback = (): void => {
-                    show_modal_for_deleting_options(field, deleted_values, update_profile_field);
-                };
-                dialog_widget.close(edit_select_field_modal_callback);
-                return;
+            // Get the field data from the form for submission.
+            // Each option keeps its DOM data-value, so deleted options
+            // are properly detected even if new options with the same text are added.
+            const submission_field_data = settings_components.read_field_data_from_form(
+                field.type,
+                $profile_field_form,
+                JSON.parse(field.field_data),
+            );
+            if (submission_field_data !== undefined) {
+                data["field_data"] = JSON.stringify(submission_field_data);
+            }
+
+            if (data["field_data"] !== undefined) {
+                const new_values = new Set(
+                    Object.keys(
+                        settings_components.select_field_data_schema.parse(
+                            JSON.parse(data["field_data"].toString()),
+                        ),
+                    ),
+                );
+                const deleted_values: Record<string, string> = {};
+                const select_field_data =
+                    settings_components.select_field_data_schema.parse(field_data);
+                for (const [value, option] of Object.entries(select_field_data)) {
+                    if (!new_values.has(value)) {
+                        deleted_values[value] = option.text;
+                    }
+                }
+
+                if (Object.keys(deleted_values).length > 0) {
+                    const edit_select_field_modal_callback = (): void => {
+                        show_modal_for_deleting_options(
+                            field,
+                            deleted_values,
+                            update_profile_field,
+                        );
+                    };
+                    dialog_widget.close(edit_select_field_modal_callback);
+                    return;
+                }
             }
         }
 

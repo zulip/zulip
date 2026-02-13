@@ -403,33 +403,15 @@ export type SelectFieldData = z.output<typeof select_field_data_schema>;
 
 function read_select_field_data_from_form(
     $profile_field_form: JQuery,
-    old_field_data: unknown,
+    _old_field_data: unknown,
 ): SelectFieldData {
     const field_data: SelectFieldData = {};
     let field_order = 1;
 
-    const old_option_value_map = new Map<string, string>();
-    if (old_field_data !== undefined) {
-        for (const [value, choice] of Object.entries(
-            select_field_data_schema.parse(old_field_data),
-        )) {
-            assert(typeof choice !== "string");
-            old_option_value_map.set(choice.text, value);
-        }
-    }
     $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
         const text = util.the($(this).find("input")).value;
         if (text) {
-            let value = old_option_value_map.get(text);
-            if (value !== undefined) {
-                // Resetting the data-value in the form is
-                // important if the user removed an option string
-                // and then added it back again before saving
-                // changes.
-                $(this).attr("data-value", value);
-            } else {
-                value = $(this).attr("data-value")!;
-            }
+            const value = $(this).attr("data-value")!;
             field_data[value] = {text, order: field_order.toString()};
             field_order += 1;
         }
@@ -474,6 +456,24 @@ function read_external_account_field_data(
 }
 
 export type FieldData = SelectFieldData | ExternalAccountFieldData;
+
+export function get_select_field_duplicate_options($profile_field_form: JQuery): string[] {
+    const seen_texts = new Set<string>();
+    const duplicates: string[] = [];
+    $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
+        const text = util.the($(this).find("input")).value.trim();
+        if (text) {
+            if (seen_texts.has(text)) {
+                if (!duplicates.includes(text)) {
+                    duplicates.push(text);
+                }
+            } else {
+                seen_texts.add(text);
+            }
+        }
+    });
+    return duplicates;
+}
 
 export function read_field_data_from_form(
     field_type_id: number,
