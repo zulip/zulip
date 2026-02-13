@@ -12,7 +12,7 @@ from django.conf import settings
 from django.http import HttpRequest
 from django.utils.timesince import timeuntil
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from typing_extensions import override
 
 from zerver.lib import redis_utils
@@ -662,7 +662,11 @@ def readable_expiry_string_for_html(seconds_till_expiry: int) -> str:
         # We use \xa0 as the whitespace to be consistent with
         # timeuntil.
         # If you want the regular " ", see readable_expiry_string_for_plaintext.
-        return _("{secs}\xa0seconds").format(secs=seconds_till_expiry)
+        return ngettext(
+            "{secs}{nbsp}second",
+            "{secs}{nbsp}seconds",
+            seconds_till_expiry,
+        ).format(secs=seconds_till_expiry, nbsp="\xa0")
 
     return timeuntil(expires_in_datetime)
 
