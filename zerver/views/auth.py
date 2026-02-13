@@ -23,6 +23,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
+from jwt.types import Options as JwtDecodeOptions
 from pydantic import Json
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
@@ -107,7 +108,7 @@ from zproject.backends import (
     sync_groups_for_prereg_user,
     validate_otp_params,
 )
-from zproject.settings_types import OIDCIdPConfigDict, SAMLIdPConfigDict
+from zproject.settings_types import JwksAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict
 
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
@@ -594,18 +595,44 @@ def get_email_and_realm_from_jwt_authentication_request(
         raise InvalidSubdomainError
 
     try:
-        key = settings.JWT_AUTH_KEYS[realm.subdomain]["key"]
-        algorithms = settings.JWT_AUTH_KEYS[realm.subdomain]["algorithms"]
+        domain_auth_keys = settings.JWT_AUTH_KEYS[realm.subdomain]
     except KeyError:
         raise JsonableError(_("JWT authentication is not enabled for this organization"))
 
-    if not json_web_token:
-        raise JsonableError(_("No JSON web token passed in request"))
+    if "jwks_url" in domain_auth_keys:
+        jwks_domain_auth_keys = cast(JwksAuthKey, domain_auth_keys)
+        jwks_client = jwt.PyJWKClient(jwks_domain_auth_keys["jwks_url"])
+        if not json_web_token:
+            raise JsonableError(_("No JSON web token passed in request"))
+        try:
+            key: jwt.PyJWK | str = jwks_client.get_signing_key_from_jwt(json_web_token)
+        except jwt.PyJWKClientError:
+            raise JsonableError(_("Bad JSON web token"))
+        algorithms = [cast(jwt.PyJWK, key).algorithm_name]
+        if "aud" in jwks_domain_auth_keys:
+            aud = jwks_domain_auth_keys["aud"]
+            options: JwtDecodeOptions = {"verify_signature": True, "verify_aud": True}
+        else:
+            aud = None
+            options = {"verify_signature": True, "verify_aud": False}
+    else:
+        try:
+            key = domain_auth_keys["key"]
+            algorithms = domain_auth_keys["algorithms"]
+            aud = None
+        except KeyError:
+            raise JsonableError(_("JWT authentication is not enabled for this organization"))
+        if not json_web_token:
+            raise JsonableError(_("No JSON web token passed in request"))
+        options = {"verify_signature": True}
 
     try:
-        payload = jwt.decode(
-            json_web_token, key, algorithms=algorithms, options={"verify_signature": True}
-        )
+        if aud:
+            payload = jwt.decode(
+                json_web_token, key, algorithms=algorithms, options=options, audience=aud
+            )
+        else:
+            payload = jwt.decode(json_web_token, key, algorithms=algorithms, options=options)
     except jwt.InvalidTokenError:
         raise JsonableError(_("Bad JSON web token"))
 

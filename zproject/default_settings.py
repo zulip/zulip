@@ -6,7 +6,13 @@ from typing import TYPE_CHECKING, Any, Literal, Optional
 from django_auth_ldap.config import GroupOfUniqueNamesType, LDAPGroupType
 
 from scripts.lib.zulip_tools import deport
-from zproject.settings_types import JwtAuthKey, OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
+from zproject.settings_types import (
+    JwksAuthKey,
+    JwtAuthKey,
+    OIDCIdPConfigDict,
+    SAMLIdPConfigDict,
+    SCIMConfigDict,
+)
 
 from .config import DEVELOPMENT, PRODUCTION, get_config, get_secret
 
@@ -556,7 +562,7 @@ FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE: str | None = None
 TERMS_OF_SERVICE_MESSAGE: str | None = None
 
 # Configuration for JWT auth (sign in and API key fetch)
-JWT_AUTH_KEYS: dict[str, JwtAuthKey] = {}
+JWT_AUTH_KEYS: dict[str, JwksAuthKey | JwtAuthKey] = {}
 
 # https://docs.djangoproject.com/en/5.0/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.
