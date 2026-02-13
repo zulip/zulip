@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
+import render_emoji_tooltip from "../templates/emoji_tooltip.hbs";
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
 import render_message_media_preview_tooltip from "../templates/message_media_preview_tooltip.hbs";
 import render_message_row_date_tooltip from "../templates/message_row_date_tooltip.hbs";
@@ -19,11 +20,12 @@ import {message_edit_history_visibility_policy_values} from "./settings_config.t
 import {realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import {
+    INSTANT_HOVER_DELAY,
     INTERACTIVE_HOVER_DELAY,
     LONG_HOVER_DELAY,
     topic_visibility_policy_tooltip_props,
 } from "./tippyjs.ts";
-import {parse_html} from "./ui_util.ts";
+import {convert_emoji_element_to_unicode, parse_html} from "./ui_util.ts";
 
 type Config = {
     attributes: boolean;
@@ -484,6 +486,70 @@ export function initialize(): void {
             if (is_disabled) {
                 return false;
             }
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    // Emoji tooltips in message feed (excluding reactions)
+    message_list_tooltip(".rendered_markdown .emoji:not(.message_reaction .emoji)", {
+        delay: INSTANT_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            // Remove native `title` attribute so the browser doesn't show
+            // the default tooltip in addition to our Tippy tooltip.
+            $elem.removeAttr("title");
+
+            // Get emoji information from the element
+            let emoji_name: string | undefined = $elem.attr("data-emoji-name");
+            let emoji_url: string | undefined;
+            let emoji_code: string | undefined;
+            let emoji_unicode: string | undefined;
+
+            if (!emoji_name) {
+                const title = $elem.attr("title");
+                emoji_name = title?.replaceAll(" ", "_");
+                if (emoji_name) {
+                    $elem.attr("data-emoji-name", emoji_name);
+                    $elem.removeAttr("title");
+                }
+            }
+
+            if ($elem.is("img")) {
+                // Realm/custom emoji
+                emoji_url = $elem.attr("src");
+            } else {
+                // Unicode emoji (uses CSS sprite)
+                // Extract emoji code from class name (e.g., "emoji-1f604")
+                const classes = $elem.attr("class")?.split(/\s+/) ?? [];
+                for (const cls of classes) {
+                    if (cls.startsWith("emoji-")) {
+                        emoji_code = cls.slice(6); // Remove "emoji-" prefix
+                        break;
+                    }
+                }
+
+                if (instance.reference instanceof HTMLElement) {
+                    emoji_unicode = convert_emoji_element_to_unicode($(instance.reference));
+                }
+            }
+
+            if (!emoji_name) {
+                return false;
+            }
+
+            instance.setContent(
+                parse_html(
+                    render_emoji_tooltip({
+                        emoji_name: emoji_name.replaceAll("_", " "),
+                        url: emoji_url,
+                        emoji_code,
+                        emoji_unicode,
+                    }),
+                ),
+            );
             return undefined;
         },
         onHidden(instance) {

@@ -1282,21 +1282,34 @@ def make_emoji(codepoint: str, display_string: str) -> Element:
     # Replace underscore in emoji's title with space
     title = display_string[1:-1].replace("_", " ")
     span = Element("span")
-    span.set("class", f"emoji emoji-{codepoint}")
-    span.set("title", title)
-    span.set("role", "img")
     span.set("aria-label", title)
+    span.set("class", f"emoji emoji-{codepoint}")
+    span.set("role", "img")
+    span.set("data-emoji-name", title)
     span.text = markdown.util.AtomicString(display_string)
     return span
 
 
 def make_realm_emoji(src: str, display_string: str) -> Element:
     elt = Element("img")
-    elt.set("src", src)
-    elt.set("class", "emoji")
     elt.set("alt", display_string)
-    elt.set("title", display_string[1:-1].replace("_", " "))
+    elt.set("class", "emoji")
+    elt.set("src", src)
+    elt.set("data-emoji-name", display_string[1:-1].replace("_", " "))
     return elt
+
+
+EMOJI_SPAN_ATTR_RE = re.compile(r'data-emoji-name="([^\"]+)" role="img"')
+EMOJI_IMG_ATTR_RE = re.compile(r'data-emoji-name="([^\"]+)" src="([^\"]+)"')
+
+
+def reorder_emoji_attributes(html: str) -> str:
+    if "data-emoji-name" not in html:
+        return html
+
+    html = EMOJI_SPAN_ATTR_RE.sub(r'role="img" data-emoji-name="\1"', html)
+    html = EMOJI_IMG_ATTR_RE.sub(r'src="\2" data-emoji-name="\1"', html)
+    return html
 
 
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):
@@ -2686,7 +2699,9 @@ def do_convert(
         # extremely inefficient in corner cases) as well as user
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
-        rendering_result.rendered_content = unsafe_timeout(5, lambda: md_engine.convert(content))
+        rendering_result.rendered_content = reorder_emoji_attributes(
+            unsafe_timeout(5, lambda: md_engine.convert(content))
+        )
 
         # Post-process the result with the rendered image previews:
         if user_upload_previews is not None:
