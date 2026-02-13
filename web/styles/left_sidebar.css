@@ -2381,3 +2381,29 @@ li.topic-list-item {
         top: 0;
     }
 }
+
+#left-sidebar-menu-popover {
+    /* No hover effect on the label */
+    .display-style-selector-header:hover {
+        background: inherit;
+        cursor: default;
+    }
+
+    .popover-menu-link:not(.display-style-selector-header) {
+        display: grid;
+        grid-template: "left-icon row-content" auto / 18px minmax(
+                max-content,
+                1fr
+            );
+        align-items: center;
+
+        .user_list_style_choice {
+            grid-area: left-icon;
+            justify-self: baseline;
+        }
+
+        .popover-menu-label {
+            grid-area: row-content;
+        }
+    }
+}
