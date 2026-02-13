@@ -3,6 +3,7 @@ import argparse
 import glob
 import os
 import pwd
+import re
 import subprocess
 import sys
 from typing import Any
@@ -471,18 +472,43 @@ def run_tests_via_node_js() -> int:
     return ret
 
 
+# Regexes for lines to exclude from coverage, analogous to
+# tools/coveragerc's exclude_lines for Python.
+COVERAGE_EXCLUDE_LINES = [
+    # Don't require coverage for assertion failures
+    re.compile(r"\bassert\(false[,)]"),
+]
+
+
 def check_line_coverage(
     fn: str, line_coverage: dict[Any, Any], line_mapping: dict[Any, Any], log: bool = True
 ) -> bool:
     missing_lines = [
-        str(line_mapping[line]["start"]["line"])
+        line_mapping[line]["start"]["line"]
         for line, coverage in line_coverage.items()
         if coverage == 0
     ]
+
+    if missing_lines and COVERAGE_EXCLUDE_LINES:
+        source_path = os.path.join(ROOT_DIR, fn)
+        with open(source_path) as f:
+            source_lines = f.readlines()
+        missing_lines = [
+            line_num
+            for line_num in missing_lines
+            if not any(
+                pattern.search(source_lines[line_num - 1]) for pattern in COVERAGE_EXCLUDE_LINES
+            )
+        ]
+
     if missing_lines:
         if log:
             print_error(f"{fn} no longer has complete node test coverage")
-            print("  Lines missing coverage: {}".format(", ".join(sorted(missing_lines, key=int))))
+            print(
+                "  Lines missing coverage: {}".format(
+                    ", ".join(sorted((str(line_num) for line_num in missing_lines), key=int))
+                )
+            )
             print()
         return False
     return True
