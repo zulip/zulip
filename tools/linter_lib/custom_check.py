@@ -710,6 +710,8 @@ html_rules: list["Rule"] = [
         "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
         "exclude_pattern": r""".*style ?=["'](display: ?none|background: {{|color: {{|background-color: {{).*|style=["'](narrow|long|short)["']""",
         "exclude": {
+            # Background color calculated dynamically.
+            "web/templates/inbox_view/inbox_stream_header_row.hbs",
             # 5xx page doesn't have external CSS
             "web/html/5xx.html",
             # exclude_pattern above handles color, but have other issues:
