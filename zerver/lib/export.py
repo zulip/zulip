@@ -2174,7 +2174,7 @@ def _get_exported_s3_record(
     if "realm_id" in record:
         record["realm_id"] = int(record["realm_id"])
     else:
-        raise Exception("Missing realm_id")
+        raise ValueError("Missing realm_id")
 
     if "avatar_version" in record:
         record["avatar_version"] = int(record["avatar_version"])
