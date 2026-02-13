@@ -37,6 +37,7 @@ from zerver.lib.utils import optional_bytes_to_mib
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
+    ImageAttachment,
     Message,
     NamedUserGroup,
     Realm,
@@ -706,20 +707,18 @@ def do_add_deactivated_redirect(realm: Realm, redirect_url: str) -> None:
 def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> None:
     # Delete attachment files from the storage backend, so that we
     # don't leave them dangling.
-    for obj_class in Attachment, ArchivedAttachment:
-        last_id = 0
-        while True:
+    with delete_message_attachments() as delete_one:
+        for obj_class in Attachment, ArchivedAttachment:
             to_delete = (
-                obj_class._default_manager.filter(realm_id=realm.id, pk__gt=last_id)
+                obj_class._default_manager.filter(realm_id=realm.id)
                 .order_by("pk")
-                .values_list("pk", "path_id")[:batch_size]
+                .select_for_update()
+                .values_list("path_id", flat=True)
             )
-            if len(to_delete) > 0:
-                delete_message_attachments([row[1] for row in to_delete])
-                last_id = to_delete[len(to_delete) - 1][0]
-            if len(to_delete) < batch_size:
-                break
-        obj_class._default_manager.filter(realm=realm).delete()
+            ImageAttachment.objects.filter(path_id__in=to_delete).delete()
+            for path_id in to_delete.iterator():
+                delete_one(path_id)
+            obj_class._default_manager.filter(realm_id=realm.id).delete()
 
 
 @transaction.atomic(durable=True)
