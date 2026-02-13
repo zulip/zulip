@@ -289,7 +289,11 @@
     position: sticky;
     top: 0;
     z-index: 3;
-    background-color: var(--color-background);
+
+    /* The active direct messages section has a different background color */
+    &:not(.active-direct-messages-section) {
+        background-color: var(--color-background);
+    }
 
     /* Prevent hover styles set on other rows when zoomed in. */
     &:not(.zoom-in):hover {
