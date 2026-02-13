@@ -1228,6 +1228,15 @@ ul.modal-options-list {
     width: 100%;
 }
 
+.read_receipts_user_avatar {
+    display: inline-block;
+    height: 1.25em; /* 20px at 16px font-size at 14px em */
+    width: 1.25em; /* 20px at 16px font-size at 14px em */
+    position: relative;
+    right: 8px;
+    border-radius: 4px;
+}
+
 #change_group_info_modal .user-group-info-modal-fields {
     display: flex;
     flex-direction: column;

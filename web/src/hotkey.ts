@@ -917,10 +917,6 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
 
     // `list_util` will process the event in send later modal.
     if (is_any_modal_active && active_modal !== "#send_later_modal") {
-        if (event_name === "toggle_read_receipts" && active_modal === "#read_receipts_modal") {
-            read_receipts.hide_user_list();
-            return true;
-        }
         return false;
     }
 
@@ -1519,7 +1515,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             return true;
         }
         case "toggle_read_receipts": {
-            read_receipts.show_user_list(msg.id);
+            read_receipts.toggle_read_receipts(msg.id);
             return true;
         }
         case "zoom_to_message_near": {

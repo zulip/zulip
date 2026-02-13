@@ -300,6 +300,12 @@
     width: max-content;
 }
 
+#read_recepients_info_container {
+    padding: 0;
+    min-height: min-content;
+}
+
+.read-receipt-container,
 .popover-group-menu-info {
     display: flex;
     flex-direction: column;
@@ -318,6 +324,10 @@
     line-height: 1.1111em;
     color: var(--color-text-full-name);
     overflow-wrap: anywhere;
+}
+
+.popover-group-menu-name-container .popover-group-menu-name {
+    padding-top: 5px;
 }
 
 .popover-group-menu-description {
@@ -1073,6 +1083,7 @@ ul.popover-group-menu-member-list {
     }
 }
 
+#read-receipts-popover,
 #message-actions-menu-dropdown {
     /* 350px at 15px/1em */
     --popover-menu-max-width: 23.3333em;
