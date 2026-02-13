@@ -2342,6 +2342,12 @@
         var(--grey-400)
     );
 
+    /* bottom fade gradients for typeahead dropdowns */
+    --color-dropdown-bottom-gradient: light-dark(
+        hsl(0deg 0% 100%),
+        hsl(0deg 0% 0% / 35%)
+    );
+
     /* Shared button CSS variables */
     --color-outline-button-focus: light-dark(
         hsl(0deg 0% 0%),
