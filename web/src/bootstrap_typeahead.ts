@@ -428,6 +428,17 @@ export class Typeahead<ItemType extends string | object> {
                 offset({placement, reference}) {
                     // Gap separates the typeahead and caret by 2px vertically.
                     const gap = 2;
+                    // Use window width for mobile detection instead of touchscreen.
+                    const isMobileWidth = window.innerWidth < 768;
+
+                    if (isMobileWidth) {
+                        // On narrow screens the input is near the right edge, so
+                        // the dropdown would overflow and get clipped.  Shift it
+                        // left so its left edge aligns with the viewport's left edge,
+                        // giving it the full screen width.
+                        const inputRect = the(input_element.$element).getBoundingClientRect();
+                        return [-inputRect.left, gap];
+                    }
 
                     if (input_element.type === "textarea") {
                         const caret = getCaretCoordinates(
