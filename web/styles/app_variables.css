@@ -548,7 +548,7 @@
     */
     --compose-send-controls-width: 112px;
 
-    @media ((width >= $sm_min) and (width < $mc_min)) {
+    @media (width >= $sm_min) and (width < $mc_min) {
         --compose-send-controls-width: 62px;
     }
 
@@ -574,8 +574,8 @@
 
     /*
     Width to be reserved for document scrollbar when scrolling is disabled.
-    Using `scrollbar-gutter` would be more appropriate but doesn't has wide
-    support and doesn't work for `fixed` elements.
+    This is now largely handled by `scrollbar-gutter: stable` on the html element,
+    but this variable is retained for any edge cases or older browser support.
     */
     --disabled-scrollbar-width: 0px;
 
