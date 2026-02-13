@@ -88,8 +88,14 @@ def create_users(
     tos_version: str | None = None,
     bot_type: int | None = None,
     bot_owner: UserProfile | None = None,
+    is_imported_stub: bool = False,
 ) -> None:
     user_set = {(email, full_name, True) for full_name, email in name_list}
     bulk_create_users(
-        realm, user_set, bot_type=bot_type, bot_owner=bot_owner, tos_version=tos_version
+        realm,
+        user_set,
+        bot_type=bot_type,
+        bot_owner=bot_owner,
+        tos_version=tos_version,
+        is_imported_stub=is_imported_stub,
     )

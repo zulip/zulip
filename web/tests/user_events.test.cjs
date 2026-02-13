@@ -20,6 +20,9 @@ const settings_account = mock_esm("../src/settings_account", {
     update_user_own_role_dropdown_state() {},
 });
 const settings_bots = mock_esm("../src/settings_bots");
+mock_esm("../src/settings_panel_menu", {
+    update_imported_users_tab() {},
+});
 mock_esm("../src/settings_users", {
     update_user_data() {},
     update_view_on_deactivate() {},
@@ -341,4 +344,14 @@ run_test("updates", ({override}) => {
     assert.ok(bot_data_updated);
     assert.ok(pm_list_updated);
     assert.ok(compose_pill_updated);
+
+    const imported_user = {
+        email: "imoreted-user@example.com",
+        delivery_email: null,
+        user_id: 33,
+        full_name: "Imported user",
+        is_imported_stub: true,
+    };
+    people.add_active_user(imported_user);
+    user_events.update_person({user_id: imported_user.user_id, is_imported_stub: false});
 });

@@ -151,6 +151,7 @@ from zerver.actions.user_groups import (
 from zerver.actions.user_settings import (
     do_change_avatar_fields,
     do_change_full_name,
+    do_change_user_date_joined,
     do_change_user_delivery_email,
     do_change_user_setting,
     do_regenerate_api_key,
@@ -2634,6 +2635,12 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user("polonius")
         with self.verify_action(num_events=0, state_change_expected=False):
             do_change_full_name(cordelia, "Cordelia", self.user_profile, notify=False)
+
+    def test_change_date_joined(self) -> None:
+        now = timezone_now()
+        with self.verify_action() as events:
+            do_change_user_date_joined(self.user_profile, now)
+        check_realm_user_update("events[0]", events[0], "date_joined")
 
     def test_change_user_delivery_email_email_address_visibility_admins(self) -> None:
         do_change_user_setting(

@@ -33,6 +33,7 @@ def bulk_create_users(
     bot_owner: UserProfile | None = None,
     tos_version: str | None = None,
     timezone: str = "",
+    is_imported_stub: bool = False,
 ) -> None:
     """
     Creates and saves a UserProfile with the given email.
@@ -65,6 +66,7 @@ def bulk_create_users(
             False,
             tos_version,
             timezone,
+            is_imported_stub=is_imported_stub,
             default_language=realm.default_language,
             email_address_visibility=email_address_visibility,
         )

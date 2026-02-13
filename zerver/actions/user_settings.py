@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from datetime import timedelta
+from datetime import datetime, timedelta
 from enum import Enum
 
 from django.conf import settings
@@ -719,3 +719,30 @@ def bulk_change_user_setting(
                 force_send_update=True,
             )
         )
+
+
+@transaction.atomic(durable=True)
+def do_change_user_date_joined(user_profile: UserProfile, date_joined: datetime) -> None:
+    old_date_joined = user_profile.date_joined
+    user_profile.date_joined = date_joined
+    user_profile.save(update_fields=["date_joined"])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=user_profile,
+        modified_user=user_profile,
+        event_type=AuditLogEventType.USER_DATE_JOINED_CHANGED,
+        event_time=event_time,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_date_joined.isoformat(),
+            RealmAuditLog.NEW_VALUE: date_joined.isoformat(),
+        },
+    )
+
+    payload = dict(user_id=user_profile.id, date_joined=date_joined.isoformat(timespec="minutes"))
+    send_event_on_commit(
+        user_profile.realm,
+        dict(type="realm_user", op="update", person=payload),
+        get_user_ids_who_can_access_user(user_profile),
+    )

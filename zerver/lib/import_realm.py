@@ -1455,6 +1455,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         user_profile.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
     UserProfile.objects.bulk_create(user_profiles)
 
+    # Update date_joined field here so that we do not need to worry about
+    # conversion time and import time being different.
+    UserProfile.objects.filter(realm=realm, is_imported_stub=True).update(
+        date_joined=timezone_now()
+    )
+
     channel_folders = ChannelFolder.objects.filter(id__in=channel_folder_id_to_creator_id.keys())
     for channel_folder in channel_folders:
         channel_folder.creator_id = channel_folder_id_to_creator_id[channel_folder.id]

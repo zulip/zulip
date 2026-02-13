@@ -558,7 +558,8 @@ class RealmImportExportTest(ExportFile):
         exported_alert_words = data["zerver_alertword"]
 
         # We set up 4 alert words for Hamlet, Cordelia, etc.
-        # when we populate the test database.
+        # expected imported stub user when we populate the
+        # the test database.
         num_zulip_users = 10
         self.assert_length(exported_alert_words, num_zulip_users * 4)
 
@@ -1794,6 +1795,12 @@ class RealmImportExportTest(ExportFile):
         # Check is_imported_stub is False for users imported from another
         # Zulip organization.
         for user_profile in UserProfile.objects.filter(realm=imported_realm):
+            if user_profile.delivery_email == "imported-user@zulip.com":
+                # User who was already a stub user for an imported user
+                # originally in the exported realm, will have is_imported_stub
+                # as True.
+                self.assertTrue(user_profile.is_imported_stub)
+                continue
             self.assertFalse(user_profile.is_imported_stub)
 
         # Check folder field for imported streams
