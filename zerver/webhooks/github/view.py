@@ -67,12 +67,14 @@ class Helper:
         include_title: bool,
         include_repository_name: bool,
         user_profile: UserProfile,
+        compact_edit: bool,
     ) -> None:
         self.request = request
         self.payload = payload
         self.include_title = include_title
         self.include_repository_name = include_repository_name
         self.realm = user_profile.realm
+        self.compact_edit = compact_edit
 
     def log_unsupported(self, event: str) -> None:
         summary = f"The '{event}' event isn't currently supported by the GitHub webhook; ignoring"
@@ -91,7 +93,7 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
         assignee = pull_request["assignee"]["login"].tame(check_string)
     description = None
     changes = payload.get("changes", {})
-    if "body" in changes or action == "opened":
+    if action == "opened" or (action == "edited" and not helper.compact_edit and "body" in changes):
         description = pull_request["body"].tame(check_none_or(check_string))
     target_branch = None
     base_branch = None
@@ -175,16 +177,23 @@ def get_issue_body(helper: Helper) -> str:
     include_title = helper.include_title
     action = payload["action"].tame(check_string)
     issue = payload["issue"]
+
+    show_body_map = {
+        "edited": not helper.compact_edit,
+        "assigned": False,
+        "unassigned": False,
+    }
+
+    message = (
+        issue["body"].tame(check_none_or(check_string)) if show_body_map.get(action, True) else None
+    )
+
     return get_issue_event_message(
         user_name=get_sender_name(helper),
         action=action,
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
-        message=(
-            None
-            if action in ("assigned", "unassigned")
-            else issue["body"].tame(check_none_or(check_string))
-        ),
+        message=message,
         title=issue["title"].tame(check_string) if include_title else None,
         assignee_updated=(
             payload["assignee"]["login"].tame(check_string) if "assignee" in payload else None
@@ -1134,6 +1143,7 @@ def api_github_webhook(
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
     ignore_private_repositories: Json[bool] = False,
     include_repository_name: Json[bool] = False,
+    compact_edit: Json[bool] = False,
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
@@ -1179,6 +1189,7 @@ def api_github_webhook(
         include_title=user_specified_topic is not None,
         include_repository_name=include_repository_name,
         user_profile=user_profile,
+        compact_edit=compact_edit,
     )
     body = body_function(helper)
 

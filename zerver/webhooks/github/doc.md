@@ -17,8 +17,9 @@ Get GitHub notifications in Zulip!
 1. Decide where to send {{ integration_display_name }} notifications, and
    [generate the integration URL](/help/generate-integration-url). You'll be
    able to configure which branches you'll receive notifications from,
-   whether to exclude notifications from private repositories, and whether
-   to include the repository name in the notifications.
+   whether to exclude notifications from private repositories, whether
+   to include the repository name in the notifications, and whether to
+   include issue and pull request descriptions on edit notifications.
 
 1. On your repository's web page, go to **Settings**. Select **Webhooks**,
    and click **Add webhook**. GitHub may prompt you for your password.

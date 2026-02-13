@@ -657,6 +657,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
                 label="Include repository name in the notifications",
                 validator=check_bool,
             ),
+            WebhookUrlOption(
+                name="compact_edit",
+                label="Hide issue and pull request descriptions on edit events",
+                validator=check_bool,
+            ),
         ],
     ),
     IncomingWebhookIntegration(
