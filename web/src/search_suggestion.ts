@@ -97,6 +97,7 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "is", operand: "resolved"},
     ],
     "dm-including": [{operator: "channel"}, {operator: "stream"}],
+    mentions: [{operator: "is", operand: "dm"}, {operator: "pm-with"}, {operator: "dm"}],
     "is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
@@ -387,7 +388,7 @@ function get_person_suggestions(
     people_getter: () => User[],
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
-    autocomplete_operator: "dm" | "sender" | "dm-including",
+    autocomplete_operator: "dm" | "sender" | "dm-including" | "mentions",
 ): Suggestion[] {
     if (last.operator === "is" && last.operand === "dm") {
         last = {operator: "dm", operand: "", negated: false};
@@ -415,8 +416,9 @@ function get_person_suggestions(
                 });
                 break;
             case "sender":
+            case "mentions":
                 terms.push({
-                    operator: "sender",
+                    operator: autocomplete_operator,
                     operand: person.user_id,
                     negated: last.negated,
                 });
@@ -837,6 +839,7 @@ function get_operator_suggestions(
             "dm-including",
             "sender",
             "near",
+            "mentions",
         ];
         legacy_operator_choices = ["from", "pm-with", "streams", "stream"];
     }
@@ -895,6 +898,7 @@ function get_operator_suggestions(
                     true,
                 );
             case "sender":
+            case "mentions":
                 return format_as_suggestion(
                     [
                         {
@@ -1073,7 +1077,7 @@ export let get_suggestions = function (
         last = text_search_terms.at(-1)!;
     }
 
-    const person_suggestion_ops = ["sender", "dm", "dm-including"];
+    const person_suggestion_ops = ["sender", "dm", "dm-including", "mentions"];
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_terms is one out of person_suggestion_ops.
@@ -1125,7 +1129,7 @@ export let get_suggestions = function (
     const people_getter = make_people_getter(last);
 
     function get_people(
-        flavor: "dm" | "sender" | "dm-including",
+        flavor: "dm" | "sender" | "dm-including" | "mentions",
     ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
         return function (
             last: NarrowCanonicalTermSuggestion,
@@ -1151,6 +1155,7 @@ export let get_suggestions = function (
         get_people("dm"),
         get_people("sender"),
         get_people("dm-including"),
+        get_people("mentions"),
         get_topic_suggestions,
         get_has_filter_suggestions,
     ];

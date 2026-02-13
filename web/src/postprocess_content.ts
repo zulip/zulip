@@ -390,3 +390,36 @@ function process_emoji_only_message(content: DocumentFragment): void {
     // the emoji in CSS.
     content.firstElementChild?.classList.add("emoji-only");
 }
+
+export function process_user_mention(message_content: string, user_id: number): boolean {
+    const search_attr = `data-user-id="${user_id}"`;
+    let index = message_content.indexOf(search_attr);
+
+    while (index !== -1) {
+        const tag_start = message_content.lastIndexOf("<", index);
+        const tag_end = message_content.indexOf(">", index);
+
+        if (tag_start !== -1 && tag_end !== -1) {
+            const sub_string = message_content.slice(tag_start, tag_end);
+            const class_pos = sub_string.lastIndexOf('class="');
+
+            if (class_pos !== -1) {
+                const start_class_value = class_pos + 7;
+                const end_class_value = sub_string.indexOf('"', start_class_value);
+
+                if (end_class_value !== -1) {
+                    const class_string = sub_string.slice(start_class_value, end_class_value);
+                    const user_mention = /(^|\s)user-mention(\s|$)/;
+                    const silent_mention = /(^|\s)silent(\s|$)/;
+
+                    if (user_mention.test(class_string) && !silent_mention.test(class_string)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        index = message_content.indexOf(search_attr, index + 1);
+    }
+    return false;
+}

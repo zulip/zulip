@@ -42,6 +42,7 @@ export function encode_operand(term: NarrowCanonicalTerm): string {
             slug = people.user_ids_to_slug(term.operand);
             break;
         case "sender":
+        case "mentions":
             slug = people.user_ids_to_slug([term.operand]);
             break;
         case "channel":
@@ -79,7 +80,7 @@ export function decode_operand(
         }
     }
 
-    if (operator === "sender") {
+    if (operator === "sender" || operator === "mentions") {
         const user_ids = people.slug_to_user_ids(operand);
         if (user_ids?.length !== 1) {
             // User mistyped the URL since we don't support
