@@ -189,6 +189,18 @@ export function toggle_user_card_popover(element: HTMLElement, user: User): void
     );
 }
 
+function toggle_user_card_popover_for_navbar(element: HTMLElement, user: User): void {
+    show_user_card_popover(
+        user,
+        $(element),
+        false,
+        false,
+        "compose_private_message",
+        "user_card",
+        "bottom",
+    );
+}
+
 function toggle_user_card_popover_for_bot_owner(element: HTMLElement, user: User): void {
     show_user_card_popover(
         user,
@@ -727,6 +739,17 @@ function register_click_handlers(): void {
             }
         }
         toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+    });
+
+    $("body").on("click", ".navbar-dm-avatar-container", function (this: HTMLElement, e) {
+        const user_id = Number.parseInt(this.getAttribute("data-user-id") ?? "", 10);
+        if (Number.isNaN(user_id)) {
+            return;
+        }
+        const user = people.get_by_user_id(user_id);
+        toggle_user_card_popover_for_navbar(this, user);
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     // Note: Message feeds and drafts have their own direct event listeners
