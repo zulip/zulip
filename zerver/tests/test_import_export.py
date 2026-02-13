@@ -2393,7 +2393,7 @@ class RealmImportExportTest(ExportFile):
                 "last_realmauditlog_id": 0,
             }
 
-            def mock_send_to_push_bouncer_response(  # type: ignore[return]
+            def mock_send_to_push_bouncer_response(  # type: ignore[return]  # stub may return None or dict; mypy false positive
                 method: str, *args: Any
             ) -> dict[str, int] | None:
                 if method == "GET":

@@ -469,7 +469,7 @@ class AuthBackendTest(ZulipTestCase):
             with self.artificial_transaction_savepoint():
                 return orig_authenticate(*args, **kwargs)
 
-        backend.authenticate = wrapped_authenticate  # type: ignore[method-assign]
+        backend.authenticate = wrapped_authenticate  # type: ignore[method-assign]  # assignment for test wrapper
 
         # Test LDAP auth fails when LDAP server rejects password
         self.assertIsNone(
