@@ -467,6 +467,9 @@ export function update_messages(events: UpdateMessageEvent[]): void {
 
             if (event.rendered_content !== undefined) {
                 message_store.update_message_content(anchor_message, event.rendered_content);
+                // Clear raw_content cache to prevent stale Markdown when
+                // the message was edited in a channel we're not subscribed to.
+                delete anchor_message.raw_content;
             }
 
             if (event.is_me_message !== undefined) {
