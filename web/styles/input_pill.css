@@ -222,6 +222,15 @@
             backface-visibility: hidden;
             perspective: 1000px;
         }
+
+        /* Styling for editable pill - when user double-clicks or presses Enter on a pill */
+        &.editable-pill {
+            flex: 0 1 auto;
+            border-radius: 4px;
+            background-color: var(--color-background-input-pill);
+            outline: 2px solid var(--color-focus-outline-input-pill);
+            outline-offset: -1px;
+        }
     }
 
     &.not-editable-by-user {
