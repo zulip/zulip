@@ -37,7 +37,7 @@ export function get_count_in_topic(stream_id?: number, topic?: string): number {
     }
 
     const messages = [...starred_ids].filter((id) => {
-        const message = message_store.get(id);
+        const message = message_store.maybe_get_immutable_message(id);
 
         if (message === undefined) {
             // We know the `id` from the initial data fetch from page_params,
@@ -54,9 +54,9 @@ export function get_count_in_topic(stream_id?: number, topic?: string): number {
         }
 
         return (
-            message.type === "stream" &&
-            message.stream_id === stream_id &&
-            message.topic.toLowerCase() === topic.toLowerCase()
+            message.get_type() === "stream" &&
+            message.get_stream_id() === stream_id &&
+            message.get_topic_name().toLowerCase() === topic.toLowerCase()
         );
     });
 
