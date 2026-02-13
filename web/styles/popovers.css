@@ -424,6 +424,7 @@ ul.popover-group-menu-member-list {
 
         width: 100vw;
         height: 100vh;
+        height: var(--full-height-dynamic-viewport);
 
         display: flex !important;
         justify-content: center;
