@@ -4,7 +4,7 @@ import type * as tippy from "tippy.js";
 
 import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
 import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
-import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
+import render_settings_bot_list_row from "../templates/settings/settings_bot_list_row.hbs";
 
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
@@ -66,6 +66,7 @@ type BotInfo = {
     display_email: string;
     show_download_zuliprc_button: boolean;
     show_generate_integration_url_button: boolean;
+    current_user_is_admin: boolean;
 } & (
     | {
           bot_owner_id: number;
@@ -406,6 +407,7 @@ function bot_info(bot_user_id: number): BotInfo {
         cannot_edit: (bot_user.is_system_bot ?? false) || !can_modify_bot,
         // It's always safe to show the real email addresses for bot users
         display_email: bot_user.email,
+        current_user_is_admin: current_user.is_admin,
         ...(owner_id
             ? {
                   bot_owner_id: owner_id,
@@ -575,18 +577,45 @@ function reset_scrollbar($sel: JQuery): () => void {
     };
 }
 
+function update_actions_header_visibility_for_table(
+    $table: JQuery,
+    list_widget: ListWidgetType<number, BotInfo> | undefined,
+): void {
+    // Admins always see the Actions column
+    if (current_user.is_admin) {
+        $table.find("th.actions").show();
+        return;
+    }
+
+    if (!list_widget) {
+        $table.find("th.actions").hide();
+        return;
+    }
+
+    const items = list_widget.get_current_list();
+    const has_action = items.some(
+        (item) =>
+            (item.is_bot && item.show_download_zuliprc_button) ||
+            (item.is_bot && item.show_generate_integration_url_button) ||
+            item.can_modify,
+    );
+
+    $table.find("th.actions").toggle(has_action);
+}
+
 function create_all_bots_table(): void {
     loading.make_indicator($("#admin_page_all_bots_loading_indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
     const $all_bots_table = $("#admin_all_bots_table");
+    const $table = $all_bots_table.closest("table");
     $all_bots_table.hide();
     const bot_user_ids = people.get_bot_ids();
 
     all_bots_section.list_widget = ListWidget.create($all_bots_table, bot_user_ids, {
         name: "admin_bot_list",
         get_item: bot_info,
-        modifier_html: render_settings_user_list_row,
+        modifier_html: render_settings_bot_list_row,
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
             predicate(item) {
@@ -596,7 +625,10 @@ function create_all_bots_table(): void {
                 const $search_input = $("#admin-all-bots-list .search");
                 return are_filters_active(all_bots_section.filters, $search_input);
             },
-            onupdate: reset_scrollbar($all_bots_table),
+            onupdate() {
+                reset_scrollbar($all_bots_table)();
+                update_actions_header_visibility_for_table($table, all_bots_section.list_widget);
+            },
         },
         $parent_container: $("#admin-all-bots-list").expectOne(),
         init_sort: "full_name_alphabetic",
@@ -612,6 +644,9 @@ function create_all_bots_table(): void {
 
     loading.destroy_indicator($("#admin_page_all_bots_loading_indicator"));
     $all_bots_table.show();
+
+    // Ensure header visibility is correct on initial render and when filters change.
+    update_actions_header_visibility_for_table($table, all_bots_section.list_widget);
 }
 
 function create_your_bots_table(): void {
@@ -619,12 +654,14 @@ function create_your_bots_table(): void {
         text: $t({defaultMessage: "Loading…"}),
     });
     const $your_bots_table = $("#admin_your_bots_table");
+    const $table = $your_bots_table.closest("table");
     $your_bots_table.hide();
     const bot_user_ids = bot_data.get_all_bots_ids_for_current_user();
+
     your_bots_section.list_widget = ListWidget.create($your_bots_table, bot_user_ids, {
         name: "admin_your_bot_list",
         get_item: bot_info,
-        modifier_html: render_settings_user_list_row,
+        modifier_html: render_settings_bot_list_row,
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
             predicate(item) {
@@ -634,7 +671,10 @@ function create_your_bots_table(): void {
                 const $search_input = $("#admin-your-bots-list .search");
                 return are_filters_active(your_bots_section.filters, $search_input);
             },
-            onupdate: reset_scrollbar($your_bots_table),
+            onupdate() {
+                reset_scrollbar($your_bots_table);
+                update_actions_header_visibility_for_table($table, your_bots_section.list_widget);
+            },
         },
         $parent_container: $("#admin-your-bots-list").expectOne(),
         init_sort: "full_name_alphabetic",
@@ -650,6 +690,9 @@ function create_your_bots_table(): void {
 
     loading.destroy_indicator($("#admin_page_your_bots_loading_indicator"));
     $your_bots_table.show();
+
+    // Ensure header visibility is correct on initial render and when filters change.
+    update_actions_header_visibility_for_table($table, your_bots_section.list_widget);
 }
 
 export function update_bot_data(bot_user_id: number): void {
