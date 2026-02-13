@@ -3787,3 +3787,22 @@ class MarkdownErrorTests(ZulipTestCase):
 
         result = processor.run(markdown_input)
         self.assertEqual(result, expected)
+
+    def test_fenced_code_with_pygments_exception(self) -> None:
+        """Fallback to plain code when Pygments raises an exception."""
+        with (
+            self.assertLogs(level="ERROR") as log,
+            mock.patch("zerver.lib.markdown.fenced_code.CodeHilite.hilite") as mocked_hilite,
+        ):
+            mocked_hilite.side_effect = Exception("pygments crashed")
+
+            markdown_text = "```python\nprint('pygments fallback test')\n```"
+            rendered_html = markdown_convert(
+                markdown_text,
+                self.example_user("hamlet"),
+            ).rendered_content
+
+        self.assertIn("<pre", rendered_html)
+        self.assertIn("print('pygments fallback test')", rendered_html)
+        mocked_hilite.assert_called()
+        self.assertIn("Failed to highlight fenced code block", log.output[0])
