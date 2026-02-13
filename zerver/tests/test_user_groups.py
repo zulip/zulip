@@ -291,6 +291,25 @@ class UserGroupTestCase(ZulipTestCase):
             {"support", SystemGroups.MEMBERS, SystemGroups.FULL_MEMBERS},
         )
 
+    def test_get_is_user_group_member_status_openapi_coverage(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        self.login_user(iago)
+
+        user_group = self.create_user_group_for_test("test_group", acting_user=iago)
+
+        result = self.api_get(
+            iago,
+            f"/api/v1/user_groups/{user_group.id}/members/{hamlet.id}",
+        )
+
+        self.assert_json_success(result)
+        result_dict = orjson.loads(result.content)
+
+        self.assertIn("is_user_group_member", result_dict)
+        self.assertIsInstance(result_dict["is_user_group_member"], bool)
+
     def test_recursive_queries_for_user_groups(self) -> None:
         realm = get_realm("zulip")
         iago = self.example_user("iago")
