@@ -291,6 +291,18 @@ export class ImmutableMessage {
     get_id(): number {
         return this.message.id;
     }
+
+    is_stream_wildcard_mentioned(): boolean {
+        return this.message.stream_wildcard_mentioned;
+    }
+
+    did_mention_me_directly(): boolean {
+        return this.message.mentioned_me_directly;
+    }
+
+    is_topic_wildcard_mentioned(): boolean {
+        return this.message.topic_wildcard_mentioned;
+    }
 }
 
 export function maybe_get_immutable_message(message_id: number): ImmutableMessage | undefined {
