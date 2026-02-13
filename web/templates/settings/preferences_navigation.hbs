@@ -30,6 +30,13 @@
       prefix=prefix
       show_reset_button=for_realm_settings}}
 
+    {{> settings_checkbox
+      setting_name="enable_smooth_scroll_navigation"
+      is_checked=settings_object.enable_smooth_scroll_navigation
+      label=settings_label.enable_smooth_scroll_navigation
+      prefix=prefix}}
+
+
     <div class="input-group">
         <label for="{{prefix}}web_mark_read_on_scroll_policy" class="settings-field-label">{{t "Automatically mark messages as read" }}
             {{> ../help_link_widget link="/help/marking-messages-as-read" }}
