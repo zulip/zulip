@@ -807,6 +807,12 @@
     }
 }
 
+.multiple_messages_select {
+    input {
+        transform: scale(1.5);
+    }
+}
+
 /* Message-editing styles */
 .message-edit-buttons-and-timer {
     margin-top: 5px;

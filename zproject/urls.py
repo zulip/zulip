@@ -77,6 +77,7 @@ from zerver.views.invite import (
 )
 from zerver.views.message_edit import (
     delete_message_backend,
+    delete_multiple_messages,
     get_message_edit_history,
     json_fetch_raw_message,
     update_message_backend,
@@ -426,6 +427,7 @@ v1_api_and_json_patterns = [
         PATCH=update_message_backend,
         DELETE=delete_message_backend,
     ),
+    rest_path("messages/delete_multiple", POST=delete_multiple_messages),
     rest_path(
         "messages/summary",
         GET=(
