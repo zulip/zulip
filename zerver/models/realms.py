@@ -364,10 +364,12 @@ class Realm(models.Model):
     )
 
     # UserGroup which is allowed to create groups.
-    can_create_groups = models.ForeignKey("UserGroup", on_delete=models.RESTRICT, related_name="+")
+    can_create_groups_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
 
     # UserGroup which is allowed to manage all groups.
-    can_manage_all_groups = models.ForeignKey(
+    can_manage_all_groups_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
@@ -799,7 +801,7 @@ class Realm(models.Model):
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
-        can_create_groups=GroupPermissionSetting(
+        can_create_groups_group=GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
@@ -846,7 +848,7 @@ class Realm(models.Model):
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
         ),
-        can_manage_all_groups=GroupPermissionSetting(
+        can_manage_all_groups_group=GroupPermissionSetting(
             allow_nobody_group=False,
             allow_everyone_group=False,
             default_group_name=SystemGroups.OWNERS,

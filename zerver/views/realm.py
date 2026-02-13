@@ -108,7 +108,7 @@ def update_realm(
     can_add_custom_emoji_group: Json[GroupSettingChangeRequest] | None = None,
     can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_bots_group: Json[GroupSettingChangeRequest] | None = None,
-    can_create_groups: Json[GroupSettingChangeRequest] | None = None,
+    can_create_groups_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_private_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_web_public_channel_group: Json[GroupSettingChangeRequest] | None = None,
@@ -116,7 +116,7 @@ def update_realm(
     can_delete_any_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_delete_own_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_invite_users_group: Json[GroupSettingChangeRequest] | None = None,
-    can_manage_all_groups: Json[GroupSettingChangeRequest] | None = None,
+    can_manage_all_groups_group: Json[GroupSettingChangeRequest] | None = None,
     can_manage_billing_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_many_users_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_between_channels_group: Json[GroupSettingChangeRequest] | None = None,
@@ -265,15 +265,15 @@ def update_realm(
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
 
-    if can_create_groups is not None:
+    if can_create_groups_group is not None:
         realm.ensure_not_on_limited_plan()
 
     if (
         invite_required is not None
         or create_multiuse_invite_group is not None
-        or can_create_groups is not None
+        or can_create_groups_group is not None
         or can_invite_users_group is not None
-        or can_manage_all_groups is not None
+        or can_manage_all_groups_group is not None
         or can_manage_billing_group is not None
     ) and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
