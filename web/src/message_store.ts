@@ -303,6 +303,15 @@ export class ImmutableMessage {
     is_topic_wildcard_mentioned(): boolean {
         return this.message.topic_wildcard_mentioned;
     }
+
+    get_timestamp(): number {
+        return this.message.timestamp;
+    }
+
+    get_display_reply_to(): string {
+        assert(this.message.type === "private");
+        return this.message.display_reply_to;
+    }
 }
 
 export function maybe_get_immutable_message(message_id: number): ImmutableMessage | undefined {

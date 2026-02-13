@@ -1154,32 +1154,32 @@ function sort_comparator(a: string, b: string): number {
 
 function stream_sort(a: Row, b: Row): number {
     if (a.type === b.type) {
-        const a_msg = message_store.get(a.last_msg_id);
+        const a_msg = message_store.maybe_get_immutable_message(a.last_msg_id);
         assert(a_msg !== undefined);
-        const b_msg = message_store.get(b.last_msg_id);
+        const b_msg = message_store.maybe_get_immutable_message(b.last_msg_id);
         assert(b_msg !== undefined);
 
-        if (a_msg.type === "stream") {
-            assert(b_msg.type === "stream");
-            const a_stream_name = stream_data.get_stream_name_from_id(a_msg.stream_id);
-            const b_stream_name = stream_data.get_stream_name_from_id(b_msg.stream_id);
+        if (a_msg.get_type() === "stream") {
+            assert(b_msg.get_type() === "stream");
+            const a_stream_name = stream_data.get_stream_name_from_id(a_msg.get_stream_id());
+            const b_stream_name = stream_data.get_stream_name_from_id(b_msg.get_stream_id());
             return sort_comparator(a_stream_name, b_stream_name);
         }
-        assert(a_msg.type === "private");
-        assert(b_msg.type === "private");
-        return sort_comparator(a_msg.display_reply_to, b_msg.display_reply_to);
+        assert(a_msg.get_type() === "private");
+        assert(b_msg.get_type() === "private");
+        return sort_comparator(a_msg.get_display_reply_to(), b_msg.get_display_reply_to());
     }
     // if type is not same sort between "private" and "stream"
     return sort_comparator(a.type, b.type);
 }
 
 function topic_sort_key(conversation_data: ConversationData): string {
-    const message = message_store.get(conversation_data.last_msg_id);
+    const message = message_store.maybe_get_immutable_message(conversation_data.last_msg_id);
     assert(message !== undefined);
-    if (message.type === "private") {
-        return message.display_reply_to;
+    if (message.get_type() === "private") {
+        return message.get_display_reply_to();
     }
-    return message.topic;
+    return message.get_topic_name();
 }
 
 function topic_sort(a: ConversationData, b: ConversationData): number {
@@ -1396,9 +1396,9 @@ export function update_recent_view_rendered_time(): void {
     // only update it when the user comes back from idle which has
     // maximum chance of user seeing incorrect rendered time.
     for (const conversation_data of topics_widget.get_rendered_list()) {
-        const last_msg = message_store.get(conversation_data.last_msg_id);
+        const last_msg = message_store.maybe_get_immutable_message(conversation_data.last_msg_id);
         assert(last_msg !== undefined);
-        const time = new Date(last_msg.timestamp * 1000);
+        const time = new Date(last_msg.get_timestamp() * 1000);
         const updated_time = timerender.relative_time_string_from_date(time);
         const $row = get_topic_row(conversation_data);
         const rendered_time = $row.find(".recent_topic_timestamp").text().trim();
@@ -1492,12 +1492,12 @@ function has_unread(row: number): boolean {
     const current_row = topics_widget.get_current_list()[row];
     assert(current_row !== undefined);
     const last_msg_id = current_row.last_msg_id;
-    const last_msg = message_store.get(last_msg_id);
+    const last_msg = message_store.maybe_get_immutable_message(last_msg_id);
     assert(last_msg !== undefined);
-    if (last_msg.type === "stream") {
-        return unread.num_unread_for_topic(last_msg.stream_id, last_msg.topic) > 0;
+    if (last_msg.get_type() === "stream") {
+        return unread.num_unread_for_topic(last_msg.get_stream_id(), last_msg.get_topic_name()) > 0;
     }
-    return unread.num_unread_for_user_ids_string(last_msg.to_user_ids) > 0;
+    return unread.num_unread_for_user_ids_string(last_msg.to_user_ids()) > 0;
 }
 
 export function focus_clicked_element(
