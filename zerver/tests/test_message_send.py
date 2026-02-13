@@ -2439,7 +2439,7 @@ class StreamMessagesTest(ZulipTestCase):
         leadership.save()
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'.",
+            f"You do not have permission to mention @{leadership.name}.",
         ):
             self.send_stream_message(cordelia, "test_stream", content)
 
@@ -2466,7 +2466,7 @@ class StreamMessagesTest(ZulipTestCase):
         content = "Test mentioning user group @*support*"
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'.",
+            f"You do not have permission to mention @{support.name}.",
         ):
             self.send_stream_message(iago, "test_stream", content)
 
@@ -2481,13 +2481,13 @@ class StreamMessagesTest(ZulipTestCase):
         content = "Test mentioning user group @*support* @*leadership*"
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'.",
+            f"You do not have permission to mention @{support.name}.",
         ):
             self.send_stream_message(iago, "test_stream", content)
 
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'.",
+            f"You do not have permission to mention @{leadership.name}.",
         ):
             self.send_stream_message(othello, "test_stream", content)
 
@@ -2507,7 +2507,7 @@ class StreamMessagesTest(ZulipTestCase):
         system_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{support.name}'.",
+            f"You do not have permission to mention @{support.name}.",
         ):
             self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
 
@@ -2545,13 +2545,13 @@ class StreamMessagesTest(ZulipTestCase):
 
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'.",
+            f"You do not have permission to mention @{leadership.name}.",
         ):
             self.send_stream_message(cordelia, "test_stream", content)
 
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{leadership.name}'.",
+            f"You do not have permission to mention @{leadership.name}.",
         ):
             self.send_stream_message(system_bot, "test_stream", content, recipient_realm=iago.realm)
 
@@ -2569,7 +2569,7 @@ class StreamMessagesTest(ZulipTestCase):
 
         with self.assertRaisesRegex(
             JsonableError,
-            f"You are not allowed to mention user group '{moderators_system_group.name}'.",
+            f"You do not have permission to mention @{moderators_system_group.name}.",
         ):
             self.send_stream_message(iago, "test_stream", content)
 
