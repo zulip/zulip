@@ -54,6 +54,7 @@ import "../../styles/lightbox.css";
 import "../../styles/popovers.css";
 import "../../styles/recent_view.css";
 import "../../styles/typing_notifications.css";
+import "../../styles/urdu.css";
 import "../../styles/dark_theme.css";
 import "../../styles/user_status.css";
 import "../../styles/widgets.css";
