@@ -49,7 +49,9 @@ const sent_messages = mock_esm("../src/sent_messages");
 const server_events_state = mock_esm("../src/server_events_state");
 const transmit = mock_esm("../src/transmit");
 const upload = mock_esm("../src/upload");
-const onboarding_steps = mock_esm("../src/onboarding_steps");
+const onboarding_steps = mock_esm("../src/onboarding_steps", {
+    ONE_TIME_NOTICES_TO_DISPLAY: new Set(),
+});
 mock_esm("../src/settings_data", {
     user_has_permission_for_group_setting: () => true,
 });

@@ -408,7 +408,10 @@ run_test("default_streams", ({override}) => {
 });
 
 run_test("onboarding_steps", () => {
-    onboarding_steps.initialize({onboarding_steps: []}, () => {});
+    onboarding_steps.initialize(
+        {onboarding_steps: []},
+        {show_message_view() {}, update_recipient_row_attention_level() {}},
+    );
     const event = event_fixtures.onboarding_steps;
     const one_time_notices = new Set();
     for (const onboarding_step of event.onboarding_steps) {

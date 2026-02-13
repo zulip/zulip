@@ -40,7 +40,10 @@ set_global("requestAnimationFrame", (func) => func());
 const autosize = noop;
 autosize.update = noop;
 mock_esm("autosize", {default: autosize});
-mock_esm("../src/compose_tooltips", {initialize_compose_tooltips: noop});
+mock_esm("../src/compose_tooltips", {
+    initialize_compose_tooltips: noop,
+    dismiss_intro_go_to_conversation_tooltip: noop,
+});
 
 const channel = mock_esm("../src/channel");
 const compose_fade = mock_esm("../src/compose_fade", {

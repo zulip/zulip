@@ -15,6 +15,7 @@ import * as compose_reply from "./compose_reply.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_textarea from "./compose_textarea.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as condense from "./condense.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as deprecated_feature_notice from "./deprecated_feature_notice.ts";
@@ -1053,6 +1054,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
     }
 
     if (event_name === "narrow_to_compose_target") {
+        compose_tooltips.dismiss_intro_go_to_conversation_tooltip();
         message_view.to_compose_target();
         return true;
     }
