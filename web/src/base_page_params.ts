@@ -123,11 +123,44 @@ function take_params(): string {
     if (page_params_div === null) {
         throw new Error("Missing #page-params");
     }
+
     const params = page_params_div.getAttribute("data-params");
     if (params === null) {
-        throw new Error("Missing #page_params[data-params]");
+        // The div exists but data-params was already consumed.  This
+        // happens when Firefox restores a background tab from a cached
+        // DOM state (e.g. after tab discarding or BFCache restoration),
+        // since we remove the attribute below after extracting it.
+        //
+        // Force a single server reload to get fresh page params;
+        // sessionStorage persists across the reload so we can detect
+        // the second attempt and stop.  If sessionStorage is
+        // unavailable (crawlers, private browsing edge cases), we skip
+        // the reload to avoid a potential infinite loop and let the
+        // user reload manually.
+        try {
+            if (sessionStorage.getItem("reload_for_tab_restore") === null) {
+                sessionStorage.setItem("reload_for_tab_restore", "1");
+                window.location.reload();
+            }
+        } catch {
+            // sessionStorage unavailable; fall through to throw.
+        }
+        throw new Error("Missing #page-params data after tab restore");
     }
-    page_params_div.remove();
+
+    // Clear the reload guard on a successful load so it's ready
+    // for the next tab-restore event.
+    try {
+        sessionStorage.removeItem("reload_for_tab_restore");
+    } catch {
+        // Ignore; the stale flag just means the next tab-restore
+        // won't auto-reload, which is the safe default.
+    }
+
+    // Remove the attribute to free the (potentially multi-megabyte)
+    // JSON string from the DOM, but keep the div as a sentinel so
+    // we can distinguish tab-restore from a truly missing element.
+    page_params_div.removeAttribute("data-params");
     return params;
 }
 
