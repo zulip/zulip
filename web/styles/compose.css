@@ -189,6 +189,23 @@
             opacity: 1;
         }
     }
+
+    #scroll-to-bottom-button {
+        position: relative;
+    }
+
+    .badge-counter {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: var(--color-unread-superscript-background);
+        color: var(--color-unread-superscript-text);
+        border-radius: 50%;
+        padding: 3px 6px;
+        font-size: 10px;
+        font-weight: bold;
+        line-height: 1;
+    }
 }
 
 .message_comp {

@@ -1024,6 +1024,14 @@
         hsl(0deg 0% 100%),
         hsl(0deg 0% 100% / 7%)
     );
+    --color-unread-superscript-background: light-dark(
+        hsl(184deg 52% 63% / 100%),
+        hsl(183deg 52% 26% / 100%)
+    );
+    --color-unread-superscript-text: light-dark(
+        hsl(240deg 30% 40%),
+        hsl(0deg 0% 100%)
+    );
     --color-outline-tab-picker-tab-option: light-dark(
         hsl(0deg 0% 0% / 30%),
         hsl(0deg 0% 100% / 12%)
