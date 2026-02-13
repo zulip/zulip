@@ -13,6 +13,7 @@ import render_users_with_status_icons from "../templates/users_with_status_icons
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
+import * as compose_actions from "./compose_actions.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
@@ -1990,7 +1991,7 @@ export function initialize({
         maybe_load_older_messages(unread.first_unread_unmuted_message_id);
     });
 
-    $(document).on("compose_canceled.zulip", () => {
+    compose_actions.register_compose_cancel_hook(() => {
         if (recent_view_util.is_visible()) {
             revive_current_focus();
         }

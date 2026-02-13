@@ -221,7 +221,7 @@ const top_of_feed = new util.CachedValue({
     },
 });
 
-const bottom_of_feed = new util.CachedValue({
+export const bottom_of_feed = new util.CachedValue({
     compute_value() {
         return util.the($("#compose")).getBoundingClientRect().top;
     },
@@ -564,10 +564,6 @@ export function initialize(): void {
         top_of_feed.reset();
         bottom_of_feed.reset();
         window_resize_handler?.();
-    });
-
-    $(document).on("compose_started compose_canceled compose_finished", () => {
-        bottom_of_feed.reset();
     });
 
     // We stop autoscrolling when the user is clearly in the middle of
