@@ -576,6 +576,7 @@ export const realm_schema = z.object({
     realm_send_channel_events_messages: z.boolean(),
     realm_send_welcome_emails: z.boolean(),
     realm_signup_announcements_stream_id: z.number(),
+    realm_topic_resolution_message_requirement: z.enum(["not_requested", "optional", "required"]),
     realm_topics_policy: z.enum(["allow_empty_topic", "disable_empty_topic"]),
     realm_upload_quota_mib: z.nullable(z.number()),
     realm_url: z.string(),

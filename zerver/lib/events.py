@@ -117,6 +117,7 @@ from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
     RealmTopicsPolicyEnum,
+    TopicResolutionMessageRequirementEnum,
     get_corresponding_policy_value_for_group_setting,
     get_realm_domains,
 )
@@ -637,6 +638,10 @@ def fetch_initial_state_data(
         )
 
         state["realm_topics_policy"] = RealmTopicsPolicyEnum(realm.topics_policy).name
+
+        state["realm_topic_resolution_message_requirement"] = TopicResolutionMessageRequirementEnum(
+            realm.topic_resolution_message_requirement
+        ).name
 
         state["realm_mandatory_topics"] = (
             realm.topics_policy == RealmTopicsPolicyEnum.disable_empty_topic.value

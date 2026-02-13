@@ -162,6 +162,13 @@ class RealmTopicsPolicyEnum(Enum):
     disable_empty_topic = 3
 
 
+class TopicResolutionMessageRequirementEnum(Enum):
+    # Whether a message is required when resolving a topic
+    not_requested = 1
+    optional = 2
+    required = 3
+
+
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -445,6 +452,12 @@ class Realm(models.Model):
         default=MessageEditHistoryVisibilityPolicyEnum.all.value,
     )
     MESSAGE_EDIT_HISTORY_VISIBILITY_POLICY_TYPES = list(MessageEditHistoryVisibilityPolicyEnum)
+
+    # Whether a message is required when resolving a topic
+    topic_resolution_message_requirement = models.PositiveSmallIntegerField(
+        default=TopicResolutionMessageRequirementEnum.not_requested.value,
+    )
+    TOPIC_RESOLUTION_MESSAGE_REQUIREMENT_TYPES = list(TopicResolutionMessageRequirementEnum)
 
     # Defaults for new users
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
@@ -762,6 +775,7 @@ class Realm(models.Model):
         require_unique_names=bool,
         send_channel_events_messages=bool,
         send_welcome_emails=bool,
+        topic_resolution_message_requirement=TopicResolutionMessageRequirementEnum,
         topics_policy=RealmTopicsPolicyEnum,
         video_chat_provider=int,
         waiting_period_threshold=int,

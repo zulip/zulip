@@ -34,6 +34,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import * as topic_resolution_state from "./topic_resolution_state.ts";
 import type {UserOrMention} from "./typeahead_helper.ts";
 import {toggle_user_group_info_popover} from "./user_group_popover.ts";
 import * as user_groups from "./user_groups.ts";
@@ -96,6 +97,16 @@ export const CANNOT_CREATE_NEW_TOPIC_TOOLTIP_MESSAGE = $t({
     defaultMessage:
         "You are not allowed to start new topics in this channel. Choose an existing topic from the typeahead.",
 });
+
+// Error message for topic resolution when required mode doesn't meet minimum length
+export function get_resolution_message_too_short_error(): string {
+    return $t(
+        {
+            defaultMessage: "Resolution message must be at least {min_length} characters.",
+        },
+        {min_length: topic_resolution_state.MIN_RESOLUTION_MESSAGE_LENGTH},
+    );
+}
 
 type StreamWildcardOptions = {
     stream_id: number;
@@ -1223,6 +1234,42 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         blueslip.debug("Invalid compose state: Upload in progress");
         is_validating_compose_box = false;
         return false;
+    }
+
+    // Check for minimum resolution message length when resolving with a message.
+    // In Required mode: always require minimum length
+    // In Optional mode: if user has typed something, require minimum length
+    //                   (user can still use "Resolve without message" button for empty message)
+    const stripped_content = topic_resolution_state.strip_markdown_decorators(
+        message_content.trim(),
+    );
+    if (
+        topic_resolution_state.has_pending_resolution() &&
+        topic_resolution_state.is_message_requirement_enabled() &&
+        stripped_content.length < topic_resolution_state.MIN_RESOLUTION_MESSAGE_LENGTH
+    ) {
+        // Enforce minimum length when:
+        // - Required mode: always enforce
+        // - Optional mode: enforce if user has typed something (even if it's just decorators)
+        //   This ensures typing just "> " or "```" doesn't count as a valid message
+        const has_typed_content = message_content.trim().length > 0;
+        const should_enforce =
+            topic_resolution_state.is_message_required() ||
+            (topic_resolution_state.is_message_optional() && has_typed_content);
+
+        if (should_enforce) {
+            // Message too short for resolution requirement
+            if (show_banner) {
+                $("textarea#compose-textarea").toggleClass("invalid", true);
+                $("textarea#compose-textarea").trigger("focus");
+            }
+            if (is_validating_compose_box) {
+                disabled_send_tooltip_message_html = get_resolution_message_too_short_error();
+            }
+            blueslip.debug("Invalid compose state: Resolution message too short");
+            is_validating_compose_box = false;
+            return false;
+        }
     }
 
     is_validating_compose_box = false;
