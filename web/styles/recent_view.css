@@ -652,3 +652,19 @@
         box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
     }
 }
+
+#recent_view_folder_filter_container {
+    display: flex;
+    align-items: center;
+    margin-left: 4px;
+
+    &.hide {
+        display: none;
+    }
+}
+
+#recent_view_folder_filter_button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
