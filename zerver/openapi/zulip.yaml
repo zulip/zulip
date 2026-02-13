@@ -1864,6 +1864,14 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the submessage.
+                                timestamp:
+                                  type: integer
+                                  description: |
+                                    The UNIX timestamp for when the submessage was sent,
+                                    in UTC seconds. Will be null for submessages sent before
+                                    this field was added.
+
+                                    **Changes**: New in Zulip 12.0 (feature level ZF-1bae29).
                               example:
                                 {
                                   "type": "submessage",
@@ -1872,6 +1880,7 @@ paths:
                                   "submessage_id": 4737,
                                   "sender_id": 58,
                                   "content": '{"type":"vote","key":"58,1","vote":1}',
+                                  "timestamp": 1770303292,
                                   "id": 28,
                                 }
                             - type: object
@@ -27380,6 +27389,14 @@ components:
                 type: integer
                 description: |
                   The ID of the submessage.
+              timestamp:
+                type: integer
+                description: |
+                  The UNIX timestamp for when the submessage was sent,
+                  in UTC seconds. Will be null for submessages sent before
+                  this field was added.
+
+                  **Changes**: New in Zulip 12.0 (feature level ZF-1bae29).
         timestamp:
           type: integer
           description: |

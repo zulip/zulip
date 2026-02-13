@@ -3565,6 +3565,7 @@ class SingleUserExportTest(ExportFile):
         @checker
         def zerver_submessage(records: list[Record]) -> None:
             assert submessage
+            assert submessage.timestamp is not None
             self.assertEqual(
                 records[-1],
                 dict(
@@ -3573,6 +3574,7 @@ class SingleUserExportTest(ExportFile):
                     msg_type="widget",
                     content='{"widget_type": "todo", "extra_data": {"task_list_title": "Example Task List Title", "tasks": []}}',
                     message=widget_message_id,
+                    timestamp=submessage.timestamp.timestamp(),
                 ),
             )
 
