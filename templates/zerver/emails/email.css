@@ -234,14 +234,21 @@ p.digest_paragraph,
 }
 
 .hot_convo_recipient_block {
-    border: 1px solid #000;
+    border: 1px solid #00000029;
+    border-radius: 7px;
 }
 
 .hot_convo_recipient_header {
-    background-color: #9ec9ff;
-    border-bottom: 1px solid #000;
+    color: #262626;
+    border-bottom: 1px solid #00000029;
+    border-radius: 7px 7px 0 0;
     font-weight: bold;
-    padding: 2px;
+    padding: 5px 2px 5px 10px;
+}
+
+.hot_convo_recipient_header a {
+    color: #262626;
+    text-decoration: none;
 }
 
 .hot_convo_message_content {
