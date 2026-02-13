@@ -5,6 +5,7 @@ title: Import from Mattermost
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
 import ImportGetYourOrganizationStarted from "../include/_ImportGetYourOrganizationStarted.mdx";
 import ImportHowUsersWillLogIn from "../include/_ImportHowUsersWillLogIn.mdx";
 import ImportIntoASelfHostedServerDescription from "../include/_ImportIntoASelfHostedServerDescription.mdx";
@@ -43,31 +44,39 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
 <Tabs>
   <TabItem label="Default installation">
     <Steps>
-      1. SSH into your Mattermost production server.
-         ```bash "<username>" "<server_ip>"
+      1. Log into your Mattermost production server.
+         ```bash "username" "server_ip"
          ssh <username>@<server_ip>
          ```
-      1. Navigate to the directory which contains the Mattermost executable.
-         On a default install of Mattermost, the directory is `/opt/mattermost/bin`.
-         ```bash
-         cd /opt/mattermost/bin
+      1. Log in to a `mmctl` instance.
+         ```bash "server_ip"
+         mmctl auth login <server_ip>
          ```
-      1. Create an export of all your Mattermost teams, as a tar file.
+         You’ll be prompted for a username (use your admin user), password, and for a
+         connection name. The connection name can be anything you want.
+      1. Create a full export of the server, including attached files.
          ```bash
-         sudo ./mattermost export bulk export.json --all-teams --attachments
-         mkdir -p exported_emoji
-         tar --transform 's|^|mattermost/|' -czf export.tar.gz \
-             data/ exported_emoji/ export.json
+         mmctl export create
          ```
-      1. Exit your shell on the Mattermost server.
+         <ZulipNote>
+           If you're on version \< `7.3.0`, you need to include the `--attachments`
+           argument when calling the command above to export attachment files.
+         </ZulipNote>
+      1. List all of the exports on the server, and copy the name of the
+         latest one to your clipboard.
          ```bash
-         exit
+         mmctl export list
          ```
-      1. Finally, copy the exported tar file from the server to your local
-         computer.  You may need to replace `/opt/mattermost/bin/` with the
+      1. Download the export file to the server, replacing `latest_export`
+         with the actual file name from the previous step.
+         ```bash
+         mmctl export download latest_export.zip /local/dir/latest_export.zip
+         ```
+      1. Finally, copy the exported zip file from the server to your local
+         computer. You may need to replace /opt/mattermost/bin/ with the
          path to your Mattermost installation.
-         ```bash "<username>" "<server_ip>"
-         scp <username>@<server_ip>:/opt/mattermost/bin/export.tar.gz .
+         ```bash "username" "server_ip"
+         scp <username>@<server_ip>:latest_export.zip /local/dir
          ```
     </Steps>
   </TabItem>
@@ -75,7 +84,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
   <TabItem label="Cloud instance">
     <Steps>
       1. Make sure you have [mmctl](https://github.com/mattermost/mmctl) installed - these
-         instructions assume your version is `7.5.1` or higher.
+         instructions assume your version is `7.3.0` or higher.
       1. Log into your Mattermost Cloud instance using your administrator credentials.
          ```bash "yourdomain"
          mmctl auth login https://yourdomain.cloud.mattermost.com
@@ -84,6 +93,10 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
          ```bash
          mmctl export create
          ```
+         <ZulipNote>
+           If you're on version \< `7.3.0`, you need to include the `--attachments`
+           argument when calling the command above to export attachment files.
+         </ZulipNote>
       1. List all of the exports on the server, and copy the name of the
          latest one to your clipboard.
          ```bash
@@ -103,30 +116,41 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
          ```bash "<username>" "<server_ip>"
          ssh <username>@<server_ip>
          ```
+
       1. Navigate to the Mattermost docker directory. On most installs, the
          directory should be `mattermost-docker`.
          ```bash
          cd mattermost-docker/
          ```
-      1. Create an export of all your Mattermost teams, as a tar file.
+
+      1. Create a full export of the server, including attached files.
          ```bash
-         docker exec -it mattermost-docker_app_1 mattermost \
-             export bulk data/export.json --all-teams --attachments
-         cd volumes/app/mattermost/data/
-         mkdir -p exported_emoji
-         tar --transform 's|^|mattermost/|' -czf export.tar.gz \
-             data/ exported_emoji/ export.json
+         docker exec -it mattermost-docker_app_1 mmctl export create
          ```
+         <ZulipNote>
+           If you're on version \< `7.3.0`, you need to include the `--attachments`
+           argument when calling the command above to export attachment files.
+         </ZulipNote>
+
+      1. List all of the exports on the server, and copy the name of the
+         latest one to your clipboard.
+         ```bash
+         docker exec -it mattermost-docker_app_1 mmctl export list
+         ```
+
+      1. List all of the exports on the server, and copy the name of the
+         latest one to your clipboard.
+         ```bash
+         docker exec -it mattermost-docker_app_1 mmctl export download latest_export.zip /local/dir/latest_export.zip
+         ```
+
       1. Exit your shell on the Mattermost server.
          ```bash
          exit
          ```
-      1. Finally, copy the exported tar file from the server to your local
-         computer. You may need to replace `mattermost-docker` with the
-         appropriate path for your installation.
-         ```bash "<username>" "<server_ip>"
-         scp <username>@<server_ip>:mattermost-docker/volumes/app/mattermost/data/export.tar.gz .
-         ```
+
+      1. Download the exported file from the server to your local
+         computer.
     </Steps>
   </TabItem>
 
