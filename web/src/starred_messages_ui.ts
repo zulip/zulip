@@ -7,7 +7,6 @@ import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts
 import * as message_flags from "./message_flags.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_store from "./message_store.ts";
-import type {Message} from "./message_store.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as sub_store from "./sub_store.ts";
@@ -15,7 +14,11 @@ import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
-export function toggle_starred_and_update_server(message: Message): void {
+export function toggle_starred_and_update_server(message_id: number): void {
+    const message = message_store.get(message_id);
+    if (message === undefined) {
+        return;
+    }
     if (message.locally_echoed) {
         // This is defensive code for when you hit the "*" key
         // before we get a server ack.  It's rare that somebody
