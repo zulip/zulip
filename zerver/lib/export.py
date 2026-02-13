@@ -2084,6 +2084,13 @@ def export_uploads_and_avatars(
 
         avatar_hash_values = set()
         for avatar_user in users:
+            # We don't export Jdenticon avatar because it is deterministically
+            # generated using a combination of user ID and realm UUID as input
+            # value. Since user ID may change on import, the resulting Jdenticon
+            # would differ. Instead, we regenerate it during import using the new user ID.
+            if avatar_user.avatar_source != UserProfile.AVATAR_FROM_USER:
+                continue
+
             avatar_path = user_avatar_base_path_from_ids(
                 avatar_user.id, avatar_user.avatar_version, realm.id
             )
@@ -2364,7 +2371,7 @@ def export_avatars_from_local(
         ]
 
     for user in users:
-        if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
+        if user.avatar_source != UserProfile.AVATAR_FROM_USER:
             continue
 
         avatar_path = user_avatar_base_path_from_ids(user.id, user.avatar_version, realm.id)

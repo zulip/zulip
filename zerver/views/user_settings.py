@@ -33,6 +33,7 @@ from zerver.actions.user_settings import (
     do_change_user_setting,
     do_regenerate_api_key,
     do_start_email_change_process,
+    set_avatar_to_default,
 )
 from zerver.actions.users import generate_password_reset_url
 from zerver.decorator import human_users_only, require_post
@@ -577,13 +578,11 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_USER:
-        do_change_avatar_fields(
-            user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile
-        )
+        set_avatar_to_default(user_profile, acting_user=user_profile)
 
-    gravatar_url = avatar_url(user_profile)
+    default_avatar_url = avatar_url(user_profile)
     json_result = dict(
-        avatar_url=gravatar_url,
+        avatar_url=default_avatar_url,
     )
     return json_success(request, data=json_result)
 

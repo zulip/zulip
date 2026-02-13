@@ -59,7 +59,6 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
 function display_avatar_delete_complete(): void {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();
-    $("#user-avatar-source").show();
 }
 
 function display_avatar_delete_started(): void {
@@ -73,8 +72,11 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         return $<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input").expectOne();
     };
 
-    if (current_user.avatar_source === "G") {
+    if (current_user.avatar_source !== "U") {
         $("#user-avatar-upload-widget .image-delete-button").hide();
+    }
+
+    if (current_user.avatar_source === "G") {
         $("#user-avatar-source").show();
     } else {
         $("#user-avatar-source").hide();

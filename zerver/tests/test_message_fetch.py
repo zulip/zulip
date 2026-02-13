@@ -19,7 +19,7 @@ from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.uploads import do_claim_attachments
-from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.display_recipient import get_display_recipient
@@ -2453,6 +2453,9 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
+
+        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         do_change_user_setting(
             hamlet,

@@ -332,7 +332,10 @@ class S3UploadBackend(ZulipUploadBackend):
         return self.get_public_upload_url(self.get_avatar_path(hash_key, medium))
 
     @override
-    def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
+    def get_avatar_contents(self, file_path: str, avatar_source: str) -> tuple[bytes, str]:
+        # Currently, only used in codepaths where avatar_source = "U".
+        # We can extend it for avatar_source = "J", if required.
+        assert avatar_source is UserProfile.AVATAR_FROM_USER
         key = self.avatar_bucket.Object(file_path + ".original")
         image_data = key.get()["Body"].read()
         content_type = key.content_type

@@ -162,7 +162,7 @@ def create_user(
     bot_owner: UserProfile | None = None,
     tos_version: str | None = None,
     timezone: str = "",
-    avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
+    avatar_source: str | None = None,
     is_mirror_dummy: bool = False,
     default_language: str | None = None,
     default_sending_stream: Stream | None = None,
@@ -205,6 +205,8 @@ def create_user(
         force_date_joined=force_date_joined,
         email_address_visibility=user_email_address_visibility,
     )
+    if avatar_source is None:
+        avatar_source = realm.default_avatar_source
     user_profile.avatar_source = avatar_source
     user_profile.timezone = timezone
     user_profile.default_sending_stream = default_sending_stream
