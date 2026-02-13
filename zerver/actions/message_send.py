@@ -782,6 +782,8 @@ def create_user_messages(
     mark_as_read_user_ids: set[int],
     limit_unread_user_ids: set[int] | None,
     topic_participant_user_ids: set[int],
+    service_bot_tuples: list[tuple[int, int]],
+    triggered_service_bots: set[int],
 ) -> list[UserMessageLite]:
     # These properties on the Message are set via
     # render_message_markdown by code in the Markdown inline patterns
@@ -813,11 +815,22 @@ def create_user_messages(
     #
     # See https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
     # for details on this system.
+    service_bot_ids = dict(service_bot_tuples).keys()
     user_messages = []
-    for user_profile_id in um_eligible_user_ids:
+    for user_profile_id in um_eligible_user_ids | triggered_service_bots:
         flags = base_flags
-        if user_profile_id in mark_as_read_user_ids or (
-            limit_unread_user_ids is not None and user_profile_id not in limit_unread_user_ids
+        if (
+            user_profile_id in mark_as_read_user_ids
+            or (limit_unread_user_ids is not None and user_profile_id not in limit_unread_user_ids)
+            or (
+                # We track whether a service bot event message has been
+                # processed by checking if it has been read by the bot.
+                #
+                # This makes sure all messages where the service bots are
+                # part of the recipients but their function isn't triggered,
+                # are marked as read by them.
+                user_profile_id in (service_bot_ids - triggered_service_bots)
+            )
         ):
             flags |= UserMessage.flags.read
         if user_profile_id in mentioned_user_ids:
@@ -957,14 +970,24 @@ def do_send_messages(
 
     ums: list[UserMessageLite] = []
     for send_request in send_message_requests:
-        # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
-        # they will be processed later.
         mentioned_user_ids = send_request.rendering_result.mentions_user_ids
 
         # Extend the set with users who have muted the sender.
         mark_as_read_user_ids = send_request.muted_sender_user_ids
         mark_as_read_user_ids.update(mark_as_read)
 
+        send_request.service_queue_events = get_service_bot_events(
+            sender=send_request.message.sender,
+            service_bot_tuples=send_request.service_bot_tuples,
+            mentioned_user_ids=mentioned_user_ids,
+            active_user_ids=send_request.active_user_ids,
+            recipient_type=send_request.message.recipient.type,
+        )
+        triggered_service_bots = {
+            event["user_profile_id"]
+            for events in send_request.service_queue_events.values()
+            for event in events
+        }
         user_messages = create_user_messages(
             message=send_request.message,
             rendering_result=send_request.rendering_result,
@@ -978,20 +1001,14 @@ def do_send_messages(
             mark_as_read_user_ids=mark_as_read_user_ids,
             limit_unread_user_ids=send_request.limit_unread_user_ids,
             topic_participant_user_ids=send_request.topic_participant_user_ids,
+            service_bot_tuples=send_request.service_bot_tuples,
+            triggered_service_bots=triggered_service_bots,
         )
 
         for um in user_messages:
             user_message_flags[send_request.message.id][um.user_profile_id] = um.flags_list()
 
         ums.extend(user_messages)
-
-        send_request.service_queue_events = get_service_bot_events(
-            sender=send_request.message.sender,
-            service_bot_tuples=send_request.service_bot_tuples,
-            mentioned_user_ids=mentioned_user_ids,
-            active_user_ids=send_request.active_user_ids,
-            recipient_type=send_request.message.recipient.type,
-        )
 
     bulk_insert_ums(ums)
 
