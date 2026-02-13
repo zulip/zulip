@@ -67,6 +67,11 @@
         text-align: right;
     }
 
+    & td.definition .emoji {
+        vertical-align: middle;
+        margin-bottom: 0.6em;
+    }
+
     .hotkey {
         font-weight: normal;
     }
