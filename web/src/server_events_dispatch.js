@@ -9,6 +9,7 @@ import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as compose_call from "./compose_call.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
@@ -42,6 +43,7 @@ import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
+import * as pm_conversations from "./pm_conversations.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
 import * as realm_icon from "./realm_icon.ts";
@@ -170,11 +172,30 @@ export function dispatch_normal_event(event) {
 
         case "delete_message": {
             const msg_ids = event.message_ids;
+
+            // We look up the conversation ID before deletion, because once
+            // the messages are removed from message_store, we won't be able
+            // to calculate the conversation key.
+            let private_conversation_id = null;
+            let max_message_id_before;
+            if (event.message_type === "private" && msg_ids.length > 0) {
+                const message = message_store.get(msg_ids[0]);
+                if (message) {
+                    const user_ids_from_people = people.pm_with_user_ids(message);
+                    if (user_ids_from_people) {
+                        private_conversation_id = user_ids_from_people.join(",");
+                        max_message_id_before =
+                            pm_conversations.recent.get_max_message_id(private_conversation_id);
+                    }
+                }
+            }
+
             // message is passed to unread.get_unread_messages,
             // which returns all the unread messages out of a given list.
             // So double marking something as read would not occur
             unread_ops.process_read_messages_event(msg_ids);
             emoji_frequency.update_emoji_frequency_on_messages_deletion(msg_ids);
+
             // This methods updates message_list too and since stream_topic_history relies on it
             // this method should be called first.
             message_events.remove_messages(msg_ids);
@@ -189,6 +210,56 @@ export function dispatch_normal_event(event) {
                 stream_list.update_streams_sidebar();
             }
 
+            // If we potentially emptied a DM conversation, verify with the server
+            // and remove it from the sidebar if needed.
+            if (private_conversation_id !== null) {
+                const user_ids_string = private_conversation_id;
+                const max_deleted_id = Math.max(...msg_ids);
+
+                // If we did not delete the newest known message, the conversation
+                // is definitely not empty, so skip the server check.
+                if (
+                    max_message_id_before !== undefined &&
+                    max_message_id_before > max_deleted_id &&
+                    message_store.get(max_message_id_before) !== undefined
+                ) {
+                    break;
+                }
+                const user_ids_array = user_ids_string
+                    .split(",")
+                    .map((id) => Number.parseInt(id, 10));
+                const narrow = [{operator: "dm", operand: user_ids_array}];
+
+                channel.get({
+                    url: "/json/messages",
+                    data: {
+                        anchor: "oldest",
+                        num_before: 0,
+                        num_after: 1,
+                        narrow: JSON.stringify(narrow),
+                    },
+                    success(data) {
+                        const max_message_id_after =
+                            pm_conversations.recent.get_max_message_id(user_ids_string);
+                        if (
+                            // Race condition check - return early if a newer message arrived.
+                            max_message_id_after !== undefined &&
+                            max_message_id_before !== undefined &&
+                            max_message_id_after > max_message_id_before
+                        ) {
+                            return;
+                        }
+                        if (data.messages.length === 0) {
+                            pm_conversations.recent.remove(user_ids_string);
+                            pm_list.update_private_messages();
+                            recent_view_ui.complete_rerender();
+                        }
+                    },
+                    error(xhr) {
+                        blueslip.warn("Failed to verify DM emptiness", {status: xhr.status});
+                    },
+                });
+            }
             break;
         }
 

@@ -24,6 +24,7 @@ const alert_words_ui = mock_esm("../src/alert_words_ui");
 const attachments_ui = mock_esm("../src/attachments_ui");
 const audible_notifications = mock_esm("../src/audible_notifications");
 const bot_data = mock_esm("../src/bot_data");
+const channel = mock_esm("../src/channel");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const {electron_bridge} = mock_esm("../src/electron_bridge", {
     electron_bridge: {},
@@ -50,6 +51,9 @@ const navbar_alerts = mock_esm("../src/navbar_alerts");
 const pm_list = mock_esm("../src/pm_list");
 const reactions = mock_esm("../src/reactions", {
     generate_clean_reactions() {},
+});
+mock_esm("../src/recent_view_ui", {
+    complete_rerender: noop,
 });
 const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");
@@ -153,6 +157,7 @@ const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const presence = zrequire("presence");
+const pm_conversations = zrequire("pm_conversations");
 const user_status = zrequire("user_status");
 const onboarding_steps = zrequire("onboarding_steps");
 const user_groups = zrequire("user_groups");
@@ -1682,4 +1687,249 @@ run_test("realm_user_settings_defaults", ({override}) => {
     dispatch(event);
     assert_same(realm_user_settings_defaults.notification_sound, "ding");
     assert_same(called, true);
+});
+
+run_test("delete_message_private_cleanup", ({override}) => {
+    const user4 = {user_id: 4, email: "user4@example.com", full_name: "User 4"};
+    const user5 = {user_id: 5, email: "user5@example.com", full_name: "User 5"};
+    people.add_active_user(user4);
+    people.add_active_user(user5);
+
+    const test_message_dm = {
+        id: 501,
+        type: "private",
+        to_user_ids: "4,5",
+        display_recipient: [user4, user5],
+        sender_id: 4,
+        content: "test",
+        timestamp: 1234567890,
+    };
+
+    message_store.update_message_cache({
+        type: "server_message",
+        message: test_message_dm,
+    });
+
+    pm_conversations.recent.insert([4, 5], 501);
+
+    const remove_stub = make_stub();
+    override(pm_conversations.recent, "remove", remove_stub.f);
+
+    override(pm_list, "update_private_messages", noop);
+    override(unread_ops, "process_read_messages_event", noop);
+    override(message_events, "remove_messages", noop);
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
+
+    override(channel, "get", (req) => {
+        assert.equal(req.url, "/json/messages");
+        req.success({messages: []});
+    });
+
+    dispatch({
+        type: "delete_message",
+        message_type: "private",
+        message_ids: [501],
+    });
+
+    assert.equal(remove_stub.num_calls, 1);
+});
+
+run_test("delete_message_private_not_empty", ({override}) => {
+    const user4 = {user_id: 4, email: "user4@example.com", full_name: "User 4"};
+    const user5 = {user_id: 5, email: "user5@example.com", full_name: "User 5"};
+    people.add_active_user(user4);
+    people.add_active_user(user5);
+
+    const test_message_dm = {
+        id: 502,
+        type: "private",
+        to_user_ids: "4,5",
+        display_recipient: [user4, user5],
+        sender_id: 4,
+        content: "test",
+        timestamp: 1234567890,
+    };
+
+    message_store.update_message_cache({
+        type: "server_message",
+        message: test_message_dm,
+    });
+
+    pm_conversations.recent.insert([4, 5], 502);
+
+    const original_remove = pm_conversations.recent.remove;
+    const remove_stub = make_stub();
+    pm_conversations.recent.remove = remove_stub.f;
+
+    override(unread_ops, "process_read_messages_event", noop);
+    override(message_events, "remove_messages", noop);
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
+
+    override(channel, "get", (req) => {
+        req.success({messages: [{id: 100}]});
+    });
+
+    dispatch({
+        type: "delete_message",
+        message_type: "private",
+        message_ids: [502],
+    });
+
+    assert.equal(remove_stub.num_calls, 0);
+    pm_conversations.recent.remove = original_remove;
+});
+
+run_test("delete_message_private_race_condition", ({override}) => {
+    const user4 = {user_id: 4, email: "user4@example.com", full_name: "User 4"};
+    const user5 = {user_id: 5, email: "user5@example.com", full_name: "User 5"};
+    people.add_active_user(user4);
+    people.add_active_user(user5);
+
+    const test_message_dm = {
+        id: 503,
+        type: "private",
+        to_user_ids: "4,5",
+        display_recipient: [user4, user5],
+        sender_id: 4,
+        content: "test",
+        timestamp: 1234567890,
+    };
+
+    message_store.update_message_cache({
+        type: "server_message",
+        message: test_message_dm,
+    });
+
+    pm_conversations.recent.insert([4, 5], 503);
+
+    let call_count = 0;
+    const original_get_max = pm_conversations.recent.get_max_message_id;
+    pm_conversations.recent.get_max_message_id = () => {
+        call_count += 1;
+        if (call_count === 1) {
+            return 503;
+        }
+        return 999;
+    };
+
+    const original_remove = pm_conversations.recent.remove;
+    const remove_stub = make_stub();
+    pm_conversations.recent.remove = remove_stub.f;
+
+    override(unread_ops, "process_read_messages_event", noop);
+    override(message_events, "remove_messages", noop);
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
+
+    override(channel, "get", (req) => {
+        req.success({messages: []});
+    });
+
+    dispatch({
+        type: "delete_message",
+        message_type: "private",
+        message_ids: [503],
+    });
+
+    assert.equal(remove_stub.num_calls, 0);
+
+    pm_conversations.recent.get_max_message_id = original_get_max;
+    pm_conversations.recent.remove = original_remove;
+});
+
+run_test("delete_message_private_api_error", ({override}) => {
+    const user8 = {user_id: 8, email: "user8@example.com", full_name: "User 8"};
+    const user9 = {user_id: 9, email: "user9@example.com", full_name: "User 9"};
+    people.add_active_user(user8);
+    people.add_active_user(user9);
+
+    const test_message_dm = {
+        id: 505,
+        type: "private",
+        to_user_ids: "8,9",
+        display_recipient: [user8, user9],
+        sender_id: 8,
+        content: "test",
+        timestamp: 1234567890,
+    };
+
+    message_store.update_message_cache({
+        type: "server_message",
+        message: test_message_dm,
+    });
+
+    pm_conversations.recent.insert([8, 9], 505);
+
+    override(unread_ops, "process_read_messages_event", noop);
+    override(message_events, "remove_messages", noop);
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
+
+    override(channel, "get", (req) => {
+        req.error({status: 500});
+    });
+
+    blueslip.expect("warn", "Failed to verify DM emptiness");
+
+    dispatch({
+        type: "delete_message",
+        message_type: "private",
+        message_ids: [505],
+    });
+});
+
+run_test("delete_message_private_optimization", ({override}) => {
+    const user4 = {user_id: 4, email: "user4@example.com", full_name: "User 4"};
+    const user5 = {user_id: 5, email: "user5@example.com", full_name: "User 5"};
+    people.add_active_user(user4);
+    people.add_active_user(user5);
+
+    const msg_old = {
+        id: 500,
+        type: "private",
+        to_user_ids: "4,5",
+        display_recipient: [user4, user5],
+        sender_id: 4,
+        content: "old",
+        timestamp: 1000,
+    };
+
+    const msg_new = {
+        id: 501,
+        type: "private",
+        to_user_ids: "4,5",
+        display_recipient: [user4, user5],
+        sender_id: 4,
+        content: "new",
+        timestamp: 2000,
+    };
+
+    message_store.update_message_cache({
+        type: "server_message",
+        message: msg_old,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: msg_new,
+    });
+
+    const original_get_max = pm_conversations.recent.get_max_message_id;
+    pm_conversations.recent.get_max_message_id = () => 501;
+
+    override(unread_ops, "process_read_messages_event", noop);
+    override(message_events, "remove_messages", noop);
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
+
+    const original_channel_get = channel.get;
+    const channel_get_stub = make_stub();
+    channel.get = channel_get_stub.f;
+
+    dispatch({
+        type: "delete_message",
+        message_type: "private",
+        message_ids: [500],
+    });
+
+    assert.equal(channel_get_stub.num_calls, 0);
+
+    pm_conversations.recent.get_max_message_id = original_get_max;
+    channel.get = original_channel_get;
 });
