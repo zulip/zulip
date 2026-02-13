@@ -799,8 +799,9 @@
         }
     }
 
-    .bottom_left_row:not(.active-sub-filter) {
+    &:not(.active-filter) {
         background-color: var(--color-background-hover-narrow-filter);
+        border-radius: 4px;
 
         .sidebar-topic-check {
             background-color: var(--color-background-hover-narrow-filter);
