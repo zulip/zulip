@@ -21,6 +21,7 @@ import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
+import type {Message} from "./message_store.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
@@ -53,7 +54,15 @@ export function set_update_inbox_channel_view_callback(value: (channel_id: numbe
     update_inbox_channel_view_callback = value;
 }
 
-let has_scrolled = false;
+let is_actively_scrolling = false;
+
+const left_sidebar_scroll_state: {
+    scroll_container_scroll_top: number | undefined;
+    selection_offset_to_top: number | undefined;
+} = {
+    scroll_container_scroll_top: 0,
+    selection_offset_to_top: 0,
+};
 
 const collapsed_sections = new Set<string>();
 const sections_with_only_inactive_or_muted = new Set<string>();
@@ -66,6 +75,77 @@ const ls = localstorage();
 
 export function is_zoomed_in(): boolean {
     return zoomed_in;
+}
+
+function get_selection_offset_from_top($target: JQuery, $scroll_element: JQuery): number {
+    const container_top = $scroll_element.offset()?.top ?? 0;
+    const target_top = $target.offset()?.top ?? 0;
+    return target_top - container_top;
+}
+
+function capture_left_sidebar_selection_anchor(): void {
+    const $scroll_element = scroll_util.get_left_sidebar_scroll_container();
+    left_sidebar_scroll_state.scroll_container_scroll_top = $scroll_element.scrollTop();
+    // .active-sub-filter: Selected topic or DM.
+    // .active-filter: Selected channel.
+    // We don't need to handle others since restoring `scroll_container_scroll_top` would
+    // work for them.
+    const $active_filter = $scroll_element.find(".active-sub-filter, .active-filter");
+    if ($active_filter.length === 1) {
+        left_sidebar_scroll_state.selection_offset_to_top = get_selection_offset_from_top(
+            $active_filter,
+            $scroll_element,
+        );
+    } else {
+        left_sidebar_scroll_state.selection_offset_to_top = undefined;
+    }
+}
+
+function restore_left_sidebar_scroll_state(): void {
+    const $scroll_element = scroll_util.get_left_sidebar_scroll_container();
+    if (left_sidebar_scroll_state.selection_offset_to_top !== undefined) {
+        const $active_topic_or_channel = $scroll_element.find(".active-sub-filter, .active-filter");
+        if ($active_topic_or_channel.length === 1) {
+            const current_offset_to_top = get_selection_offset_from_top(
+                $active_topic_or_channel,
+                $scroll_element,
+            );
+            const offset_difference =
+                current_offset_to_top - left_sidebar_scroll_state.selection_offset_to_top;
+            $scroll_element.scrollTop($scroll_element.scrollTop()! + offset_difference);
+        } else {
+            $scroll_element.scrollTop(left_sidebar_scroll_state.scroll_container_scroll_top ?? 0);
+        }
+    }
+}
+
+function update_streams_sidebar_and_restore_scroll_state(): void {
+    requestAnimationFrame(() => {
+        capture_left_sidebar_selection_anchor();
+        update_streams_sidebar();
+        restore_left_sidebar_scroll_state();
+    });
+}
+
+export function update_streams_sidebar_for_messages(messages: Message[]): void {
+    const channel_id = topic_list.active_stream_id();
+    if (channel_id === undefined) {
+        return;
+    }
+
+    const should_update = messages.some(
+        (message) => message.type === "stream" && message.stream_id === channel_id,
+    );
+
+    if (!should_update) {
+        return;
+    }
+
+    if (is_actively_scrolling) {
+        update_streams_sidebar();
+    } else {
+        update_streams_sidebar_and_restore_scroll_state();
+    }
 }
 
 function zoom_in(): void {
@@ -1450,9 +1530,15 @@ export function set_event_handlers({
         }
     }
 
+    let mark_scroll_inactive_timeout: ReturnType<typeof setTimeout> | undefined;
     // check for user scrolls on streams list for first time
     scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
-        has_scrolled = true;
+        is_actively_scrolling = true;
+        clearTimeout(mark_scroll_inactive_timeout);
+        mark_scroll_inactive_timeout = setTimeout(() => {
+            is_actively_scrolling = false;
+        }, 200);
+
         toggle_pm_header_icon();
     });
 
@@ -1547,15 +1633,6 @@ export let scroll_stream_into_view = function ($stream_li?: JQuery): void {
 
 export function rewire_scroll_stream_into_view(value: typeof scroll_stream_into_view): void {
     scroll_stream_into_view = value;
-}
-
-export function maybe_scroll_narrow_into_view(first_messages_fetch_done: boolean): void {
-    // we don't want to interfere with user scrolling once the page loads
-    if (has_scrolled && first_messages_fetch_done) {
-        return;
-    }
-
-    scroll_stream_into_view();
 }
 
 export function get_current_stream_li(): JQuery | undefined {
