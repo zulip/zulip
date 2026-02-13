@@ -1100,7 +1100,7 @@ def import_uploads(
                 # None, and we assert.  For emoji / realm icons, we
                 # fall back to default_user_profile_id.
                 assert default_user_profile_id is not None
-                metadata["user_profile_id"] = str(default_user_profile_id)
+                metadata["user-profile-id"] = str(default_user_profile_id)
             else:
                 user_profile_id = int(record["user_profile_id"])
                 # Support email gateway bot and other cross-realm messages
@@ -1108,11 +1108,11 @@ def import_uploads(
                     logging.info("Uploaded by ID mapped user: %s!", user_profile_id)
                     user_profile_id = ID_MAP["user_profile"][user_profile_id]
                 user_profile = get_user_profile_by_id(user_profile_id)
-                metadata["user_profile_id"] = str(user_profile.id)
+                metadata["user-profile-id"] = str(user_profile.id)
 
             if "last_modified" in record:
-                metadata["orig_last_modified"] = str(record["last_modified"])
-            metadata["realm_id"] = str(record["realm_id"])
+                metadata["orig-last-modified"] = str(record["last_modified"])
+            metadata["realm-id"] = str(record["realm_id"])
 
             # Zulip exports will always have a content-type, but third-party exports might not.
             content_type = record.get("content_type")

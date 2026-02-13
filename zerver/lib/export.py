@@ -2149,7 +2149,18 @@ def _get_exported_s3_record(
         content_type=s3_obj.content_type,
         md5=s3_obj.e_tag,
     )
-    record.update(s3_obj.metadata)
+    if "user-profile-id" in s3_obj.metadata:
+        record["user_profile_id"] = s3_obj.metadata["user-profile-id"]
+    elif "user_profile_id" in s3_obj.metadata:
+        record["user_profile_id"] = s3_obj.metadata["user_profile_id"]
+    if "realm-id" in s3_obj.metadata:
+        record["realm_id"] = s3_obj.metadata["realm-id"]
+    elif "realm_id" in s3_obj.metadata:
+        record["realm_id"] = s3_obj.metadata["realm_id"]
+    if "avatar-version" in s3_obj.metadata:
+        record["avatar_version"] = s3_obj.metadata["avatar-version"]
+    elif "avatar_version" in s3_obj.metadata:
+        record["avatar_version"] = s3_obj.metadata["avatar_version"]
 
     if processing_emoji:
         file_name = os.path.basename(s3_obj.key)
@@ -2263,28 +2274,31 @@ def export_files_from_s3(
                 continue
 
             s3_obj = bucket.Object(bkey.key)
-
-            if "realm_id" not in s3_obj.metadata:
-                raise AssertionError(f"Missing realm_id in object metadata: {s3_obj.metadata}")
-
-            if "user_profile_id" not in s3_obj.metadata:
+            s3_realm_id = s3_obj.metadata.get("realm-id", s3_obj.metadata.get("realm_id"))
+            if s3_realm_id is None:
                 raise AssertionError(
-                    f"Missing user_profile_id in object metadata: {s3_obj.metadata}"
+                    f"Missing realm-id in object {s3_obj.key} metadata: {s3_obj.metadata}"
                 )
 
-            if int(s3_obj.metadata["user_profile_id"]) not in user_ids:
+            s3_user_profile_id = s3_obj.metadata.get(
+                "user-profile-id", s3_obj.metadata.get("user_profile_id")
+            )
+            if s3_user_profile_id is None:
+                raise AssertionError(
+                    f"Missing user_profile_id in object {s3_obj.key} metadata: {s3_obj.metadata}"
+                )
+
+            if int(s3_user_profile_id) not in user_ids:
                 continue
 
-            if s3_obj.metadata["realm_id"] == str(realm.id):
+            if int(s3_realm_id) == realm.id:
                 pass
-            elif email_gateway_bot and s3_obj.metadata["user_profile_id"] == str(
-                email_gateway_bot.id
-            ):
+            elif email_gateway_bot and int(s3_user_profile_id) == email_gateway_bot.id:
                 # Our one expected cross-realm source of attachments
                 pass
             else:
                 raise AssertionError(
-                    f"Key metadata problem: {s3_obj.key} / {s3_obj.metadata} / {realm.id}"
+                    f"Mismatch of realm-id in object {s3_obj.key} for realm {realm.id}: {s3_obj.metadata}"
                 )
 
             record = _get_exported_s3_record(bucket_name, s3_obj, processing_emoji, realm.id)

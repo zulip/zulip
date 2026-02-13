@@ -164,8 +164,8 @@ def handle_upload_pre_finish_hook(
         # parallels the work from upload_content_to_s3 in
         # zerver.lib.uploads.s3
         s3_metadata = {
-            "user_profile_id": str(user_profile.id),
-            "realm_id": str(user_profile.realm_id),
+            "user-profile-id": str(user_profile.id),
+            "realm-id": str(user_profile.realm_id),
         }
 
         is_attachment = bare_content_type(content_type) not in INLINE_MIME_TYPES
