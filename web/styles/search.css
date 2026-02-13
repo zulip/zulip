@@ -255,7 +255,7 @@
         /* Override style for .pill-container that isn't relevant for search. */
         border: none;
         grid-template:
-            "search-icon search-pills search-close" var(--search-box-height)
+            "search-icon search-pills search-close" var(--height-input-pill)
             ". search-pills ." auto / var(--search-left-padding) minmax(0, 1fr)
             1.75em; /* 28px at 16px em */
         align-content: center;
@@ -266,7 +266,10 @@
             background: inherit;
             gap: 0;
             /* Override padding. */
-            padding: 0;
+            padding: calc(
+                    (var(--search-box-height) - var(--height-input-pill)) / 2
+                )
+                0;
         }
 
         .pill {
