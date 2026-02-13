@@ -4015,17 +4015,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pyoembed"
-version = "0.1.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "beautifulsoup4" },
-    { name = "lxml" },
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/32/11/7b9549660ae130668cabc886e4012572745508d381cd0005239b082129a8/pyoembed-0.1.2.tar.gz", hash = "sha256:0f755c8308039f1e49238e95ea94ef16aa08add9f32075ba13ab9b65f32ff582", size = 12502, upload-time = "2017-11-17T11:51:21.083Z" }
-
-[[package]]
 name = "pyopenssl"
 version = "25.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -6424,7 +6413,6 @@ dev = [
     { name = "pyjwt" },
     { name = "pymongo" },
     { name = "pynacl" },
-    { name = "pyoembed" },
     { name = "python-binary-memcached" },
     { name = "python-dateutil" },
     { name = "python-debian" },
@@ -6552,7 +6540,6 @@ prod = [
     { name = "pyjwt" },
     { name = "pymongo" },
     { name = "pynacl" },
-    { name = "pyoembed" },
     { name = "python-binary-memcached" },
     { name = "python-dateutil" },
     { name = "python-ldap" },
@@ -6664,7 +6651,6 @@ dev = [
     { name = "pyjwt" },
     { name = "pymongo" },
     { name = "pynacl" },
-    { name = "pyoembed" },
     { name = "python-binary-memcached" },
     { name = "python-dateutil" },
     { name = "python-debian" },
@@ -6794,7 +6780,6 @@ prod = [
     { name = "pyjwt" },
     { name = "pymongo" },
     { name = "pynacl" },
-    { name = "pyoembed" },
     { name = "python-binary-memcached" },
     { name = "python-dateutil" },
     { name = "python-ldap" },

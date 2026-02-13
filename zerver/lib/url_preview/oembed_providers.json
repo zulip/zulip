@@ -1,0 +1,189 @@
+[
+    {
+        "provider_name": "YouTube",
+        "provider_url": "https://www.youtube.com/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "https://youtube.com/watch*",
+                    "http://youtube.com/watch*",
+                    "https://*.youtube.com/watch*",
+                    "http://*.youtube.com/watch*",
+                    "https://*.youtube.com/v/*",
+                    "http://*.youtube.com/v/*",
+                    "https://youtu.be/*",
+                    "http://youtu.be/*",
+                    "https://*.youtube.com/playlist?list=*",
+                    "http://*.youtube.com/playlist?list=*",
+                    "https://youtube.com/playlist?list=*",
+                    "http://youtube.com/playlist?list=*",
+                    "https://*.youtube.com/shorts*",
+                    "http://*.youtube.com/shorts*",
+                    "https://youtube.com/shorts*",
+                    "http://youtube.com/shorts*",
+                    "https://*.youtube.com/embed/*",
+                    "http://*.youtube.com/embed/*",
+                    "https://*.youtube.com/live*",
+                    "http://*.youtube.com/live*",
+                    "https://youtube.com/live*",
+                    "http://youtube.com/live*"
+                ],
+                "url": "https://www.youtube.com/oembed",
+                "discovery": true
+            }
+        ]
+    },
+    {
+        "provider_name": "Vimeo",
+        "provider_url": "https://vimeo.com/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "https://vimeo.com/*",
+                    "http://vimeo.com/*",
+                    "https://vimeo.com/album/*/video/*",
+                    "http://vimeo.com/album/*/video/*",
+                    "https://vimeo.com/channels/*/*",
+                    "http://vimeo.com/channels/*/*",
+                    "https://vimeo.com/groups/*/videos/*",
+                    "http://vimeo.com/groups/*/videos/*",
+                    "https://vimeo.com/ondemand/*/*",
+                    "http://vimeo.com/ondemand/*/*",
+                    "https://player.vimeo.com/video/*",
+                    "http://player.vimeo.com/video/*"
+                ],
+                "url": "https://vimeo.com/api/oembed.json",
+                "discovery": true
+            }
+        ]
+    },
+    {
+        "provider_name": "Imgur",
+        "provider_url": "https://imgur.com/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "https://imgur.com/*",
+                    "http://imgur.com/*",
+                    "https://i.imgur.com/*",
+                    "http://i.imgur.com/*",
+                    "https://imgur.com/a/*",
+                    "http://imgur.com/a/*",
+                    "https://imgur.com/gallery/*",
+                    "http://imgur.com/gallery/*"
+                ],
+                "url": "https://api.imgur.com/oembed",
+                "discovery": true
+            }
+        ]
+    },
+    {
+        "provider_name": "Spotify",
+        "provider_url": "https://spotify.com/",
+        "endpoints": [
+            {
+                "schemes": ["https://open.spotify.com/*", "http://open.spotify.com/*"],
+                "url": "https://open.spotify.com/oembed",
+                "discovery": true
+            }
+        ]
+    },
+    {
+        "provider_name": "SoundCloud",
+        "provider_url": "https://soundcloud.com/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "https://soundcloud.com/*",
+                    "http://soundcloud.com/*",
+                    "https://soundcloud.app.goo.gl/*",
+                    "http://soundcloud.app.goo.gl/*"
+                ],
+                "url": "https://soundcloud.com/oembed",
+                "discovery": true
+            }
+        ]
+    },
+    {
+        "provider_name": "Twitter",
+        "provider_url": "https://twitter.com/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "https://twitter.com/*/status/*",
+                    "http://twitter.com/*/status/*",
+                    "https://x.com/*/status/*",
+                    "http://x.com/*/status/*"
+                ],
+                "url": "https://publish.twitter.com/oembed",
+                "discovery": true
+            }
+        ]
+    },
+    {
+        "provider_name": "TikTok",
+        "provider_url": "https://www.tiktok.com/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "https://www.tiktok.com/*/video/*",
+                    "http://www.tiktok.com/*/video/*",
+                    "https://www.tiktok.com/@*/video/*",
+                    "http://www.tiktok.com/@*/video/*",
+                    "https://vm.tiktok.com/*",
+                    "http://vm.tiktok.com/*"
+                ],
+                "url": "https://www.tiktok.com/oembed",
+                "discovery": true
+            }
+        ]
+    },
+    {
+        "provider_name": "Giphy",
+        "provider_url": "https://giphy.com/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "https://giphy.com/gifs/*",
+                    "http://giphy.com/gifs/*",
+                    "https://media.giphy.com/media/*/giphy.gif",
+                    "http://media.giphy.com/media/*/giphy.gif"
+                ],
+                "url": "https://giphy.com/services/oembed",
+                "discovery": true
+            }
+        ]
+    },
+    {
+        "provider_name": "Flickr",
+        "provider_url": "https://www.flickr.com/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "https://*.flickr.com/photos/*",
+                    "http://*.flickr.com/photos/*",
+                    "https://flic.kr/p/*",
+                    "http://flic.kr/p/*"
+                ],
+                "url": "https://www.flickr.com/services/oembed/",
+                "discovery": true
+            }
+        ]
+    },
+    {
+        "provider_name": "DailyMotion",
+        "provider_url": "https://www.dailymotion.com/",
+        "endpoints": [
+            {
+                "schemes": [
+                    "https://www.dailymotion.com/video/*",
+                    "http://www.dailymotion.com/video/*",
+                    "https://dai.ly/*",
+                    "http://dai.ly/*"
+                ],
+                "url": "https://www.dailymotion.com/services/oembed",
+                "discovery": true
+            }
+        ]
+    }
+]
