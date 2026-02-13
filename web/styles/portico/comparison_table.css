@@ -242,14 +242,6 @@
         text-decoration-color: var(--color-table-link-decoration-active);
     }
 
-    .comparison-table tr {
-        transition: background-color 200ms ease-out;
-    }
-
-    .comparison-table tbody tr:hover {
-        background-color: hsl(0deg 0% 100% / 30%);
-    }
-
     .comparison-table th:first-child {
         border-top-left-radius: var(--border-radius-table);
     }
@@ -352,6 +344,14 @@
     }
 
     &:not(.education-features-comparison) {
+        .comparison-table tr {
+            transition: background-color 200ms ease-out;
+        }
+
+        .comparison-table tbody tr:hover {
+            background-color: hsl(0deg 0% 100% / 30%);
+        }
+
         .comparison-value-positive::after,
         .comparison-value-warning::after,
         .comparison-value-negative::after {
