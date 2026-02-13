@@ -25,7 +25,12 @@ from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_realm_user_sessions
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.types import UserGroupMembersData
+from zerver.lib.types import (
+    RealmDeactivatedEvent,
+    RealmUpdateDictEvent,
+    RealmUpdateEvent,
+    UserGroupMembersData,
+)
 from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import (
@@ -95,12 +100,12 @@ def do_set_realm_property(
     else:
         realm.save(update_fields=[name])
 
-    event = dict(
-        type="realm",
-        op="update",
-        property=name,
-        value=value,
-    )
+    event: RealmUpdateEvent | RealmUpdateDictEvent = {
+        "type": "realm",
+        "op": "update",
+        "property": name,
+        "value": value,
+    }
 
     if name == "description":
         event["rendered_description"] = realm.rendered_description
@@ -111,29 +116,29 @@ def do_set_realm_property(
         "message_content_edit_limit_seconds",
     ]
     if name in message_edit_settings:
-        event = dict(
-            type="realm",
-            op="update_dict",
-            property="default",
-            data={name: value},
-        )
+        event = {
+            "type": "realm",
+            "op": "update_dict",
+            "property": "default",
+            "data": {name: value},
+        }
     if name == "message_edit_history_visibility_policy":
-        event = dict(
-            type="realm",
-            op="update",
-            property=name,
-            value=MessageEditHistoryVisibilityPolicyEnum(value).name,
-        )
+        event = {
+            "type": "realm",
+            "op": "update",
+            "property": name,
+            "value": MessageEditHistoryVisibilityPolicyEnum(value).name,
+        }
     if name == "topics_policy":
-        event = dict(
-            type="realm",
-            op="update_dict",
-            property="default",
-            data={
+        event = {
+            "type": "realm",
+            "op": "update_dict",
+            "property": "default",
+            "data": {
                 name: RealmTopicsPolicyEnum(value).name,
                 "mandatory_topics": value == RealmTopicsPolicyEnum.disable_empty_topic.value,
             },
-        )
+        }
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
@@ -189,12 +194,12 @@ def do_set_push_notifications_enabled_end_timestamp(
         },
     )
 
-    event = dict(
-        type="realm",
-        op="update",
-        property=name,
-        value=value,
-    )
+    event: RealmUpdateEvent = {
+        "type": "realm",
+        "op": "update",
+        "property": name,
+        "value": value,
+    }
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
@@ -232,12 +237,12 @@ def do_change_realm_permission_group_setting(
         # a combination of users and groups.
         old_value.delete()
 
-    event = dict(
-        type="realm",
-        op="update_dict",
-        property="default",
-        data={setting_name: convert_to_user_group_members_dict(new_setting_api_value)},
-    )
+    event: RealmUpdateDictEvent = {
+        "type": "realm",
+        "op": "update_dict",
+        "property": "default",
+        "data": {setting_name: convert_to_user_group_members_dict(new_setting_api_value)},
+    }
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
@@ -406,12 +411,12 @@ def do_set_realm_authentication_methods(
             realm, updated_value
         )
     )
-    event = dict(
-        type="realm",
-        op="update_dict",
-        property="default",
-        data=event_data,
-    )
+    event: RealmUpdateDictEvent = {
+        "type": "realm",
+        "op": "update_dict",
+        "property": "default",
+        "data": event_data,
+    }
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
@@ -465,12 +470,12 @@ def do_set_realm_stream(
             },
         )
 
-        event = dict(
-            type="realm",
-            op="update",
-            property=property,
-            value=stream_id,
-        )
+        event: RealmUpdateEvent = {
+            "type": "realm",
+            "op": "update",
+            "property": property,
+            "value": stream_id,
+        }
         send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
@@ -542,12 +547,12 @@ def do_set_realm_user_default_setting(
         },
     )
 
-    event = dict(
-        type="realm_user_settings_defaults",
-        op="update",
-        property=name,
-        value=event_value,
-    )
+    event: RealmUpdateEvent = {
+        "type": "realm_user_settings_defaults",
+        "op": "update",
+        "property": name,
+        "value": event_value,
+    }
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
@@ -621,15 +626,15 @@ def do_deactivate_realm(
         # immediate reload into the page explaining the realm was
         # deactivated). So the purpose of sending this is to flush all
         # active longpoll connections for the realm.
-        event = dict(type="realm", op="deactivated", realm_id=realm.id)
+        event: RealmDeactivatedEvent = {"type": "realm", "op": "deactivated", "realm_id": realm.id}
         send_event_on_commit(realm, event, active_user_ids(realm.id))
 
         if deletion_delay_days == 0:
-            event = {
+            scrub_event = {
                 "type": "scrub_deactivated_realm",
                 "realm_id": realm.id,
             }
-            queue_json_publish_rollback_unsafe("deferred_work", event)
+            queue_json_publish_rollback_unsafe("deferred_work", scrub_event)
 
     # Don't deactivate the users, as that would lose a lot of state if
     # the realm needs to be reactivated, but do delete their sessions
