@@ -12,7 +12,7 @@ from zerver.actions.users import do_change_is_imported_stub
 from zerver.context_processors import get_realm_from_request, get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
-from zerver.lib.compatibility import is_banned_browser, is_outdated_desktop_app
+from zerver.lib.compatibility import find_mobile_os, is_banned_browser, is_outdated_desktop_app
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
 from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.request import RequestNotes
@@ -250,6 +250,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     user_permission_info = get_user_permission_info(user_profile)
     is_firefox_android = "Firefox" in client_user_agent and "Android" in client_user_agent
+    is_ios = find_mobile_os(client_user_agent) == "ios"
 
     response = render(
         request,
@@ -261,6 +262,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "color_scheme": user_permission_info.color_scheme,
             "enable_gravatar": settings.ENABLE_GRAVATAR,
             "is_firefox_android": is_firefox_android,
+            "is_ios": is_ios,
             "s3_avatar_public_url_prefix": settings.S3_AVATAR_PUBLIC_URL_PREFIX
             if settings.LOCAL_UPLOADS_DIR is None
             else "",
