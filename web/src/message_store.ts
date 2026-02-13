@@ -279,6 +279,10 @@ export class ImmutableMessage {
     get_sender_email(): string {
         return this.message.sender_email;
     }
+
+    get_sender_id(): number {
+        return this.message.sender_id;
+    }
 }
 
 export function maybe_get_immutable_message(message_id: number): ImmutableMessage | undefined {
