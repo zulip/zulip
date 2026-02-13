@@ -34,6 +34,7 @@ import * as resize from "./resize.ts";
 import {unresolve_name} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as sub_store from "./sub_store.ts";
@@ -59,6 +60,7 @@ function setup_compose_actions_hooks(): void {
 }
 
 export function initialize(): void {
+    $("input#stream_message_recipient_topic").removeAttr("maxlength");
     // Register hooks for compose_actions.
     setup_compose_actions_hooks();
 
@@ -682,9 +684,40 @@ export function initialize(): void {
         $compose_recipient.addClass("recently-focused");
     });
 
-    $("input#stream_message_recipient_topic").on("input", () => {
+    $("input#stream_message_recipient_topic").on("input", function (this: HTMLElement) {
+        const $input = $(this);
+        let topic = $input.val()?.toString() ?? "";
+
+        if (topic.length > realm.max_topic_length) {
+            topic = topic.slice(0, realm.max_topic_length);
+            $input.val(topic);
+
+            $input.addClass("shake");
+            setTimeout(() => {
+                $input.removeClass("shake");
+            }, 300);
+        }
+
         compose_recipient.update_placeholder_visibility();
         compose_recipient.update_compose_area_placeholder_text();
+    });
+
+    $("input#stream_message_recipient_topic").on("paste", function (this: HTMLElement) {
+        const $input = $(this);
+
+        setTimeout(() => {
+            let topic = $input.val()?.toString() ?? "";
+
+            if (topic.length > realm.max_topic_length) {
+                topic = topic.slice(0, realm.max_topic_length);
+                $input.val(topic);
+
+                $input.addClass("shake");
+                setTimeout(() => {
+                    $input.removeClass("shake");
+                }, 300);
+            }
+        }, 0);
     });
 
     $("#private_message_recipient").on("focus", () => {
