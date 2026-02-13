@@ -403,6 +403,13 @@ select.settings_select {
 
 .config-download-text {
     margin-top: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.bot-list-error {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .user_role,
@@ -440,7 +447,8 @@ select.settings_select {
     width: fit-content;
 }
 
-#bot-edit-form {
+#bot-edit-form,
+#api-key-modal {
     .api-key-details-container,
     .zuliprc-container {
         display: flex;
@@ -452,9 +460,19 @@ select.settings_select {
             align-items: center;
         }
     }
+
+    .modal_text_input {
+        margin-bottom: 0;
+    }
 }
 
 #zuliprc-section {
+    /* Normally all input-group elements have bottom margin of 1.25em.
+    But here the buttons have bottom padding of 0.375em and thus there is
+    already some extra space between this and the section below it, so we
+    reduce the bottom margin by 0.375em. */
+    margin-bottom: 0.875em;
+
     .modal-field-label {
         margin-bottom: 0;
     }

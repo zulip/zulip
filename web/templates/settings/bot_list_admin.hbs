@@ -13,6 +13,7 @@
     </div>
     <div class="tab-container"></div>
     <div id="admin-all-bots-list" class="bot-settings-section user-or-bot-settings-section" data-bot-settings-section="all-bots">
+        <div class="bot-list-error alert"></div>
         {{> bot_list
           section_name="all_bots"
           section_title=(t "All bots")
@@ -20,6 +21,7 @@
           }}
     </div>
     <div id="admin-your-bots-list" class="bot-settings-section user-or-bot-settings-section" data-bot-settings-section="your-bots">
+        <div class="bot-list-error alert"></div>
         <div id="botserverrc-text-container" class="config-download-text">
             <span>{{t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
             <a type="submit" download="botserverrc" id= "hidden-botserverrc-download" hidden></a>
@@ -27,7 +29,7 @@
               id= "download-botserverrc-file"
               icon="download"
               intent="brand"
-              custom_classes="tippy-zulip-delayed-tooltip inline"
+              custom_classes="tippy-zulip-delayed-tooltip"
               data-tippy-content=(t "Download botserverrc")
               }}
         </div>

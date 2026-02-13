@@ -44,6 +44,7 @@ import * as modals from "./modals.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -870,11 +871,9 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         disable_role_dropdown: !current_user.is_admin || (bot.is_owner && !current_user.is_owner),
         bot_avatar_url: bot.avatar_url,
         bot_type: settings_data.bot_type_id_to_string(bot.bot_type),
-        api_key: bot_user.api_key,
         is_incoming_webhook_bot: bot.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
         max_bot_name_length: people.MAX_USER_NAME_LENGTH,
         realm_bot_domain: realm.realm_bot_domain,
-        zuliprc: "zuliprc",
     });
     $container.append($(modal_content_html));
     let avatar_widget: UploadWidget;
@@ -1113,13 +1112,39 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             user_deactivation_ui.confirm_reactivation(user_id, handle_confirm, true);
         });
 
-        $("#bot-edit-form").on("click", ".generate_url_for_integration", (e) => {
+        $("#bot-edit-form").on(
+            "click",
+            ".generate_url_for_integration",
+            function (this: HTMLElement, e) {
+                e.preventDefault();
+                e.stopPropagation();
+                assert(bot !== undefined);
+                const $button = $(this);
+                void (async () => {
+                    const api_key = await bot_helper.fetch_bot_api_key(
+                        bot.user_id,
+                        $("#bot-edit-form-error"),
+                        $button,
+                    );
+                    if (!api_key) {
+                        scroll_util.scroll_element_into_container(
+                            $("#bot-edit-form-error"),
+                            $("#user-profile-modal .modal__body"),
+                        );
+                        return;
+                    }
+                    integration_url_modal.show_generate_integration_url_modal(api_key);
+                })();
+            },
+        );
+
+        $("#bot-edit-form").on("click", ".show-api-key", (e) => {
             e.preventDefault();
             e.stopPropagation();
             assert(bot !== undefined);
-            const current_bot_data = bot_data.get(bot.user_id);
-            assert(current_bot_data !== undefined);
-            integration_url_modal.show_generate_integration_url_modal(current_bot_data.api_key);
+            void (async () => {
+                await bot_helper.show_api_key_modal(bot.user_id);
+            })();
         });
     }
 }
@@ -1689,6 +1714,4 @@ export function initialize(): void {
             show_check_icon: true,
         });
     });
-
-    bot_helper.initialize_clipboard_handlers();
 }

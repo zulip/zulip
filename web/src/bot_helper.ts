@@ -3,20 +3,29 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import render_bot_api_key_details from "../templates/settings/bot_api_key_details.hbs";
+
 import * as bot_data from "./bot_data.ts";
+import type {Bot} from "./bot_data.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
+import * as clipboard_handler from "./clipboard_handler.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as dialog_widget from "./dialog_widget.ts";
+import {$t_html} from "./i18n.ts";
+import * as scroll_util from "./scroll_util.ts";
 import {realm} from "./state_data.ts";
+import * as ui_report from "./ui_report.ts";
 
 export function validate_bot_short_name(value: string): boolean {
     // Adapted from Django's EmailValidator
     return /^[\w!#$%&'*+/=?^`{|}~-]+(\.[\w!#$%&'*+/=?^`{|}~-]+)*$/i.test(value);
 }
 
-export function generate_zuliprc_url(bot_id: number): string {
+export function generate_zuliprc_url(bot_id: number, api_key: string): string {
     const bot = bot_data.get(bot_id);
     assert(bot !== undefined);
-    const data = generate_zuliprc_content(bot);
+    const data = generate_zuliprc_content({...bot, api_key});
     return encode_zuliprc_as_url(data);
 }
 
@@ -54,10 +63,46 @@ export function generate_zuliprc_content(bot: {
     );
 }
 
-export function initialize_clipboard_handlers(): void {
+export async function fetch_bot_api_key(
+    bot_id: number,
+    $error_element: JQuery,
+    $trigger?: JQuery,
+): Promise<string | null> {
+    try {
+        if ($trigger !== undefined) {
+            buttons.show_button_loading_indicator($trigger);
+            $trigger.prop("disabled", true);
+        }
+        const raw_data = await channel.get({
+            url: `/json/bots/${bot_id}/api_key`,
+            error(xhr) {
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $error_element);
+            },
+        });
+
+        const data = z
+            .object({
+                api_key: z.string(),
+                msg: z.string(),
+                result: z.string(),
+            })
+            .parse(raw_data);
+
+        return data.api_key;
+    } catch {
+        return null;
+    } finally {
+        if ($trigger !== undefined) {
+            buttons.hide_button_loading_indicator($trigger);
+            $trigger.prop("disabled", false);
+        }
+    }
+}
+
+function initialize_api_key_clipboard_handlers(): void {
     new ClipboardJS("#copy-api-key-button", {
         text(trigger) {
-            const data = $(trigger).closest("span").attr("data-api-key") ?? "";
+            const data = $(trigger).closest(".bot-api-key-container").attr("data-api-key") ?? "";
             return data;
         },
     }).on("success", (e) => {
@@ -66,21 +111,54 @@ export function initialize_clipboard_handlers(): void {
             show_check_icon: true,
         });
     });
+}
 
-    new ClipboardJS("#copy-zuliprc-config", {
-        text(trigger) {
-            const $bot_info = $(trigger).closest("#bot-edit-form");
-            const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
-            const bot = bot_data.get(bot_id);
-            assert(bot !== undefined);
-            const data = generate_zuliprc_content(bot);
-            return data;
+async function copy_zuliprc_content(bot: Bot, api_key: string): Promise<void> {
+    const zuliprc_content = generate_zuliprc_content({...bot, api_key});
+
+    return new Promise((resolve) => {
+        function handle_copy_event(e: ClipboardEvent): void {
+            e.clipboardData?.setData("text/plain", zuliprc_content);
+            e.preventDefault();
+            resolve();
+        }
+        clipboard_handler.execute_copy(handle_copy_event, zuliprc_content);
+    });
+}
+
+export async function show_api_key_modal(bot_id: number): Promise<void> {
+    const api_key = await fetch_bot_api_key(
+        bot_id,
+        $("#bot-edit-form-error"),
+        $("#bot-edit-form .show-api-key"),
+    );
+
+    if (!api_key) {
+        scroll_util.scroll_element_into_container(
+            $("#bot-edit-form-error"),
+            $("#user-profile-modal .modal__body"),
+        );
+        return;
+    }
+
+    const bot = bot_data.get(bot_id)!;
+    const modal_content_html = render_bot_api_key_details({
+        bot_id,
+        api_key,
+    });
+    dialog_widget.launch({
+        modal_title_html: $t_html(
+            {defaultMessage: "API key for {bot_name}"},
+            {bot_name: bot.full_name},
+        ),
+        modal_content_html,
+        id: "api-key-modal",
+        single_footer_button: true,
+        modal_submit_button_text: $t_html({defaultMessage: "Close"}),
+        on_click() {
+            return;
         },
-    }).on("success", (e) => {
-        assert(e.trigger instanceof HTMLElement);
-        show_copied_confirmation(e.trigger, {
-            show_check_icon: true,
-        });
+        post_render: initialize_api_key_clipboard_handlers,
     });
 }
 
@@ -103,7 +181,7 @@ export function initialize_bot_click_handlers(): void {
                     .parse(data);
 
                 $row.find(".api-key").val(parsed_data.api_key);
-                $row.find("span[data-api-key]").attr("data-api-key", parsed_data.api_key);
+                $row.closest(".bot-api-key-container").attr("data-api-key", parsed_data.api_key);
                 $row.find(".bot-modal-api-key-error").hide();
             },
             error(xhr) {
@@ -116,13 +194,36 @@ export function initialize_bot_click_handlers(): void {
     });
 
     $("body").on("click", "button.download-bot-zuliprc", function () {
-        const $bot_info = $(this).closest("#bot-edit-form");
-        const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
-        const bot_email = $bot_info.attr("data-email");
+        void (async () => {
+            const $bot_info = $(this).closest("#bot-edit-form");
+            const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
+            const bot_email = $bot_info.attr("data-email");
+            const api_key = await fetch_bot_api_key(bot_id, $("#bot-edit-form-error"), $(this));
+            if (!api_key) {
+                return;
+            }
 
-        // Select the <a> element by matching data-email.
-        const $zuliprc_link = $(`.hidden-zuliprc-download[data-email="${bot_email}"]`);
-        $zuliprc_link.attr("href", generate_zuliprc_url(bot_id));
-        $zuliprc_link[0]?.click();
+            // Select the <a> element by matching data-email.
+            const $zuliprc_link = $(`.hidden-zuliprc-download[data-email="${bot_email}"]`);
+            $zuliprc_link.attr("href", generate_zuliprc_url(bot_id, api_key));
+            $zuliprc_link[0]?.click();
+        })();
+    });
+
+    $("body").on("click", "#copy-zuliprc-config", function (this: HTMLElement) {
+        void (async () => {
+            const $bot_info = $(this).closest("#bot-edit-form");
+            const bot_id = Number.parseInt($bot_info.attr("data-user-id")!, 10);
+            const bot = bot_data.get(bot_id)!;
+            const api_key = await fetch_bot_api_key(bot_id, $("#bot-edit-form-error"), $(this));
+            if (!api_key) {
+                return;
+            }
+
+            await copy_zuliprc_content(bot, api_key);
+            show_copied_confirmation(this, {
+                show_check_icon: true,
+            });
+        })();
     });
 }

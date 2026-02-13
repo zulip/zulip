@@ -613,6 +613,19 @@ def regenerate_bot_api_key(
 
 
 @require_human_non_guest_user
+@typed_endpoint_without_parameters
+def get_bot_api_key(
+    request: HttpRequest, user_profile: UserProfile, bot_id: PathOnly[int]
+) -> HttpResponse:
+    bot = access_bot_by_id(user_profile, bot_id)
+
+    json_result = dict(
+        api_key=bot.api_key,
+    )
+    return json_success(request, data=json_result)
+
+
+@require_human_non_guest_user
 @typed_endpoint
 def add_bot_backend(
     request: HttpRequest,
