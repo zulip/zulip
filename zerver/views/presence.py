@@ -51,8 +51,8 @@ def get_presence_backend(
     ):
         raise JsonableError(_("Insufficient permission"))
 
-    presence_dict = get_presence_for_user(target.id)
-    if len(presence_dict) == 0:
+    presence_dict = get_presence_for_user(target.id, slim_presence=False)
+    if not presence_dict:
         raise JsonableError(
             _("No presence data for {user_id_or_email}").format(user_id_or_email=user_id_or_email)
         )
