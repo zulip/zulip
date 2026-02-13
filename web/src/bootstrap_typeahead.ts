@@ -486,11 +486,18 @@ export class Typeahead<ItemType extends string | object> {
             this.$container.show();
         }
 
+        // Set up scroll listener for shadow updates
+        this.setupScrollListener();
+
         return this;
     }
 
     hide(): this {
         this.shown = false;
+
+        // Clean up scroll listener
+        this.removeScrollListener();
+
         if (this.non_tippy_parent_element) {
             this.$container.hide();
         } else {
@@ -597,7 +604,61 @@ export class Typeahead<ItemType extends string | object> {
         // before we render it.
         scroll_util.get_scroll_element(this.$menu);
         scroll_util.get_content_element(this.$menu).empty().append($items);
+
+        // Check if the menu is overflowing and add/remove shadow accordingly
+        // Use a small delay to ensure the DOM is fully updated after simplebar processing
+        setTimeout(() => {
+            this.updateOverflowShadow();
+        }, 0);
+
         return this;
+    }
+
+    updateOverflowShadow(): void {
+        // Check if the typeahead menu content is overflowing and add/remove
+        // the 'overflowing' class accordingly to show/hide the bottom shadow
+
+        // Get the actual scrollable element - this might be wrapped by simplebar
+        const scrollElement = scroll_util.get_scroll_element(this.$menu)[0];
+
+        // Check if there's content that can be scrolled AND if we're not at the bottom
+        const hasOverflow =
+            scrollElement && scrollElement.scrollHeight > scrollElement.clientHeight;
+        const isAtBottom =
+            scrollElement &&
+            Math.abs(
+                scrollElement.scrollHeight - scrollElement.clientHeight - scrollElement.scrollTop,
+            ) < 1;
+
+        if (hasOverflow && !isAtBottom) {
+            this.$container.addClass("overflowing");
+        } else {
+            this.$container.removeClass("overflowing");
+        }
+    }
+
+    onScroll(): void {
+        // Update shadow when user scrolls the typeahead menu
+        this.updateOverflowShadow();
+    }
+
+    setupScrollListener(): void {
+        // Remove any existing scroll listeners first
+        this.removeScrollListener();
+
+        // Attach scroll listener to the actual scrollable element
+        const scrollElement = scroll_util.get_scroll_element(this.$menu);
+        if (scrollElement.length > 0) {
+            scrollElement.on("scroll", this.onScroll.bind(this));
+        }
+    }
+
+    removeScrollListener(): void {
+        // Remove scroll listener from the scrollable element
+        const scrollElement = scroll_util.get_scroll_element(this.$menu);
+        if (scrollElement.length > 0) {
+            scrollElement.off("scroll");
+        }
     }
 
     next(): void {
@@ -668,6 +729,8 @@ export class Typeahead<ItemType extends string | object> {
         for (const event of events) {
             $(this.input_element.$element).off(event);
         }
+        // Clean up any remaining scroll listeners
+        this.removeScrollListener();
     }
 
     resizeHandler(): void {
