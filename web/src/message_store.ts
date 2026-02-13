@@ -229,7 +229,17 @@ export type Message = (
           }
     );
 
-class ImmutableMessage {
+export function maybe_get_clean_reactions(
+    message_id: number,
+): Map<string, MessageCleanReaction> | undefined {
+    const message = get(message_id);
+    if (!message) {
+        return undefined;
+    }
+    return message.clean_reactions;
+}
+
+export class ImmutableMessage {
     private message: Message;
     constructor(message: Message) {
         this.message = message;
