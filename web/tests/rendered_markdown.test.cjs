@@ -12,6 +12,8 @@ const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
+const message_store = zrequire("message_store");
+
 let clipboard_args;
 class Clipboard {
     constructor(...args) {
@@ -32,7 +34,6 @@ const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
 const rows = mock_esm("../src/rows");
-const message_store = mock_esm("../src/message_store");
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => false,
 });
@@ -116,10 +117,12 @@ function set_message_for_message_content($content, value) {
         assert.equal($message_row_[0], $message_row[0]);
         return message_id;
     };
-    message_store.get = (message_id_opt) => {
-        assert.equal(message_id_opt, message_id);
-        return value;
-    };
+    message_store.update_message_cache({
+        message: {
+            id: message_id,
+            ...value,
+        },
+    });
 }
 
 const get_content_element = () => {
