@@ -6,6 +6,7 @@ import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.test import override_settings
 from django.views.decorators.http import require_safe
 
 from confirmation.models import Confirmation
@@ -50,6 +51,7 @@ def clear_emails(request: HttpRequest) -> HttpResponse:
 
 
 @require_safe
+@override_settings(RATE_LIMITING=False)
 def generate_all_emails(request: HttpRequest) -> HttpResponse:
     # We import the Django test client inside the view function,
     # because it isn't needed in production elsewhere, and not
