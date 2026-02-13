@@ -197,6 +197,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         helpOnEmptyStrings: true,
         stopAdvance: true,
         requireHighlight: false,
+        enableMacCtrlNPNavigation: true,
         item_html(item: string, query: string): string {
             return search_pill.generate_pills_html(item, query);
         },
