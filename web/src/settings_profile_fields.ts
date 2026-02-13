@@ -137,7 +137,7 @@ export function field_type_id_to_string(type_id: number): string | undefined {
 // Checking custom profile field type is valid for showing display on user card checkbox field.
 function is_valid_to_display_in_summary(field_type: number): boolean {
     const field_types = realm.custom_profile_field_types;
-    if (field_type === field_types.LONG_TEXT.id || field_type === field_types.USER.id) {
+    if (field_type === field_types.USER.id) {
         return false;
     }
     return true;
