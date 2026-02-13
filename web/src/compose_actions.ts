@@ -97,6 +97,7 @@ function hide_box(): void {
     // the compose box is reopened
     $("#compose-recipient").addClass("low-attention-recipient-row");
     $("#compose").removeClass("compose-box-open");
+    compose_ui.cleanup_mobile_keyboard_handling();
 }
 
 function show_compose_box(opts: ComposeActionsOpts): void {
@@ -238,6 +239,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     }
     compose_ui.maybe_show_scrolling_formatting_buttons("#message-formatting-controls-container");
     compose_validate.validate_and_update_send_button_status();
+    compose_ui.initialize_mobile_keyboard_handling();
 };
 
 export function rewire_complete_starting_tasks(value: typeof complete_starting_tasks): void {

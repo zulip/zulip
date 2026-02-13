@@ -17,6 +17,7 @@ import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
+import * as compose_mobile_keyboard_handler from "./compose_mobile_keyboard_handler.ts";
 import * as compose_state from "./compose_state.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -1431,4 +1432,24 @@ export function render_and_show_preview(
             },
         });
     }
+}
+
+export let initialize_mobile_keyboard_handling = (): void => {
+    compose_mobile_keyboard_handler.initialize_mobile_keyboard_handler();
+};
+
+export function rewire_initialize_mobile_keyboard_handling(
+    value: typeof initialize_mobile_keyboard_handling,
+): void {
+    initialize_mobile_keyboard_handling = value;
+}
+
+export let cleanup_mobile_keyboard_handling = (): void => {
+    compose_mobile_keyboard_handler.cleanup_mobile_keyboard_handler();
+};
+
+export function rewire_cleanup_mobile_keyboard_handling(
+    value: typeof cleanup_mobile_keyboard_handling,
+): void {
+    cleanup_mobile_keyboard_handling = value;
 }

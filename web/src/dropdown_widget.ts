@@ -9,6 +9,7 @@ import render_dropdown_list_container from "../templates/dropdown_list_container
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import * as compose_mobile_keyboard_handler from "./compose_mobile_keyboard_handler.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import {page_params} from "./page_params.ts";
@@ -21,6 +22,10 @@ import * as util from "./util.ts";
 export const DEFAULT_DROPDOWN_HEIGHT = 210;
 /* Default minimum items required to show the search box. */
 export const MIN_ITEMS_TO_SHOW_SEARCH_BOX = 3;
+
+// WeakMap to store offset change handlers for Tippy instances
+const instance_offset_handlers = new WeakMap<tippy.Instance, () => void>();
+
 const noop = (): void => {
     // Empty function for default values.
 };
@@ -226,7 +231,10 @@ export class DropdownWidget {
             top_offset = this.tippy_props.offset[1];
         }
 
-        const window_height = window.innerHeight;
+        // Account for mobile keyboard offset if present
+        const keyboard_offset = compose_mobile_keyboard_handler.get_keyboard_offset();
+
+        const window_height = window.innerHeight - keyboard_offset;
         let dropdown_search_box_and_padding_height = 50;
         if (this.hide_search_box) {
             dropdown_search_box_and_padding_height = 0;
@@ -333,6 +341,13 @@ export class DropdownWidget {
             theme: "dropdown-widget",
             arrow: false,
             onShow: (instance: tippy.Instance) => {
+                // Listen for keyboard offset changes to recalculate position
+                const offset_change_handler = (): void => {
+                    this.adjust_dropdown_position_post_list_render(instance);
+                };
+                compose_mobile_keyboard_handler.on_offset_change(offset_change_handler);
+                instance_offset_handlers.set(instance, offset_change_handler);
+
                 if (util.is_mobile()) {
                     // The dropdown trigger button can be hidden by the
                     // keyboard on mobile or if it is scrolled out of
@@ -721,6 +736,13 @@ export class DropdownWidget {
                 this.on_mount_callback(instance);
             },
             onHidden: (instance: tippy.Instance) => {
+                // Clean up keyboard offset change listener
+                const offset_change_handler = instance_offset_handlers.get(instance);
+                if (offset_change_handler) {
+                    compose_mobile_keyboard_handler.off_offset_change(offset_change_handler);
+                    instance_offset_handlers.delete(instance);
+                }
+
                 if (this.focus_target_on_hidden) {
                     $(this.widget_selector).trigger("focus");
                 }
