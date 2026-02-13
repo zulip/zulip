@@ -1647,6 +1647,30 @@ def upload_file(client: Client) -> None:
     validate_against_openapi_schema(result, "/user_uploads", "post", "200")
 
 
+@openapi_test_function("/thumbnail/status/{realm_id_str}/{filename}:get")
+def check_thumbnail_status(client: Client) -> None:
+    path_to_file = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
+    with open(path_to_file, "rb") as fp:
+        result = client.upload_file(fp)
+
+    uri = result["uri"]
+    parts = uri.split("/")
+    realm_id_str = parts[2]
+    filename = "/".join(parts[3:])
+
+    # {code_example|start}
+    # Check thumbnail status.
+    result = client.call_endpoint(
+        url=f"/thumbnail/status/{realm_id_str}/{filename}",
+        method="GET",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(
+        result, "/thumbnail/status/{realm_id_str}/{filename}", "get", "200"
+    )
+
+
 @openapi_test_function("/users/me/{stream_id}/topics:get")
 def get_stream_topics(client: Client, stream_id: int) -> None:
     # {code_example|start}
@@ -1976,6 +2000,7 @@ def test_invalid_stream_error(client: Client) -> None:
 
 
 def test_messages(client: Client, nonadmin_client: Client) -> None:
+    check_thumbnail_status(client)
     render_message(client)
     message_id, content = send_message(client)
     set_message_edit_typing_status(client, message_id)

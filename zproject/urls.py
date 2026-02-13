@@ -212,7 +212,7 @@ from zerver.views.streams import (
     update_subscriptions_property,
 )
 from zerver.views.submessage import process_submessage
-from zerver.views.thumbnail import backend_serve_thumbnail
+from zerver.views.thumbnail import backend_serve_thumbnail, check_thumbnail_status
 from zerver.views.tusd import handle_tusd_hook
 from zerver.views.typing import send_message_edit_notification_backend, send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
@@ -459,6 +459,11 @@ v1_api_and_json_patterns = [
     rest_path("typing", POST=send_notification_backend),
     # POST sends a message edit typing notification
     rest_path("messages/<int:message_id>/typing", POST=send_message_edit_notification_backend),
+    # Thumbnail metadata API
+    rest_path(
+        "thumbnail/status/<realm_id_str>/<path:filename>",
+        GET=check_thumbnail_status,
+    ),
     # user_uploads -> zerver.views.upload
     rest_path("user_uploads", POST=upload_file_backend),
     rest_path(

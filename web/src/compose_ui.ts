@@ -1357,12 +1357,135 @@ export function show_compose_spinner(): void {
     $(".compose-submit-button").addClass("compose-button-disabled");
 }
 
+let thumbnail_poll_timeout: ReturnType<typeof setTimeout> | null = null;
+let pending_thumbnail_paths = new Set<string>();
+const MAX_THUMBNAIL_RETRIES = 5;
+
+function extract_thumbnail_paths($preview_content: JQuery): Set<string> {
+    const paths = new Set<string>();
+
+    $preview_content.find(".image-loading-placeholder").each(function () {
+        const $img = $(this);
+        const $link = $img.closest("a");
+        const href = $link.attr("href");
+
+        if (href?.startsWith("/user_uploads/")) {
+            paths.add(href.slice("/user_uploads/".length));
+        }
+    });
+
+    return paths;
+}
+
+async function check_thumbnail_status(path_id: string): Promise<boolean> {
+    const thumbnail_status_schema = z.object({
+        has_thumbnail: z.boolean(),
+    });
+
+    try {
+        const response: unknown = await channel.get({
+            url: `/json/thumbnail/status/${path_id}`,
+        });
+        const data = thumbnail_status_schema.parse(response);
+        return data.has_thumbnail;
+    } catch {
+        return false;
+    }
+}
+
+async function poll_thumbnail_status(
+    $preview_container: JQuery,
+    $preview_spinner: JQuery,
+    $preview_content_box: JQuery,
+    content: string,
+    attempt = 1,
+): Promise<void> {
+    if (attempt > MAX_THUMBNAIL_RETRIES) {
+        pending_thumbnail_paths.clear();
+        return;
+    }
+
+    if (pending_thumbnail_paths.size === 0 || !$preview_container.hasClass("preview_mode")) {
+        return;
+    }
+
+    // Check all pending thumbnails in parallel
+    const thumbnails_to_check = [...pending_thumbnail_paths];
+    const thumbnail_status_results = await Promise.all(
+        thumbnails_to_check.map(async (path_id) => ({
+            path_id,
+            ready: await check_thumbnail_status(path_id),
+        })),
+    );
+
+    // Remove thumbnails that are now ready
+    let any_thumbnail_ready = false;
+    for (const {path_id, ready} of thumbnail_status_results) {
+        if (ready) {
+            pending_thumbnail_paths.delete(path_id);
+            any_thumbnail_ready = true;
+        }
+    }
+
+    // We check preview mode again since the user could have exited preview
+    // while we were waiting for the thumbnail status
+    if ($preview_container.hasClass("preview_mode")) {
+        if (any_thumbnail_ready) {
+            render_and_show_preview(
+                $preview_container,
+                $preview_spinner,
+                $preview_content_box,
+                content,
+                false,
+            );
+            return;
+        }
+
+        if (pending_thumbnail_paths.size > 0) {
+            const retry_delay_secs = util.get_retry_backoff_seconds(undefined, attempt, true);
+            thumbnail_poll_timeout = setTimeout(() => {
+                void poll_thumbnail_status(
+                    $preview_container,
+                    $preview_spinner,
+                    $preview_content_box,
+                    content,
+                    attempt + 1,
+                );
+            }, retry_delay_secs * 1000);
+        }
+    }
+}
+
+export function clear_thumbnail_polling(): void {
+    if (thumbnail_poll_timeout !== null) {
+        clearTimeout(thumbnail_poll_timeout);
+        thumbnail_poll_timeout = null;
+    }
+    pending_thumbnail_paths.clear();
+}
+
+// We use this module-level variable to suppress the preview spinner for
+// the next render cycle. We need this state because the preview update
+// is triggered via a global input event listener when we modify the textarea
+// (e.g. cancelling an upload). We cannot pass a "no spinner" argument
+// through the standard event chain because the event listener format is fixed.
+let prevent_next_spinner = false;
+
+export function set_prevent_next_spinner(value: boolean): void {
+    prevent_next_spinner = value;
+}
+
 export function render_and_show_preview(
     $preview_container: JQuery,
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
+    show_spinner = true,
 ): void {
+    if (prevent_next_spinner) {
+        show_spinner = false;
+    }
+
     const preview_render_count = compose_state.get_preview_render_count() + 1;
     compose_state.set_preview_render_count(preview_render_count);
 
@@ -1383,12 +1506,25 @@ export function render_and_show_preview(
 
         $preview_content_box.html(postprocess_content(rendered_preview_html));
         rendered_markdown.update_elements($preview_content_box);
+
+        // Check for thumbnail loading placeholders and start polling
+        clear_thumbnail_polling();
+        pending_thumbnail_paths = extract_thumbnail_paths($preview_content_box);
+
+        if (pending_thumbnail_paths.size > 0) {
+            void poll_thumbnail_status(
+                $preview_container,
+                $preview_spinner,
+                $preview_content_box,
+                content,
+            );
+        }
     }
 
     if (content.length === 0) {
         show_preview($t_html({defaultMessage: "Nothing to preview"}));
     } else {
-        if (markdown.contains_backend_only_syntax(content)) {
+        if (markdown.contains_backend_only_syntax(content) && show_spinner) {
             const $spinner = $preview_spinner.expectOne();
             loading.make_indicator($spinner);
         } else {

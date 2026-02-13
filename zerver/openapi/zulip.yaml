@@ -10322,6 +10322,59 @@ paths:
                         "url": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
                         "filename": "zulip.txt",
                       }
+  /thumbnail/status/{realm_id_str}/{filename}:
+    get:
+      operationId: check-thumbnail-status
+      summary: Check thumbnail status
+      tags: ["messages"]
+      description: |
+        Check whether a thumbnail exists for a specific file uploaded by a user.
+        This endpoint is intended to be polled by clients to determine when
+        thumbnail generation is complete.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-dbb36e).
+      parameters:
+        - name: realm_id_str
+          in: path
+          description: |
+            The realm ID component of the file's `path_id`. If the `path_id` is
+            `1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`, the `realm_id_str` would be `1`.
+          schema:
+            type: integer
+          example: 1
+          required: true
+        - name: filename
+          in: path
+          description: |
+            The file path component of the file's `path_id` (everything
+            after the first `/`). If the `path_id` is
+            `1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`, the `filename`
+            would be `4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`.
+          schema:
+            type: string
+          example: 4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      has_thumbnail:
+                        type: boolean
+                        description: |
+                          A boolean indicating whether the thumbnail exists.
+                    required:
+                      - has_thumbnail
+                    example:
+                      {"msg": "", "result": "success", "has_thumbnail": true}
   /user_uploads/{realm_id_str}/{filename}:
     get:
       operationId: get-file-temporary-url
@@ -10342,7 +10395,8 @@ paths:
         - name: realm_id_str
           in: path
           description: |
-            The ID of the Zulip organization.
+            The realm ID component of the file's `path_id`. If the `path_id` is
+            `1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`, the `realm_id_str` would be `1`.
           schema:
             type: integer
           example: 1
@@ -10350,7 +10404,10 @@ paths:
         - name: filename
           in: path
           description: |
-            Path to the [uploaded file](/api/upload-file).
+            The file path component of the file's `path_id` (everything
+            after the first `/`). If the `path_id` is
+            `1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`, the `filename`
+            would be `4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`.
           schema:
             type: string
           example: 4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt
