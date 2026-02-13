@@ -1077,6 +1077,11 @@ export async function build_move_topic_to_stream_popover(
         }
 
         $topic_input.on("focus", () => {
+            const stream_id = stream_widget_value;
+            if (stream_id && !stream_data.can_create_new_topics_in_stream(stream_id)) {
+                move_topic_to_stream_topic_typeahead?.lookup(false);
+            }
+
             update_topic_input_placeholder();
 
             $topic_input.one("blur", () => {
