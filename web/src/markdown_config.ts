@@ -3,6 +3,7 @@ import * as hash_util from "./hash_util.ts";
 import * as linkifiers from "./linkifiers.ts";
 import type {AbstractMap, MarkdownHelpers} from "./markdown.ts";
 import * as people from "./people.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {Stream} from "./sub_store.ts";
 import * as user_groups from "./user_groups.ts";
@@ -90,4 +91,7 @@ export const get_helpers = (): MarkdownHelpers => ({
 
     // linkifiers
     get_linkifier_map: () => abstract_map(linkifiers.get_linkifier_map()),
+
+    // realm
+    realm_url: realm.realm_url,
 });
