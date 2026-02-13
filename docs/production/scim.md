@@ -61,7 +61,7 @@ The Zulip server-side configuration is straightforward:
 
   Example configuration with the additional option:
 
-  ```
+  ```python
   SCIM_CONFIG = {
      "subdomain": {
         "bearer_token": "<secret token>",
@@ -71,3 +71,31 @@ The Zulip server-side configuration is straightforward:
      }
   }
   ```
+
+- To sync custom profile fields from the SCIM IdP, add
+  `"custom_profile_field_map"` to your client's config dict. This is a
+  dictionary mapping SCIM attribute names to Zulip custom profile field
+  var names. The var name for a custom profile field is the field name
+  in lowercase with spaces replaced by underscores (e.g., "Phone
+  number" becomes `phone_number`).
+
+  Example configuration with custom profile field syncing:
+
+  ```python
+  SCIM_CONFIG = {
+     "subdomain": {
+        "bearer_token": "<secret token>",
+        "scim_client_name": "okta",
+        "name_formatted_included": False,
+        "custom_profile_field_map": {
+            "phoneNumber": "phone_number",
+            "birthday": "birthday",
+        },
+     }
+  }
+  ```
+
+  With this configuration, when the SCIM IdP sends a `phoneNumber`
+  attribute in a User request, its value will be synced to the "Phone
+  number" custom profile field in Zulip. The custom profile fields
+  referenced must already exist in the Zulip organization.
