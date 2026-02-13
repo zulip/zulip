@@ -1,4 +1,5 @@
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
@@ -227,6 +228,35 @@ export type Message = (
               display_reply_to: undefined;
           }
     );
+
+class ImmutableMessage {
+    private message: Message;
+    constructor(message: Message) {
+        this.message = message;
+    }
+
+    get_type(): string {
+        return this.message.type;
+    }
+
+    get_stream_id(): number {
+        assert(this.message.type === "stream");
+        return this.message.stream_id;
+    }
+
+    get_topic_name(): string {
+        assert(this.message.type === "stream");
+        return this.message.topic;
+    }
+}
+
+export function maybe_get_immutable_message(message_id: number): ImmutableMessage | undefined {
+    const message = stored_messages.get(message_id)?.message;
+    if (message) {
+        return new ImmutableMessage(message);
+    }
+    return undefined;
+}
 
 export function update_message_cache(message_data: ProcessedMessage): void {
     // You should only call this from message_helper (or in tests).

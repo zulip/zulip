@@ -62,16 +62,16 @@ export function get_topics_for_message_ids(message_ids: number[]): Map<string, [
     const topics = new Map<string, [number, string]>(); // key = stream_id:topic
     for (const msg_id of message_ids) {
         // message_store still has data on deleted messages when this runs.
-        const message = message_store.get(msg_id);
+        const message = message_store.maybe_get_immutable_message(msg_id);
         if (message === undefined) {
             // We may not have the deleted message cached locally in
             // message_store; if so, we can just skip processing it.
             continue;
         }
-        if (message.type === "stream") {
+        if (message.get_type() === "stream") {
             // Create unique keys for stream_id and topic.
-            const topic_key = message.stream_id + ":" + message.topic;
-            topics.set(topic_key, [message.stream_id, message.topic]);
+            const topic_key = message.get_stream_id() + ":" + message.get_topic_name();
+            topics.set(topic_key, [message.get_stream_id(), message.get_topic_name()]);
         }
     }
     return topics;
