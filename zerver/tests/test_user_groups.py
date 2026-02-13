@@ -3740,7 +3740,7 @@ def test_get_is_user_group_member_status(self: UserGroupAPITestCase) -> None:
     desdemona = self.example_user("desdemona")
     iago = self.example_user("iago")
     othello = self.example_user("othello")
-    bot = self.example_user("webhook_bot")
+    bot = self.example_user("default_bot")
     admins_group = NamedUserGroup.objects.get(
         realm_for_sharding=realm, name=SystemGroups.ADMINISTRATORS, is_system_group=True
     )
@@ -3826,7 +3826,7 @@ def test_get_user_group_members(self: UserGroupAPITestCase) -> None:
     moderators_group = NamedUserGroup.objects.get(
         name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
     )
-    bot = self.example_user("webhook_bot")
+    bot = self.example_user("default_bot")
 
     self.login("iago")
 
@@ -3903,7 +3903,7 @@ def test_get_subgroups_of_user_group(self: UserGroupAPITestCase) -> None:
     moderators_group = NamedUserGroup.objects.get(
         name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
     )
-    bot = self.example_user("webhook_bot")
+    bot = self.example_user("default_bot")
 
     self.login("iago")
 
