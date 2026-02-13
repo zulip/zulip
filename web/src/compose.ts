@@ -17,6 +17,7 @@ import * as compose_validate from "./compose_validate.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import type {PostMessageAPIData} from "./echo.ts";
+import * as markdown from "./markdown.ts";
 import * as message_events from "./message_events.ts";
 import type {LocalMessage} from "./message_helper.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
@@ -381,6 +382,12 @@ export let finish = (scheduling_message = false): boolean | undefined => {
     if (!compose_validate.validate(scheduling_message)) {
         // If the message failed validation, hide compose spinner.
         compose_ui.hide_compose_spinner();
+        return false;
+    }
+
+    const disallowed_group = markdown.get_first_disallowed_group_mention(message_content);
+    if (disallowed_group) {
+        compose_banner.show_user_group_mention_not_allowed_error(disallowed_group);
         return false;
     }
 

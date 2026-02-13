@@ -19,6 +19,7 @@ exports.mock_banners = () => {
     $("#compose_banners .warning").remove = noop;
     $("#compose_banners .error").remove = noop;
     $("#compose_banners .upload_banner").remove = noop;
+    $("#compose_banners .user_group_mention_not_allowed").remove = noop;
 
     const $stub = $.create("stub_to_remove");
     const $cb = $("#compose_banners");
