@@ -1130,11 +1130,19 @@ def bulk_can_access_stream_metadata_user_ids(streams: list[Stream]) -> dict[int,
     result: dict[int, set[int]] = {}
     public_streams = []
     private_streams = []
+    web_public_streams = []
     for stream in streams:
-        if stream.is_public():
+        if stream.is_web_public:
+            web_public_streams.append(stream)
+        elif stream.is_public():
             public_streams.append(stream)
         else:
             private_streams.append(stream)
+
+    if len(web_public_streams) > 0:
+        active_user_id_set = set(active_user_ids(web_public_streams[0].realm_id))
+        for stream in web_public_streams:
+            result[stream.id] = active_user_id_set
 
     if len(public_streams) > 0:
         guest_subscriptions = get_guest_user_ids_for_streams(
