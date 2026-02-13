@@ -209,7 +209,7 @@ function open_uppy_editor(
             assert(uppy_widget !== undefined);
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.save();
         },
-        post_render() {
+        on_show() {
             set_up_uppy_widget(property_name);
             assert(uppy_widget !== undefined);
 

@@ -58,7 +58,7 @@ import * as timerender from "./timerender.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
-import type {UploadWidget} from "./upload_widget.ts";
+import type {UploadFunction, UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_group_picker_pill from "./user_group_picker_pill.ts";
@@ -1161,7 +1161,9 @@ function get_current_values(
     $edit_form: JQuery,
 ): Record<string, unknown> & {user_id?: string | undefined} {
     const raw_current_values = dialog_widget.get_current_values(
-        $edit_form.find("input:not(.datepicker), select, textarea, button, .pill-container"),
+        $edit_form.find(
+            "input:not(.datepicker, .image_file_input), select, textarea, button, .pill-container",
+        ),
     );
     const schema = z.intersection(
         z.object({
@@ -1250,9 +1252,29 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         hide_deactivate_button,
         user_is_only_organization_owner,
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
+        image: person.avatar_url,
     });
 
     $container.append($(modal_content_html));
+
+    const upload_function: UploadFunction = (file: File): void => {
+        const formData = new FormData();
+        assert(csrf_token !== undefined);
+        formData.append("csrfmiddlewaretoken", csrf_token);
+        formData.append("file", file);
+        void channel.post({
+            url: "/json/users/" + encodeURIComponent(user_id) + "/avatar",
+            data: formData,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success() {
+                dialog_widget.close();
+            },
+        });
+    };
+    avatar.build_admin_avatar_widget(user_id, upload_function);
+
     // Set role dropdown and fields user pills
     $("#user-role-select").val(person.role);
     if (!current_user.is_owner) {

@@ -464,7 +464,7 @@ function deactivated_create_table(deactivated_users: number[]): void {
 
 export function update_user_data(
     user_id: number,
-    new_data: {full_name?: string; role?: number},
+    new_data: {full_name?: string; role?: number; avatar_url?: string | null},
 ): void {
     const $user_row = get_user_info_row(user_id);
 
@@ -482,6 +482,11 @@ export function update_user_data(
         if (user_type) {
             $user_row.find(".user_role").text(user_type);
         }
+    }
+
+    if (new_data.avatar_url !== undefined) {
+        const person = people.get_by_user_id(user_id);
+        $user_row.find(".pill-image").attr("src", people.small_avatar_url_for_person(person));
     }
 }
 

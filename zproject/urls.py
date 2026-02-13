@@ -253,6 +253,7 @@ from zerver.views.users import (
     deactivate_bot_backend,
     deactivate_user_backend,
     deactivate_user_own_backend,
+    delete_user_avatar_backend,
     get_bots_backend,
     get_member_backend,
     get_members_backend,
@@ -263,6 +264,7 @@ from zerver.views.users import (
     patch_bot_backend,
     reactivate_user_backend,
     regenerate_bot_api_key,
+    set_user_avatar_backend,
     update_user_by_email_api,
     update_user_by_id_api,
 )
@@ -363,6 +365,11 @@ v1_api_and_json_patterns = [
         GET=get_member_backend,
         PATCH=update_user_by_id_api,
         DELETE=deactivate_user_backend,
+    ),
+    rest_path(
+        "users/<int:user_id>/avatar",
+        POST=set_user_avatar_backend,
+        DELETE=delete_user_avatar_backend,
     ),
     rest_path("users/<int:user_id>/channels", GET=get_subscribed_channels_backend),
     rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),

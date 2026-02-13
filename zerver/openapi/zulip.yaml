@@ -15041,6 +15041,81 @@ paths:
                       }
                     description: |
                       A typical unsuccessful JSON response:
+  /users/{user_id}/avatar:
+    post:
+      operationId: set-user-avatar
+      summary: Upload a user's avatar
+      tags: ["users"]
+      x-requires-administrator: true
+      description: |
+        Upload an avatar for a user.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-53bc78).
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  example: zerver/tests/images/img.png
+              required:
+                - file
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      avatar_url:
+                        type: string
+                        description: |
+                          The URL of the uploaded avatar.
+                example:
+                  result: success
+                  msg: ""
+                  avatar_url: https://secure.gravatar.com/avatar/f3d519f11bd7310cc2b2dfc033f63157
+    delete:
+      operationId: delete-user-avatar
+      summary: Delete a user's avatar
+      tags: ["users"]
+      x-requires-administrator: true
+      description: |
+        Delete a user's avatar (resetting it to the default Gravatar).
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-53bc78).
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      avatar_url:
+                        type: string
+                        description: |
+                          The URL of the gravatar that the user's avatar has been reset to.
+                example:
+                  result: success
+                  msg: ""
+                  avatar_url: https://secure.gravatar.com/avatar/f3d519f11bd7310cc2b2dfc033f63157
   /users/{user_id}:
     get:
       operationId: get-user

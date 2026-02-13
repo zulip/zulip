@@ -1698,6 +1698,38 @@ label.preferences-radio-choice-label {
 }
 
 #edit-user-form {
+    position: relative;
+
+    .image-upload-container {
+        position: absolute;
+        top: 0;
+        right: 0;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100px;
+
+        .image_file_input_error {
+            font-size: 0.8rem;
+            text-align: center;
+            width: 100%;
+            overflow-wrap: break-word;
+        }
+
+        .image_upload_widget,
+        .image-block {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
+    }
+
+    .name_change_container,
+    .email_change_container {
+        margin-right: 110px;
+    }
+
     .person_picker {
         /* Subtract (1px border and 2px of padding) on each side */
         width: calc(var(--modal-input-width) - 6px);
