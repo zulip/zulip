@@ -60,10 +60,89 @@ class RealmFilterTest(ZulipTestCase):
             result, "Group 'id' in linkifier pattern is not present in URL template."
         )
 
-        data["url_template"] = "https://realm.com/my_realm_filter/#hashtag/{id}"
+        data["pattern"] = r"ZUL-(?P<id>\d+)"
+        data["url_template"] = "https://realm.com/my_realm_filter/{id}"
+        data["example_input"] = "no match"
+        data["reverse_template"] = "ZUL-{id}"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Example input does not match the linkifier pattern.")
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+            "reverse_template": "ZUL-{id}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "example_input is required when reverse_template is set.")
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-{id}-x",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Example input does not match reverse_template.")
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-{id",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Invalid reverse_template: missing '}' character.")
+
+        data["reverse_template"] = "ZUL-{}"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Invalid reverse_template: empty field name.")
+
+        data["reverse_template"] = "ZUL-{other}"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result, "Group 'other' in reverse_template is not present in linkifier pattern."
+        )
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/#hashtag/{id}",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-{id}",
+        }
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data["pattern"], "ZUL-15"))
+
+        data = {
+            "pattern": r"ZUL-NEW-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/#hashtag/{id}",
+            "example_input": "ZUL-NEW-42",
+            "reverse_template": "ZUL-NEW-{id}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "ZUL-NEW-42"))
+
+        data = {
+            "pattern": r"ZUL-\{(?P<id>\d+)\}",
+            "url_template": "https://realm.com/my_realm_filter/#hashtag/{id}",
+            "example_input": "ZUL-{15}",
+            "reverse_template": "ZUL-{{{id}}}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "ZUL-{15}"))
+
+        data = {
+            "pattern": "ZUL-15",
+            "url_template": "https://realm.com/example_url",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-15",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        data.pop("example_input")
+        data.pop("reverse_template")
 
         data["pattern"] = r"ZUL2-(?P<id>\d+)"
         data["url_template"] = "https://realm.com/my_realm_filter/?value={id}"
@@ -184,6 +263,8 @@ class RealmFilterTest(ZulipTestCase):
         data = {
             "pattern": "#(?P<id>[0-9]+)",
             "url_template": "https://realm.com/my_realm_filter/issues/{id}",
+            "example_input": "#1234",
+            "reverse_template": "#{id}",
         }
         result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
         self.assert_json_success(result)
@@ -197,6 +278,37 @@ class RealmFilterTest(ZulipTestCase):
         self.assertEqual(
             linkifier[0]["url_template"], "https://realm.com/my_realm_filter/issues/{id}"
         )
+        self.assertEqual(linkifier[0]["example_input"], "#1234")
+
+        # Resetting example_input should not work when reverse_template is set.
+        data["example_input"] = ""
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_error(result, "example_input is required when reverse_template is set.")
+        data.pop("example_input")
+
+        # Resetting reverse_template should work.
+        data["reverse_template"] = ""
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_success(result)
+        data.pop("reverse_template")
+
+        result = self.client_get("/json/realm/linkifiers")
+        linkifier = self.assert_json_success(result)["linkifiers"]
+        self.assert_length(linkifier, 1)
+        self.assertIsNone(linkifier[0]["reverse_template"])
+        self.assertIsNotNone(linkifier[0]["example_input"])
+
+        # Resetting example_input should work once reverse_template has been unset.
+        data["example_input"] = ""
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_success(result)
+        data.pop("example_input")
+
+        result = self.client_get("/json/realm/linkifiers")
+        linkifier = self.assert_json_success(result)["linkifiers"]
+        self.assert_length(linkifier, 1)
+        self.assertIsNone(linkifier[0]["reverse_template"])
+        self.assertIsNone(linkifier[0]["example_input"])
 
         data = {
             "pattern": r"ZUL-(?P<id>\d????)",

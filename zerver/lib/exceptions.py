@@ -231,6 +231,19 @@ class IncompatibleParametersError(JsonableError):
         return _("Unsupported parameter combination: {parameters}")
 
 
+class MissingDependentParameterError(JsonableError):
+    data_fields = ["required_parameter", "set_parameter"]
+
+    def __init__(self, required_parameter: str, set_parameter: str) -> None:
+        self.required_parameter = required_parameter
+        self.set_parameter = set_parameter
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("{required_parameter} is required when {set_parameter} is set.")
+
+
 class CannotDeactivateLastUserError(JsonableError):
     code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
     data_fields = ["is_last_owner", "entity"]

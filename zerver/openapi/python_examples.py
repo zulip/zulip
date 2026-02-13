@@ -666,6 +666,8 @@ def add_realm_filter(client: Client) -> int:
     request = {
         "pattern": "#(?P<id>[0-9]+)",
         "url_template": "https://github.com/zulip/zulip/issues/{id}",
+        "example_input": "#1234",
+        "reverse_template": "#{id}",
     }
     result = client.call_endpoint("/realm/filters", method="POST", request=request)
     # {code_example|end}
@@ -681,6 +683,8 @@ def update_realm_filter(client: Client, filter_id: int) -> None:
     request = {
         "pattern": "#(?P<id>[0-9]+)",
         "url_template": "https://github.com/zulip/zulip/issues/{id}",
+        "example_input": "#1234",
+        "reverse_template": "#{id}",
     }
     result = client.call_endpoint(
         url=f"/realm/filters/{filter_id}", method="PATCH", request=request

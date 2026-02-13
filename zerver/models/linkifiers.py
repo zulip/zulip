@@ -9,12 +9,54 @@ from typing_extensions import override
 
 from zerver.lib import cache
 from zerver.lib.cache import cache_delete, cache_with_key
+from zerver.lib.exceptions import MissingDependentParameterError
 from zerver.lib.per_request_cache import (
     flush_per_request_cache,
     return_same_value_during_entire_request,
 )
 from zerver.lib.types import LinkifierDict
 from zerver.models.realms import Realm
+
+
+def normalize_optional_text(value: str | None) -> str | None:
+    if value is None:
+        return None
+    value = value.strip()
+    return value or None
+
+
+# A function with the same name implements this on the JS side.
+# Please replicate any changes here to that function as well.
+def expand_reverse_template(
+    reverse_template: str, match: "re2._Match[str]", group_set: set[str]
+) -> str:
+    output: list[str] = []
+    index = 0
+    while index < len(reverse_template):
+        if reverse_template.startswith("{{", index):
+            output.append("{")
+            index += 2
+        elif reverse_template.startswith("}}", index):
+            output.append("}")
+            index += 2
+        elif reverse_template[index] == "{":
+            end_index = reverse_template.find("}", index + 1)
+            if end_index == -1:
+                raise ValidationError(_("Invalid reverse_template: missing '}' character."))
+            name = reverse_template[index + 1 : end_index]
+            if not name:
+                raise ValidationError(_("Invalid reverse_template: empty field name."))
+            if name not in group_set:
+                raise ValidationError(
+                    _("Group %(name)r in reverse_template is not present in linkifier pattern."),
+                    params={"name": name},
+                )
+            output.append(match.group(name))
+            index = end_index + 1
+        else:
+            output.append(reverse_template[index])
+            index += 1
+    return "".join(output)
 
 
 def filter_pattern_validator(value: str) -> "re2._Regexp[str]":
@@ -51,6 +93,8 @@ class RealmFilter(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     pattern = models.TextField()
     url_template = models.TextField(validators=[url_template_validator])
+    example_input = models.TextField(blank=True, null=True)
+    reverse_template = models.TextField(blank=True, null=True)
     # Linkifiers are applied in a message/topic in order; the processing order
     # is important when there are overlapping patterns.
     order = models.IntegerField(default=0)
@@ -74,6 +118,21 @@ class RealmFilter(models.Model):
         # Extract variables present in the pattern
         pattern = filter_pattern_validator(self.pattern)
         group_set = set(pattern.groupindex.keys())
+
+        example_input = normalize_optional_text(self.example_input)
+        reverse_template = normalize_optional_text(self.reverse_template)
+
+        if reverse_template is not None and example_input is None:
+            raise MissingDependentParameterError("example_input", "reverse_template")
+
+        if example_input is not None:
+            match = pattern.search(example_input)
+            if match is None:
+                raise ValidationError(_("Example input does not match the linkifier pattern."))
+            elif reverse_template is not None:
+                reversed_input = expand_reverse_template(reverse_template, match, group_set)
+                if reversed_input != example_input:
+                    raise ValidationError(_("Example input does not match reverse_template."))
 
         # Do not continue the check if the url template is invalid to begin with.
         # The ValidationError for invalid template will only be raised by the validator
@@ -118,6 +177,8 @@ def linkifiers_for_realm(realm_id: int) -> list[LinkifierDict]:
             pattern=linkifier.pattern,
             url_template=linkifier.url_template,
             id=linkifier.id,
+            example_input=linkifier.example_input,
+            reverse_template=linkifier.reverse_template,
         )
         for linkifier in RealmFilter.objects.filter(realm_id=realm_id).order_by("order")
     ]

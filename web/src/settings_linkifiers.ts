@@ -43,6 +43,8 @@ function open_linkifier_edit_form(linkifier_id: number): void {
         linkifier_id,
         pattern: linkifier.pattern,
         url_template: linkifier.url_template,
+        example_input: linkifier.example_input ?? "",
+        reverse_template: linkifier.reverse_template ?? "",
     });
 
     function submit_linkifier_form(dialog_widget_id: string): void {
@@ -56,9 +58,23 @@ function open_linkifier_edit_form(linkifier_id: number): void {
             .find<HTMLInputElement>("input#edit-linkifier-url-template")
             .val()!
             .trim();
-        const data = {pattern, url_template};
+        const example_input = $modal
+            .find<HTMLInputElement>("input#edit-linkifier-example-input")
+            .val()!
+            .trim();
+        const reverse_template = $modal
+            .find<HTMLInputElement>("input#edit-linkifier-reverse-template")
+            .val()!
+            .trim();
+        const data = {pattern, url_template, example_input, reverse_template};
         const $pattern_status = $modal.find("#edit-linkifier-pattern-status").expectOne();
         const $template_status = $modal.find("#edit-linkifier-template-status").expectOne();
+        const $example_input_status = $modal
+            .find("#edit-linkifier-example-input-status")
+            .expectOne();
+        const $reverse_template_status = $modal
+            .find("#edit-linkifier-reverse-template-status")
+            .expectOne();
         const $dialog_error_element = $modal.find("#dialog_error").expectOne();
         const opts = {
             success_continuation() {
@@ -75,6 +91,8 @@ function open_linkifier_edit_form(linkifier_id: number): void {
                         parsed.data.errors,
                         $pattern_status,
                         $template_status,
+                        $example_input_status,
+                        $reverse_template_status,
                         $dialog_error_element,
                     );
                 } else {
@@ -127,6 +145,8 @@ function handle_linkifier_api_error(
     errors: Record<string, string[] | undefined>,
     pattern_status: JQuery,
     template_status: JQuery,
+    example_input_status: JQuery,
+    reverse_template_status: JQuery,
     linkifier_status: JQuery,
 ): void {
     // The endpoint uses the Django ValidationError system for error
@@ -144,6 +164,20 @@ function handle_linkifier_api_error(
             $t_html({defaultMessage: "Failed: {error}"}, {error: errors["url_template"][0]}),
             undefined,
             template_status,
+        );
+    }
+    if (errors["example_input"] !== undefined) {
+        ui_report.error(
+            $t_html({defaultMessage: "Failed: {error}"}, {error: errors["example_input"][0]}),
+            undefined,
+            example_input_status,
+        );
+    }
+    if (errors["reverse_template"] !== undefined) {
+        ui_report.error(
+            $t_html({defaultMessage: "Failed: {error}"}, {error: errors["reverse_template"][0]}),
+            undefined,
+            reverse_template_status,
         );
     }
     if (errors["__all__"] !== undefined) {
@@ -169,6 +203,8 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
                 linkifier: {
                     pattern: linkifier.pattern,
                     url_template: linkifier.url_template,
+                    example_input: linkifier.example_input ?? "",
+                    reverse_template: linkifier.reverse_template ?? "",
                     id: linkifier.id,
                 },
                 can_modify: current_user.is_admin,
@@ -250,11 +286,15 @@ export function build_page(): void {
             const $linkifier_status = $("#admin-linkifier-status");
             const $pattern_status = $("#admin-linkifier-pattern-status");
             const $template_status = $("#admin-linkifier-template-status");
+            const $example_input_status = $("#admin-linkifier-example-status");
+            const $reverse_template_status = $("#admin-linkifier-reverse-status");
             const $add_linkifier_button = $(".new-linkifier-form button");
             $add_linkifier_button.prop("disabled", true);
             $linkifier_status.hide();
             $pattern_status.hide();
             $template_status.hide();
+            $example_input_status.hide();
+            $reverse_template_status.hide();
 
             const pattern = String($("#linkifier_pattern").val()).trim();
             const url_template = String($("#linkifier_template").val()).trim();
@@ -277,6 +317,8 @@ export function build_page(): void {
                 success() {
                     $("#linkifier_pattern").val("");
                     $("#linkifier_template").val("");
+                    $("#linkifier_example_input").val("");
+                    $("#linkifier_reverse_template").val("");
                     $add_linkifier_button.prop("disabled", false);
                     ui_report.success(
                         $t_html({defaultMessage: "Custom linkifier added!"}),
@@ -293,6 +335,8 @@ export function build_page(): void {
                             parsed.data.errors,
                             $pattern_status,
                             $template_status,
+                            $example_input_status,
+                            $reverse_template_status,
                             $linkifier_status,
                         );
                     }

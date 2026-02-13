@@ -643,6 +643,18 @@ function add_text_and_select(text: string, $textarea: JQuery<HTMLTextAreaElement
     textarea.setSelectionRange(init_cursor_pos, new_cursor_pos);
 }
 
+function replace_pasted_text(
+    $textarea: JQuery<HTMLTextAreaElement>,
+    pasted_text: string,
+    replacement_text: string,
+): void {
+    // To ensure you can get the actual pasted URL back via the browser
+    // undo feature, we first paste the URL in, then select it, and then
+    // replace it with the nicer markdown syntax.
+    add_text_and_select(pasted_text, $textarea);
+    compose_ui.insert_and_scroll_into_view(replacement_text, $textarea);
+}
+
 export function try_stream_topic_syntax_text(text: string): string | null {
     const stream_topic = hash_util.decode_stream_topic_from_url(text);
 
@@ -799,12 +811,20 @@ export function paste_handler(
                 if (syntax_text) {
                     event.preventDefault();
                     event.stopPropagation();
-                    // To ensure you can get the actual pasted URL back via the browser
-                    // undo feature, we first paste the URL in, then select it, and then
-                    // replace it with the nicer markdown syntax.
-                    add_text_and_select(trimmed_paste_text, $textarea);
-                    compose_ui.insert_and_scroll_into_view(syntax_text + " ", $textarea);
+                    replace_pasted_text($textarea, trimmed_paste_text, syntax_text + " ");
                 }
+                return;
+            }
+        }
+        // Keep this outside the `isUrl(trimmed_paste_text)` code just above.
+        // `reverse_linkify_text` can still transform URL-like text inside a larger
+        // string that is not itself a valid URL, based on our configured url patterns.
+        if (!compose_ui.cursor_inside_code_block($textarea) && !compose_ui.shift_pressed) {
+            const reversed_text = compose_ui.reverse_linkify_text(trimmed_paste_text);
+            if (reversed_text) {
+                event.preventDefault();
+                event.stopPropagation();
+                replace_pasted_text($textarea, trimmed_paste_text, reversed_text);
                 return;
             }
         }
