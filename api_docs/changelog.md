@@ -1,4 +1,8 @@
-# API changelog
+**Feature level 461**
+
+* Incoming webhook bots can now access the `GET /user_groups/{id}/members`,
+  `GET /user_groups/{id}/members/{user_id}`, and `GET /user_groups/{id}/subgroups`
+  endpoints.
 
 This page documents changes to the Zulip Server API over time. See
 also the [Zulip release lifecycle][release-lifecycle] for background

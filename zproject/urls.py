@@ -496,16 +496,17 @@ v1_api_and_json_patterns = [
     rest_path("user_groups/<int:user_group_id>", PATCH=edit_user_group),
     rest_path(
         "user_groups/<int:user_group_id>/members",
-        GET=get_user_group_members,
+        GET=(get_user_group_members, {"allow_incoming_webhooks"}),
         POST=update_user_group_backend,
     ),
     rest_path(
         "user_groups/<int:user_group_id>/subgroups",
         POST=update_subgroups_of_user_group,
-        GET=get_subgroups_of_user_group,
+        GET=(get_subgroups_of_user_group, {"allow_incoming_webhooks"}),
     ),
     rest_path(
-        "user_groups/<int:user_group_id>/members/<int:user_id>", GET=get_is_user_group_member
+        "user_groups/<int:user_group_id>/members/<int:user_id>",
+        GET=(get_is_user_group_member, {"allow_incoming_webhooks"}),
     ),
     rest_path("user_groups/<int:user_group_id>/deactivate", POST=deactivate_user_group),
     # users/me -> zerver.views.user_settings
