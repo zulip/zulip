@@ -40,6 +40,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     "zerver/tests/test_message_topics.py",
     # This is actually email subjects
     "zerver/lib/email_mirror_server.py",
+    "zerver/lib/types.py",
 }
 
 shebang_rules: list["Rule"] = [
