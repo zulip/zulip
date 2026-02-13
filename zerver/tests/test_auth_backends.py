@@ -4045,6 +4045,184 @@ class SAMLAuthBackendTest(SocialAuthBase):
             ],
         )
 
+    def test_external_auth_id_saml_login(self) -> None:
+        """Test that SAML login creates an ExternalAuthID record on first login,
+        and uses it for subsequent logins even if the email changes at the IdP."""
+        hamlet = self.example_user("hamlet")
+        # The test config has attr_user_permanent_id="name_id" (which differs
+        # from attr_email="email"), so ExternalAuthID lookup is active.
+        # The NameID in our SAML fixture equals the email, so the uid is
+        # "test_idp:{email}".
+        expected_uid = f"test_idp:{hamlet.delivery_email}"
+
+        # First login: no ExternalAuthID exists yet. One should be created.
+        self.assertEqual(ExternalAuthID.objects.filter(user=hamlet).count(), 0)
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        with self.assertLogs(self.logger_string, level="INFO"):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], hamlet.delivery_email)
+        self.assertEqual(result.status_code, 302)
+
+        external_auth_ids = list(ExternalAuthID.objects.filter(user=hamlet))
+        self.assert_length(external_auth_ids, 1)
+        self.assertEqual(external_auth_ids[0].external_auth_method_name, "saml:test_idp")
+        self.assertEqual(external_auth_ids[0].external_auth_id, expected_uid)
+
+        # To test ExternalAuthID lookup with email change, we use a separate
+        # "uid" attribute as the permanent_id, so it won't change when email changes.
+        idps_config_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_config_dict["test_idp"]["attr_user_permanent_id"] = "uid"
+        uid_value = "testuid"
+        expected_stable_uid = f"test_idp:{uid_value}"
+
+        # Re-do first login with stable uid config to create the right ExternalAuthID.
+        ExternalAuthID.objects.filter(user=hamlet).delete()
+        with (
+            self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO"),
+        ):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attributes={"uid": [uid_value]},
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], hamlet.delivery_email)
+        external_auth_ids = list(ExternalAuthID.objects.filter(user=hamlet))
+        self.assert_length(external_auth_ids, 1)
+        self.assertEqual(external_auth_ids[0].external_auth_id, expected_stable_uid)
+
+        # Now login with changed email - user should be found by ExternalAuthID and email synced.
+        new_email = "hamlet_new@zulip.com"
+        new_account_data_dict = self.get_account_data_dict(email=new_email, name=self.name)
+        with (
+            self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO") as m,
+        ):
+            result = self.social_auth_test(
+                new_account_data_dict,
+                subdomain="zulip",
+                extra_attributes={"uid": [uid_value]},
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], new_email)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.delivery_email, new_email)
+
+        self.assertIn("has mismatched email. Syncing:", m.output[0])
+
+        # ExternalAuthID should still exist and be the same.
+        self.assertEqual(ExternalAuthID.objects.filter(user=hamlet).count(), 1)
+
+    def test_external_auth_id_saml_email_conflict(self) -> None:
+        """Test that email is NOT synced when another user has the target email."""
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        idps_config_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_config_dict["test_idp"]["attr_user_permanent_id"] = "uid"
+        uid_value = "testuid"
+
+        # Create ExternalAuthID for hamlet.
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        with (
+            self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO"),
+        ):
+            self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attributes={"uid": [uid_value]},
+            )
+        self.assertEqual(ExternalAuthID.objects.filter(user=hamlet).count(), 1)
+
+        # Try to login with othello's email - should find hamlet by ExternalAuthID
+        # but NOT sync the email since othello already has it.
+        othello_email = othello.delivery_email
+        conflict_data = self.get_account_data_dict(email=othello_email, name=self.name)
+        with (
+            self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO") as m,
+        ):
+            result = self.social_auth_test(
+                conflict_data,
+                subdomain="zulip",
+                extra_attributes={"uid": [uid_value]},
+            )
+        self.assertEqual(result.status_code, 302)
+        hamlet.refresh_from_db()
+        # Email should NOT have changed.
+        self.assertEqual(hamlet.delivery_email, self.email)
+        self.assertTrue(
+            any("Can't sync email" in output for output in m.output),
+        )
+
+    def test_external_auth_id_saml_deactivated_user(self) -> None:
+        """Test that a deactivated user can't log in even with ExternalAuthID."""
+        hamlet = self.example_user("hamlet")
+
+        # Create ExternalAuthID for hamlet.
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        with self.assertLogs(self.logger_string, level="INFO"):
+            self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        self.assertEqual(ExternalAuthID.objects.filter(user=hamlet).count(), 1)
+
+        # Deactivate hamlet.
+        do_deactivate_user(hamlet, acting_user=None)
+
+        # Try to log in - should fail with deactivation redirect.
+        with self.assertLogs(self.logger_string, level="INFO") as m:
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(
+            result["Location"],
+            f"{hamlet.realm.url}/login/?" + urlencode({"is_deactivated": hamlet.delivery_email}),
+        )
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    f"Failed login attempt for deactivated account: {hamlet.id}@zulip",
+                    "info",
+                )
+            ],
+        )
+
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_external_auth_id_saml_registration(self) -> None:
+        """Test that registering a new user via SAML creates an ExternalAuthID record."""
+        email = "newuser@zulip.com"
+        name = "New User"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(account_data_dict, subdomain=subdomain, is_signup=True)
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+        )
+        user_profile = get_user_by_delivery_email(email, realm)
+        self.assertTrue(user_profile.is_active)
+        external_auth_ids = list(ExternalAuthID.objects.filter(user=user_profile))
+        self.assert_length(external_auth_ids, 1)
+        self.assertEqual(external_auth_ids[0].external_auth_method_name, "saml:test_idp")
+        self.assertEqual(external_auth_ids[0].external_auth_id, f"test_idp:{email}")
+
 
 class AppleAuthMixin:
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_APPLE_KEY"

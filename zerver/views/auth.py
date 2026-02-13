@@ -170,6 +170,7 @@ def maybe_send_to_registration(
     email: str,
     *,
     desktop_flow_otp: str | None = None,
+    external_auth_id_dict_for_registration: dict[str, str] | None = None,
     full_name: str = "",
     full_name_validated: bool = False,
     group_memberships_sync_map: dict[str, bool] | None = None,
@@ -334,6 +335,10 @@ def maybe_send_to_registration(
         else:
             prereg_user.invited_as = invited_as
         prereg_user.multiuse_invite = multiuse_obj
+        if external_auth_id_dict_for_registration:
+            method_name, auth_id = next(iter(external_auth_id_dict_for_registration.items()))
+            prereg_user.external_auth_method_name = method_name
+            prereg_user.external_auth_id = auth_id
         prereg_user.save()
 
         confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
@@ -379,6 +384,7 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
         "multiuse_object_key",
         "full_name_validated",
         "params_to_store_in_authenticated_session",
+        "external_auth_id_dict_for_registration",
     ]
     for key in dict(kwargs):
         if key not in kwargs_to_pass:

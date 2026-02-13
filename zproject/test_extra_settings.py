@@ -261,7 +261,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, SAMLIdPConfigDict] = {
         "slo_url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/Logout",
         "sp_initiated_logout_enabled": True,
         "x509cert": get_from_file_if_exists("zerver/tests/fixtures/saml/idp.crt"),
-        "attr_user_permanent_id": "email",
+        "attr_user_permanent_id": "name_id",
         "attr_first_name": "first_name",
         "attr_last_name": "last_name",
         "attr_username": "email",
