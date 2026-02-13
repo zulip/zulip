@@ -30,6 +30,7 @@ export type DataType = "number" | "string";
 export type Option = {
     unique_id: number | string;
     name: string;
+    make_italic?: boolean;
     aliases?: string[];
     description?: string;
     is_direct_message?: boolean;
