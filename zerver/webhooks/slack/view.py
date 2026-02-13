@@ -11,6 +11,7 @@ from zerver.data_import.slack_message_conversion import (
     SLACK_USERMENTION_REGEX,
     convert_slack_formatting,
     convert_slack_workspace_mentions,
+    process_slack_block_and_attachment,
     replace_links,
 )
 from zerver.decorator import webhook_view
@@ -262,20 +263,15 @@ def api_slack_webhook(
 
     raw_files = event_dict.get("files")
     files = convert_raw_file_data(raw_files) if raw_files else []
-    raw_text = event_dict.get("text", "").tame(check_string)
+    raw_text = process_slack_block_and_attachment(event_dict)
     text = convert_to_zulip_markdown(raw_text, slack_app_token)
     user_id = event_dict.get("user").tame(check_none_or(check_string))
     if user_id is None:
         # This is likely a Slack integration bot message. The sender of these
-        # messages doesn't have a user profile and would require additional
-        # formatting to handle. Refer to the Slack Incoming Webhook integration
-        # for how to add support for this type of payload.
-        raise UnsupportedWebhookEventTypeError(
-            "integration bot message"
-            if event_dict["subtype"].tame(check_string) == "bot_message"
-            else "unknown Slack event"
-        )
-    sender = get_slack_sender_name(user_id, slack_app_token)
+        # messages doesn't have a user profile.
+        sender = event_dict["username"].tame(check_string)
+    else:
+        sender = get_slack_sender_name(user_id, slack_app_token)
     content = get_message_body(text, sender, files)
 
     # channels_map_to_topics=0 is ported to use PresetUrlOption.CHANNEL_MAPPING
