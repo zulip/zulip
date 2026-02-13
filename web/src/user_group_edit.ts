@@ -84,7 +84,7 @@ const initial_group_filter = FILTERS.ACTIVE_GROUPS;
 let group_list_widget: ListWidget.ListWidget<UserGroup, UserGroup>;
 let group_list_toggler: Toggle;
 
-const GROUP_INFO_BANNER: Banner = {
+export const GROUP_INFO_BANNER: Banner = {
     intent: "info",
     label: $t({
         defaultMessage:
@@ -1378,6 +1378,18 @@ export function set_up_click_handlers(): void {
         e.stopPropagation();
         e.preventDefault();
     });
+
+    $("#groups_overlay").on("click", ".no-groups-to-show .action-button-quiet-neutral", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        group_list_toggler.goto("all-groups");
+    });
+
+    $("#groups_overlay").on("click", ".no-groups-to-show .action-button-quiet-brand", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        open_create_user_group();
+    });
 }
 
 function create_user_group_clicked(): void {
@@ -1750,10 +1762,19 @@ function get_empty_user_group_list_message(
     is_your_groups_tab_active: boolean,
 ): string {
     const is_searching = $("#search_group_name").val() !== "";
-    if (is_searching || current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS) {
+    if (is_searching || current_group_filter !== "Active and deactivated") {
         return $t({defaultMessage: "There are no groups matching your filters."});
     }
 
+    const all_groups = user_groups.get_realm_user_groups(true);
+    const non_system_groups = all_groups.filter((group) => !group.is_system_group);
+    const organization_has_zero_non_system_groups = non_system_groups.length === 0;
+
+    if (is_your_groups_tab_active && organization_has_zero_non_system_groups) {
+        return $t({
+            defaultMessage: "There are no user groups you can view in this organization.",
+        });
+    }
     if (is_your_groups_tab_active) {
         return $t({defaultMessage: "You are not a member of any user groups."});
     }
@@ -1843,13 +1864,28 @@ function setup_dropdown_filters_widget(): void {
 }
 
 function update_filter_widget_visibility(): void {
-    if (user_groups.realm_has_deactivated_user_groups()) {
-        $("#user-group-edit-filter-options").show();
-    } else {
-        $("#user-group-edit-filter-options").hide();
+    const total_groups = user_groups.get_realm_user_groups(true).length;
+    const $filterDropdown = $("#user-group-edit-filter-options");
+    const $searchBox = $("#group_filter");
+
+    if (total_groups === 0) {
+        $searchBox.hide();
+        $filterDropdown.hide();
         update_displayed_groups(FILTERS.ACTIVE_GROUPS);
         if (filters_dropdown_widget) {
             filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
+        }
+    } else {
+        $searchBox.show();
+
+        if (user_groups.realm_has_deactivated_user_groups()) {
+            $filterDropdown.show();
+        } else {
+            $filterDropdown.hide();
+            update_displayed_groups(FILTERS.ACTIVE_GROUPS);
+            if (filters_dropdown_widget) {
+                filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
+            }
         }
     }
 }
@@ -1889,12 +1925,6 @@ export function setup_page(callback: () => void): void {
             $("#groups_overlay_container"),
         );
         $groups_overlay_container.html(groups_overlay_html);
-        update_displayed_groups(initial_group_filter);
-        settings_banner.set_up_banner(
-            $(".group-info-banner"),
-            GROUP_INFO_BANNER,
-            "/help/user-groups",
-        );
 
         settings_banner.set_up_upgrade_banners();
         // Initially as the overlay is build with empty right panel,
