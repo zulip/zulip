@@ -442,6 +442,52 @@ export const user_role_values = {
     },
 };
 
+type provisionalRoleType = Record<string, {code: number; description: string}> & {
+    provisional_member: {code: number; description: string};
+    full_member: {code: number; description: string};
+};
+
+export const user_role_values_with_provisional_member: provisionalRoleType = (() => {
+    const result: [string, {code: number; description: string}][] = [];
+
+    // maintatin the order and replace member with provisional and full member.
+    for (const [role_name, role_info] of Object.entries(user_role_values)) {
+        if (role_name === "member") {
+            result.push(
+                [
+                    "provisional_member",
+                    {
+                        code: 401,
+                        description: $t({defaultMessage: "New member"}),
+                    },
+                ],
+                [
+                    "full_member",
+                    {
+                        code: 402,
+                        description: $t({defaultMessage: "Full member"}),
+                    },
+                ],
+            );
+        } else {
+            result.push([role_name, role_info]);
+        }
+    }
+
+    // override the added members for typesafe.
+    return {
+        ...Object.fromEntries(result),
+        provisional_member: {
+            code: 401,
+            description: $t({defaultMessage: "New member"}),
+        },
+        full_member: {
+            code: 402,
+            description: $t({defaultMessage: "Full member"}),
+        },
+    };
+})();
+
 export const all_org_type_values = {
     // When org_type was added to the database model, 'unspecified'
     // was the default for existing organizations. To discourage
@@ -618,6 +664,13 @@ export const realm_deletion_in_values = {
 
 const user_role_array = Object.values(user_role_values);
 export const user_role_map = new Map(user_role_array.map((role) => [role.code, role.description]));
+
+const user_role_with_provisional_member_array = Object.values(
+    user_role_values_with_provisional_member,
+);
+export const user_role_map_with_provisional_member = new Map(
+    user_role_with_provisional_member_array.map((role) => [role.code, role.description]),
+);
 
 export const preferences_settings_labels = {
     default_language_settings_label: $t({defaultMessage: "Language"}),
