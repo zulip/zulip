@@ -2141,41 +2141,40 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
         db_data: DbData | None = self.zmd.zulip_db_data
         src = rewrite_local_links_to_relative(db_data, src)
         maybe_add_attachment_path_id(src, self.zmd)
-        img.set("data-original-src", src)
 
-        # We try to use image thumbnails for previews of the user
-        # upload images rather than original images when available.
-        if src.startswith("/user_uploads/") and db_data:
-            path_id = src[len("/user_uploads/") :]
+        # We only support Markdown image syntax for uploaded files
+        if not src.startswith("/user_uploads/"):
+            return None
 
-            # We should have pulled the preview data for this image
-            # (even if that's "no preview yet") from the database
-            # before rendering; Else, its header didn't parse as
-            # a valid image type which libvips handles.
-            if path_id not in db_data.user_upload_previews.image_metadata:
-                return None
-            else:
-                assert path_id in db_data.user_upload_previews.image_metadata
-                metadata = db_data.user_upload_previews.image_metadata[path_id]
+        path_id = src[len("/user_uploads/") :]
 
-            # Insert a placeholder image spinner.  We post-process
-            # this content (see rewrite_thumbnailed_images in
-            # zerver.lib.thumbnail), looking specifically for this
-            # tag, and may re-write it into the thumbnail URL if it
-            # already exists when the message is sent.
-            img.set("class", "inline-image image-loading-placeholder")
-            img.set("src", "/static/images/loading/loader-black.svg")
-            img.set(
-                "data-original-dimensions",
-                f"{metadata.original_width_px}x{metadata.original_height_px}",
-            )
-            if metadata.original_content_type:
-                img.set(
-                    "data-original-content-type",
-                    metadata.original_content_type,
-                )
+        # We should have pulled the preview data for this image
+        # (even if that's "no preview yet") from the database
+        # before rendering; Else, its header didn't parse as
+        # a valid image type which libvips handles.
+        if not db_data or path_id not in db_data.user_upload_previews.image_metadata:
+            return None
         else:
-            img.set("src", src)
+            assert path_id in db_data.user_upload_previews.image_metadata
+            metadata = db_data.user_upload_previews.image_metadata[path_id]
+
+        # Insert a placeholder image spinner.  We post-process
+        # this content (see rewrite_thumbnailed_images in
+        # zerver.lib.thumbnail), looking specifically for this
+        # tag, and may re-write it into the thumbnail URL if it
+        # already exists when the message is sent.
+        img.set("data-original-src", src)
+        img.set("class", "inline-image image-loading-placeholder")
+        img.set("src", "/static/images/loading/loader-black.svg")
+        img.set(
+            "data-original-dimensions",
+            f"{metadata.original_width_px}x{metadata.original_height_px}",
+        )
+        if metadata.original_content_type:
+            img.set(
+                "data-original-content-type",
+                metadata.original_content_type,
+            )
 
         return img
 
