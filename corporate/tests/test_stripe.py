@@ -5604,7 +5604,16 @@ class BillingHelpersTest(ZulipTestCase):
             self.assertEqual(next_month(anchor, last), next_)
 
     def test_compute_plan_parameters(self) -> None:
-        # TODO: test rounding down microseconds
+        # Test rounding down microseconds
+        mocked_now = datetime(2024, 1, 1, 12, 0, 0, 654321, tzinfo=timezone.utc)
+        with time_machine.travel(mocked_now, tick=False):
+            anchor, _, _, _ = compute_plan_parameters(
+                CustomerPlan.TIER_CLOUD_STANDARD,
+                CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                None,
+            )
+            expected_anchor = mocked_now.replace(microsecond=0)
+            self.assertEqual(anchor, expected_anchor)
         anchor = datetime(2019, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
         month_later = datetime(2020, 1, 31, 1, 2, 3, tzinfo=timezone.utc)
         year_later = datetime(2020, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
