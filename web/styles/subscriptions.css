@@ -656,7 +656,7 @@ h4.user_group_setting_subsection_title {
 
 .stream_name_search_section,
 .group_name_search_section {
-    padding: 8px 10px;
+    padding: 0.5em 0.625em; /* 8px 10px at 16px font size */
     display: grid;
     border-bottom: 1px solid var(--color-border-modal-bar);
 }
@@ -895,6 +895,14 @@ h4.user_group_setting_subsection_title {
         /* 2.5625em = width of checkmark (1.5625em) + right margin for checkmark (0.75em)
         + right margin for this element (0.25em) */
         width: calc(100% - 2.5625em);
+    }
+
+    &.system-group .group-info-box {
+        /* We want to align this with the search filter placeholder.
+           Search filter box and group info box have the same left
+           margin in ems. Since filter box has a left padding of 6px,
+           we set the same as left margin here. */
+        margin-left: var(--input-horizontal-padding);
     }
 
     .sub-info-box,

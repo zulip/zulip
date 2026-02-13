@@ -290,7 +290,9 @@ function update_members_panel_ui(group: UserGroup): void {
         group,
         $parent_container: $member_container,
     });
-    update_add_members_elements(group);
+    if (!group.is_system_group) {
+        update_add_members_elements(group);
+    }
 }
 
 export function update_group_management_ui(): void {
@@ -605,7 +607,7 @@ function get_membership_status_context(group: UserGroup): {
 
 function update_membership_status_text(group: UserGroup): void {
     const args = get_membership_status_context(group);
-    const rendered_membership_status = render_user_group_membership_status(args);
+    const rendered_membership_status = render_user_group_membership_status({...args, group});
     const $edit_container = get_edit_container(group.id);
     $edit_container.find(".membership-status").html(rendered_membership_status);
 }
@@ -1071,19 +1073,20 @@ export function show_settings_for(group: UserGroup): void {
     const group_assigned_user_group_permissions =
         settings_components.get_group_assigned_user_group_permissions(group);
 
+    let date_created_string = null;
+    if (group.date_created) {
+        date_created_string = timerender.get_localized_date_or_time_for_format(
+            // We get timestamp in seconds from the API but timerender
+            // needs milliseconds.
+            new Date(group.date_created * 1000),
+            "dayofyear_year",
+        );
+    }
+
     const html = render_user_group_settings({
         group,
         group_name: user_groups.get_display_group_name(group.name),
-        date_created_string: timerender.get_localized_date_or_time_for_format(
-            // We get timestamp in seconds from the API but timerender
-            // needs milliseconds.
-            //
-            // Note that the 0 value will never be used in practice,
-            // because group.date_created is undefined precisely when
-            // group.creator_id is unset.
-            new Date((group.date_created ?? 0) * 1000),
-            "dayofyear_year",
-        ),
+        date_created_string,
         creator: stream_data.maybe_get_creator_details(group.creator_id),
         is_creator: group.creator_id === current_user.user_id,
         ...get_membership_status_context(group),
@@ -1107,7 +1110,9 @@ export function show_settings_for(group: UserGroup): void {
 
     $edit_container.show();
     show_membership_settings(group);
-    show_general_settings(group);
+    if (!group.is_system_group) {
+        show_general_settings(group);
+    }
 
     update_group_deactivated_banner(group);
 
@@ -1230,12 +1235,22 @@ export function setup_group_list_tab_hash(tab_key_value: string): void {
         return;
     }
 
-    if (tab_key_value === "all-groups") {
-        browser_history.update("#groups/all");
-    } else if (tab_key_value === "your-groups") {
-        browser_history.update("#groups/your");
-    } else {
-        blueslip.debug(`Unknown tab_key_value: ${tab_key_value} for groups overlay.`);
+    switch (tab_key_value) {
+        case "all-groups": {
+            browser_history.update("#groups/all");
+            break;
+        }
+        case "your-groups": {
+            browser_history.update("#groups/your");
+            break;
+        }
+        case "roles": {
+            browser_history.update("#groups/roles");
+            break;
+        }
+        default: {
+            blueslip.debug(`Unknown tab_key_value: ${tab_key_value} for groups overlay.`);
+        }
     }
 }
 
@@ -1587,6 +1602,12 @@ export function change_state(
         return;
     }
 
+    if (section === "roles") {
+        group_list_toggler.goto("roles");
+        empty_right_panel();
+        return;
+    }
+
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         const group_id = Number.parseInt(section, 10);
@@ -1604,7 +1625,9 @@ export function change_state(
 
         if (left_side_tab === undefined) {
             left_side_tab = "all-groups";
-            if (user_groups.is_user_in_group(group_id, current_user.user_id)) {
+            if (group.is_system_group) {
+                left_side_tab = "roles";
+            } else if (user_groups.is_user_in_group(group_id, current_user.user_id)) {
                 left_side_tab = "your-groups";
             }
         }
@@ -1630,15 +1653,28 @@ function compare_by_name(a: UserGroup, b: UserGroup): number {
 
 function redraw_left_panel(tab_name: string): void {
     let groups_list_data;
-    if (tab_name === "all-groups") {
-        groups_list_data = user_groups.get_realm_user_groups(true);
-    } else if (tab_name === "your-groups") {
-        groups_list_data = user_groups.get_user_groups_of_user(people.my_current_user_id(), true);
+    switch (tab_name) {
+        case "all-groups": {
+            groups_list_data = user_groups.get_realm_user_groups(true);
+            groups_list_data.sort(compare_by_name);
+            break;
+        }
+        case "your-groups": {
+            groups_list_data = user_groups.get_user_groups_of_user(
+                people.my_current_user_id(),
+                true,
+            );
+            groups_list_data.sort(compare_by_name);
+            break;
+        }
+        case "roles": {
+            groups_list_data = user_groups.get_system_groups_list();
+            break;
+        }
     }
     if (groups_list_data === undefined) {
         return;
     }
-    groups_list_data.sort(compare_by_name);
     group_list_widget.replace_list_data(groups_list_data);
     update_empty_left_panel_message();
 }
@@ -1709,8 +1745,8 @@ export function add_or_remove_from_group(group: UserGroup, $group_row: JQuery): 
 export function update_empty_left_panel_message(): void {
     // Check if we have any groups in panel to decide whether to
     // display a notice.
-    const is_your_groups_tab_active =
-        get_active_data().$tabs.first().attr("data-tab-key") === "your-groups";
+    const active_tab_key = get_active_data().$tabs.first().attr("data-tab-key");
+    assert(active_tab_key !== undefined);
 
     let current_group_filter =
         z.optional(z.string()).parse(filters_dropdown_widget.value()) ??
@@ -1732,14 +1768,14 @@ export function update_empty_left_panel_message(): void {
 
     const empty_user_group_list_message = get_empty_user_group_list_message(
         current_group_filter,
-        is_your_groups_tab_active,
+        active_tab_key,
     );
 
     const args = {
         empty_user_group_list_message,
         can_create_user_groups:
             settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited,
-        all_groups_tab: !is_your_groups_tab_active,
+        all_groups_tab: active_tab_key === "all-groups",
     };
 
     $(".no-groups-to-show").html(render_user_group_settings_empty_notice(args)).show();
@@ -1747,15 +1783,21 @@ export function update_empty_left_panel_message(): void {
 
 function get_empty_user_group_list_message(
     current_group_filter: string,
-    is_your_groups_tab_active: boolean,
+    active_tab_key: string,
 ): string {
     const is_searching = $("#search_group_name").val() !== "";
     if (is_searching || current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS) {
+        if (active_tab_key === "roles") {
+            return $t({defaultMessage: "There are no roles matching your filters."});
+        }
         return $t({defaultMessage: "There are no groups matching your filters."});
     }
 
-    if (is_your_groups_tab_active) {
+    if (active_tab_key === "your-groups") {
         return $t({defaultMessage: "You are not a member of any user groups."});
+    }
+    if (active_tab_key === "roles") {
+        return $t({defaultMessage: "There are no roles you can view in this organization."});
     }
     return $t({
         defaultMessage: "There are no user groups you can view in this organization.",
@@ -1861,6 +1903,7 @@ export function setup_page(callback: () => void): void {
             values: [
                 {label: $t({defaultMessage: "Your groups"}), key: "your-groups"},
                 {label: $t({defaultMessage: "All groups"}), key: "all-groups"},
+                {label: $t({defaultMessage: "Roles"}), key: "roles"},
             ],
             callback(_label, key) {
                 switch_group_tab(key);
