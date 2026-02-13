@@ -1,6 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_extended_narrow_description_overlay from "../templates/extended_narrow_description_overlay.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_message_view_header from "../templates/message_view_header.hbs";
 
@@ -11,6 +12,7 @@ import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
+import * as popovers from "./popovers.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
@@ -186,10 +188,8 @@ function build_message_view_header(filter: Filter | undefined): void {
 export function initialize(): void {
     render_title_area();
 
-    const hide_stream_settings_button_width_threshold = 620;
     $("body").on("mouseenter mouseleave", ".narrow_description", function (event) {
         const $view_description_elt = $(this);
-        const window_width = $(window).width()!;
         let hover_timeout;
 
         if (event.type === "mouseenter") {
@@ -203,12 +203,6 @@ export function initialize(): void {
                 $(".top-navbar-container").addClass(
                     "top-navbar-container-allow-description-extension",
                 );
-
-                if (window_width <= hide_stream_settings_button_width_threshold) {
-                    $(".message-header-stream-settings-button").hide();
-                    // Let it expand naturally on smaller screens
-                    $view_description_elt.css("width", "");
-                }
             }, 250);
             $view_description_elt.data("hover_timeout", hover_timeout);
         } else if (event.type === "mouseleave") {
@@ -224,15 +218,32 @@ export function initialize(): void {
             setTimeout(() => {
                 $view_description_elt.removeClass("view-description-extended");
                 $view_description_elt.removeClass("leaving-extended-view-description");
-                if (window_width <= hide_stream_settings_button_width_threshold) {
-                    $(".message-header-stream-settings-button").show();
-                    $view_description_elt.css("width", "");
-                } else {
-                    // Reset to flexbox-determined width
-                    $view_description_elt.css("width", "");
-                }
+                // Reset to flexbox-determined width
+                $view_description_elt.css("width", "");
             }, 100);
         }
+    });
+
+    $("body").on("click", ".zulip-icon-notepad-text", () => {
+        const filter = narrow_state.filter();
+        const context = get_message_view_header_context(filter);
+
+        const $header_container = $("#header-container");
+        if ($header_container.find("#extended-narrow-description-overlay").length > 0) {
+            $("#header-container #extended-narrow-description-overlay").remove();
+        }
+
+        const $extended_narrow_description_overlay = $(
+            render_extended_narrow_description_overlay(context),
+        );
+        $("#header-container").append($extended_narrow_description_overlay);
+
+        $("#extended-narrow-description-overlay").addClass("expanded");
+        popovers.hide_all();
+    });
+
+    $("body").on("click", "#extended-narrow-description-overlay-exit", () => {
+        $("#extended-narrow-description-overlay").removeClass("expanded");
     });
 }
 
