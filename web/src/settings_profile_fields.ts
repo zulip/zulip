@@ -569,6 +569,7 @@ function set_up_select_field_edit_form(
                 render_settings_profile_field_choice({
                     text: choice.text,
                     value: choice.value,
+                    is_existing_choice: true,
                 }),
             ),
         );
@@ -667,6 +668,18 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
             "button.delete-choice",
             function (this: HTMLElement) {
                 delete_choice_row_for_edit(this, $profile_field_form, field);
+            },
+        );
+        $edit_profile_field_choices_container.on(
+            "click",
+            "button.edit-choice",
+            function (this: HTMLElement) {
+                $(this)
+                    .closest(".choice-row")
+                    .find("input")
+                    .prop("disabled", false)
+                    .trigger("focus");
+                $(this).hide();
             },
         );
         $profile_field_form.on(
