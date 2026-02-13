@@ -252,6 +252,11 @@ class ImmutableMessage {
     get_reply_to(): string {
         return this.message.reply_to;
     }
+
+    to_user_ids(): string {
+        assert(this.message.type === "private");
+        return this.message.to_user_ids;
+    }
 }
 
 export function maybe_get_immutable_message(message_id: number): ImmutableMessage | undefined {
