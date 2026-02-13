@@ -1,3 +1,10 @@
+:root {
+    /* Navbar height is important to avoid case studies
+       items from overflowing at the bottom. Hence, keep
+       it in sync with the current value. */
+    --navbar-height: 60px;
+}
+
 details summary::-webkit-details-marker {
     /* Hide the default arrow on Safari. */
     display: none;
@@ -312,6 +319,8 @@ details summary::-webkit-details-marker {
 .top-menu-tab-input:checked ~ .top-menu-submenu {
     opacity: 1;
     visibility: visible;
+    max-height: calc(100vh - var(--navbar-height));
+    overflow-y: auto;
 }
 
 .top-menu-submenu-column {
