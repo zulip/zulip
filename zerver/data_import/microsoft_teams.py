@@ -1,18 +1,23 @@
 import logging
 import os
+import shutil
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from email.headerregistry import Address
 from typing import Any, Literal, TypeAlias
 from urllib.parse import SplitResult
 
+import regex
 import requests
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    AttachmentRecordData,
+    UploadFileRequest,
+    UploadRecordData,
     ZerverFieldsT,
     build_message,
     build_realm,
@@ -24,12 +29,17 @@ from zerver.data_import.import_util import (
     build_zerver_realm,
     convert_html_to_text,
     create_converted_data_files,
+    get_attachment_path_and_content,
     get_data_file,
     make_subscriber_map,
+    request_file_stream,
     validate_user_emails_for_import,
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
+from zerver.lib.mime_types import bare_content_type
+from zerver.lib.parallel import run_parallel_queue
+from zerver.lib.partial import partial
 from zerver.models.recipients import Recipient
 from zerver.models.users import UserProfile
 
@@ -60,6 +70,27 @@ class ChannelMetadata:
     is_favorite_by_default: bool
     membership_type: str
     team_id: str
+
+
+@dataclass
+class MessageConversionResult:
+    zerver_messages: list[ZerverFieldsT]
+    zerver_usermessages: list[ZerverFieldsT]
+    upload_records: list[UploadRecordData]
+
+
+@dataclass
+class AttachmentConversionResult:
+    updated_content: str
+    upload_records: list[UploadRecordData]
+
+
+@dataclass
+class ExportMessageAttachmentParameter:
+    realm_id: int
+    message_id: int
+    sender_id: int
+    upload_file_request: UploadFileRequest
 
 
 AddedTeamsT: TypeAlias = dict[str, TeamMetadata]
@@ -174,6 +205,9 @@ class ODataQueryParameter:
 
 
 MICROSOFT_GRAPH_API_URL = "https://graph.microsoft.com/v1.0{endpoint}"
+
+# https://learn.microsoft.com/en-us/graph/api/chatmessagehostedcontent-get
+GRAPH_API_HOSTED_CONTENT_REGEX = r"https://graph\.microsoft\.com/v1\.0/teams/[^/]+/channels/[^/]+/messages/[^/]+/hostedContents/[^/]+/\$value"
 
 
 def get_microsoft_graph_api_data(
@@ -408,19 +442,134 @@ def is_microsoft_teams_event_message(message: MicrosoftTeamsFieldsT) -> bool:
     return message["MessageType"] == "unknownFutureValue" and message["From"] is None
 
 
+def download_and_export_microsoft_teams_upload_file(
+    attachment_records: list[AttachmentRecordData],
+    output_dir: str,
+    args: ExportMessageAttachmentParameter,
+) -> None:
+    upload_file_request = args.upload_file_request
+    response = request_file_stream(
+        upload_file_request.request_url,
+        upload_file_request.params,
+        upload_file_request.headers,
+        **upload_file_request.kwargs,
+    )
+
+    # Don't add the file type extension here. The file path will be remapped
+    # during import and must match the updated URL in the message content.
+    # The actual file's content type will be included in its attachment
+    # record.
+    file_output_path = os.path.join(
+        output_dir, "uploads", f"{upload_file_request.output_file_path_id}"
+    )
+
+    os.makedirs(os.path.dirname(file_output_path), exist_ok=True)
+    with open(file_output_path, "wb") as upload_file:
+        shutil.copyfileobj(response.raw, upload_file)
+
+    raw_content_type = response.headers.get("Content-Type")
+    assert raw_content_type is not None
+
+    # Can't use build_attachment here since Django doesn't support parallel
+    # connection to the db.
+    attachment_records.append(
+        AttachmentRecordData(
+            content_type=bare_content_type(raw_content_type),
+            create_time=os.path.getmtime(file_output_path),
+            file_name=os.path.basename(file_output_path),
+            id=NEXT_ID("attachment"),
+            is_realm_public=True,
+            messages=[args.message_id],
+            owner=args.sender_id,
+            path_id=upload_file_request.output_file_path_id,
+            realm=args.realm_id,
+            scheduled_messages=[],
+            size=os.path.getsize(file_output_path),
+        )
+    )
+
+
+def process_hosted_content_attachments(
+    content: str,
+    do_download_and_export_upload_file: Callable[[ExportMessageAttachmentParameter], None],
+    is_direct_message_type: bool,
+    microsoft_graph_api_token: str,
+    realm_id: int,
+    teams_message_id: str,
+    zulip_message_id: int,
+    zulip_user_id: int,
+) -> AttachmentConversionResult:
+    """
+    "Hosted contents" are message file attachments that can be fetched straight
+    from Microsoft Graph API.
+
+    https://learn.microsoft.com/en-us/graph/api/chatmessagehostedcontent-get
+    """
+    upload_records: list[UploadRecordData] = []
+
+    def export_file_and_get_zulip_url(match: regex.Match[str]) -> str:
+        # Hosted content attachments don't have a user-specified filename.
+        attachment_data = get_attachment_path_and_content("", teams_message_id, realm_id)
+
+        upload_records.append(
+            UploadRecordData(
+                content_type=None,
+                last_modified=float(timezone_now().timestamp()),
+                path=attachment_data.path_id,
+                realm_id=realm_id,
+                s3_path=attachment_data.path_id,
+                size=0,
+                user_profile_id=zulip_user_id,
+            )
+        )
+
+        do_download_and_export_upload_file(
+            ExportMessageAttachmentParameter(
+                realm_id=realm_id,
+                message_id=zulip_message_id,
+                sender_id=zulip_user_id,
+                upload_file_request=UploadFileRequest(
+                    output_file_path_id=attachment_data.path_id,
+                    request_url=match.group(),
+                    params=None,
+                    headers={"Authorization": f"Bearer {microsoft_graph_api_token}"},
+                    kwargs={},
+                ),
+            )
+        )
+        return attachment_data.url
+
+    if is_direct_message_type:
+        # TODO: hosted content URL for private chats have a different format, we
+        # can process it once we support converting direct messages.
+        return AttachmentConversionResult(updated_content=content, upload_records=upload_records)
+    else:
+        updated_content = regex.sub(
+            GRAPH_API_HOSTED_CONTENT_REGEX,
+            export_file_and_get_zulip_url,
+            content,
+        )
+        return AttachmentConversionResult(
+            updated_content=updated_content,
+            upload_records=upload_records,
+        )
+
+
 def process_messages(
     added_teams: dict[str, TeamMetadata],
-    domain_name: str,
     channel_metadata: None | dict[str, ChannelMetadata],
-    is_private: bool,
+    do_download_and_export_upload_file: Callable[[ExportMessageAttachmentParameter], None],
+    domain_name: str,
     messages: list[MicrosoftTeamsFieldsT],
+    microsoft_graph_api_token: str,
     microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT,
     realm: dict[str, Any],
     realm_id: int,
     subscriber_map: dict[int, set[int]],
-) -> tuple[list[ZerverFieldsT], list[ZerverFieldsT]]:
+) -> MessageConversionResult:
     zerver_usermessage: list[ZerverFieldsT] = []
     zerver_messages: list[ZerverFieldsT] = []
+    upload_records: list[UploadRecordData] = []
 
     for message in messages:
         if is_microsoft_teams_event_message(message):
@@ -471,20 +620,42 @@ def process_messages(
             )
 
         message_id = NEXT_ID("message")
+        user_id = microsoft_teams_user_id_to_zulip_user_id[microsoft_teams_sender_id]
+        attachment_result = process_hosted_content_attachments(
+            content=content,
+            do_download_and_export_upload_file=do_download_and_export_upload_file,
+            is_direct_message_type=is_direct_message_type,
+            microsoft_graph_api_token=microsoft_graph_api_token,
+            realm_id=realm_id,
+            teams_message_id=message["Id"],
+            zulip_user_id=user_id,
+            zulip_message_id=message_id,
+        )
+        content = attachment_result.updated_content
+        upload_records += attachment_result.upload_records
+
+        if upload_records != []:
+            has_image = True
+            has_link = True
+            has_attachments = True
+        else:
+            has_image = False
+            has_link = False
+            has_attachments = False
+
         zulip_message = build_message(
             topic_name=topic_name,
             date_sent=get_timestamp_from_message(message),
             message_id=message_id,
             content=content,
             rendered_content=None,
-            user_id=microsoft_teams_user_id_to_zulip_user_id[microsoft_teams_sender_id],
+            user_id=user_id,
             recipient_id=recipient_id,
             realm_id=realm_id,
             is_channel_message=not is_direct_message_type,
-            # TODO: Process links and attachments
-            has_image=False,
-            has_link=False,
-            has_attachment=False,
+            has_image=has_image,
+            has_link=has_link,
+            has_attachment=has_attachments,
             is_direct_message_type=is_direct_message_type,
         )
         zerver_messages.append(zulip_message)
@@ -504,9 +675,10 @@ def process_messages(
             num_skipped,
         )
 
-    return (
-        zerver_messages,
-        zerver_usermessage,
+    return MessageConversionResult(
+        zerver_messages=zerver_messages,
+        zerver_usermessages=zerver_usermessage,
+        upload_records=upload_records,
     )
 
 
@@ -532,13 +704,15 @@ def get_batched_export_message_data(
 def convert_messages(
     added_teams: dict[str, TeamMetadata],
     domain_name: str,
+    microsoft_graph_api_token: str,
     microsoft_teams_user_id_to_zulip_user_id: MicrosoftTeamsUserIdToZulipUserIdT,
     output_dir: str,
+    processes: int,
     realm_id: int,
     realm: dict[str, Any],
     teams_data_dir: str,
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
-) -> None:
+) -> tuple[list[UploadRecordData], list[AttachmentRecordData]]:
     microsoft_teams_channel_metadata: dict[str, ChannelMetadata] = {}
     subscriber_map = make_subscriber_map(
         zerver_subscription=realm["zerver_subscription"],
@@ -567,34 +741,49 @@ def convert_messages(
                 membership_type=team_channel["MembershipType"],
                 team_id=team_id,
             )
-
-    dump_file_id = 1
-    for message_chunk in get_batched_export_message_data(message_file_paths, chunk_size):
-        (zerver_messages, zerver_usermessage) = process_messages(
-            added_teams=added_teams,
-            channel_metadata=microsoft_teams_channel_metadata,
-            domain_name=domain_name,
-            is_private=False,
-            messages=message_chunk,
-            microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
-            subscriber_map=subscriber_map,
-            realm=realm,
-            realm_id=realm_id,
-        )
-
-        create_converted_data_files(
-            dict(zerver_message=zerver_messages, zerver_usermessage=zerver_usermessage),
-            output_dir,
-            f"/messages-{dump_file_id:06}.json",
-        )
-        dump_file_id += 1
+    total_attachment_records: list[AttachmentRecordData] = []
+    total_upload_records: list[UploadRecordData] = []
+    with run_parallel_queue(
+        partial(
+            download_and_export_microsoft_teams_upload_file, total_attachment_records, output_dir
+        ),
+        processes,
+        catch=True,
+        report_every=100,
+        report=lambda count: logging.info("Downloaded %s attachments", count),
+    ) as do_download_and_export_upload_file:
+        dump_file_id = 1
+        for message_chunk in get_batched_export_message_data(message_file_paths, chunk_size):
+            conversion_result = process_messages(
+                added_teams=added_teams,
+                channel_metadata=microsoft_teams_channel_metadata,
+                do_download_and_export_upload_file=do_download_and_export_upload_file,
+                domain_name=domain_name,
+                messages=message_chunk,
+                microsoft_graph_api_token=microsoft_graph_api_token,
+                microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
+                realm=realm,
+                realm_id=realm_id,
+                subscriber_map=subscriber_map,
+            )
+            total_upload_records += conversion_result.upload_records
+            create_converted_data_files(
+                dict(
+                    zerver_message=conversion_result.zerver_messages,
+                    zerver_usermessage=conversion_result.zerver_usermessages,
+                ),
+                output_dir,
+                f"/messages-{dump_file_id:06}.json",
+            )
+            dump_file_id += 1
+    return (total_upload_records, total_attachment_records)
 
 
 def do_convert_directory(
     microsoft_teams_dir: str,
     output_dir: str,
     microsoft_graph_api_token: str,
-    threads: int = 6,
+    processes: int = 6,
 ) -> None:
     os.makedirs(output_dir, exist_ok=True)
     if os.listdir(output_dir):  # nocoverage
@@ -632,23 +821,25 @@ def do_convert_directory(
         teams_data_dir=teams_data_dir,
     )
 
-    convert_messages(
+    upload_records, attachment_records = convert_messages(
         added_teams=added_teams,
         domain_name=domain_name,
+        microsoft_graph_api_token=microsoft_graph_api_token,
         microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
         output_dir=output_dir,
+        processes=processes,
         realm_id=realm_id,
         realm=realm,
         teams_data_dir=teams_data_dir,
     )
 
     create_converted_data_files(realm, output_dir, "/realm.json")
+    create_converted_data_files(upload_records, output_dir, "/uploads/records.json")
+    attachment: dict[str, list[Any]] = {"zerver_attachment": attachment_records}
+    create_converted_data_files(attachment, output_dir, "/attachment.json")
     # TODO:
     create_converted_data_files([], output_dir, "/emoji/records.json")
     create_converted_data_files([], output_dir, "/avatars/records.json")
-    create_converted_data_files([], output_dir, "/uploads/records.json")
-    attachment: dict[str, list[Any]] = {"zerver_attachment": []}
-    create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files([], output_dir, "/realm_icons/records.json")
     do_common_export_processes(output_dir)
 
