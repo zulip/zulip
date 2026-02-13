@@ -8,6 +8,8 @@ import render_widgets_poll_widget_results from "../templates/widgets/poll_widget
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as message_lists from "./message_lists.ts";
+import * as message_live_update from "./message_live_update.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
@@ -43,6 +45,49 @@ export function activate({
         comma_separated_names: people.get_full_names_for_poll_option,
         report_error_function: blueslip.warn,
     });
+
+    function mark_poll_edited(timestamp: number | undefined): void {
+        const should_rerender = !message.poll_edited;
+        message.poll_edited = true;
+        if (timestamp !== undefined) {
+            message.poll_edit_timestamp = timestamp;
+        } else {
+            delete message.poll_edit_timestamp;
+        }
+        if (!should_rerender || message.id === undefined) {
+            return;
+        }
+
+        const can_check_dom = typeof document !== "undefined" && typeof $.contains === "function";
+        const current_list = message_lists.current;
+        if (!can_check_dom || current_list === undefined) {
+            message_live_update.rerender_messages_view_by_message_ids([message.id]);
+            return;
+        }
+
+        const $row = current_list.get_row(message.id);
+        if ($row.length === 0) {
+            return;
+        }
+        if ($.contains(document.body, $row[0]!)) {
+            message_live_update.rerender_messages_view_by_message_ids([message.id]);
+            return;
+        }
+
+        setTimeout(() => {
+            const list = message_lists.current;
+            if (list === undefined) {
+                return;
+            }
+            const $deferred_row = list.get_row(message.id);
+            if ($deferred_row.length === 0) {
+                return;
+            }
+            if ($.contains(document.body, $deferred_row[0]!)) {
+                message_live_update.rerender_messages_view_by_message_ids([message.id]);
+            }
+        }, 0);
+    }
 
     function update_edit_controls(): void {
         const has_question =
@@ -105,6 +150,7 @@ export function activate({
         // Broadcast the new question to our peers.
         const data = poll_data.question_event(new_question);
         if (data) {
+            mark_poll_edited(data.timestamp);
             callback(data);
         }
     }
@@ -125,6 +171,7 @@ export function activate({
         $poll_option_input.val("").trigger("focus");
 
         const data = poll_data.new_option_event(option);
+        mark_poll_edited(data.timestamp);
         callback(data);
     }
 
@@ -235,11 +282,19 @@ export function activate({
         const type = data.type;
         switch (type) {
             case "new_option": {
-                poll_data.handle_new_option_event(sender_id, new_option_schema.parse(data));
+                const parsed = new_option_schema.parse(data);
+                const did_edit = poll_data.handle_new_option_event(sender_id, parsed);
+                if (did_edit) {
+                    mark_poll_edited(parsed.timestamp);
+                }
                 break;
             }
             case "question": {
-                poll_data.handle_question_event(sender_id, question_schema.parse(data));
+                const parsed = question_schema.parse(data);
+                const did_edit = poll_data.handle_question_event(sender_id, parsed);
+                if (did_edit) {
+                    mark_poll_edited(parsed.timestamp);
+                }
                 break;
             }
             case "vote": {

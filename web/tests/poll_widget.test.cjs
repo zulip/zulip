@@ -4,12 +4,18 @@ const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {make_stub} = require("./lib/stub.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
+});
+
+const rerender_messages_stub = make_stub();
+mock_esm("../src/message_live_update", {
+    rerender_messages_view_by_message_ids: rerender_messages_stub.f,
 });
 
 const {PollData} = zrequire("poll_data");
@@ -35,7 +41,14 @@ people.add_active_user(me);
 people.add_active_user(alice);
 people.initialize_current_user(me.user_id);
 
-run_test("PollData my question", () => {
+function reset_rerender_messages_stub() {
+    rerender_messages_stub.num_calls = 0;
+    rerender_messages_stub.last_call_args = undefined;
+}
+
+run_test("PollData my question", ({override}) => {
+    const timestamp = 1700000000;
+    override(Date, "now", () => timestamp * 1000);
     const is_my_poll = true;
     const question = "Favorite color?";
 
@@ -150,6 +163,7 @@ run_test("PollData my question", () => {
         type: "new_option",
         idx: 2,
         option: "new option",
+        timestamp,
     });
 
     const new_question = "Any new plan?";
@@ -157,6 +171,7 @@ run_test("PollData my question", () => {
     assert.deepEqual(question_outbound_event, {
         type: "question",
         question: new_question,
+        timestamp,
     });
 
     const vote_outbound_event = data_holder.vote_event("99,1");
@@ -214,7 +229,10 @@ run_test("wrong person editing question", () => {
     });
 });
 
-run_test("activate another person poll", ({mock_template}) => {
+run_test("activate another person poll", ({mock_template, override}) => {
+    const timestamp = 1700000000;
+    override(Date, "now", () => timestamp * 1000);
+    reset_rerender_messages_stub();
     mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
     mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
 
@@ -225,12 +243,14 @@ run_test("activate another person poll", ({mock_template}) => {
         out_data = data;
     };
 
+    const message = {
+        sender_id: alice.user_id,
+        id: 101,
+    };
     const opts = {
         $elem: $widget_elem,
         callback,
-        message: {
-            sender_id: alice.user_id,
-        },
+        message,
         any_data: {
             widget_type: "poll",
             extra_data: {
@@ -275,19 +295,6 @@ run_test("activate another person poll", ({mock_template}) => {
     assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
     assert.equal($poll_question_header.text(), "What do you want?");
 
-    {
-        /* Testing data sent to server on adding option */
-        $poll_option_input.val("cool choice");
-        out_data = undefined;
-        $poll_option.trigger("click");
-        assert.deepEqual(out_data, {type: "new_option", idx: 1, option: "cool choice"});
-
-        $poll_option_input.val("");
-        out_data = undefined;
-        $poll_option.trigger("click");
-        assert.deepEqual(out_data, undefined);
-    }
-
     const vote_events = [
         {
             sender_id: alice.user_id,
@@ -295,6 +302,7 @@ run_test("activate another person poll", ({mock_template}) => {
                 type: "new_option",
                 idx: 1,
                 option: "release now",
+                timestamp,
             },
         },
         {
@@ -308,6 +316,42 @@ run_test("activate another person poll", ({mock_template}) => {
     ];
 
     handle_events(vote_events);
+    assert.equal(message.poll_edited, true);
+    assert.equal(message.poll_edit_timestamp, timestamp);
+    assert.equal(rerender_messages_stub.num_calls, 1);
+    assert.deepEqual(rerender_messages_stub.get_args("message_ids").message_ids, [message.id]);
+
+    const legacy_option_event = [
+        {
+            sender_id: alice.user_id,
+            data: {
+                type: "new_option",
+                idx: 2,
+                option: "legacy option",
+            },
+        },
+    ];
+    handle_events(legacy_option_event);
+    assert.equal(message.poll_edit_timestamp, undefined);
+    assert.equal(rerender_messages_stub.num_calls, 1);
+
+    {
+        /* Testing data sent to server on adding option */
+        $poll_option_input.val("cool choice");
+        out_data = undefined;
+        $poll_option.trigger("click");
+        assert.deepEqual(out_data, {
+            type: "new_option",
+            idx: 1,
+            option: "cool choice",
+            timestamp,
+        });
+
+        $poll_option_input.val("");
+        out_data = undefined;
+        $poll_option.trigger("click");
+        assert.deepEqual(out_data, undefined);
+    }
 
     {
         /* Testing data sent to server on voting */
@@ -323,14 +367,33 @@ run_test("activate another person poll", ({mock_template}) => {
             data: {
                 type: "question",
                 question: "best plan?",
+                timestamp,
             },
         },
     ];
 
     handle_events(add_question_event);
+    assert.equal(message.poll_edit_timestamp, timestamp);
+
+    const legacy_question_event = [
+        {
+            sender_id: 100,
+            data: {
+                type: "question",
+                question: "legacy question",
+            },
+        },
+    ];
+
+    handle_events(legacy_question_event);
+    assert.equal(message.poll_edit_timestamp, undefined);
+    assert.equal(rerender_messages_stub.num_calls, 1);
 });
 
-run_test("activate own poll", ({mock_template}) => {
+run_test("activate own poll", ({mock_template, override}) => {
+    const timestamp = 1700000000;
+    override(Date, "now", () => timestamp * 1000);
+    reset_rerender_messages_stub();
     mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
     mock_template("widgets/poll_widget_results.hbs", false, () => "widgets/poll_widget_results");
 
@@ -339,12 +402,14 @@ run_test("activate own poll", ({mock_template}) => {
     const callback = (data) => {
         out_data = data;
     };
+    const message = {
+        sender_id: me.user_id,
+        id: 202,
+    };
     const opts = {
         $elem: $widget_elem,
         callback,
-        message: {
-            sender_id: me.user_id,
-        },
+        message,
         any_data: {
             widget_type: "poll",
             extra_data: {
@@ -397,7 +462,15 @@ run_test("activate own poll", ({mock_template}) => {
         $poll_question_input.val("Is it new?");
         out_data = undefined;
         $poll_question_submit.trigger("click");
-        assert.deepEqual(out_data, {type: "question", question: "Is it new?"});
+        assert.deepEqual(out_data, {
+            type: "question",
+            question: "Is it new?",
+            timestamp,
+        });
+        assert.equal(message.poll_edited, true);
+        assert.equal(message.poll_edit_timestamp, timestamp);
+        assert.equal(rerender_messages_stub.num_calls, 1);
+        assert.deepEqual(rerender_messages_stub.get_args("message_ids").message_ids, [message.id]);
 
         assert_visibility();
         assert.ok($poll_question_submit.visible());
@@ -406,5 +479,6 @@ run_test("activate own poll", ({mock_template}) => {
         out_data = undefined;
         $poll_question_submit.trigger("click");
         assert.deepEqual(out_data, undefined);
+        assert.equal(rerender_messages_stub.num_calls, 1);
     }
 });
