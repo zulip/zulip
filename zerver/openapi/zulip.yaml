@@ -14369,6 +14369,20 @@ paths:
                     Enable audible desktop notifications for channel messages.
                   type: boolean
                   example: true
+                enable_reaction_desktop_notifications:
+                  type: boolean
+                  description: |
+                    Enable visual desktop notifications for reactions to messages the user sent.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-57f64c).
+                  example: true
+                enable_reaction_audible_notifications:
+                  type: boolean
+                  description: |
+                    Enable audible desktop notifications for reactions to messages the user sent.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-57f64c).
+                  example: true
                 notification_sound:
                   description: |
                     Notification sound name.
@@ -14688,6 +14702,10 @@ paths:
               enable_stream_push_notifications:
                 contentType: application/json
               enable_stream_audible_notifications:
+                contentType: application/json
+              enable_reaction_desktop_notifications:
+                contentType: application/json
+              enable_reaction_audible_notifications:
                 contentType: application/json
               enable_desktop_notifications:
                 contentType: application/json
@@ -18139,6 +18157,18 @@ paths:
                             type: boolean
                             description: |
                               Enable audible desktop notifications for channel messages.
+                          enable_reaction_desktop_notifications:
+                            type: boolean
+                            description: |
+                              Enable visual desktop notifications for reactions to messages the user sent.
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-57f64c).
+                          enable_reaction_audible_notifications:
+                            type: boolean
+                            description: |
+                              Enable audible desktop notifications for reactions to messages the user sent.
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-57f64c).
                           notification_sound:
                             type: string
                             description: |
@@ -20442,6 +20472,18 @@ paths:
                             type: boolean
                             description: |
                               Enable audible desktop notifications for channel messages.
+                          enable_reaction_desktop_notifications:
+                            type: boolean
+                            description: |
+                              Enable visual desktop notifications for reactions to messages the user sent.
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-57f64c).
+                          enable_reaction_audible_notifications:
+                            type: boolean
+                            description: |
+                              Enable audible desktop notifications for reactions to messages the user sent.
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-57f64c).
                           notification_sound:
                             type: string
                             description: |
@@ -21830,6 +21872,20 @@ paths:
                     the `PATCH /settings/notifications` endpoint.
                   type: boolean
                   example: true
+                enable_reaction_desktop_notifications:
+                  type: boolean
+                  description: |
+                    Enable visual desktop notifications for reactions to messages the user sent.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-57f64c).
+                  example: true
+                enable_reaction_audible_notifications:
+                  type: boolean
+                  description: |
+                    Enable audible desktop notifications for reactions to messages the user sent.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-57f64c).
+                  example: true
                 notification_sound:
                   description: |
                     Notification sound name.
@@ -22215,6 +22271,10 @@ paths:
               enable_stream_push_notifications:
                 contentType: application/json
               enable_stream_audible_notifications:
+                contentType: application/json
+              enable_reaction_desktop_notifications:
+                contentType: application/json
+              enable_reaction_audible_notifications:
                 contentType: application/json
               enable_desktop_notifications:
                 contentType: application/json

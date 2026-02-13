@@ -43,6 +43,7 @@ import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
+import * as reaction_notifications from "./reaction_notifications.ts";
 import * as reactions from "./reactions.ts";
 import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
@@ -255,10 +256,12 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     reactions.add_reaction(event);
+                    reaction_notifications.received_reaction(event);
                     emoji_frequency.update_emoji_frequency_on_add_reaction_event(event);
                     break;
                 case "remove":
                     reactions.remove_reaction(event);
+                    reaction_notifications.close_notification(event.message_id);
                     emoji_frequency.update_emoji_frequency_on_remove_reaction_event(event);
                     break;
                 default:

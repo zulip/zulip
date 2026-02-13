@@ -306,6 +306,8 @@ def json_change_settings(
     enable_offline_email_notifications: Json[bool] | None = None,
     enable_offline_push_notifications: Json[bool] | None = None,
     enable_online_push_notifications: Json[bool] | None = None,
+    enable_reaction_audible_notifications: Json[bool] | None = None,
+    enable_reaction_desktop_notifications: Json[bool] | None = None,
     enable_sounds: Json[bool] | None = None,
     enable_stream_audible_notifications: Json[bool] | None = None,
     enable_stream_desktop_notifications: Json[bool] | None = None,
