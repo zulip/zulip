@@ -17,6 +17,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase, ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.webhooks.common import (
     INVALID_JSON_MESSAGE,
     MISSING_EVENT_HEADER_MESSAGE,
@@ -25,6 +26,7 @@ from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_event_header,
     guess_zulip_user_from_external_account,
+    maybe_auto_resolve_topic,
     standardize_headers,
     validate_webhook_signature,
 )
@@ -200,6 +202,94 @@ class WebhooksCommonTestCase(ZulipTestCase):
         assert message_id is not None
         msg = Message.objects.get(id=message_id)
         self.assertEqual(msg.topic_name(), "Test topic")
+
+
+class TestMaybeAutoResolveTopic(ZulipTestCase):
+    def test_maybe_auto_resolve_topic(self) -> None:
+        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
+        stream = self.make_stream("resolve_test_stream")
+        self.subscribe(webhook_bot, stream.name)
+
+        request = HostRequestMock()
+        request.user = webhook_bot
+        client = Client.objects.get_or_create(name="TestClient")[0]
+        RequestNotes.get_notes(request).client = client
+
+        message_id = check_send_webhook_message(
+            request,
+            webhook_bot,
+            "Bug 123",
+            "Initial message",
+            stream=stream.name,
+        )
+
+        assert message_id is not None
+        message = Message.objects.get(id=message_id)
+        self.assertEqual(message.topic_name(), "Bug 123")
+
+        maybe_auto_resolve_topic(
+            user_profile=webhook_bot,
+            message_id=message_id,
+            topic_name="Bug 123",
+        )
+
+        message.refresh_from_db()
+        self.assertTrue(message.topic_name().startswith("✔"))
+
+    def test_maybe_auto_resolve_topic_already_resolved(self) -> None:
+        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
+        stream = self.make_stream("resolved_topic_stream")
+        self.subscribe(webhook_bot, stream.name)
+
+        request = HostRequestMock()
+        request.user = webhook_bot
+        client = Client.objects.get_or_create(name="TestClient")[0]
+        RequestNotes.get_notes(request).client = client
+
+        message_id = check_send_webhook_message(
+            request,
+            webhook_bot,
+            f"{RESOLVED_TOPIC_PREFIX}Bug 123",
+            "Already resolved message",
+            stream=stream.name,
+        )
+        assert message_id is not None
+
+        maybe_auto_resolve_topic(
+            user_profile=webhook_bot,
+            message_id=message_id,
+            topic_name=f"{RESOLVED_TOPIC_PREFIX}Bug 123",
+        )
+
+        message = Message.objects.get(id=message_id)
+        self.assertEqual(message.topic_name(), f"{RESOLVED_TOPIC_PREFIX}Bug 123")
+
+    def test_maybe_auto_resolve_topic_empty_topic(self) -> None:
+        webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
+        stream = self.make_stream("empty_topic_stream")
+        self.subscribe(webhook_bot, stream.name)
+
+        request = HostRequestMock()
+        request.user = webhook_bot
+        client = Client.objects.get_or_create(name="TestClient")[0]
+        RequestNotes.get_notes(request).client = client
+
+        message_id = check_send_webhook_message(
+            request,
+            webhook_bot,
+            Message.EMPTY_TOPIC_FALLBACK_NAME,
+            "Message in general chat",
+            stream=stream.name,
+        )
+        assert message_id is not None
+        maybe_auto_resolve_topic(
+            user_profile=webhook_bot,
+            message_id=message_id,
+            topic_name="",
+        )
+
+        message = Message.objects.get(id=message_id)
+        self.assertEqual(message.topic_name(), "")
 
 
 class TestGuessZulipUserFromExternalAccount(ZulipTestCase):
