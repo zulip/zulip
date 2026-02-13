@@ -23,6 +23,7 @@ from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     check_add_user_group,
+    do_change_user_group_permission_setting,
     do_deactivate_user_group,
 )
 from zerver.actions.user_settings import do_change_user_setting
@@ -309,23 +310,6 @@ class MarkdownMiscTest(ZulipTestCase):
         mention_data = MentionData(mention_backend, content, message_sender=None)
         self.assertEqual(mention_data.get_group_members(group.id), {hamlet.id})
 
-    def test_bulk_user_group_mentions(self) -> None:
-        realm = get_realm("zulip")
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-        othello = self.example_user("othello")
-        mention_backend = MentionBackend(realm.id)
-
-        content = ""
-        for i in range(5):
-            group_name = f"group{i}"
-            check_add_user_group(realm, group_name, [hamlet, cordelia], acting_user=othello)
-            content += f" @*{group_name}*"
-
-        CONSTANT_QUERY_COUNT = 2  # even if it increases in future, make sure it's constant.
-        with self.assert_database_query_count(CONSTANT_QUERY_COUNT):
-            MentionData(mention_backend, content, message_sender=None)
-
     def test_mention_user_groups_with_common_subgroup(self) -> None:
         # Mention multiple groups (class-A and class-B) with a common sub-group (good-students)
         # and make sure each mentioned group has the expected members
@@ -393,6 +377,157 @@ class MarkdownMiscTest(ZulipTestCase):
         content = "@_*hamletcharacters*, @*hamletcharacters*"
         mention_data = MentionData(mention_backend, content, message_sender=None)
         self.assertEqual(mention_data.get_group_members(hamlet_group.id), {hamlet.id, cordelia.id})
+
+    def test_fetch_group_membership_when_mention_group_permission_changes(self) -> None:
+        # Test we ONLY fetch group membership when sender
+        # is allowed, via direct/indirect membership, to mention that group.
+
+        # This also tests an edge case where a sender's permission changes (i.e. they can't mention that group)
+        # while sending the message and after writing @group_name in compose box, in which case we should NOT fetch
+        # membership.
+        realm = get_realm("zulip")
+
+        # hamlet_group members
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        iago = self.example_user("iago")
+        aaron = self.example_user("aaron")
+        zoe = self.example_user("ZOE")
+        prospero = self.example_user("prospero")
+        othello = self.example_user("othello")
+
+        mention_backend = MentionBackend(realm.id)
+        can_mention_group = check_add_user_group(
+            realm, "can_mention_group", [aaron], acting_user=iago
+        )
+
+        sub_group_1 = check_add_user_group(realm, "sub_group_1", [zoe], acting_user=iago)
+        sub_group_2 = check_add_user_group(realm, "sub_group_2", [prospero], acting_user=iago)
+        hamlet_group = NamedUserGroup.objects.get(realm=realm, name="hamletcharacters")
+        content = "@*hamletcharacters*"
+        hamlet_members_ids = {hamlet.id, cordelia.id}
+
+        # Change permission, so that only can_mention_group (with aaron being the only member)
+        # can mention hamlet_group.
+        do_change_user_group_permission_setting(
+            hamlet_group,
+            "can_mention_group",
+            can_mention_group,
+            acting_user=None,
+        )
+
+        # We should fetch group membership when sender is allowed to mention the group.
+        mention_data = MentionData(mention_backend, content, message_sender=aaron)
+        self.assertEqual(mention_data.get_group_members(hamlet_group.id), hamlet_members_ids)
+
+        # We should NOT fetch group membership when sender is NOT allowed
+        # (only aaron is allowed at this point) to mention the group.
+        mention_data = MentionData(mention_backend, content, message_sender=othello)
+        self.assertEqual(mention_data.get_group_members(hamlet_group.id), set())
+
+        # Add 2 levels of sub-groups to can_mention_group.
+        add_subgroups_to_user_group(can_mention_group, [sub_group_1], acting_user=iago)
+        add_subgroups_to_user_group(sub_group_1, [sub_group_2], acting_user=iago)
+
+        # 3 senders (which are direct/indirect members of can_mention_group)
+        # mention hamlet_group.
+        aaron_mention_data = MentionData(mention_backend, content, message_sender=aaron)
+        zoe_mention_data = MentionData(mention_backend, content, message_sender=zoe)
+        prospero_mention_data = MentionData(mention_backend, content, message_sender=prospero)
+
+        # We should fetch group membership, as all senders are allowed to mention that group.
+        self.assertEqual(aaron_mention_data.get_group_members(hamlet_group.id), hamlet_members_ids)
+        self.assertEqual(zoe_mention_data.get_group_members(hamlet_group.id), hamlet_members_ids)
+        self.assertEqual(
+            prospero_mention_data.get_group_members(hamlet_group.id), hamlet_members_ids
+        )
+
+    def test_fetch_group_membership_for_bulk_mention_groups(self) -> None:
+        # Same as test_fetch_group_membership_when_mention_group_permission_changes
+        # but for bulk mentioning groups in a single message.
+        # This test ensures we do the permission check for bulk groups mentions correctly
+        # and in a constant time.
+        realm = get_realm("zulip")
+
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        hamlet_members_ids = {hamlet.id, cordelia.id}
+        iago = self.example_user("iago")
+        aaron = self.example_user("aaron")
+        zoe = self.example_user("ZOE")
+        othello = self.example_user("othello")
+
+        mention_backend = MentionBackend(realm.id)
+
+        can_mention_group = check_add_user_group(
+            realm, "can_mention_group", [aaron], acting_user=iago
+        )
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        sub_group = check_add_user_group(realm, "sub_group", [zoe], acting_user=iago)
+        add_subgroups_to_user_group(can_mention_group, [sub_group], acting_user=iago)
+        hamlet_group = NamedUserGroup.objects.get(realm=realm, name="hamletcharacters")
+
+        content = "@*hamletcharacters*, "
+        mentioned_groups = []
+
+        for i in range(6):
+            group_name = f"group_{i}"
+            group = check_add_user_group(realm, group_name, [othello], acting_user=iago)
+            mentioned_groups.append(group)
+            content += f"@*{group_name}*, "
+
+        # Bulk mention groups with the default mention permission i.e. SystemGroups.EVERYONE.
+        # We make sure it's constant.
+        with self.assert_database_query_count(2):
+            mention_data = MentionData(mention_backend, content, message_sender=zoe)
+
+        # We should fetch group memberships for all mentioned groups,
+        # since the default is to allow mention by all.
+        self.assertEqual(mention_data.get_group_members(hamlet_group.id), hamlet_members_ids)
+        for group in mentioned_groups:
+            self.assertEqual(mention_data.get_group_members(group.id), {othello.id})
+
+        # Now, change the default permission for each group to allow some groups
+        # to be mentioned by the sender "zoe" through can_mention_group,
+        # but prevent others through moderators_group. This way we can test that
+        # our algorithm correctly and efficiently does the permission
+        # check against different mention permissions for different groups.
+        for i, group in enumerate(mentioned_groups):
+            if i % 2 == 0:
+                do_change_user_group_permission_setting(
+                    group,
+                    "can_mention_group",
+                    can_mention_group,
+                    acting_user=None,
+                )
+            else:
+                do_change_user_group_permission_setting(
+                    group,
+                    "can_mention_group",
+                    moderators_group,
+                    acting_user=None,
+                )
+
+        # Bulk mention groups that have different (non default) mention permissions.
+        # This is one extra query than the previous case;
+        # that extra query is triggered when any or all mentioned group/s
+        # needs a permission check (e.g. not SystemGroups.EVERYONE).
+        # Again, we make sure it's constant.
+        with self.assert_database_query_count(3):
+            mention_data = MentionData(mention_backend, content, message_sender=zoe)
+
+        # We should fetch group membership, ONLY for groups the sender "zoe" is allowed
+        # to mention.
+        self.assertEqual(mention_data.get_group_members(hamlet_group.id), hamlet_members_ids)
+        self.assertEqual(mention_data.get_group_members(mentioned_groups[0].id), {othello.id})
+        self.assertEqual(mention_data.get_group_members(mentioned_groups[1].id), set())
+        self.assertEqual(mention_data.get_group_members(mentioned_groups[2].id), {othello.id})
+        self.assertEqual(mention_data.get_group_members(mentioned_groups[3].id), set())
+        self.assertEqual(mention_data.get_group_members(mentioned_groups[4].id), {othello.id})
+        self.assertEqual(mention_data.get_group_members(mentioned_groups[5].id), set())
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):

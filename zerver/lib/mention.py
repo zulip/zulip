@@ -6,7 +6,7 @@ from re import Match
 from typing import Literal
 
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django_stubs_ext import StrPromise
 
 from zerver.lib.streams import get_content_access_streams
@@ -14,8 +14,8 @@ from zerver.lib.topic import get_latest_message_for_user_in_topic
 from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
+    get_recursive_membership_groups,
     get_root_id_annotated_recursive_subgroups_for_groups,
-    user_has_permission_for_group_setting,
 )
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
@@ -393,37 +393,47 @@ class MentionData:
 
     def init_user_group_data(self, realm_id: int, content: str) -> None:
         self.user_group_name_info: dict[str, NamedUserGroup] = {}
+        # gets group_name by id
+        self.user_group_names: dict[int, str] = {}
         self.user_group_members: dict[int, set[int]] = defaultdict(set)
+        self.allowed_mention_group_ids: set[int] = set()
         user_group_names_mentions = possible_user_group_mentions(content)
         if user_group_names_mentions:
             named_user_groups = NamedUserGroup.objects.filter(
                 realm_for_sharding_id=realm_id, name__in=user_group_names_mentions
+            ).select_related("can_mention_group", "can_mention_group__named_user_group")
+
+            # No filter here as we need user_group_name_info and user_group_names for all groups mentions.
+            for group in named_user_groups:
+                group_name = group.name.lower()
+                self.user_group_name_info[group_name] = group
+                self.user_group_names[group.id] = group_name
+
+            self.allowed_mention_group_ids = bulk_get_groups_sender_can_mention(
+                self.message_sender, named_user_groups
             )
 
-            # No filter here as we need user_group_name_info for all groups mentions.
-            self.user_group_name_info = {group.name.lower(): group for group in named_user_groups}
-
-            # We only fetch group membership mentions that can
+            # We only fetch group memberships that can
             # possibly trigger notifications.
-            filtered_group_ids = [
+            group_ids_to_fetch_memberships_for = [
                 group.id
                 for group in named_user_groups
                 if not group.deactivated
                 and user_group_names_mentions.get(group.name) == "non-silent"
+                and group.id in self.allowed_mention_group_ids
             ]
 
             # Avoid doing a database query if there's nothing to fetch.
-            #
-            # This isn't quite optimal -- we've not checked our user
-            # has permission to mention the group yet.
-            if len(filtered_group_ids) == 0:
+            if len(group_ids_to_fetch_memberships_for) == 0:
                 return
 
             # Fetch membership for the groups filtered above in a
             # single, efficient bulk query, mapping each group to its
             # direct and indirect members.
             for group_root_id, member_id in (
-                get_root_id_annotated_recursive_subgroups_for_groups(filtered_group_ids, realm_id)
+                get_root_id_annotated_recursive_subgroups_for_groups(
+                    group_ids_to_fetch_memberships_for, realm_id
+                )
                 .filter(direct_members__is_active=True)
                 .values_list("root_id", "direct_members")  # type: ignore[misc]  # root_id is an annotated field.
             ):
@@ -449,6 +459,9 @@ class MentionData:
 
     def get_user_group(self, name: str) -> NamedUserGroup | None:
         return self.user_group_name_info.get(name.lower(), None)
+
+    def get_user_group_name(self, group_id: int) -> str:
+        return self.user_group_names.get(group_id, "")
 
     def get_group_members(self, user_group_id: int) -> set[int]:
         return self.user_group_members.get(user_group_id, set())
@@ -482,23 +495,51 @@ def get_user_group_mention_display_name(user_group: NamedUserGroup) -> StrPromis
     return user_group.name
 
 
-def sender_can_mention_group(sender: UserProfile | None, named_group: NamedUserGroup) -> bool:
-    can_mention_group = named_group.can_mention_group
+def bulk_get_groups_sender_can_mention(
+    sender: UserProfile | None, named_user_groups: QuerySet[NamedUserGroup]
+) -> set[int]:
+    # Ids of NamedUserGroup that don't need to be checked against the sender's permission.
+    group_ids_everyone_can_mention = set()
 
-    if (
-        hasattr(can_mention_group, "named_user_group")
-        and can_mention_group.named_user_group.name == SystemGroups.EVERYONE
-    ):
-        return True
+    # Ids of NamedUserGroup that must be checked against the sender's permission.
+    group_ids_requiring_permission_check = set()
+
+    for named_group in named_user_groups:
+        can_mention_group = named_group.can_mention_group
+
+        if (
+            hasattr(can_mention_group, "named_user_group")
+            and can_mention_group.named_user_group.name == SystemGroups.EVERYONE
+        ):
+            group_ids_everyone_can_mention.add(named_group.id)
+        else:
+            group_ids_requiring_permission_check.add(named_group)
+
+    if not group_ids_requiring_permission_check:
+        return group_ids_everyone_can_mention
+
+    setting_config = NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_mention_group"]
 
     assert sender is not None
+    if is_cross_realm_bot_email(sender.delivery_email) or (
+        not setting_config.allow_everyone_group and sender.is_guest
+    ):
+        return group_ids_everyone_can_mention
 
-    if is_cross_realm_bot_email(sender.delivery_email):
-        return False
-
-    return user_has_permission_for_group_setting(
-        can_mention_group.id,
-        sender,
-        NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_mention_group"],
-        direct_member_only=False,
+    # Ids of all direct and indirect groups the sender is a member of.
+    user_recursive_group_ids = set(
+        get_recursive_membership_groups(sender).values_list("id", flat=True)
     )
+
+    # For every named_group, We check if the sender can mention the group
+    # by checking if they are direct/indirect member of that named_group.can_mention_group
+    sender_can_mention_group_ids = {
+        named_group.id
+        for named_group in group_ids_requiring_permission_check
+        if named_group.can_mention_group_id in user_recursive_group_ids
+    }
+
+    # NamedUserGroups allowed to be mention by sender are the union of:
+    # 1- groups that already allow mention by everyone.
+    # 2- groups that required permission check and have passed it for that sender.
+    return sender_can_mention_group_ids | group_ids_everyone_can_mention

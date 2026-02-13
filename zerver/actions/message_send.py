@@ -1923,8 +1923,8 @@ def check_message(
         raise TopicWildcardMentionNotAllowedError
 
     if message_send_dict.rendering_result.mentions_user_group_ids:
-        mentioned_group_ids = list(message_send_dict.rendering_result.mentions_user_group_ids)
-        check_user_group_mention_allowed(sender, mentioned_group_ids)
+        mentioned_group_ids = message_send_dict.rendering_result.mentions_user_group_ids
+        check_user_group_mention_allowed(mentioned_group_ids, message_send_dict.mention_data)
 
     return message_send_dict
 
