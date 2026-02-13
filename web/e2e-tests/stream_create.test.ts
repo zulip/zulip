@@ -108,7 +108,7 @@ async function create_stream(page: Page): Promise<void> {
     );
     const stream_name = await common.get_text_from_selector(
         page,
-        ".stream-header .stream-name .sub-stream-name",
+        ".selected-channel-title-container .stream-name-title",
     );
     const stream_description = await common.get_text_from_selector(
         page,

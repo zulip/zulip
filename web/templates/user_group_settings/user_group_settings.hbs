@@ -22,22 +22,20 @@
         <div class="group_general_settings group_setting_section" data-group-section="general">
             <div class="group-reactivation-error-banner"></div>
             <div class="group-banner"></div>
-            <div class="group-header">
-                <div class="group-name-wrapper">
-                    <span class="group-name" data-tippy-content="{{group.name}}">{{group.name}}</span>
+            <label class="group-setting-label">
+                Description
+            </label>
+            <div class="group-description-field">
+                <div class="user-group-description">
+                    {{> ../user_group_settings/user_group_description
+                      rendered_description=group.description }}
                 </div>
-                <div class="group_change_property_info alert-notification"></div>
                 <div class="button-group">
-                    {{> ../components/icon_button icon="user-group-edit" intent="neutral" custom_classes="tippy-zulip-delayed-tooltip"
+                    {{> ../components/icon_button icon="edit" intent="neutral" custom_classes="tippy-zulip-delayed-tooltip"
                       data-tippy-content=(t 'Change group info') id="open_group_info_modal" }}
                 </div>
+                <div class="group_change_property_info alert-notification"></div>
             </div>
-            <div class="group-description-wrapper">
-                <span class="group-description">
-                    {{group.description}}
-                </span>
-            </div>
-
             <div class="creator_details group_detail_box">
                 {{> ../creator_details .
                   group_id=group.id }}

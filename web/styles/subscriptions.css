@@ -477,18 +477,11 @@ h4.user_group_setting_subsection_title {
                 display: inline-block;
                 margin-left: 5px;
 
+                .deactivated-user-icon,
                 .zulip-icon {
                     font-size: 0.75em; /* 18px at 24px/em */
                 }
             }
-        }
-
-        .user-group-info-title {
-            margin-left: 5px;
-        }
-
-        .deactivated-user-group-icon-right {
-            margin-right: 5px;
         }
     }
 }
@@ -729,11 +722,6 @@ h4.user_group_setting_subsection_title {
 .left .group-name-wrapper .fa-ban,
 .right .group-name .fa-ban {
     font-size: 0.8em;
-    opacity: 0.6;
-}
-
-.deactivated-user-group-icon-right {
-    margin-left: 3px;
     opacity: 0.6;
 }
 
@@ -1135,82 +1123,28 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .group-header,
-    .stream-header {
-        white-space: nowrap;
-        padding-top: 5px;
+    .group_change_property_info,
+    .stream_change_property_info {
+        vertical-align: top;
+        margin: 0 5px 0 0;
+    }
+
+    .group-description-field,
+    .channel-description-field {
         display: flex;
-        align-items: center;
+        /* 10px at 16px */
+        margin: 0 0 0.625em;
 
-        .group-name-wrapper,
-        .stream-name {
-            position: relative;
-            font-size: 1.5em;
-            font-weight: 600;
-            white-space: nowrap;
-            max-width: 90%;
-            flex: auto;
-            min-width: 0;
-            overflow-x: clip;
-            text-overflow: ellipsis;
-
-            .group-name,
-            .sub-stream-name {
-                display: block;
-                width: 100%;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
-
-        #open_group_info_modal {
-            display: flex;
-            align-items: center;
-        }
-
-        .button-group {
-            margin-left: auto;
-
-            /* This icon is narrower in width, we have to explicitly
-               set it's width to 1em so that it vertically aligns with
-               other buttons near it. */
-            .fa-pencil {
-                width: 1em;
-            }
-
-            .deactivate,
-            .reactivate {
-                margin-right: 3px;
-                text-decoration: none;
-            }
-        }
-
-        .large-icon {
-            display: flex;
-            margin-right: 5px;
-
-            &.hash::after {
-                top: -1px;
-                font-size: 1.09em;
-                font-weight: 700;
-            }
-
-            .zulip-icon {
-                font-size: 1.2857em; /* 18px at 14px/em */
-            }
-        }
-
-        .group_change_property_info,
-        .stream_change_property_info {
-            vertical-align: top;
-            margin: 0 5px 0 0;
+        .settings-view-only-textarea {
+            width: calc(var(--modal-input-width) - 1.25em);
         }
     }
 
-    .group-description-wrapper,
+    .user-group-description,
     .stream-description {
         hyphens: auto;
-        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
 
         .no-description {
             font-style: italic;
@@ -1292,8 +1226,22 @@ h4.user_group_setting_subsection_title {
         }
     }
 
+    .user-group-settings-header-actions,
+    .channel-settings-header-actions {
+        .icon-button {
+            font-size: var(--base-font-size-px);
+        }
+    }
+
     .icon-button {
         font-size: 1.2em;
+    }
+
+    .selected-user-group-title-container,
+    .selected-channel-title-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
     }
 }
 
@@ -1502,13 +1450,6 @@ h4.user_group_setting_subsection_title {
             display: block;
             float: right;
             margin-top: 10px;
-        }
-
-        .group-header,
-        .stream-header {
-            .button-group {
-                margin-top: -5px;
-            }
         }
 
         .group_change_property_info,

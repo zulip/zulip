@@ -51,29 +51,28 @@
             <div class="stream-settings-tip-container">
                 {{> stream_settings_tip .}}
             </div>
-            <div class="stream-header">
-                {{> stream_privacy_icon
-                  invite_only=invite_only
-                  is_web_public=is_web_public
-                  is_archived=is_archived }}
-                <div class="stream-name">
-                    <span class="sub-stream-name" data-tippy-content="{{name}}">{{name}}</span>
+            <div class="channel-description-box">
+                <label class="settings-field-label">
+                    {{t "Description" }}
+                    {{> ../help_link_widget link="/help/change-the-channel-description" }}
+                </label>
+                <div class="channel-description-field">
+                    <div class="stream-description">
+                        {{> stream_description
+                          rendered_description=rendered_description
+                          }}
+                    </div>
+                    <div class="stream_change_property_info alert-notification"></div>
+                    <span class="button-group" {{#unless can_change_name_description}}style="display:none"{{/unless}}>
+                        {{> ../components/icon_button
+                          icon="edit"
+                          intent="neutral"
+                          custom_classes="tippy-zulip-delayed-tooltip"
+                          id="open_stream_info_modal"
+                          data-tippy-content=(t 'Edit channel name and description' )
+                          }}
+                    </span>
                 </div>
-                <div class="stream_change_property_info alert-notification"></div>
-                <div class="button-group" {{#unless can_change_name_description}}style="display:none"{{/unless}}>
-                    {{> ../components/icon_button
-                      icon="edit"
-                      intent="neutral"
-                      custom_classes="tippy-zulip-delayed-tooltip"
-                      id="open_stream_info_modal"
-                      data-tippy-content=(t 'Edit channel name and description' )
-                      }}
-                </div>
-            </div>
-            <div class="stream-description">
-                {{> stream_description
-                  rendered_description=rendered_description
-                  }}
             </div>
             <div class="creator_details stream_details_box">
                 {{> ../creator_details .}}
