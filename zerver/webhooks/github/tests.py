@@ -479,7 +479,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__unassigned", expected_topic_name, expected_message)
 
     def test_pull_request_ready_for_review_msg(self) -> None:
-        expected_message = "**Hypro999** has marked [PR #2](https://github.com/Hypro999/temp-test-github-webhook/pull/2) as ready for review."
+        expected_message = "Hypro999 has marked [PR #2](https://github.com/Hypro999/temp-test-github-webhook/pull/2) as ready for review."
         self.check_webhook(
             "pull_request__ready_for_review",
             "temp-test-github-webhook / PR #2 Test",
@@ -487,7 +487,7 @@ class GitHubWebhookTest(WebhookTestCase):
         )
 
     def test_pull_request_review_requested_msg(self) -> None:
-        expected_message = "**eeshangarg** requested [showell](https://github.com/showell) for a review on [PR #1](https://github.com/eeshangarg/Scheduler/pull/1)."
+        expected_message = "eeshangarg requested [showell](https://github.com/showell) for a review on [PR #1](https://github.com/eeshangarg/Scheduler/pull/1)."
         self.check_webhook(
             "pull_request__review_requested",
             "Scheduler / PR #1 This is just a test commit",
@@ -495,7 +495,7 @@ class GitHubWebhookTest(WebhookTestCase):
         )
 
     def test_pull_request__review_requested_team_reviewer_msg(self) -> None:
-        expected_message = "**singhsourabh** requested [authority](https://github.com/orgs/test-org965/teams/authority) for a review on [PR #4](https://github.com/test-org965/webhook-test/pull/4)."
+        expected_message = "singhsourabh requested [authority](https://github.com/orgs/test-org965/teams/authority) for a review on [PR #4](https://github.com/test-org965/webhook-test/pull/4)."
         self.check_webhook(
             "pull_request__review_requested_team_reviewer",
             "webhook-test / PR #4 testing webhook",
@@ -505,7 +505,7 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_pull_request_review_requested_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "**eeshangarg** requested [showell](https://github.com/showell) for a review on [PR #1 This is just a test commit](https://github.com/eeshangarg/Scheduler/pull/1)."
+        expected_message = "eeshangarg requested [showell](https://github.com/showell) for a review on [PR #1 This is just a test commit](https://github.com/eeshangarg/Scheduler/pull/1)."
         self.check_webhook("pull_request__review_requested", expected_topic_name, expected_message)
 
     def test_pull_request_labeled_msg(self) -> None:
@@ -570,7 +570,7 @@ Check [randscape](http://github.com/github/hello-world/runs/4) completed (succes
     def test_team_edited_description(self) -> None:
         expected_topic_name = "team Testing"
         expected_message = """\
-**Hypro999** changed the team description to:
+Hypro999 changed the team description to:
 \n~~~ quote
 A temporary team so that I can get some webhook fixtures!
 ~~~"""
