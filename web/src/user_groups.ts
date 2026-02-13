@@ -447,9 +447,15 @@ export function check_group_can_be_subgroup(
 
 export function get_potential_subgroups(target_user_group_id: number): UserGroup[] {
     const target_user_group = get_user_group_from_id(target_user_group_id);
-    return get_all_realm_user_groups().filter((user_group) =>
-        check_group_can_be_subgroup(user_group, target_user_group),
-    );
+    return get_all_realm_user_groups().filter((user_group) => {
+        if (user_group.name === "role:fullmembers" && realm.realm_waiting_period_threshold === 0) {
+            // We hide the full members group in the typeahead when there is no separation
+            // between member and full member users due to organization not having set a
+            // waiting period for member users to become full members.
+            return false;
+        }
+        return check_group_can_be_subgroup(user_group, target_user_group);
+    });
 }
 
 export function get_direct_subgroups_of_group(target_user_group: UserGroup): UserGroup[] {

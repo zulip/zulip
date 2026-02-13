@@ -7,6 +7,7 @@ import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import type {User} from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
+import {realm} from "./state_data.ts";
 import * as stream_pill from "./stream_pill.ts";
 import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_group_pill from "./user_group_pill.ts";
@@ -191,7 +192,20 @@ export function create({
 
     function get_groups(): UserGroup[] {
         let groups = get_user_groups();
-        groups = groups.filter((item) => item.name !== "role:nobody");
+        groups = groups.filter((item) => {
+            if (item.name === "role:nobody") {
+                return false;
+            }
+
+            if (item.name === "role:fullmembers" && realm.realm_waiting_period_threshold === 0) {
+                // We hide the full members group in the typeahead when there is no separation
+                // between member and full member users due to organization not having set a
+                // waiting period for member users to become full members.
+                return false;
+            }
+
+            return true;
+        });
         return user_group_pill.filter_taken_groups(groups, pill_widget);
     }
 

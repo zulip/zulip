@@ -2,7 +2,7 @@ import _ from "lodash";
 
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
-import {current_user} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
@@ -58,7 +58,15 @@ export function get_potential_members(): User[] {
 
 export function get_potential_subgroups(): UserGroup[] {
     const potential_subgroups = user_groups.get_all_realm_user_groups();
-    return potential_subgroups.filter((group) => !subgroup_id_set.has(group.id));
+    return potential_subgroups.filter((group) => {
+        if (group.name === "role:fullmembers" && realm.realm_waiting_period_threshold === 0) {
+            // We hide the full members group in the typeahead when there is no separation
+            // between member and full member users due to organization not having set a
+            // waiting period for member users to become full members.
+            return false;
+        }
+        return !subgroup_id_set.has(group.id);
+    });
 }
 
 export function add_user_ids(user_ids: number[]): void {

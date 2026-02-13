@@ -765,6 +765,13 @@ export function get_person_suggestions(
                 return false;
             }
 
+            if (group.name === "role:fullmembers" && realm.realm_waiting_period_threshold === 0) {
+                // We hide the full members group in the typeahead when there is no separation
+                // between member and full member users due to organization not having set a
+                // waiting period for member users to become full members.
+                return false;
+            }
+
             if (can_access_all_users) {
                 return true;
             }
@@ -781,7 +788,16 @@ export function get_person_suggestions(
             return true;
         });
     } else {
-        groups = user_groups.get_all_realm_user_groups();
+        groups = user_groups.get_all_realm_user_groups().filter((group) => {
+            if (group.name === "role:fullmembers" && realm.realm_waiting_period_threshold === 0) {
+                // We hide the full members group in the typeahead when there is no separation
+                // between member and full member users due to organization not having set a
+                // waiting period for member users to become full members.
+                return false;
+            }
+
+            return true;
+        });
     }
 
     const group_pill_data: UserGroupPillData[] = groups.map((group) => ({
