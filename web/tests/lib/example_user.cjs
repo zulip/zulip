@@ -35,6 +35,7 @@ const bot_or_user_props = (opts = {}) => {
         is_owner: false,
         is_admin: false,
         is_guest: false,
+        is_moderator: false,
         timezone: "UTC",
         avatar_version: 0,
         // By default a member.
