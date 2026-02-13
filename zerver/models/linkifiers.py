@@ -127,6 +127,7 @@ def flush_linkifiers(*, instance: RealmFilter, **kwargs: object) -> None:
     realm_id = instance.realm_id
     cache_delete(get_linkifiers_cache_key(realm_id))
     flush_per_request_cache("linkifiers_for_realm")
+    flush_per_request_cache("topic_links")
 
 
 post_save.connect(flush_linkifiers, sender=RealmFilter)
