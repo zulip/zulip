@@ -144,9 +144,24 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker created new deployment."
         self.check_webhook("deployment", TOPIC_DEPLOYMENT, expected_message)
 
-    def test_deployment_status_msg(self) -> None:
-        expected_message = "Deployment changed status to success."
-        self.check_webhook("deployment_status", TOPIC_DEPLOYMENT, expected_message)
+    def test_deployment_status_success_msg(self) -> None:
+        expected_message = ":check: Deployment changed status to success."
+        self.check_webhook("deployment_status__success", TOPIC_DEPLOYMENT, expected_message)
+
+    def test_deployment_status_pending_msg(self) -> None:
+        expected_topic_name = "test-repo / Deployment on production"
+        expected_message = ":time_ticking: Deployment changed status to pending."
+        self.check_webhook("deployment_status__pending", expected_topic_name, expected_message)
+
+    def test_deployment_status_error_msg(self) -> None:
+        expected_topic_name = "test-repo / Deployment on production"
+        expected_message = ":cross_mark: Deployment changed status to error."
+        self.check_webhook("deployment_status__error", expected_topic_name, expected_message)
+
+    def test_deployment_status_failure_msg(self) -> None:
+        expected_topic_name = "test-repo / Deployment on production"
+        expected_message = ":rotating_light: Deployment changed status to failure."
+        self.check_webhook("deployment_status__failure", expected_topic_name, expected_message)
 
     def test_fork_msg(self) -> None:
         expected_message = "baxterandthehackers forked [public-repo](https://github.com/baxterandthehackers/public-repo)."
@@ -303,19 +318,17 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__synchronized", TOPIC_PR, expected_message)
 
     def test_pull_request_closed_msg(self) -> None:
-        expected_message = "baxterthehacker closed without merge [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        expected_message = ":no_entry: baxterthehacker closed without merge [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__closed", TOPIC_PR, expected_message)
 
     def test_pull_request_closed_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "baxterthehacker closed without merge [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
+        expected_message = ":no_entry: baxterthehacker closed without merge [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__closed", expected_topic_name, expected_message)
 
     def test_pull_request_merged_msg(self) -> None:
-        expected_message = (
-            "baxterthehacker merged [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
-        )
+        expected_message = ":check: baxterthehacker merged [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__merged", TOPIC_PR, expected_message)
 
     def test_pull_request_merged_msg_private_repository_skipped(self) -> None:
@@ -397,28 +410,28 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("status__with_target_url", TOPIC_REPO, expected_message)
 
     def test_pull_request_review_msg(self) -> None:
-        expected_message = "baxterthehacker submitted [PR review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
+        expected_message = ":thumbs_up: baxterthehacker submitted [PR review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
         self.check_webhook("pull_request_review", TOPIC_PR, expected_message)
 
     def test_pull_request_review_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "baxterthehacker submitted [PR review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
+        expected_message = ":thumbs_up: baxterthehacker submitted [PR review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
         self.check_webhook("pull_request_review", expected_topic_name, expected_message)
 
     def test_pull_request_review_msg_with_empty_body(self) -> None:
         expected_topic_name = "groonga / PR #1581 grn_db_value_lock: unlock GRN_TYPE obj..."
-        expected_message = "kou submitted [PR review](https://github.com/groonga/groonga/pull/1581#pullrequestreview-1483047907)."
+        expected_message = ":speech_balloon: kou submitted [PR review](https://github.com/groonga/groonga/pull/1581#pullrequestreview-1483047907)."
         self.check_webhook("pull_request_review__empty_body", expected_topic_name, expected_message)
 
     def test_pull_request_review_comment_msg(self) -> None:
-        expected_message = "baxterthehacker created [PR review comment](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
+        expected_message = ":speech_balloon: baxterthehacker created [PR review comment](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
         self.check_webhook("pull_request_review_comment", TOPIC_PR, expected_message)
 
     def test_pull_request_review_comment_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "baxterthehacker created [PR review comment on #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
+        expected_message = ":speech_balloon: baxterthehacker created [PR review comment on #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
         self.check_webhook("pull_request_review_comment", expected_topic_name, expected_message)
 
     def test_pull_request_locked(self) -> None:
@@ -560,12 +573,28 @@ class GitHubWebhookTest(WebhookTestCase):
             expected_message,
         )
 
-    def test_check_run(self) -> None:
+    def test_check_run_success(self) -> None:
         expected_topic_name = "hello-world / checks"
         expected_message = """
-Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
+:check: Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
 """.strip()
-        self.check_webhook("check_run__completed", expected_topic_name, expected_message)
+        self.check_webhook("check_run__completed_success", expected_topic_name, expected_message)
+
+    def test_check_run_failure(self) -> None:
+        expected_message = ":cross_mark: Check [success_job](https://github.com/Pritesh-30/test-repo/actions/runs/21484616811/job/61890143312) completed (failure). ([e9a540c97cd](https://github.com/Pritesh-30/test-repo/commit/e9a540c97cd4efe9505bbd03bad55fe508bc863c))"
+        self.check_webhook("check_run__completed_failure", "test-repo / checks", expected_message)
+
+    def test_check_run_cancelled(self) -> None:
+        expected_message = ":no_entry: Check [cancelled_job](https://github.com/Pritesh-30/test-repo/actions/runs/21484990515/job/61891523612) completed (cancelled). ([00695aa31e3](https://github.com/Pritesh-30/test-repo/commit/00695aa31e31bdd8a79d21372888fa4ee272cff2))"
+        self.check_webhook("check_run__completed_cancelled", "test-repo / checks", expected_message)
+
+    def test_check_run_skipped(self) -> None:
+        expected_message = ":fast_forward: Check [skipped_job](https://github.com/Pritesh-30/test-repo/actions/runs/21485545015/job/61893572658) completed (skipped). ([ffdbfe3b4ff](https://github.com/Pritesh-30/test-repo/commit/ffdbfe3b4ff64bed0319e4c35e44b7d6b2234b91))"
+        self.check_webhook("check_run__completed_skipped", "test-repo / checks", expected_message)
+
+    def test_check_run_timed_out(self) -> None:
+        expected_message = ":times_up: Check [timeout_job](https://github.com/Pritesh-30/test-repo/actions/runs/21486151970/job/61895828368) completed (timed_out). ([2f6c6671799](https://github.com/Pritesh-30/test-repo/commit/2f6c6671799360327987a1af8e0b24b81b7964e0))"
+        self.check_webhook("check_run__completed_timed_out", "test-repo / checks", expected_message)
 
     def test_team_edited_description(self) -> None:
         expected_topic_name = "team Testing"

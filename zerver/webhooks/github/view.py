@@ -58,6 +58,35 @@ DISCUSSION_TEMPLATES = {
     "edited_body": "{sender} edited [discussion #{discussion_number}{configured_title}]({url}):\n\n~~~ quote\n{body}\n~~~",
 }
 
+CHECK_RUN_CONCLUSION_EMOJI = {
+    "success": ":check:",
+    "failure": ":cross_mark:",
+    "cancelled": ":no_entry:",
+    "skipped": ":fast_forward:",
+    "timed_out": ":times_up:",
+    "action_required": ":wrench:",
+    "neutral": ":grey_question:",
+    "stale": ":sleeping:",
+}
+
+PR_REVIEW_STATE_EMOJI = {
+    "approved": ":thumbs_up:",
+    "changes_requested": ":hammer_and_wrench:",
+    "commented": ":speech_balloon:",
+}
+
+PR_CLOSE_ACTION_EMOJI = {
+    "merged": ":check:",
+    "closed without merge": ":no_entry:",
+}
+
+DEPLOYMENT_STATUS_EMOJI = {
+    "success": ":check:",
+    "failure": ":rotating_light:",
+    "error": ":cross_mark:",
+    "pending": ":time_ticking:",
+}
+
 
 class Helper:
     def __init__(
@@ -139,6 +168,7 @@ def get_closed_pull_request_body(helper: Helper) -> str:
         url=pull_request["html_url"].tame(check_string),
         number=pull_request["number"].tame(check_int),
         title=pull_request["title"].tame(check_string) if include_title else None,
+        emoji=PR_CLOSE_ACTION_EMOJI.get(action),
     )
 
 
@@ -258,9 +288,9 @@ def get_deployment_body(helper: Helper) -> str:
 
 def get_change_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
-    return "Deployment changed status to {}.".format(
-        payload["deployment_status"]["state"].tame(check_string),
-    )
+    state = payload["deployment_status"]["state"].tame(check_string)
+    emoji = DEPLOYMENT_STATUS_EMOJI.get(state, "")
+    return f"{emoji} Deployment changed status to {state}."
 
 
 def get_create_or_delete_body(action: str, helper: Helper) -> str:
@@ -637,6 +667,7 @@ def get_pull_request_ready_for_review_body(helper: Helper) -> str:
 def get_pull_request_review_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
+    emoji = PR_REVIEW_STATE_EMOJI.get(payload["review"]["state"].tame(check_string))
     title = "for #{} {}".format(
         payload["pull_request"]["number"].tame(check_int),
         payload["pull_request"]["title"].tame(check_string),
@@ -648,6 +679,7 @@ def get_pull_request_review_body(helper: Helper) -> str:
         type="PR review",
         title=title if include_title else None,
         message=payload["review"]["body"].tame(check_none_or(check_string)),
+        emoji=emoji,
     )
 
 
@@ -741,6 +773,7 @@ def get_pull_request_review_comment_body(helper: Helper) -> str:
         message=message,
         type="PR review comment",
         title=title if include_title else None,
+        emoji=":speech_balloon:",
     )
 
 
@@ -782,7 +815,7 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
 def get_check_run_body(helper: Helper) -> str:
     payload = helper.payload
     template = """
-Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
+{emoji} Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
 """.strip()
 
     kwargs = {
@@ -795,6 +828,9 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
             payload["check_run"]["head_sha"].tame(check_string),
         ),
         "conclusion": payload["check_run"]["conclusion"].tame(check_string),
+        "emoji": CHECK_RUN_CONCLUSION_EMOJI.get(
+            payload["check_run"]["conclusion"].tame(check_string), ""
+        ),
     }
 
     return template.format(**kwargs)
