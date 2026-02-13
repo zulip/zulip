@@ -22,7 +22,7 @@ class zulip::profile::redis {
   $file = "${redis_dir}/redis.conf"
   $zulip_redisconf = "${redis_dir}/zulip-redis.conf"
   $line = "include ${zulip_redisconf}"
-  exec { 'redis':
+  exec { 'update-redis-conf':
     unless  => "/bin/grep -Fxqe '${line}' '${file}'",
     path    => '/bin',
     command => "bash -c \"(/bin/echo; /bin/echo '# Include Zulip-specific configuration'; /bin/echo '${line}') >> '${file}'\"",
@@ -65,7 +65,7 @@ class zulip::profile::redis {
     ],
     subscribe => [
       File[$zulip_redisconf],
-      Exec['redis'],
+      Exec['update-redis-conf'],
     ],
   }
 }
