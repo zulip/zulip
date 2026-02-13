@@ -46,6 +46,7 @@ from zerver.actions.streams import do_deactivate_stream, merge_streams
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.cache import cache_delete, realm_rendered_description_cache_key
+from zerver.lib.markdown import version as markdown_version
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
@@ -517,6 +518,7 @@ class RealmTest(ZulipTestCase):
         self.assertIn("<h1>Test Description</h1>", rendered_description)
         self.assertIn('<a href="https://example.com"', rendered_description)
         self.assertEqual(get_realm_rendered_description(realm), rendered_description)
+        self.assertEqual(realm.rendered_description_version, markdown_version)
 
         # Check rendered_description field when description is empty string.
         do_set_realm_property(realm, "description", "", acting_user=None)
@@ -530,7 +532,8 @@ class RealmTest(ZulipTestCase):
         do_set_realm_property(realm, "description", new_description, acting_user=None)
 
         realm.rendered_description = None
-        realm.save(update_fields=["rendered_description"])
+        realm.rendered_description_version = None
+        realm.save(update_fields=["rendered_description", "rendered_description_version"])
         self.assertEqual(realm.description, new_description)
 
         # Clear the cache to force re-rendering
@@ -544,6 +547,7 @@ class RealmTest(ZulipTestCase):
         self.assertIn("<h1>Test Description</h1>", result)
         self.assertIn('<a href="https://example.com"', result)
         self.assertEqual(result, realm.rendered_description)
+        self.assertEqual(realm.rendered_description_version, markdown_version)
 
     def test_do_deactivate_realm_on_deactivated_realm(self) -> None:
         """Ensure early exit is working in realm deactivation"""

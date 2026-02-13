@@ -220,8 +220,9 @@ def do_create_realm(
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
     if description is not None:
         kwargs["description"] = description
-        rendered_description = render_realm_description(description, realm=None)
+        rendered_description, version = render_realm_description(description, realm=None)
         kwargs["rendered_description"] = rendered_description
+        kwargs["rendered_description_version"] = version
     if invite_required is not None:
         kwargs["invite_required"] = invite_required
     if plan_type is not None:

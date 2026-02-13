@@ -88,9 +88,10 @@ def do_set_realm_property(
     if name == "description":
         from zerver.lib.realm_description import render_realm_description
 
-        rendered_description = render_realm_description(value, realm)
+        rendered_description, version = render_realm_description(value, realm)
         realm.rendered_description = rendered_description
-        realm.save(update_fields=[name, "rendered_description"])
+        realm.rendered_description_version = version
+        realm.save(update_fields=[name, "rendered_description", "rendered_description_version"])
     else:
         realm.save(update_fields=[name])
 

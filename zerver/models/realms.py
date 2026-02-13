@@ -180,6 +180,7 @@ class Realm(models.Model):
     name = models.CharField(max_length=MAX_REALM_NAME_LENGTH)
     description = models.TextField(default="")
     rendered_description = models.TextField(null=True, default=None)
+    rendered_description_version = models.IntegerField(null=True, default=None)
 
     # A short, identifier-like name for the organization.  Used in subdomains;
     # e.g. on a server at example.com, an org with string_id `foo` is reached
