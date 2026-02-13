@@ -75,18 +75,11 @@ class zulip::profile::redis {
     ensure  => running,
     require => Package['sysfsutils'],
   }
-  file { '/run/redis':
-    ensure  => directory,
-    owner   => 'redis',
-    group   => 'redis',
-    mode    => '0755',
-    require => Package[$redis],
-  }
   service { $redis:
     ensure    => running,
     require   => [
       Service['sysfsutils'],
-      File['/run/redis'],
+      Package['redis-server'],
     ],
     subscribe => [
       File[$zulip_redisconf],
