@@ -1752,13 +1752,23 @@ paths:
                                 attachment:
                                   type: object
                                   description: |
-                                    Dictionary containing the ID of the deleted attachment.
+                                    Dictionary containing the ID of the deleted attachment and
+                                    the IDs of messages that contained it.
                                   additionalProperties: false
                                   properties:
                                     id:
                                       type: integer
                                       description: |
                                         The ID of the deleted attachment.
+                                    message_ids:
+                                      type: array
+                                      description: |
+                                        Array containing the IDs of messages that contained
+                                        this attachment. Clients can use this to update the UI
+                                        for these messages to reflect that the attachment is
+                                        no longer available.
+                                      items:
+                                        type: integer
                                 upload_space_used:
                                   type: integer
                                   description: |
@@ -1768,7 +1778,7 @@ paths:
                                 {
                                   "type": "attachment",
                                   "op": "remove",
-                                  "attachment": {"id": 1},
+                                  "attachment": {"id": 1, "message_ids": [190]},
                                   "upload_space_used": 0,
                                   "id": 0,
                                 }

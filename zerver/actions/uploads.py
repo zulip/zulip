@@ -24,7 +24,11 @@ class AttachmentChangeResult:
 
 
 def notify_attachment_update(
-    user_profile: UserProfile, op: str, attachment_dict: dict[str, Any]
+    user_profile: UserProfile,
+    op: str,
+    attachment_dict: dict[str, Any],
+    *,
+    user_ids: list[int] | None = None,
 ) -> None:
     event = {
         "type": "attachment",
@@ -32,7 +36,9 @@ def notify_attachment_update(
         "attachment": attachment_dict,
         "upload_space_used": user_profile.realm.currently_used_upload_space_bytes(),
     }
-    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+    if user_ids is None:
+        user_ids = [user_profile.id]
+    send_event_on_commit(user_profile.realm, event, user_ids)
 
 
 def do_claim_attachments(

@@ -405,6 +405,18 @@ test("update_property", () => {
     assert.equal(message1.display_recipient, "Prod");
     assert.equal(message2.stream_id, denmark.stream_id);
     assert.equal(message2.display_recipient, denmark.name);
+
+    message_store.update_status_emoji_info(alice.user_id, {
+        emoji_name: "smile",
+        emoji_code: "1f642",
+        reaction_type: "unicode_emoji",
+    });
+    assert.deepEqual(message1.status_emoji_info, {
+        emoji_name: "smile",
+        emoji_code: "1f642",
+        reaction_type: "unicode_emoji",
+    });
+    assert.equal(message2.status_emoji_info, undefined);
 });
 
 test("remove", () => {
