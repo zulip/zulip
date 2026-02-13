@@ -46,8 +46,13 @@ function get_private_messages_section_header(): JQuery {
     return $("#direct-messages-section-header");
 }
 
+function get_private_messages_modal_section_header(): JQuery {
+    return $("#direct-messages-modal-section-header");
+}
+
 export function set_count(count: number): void {
     ui_util.update_unread_count_in_dom(get_private_messages_section_header(), count);
+    ui_util.update_unread_count_in_dom(get_private_messages_modal_section_header(), count);
 }
 
 export function close(): void {
@@ -77,8 +82,10 @@ export function _build_direct_messages_list(opts: {
     return dom_ast;
 }
 
-function set_dom_to(new_dom: vdom.Tag<PMNode>): void {
-    const $container = scroll_util.get_content_element($("#direct-messages-list"));
+function set_dom_to(new_dom: vdom.Tag<PMNode>, for_modal: boolean): void {
+    const $container = for_modal
+        ? scroll_util.get_content_element($("#modal-direct-messages-list"))
+        : scroll_util.get_content_element($("#direct-messages-list"));
 
     function replace_content(html: string): void {
         $container.html(html);
@@ -147,7 +154,7 @@ export function update_private_messages(): void {
         if (active_conversation) {
             const node = [pm_list_dom.keyed_pm_li(active_conversation)];
             const new_dom = pm_list_dom.pm_ul(node);
-            set_dom_to(new_dom);
+            set_dom_to(new_dom, zoomed);
         } else {
             // Otherwise, empty the section.
             $(".dm-list").empty();
@@ -159,7 +166,7 @@ export function update_private_messages(): void {
             conversations_to_be_shown,
             search_term,
         });
-        set_dom_to(new_dom);
+        set_dom_to(new_dom, zoomed);
     }
     // Make sure to update the left sidebar heights after updating
     // direct messages.
@@ -244,11 +251,11 @@ export function update_dom_with_unread_counts(
 }
 
 function highlight_all_private_messages_view(): void {
-    $(".direct-messages-container").addClass("active-direct-messages-section");
+    $(".direct-messages-container.zoomed-out").addClass("active-direct-messages-section");
 }
 
 function unhighlight_all_private_messages_view(): void {
-    $(".direct-messages-container").removeClass("active-direct-messages-section");
+    $(".direct-messages-container.zoomed-out").removeClass("active-direct-messages-section");
 }
 
 function scroll_pm_into_view($target_li: JQuery): void {
@@ -276,7 +283,9 @@ export function handle_narrow_activated(filter: Filter): void {
         // top, but empirically that doesn't occur, so we just ensure the
         // section is expanded before scrolling.
         expand();
-        highlight_all_private_messages_view();
+        if (!zoomed) {
+            highlight_all_private_messages_view();
+        }
         scroll_all_private_into_view();
     } else {
         unhighlight_all_private_messages_view();
@@ -322,9 +331,9 @@ function zoom_in(): void {
     pre_search_scroll_position = 0;
     ui_util.disable_left_sidebar_search();
     update_private_messages();
-    $(".direct-messages-container").removeClass("zoom-out").addClass("zoom-in");
-    $("#hide-more-direct-messages").addClass("dm-zoomed-in");
-    $("#streams_list").hide();
+    $("#left-sidebar").addClass("zoom-in");
+    $("#left-sidebar").addClass("zoom-in-conversations");
+    $("#direct-messages-modal").toggleClass("no-display", false);
 
     const $filter = $(".direct-messages-list-filter").expectOne();
     $filter.trigger("focus");
@@ -337,9 +346,9 @@ function zoom_out(): void {
     zoomed = false;
     ui_util.enable_left_sidebar_search();
     clear_search();
-    $(".direct-messages-container").removeClass("zoom-in").addClass("zoom-out");
-    $("#hide-more-direct-messages").removeClass("dm-zoomed-in");
-    $("#streams_list").show();
+    $("#left-sidebar").removeClass("zoom-in");
+    $("#left-sidebar").removeClass("zoom-in-conversations");
+    $("#direct-messages-modal").toggleClass("no-display", true);
 }
 
 export function clear_search(): void {
@@ -372,7 +381,7 @@ export function initialize(): void {
         }
     });
 
-    $("#left-sidebar").on("click", "#hide-more-direct-messages", (e) => {
+    $("body").on("click", ".zoom-in-conversations .left-sidebar-modal-close-area", (e) => {
         e.stopPropagation();
         e.preventDefault();
 
