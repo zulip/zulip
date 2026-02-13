@@ -58,9 +58,14 @@ DATE_ISO_8601 = _DT.date().isoformat()
 DATE_LONG = _DT.strftime("%A, %B %d, %Y")
 
 
+class MessageThread(TypedDict):
+    sender: str
+    message: str
+
+
 class ScreenshotContent(TypedDict):
     topic: str
-    content: str
+    content: str | list[MessageThread]
 
 
 ASANA = ScreenshotContent(
@@ -88,6 +93,22 @@ DISCOURSE = ScreenshotContent(
 > {COMMIT_BODY_A}""",
 )
 
+ERRBOT = ScreenshotContent(
+    topic="bot commands",
+    content=[
+        {"sender": f"{BO_NAME}", "message": "@**Errbot Bot** help"},
+        {"sender": "Errbot", "message": "Available commands: `!help`, `!about`, `!config`"},
+        {"sender": f"{BO_NAME}", "message": "!about"},
+        {
+            "sender": "Errbot",
+            "message": """This is Errbot version 6.2.0
+• Visit http://errbot.io/ for more information about errbot in general.
+• Visit http://errbot.io/en/latest/#user-guide for help with configuration,administration and plugin development.
+• Errbot is built through the hard work and dedication of everyone who contributes code, documentation and bug reports at https://github.com/errbotio.""",
+        },
+    ],
+)
+
 GIT = ScreenshotContent(
     topic=BRANCH_GIT,
     content=f"""`{DEPLOYMENT_HASH[:12]}` was deployed to `{BRANCH_GIT}` with:
@@ -102,6 +123,25 @@ GITHUB_ACTIONS = ScreenshotContent(
 > Unable to connect.""",
 )
 
+GITHUB_DETAIL = ScreenshotContent(
+    topic="Issue and PR details",
+    content=[
+        {"sender": f"{BO_NAME}", "message": "@**GitHub Detail Bot** #1234"},
+        {
+            "sender": "GitHub Detail Bot",
+            "message": """**[zulip/zulip#1234]() - Fix login bug affecting multiple users**
+Created by **[octocat]()**
+Status - **Open**
+```quote
+Users are experiencing issues when attempting to log in with valid credentials. The login button appears unresponsive and authentication fails silently. This affects both new and existing users across multiple browsers.
+
+Expected: User should be logged in successfully
+Actual: Login fails without error message
+```""",
+        },
+    ],
+)
+
 GOOGLE_CALENDAR = ScreenshotContent(
     topic="Team reminders",
     content=f"""The [Development Sync]() event is scheduled from 2 PM - 3 PM on {DATE_LONG} at Conference Room B.
@@ -109,6 +149,29 @@ GOOGLE_CALENDAR = ScreenshotContent(
 
 [Join call]().""",
 )
+
+HUBOT = ScreenshotContent(
+    topic="general",
+    content=[
+        {"sender": f"{BO_NAME}", "message": "@**Hubot** pug me"},
+        {
+            "sender": "Hubot",
+            "message": "https://29.media.tumblr.com/tumblr_ll3xcmS6Bh1qb08qmo1_500.jpg",
+        },
+    ],
+)
+
+IRC = ScreenshotContent(
+    topic="IRC",
+    content=[
+        {"sender": f"{BO_NAME}", "message": "Message from Zulip!"},
+        {
+            "sender": "IRC Bot",
+            "message": "irc_user: Hi!",
+        },
+    ],
+)
+
 
 JENKINS = ScreenshotContent(
     topic=PROJECT_NAME,
@@ -120,6 +183,17 @@ MASTODON = ScreenshotContent(
     content=f"""**[Don’t let hype about AI agents get ahead of reality](https://www.technologyreview.com/2025/07/03/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/)**
 Google’s recent unveiling of what it calls a “new class of agentic experiences” feels like a turning point. At its I/O event last month, for example, the company showed off a digital assistant that didn’t just answer questions; it helped work on a bicycle repair by finding a matching user manual, locating a YouTube…
 https://www.technologyreview.com/{DATE_ISO_8601.replace("-", "/")}/1119545/dont-let-hype-about-ai-agents-get-ahead-of-reality/""",
+)
+
+MATRIX = ScreenshotContent(
+    topic="Matrix",
+    content=[
+        {"sender": f"{BO_NAME}", "message": "Message from Zulip!"},
+        {
+            "sender": "Matrix Bot",
+            "message": f"**{BO_NAME}** [@johnsmith:matrix.org]: Hi from Matrix!",
+        },
+    ],
 )
 
 MERCURIAL = ScreenshotContent(
@@ -183,4 +257,19 @@ TRAC = ScreenshotContent(
 > Fixed in  {COMMIT_HASH_A}
 
 status: **new** => **closed**, resolution: => **fixed**""",
+)
+
+XKCD = ScreenshotContent(
+    topic="xkcd",
+    content=[
+        {"sender": f"{BO_NAME}", "message": "@**xkcd Bot** help"},
+        {
+            "sender": "xkcd Bot",
+            "message": """xkcd bot supports these commands:
+* `@**xkcd** help` to show this help message.
+* `@**xkcd** latest` to fetch the latest comic strip from xkcd.
+* `@**xkcd** random` to fetch a random comic strip from xkcd.
+* `@**xkcd** <comic id>` to fetch a comic strip based on `<comic id>` e.g `@**xkcd** 1234`.""",
+        },
+    ],
 )
