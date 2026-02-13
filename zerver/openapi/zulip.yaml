@@ -15814,6 +15814,10 @@ paths:
                               invited_by_user_id: 9,
                               notify_referrer_on_join: true,
                               is_multiuse: false,
+                              stream_ids: [7, 9],
+                              group_ids: [10, 11],
+                              include_realm_default_subscriptions: true,
+                              welcome_message_custom_text: null,
                             },
                             {
                               expiry_date: 1711463862,
@@ -15824,6 +15828,10 @@ paths:
                               is_multiuse: true,
                               notify_referrer_on_join: true,
                               link_url: "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/",
+                              stream_ids: [7, 9],
+                              group_ids: [10, 11],
+                              include_realm_default_subscriptions: true,
+                              welcome_message_custom_text: "Welcome!",
                             },
                           ],
                       }
@@ -16271,6 +16279,158 @@ paths:
                         description: |
                           A typical failed JSON response for an invalid email invitation ID:
   /invites/multiuse/{invite_id}:
+    patch:
+      operationId: edit-invite-link
+      summary: Edit a reusable invitation link
+      tags: ["invites"]
+      description: |
+        [Edit a reusable invitation link](/help/invite-new-users#edit-a-reusable-invitation-link)
+        which can be used to invite new users to the organization. Users can modify the details
+        of the invitation link, such as:
+
+        - The channels (streams) to which the new user will be automatically subscribed upon
+          accepting the invitation.
+        - Whether the new user should be subscribed to default channels of the organization.
+        - The role assigned to the new user, such as member, moderator, administrator, or owner.
+        - The groups to which the new user will be automatically added upon accepting the invitation.
+        - Custom message text in the message sent by Welcome Bot.
+
+        A user can only edit [invitations that they can manage](/help/invite-new-users#manage-pending-invitations).
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-e2f784).
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the multiuse invitation to be edited.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                invite_as:
+                  $ref: "#/components/schemas/InviteRoleParameter"
+                stream_ids:
+                  type: array
+                  items:
+                    type: integer
+                  example: [10, 12]
+                  description: |
+                    A list containing the [IDs of the channels](/api/get-stream-id) that the
+                    newly created user will be automatically subscribed to if the invitation
+                    is accepted. If the list is empty, then the new user will not be subscribed
+                    to any channels.
+                group_ids:
+                  type: array
+                  items:
+                    type: integer
+                  example: []
+                  description: |
+                    A list containing the [IDs of the user groups](/api/get-user-groups) that
+                    the newly created user will be automatically joined to if the invitation
+                    is accepted. If the list is empty, then the new user will not be added to
+                    any user groups.
+                include_realm_default_subscriptions:
+                  type: boolean
+                  example: false
+                  description: |
+                    A boolean specifying whether the [invitation](/help/invite-new-users)
+                    include default channel subscription or not.
+                welcome_message_custom_text:
+                  type: string
+                  nullable: true
+                  example: "Welcome to Zulip! We're excited to have you on board."
+                  description: |
+                    Custom message text, in Zulip Markdown format, to be sent by the
+                    Welcome Bot to new users that join the organization via this
+                    invitation.
+
+                    Maximum length is 8000 characters.
+
+                    Only organization administrators can edit this.
+
+                    - `null`: the organization's default `welcome_message_custom_text` is used.
+                    - Empty string: no Welcome Bot custom message is sent.
+                    - Otherwise, the provided string is the custom message.
+            encoding:
+              stream_ids:
+                contentType: application/json
+              group_ids:
+                contentType: application/json
+              include_realm_default_subscriptions:
+                contentType: application/json
+              welcome_message_custom_text:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                    example: {"result": "success", "msg": ""}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Insufficient permission",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON error response for when the user doesn't have permission
+                          to edit invitations.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Must be an organization administrator",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON error response occurs when the user attempts to edit an invitation link for a role higher than their own.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid channel ID 11. No invites were sent.",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON error response for when any of the specified channels
+                          does not exist or the user does not have permission to access one of
+                          the targeted channels.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "You do not have permission to subscribe other users to channels.",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON error response for when the user doesn't have permission
+                          to subscribe other users to channels and `stream_ids` is not empty.
     delete:
       operationId: revoke-invite-link
       summary: Revoke a reusable invitation link
@@ -26552,6 +26712,50 @@ components:
           description: |
             A boolean specifying whether the [invitation](/help/invite-new-users) is a
             reusable invitation link or an email invitation.
+        stream_ids:
+          type: array
+          items:
+            type: integer
+          description: |
+            A list containing the [IDs of the streams](/api/get-stream-id) that the
+            newly created user will be automatically subscribed to if the invitation
+            is accepted. If the list is empty, then the new user will not be
+            subscribed to any streams.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-8d0c68).
+        group_ids:
+          type: array
+          items:
+            type: integer
+          description: |
+            A list containing the [IDs of the user groups](/api/get-user-groups) that
+            the newly created user will be automatically added to if the invitation
+            is accepted. If the list is empty, then the new user will not be
+            added to any user groups.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-8d0c68).
+        include_realm_default_subscriptions:
+          type: boolean
+          description: |
+            Boolean indicating whether the newly created user should be subscribed
+            to the [default channels][default-channels] for the organization.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-8d0c68).
+        welcome_message_custom_text:
+          type: string
+          nullable: true
+          description: |
+            Custom message text, in Zulip Markdown format, to be sent by the
+            Welcome Bot to new users that join the organization via this
+            invitation.
+
+            Maximum length is 8000 characters.
+
+            - `null`: the organization's default `welcome_message_custom_text` is used.
+            - Empty string: no Welcome Bot custom message is sent.
+            - Otherwise, the provided string is the custom message.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-8d0c68).
     InviteExpirationParameter:
       description: |
         The number of minutes before the invitation will expire. If `null`, the
