@@ -176,7 +176,6 @@ environment:
 - With a command-line editor like vim or emacs run over SSH.
 - With a desktop GUI editor like VS Code or Atom and a plugin for
   syncing your changes to the remote server.
-- With a web-based IDE like CodeAnywhere.
 
 We document these options below; we recommend using whatever editor
 you prefer for development in general.
@@ -243,25 +242,6 @@ Other options include:
 - [emacs](https://www.gnu.org/software/emacs/)
 - [spacemacs](https://github.com/syl20bnr/spacemacs)
 
-##### Web-based IDE
-
-If you are relatively new to working on the command line, or just want to get
-started working quickly, we recommend web-based IDE
-[Codeanywhere][codeanywhere].
-
-To set up Codeanywhere for Zulip:
-
-1. Create a [Codeanywhere][codeanywhere] account and log in.
-2. Create a new **SFTP-SSH** project. Use _Public key_ for authentication.
-3. Click **GET YOUR PUBLIC KEY** to get the new public key that
-   Codeanywhere generates when you create a new project. Add this public key to
-   `~/.ssh/authorized_keys` on your remote development instance.
-4. Once you've added the new public key to your remote development instance, click
-   _CONNECT_.
-
-Now your workspace should look similar this:
-![Codeanywhere workspace][img-ca-workspace]
-
 #### Next steps
 
 Next, read the following to learn more about developing for Zulip:
@@ -276,9 +256,6 @@ Next, read the following to learn more about developing for Zulip:
 [rtd-using-dev-env]: using.md
 [rtd-testing]: ../testing/testing.md
 [git-bash]: https://git-for-windows.github.io/
-[codeanywhere]: https://codeanywhere.com/
-[img-ca-settings]: ../images/codeanywhere-settings.png
-[img-ca-workspace]: ../images/codeanywhere-workspace.png
 
 ## Using an nginx reverse proxy
 
