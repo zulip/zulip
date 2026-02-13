@@ -2,6 +2,15 @@
 
 Receive GitLab notifications in Zulip!
 
+!!! tip ""
+
+    If you also configure a [custom profile
+    field](/help/custom-profile-fields) for GitLab accounts, this
+    integration will refer to GitLab users using [Zulip silent
+    mentions](/help/mention-a-user-or-group#silently-mention-a-user),
+    rather than their GitLab name.
+
+
 {start_tabs}
 
 1. {!create-an-incoming-webhook.md!}

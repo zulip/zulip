@@ -1,7 +1,9 @@
 from unittest.mock import MagicMock, patch
 
+from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
+from zerver.models.realms import get_realm
 
 
 class GitlabHookTests(WebhookTestCase):
@@ -695,13 +697,13 @@ A trivial change that should probably be ignored.
 
     def test_feature_flag_activate_event_message(self) -> None:
         expected_topic_name = "sample"
-        expected_message = "kolanuvarun739 activated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
+        expected_message = "Varun Kolanu activated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
 
         self.check_webhook("feature_flag_hook__activated", expected_topic_name, expected_message)
 
     def test_feature_flag_deactivate_event_message(self) -> None:
         expected_topic_name = "sample"
-        expected_message = "kolanuvarun739 deactivated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
+        expected_message = "Varun Kolanu deactivated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
 
         self.check_webhook("feature_flag_hook__deactivated", expected_topic_name, expected_message)
 
@@ -716,6 +718,15 @@ A trivial change that should probably be ignored.
     def test_resource_access_token_group_expiry(self) -> None:
         expected_topic_name = "Twitter"
         expected_message = "The access token [acd](https://gitlab.com/groups/twitter/-/settings/access_tokens) will expire on Jan 26, 2024."
+
+        self.check_webhook(
+            "resource_access_token_hook__group_expiry", expected_topic_name, expected_message
+        )
+
+    def test_resource_access_token_group_expiry_with_custom_topic(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic_name = "notifications"
+        expected_message = "[[Twitter](https://gitlab.com/groups/twitter)] The access token [acd](https://gitlab.com/groups/twitter/-/settings/access_tokens) will expire on Jan 26, 2024."
 
         self.check_webhook(
             "resource_access_token_hook__group_expiry", expected_topic_name, expected_message
@@ -766,3 +777,40 @@ A trivial change that should probably be ignored.
             expected_message,
             HTTP_X_GITLAB_EVENT="Deployment Hook",
         )
+
+    def test_push_event_message_silent_mention(self) -> None:
+        realm = get_realm("zulip")
+        gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab")
+        hamlet = self.example_user("hamlet")
+        self.set_user_custom_profile_data(
+            hamlet, [{"id": gitlab_field.id, "value": "tomaszkolek0"}]
+        )
+        expected_topic_name = "my-awesome-project / tomek"
+        expected_message = f"@_**{hamlet.full_name}|{hamlet.id}** [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/-/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 2 commits to branch tomek. Commits by Tomasz Kolek (2).\n\n* b ([66abd2da288](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n* c ([eb6ae1e591e](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9))"
+        self.check_webhook("push_hook", expected_topic_name, expected_message)
+
+    def test_update_issue_event_message_silent_mention(self) -> None:
+        realm = get_realm("zulip")
+        gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab")
+        hamlet = self.example_user("hamlet")
+        self.set_user_custom_profile_data(
+            hamlet, [{"id": gitlab_field.id, "value": "tomaszkolek0"}]
+        )
+        expected_topic_name = "my-awesome-project / issue #1 Issue title_new"
+        expected_message = f"@_**{hamlet.full_name}|{hamlet.id}** updated [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
+        self.check_webhook("issue_hook__issue_updated", expected_topic_name, expected_message)
+
+    def test_update_issue_event_message_silent_mention_multiple_matches(self) -> None:
+        realm = get_realm("zulip")
+        gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab")
+        hamlet = self.example_user("hamlet")
+        self.set_user_custom_profile_data(
+            hamlet, [{"id": gitlab_field.id, "value": "tomaszkolek0"}]
+        )
+        cordelia = self.example_user("cordelia")
+        self.set_user_custom_profile_data(
+            cordelia, [{"id": gitlab_field.id, "value": "tomaszkolek0"}]
+        )
+        expected_topic_name = "my-awesome-project / issue #1 Issue title_new"
+        expected_message = "Tomasz Kolek updated [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
+        self.check_webhook("issue_hook__issue_updated", expected_topic_name, expected_message)

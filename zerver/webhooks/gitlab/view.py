@@ -7,6 +7,8 @@ from pydantic import Json
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
@@ -15,6 +17,7 @@ from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
     get_event_header,
+    guess_zulip_user_from_external_account,
 )
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
@@ -30,7 +33,7 @@ from zerver.lib.webhooks.git import (
     get_remove_branch_event_message,
     is_branch_name_notifiable,
 )
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
 
 TOPIC_WITH_DESIGN_INFO_TEMPLATE = "{repo} / {type} {design_name}"
 DESIGN_COMMENT_MESSAGE_TEMPLATE = "{user_name} {action}{design_part}:\n{content_message}"
@@ -50,16 +53,16 @@ def fixture_to_headers(fixture_name: str) -> dict[str, str]:
     return {"HTTP_X_GITLAB_EVENT": fixture_name.split("__", 1)[0].replace("_", " ").title()}
 
 
-def get_push_event_body(payload: WildValue, include_title: bool) -> str:
+def get_push_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
     after = payload.get("after")
     if after:
         stringified_after = after.tame(check_string)
         if stringified_after == EMPTY_SHA:
-            return get_remove_branch_event_body(payload)
-    return get_normal_push_event_body(payload)
+            return get_remove_branch_event_body(payload, realm)
+    return get_normal_push_event_body(payload, realm)
 
 
-def get_normal_push_event_body(payload: WildValue) -> str:
+def get_normal_push_event_body(payload: WildValue, realm: Realm) -> str:
     compare_url = "{}/-/compare/{}...{}".format(
         get_project_homepage(payload),
         payload["before"].tame(check_string),
@@ -77,29 +80,29 @@ def get_normal_push_event_body(payload: WildValue) -> str:
     ]
 
     return get_push_commits_event_message(
-        get_user_name(payload),
+        get_user_name(payload, realm),
         compare_url,
         get_branch_name(payload),
         commits,
     )
 
 
-def get_remove_branch_event_body(payload: WildValue) -> str:
+def get_remove_branch_event_body(payload: WildValue, realm: Realm) -> str:
     return get_remove_branch_event_message(
-        get_user_name(payload),
+        get_user_name(payload, realm),
         get_branch_name(payload),
     )
 
 
-def get_tag_push_event_body(payload: WildValue, include_title: bool) -> str:
+def get_tag_push_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
     return get_push_tag_event_message(
-        get_user_name(payload),
+        get_user_name(payload, realm),
         get_tag_name(payload),
         action="pushed" if payload.get("checkout_sha") else "removed",
     )
 
 
-def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str:
+def get_issue_created_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
     description = payload["object_attributes"].get("description")
     # Filter out multiline hidden comments
     if description:
@@ -112,7 +115,7 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str
         stringified_description = None
 
     return get_issue_event_message(
-        user_name=get_issue_user_name(payload),
+        user_name=get_user_name(payload, realm),
         action="created",
         url=get_object_url(payload),
         number=payload["object_attributes"]["iid"].tame(check_int),
@@ -122,9 +125,9 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str
     )
 
 
-def get_issue_event_body(action: str, payload: WildValue, include_title: bool) -> str:
+def get_issue_event_body(action: str, payload: WildValue, include_title: bool, realm: Realm) -> str:
     return get_issue_event_message(
-        user_name=get_issue_user_name(payload),
+        user_name=get_user_name(payload, realm),
         action=action,
         url=get_object_url(payload),
         number=payload["object_attributes"]["iid"].tame(check_int),
@@ -132,22 +135,28 @@ def get_issue_event_body(action: str, payload: WildValue, include_title: bool) -
     )
 
 
-def get_merge_request_updated_event_body(payload: WildValue, include_title: bool) -> str:
+def get_merge_request_updated_event_body(
+    payload: WildValue, include_title: bool, realm: Realm
+) -> str:
     if payload["object_attributes"].get("oldrev"):
         return get_merge_request_event_body(
             "added commit(s) to",
             payload,
             include_title=include_title,
+            realm=realm,
         )
 
     return get_merge_request_open_or_updated_body(
         "updated",
         payload,
         include_title=include_title,
+        realm=realm,
     )
 
 
-def get_merge_request_event_body(action: str, payload: WildValue, include_title: bool) -> str:
+def get_merge_request_event_body(
+    action: str, payload: WildValue, include_title: bool, realm: Realm
+) -> str:
     pull_request = payload["object_attributes"]
     target_branch = None
     base_branch = None
@@ -156,7 +165,7 @@ def get_merge_request_event_body(action: str, payload: WildValue, include_title:
         base_branch = pull_request["target_branch"].tame(check_string)
 
     return get_pull_request_event_message(
-        user_name=get_issue_user_name(payload),
+        user_name=get_user_name(payload, realm),
         action=action,
         url=pull_request["url"].tame(check_string),
         number=pull_request["iid"].tame(check_int),
@@ -168,11 +177,14 @@ def get_merge_request_event_body(action: str, payload: WildValue, include_title:
 
 
 def get_merge_request_open_or_updated_body(
-    action: str, payload: WildValue, include_title: bool
+    action: str,
+    payload: WildValue,
+    include_title: bool,
+    realm: Realm,
 ) -> str:
     pull_request = payload["object_attributes"]
     return get_pull_request_event_message(
-        user_name=get_issue_user_name(payload),
+        user_name=get_user_name(payload, realm),
         action=action,
         url=pull_request["url"].tame(check_string),
         number=pull_request["iid"].tame(check_int),
@@ -235,11 +247,11 @@ def parse_design_comment(comment: WildValue, repository_url: str) -> tuple[str, 
     return comment_url, design_url, design_name
 
 
-def get_commented_commit_event_body(payload: WildValue, include_title: bool) -> str:
+def get_commented_commit_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({})".format(comment["url"].tame(check_string))
     return get_commits_comment_action_message(
-        get_issue_user_name(payload),
+        get_user_name(payload, realm),
         action,
         payload["commit"]["url"].tame(check_string),
         payload["commit"]["id"].tame(check_string),
@@ -247,14 +259,16 @@ def get_commented_commit_event_body(payload: WildValue, include_title: bool) -> 
     )
 
 
-def get_commented_merge_request_event_body(payload: WildValue, include_title: bool) -> str:
+def get_commented_merge_request_event_body(
+    payload: WildValue, include_title: bool, realm: Realm
+) -> str:
     comment = payload["object_attributes"]
     comment_url = comment["url"].tame(check_string)
     action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
     url = payload["merge_request"]["url"].tame(check_string)
 
     return get_pull_request_event_message(
-        user_name=get_issue_user_name(payload),
+        user_name=get_user_name(payload, realm),
         action=action,
         url=url,
         number=payload["merge_request"]["iid"].tame(check_int),
@@ -265,14 +279,14 @@ def get_commented_merge_request_event_body(payload: WildValue, include_title: bo
     )
 
 
-def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> str:
+def get_commented_issue_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
     comment = payload["object_attributes"]
     comment_url = comment["url"].tame(check_string)
     action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
     url = payload["issue"]["url"].tame(check_string)
 
     return get_pull_request_event_message(
-        user_name=get_issue_user_name(payload),
+        user_name=get_user_name(payload, realm),
         action=action,
         url=url,
         number=payload["issue"]["iid"].tame(check_int),
@@ -283,7 +297,7 @@ def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> s
     )
 
 
-def get_commented_design_event_body(payload: WildValue, include_title: bool) -> str:
+def get_commented_design_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
     comment = payload["object_attributes"]
     repository_url = payload["repository"]["homepage"].tame(check_string)
 
@@ -298,14 +312,14 @@ def get_commented_design_event_body(payload: WildValue, include_title: bool) -> 
     )
 
     return DESIGN_COMMENT_MESSAGE_TEMPLATE.format(
-        user_name=get_issue_user_name(payload),
+        user_name=get_user_name(payload, realm),
         action=action,
         content_message=content_message,
         design_part=design_part,
     )
 
 
-def get_commented_snippet_event_body(payload: WildValue, include_title: bool) -> str:
+def get_commented_snippet_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
     comment = payload["object_attributes"]
     comment_url = comment["url"].tame(check_string)
     action = f"[commented]({comment_url}) on" if include_title else f"[commented]({comment_url})"
@@ -319,7 +333,7 @@ def get_commented_snippet_event_body(payload: WildValue, include_title: bool) ->
         )
 
     return get_pull_request_event_message(
-        user_name=get_issue_user_name(payload),
+        user_name=get_user_name(payload, realm),
         action=action,
         url=url,
         number=payload["snippet"]["id"].tame(check_int),
@@ -330,16 +344,20 @@ def get_commented_snippet_event_body(payload: WildValue, include_title: bool) ->
     )
 
 
-def get_wiki_page_event_body(action: str, payload: WildValue, include_title: bool) -> str:
+def get_wiki_page_event_body(
+    action: str, payload: WildValue, include_title: bool, realm: Realm
+) -> str:
     return '{} {} [wiki page "{}"]({}).'.format(
-        get_issue_user_name(payload),
+        get_user_name(payload, realm),
         action,
         payload["object_attributes"]["title"].tame(check_string),
         payload["object_attributes"]["url"].tame(check_string),
     )
 
 
-def get_build_hook_event_body(payload: WildValue, include_title: bool) -> str:
+def get_build_hook_event_body(
+    payload: WildValue, include_title: bool, realm: Realm | None = None
+) -> str:
     build_status = payload["build_status"].tame(check_string)
     if build_status == "created":
         action = "was created"
@@ -354,11 +372,13 @@ def get_build_hook_event_body(payload: WildValue, include_title: bool) -> str:
     )
 
 
-def get_test_event_body(payload: WildValue, include_title: bool) -> str:
+def get_test_event_body(payload: WildValue, include_title: bool, realm: Realm | None = None) -> str:
     return f"Webhook for **{get_repo_name(payload)}** has been configured successfully! :tada:"
 
 
-def get_pipeline_event_body(payload: WildValue, include_title: bool) -> str:
+def get_pipeline_event_body(
+    payload: WildValue, include_title: bool, realm: Realm | None = None
+) -> str:
     pipeline_status = payload["object_attributes"]["status"].tame(check_string)
     if pipeline_status == "pending":
         action = "was created"
@@ -400,7 +420,9 @@ def get_pipeline_event_body(payload: WildValue, include_title: bool) -> str:
     )
 
 
-def get_release_event_body(payload: WildValue, include_title: bool) -> str:
+def get_release_event_body(
+    payload: WildValue, include_title: bool, realm: Realm | None = None
+) -> str:
     action = payload["action"].tame(check_string)
     name = payload["name"].tame(check_string)
     tag = payload["tag"].tame(check_string)
@@ -423,13 +445,17 @@ def get_release_event_body(payload: WildValue, include_title: bool) -> str:
     return body
 
 
-def get_feature_flag_event_body(payload: WildValue, include_title: bool) -> str:
+def get_feature_flag_event_body(
+    payload: WildValue,
+    include_title: bool,
+    realm: Realm,
+) -> str:
     repo_url = payload["project"]["web_url"].tame(check_string)
     feature_flag = payload["object_attributes"]
     action = "activated" if feature_flag["active"] else "deactivated"
 
     return FEATURE_FLAG_MESSAGE_TEMPLATE.format(
-        user=payload["user"]["username"].tame(check_string),
+        user=get_user_name(payload, realm),
         action=action,
         name=feature_flag["name"].tame(check_string),
         url=f"{repo_url}/-/feature_flags",
@@ -449,7 +475,9 @@ def get_access_token_page_url(payload: WildValue) -> str:
     return f"{project_url}/-/settings/access_tokens"
 
 
-def get_resource_access_token_expiry_event_body(payload: WildValue, include_title: bool) -> str:
+def get_resource_access_token_expiry_event_body(
+    payload: WildValue, include_title: bool, realm: Realm | None = None
+) -> str:
     access_token = payload["object_attributes"]
     expiry_date = access_token["expires_at"].tame(check_string)
     formatted_date = datetime.fromisoformat(expiry_date).strftime("%b %d, %Y")
@@ -461,10 +489,8 @@ def get_resource_access_token_expiry_event_body(payload: WildValue, include_titl
     )
 
 
-def get_deployment_event_body(payload: WildValue, include_title: bool) -> str:
-    user_text = (
-        f"[{payload['user']['name'].tame(check_string)}]({payload['user_url'].tame(check_string)})"
-    )
+def get_deployment_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
+    user_text = f"[{get_user_name(payload, realm)}]({payload['user_url'].tame(check_string)})"
 
     deployment_status = payload["status"].tame(check_string)
     deployable_url = payload.get("deployable_url", "").tame(check_string)
@@ -488,24 +514,44 @@ def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
 
-    # Apparently, Job Hook payloads don't have a `project` section,
-    # but the repository name is accessible from the `repository`
-    # section.
-    return payload["repository"]["name"].tame(check_string)
+    if "repository" in payload:
+        # Job Hook payloads don't have a `project` section,
+        # but the repository name is accessible from the `repository`
+        # section.
+        return payload["repository"]["name"].tame(check_string)
+
+    # Group-level events (e.g. group access token expiry) have neither
+    # `project` nor `repository`, but have a `group` section.
+    return payload["group"]["group_name"].tame(check_string)
 
 
-def get_user_name(payload: WildValue) -> str:
-    return payload["user_name"].tame(check_string)
+def get_user_mention(realm: Realm, username: str, fallback_name: str) -> str:
+    external_account_field_name = str(DEFAULT_EXTERNAL_ACCOUNTS["gitlab"].name)
+    zulip_user = guess_zulip_user_from_external_account(
+        realm, username, external_account_field_name, external_username_case_insensitive=True
+    )
+
+    if zulip_user is not None:
+        return silent_mention_syntax_for_user(zulip_user)
+    return fallback_name
 
 
-def get_issue_user_name(payload: WildValue) -> str:
-    return payload["user"]["name"].tame(check_string)
+def get_user_name(payload: WildValue, realm: Realm) -> str:
+    # Push and tag events don't have a `user` section.
+    user_data = payload["user"] if "user" in payload else payload
+    username = user_data["username" if "user" in payload else "user_username"].tame(check_string)
+    full_name = user_data["name" if "user" in payload else "user_name"].tame(check_string)
+    return get_user_mention(realm, username, full_name)
 
 
 def get_project_homepage(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["web_url"].tame(check_string)
-    return payload["repository"]["homepage"].tame(check_string)
+    if "repository" in payload:
+        return payload["repository"]["homepage"].tame(check_string)
+    # Group-level events have a group path instead of a project URL.
+    group_path = payload["group"]["full_path"].tame(check_string)
+    return f"https://gitlab.com/groups/{group_path}"
 
 
 def get_branch_name(payload: WildValue) -> str:
@@ -532,7 +578,7 @@ def skip_previews(event: str) -> bool:
 
 
 class EventFunction(Protocol):
-    def __call__(self, payload: WildValue, include_title: bool) -> str: ...
+    def __call__(self, payload: WildValue, include_title: bool, realm: Realm) -> str: ...
 
 
 EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
@@ -606,6 +652,7 @@ def api_gitlab_webhook(
         body = event_body_function(
             payload,
             include_title=user_specified_topic is not None,
+            realm=user_profile.realm,
         )
 
         # Add a link to the project if a custom topic is set
