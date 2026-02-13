@@ -1368,6 +1368,111 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.sender, self.example_user("cordelia"))
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
+    def test_receive_missed_group_direct_message_with_deactivated_recipient(self) -> None:
+        # Build dummy messages for message notification email reply.
+        # Have Othello send Iago and Cordelia a group direct message.
+        # Deactivate Iago, then Cordelia replies via email.
+        # Othello should receive the message, Iago should not.
+
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+
+        # Othello sends a group DM to Cordelia and Iago
+        self.login("othello")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "test_receive_missed_message_email_messages",
+                "to": orjson.dumps([cordelia.id, iago.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        usermessage = most_recent_usermessage(cordelia)
+
+        # Create the missed message address for Cordelia
+        mm_address = create_missed_message_address(cordelia, usermessage.message)
+
+        # Capture Iago's last message before deactivation
+        iago_last_message_before = most_recent_message(iago)
+
+        # Deactivate Iago
+        do_deactivate_user(iago, acting_user=None)
+
+        # Cordelia replies via email
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content(
+            "TestMissedGroupDirectMessageWithDeactivatedRecipient body"
+        )
+        incoming_valid_message["Subject"] = (
+            "TestMissedGroupDirectMessageWithDeactivatedRecipient subject"
+        )
+        incoming_valid_message["From"] = self.example_email("cordelia")
+        incoming_valid_message["To"] = mm_address
+        incoming_valid_message["Reply-to"] = self.example_email("cordelia")
+
+        # Process the email reply (should not raise)
+        process_message(incoming_valid_message)
+
+        # Confirm Othello received the message.
+        # Since only Othello remains active (Iago is deactivated and Cordelia is
+        # the sender), the message becomes a PERSONAL DM, not a group DM.
+        message = most_recent_message(othello)
+        self.assertEqual(
+            message.content,
+            "TestMissedGroupDirectMessageWithDeactivatedRecipient body",
+        )
+        self.assertEqual(message.sender, cordelia)
+        self.assertEqual(message.recipient.type, Recipient.PERSONAL)
+
+        # Confirm deactivated Iago did NOT receive the new message
+        iago_last_message_after = most_recent_message(iago)
+        self.assertEqual(iago_last_message_before.id, iago_last_message_after.id)
+
+    def test_receive_missed_group_direct_message_all_recipients_deactivated(self) -> None:
+        # Test the early-return path when all recipients (except sender) are deactivated.
+        # Hamlet sends a group DM to Cordelia and Iago, then both are deactivated.
+        # Hamlet replies via email - should be safely dropped with no exception.
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "group dm",
+                "to": orjson.dumps([cordelia.id, iago.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        usermessage = most_recent_usermessage(hamlet)
+        mm_address = create_missed_message_address(hamlet, usermessage.message)
+
+        # Deactivate ALL other recipients
+        do_deactivate_user(cordelia, acting_user=None)
+        do_deactivate_user(iago, acting_user=None)
+
+        # Capture last message before attempting reply
+        last_message_before = self.get_last_message()
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Reply body")
+        incoming_valid_message["Subject"] = "Reply"
+        incoming_valid_message["From"] = hamlet.delivery_email
+        incoming_valid_message["To"] = mm_address
+        incoming_valid_message["Reply-to"] = hamlet.delivery_email
+
+        # Should not raise - safely dropped
+        process_message(incoming_valid_message)
+
+        # No new message should be delivered
+        self.assertEqual(last_message_before.id, self.get_last_message().id)
+
     def test_receive_missed_stream_message_email_messages(self) -> None:
         # build dummy messages for message notification email reply
         # have Hamlet send a message to stream Denmark, that Othello
