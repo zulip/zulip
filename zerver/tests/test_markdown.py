@@ -1352,7 +1352,9 @@ class MarkdownEmojiTest(ZulipTestCase):
         user_profile = self.example_user("othello")
         do_change_user_setting(user_profile, "translate_emoticons", False, acting_user=None)
         msg = Message(
-            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+            sender=user_profile,
+            sending_client=get_client("test"),
+            realm=user_profile.realm,
         )
 
         content = ":)"
@@ -1869,7 +1871,9 @@ class MarkdownLinkifierTest(ZulipTestCase):
     def test_is_status_message(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(
-            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+            sender=user_profile,
+            sending_client=get_client("test"),
+            realm=user_profile.realm,
         )
 
         content = "/me makes a list\n* one\n* two"
@@ -1942,7 +1946,9 @@ class MarkdownAlertTest(ZulipTestCase):
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg,
+                content,
+                realm_alert_words_automaton=realm_alert_words_automaton,
             )
 
         content = "We have an ALERTWORD day today!"
@@ -1953,7 +1959,9 @@ class MarkdownAlertTest(ZulipTestCase):
         self.assertEqual(rendering_result.user_ids_with_alert_words, {user_profile.id})
 
         msg = Message(
-            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+            sender=user_profile,
+            sending_client=get_client("test"),
+            realm=user_profile.realm,
         )
         content = "We have a NOTHINGWORD day today!"
         rendering_result = render(msg, content)
@@ -1961,6 +1969,62 @@ class MarkdownAlertTest(ZulipTestCase):
             rendering_result.rendered_content, "<p>We have a NOTHINGWORD day today!</p>"
         )
         self.assertEqual(rendering_result.user_ids_with_alert_words, set())
+
+    def test_alert_words_in_stream_topic_syntax(self) -> None:
+        user_profile = self.example_user("othello")
+        do_add_alert_words(user_profile, ["GSoC"])
+        stream = self.make_stream("GSoC", realm=user_profile.realm)
+        msg = Message(
+            sender=user_profile,
+            sending_client=get_client("test"),
+            realm=user_profile.realm,
+        )
+        realm_alert_words_automaton = get_alert_word_automaton(user_profile.realm)
+
+        def render(msg: Message, content: str) -> MessageRenderingResult:
+            return render_message_markdown(
+                msg,
+                content,
+                realm_alert_words_automaton=realm_alert_words_automaton,
+            )
+
+        content = "#**GSoC>GSoC 2024 project ideas**"
+        rendering_result = render(msg, content)
+        expected_href = f"/#narrow/channel/{stream.id}-GSoC/topic/GSoC.202024.20project.20ideas"
+        self.assertEqual(
+            rendering_result.rendered_content,
+            f'<p><a class="stream-topic" data-stream-id="{stream.id}" href="{expected_href}">'
+            "#GSoC &gt; GSoC 2024 project ideas</a></p>",
+        )
+        self.assertEqual(rendering_result.user_ids_with_alert_words, {user_profile.id})
+
+    def test_alert_words_in_stream_topic_message_syntax(self) -> None:
+        user_profile = self.example_user("othello")
+        do_add_alert_words(user_profile, ["ideas"])
+        stream = self.make_stream("GSoC", realm=user_profile.realm)
+        msg = Message(
+            sender=user_profile,
+            sending_client=get_client("test"),
+            realm=user_profile.realm,
+        )
+        realm_alert_words_automaton = get_alert_word_automaton(user_profile.realm)
+
+        def render(msg: Message, content: str) -> MessageRenderingResult:
+            return render_message_markdown(
+                msg,
+                content,
+                realm_alert_words_automaton=realm_alert_words_automaton,
+            )
+
+        content = "#**GSoC>Project ideas@1761334**"
+        rendering_result = render(msg, content)
+        expected_href = f"/#narrow/channel/{stream.id}-GSoC/topic/Project.20ideas/near/1761334"
+        self.assertEqual(
+            rendering_result.rendered_content,
+            f'<p><a class="message-link" href="{expected_href}">'
+            "#GSoC &gt; Project ideas @ 💬</a></p>",
+        )
+        self.assertEqual(rendering_result.user_ids_with_alert_words, {user_profile.id})
 
     def test_alert_words_returns_user_ids_with_alert_words(self) -> None:
         alert_words_for_users: dict[str, list[str]] = {
@@ -1986,7 +2050,9 @@ class MarkdownAlertTest(ZulipTestCase):
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg,
+                content,
+                realm_alert_words_automaton=realm_alert_words_automaton,
             )
 
         content = "hello how is this possible how are you doing today"
@@ -2024,7 +2090,9 @@ class MarkdownAlertTest(ZulipTestCase):
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg,
+                content,
+                realm_alert_words_automaton=realm_alert_words_automaton,
             )
 
         content = """Hello, everyone. Prod deployment has been completed
@@ -2066,7 +2134,9 @@ class MarkdownAlertTest(ZulipTestCase):
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg,
+                content,
+                realm_alert_words_automaton=realm_alert_words_automaton,
             )
 
         content = """This is to test out alert words work in languages with accented characters too
@@ -2074,7 +2144,10 @@ class MarkdownAlertTest(ZulipTestCase):
         et j'espère qu'il n'y n' réglementaire a pas de mots d'alerte dans ce texte français
         """
         rendering_result = render(msg, content)
-        expected_user_ids: set[int] = {user_profiles["hamlet"].id, user_profiles["cordelia"].id}
+        expected_user_ids: set[int] = {
+            user_profiles["hamlet"].id,
+            user_profiles["cordelia"].id,
+        }
         # Only hamlet and cordelia have their alert-words appear in the message content
         self.assertEqual(rendering_result.user_ids_with_alert_words, expected_user_ids)
 
@@ -2094,13 +2167,17 @@ class MarkdownAlertTest(ZulipTestCase):
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user("polonius")
         msg = Message(
-            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+            sender=user_profile,
+            sending_client=get_client("test"),
+            realm=user_profile.realm,
         )
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg,
+                content,
+                realm_alert_words_automaton=realm_alert_words_automaton,
             )
 
         content = """hello how is this possible how are you doing today
@@ -2138,7 +2215,9 @@ class MarkdownAlertTest(ZulipTestCase):
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg,
+                content,
+                realm_alert_words_automaton=realm_alert_words_automaton,
             )
 
         content = """This is to test a empty alert words i.e. no user has any alert-words set"""
@@ -2168,7 +2247,9 @@ class MarkdownAlertTest(ZulipTestCase):
 
         def render(msg: Message, content: str) -> MessageRenderingResult:
             return render_message_markdown(
-                msg, content, realm_alert_words_automaton=realm_alert_words_automaton
+                msg,
+                content,
+                realm_alert_words_automaton=realm_alert_words_automaton,
             )
 
         content = """The code above will print 10 random values of numbers between 1 and 100.
