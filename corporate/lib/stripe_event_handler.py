@@ -196,9 +196,9 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
             assert get_current_plan_by_customer(customer) is None
 
         billing_session.process_initial_upgrade(
-            plan_tier,
-            int(metadata["licenses"]),
-            metadata["license_management"] == "automatic",
+            plan_tier=plan_tier,
+            licenses=int(metadata["licenses"]),
+            automanage_licenses=metadata["license_management"] == "automatic",
             billing_schedule=billing_schedule,
             charge_automatically=charge_automatically,
             free_trial=False,
