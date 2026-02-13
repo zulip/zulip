@@ -113,14 +113,21 @@ export function open_stream_edit_modal(stream_id: number): void {
         max_stream_name_length: realm.max_stream_name_length,
         max_stream_description_length: realm.max_stream_description_length,
     };
+    const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({
+        stream,
+    });
     const change_stream_info_modal = render_change_stream_info_modal(template_data);
-
     const heading = is_archived
         ? $t_html(
-              {defaultMessage: "Edit #{channel_name} (<i>archived</i>)"},
-              {channel_name: stream.name},
+              {defaultMessage: "Edit <z-link></z-link> (<i>archived</i>)"},
+              {
+                  "z-link": () => stream_name_with_privacy_symbol_html,
+              },
           )
-        : $t_html({defaultMessage: "Edit #{channel_name}"}, {channel_name: stream.name});
+        : $t_html(
+              {defaultMessage: "Edit <z-link></z-link>"},
+              {"z-link": () => stream_name_with_privacy_symbol_html},
+          );
     dialog_widget.launch({
         modal_title_html: heading,
         modal_content_html: change_stream_info_modal,
