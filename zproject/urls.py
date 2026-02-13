@@ -232,6 +232,7 @@ from zerver.views.user_groups import (
     get_subgroups_of_user_group,
     get_user_group_members,
     get_user_groups,
+    reorder_user_group_colors,
     update_subgroups_of_user_group,
     update_user_group_backend,
 )
@@ -505,6 +506,7 @@ v1_api_and_json_patterns = [
         "user_groups/<int:user_group_id>/members/<int:user_id>", GET=get_is_user_group_member
     ),
     rest_path("user_groups/<int:user_group_id>/deactivate", POST=deactivate_user_group),
+    rest_path("user_groups/colors", PATCH=reorder_user_group_colors),
     # users/me -> zerver.views.user_settings
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
     # users/me/onboarding_steps -> zerver.views.onboarding_steps

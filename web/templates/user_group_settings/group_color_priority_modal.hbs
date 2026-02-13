@@ -1,0 +1,14 @@
+<div id="group-color-priority-form">
+    <p>{{t "A user's name will be assigned the color of the highest-priority group they're a member of." }}</p>
+    <div class="group-color-priority-list" data-simplebar>
+        {{#each colored_groups}}
+        <div class="group-color-priority-row" data-group-id="{{this.id}}">
+            <span class="group-color-priority-drag-handle">
+                <i class="zulip-icon zulip-icon-grip-vertical"></i>
+            </span>
+            <span class="group-color-priority-swatch" style="background: {{this.color}};"></span>
+            <span class="group-color-priority-name">{{this.display_name}}</span>
+        </div>
+        {{/each}}
+    </div>
+</div>

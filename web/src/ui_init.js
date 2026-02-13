@@ -54,6 +54,7 @@ import * as fenced_code from "./fenced_code.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as gif_state from "./gif_state.ts";
+import * as group_color_picker_popover from "./group_color_picker_popover.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
 import * as hotkey from "./hotkey.ts";
@@ -613,6 +614,7 @@ export async function initialize_everything(state_data) {
     user_profile.initialize();
     stream_popover.initialize();
     color_picker_popover.initialize();
+    group_color_picker_popover.initialize();
     add_stream_options_popover.initialize();
     channel_folders_popover.initialize();
     click_handlers.initialize();

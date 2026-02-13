@@ -1396,6 +1396,73 @@ h4.user_group_setting_subsection_title {
     margin: -0.375em 0 -0.375em -0.625em;
 }
 
+.group-settings-color-selector {
+    border: 1px solid var(--color-border-zulip-button);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+
+    &.action-button-subtle-neutral {
+        box-shadow: none;
+    }
+}
+
+.group-settings-color-preview {
+    /* 28px at 16px font size */
+    width: 1.75em;
+    height: 1.75em;
+    /* -6px 0 -6px 10px at 16px font size. */
+    margin: -0.375em 0 -0.375em -0.625em;
+}
+
+.group-color-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.group-color-settings {
+    margin-top: 10px;
+}
+
+.group-color-priority-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--color-border-zulip-button);
+    border-radius: 4px;
+    margin-bottom: 4px;
+    cursor: grab;
+    background: var(--color-background);
+}
+
+.group-color-priority-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.group-color-priority-drag-handle {
+    cursor: grab;
+    color: var(--color-text-default);
+    display: flex;
+    align-items: center;
+}
+
+.group-color-priority-name {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.group-color-priority-ghost {
+    opacity: 0.4;
+}
+
 #subscription_overlay .channel-folder-widget-container {
     display: flex;
     gap: 0.5em;

@@ -1148,6 +1148,8 @@ class Group(BaseModel):
     can_mention_group: int | UserGroupMembersDict
     can_remove_members_group: int | UserGroupMembersDict
     deactivated: bool
+    color: str
+    color_priority: int | None
 
 
 class EventUserGroupAdd(BaseEvent):
@@ -1205,6 +1207,8 @@ class UserGroupData(UserGroupDataCore):
     can_mention_group: int | UserGroupMembersDict | None = None
     can_remove_members_group: int | UserGroupMembersDict | None = None
     deactivated: bool | None = None
+    color: str | None = None
+    color_priority: int | None = None
 
 
 class EventUserGroupUpdate(BaseEvent):

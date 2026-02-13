@@ -12,6 +12,7 @@ import * as presence from "./presence.ts";
 import * as stream_data from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
 import * as unread from "./unread.ts";
+import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import * as util from "./util.ts";
@@ -213,6 +214,7 @@ export type BuddyUserInfo = {
         WITH_AVATAR: boolean;
     };
     should_add_guest_user_indicator: boolean;
+    name_color: string;
     faded?: boolean;
 };
 
@@ -232,6 +234,9 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
         WITH_AVATAR: user_list_style_value === 3,
     };
 
+    const raw_color = user_groups.get_color_for_user(user_id);
+    const name_color = user_groups.get_user_name_color(raw_color);
+
     return {
         href: hash_util.pm_with_url(person.user_id.toString()),
         name: person.full_name,
@@ -245,6 +250,7 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
         has_status_text: Boolean(status_text),
         user_list_style,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
+        name_color,
     };
 }
 

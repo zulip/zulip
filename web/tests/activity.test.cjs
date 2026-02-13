@@ -389,6 +389,7 @@ test("insert_one_user_into_empty_list", ({override}) => {
         assert.deepEqual(data.item, {
             href: "#narrow/dm/1-Alice-Smith",
             name: "Alice Smith",
+            name_color: "",
             user_id: 1,
             is_current_user: false,
             num_unread: 0,

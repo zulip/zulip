@@ -190,6 +190,9 @@ export function update_profile_modal_ui(
         const user_type = {
             name: user.full_name,
             should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+            name_color: user_groups.get_user_name_color(
+                user_groups.get_color_for_user(user.user_id),
+            ),
         };
         $("#name .user-profile-name").html(render_user_full_name(user_type));
     }
@@ -725,6 +728,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
         profile_data,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
+        name_color: user_groups.get_user_name_color(user_groups.get_color_for_user(user.user_id)),
         user_avatar: people.medium_avatar_url_for_person(user),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         user_id: user.user_id,
