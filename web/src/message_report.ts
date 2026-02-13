@@ -22,7 +22,7 @@ import {update_elements} from "./rendered_markdown.ts";
 import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import {process_submessages} from "./submessage.ts";
+import {render_submessage} from "./submessage.ts";
 import * as ui_report from "./ui_report.ts";
 import {toggle_user_card_popover_for_message} from "./user_card_popover.ts";
 
@@ -109,7 +109,7 @@ function post_process_message_preview($row: JQuery): void {
     const $content = $row.find(".message_content");
     update_elements($content);
     const id = rows.id($row);
-    process_submessages({
+    render_submessage({
         $row,
         message_id: id,
     });

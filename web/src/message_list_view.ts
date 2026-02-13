@@ -1074,7 +1074,7 @@ export class MessageListView {
         const id = rows.id($row);
         message_edit.maybe_show_edit($row, id);
 
-        submessage.process_submessages({
+        submessage.render_submessage({
             $row,
             message_id: id,
         });
