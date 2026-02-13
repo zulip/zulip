@@ -114,8 +114,10 @@ export function dispatch_normal_event(event) {
             for (const word of event.alert_words) {
                 if (Array.isArray(word)) {
                     alert_words_list.push(word[0]);
-                } else {
+                } else if (typeof word === "string") {
                     alert_words_list.push(word);
+                } else {
+                    alert_words_list.push(word.word);
                 }
             }
             alert_words.set_words(alert_words_list);

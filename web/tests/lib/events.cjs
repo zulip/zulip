@@ -130,8 +130,8 @@ exports.fixtures = {
     alert_words_with_follow_topic: {
         type: "alert_words",
         alert_words: [
-            ["fire", true],
-            ["lunch", false],
+            {word: "fire", automatically_follow_topics: true},
+            {word: "lunch", automatically_follow_topics: false},
         ],
     },
 

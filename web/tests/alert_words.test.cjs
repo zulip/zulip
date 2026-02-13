@@ -11,16 +11,16 @@ set_global("page_params", {
 
 const params = {
     alert_words: [
-        ["alertone", true],
-        ["alerttwo", true],
-        ["alertthree", false],
-        ["al*rt.*s", true],
-        [".+", false],
-        ["emoji", false],
-        ["FD&C", true],
-        ["<3", false],
-        [">8", false],
-        ["5'11\"", true],
+        {word: "alertone", automatically_follow_topics: true},
+        {word: "alerttwo", automatically_follow_topics: true},
+        {word: "alertthree", automatically_follow_topics: false},
+        {word: "al*rt.*s", automatically_follow_topics: true},
+        {word: ".+", automatically_follow_topics: false},
+        {word: "emoji", automatically_follow_topics: false},
+        {word: "FD&C", automatically_follow_topics: true},
+        {word: "<3", automatically_follow_topics: false},
+        {word: ">8", automatically_follow_topics: false},
+        {word: "5'11\"", automatically_follow_topics: true},
     ],
 };
 
