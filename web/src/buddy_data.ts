@@ -115,6 +115,17 @@ export function compare_function(
     pm_ids: Set<number>,
     conversation_participants: Set<number>,
 ): number {
+   
+    const a_unread = get_num_unread(a);
+    const b_unread = get_num_unread(b);
+
+    if (a_unread > 0 && b_unread === 0) {
+        return -1;
+    }
+    if (a_unread === 0 && b_unread > 0) {
+        return 1;
+    }
+
     const a_is_participant = conversation_participants.has(a);
     const b_is_participant = conversation_participants.has(b);
     if (a_is_participant && !b_is_participant) {
