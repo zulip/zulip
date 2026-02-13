@@ -867,6 +867,24 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "open_recent_view":
             if (recent_view_ui.is_in_focus()) {
                 assert(e.target instanceof HTMLElement);
+                const $target = $(e.target);
+
+                if ($target.is("input, textarea")) {
+                    // Differentiating between typing and navigating keys
+                    const navigation_keys = new Set([
+                        "ArrowUp",
+                        "ArrowDown",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Escape",
+                        "Enter",
+                        "Tab",
+                    ]);
+
+                    if (!navigation_keys.has(e.key)) {
+                        return false;
+                    }
+                }
                 return recent_view_ui.change_focused_element($(e.target), event_name);
             }
     }
