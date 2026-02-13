@@ -94,7 +94,7 @@ system. Reading the following guides will give you a good starting point:
   - Inline image previews in messages (enabled by default, but can be disabled)
   - Inline webpage previews and embeds (must be configured to be enabled)
   - Twitter message previews (must be configured to be enabled)
-  - BigBlueButton, Constructor Groups, and Zoom API requests
+  - BigBlueButton, Constructor Groups, Nextcloud Talk and Zoom API requests
     (must be configured to be enabled)
   - Mobile push notifications (must be configured to be enabled)
 

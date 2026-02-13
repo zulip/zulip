@@ -52,6 +52,7 @@ source video conferencing solution. You can configure Zulip to use
 - [Jitsi Meet integration](/integrations/jitsi)
 - [Zoom integration](/integrations/zoom)
 - [BigBlueButton integration](/integrations/big-blue-button)
+- [Nextcloud Talk integration](/integrations/nextcloud-talk)
 
 [constructor-groups-api-docs]: https://developer.perculus.com/v2-en
 [constructor-groups]: https://constructor.tech/products/learning/groups
