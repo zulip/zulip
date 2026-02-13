@@ -1236,7 +1236,7 @@ elif not EMAIL_HOST:
     WARN_NO_EMAIL = True
     EMAIL_BACKEND = "django.core.mail.backends.dummy.EmailBackend"
 else:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_BACKEND = "zproject.email_backends.PersistentSMTPEmailBackend"
 
 EMAIL_TIMEOUT = 15
 
