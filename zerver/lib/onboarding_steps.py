@@ -89,9 +89,14 @@ def get_next_onboarding_steps(user: UserProfile) -> list[dict[str, Any]]:
 
 
 def copy_onboarding_steps(source_profile: UserProfile, target_profile: UserProfile) -> None:
-    for onboarding_step in frozenset(OnboardingStep.objects.filter(user=source_profile)):
-        OnboardingStep.objects.create(
-            user=target_profile,
-            onboarding_step=onboarding_step.onboarding_step,
-            timestamp=onboarding_step.timestamp,
-        )
+    source_steps = OnboardingStep.objects.filter(user=source_profile)
+    OnboardingStep.objects.bulk_create(
+        [
+            OnboardingStep(
+                user=target_profile,
+                onboarding_step=step.onboarding_step,
+                timestamp=step.timestamp,
+            )
+            for step in source_steps
+        ]
+    )

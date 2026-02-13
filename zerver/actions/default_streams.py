@@ -37,16 +37,20 @@ def check_default_stream_group_name(group_name: str) -> None:
 def lookup_default_stream_groups(
     default_stream_group_names: list[str], realm: Realm
 ) -> list[DefaultStreamGroup]:
-    default_stream_groups = []
+    groups_by_name = {
+        group.name: group
+        for group in DefaultStreamGroup.objects.filter(
+            realm=realm, name__in=default_stream_group_names
+        )
+    }
+    result = []
     for group_name in default_stream_group_names:
-        try:
-            default_stream_group = DefaultStreamGroup.objects.get(name=group_name, realm=realm)
-        except DefaultStreamGroup.DoesNotExist:
+        if group_name not in groups_by_name:
             raise JsonableError(
                 _("Invalid default channel group {group_name}").format(group_name=group_name)
             )
-        default_stream_groups.append(default_stream_group)
-    return default_stream_groups
+        result.append(groups_by_name[group_name])
+    return result
 
 
 def notify_default_streams(realm: Realm) -> None:

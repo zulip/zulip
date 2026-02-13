@@ -54,7 +54,7 @@ def set_bot_storage(bot_profile: UserProfile, entries: list[tuple[str, str]]) ->
 
 def remove_bot_storage(bot_profile: UserProfile, keys: list[str]) -> None:
     queryset = BotStorageData.objects.filter(bot_profile=bot_profile, key__in=keys)
-    if len(queryset) < len(keys):
+    if queryset.count() < len(keys):
         raise StateError("Key does not exist.")
     queryset.delete()
 
