@@ -5,6 +5,8 @@
 # definitions and validate that Zulip's implementation matches what is
 # described in our documentation.
 
+import contextlib
+import hashlib
 import json
 import os
 import re
@@ -21,6 +23,30 @@ from pydantic import BaseModel
 OPENAPI_SPEC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../openapi/zulip.yaml")
 )
+
+OPENAPI_CACHE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "../../static/generated/openapi")
+)
+
+
+def _resolve_cache(filename: str) -> str:
+    """Return the best available path for a cache file.
+
+    In production the file will have been collected into STATIC_ROOT
+    by collectstatic; try that first via static_path().  Fall back to
+    the source-tree path for development and for build-time contexts
+    where Django is not configured.
+    """
+    try:
+        from zerver.lib.storage import static_path
+
+        path = static_path(f"generated/openapi/{filename}")
+        if os.path.exists(path):
+            return path
+    except Exception:  # nocoverage
+        pass
+    return os.path.join(OPENAPI_CACHE_DIR, filename)
+
 
 # A list of endpoint-methods such that the endpoint
 # has documentation but not with this particular method.
@@ -79,7 +105,89 @@ class OpenAPISpec:
         self.mtime: float | None = None
         self._openapi: dict[str, Any] = {}
         self._endpoints_dict: dict[str, str] = {}
-        self._spec: OpenAPI | None = None
+        self._spec_dict: dict[str, Any] = {}
+        self._spec_base: dict[str, Any] = {}
+        self._endpoint_specs: dict[str, OpenAPI] = {}
+        self._yaml_hash: str = ""
+
+    @staticmethod
+    def _atomic_write(path: str, data: bytes) -> None:
+        """Write data to path atomically via a temp file + os.replace."""
+        tmp_path = path + f".tmp.{os.getpid()}"
+        try:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(tmp_path, "wb") as fb:
+                fb.write(data)
+            os.replace(tmp_path, path)
+        except OSError:  # nocoverage
+            with contextlib.suppress(OSError):
+                os.unlink(tmp_path)
+
+    def _load_openapi_dict(self) -> dict[str, Any]:
+        """Load the raw OpenAPI dict, using a JSON cache when possible.
+
+        After the first YAML parse, a JSON cache file is written into
+        static/generated/openapi/.  On subsequent loads the much-faster
+        orjson reader is used instead of yaml.load, as long as the
+        embedded content hash still matches.  Writes are atomic
+        (write-to-tmp + os.replace) so parallel test workers never
+        read a half-written file.
+        """
+        cache_filename = os.path.basename(self.openapi_path) + ".json"
+
+        # Read the YAML source as bytes so we can hash it cheaply
+        # without a full yaml.load parse.
+        with open(self.openapi_path, "rb") as fb:
+            yaml_bytes = fb.read()
+        self._yaml_hash = hashlib.sha256(yaml_bytes).hexdigest()
+
+        # Try the JSON cache: it stores {"yaml_hash": ..., "data": ...}.
+        try:
+            with open(_resolve_cache(cache_filename), "rb") as fb:
+                cached = orjson.loads(fb.read())
+            if cached.get("yaml_hash") == self._yaml_hash:
+                return cached["data"]
+        except (FileNotFoundError, orjson.JSONDecodeError, KeyError):
+            pass
+
+        import yaml
+
+        openapi: dict[str, Any] = yaml.load(yaml_bytes, Loader=yaml.CSafeLoader)
+
+        self._atomic_write(
+            os.path.join(OPENAPI_CACHE_DIR, cache_filename),
+            orjson.dumps({"yaml_hash": self._yaml_hash, "data": openapi}),
+        )
+        return openapi
+
+    def _load_merged_dict(self, openapi: dict[str, Any]) -> dict[str, Any]:
+        """Load the merged (refs resolved, allOf merged) dict, using a
+        JSON cache when possible.
+
+        After the first merge pass, a JSON cache file is written into
+        static/generated/openapi/.  On subsequent loads the cache is
+        used directly, as long as its embedded hash matches the current
+        YAML source.
+        """
+        cache_filename = os.path.basename(self.openapi_path) + ".merged.json"
+
+        try:
+            with open(_resolve_cache(cache_filename), "rb") as fb:
+                cached = orjson.loads(fb.read())
+            if cached.get("yaml_hash") == self._yaml_hash:
+                return cached["data"]
+        except (FileNotFoundError, orjson.JSONDecodeError, KeyError):
+            pass
+
+        from jsonref import JsonRef
+
+        merged: dict[str, Any] = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
+
+        self._atomic_write(
+            os.path.join(OPENAPI_CACHE_DIR, cache_filename),
+            orjson.dumps({"yaml_hash": self._yaml_hash, "data": merged}),
+        )
+        return merged
 
     def check_reload(self) -> None:
         # Because importing yaml takes significant time, and we only
@@ -92,23 +200,41 @@ class OpenAPISpec:
         # only cause some extra processing at startup and not data
         # corruption.
 
-        import yaml
-        from jsonref import JsonRef
+        mtime = os.stat(self.openapi_path).st_mtime
+        # Using == rather than >= to cover the corner case of users placing an
+        # earlier version than the current one
+        if self.mtime == mtime:
+            return
 
-        with open(self.openapi_path) as f:
-            mtime = os.fstat(f.fileno()).st_mtime
-            # Using == rather than >= to cover the corner case of users placing an
-            # earlier version than the current one
-            if self.mtime == mtime:
-                return
+        openapi = self._load_openapi_dict()
 
-            openapi = yaml.load(f, Loader=yaml.CSafeLoader)
+        # Store the raw spec dict for building per-endpoint validators
+        # lazily, rather than parsing all 99 endpoints up front.
+        self._spec_dict = openapi
+        self._spec_base = {k: v for k, v in openapi.items() if k != "paths"}
+        self._endpoint_specs = {}
 
-        spec = OpenAPI.from_dict(openapi)
-        self._spec = spec
-        self._openapi = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
+        self._openapi = self._load_merged_dict(openapi)
         self.create_endpoints_dict()
         self.mtime = mtime
+
+    def spec_for_endpoint(self, endpoint: str) -> OpenAPI:
+        """Return an OpenAPI validator for a single endpoint.
+
+        Building the validator for one endpoint is much cheaper than
+        building one for the entire spec (~0.14s vs ~0.70s), so this
+        is a significant win when running a small number of tests.
+        """
+        self.check_reload()
+        cached = self._endpoint_specs.get(endpoint)
+        if cached is not None:
+            return cached
+
+        mini_spec: dict[str, Any] = dict(self._spec_base)
+        mini_spec["paths"] = {endpoint: self._spec_dict["paths"][endpoint]}
+        spec = OpenAPI.from_dict(mini_spec)  # type: ignore[arg-type]  # dict is a Mapping
+        self._endpoint_specs[endpoint] = spec
+        return spec
 
     def create_endpoints_dict(self) -> None:
         # Algorithm description:
@@ -162,15 +288,6 @@ class OpenAPISpec:
         self.check_reload()
         assert len(self._endpoints_dict) > 0
         return self._endpoints_dict
-
-    def spec(self) -> OpenAPI:
-        """Reload the OpenAPI file if it has been modified after the last time
-        it was read, and then return the openapi_core validator object. Similar
-        to preceding functions. Used for proper access to OpenAPI objects.
-        """
-        self.check_reload()
-        assert self._spec is not None
-        return self._spec
 
 
 class SchemaError(Exception):
@@ -478,7 +595,7 @@ def validate_test_response(request: Request, response: Response) -> bool:
         return True
 
     try:
-        openapi_spec.spec().validate_response(request, response)
+        openapi_spec.spec_for_endpoint(endpoint).validate_response(request, response)
     except OpenAPIValidationError as error:
         message = f"Response validation error at {method} /api/v1{path} ({status_code}):"
         message += f"\n\n{type(error).__name__}: {error}"
@@ -594,11 +711,21 @@ def validate_test_request(
     if status_code.startswith("2") and intentionally_undocumented:
         return
 
+    # Resolve the OpenAPI endpoint for this URL so that we can build
+    # a per-endpoint validator (much cheaper than the full spec).
+    if url in openapi_spec.openapi()["paths"]:
+        endpoint = url
+    else:
+        resolved = find_openapi_endpoint(url)
+        if resolved is None:
+            raise AssertionError(f"Could not find OpenAPI docs for for {url}")
+        endpoint = resolved
+
     # Now using the openapi_core APIs, validate the request schema
     # against the OpenAPI documentation.
     try:
-        openapi_spec.spec().validate_request(request)
-    except OpenAPIValidationError as error:
+        openapi_spec.spec_for_endpoint(endpoint).validate_request(request)
+    except OpenAPIValidationError as error:  # nocoverage
         # Show a block error message explaining the options for fixing it.
         msg = f"""
 

@@ -9,3 +9,5 @@
 /generated/integrations/
 # From emoji
 /generated/emoji
+# OpenAPI JSON cache
+/generated/openapi
