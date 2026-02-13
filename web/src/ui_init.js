@@ -159,6 +159,7 @@ import * as topic_popover from "./topic_popover.ts";
 import * as transmit from "./transmit.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as typing from "./typing.ts";
+import * as ui_report from "./ui_report.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
@@ -798,6 +799,12 @@ $(() => {
         url.searchParams.delete("show_try_zulip_modal");
         window.history.replaceState(window.history.state, "", url.toString());
     }
+
+    channel.set_rate_limit_handler((xhr) => {
+        ui_report.generic_embed_error(
+            channel.xhr_error_message(i18n.$t({defaultMessage: "Too many requests"}), xhr),
+        );
+    });
 
     if (page_params.is_spectator) {
         const data = {
