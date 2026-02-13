@@ -519,7 +519,7 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same({minutes: -30}, $t({defaultMessage: "Active 30 minutes ago"}));
 
-    assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "Active 1 hour ago"}));
 
     assert_same({hours: -2}, $t({defaultMessage: "Active 2 hours ago"}));
 
@@ -549,7 +549,7 @@ run_test("last_seen_status_from_date", () => {
     base_date = new Date(2016, 4, 2, 23, 30);
     MockDate.set(base_date.getTime());
 
-    assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "Active 1 hour ago"}));
 
     assert_same({hours: -2}, $t({defaultMessage: "Active 2 hours ago"}));
 
