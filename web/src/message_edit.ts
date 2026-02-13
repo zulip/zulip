@@ -1535,10 +1535,12 @@ export function edit_last_sent_message(): void {
         return;
     }
 
-    const current_selected_msg = message_store.get(message_lists.current.selected_id());
+    const current_selected_msg = message_store.maybe_get_immutable_message(
+        message_lists.current.selected_id(),
+    );
     if (
         current_selected_msg &&
-        current_selected_msg.id < last_sent_msg.id &&
+        current_selected_msg.get_id() < last_sent_msg.id &&
         message_lists.current.can_mark_messages_read()
     ) {
         // If there are any unread messages between the selected message and the
@@ -1546,7 +1548,7 @@ export function edit_last_sent_message(): void {
         // marking messages as read unintentionally.
         let num_unread = 0;
         for (const msg of message_lists.current.all_messages()) {
-            if (current_selected_msg.id < msg.id && msg.id < last_sent_msg.id && msg.unread) {
+            if (current_selected_msg.get_id() < msg.id && msg.id < last_sent_msg.id && msg.unread) {
                 num_unread += 1;
             }
         }

@@ -287,6 +287,10 @@ export class ImmutableMessage {
     get_sender_full_name(): string {
         return this.message.sender_full_name;
     }
+
+    get_id(): number {
+        return this.message.id;
+    }
 }
 
 export function maybe_get_immutable_message(message_id: number): ImmutableMessage | undefined {
