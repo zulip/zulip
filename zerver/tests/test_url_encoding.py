@@ -12,6 +12,12 @@ from zerver.models.streams import get_stream
 
 
 class URLEncodeTest(ZulipTestCase):
+    def test_encode_hash_component(self) -> None:
+        self.assertEqual(
+            encode_hash_component("https://www.zulipexample.com/test-(spec!al)-char's"),
+            "https.3A.2F.2Fwww.2Ezulipexample.2Ecom.2Ftest-.28spec.21al.29-char.27s",
+        )
+
     def test_encode_channel(self) -> None:
         # We have more tests for this function in `test_topic_link_utils.py`
         self.assertEqual(encode_channel(9, "Verona"), "9-Verona")

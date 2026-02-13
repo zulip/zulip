@@ -1,9 +1,16 @@
 type MaybeGetStreamName = (id: number) => string | undefined;
 
+// ' & ! here gets encoded by urllib in zerver but aren't in
+// encodeURIComponent so the hashReplacements isn't in sync
+// with the zerver.
+// We escape * to bypass server markdown double tag pattern
 const hashReplacements = new Map([
     ["%", "."],
+    ["!", ".21"],
+    ["'", ".27"],
     ["(", ".28"],
     [")", ".29"],
+    ["*", ".2A"],
     [".", ".2E"],
 ]);
 
@@ -12,7 +19,7 @@ const hashReplacements = new Map([
 // by replacing % with . (like MediaWiki).
 export function encodeHashComponent(str: string): string {
     return encodeURIComponent(str).replaceAll(
-        /[%().]/g,
+        /[%!'()*.]/g,
         (matched) => hashReplacements.get(matched)!,
     );
 }

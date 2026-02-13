@@ -955,13 +955,13 @@ test("content_typeahead_selected", ({override}) => {
     query = "#**A* al";
     ct.get_or_set_token_for_testing("A* al");
     actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
-    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm)>";
+    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)>";
     assert.equal(actual_value, expected_value);
 
     query = "#>";
     ct.get_or_set_token_for_testing("#");
     actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
-    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm)>";
+    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)>";
     assert.equal(actual_value, expected_value);
 
     // topic_list
@@ -1094,7 +1094,7 @@ test("content_typeahead_selected", ({override}) => {
         query,
         input_element,
     );
-    expected_value = "Hello [#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm) ";
+    expected_value = "Hello [#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm) ";
     assert.equal(actual_value, expected_value);
 
     query = "Hello #**A* Algorithm>";
@@ -1113,7 +1113,8 @@ test("content_typeahead_selected", ({override}) => {
         query,
         input_element,
     );
-    expected_value = "Hello [#A&#42; Algorithm > fast](#narrow/channel/6-A*-Algorithm/topic/fast) ";
+    expected_value =
+        "Hello [#A&#42; Algorithm > fast](#narrow/channel/6-A.2A-Algorithm/topic/fast) ";
     assert.equal(actual_value, expected_value);
 
     // syntax
@@ -2253,7 +2254,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     ];
     assert_typeahead_equals("#**stream**>", topic_jump);
     assert_typeahead_equals("#**stream** >", topic_jump);
-    assert_typeahead_equals("[#A&#42; Algorithm](#narrow/channel/6-A*-Algorithm) >", topic_jump);
+    assert_typeahead_equals("[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm) >", topic_jump);
     assert_typeahead_equals("#**Sweden>some topic** >", []); // Already completed a topic.
 
     // topic_list

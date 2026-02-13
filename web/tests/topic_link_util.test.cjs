@@ -82,11 +82,11 @@ run_test("stream_topic_link_syntax_test", () => {
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("Sweden", "error due to *"),
-        "[#Sweden > error due to &#42;](#narrow/channel/1-Sweden/topic/error.20due.20to.20*)",
+        "[#Sweden > error due to &#42;](#narrow/channel/1-Sweden/topic/error.20due.20to.20.2A)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("Sweden", "*asterisk"),
-        "[#Sweden > &#42;asterisk](#narrow/channel/1-Sweden/topic/*asterisk)",
+        "[#Sweden > &#42;asterisk](#narrow/channel/1-Sweden/topic/.2Aasterisk)",
     );
     assert.equal(
         topic_link_util.get_stream_topic_link_syntax("Sweden", "greaterthan>"),

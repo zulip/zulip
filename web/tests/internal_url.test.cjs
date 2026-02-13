@@ -8,9 +8,21 @@ const {run_test} = require("./lib/test.cjs");
 const internal_url = zrequire("internal_url");
 
 run_test("test encodeHashComponent", () => {
-    const decoded = "https://www.zulipexample.com";
-    const encoded = "https.3A.2F.2Fwww.2Ezulipexample.2Ecom";
-    const result = internal_url.encodeHashComponent(decoded);
+    let decoded = "https://www.zulipexample.com";
+    let encoded = "https.3A.2F.2Fwww.2Ezulipexample.2Ecom";
+    let result = internal_url.encodeHashComponent(decoded);
+    assert.equal(result, encoded);
+
+    // Test hash replacement special characters
+    decoded = "https://www.zulipexample.com/test-(spec!al)-char's";
+    encoded = "https.3A.2F.2Fwww.2Ezulipexample.2Ecom.2Ftest-.28spec.21al.29-char.27s";
+    result = internal_url.encodeHashComponent(decoded);
+    assert.equal(result, encoded);
+
+    // Test hash replacement * character
+    decoded = "https://www.zulipexample.com/test-st*r";
+    encoded = "https.3A.2F.2Fwww.2Ezulipexample.2Ecom.2Ftest-st.2Ar";
+    result = internal_url.encodeHashComponent(decoded);
     assert.equal(result, encoded);
 });
 

@@ -69,7 +69,7 @@ run_test("try_stream_topic_syntax_text", () => {
         ],
         [
             "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/100.25.20*profits",
-            "[#Rome > 100% &#42;profits](#narrow/channel/4-Rome/topic/100.25.20*profits)",
+            "[#Rome > 100% &#42;profits](#narrow/channel/4-Rome/topic/100.25.20.2Aprofits)",
         ],
         [
             "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/.24.24 100.25.20profits",
