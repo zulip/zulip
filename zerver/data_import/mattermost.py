@@ -1047,8 +1047,6 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             zerver_recipient=realm["zerver_recipient"],
         )
 
-        # Mattermost currently supports only exporting messages from channels.
-        # Personal and Group Direct messages are not exported.
         zerver_subscription = (
             personal_subscriptions + stream_subscriptions + direct_message_group_subscriptions
         )
