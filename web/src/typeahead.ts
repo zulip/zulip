@@ -299,15 +299,17 @@ export function triage_raw<T>(
     get_item: (x: T) => string,
 ): {
     exact_matches: T[];
+    begins_with_exact_diacritic_matches: T[];
     begins_with_case_sensitive_matches: T[];
     begins_with_case_insensitive_matches: T[];
     word_boundary_matches: T[];
     no_matches: T[];
 } {
     /*
-        We split objs into five groups:
+        We split objs into six groups:
 
             - entire string exact match
+            - match prefix with exact diacritics
             - match prefix exactly with `query`
             - match prefix case-insensitively
             - match word boundary prefix case-insensitively
@@ -316,24 +318,38 @@ export function triage_raw<T>(
         and return an object of these.
     */
     const exact_matches = [];
+    const begins_with_exact_diacritic_matches = [];
     const begins_with_case_sensitive_matches = [];
     const begins_with_case_insensitive_matches = [];
     const word_boundary_matches = [];
     const no_matches = [];
+
     const lower_query = query ? query.toLowerCase() : "";
+    const normalized_query = remove_diacritics(lower_query);
+    const query_has_diacritics = lower_query !== normalized_query;
 
     for (const obj of objs) {
         const item = get_item(obj);
         const lower_item = item.toLowerCase();
+        const normalized_item = remove_diacritics(lower_item);
+        const item_has_diacritics = lower_item !== normalized_item;
+        const is_valid_normalized_match = query_has_diacritics || !item_has_diacritics;
 
         if (lower_item === lower_query) {
             exact_matches.push(obj);
+        } else if (query_has_diacritics && lower_item.startsWith(lower_query)) {
+            begins_with_exact_diacritic_matches.push(obj);
         } else if (item.startsWith(query)) {
             begins_with_case_sensitive_matches.push(obj);
         } else if (lower_item.startsWith(lower_query)) {
             begins_with_case_insensitive_matches.push(obj);
+        } else if (is_valid_normalized_match && normalized_item.startsWith(normalized_query)) {
+            begins_with_case_insensitive_matches.push(obj);
         } else if (
-            new RegExp(`[${word_boundary_chars}]${_.escapeRegExp(lower_query)}`).test(lower_item)
+            is_valid_normalized_match &&
+            new RegExp(`[${word_boundary_chars}]${_.escapeRegExp(normalized_query)}`).test(
+                normalized_item,
+            )
         ) {
             word_boundary_matches.push(obj);
         } else {
@@ -343,6 +359,7 @@ export function triage_raw<T>(
 
     return {
         exact_matches,
+        begins_with_exact_diacritic_matches,
         begins_with_case_sensitive_matches,
         begins_with_case_insensitive_matches,
         word_boundary_matches,
@@ -358,6 +375,7 @@ export function triage<T>(
 ): {matches: T[]; rest: T[]} {
     const {
         exact_matches,
+        begins_with_exact_diacritic_matches,
         begins_with_case_sensitive_matches,
         begins_with_case_insensitive_matches,
         word_boundary_matches,
@@ -372,6 +390,7 @@ export function triage<T>(
         return {
             matches: [
                 ...exact_matches.toSorted(sorting_comparator),
+                ...begins_with_exact_diacritic_matches.toSorted(sorting_comparator),
                 ...beginning_matches_sorted,
                 ...word_boundary_matches.toSorted(sorting_comparator),
             ],
@@ -382,6 +401,7 @@ export function triage<T>(
     return {
         matches: [
             ...exact_matches,
+            ...begins_with_exact_diacritic_matches,
             ...begins_with_case_sensitive_matches,
             ...begins_with_case_insensitive_matches,
             ...word_boundary_matches,
