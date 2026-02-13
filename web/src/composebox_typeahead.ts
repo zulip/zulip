@@ -905,11 +905,11 @@ function get_stream_topic_data(input_element: TypeaheadInputElement): {
     const $message_row = input_element.$element.closest(".message_row");
     if ($message_row.length === 1) {
         // we are editing a message so we try to use its keys.
-        const msg = message_store.get(rows.id($message_row));
+        const msg = message_store.maybe_get_immutable_message(rows.id($message_row));
         assert(msg !== undefined);
-        if (msg.type === "stream") {
-            stream_id = msg.stream_id;
-            topic = msg.topic;
+        if (msg.get_type() === "stream") {
+            stream_id = msg.get_stream_id();
+            topic = msg.get_topic_name();
         }
     } else {
         stream_id = compose_state.stream_id();

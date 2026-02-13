@@ -259,15 +259,15 @@ export function update_recipient_text_for_reply_button(
 }
 
 function can_user_reply_to_message(message_id: number): boolean {
-    const selected_message = message_store.get(message_id);
+    const selected_message = message_store.maybe_get_immutable_message(message_id);
     if (selected_message === undefined) {
         return false;
     }
-    if (selected_message.is_stream) {
+    if (selected_message.is_stream()) {
         return !should_disable_compose_reply_button_for_stream();
     }
-    assert(selected_message.is_private);
-    return message_util.user_can_send_direct_message(selected_message.to_user_ids);
+    assert(selected_message.is_private());
+    return message_util.user_can_send_direct_message(selected_message.to_user_ids());
 }
 
 export function initialize(): void {

@@ -612,17 +612,20 @@ class UnreadTopicCounter {
 const unread_topic_counter = new UnreadTopicCounter();
 
 function add_message_to_unread_mentions(message_id: number): void {
-    const message = message_store.get(message_id);
-    if (message?.type === "stream") {
-        const topic_key = recent_view_util.get_topic_key(message.stream_id, message.topic);
+    const message = message_store.maybe_get_immutable_message(message_id);
+    if (message?.get_type() === "stream") {
+        const topic_key = recent_view_util.get_topic_key(
+            message.get_stream_id(),
+            message.get_topic_name(),
+        );
         const topic_message_ids = unread_mention_topics.get(topic_key);
         if (topic_message_ids !== undefined) {
             topic_message_ids.add(message_id);
         } else {
             unread_mention_topics.set(topic_key, new Set([message_id]));
         }
-    } else if (message?.type === "private") {
-        const user_ids_string = message.to_user_ids;
+    } else if (message?.get_type() === "private") {
+        const user_ids_string = message.to_user_ids();
         const dm_message_ids = unread_mention_dms.get(user_ids_string);
         if (dm_message_ids !== undefined) {
             dm_message_ids.add(message_id);

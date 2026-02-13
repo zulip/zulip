@@ -15,7 +15,6 @@ import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
-import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as rows from "./rows.ts";
@@ -67,7 +66,9 @@ function get_user_group_id_for_mention_button(elem: HTMLElement): number {
     return Number.parseInt(user_group_id, 10);
 }
 
-function get_message_for_message_content($content: JQuery): Message | undefined {
+function get_message_for_message_content(
+    $content: JQuery,
+): message_store.ImmutableMessage | undefined {
     // TODO: This selector is designed to exclude drafts/scheduled
     // messages. Arguably those settings should be unconditionally
     // marked with user-mention-me, but rows.id doesn't support
@@ -79,7 +80,7 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
         return undefined;
     }
     const message_id = rows.id($message_row);
-    return message_store.get(message_id);
+    return message_store.maybe_get_immutable_message(message_id);
 }
 
 // Function to safely wrap mentioned names in a DOM element.
@@ -143,15 +144,14 @@ export const update_elements = ($content: JQuery): void => {
             user_id !== undefined && user_id !== "*" && people.is_valid_bot_user(user_id);
         // We give special highlights to the mention buttons
         // that refer to the current user.
-        if (user_id === "*" && message && message.stream_wildcard_mentioned) {
+        if (user_id === "*" && message?.is_stream_wildcard_mentioned()) {
             $(this).addClass("user-mention-me");
         }
         if (
             user_id !== undefined &&
             user_id !== "*" &&
             people.is_my_user_id(user_id) &&
-            message &&
-            message.mentioned_me_directly
+            message?.did_mention_me_directly()
         ) {
             $(this).addClass("user-mention-me");
         }
@@ -187,7 +187,7 @@ export const update_elements = ($content: JQuery): void => {
     $content.find(".topic-mention").each(function (): void {
         const message = get_message_for_message_content($content);
 
-        if (message && message.topic_wildcard_mentioned) {
+        if (message?.is_topic_wildcard_mentioned()) {
             $(this).addClass("user-mention-me");
         }
 

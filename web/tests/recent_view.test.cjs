@@ -109,14 +109,7 @@ mock_esm("../src/stream_topic_history", {
 mock_esm("../src/message_list_data", {
     MessageListData: class {},
 });
-mock_esm("../src/message_store", {
-    get(msg_id) {
-        if (msg_id < 15) {
-            return messages[msg_id - 1];
-        }
-        return private_messages[msg_id - 15];
-    },
-});
+const message_store = zrequire("message_store");
 mock_esm("../src/message_view_header", {
     render_title_area: noop,
 });
@@ -473,6 +466,9 @@ function test(label, f) {
         page_params.development_environment = true;
         page_params.is_node_test = true;
         messages = sample_messages.map((message) => ({...message}));
+        for (const message of [...messages, ...private_messages]) {
+            message_store.update_message_cache({message});
+        }
         f(helpers);
     });
 }

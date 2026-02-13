@@ -252,9 +252,7 @@ export function initialize(): void {
         }
 
         const message_id = rows.id($(this).closest(".message_row"));
-        const message = message_store.get(message_id);
-        assert(message !== undefined);
-        starred_messages_ui.toggle_starred_and_update_server(message);
+        starred_messages_ui.toggle_starred_and_update_server(message_id);
     });
 
     $("#main_div").on("click", ".message_reaction", function (this: HTMLElement, e) {

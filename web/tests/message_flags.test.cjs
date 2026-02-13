@@ -7,6 +7,7 @@ const {run_test} = require("./lib/test.cjs");
 
 const channel = mock_esm("../src/channel");
 const message_live_update = mock_esm("../src/message_live_update");
+const message_store = zrequire("message_store");
 
 set_global("document", {hasFocus: () => true});
 
@@ -30,6 +31,7 @@ run_test("starred", ({override}) => {
     const message = {
         id: 50,
     };
+    message_store.add_messages_for_tests([{type: "server", message}]);
     let ui_updated;
 
     override(message_live_update, "update_starred_view", () => {
@@ -43,7 +45,7 @@ run_test("starred", ({override}) => {
         posted_data = opts.data;
     });
 
-    starred_messages_ui.toggle_starred_and_update_server(message);
+    starred_messages_ui.toggle_starred_and_update_server(message.id);
 
     assert.ok(ui_updated);
 
@@ -60,7 +62,7 @@ run_test("starred", ({override}) => {
 
     ui_updated = false;
 
-    starred_messages_ui.toggle_starred_and_update_server(message);
+    starred_messages_ui.toggle_starred_and_update_server(message.id);
 
     assert.ok(ui_updated);
 

@@ -11,7 +11,7 @@ const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
-const message_store = mock_esm("../src/message_store");
+const message_store = zrequire("message_store");
 const user_topics = mock_esm("../src/user_topics");
 
 const resolved_topic = zrequire("resolved_topic");
@@ -2067,22 +2067,36 @@ test("term_type", () => {
     assert.ok(!filter._build_sorted_term_types_called);
 });
 
-test("first_valid_id_from", ({override}) => {
+test("first_valid_id_from", () => {
     const terms = [{operator: "is", operand: "alerted"}];
 
     const filter = new Filter(terms);
 
-    const messages = {
-        5: {id: 5, alerted: true},
-        10: {id: 10},
-        20: {id: 20, alerted: true},
-        30: {id: 30, type: stream_message},
-        40: {id: 40, alerted: false},
-    };
+    const messages = [
+        {
+            message: {
+                id: 5,
+                alerted: true,
+            },
+        },
+        {
+            message: {
+                id: 12,
+            },
+        },
+        {
+            message: {id: 20, alerted: true},
+        },
+        {
+            message: {id: 30, type: stream_message},
+        },
+        {
+            message: {id: 40, alerted: false},
+        },
+    ];
 
+    message_store.add_messages_for_tests(messages);
     const msg_ids = [10, 20, 30, 40];
-
-    override(message_store, "get", (msg_id) => messages[msg_id]);
 
     assert.equal(filter.first_valid_id_from([999]), undefined);
 
@@ -2133,30 +2147,39 @@ test("convert_suggestion_to_term", () => {
     );
 });
 
-test("try_adjusting_for_moved_with_target", ({override}) => {
+test("try_adjusting_for_moved_with_target", () => {
     const scotland_id = new_stream_id();
     make_sub("Scotland", scotland_id);
     const verona_id = new_stream_id();
     make_sub("Verona", verona_id);
-    const messages = {
-        12: {
-            type: "stream",
-            stream_id: scotland_id,
-            display_recipient: "Scotland",
-            topic: "Test 1",
-            id: 12,
+    const messages = [
+        {
+            message: {
+                type: "stream",
+                stream_id: scotland_id,
+                display_recipient: "Scotland",
+                topic: "Test 1",
+                id: 12,
+            },
         },
-        17: {
-            type: "stream",
-            stream_id: verona_id,
-            display_recipient: "Verona",
-            topic: "Test 2",
-            id: 17,
+        {
+            message: {
+                type: "stream",
+                stream_id: verona_id,
+                display_recipient: "Verona",
+                topic: "Test 2",
+                id: 17,
+            },
         },
-        2: {type: "direct", id: 2, display_recipient: [{id: 3, email: "user3@zulip.com"}]},
-    };
-
-    override(message_store, "get", (msg_id) => messages[msg_id]);
+        {
+            message: {
+                type: "direct",
+                id: 2,
+                display_recipient: [{id: 3, email: "user3@zulip.com"}],
+            },
+        },
+    ];
+    message_store.add_messages_for_tests(messages);
 
     // When the narrow terms are correct, it returns the same terms
     let terms = [
@@ -2280,7 +2303,7 @@ test("try_adjusting_for_moved_with_target", ({override}) => {
     filter.try_adjusting_for_moved_with_target();
     // now messages are fetched from server, and a single
     // fetched message is used to adjust narrow terms.
-    filter.try_adjusting_for_moved_with_target(messages["12"]);
+    filter.try_adjusting_for_moved_with_target(message_store.get(12));
     assert.deepEqual(filter.narrow_requires_hash_change, true);
 });
 
