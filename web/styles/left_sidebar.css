@@ -785,6 +785,12 @@
     background-color: var(--color-background-sidebar-action-heading-hover);
 }
 
+#stream_filters
+    .narrow-filter:has(a.subscription_block:focus-visible):not(.active-filter) {
+    background-color: var(--color-background-hover-narrow-filter);
+    border-radius: 4px;
+}
+
 #stream_filters .narrow-filter:has(a.subscription_block:focus-visible),
 #stream_filters .narrow-filter.highlighted_row {
     &.active-filter > .bottom_left_row {
