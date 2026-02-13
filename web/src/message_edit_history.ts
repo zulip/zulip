@@ -1,3 +1,4 @@
+import * as Handlebars from "handlebars";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -7,6 +8,7 @@ import render_message_history_overlay from "../templates/message_history_overlay
 
 import {exit_overlay} from "./browser_history.ts";
 import * as channel from "./channel.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as lightbox from "./lightbox.ts";
 import * as loading from "./loading.ts";
@@ -17,6 +19,7 @@ import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as spectators from "./spectators.ts";
@@ -45,6 +48,9 @@ type EditHistoryEntry = {
     prev_stream: string | undefined;
     prev_stream_id: number | undefined;
     new_stream: string | undefined;
+    new_stream_id: number | undefined;
+    move_content_html: string | undefined;
+    resolve_status: "resolved" | "unresolved" | undefined;
 };
 
 const server_message_history_schema = z.object({
@@ -98,6 +104,35 @@ function get_display_stream_name(stream_id: number): string {
         return $t({defaultMessage: "Unknown channel"});
     }
     return stream_name;
+}
+
+// Detect if a topic change is just a resolve or unresolve action
+// (i.e., only the ✔ prefix was added or removed, topic name otherwise unchanged)
+function get_resolve_unresolve_action(
+    prev_topic: string,
+    new_topic: string,
+): {is_resolve: boolean; is_unresolve: boolean} {
+    const prev_resolved = resolved_topic.is_resolved(prev_topic);
+    const new_resolved = resolved_topic.is_resolved(new_topic);
+
+    const prev_base = resolved_topic.unresolve_name(prev_topic);
+    const new_base = resolved_topic.unresolve_name(new_topic);
+
+    if (prev_base.toLowerCase() === new_base.toLowerCase()) {
+        return {
+            is_resolve: !prev_resolved && new_resolved,
+            is_unresolve: prev_resolved && !new_resolved,
+        };
+    }
+    return {is_resolve: false, is_unresolve: false};
+}
+
+// Generate an HTML link for #channel > topic
+function get_channel_topic_link_html(stream_id: number, topic: string): string {
+    const stream_name = get_display_stream_name(stream_id);
+    const url = hash_util.by_stream_topic_url(stream_id, topic);
+    const display_text = `#${stream_name} > ${topic}`;
+    return `<a href="${Handlebars.Utils.escapeExpression(url)}">${Handlebars.Utils.escapeExpression(display_text)}</a>`;
 }
 
 function show_loading_indicator(): void {
@@ -172,6 +207,7 @@ export function fetch_and_render_message_history(message: Message): void {
                 let prev_stream;
                 let prev_stream_id;
                 let initial_entry_for_move_history = false;
+                let resolve_status: "resolved" | "unresolved" | undefined;
 
                 if (index === 0) {
                     edited_by_notice = $t({defaultMessage: "Posted by {full_name}"}, {full_name});
@@ -193,7 +229,8 @@ export function fetch_and_render_message_history(message: Message): void {
                     is_empty_string_prev_topic = msg.prev_topic === "";
                     is_empty_string_new_topic = msg.topic === "";
                 } else if (msg.prev_topic !== undefined && msg.prev_stream) {
-                    edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
+                    // Both topic and stream changed - this is a move
+                    // We'll compute move_content after we know the new_stream
                     topic_edited = true;
                     prev_topic_display_name = util.get_final_topic_display_name(msg.prev_topic);
                     new_topic_display_name = util.get_final_topic_display_name(msg.topic);
@@ -205,13 +242,39 @@ export function fetch_and_render_message_history(message: Message): void {
                     if (prev_stream_item !== null) {
                         prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
                     }
-                } else if (msg.prev_topic !== undefined) {
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
-                    topic_edited = true;
+                } else if (msg.prev_topic !== undefined) {
+                    // Only topic changed - check if it's a resolve/unresolve action
+                    const resolve_action = get_resolve_unresolve_action(msg.prev_topic, msg.topic);
                     prev_topic_display_name = util.get_final_topic_display_name(msg.prev_topic);
                     new_topic_display_name = util.get_final_topic_display_name(msg.topic);
                     is_empty_string_prev_topic = msg.prev_topic === "";
                     is_empty_string_new_topic = msg.topic === "";
+
+                    if (resolve_action.is_resolve || resolve_action.is_unresolve) {
+                        // This is a resolve/unresolve action, not a regular move
+                        // Note: topic_edited is NOT set here to distinguish from regular moves
+                        resolve_status = resolve_action.is_resolve ? "resolved" : "unresolved";
+                        if (resolve_action.is_resolve) {
+                            edited_by_notice = $t(
+                                {defaultMessage: "Topic resolved by {full_name}"},
+                                {full_name},
+                            );
+                        } else {
+                            edited_by_notice = $t(
+                                {defaultMessage: "Topic unresolved by {full_name}"},
+                                {full_name},
+                            );
+                        }
+                        // move_content will be computed after we have stream info
+                    } else {
+                        // Regular topic move - topic_edited is set for template rendering
+                        edited_by_notice = $t(
+                            {defaultMessage: "Moved by {full_name}"},
+                            {full_name},
+                        );
+                        topic_edited = true;
+                    }
                 } else if (msg.prev_stream) {
                     edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
                     stream_changed = true;
@@ -242,6 +305,9 @@ export function fetch_and_render_message_history(message: Message): void {
                     prev_stream,
                     prev_stream_id,
                     new_stream: undefined,
+                    new_stream_id: undefined,
+                    move_content_html: undefined,
+                    resolve_status,
                 };
 
                 if (msg.prev_stream) {
@@ -253,6 +319,7 @@ export function fetch_and_render_message_history(message: Message): void {
             if (prev_stream_item !== null) {
                 assert(message.type === "stream");
                 prev_stream_item.new_stream = get_display_stream_name(message.stream_id);
+                prev_stream_item.new_stream_id = message.stream_id;
             }
 
             // In order to correctly compute the recipient_bar_color
@@ -266,6 +333,70 @@ export function fetch_and_render_message_history(message: Message): void {
                 for (const edit_history_entry of content_edit_history.toReversed()) {
                     // The stream following this move is the one whose color we already have.
                     edit_history_entry.recipient_bar_color = recipient_bar_color;
+
+                    // Compute move_content_html now that we have stream info
+                    // Also track the current stream_id for generating links
+                    const current_stream_id = edit_history_entry.new_stream_id ?? message.stream_id;
+                    if (edit_history_entry.resolve_status !== undefined) {
+                        // Resolve/unresolve action - include channel and topic as a link
+                        const topic_name = edit_history_entry.new_topic_display_name ?? "";
+                        const link_html = get_channel_topic_link_html(
+                            current_stream_id,
+                            topic_name,
+                        );
+                        if (edit_history_entry.resolve_status === "resolved") {
+                            // Note: Not using $t() here because the link contains dynamic HTML
+                            // that would need special handling in translations. The structure
+                            // "{link} was marked as resolved." is language-stable.
+                            edit_history_entry.move_content_html =
+                                link_html + " was marked as resolved.";
+                        } else {
+                            edit_history_entry.move_content_html =
+                                link_html + " was marked as unresolved.";
+                        }
+                    } else if (
+                        edit_history_entry.stream_changed &&
+                        edit_history_entry.topic_edited
+                    ) {
+                        // Both channel and topic changed
+                        const prev_link_html = get_channel_topic_link_html(
+                            edit_history_entry.prev_stream_id!,
+                            edit_history_entry.prev_topic_display_name ?? "",
+                        );
+                        const new_link_html = get_channel_topic_link_html(
+                            current_stream_id,
+                            edit_history_entry.new_topic_display_name ?? "",
+                        );
+                        // Note: Not using $t() here because links contain dynamic HTML.
+                        edit_history_entry.move_content_html =
+                            "Moved from " + prev_link_html + " to " + new_link_html + ".";
+                    } else if (edit_history_entry.stream_changed) {
+                        // Only channel changed - use same topic for both links
+                        const topic_name = edit_history_entry.new_topic_display_name ?? "";
+                        const prev_link_html = get_channel_topic_link_html(
+                            edit_history_entry.prev_stream_id!,
+                            topic_name,
+                        );
+                        const new_link_html = get_channel_topic_link_html(
+                            current_stream_id,
+                            topic_name,
+                        );
+                        edit_history_entry.move_content_html =
+                            "Moved from " + prev_link_html + " to " + new_link_html + ".";
+                    } else if (edit_history_entry.topic_edited) {
+                        // Only topic changed (regular move, not resolve/unresolve)
+                        const prev_link_html = get_channel_topic_link_html(
+                            current_stream_id,
+                            edit_history_entry.prev_topic_display_name ?? "",
+                        );
+                        const new_link_html = get_channel_topic_link_html(
+                            current_stream_id,
+                            edit_history_entry.new_topic_display_name ?? "",
+                        );
+                        edit_history_entry.move_content_html =
+                            "Moved from " + prev_link_html + " to " + new_link_html + ".";
+                    }
+
                     if (edit_history_entry.stream_changed) {
                         // If this event moved the message, then immediately
                         // prior to this event, the message must have been in
