@@ -639,14 +639,6 @@ input[type="checkbox"] {
     }
 }
 
-#confirm_reset_stream_notifications_modal {
-    .channel-privacy-type-icon {
-        padding-left: 3px;
-        padding-right: 0;
-        width: auto;
-    }
-}
-
 #customizable_stream_notifications_table .dropdown-widget-button {
     /* 225px at 16px/1em */
     width: 14.0625em;

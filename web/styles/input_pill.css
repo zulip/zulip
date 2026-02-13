@@ -73,10 +73,6 @@
             border-color: var(--color-border-input-pill-image);
         }
 
-        .channel-privacy-type-icon {
-            padding-right: 2px;
-        }
-
         .pill-label {
             /* Treat as flex container to better position status
                emoji and control ellipsis on the pill value. */

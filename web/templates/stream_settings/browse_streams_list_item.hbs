@@ -6,7 +6,7 @@
 
             <div class="tippy-zulip-tooltip" data-tooltip-template-id="unsubscribe-from-{{stream_id}}-stream-tooltip-template">
                 <template id="unsubscribe-from-{{stream_id}}-stream-tooltip-template">
-                    <span>
+                    <span class="subscription-info-tooltip">
                         {{#tr}}
                             Unsubscribe from <z-stream></z-stream>
                             {{#*inline "z-stream"}}{{> ../inline_decorated_channel_name stream=this}}{{/inline}}
@@ -23,7 +23,7 @@
 
             <div class="tippy-zulip-tooltip"  data-tooltip-template-id="{{#if should_display_subscription_button}}subscribe-to-{{stream_id}}-stream-tooltip-template{{else}}cannot-subscribe-to-{{stream_id}}-stream-tooltip-template{{/if}}">
                 <template id="subscribe-to-{{stream_id}}-stream-tooltip-template">
-                    <span>
+                    <span class="subscription-info-tooltip">
                         {{#tr}}
                             Subscribe to <z-stream></z-stream>
                             {{#*inline "z-stream"}}{{> ../inline_decorated_channel_name stream=this}}{{/inline}}
@@ -32,7 +32,7 @@
                 </template>
 
                 <template id="cannot-subscribe-to-{{stream_id}}-stream-tooltip-template">
-                    <span>
+                    <span class="subscription-info-tooltip">
                         {{#tr}}
                             Cannot subscribe to <z-stream></z-stream>
                             {{#*inline "z-stream"}}{{> ../inline_decorated_channel_name stream=this}}{{/inline}}

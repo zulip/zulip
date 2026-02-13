@@ -1764,18 +1764,16 @@ textarea.new_message_textarea {
             grid-area: privacy-icon;
             place-self: center;
             font-size: 0.95em; /* 19px at 20px/1em */
-            margin-top: -0.0579em; /* Eyeball work; 1.1px at 19px/1em */
+            margin-top: 0.0579em; /* Eyeball work; 1.1px at 19px/1em */
             color: var(--privacy-icon-color-original);
             /* Eliminate inherited component styles. */
             position: static;
             padding: 0;
-            width: 1em;
-            height: 1em;
 
             &.zulip-icon-lock {
                 /* The lock looks better centered without
                    a negative margin-top adjustment. */
-                margin-top: 0;
+                margin-top: 0 !important;
             }
         }
 
