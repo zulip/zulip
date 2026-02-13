@@ -10,9 +10,23 @@ Harbor's webhooks feature is available in version 1.9 and later.
 
 1. {!generate-webhook-url-basic.md!}
 
-1. Go to your Harbor **Projects** page, open a project, and click on the **Webhooks** tab.
+1. Go to your Harbor **Projects** page and open a project.
 
-1. Set **Endpoint URL** to the URL generated above, and click on **Continue**.
+1. Click on the **Webhooks** tab and then click on the **New Webhook** button.
+
+1. Enter a name for your webhook (e.g., "Zulip Notifications").
+
+1. Select `http` as the **Notify Type**.
+
+1. Select `Default` as the **Payload Format**.
+
+1. Check the boxes for the events you want to receive notifications for.
+
+1. Select **Verify Remote Certificate** if your Zulip server uses HTTPS.
+
+1. Set **Endpoint URL** to the URL generated above, and click on **Add**.
+
+![](/static/images/integrations/harbor/002.png)
 
 {end_tabs}
 
