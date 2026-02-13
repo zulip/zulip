@@ -275,6 +275,10 @@ export class ImmutableMessage {
     is_private(): boolean {
         return this.message.is_private;
     }
+
+    get_sender_email(): string {
+        return this.message.sender_email;
+    }
 }
 
 export function maybe_get_immutable_message(message_id: number): ImmutableMessage | undefined {

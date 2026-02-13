@@ -25,10 +25,10 @@ let interval_id: number | null = null;
 let has_initial_data = false;
 
 export function fetch_read_receipts(message_id: number): void {
-    const message = message_store.get(message_id);
+    const message = message_store.maybe_get_immutable_message(message_id);
     assert(message !== undefined, "message is undefined");
 
-    if (message.sender_email === "notification-bot@zulip.com") {
+    if (message.get_sender_email() === "notification-bot@zulip.com") {
         $("#read_receipts_modal .read_receipts_info").text(
             $t({
                 defaultMessage: "Read receipts are not available for Notification Bot messages.",
