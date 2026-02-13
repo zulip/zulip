@@ -10,7 +10,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.push_notifications import get_apns_badge_count, get_apns_badge_count_future
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.models import PushDevice, Subscription, UserPresence, UserTopic
+from zerver.models import Device, Subscription, UserPresence, UserTopic
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications
@@ -240,7 +240,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             cordelia, "enable_offline_email_notifications", False, acting_user=None
         )
         self.assertTrue(cordelia.enable_offline_push_notifications)
-        PushDevice.objects.all().delete()
+        Device.objects.filter(push_token_id__isnull=False).delete()
 
         original_content = "no mention"
         updated_content = "now we mention @**Cordelia, Lear's daughter**"

@@ -1224,6 +1224,7 @@ class FetchQueriesTest(ZulipTestCase):
             custom_profile_fields=1,
             default_streams=1,
             default_stream_groups=1,
+            device=1,
             drafts=1,
             giphy=0,
             tenor=0,
@@ -1233,7 +1234,6 @@ class FetchQueriesTest(ZulipTestCase):
             navigation_views=1,
             onboarding_steps=1,
             presence=1,
-            push_device=1,
             # 2 of the 3 queries here are a single query that is used
             # for all the 'realm', 'stream', 'subscription'
             # and 'realm_user_groups' event types.

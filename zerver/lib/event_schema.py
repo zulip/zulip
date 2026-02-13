@@ -30,6 +30,8 @@ from zerver.lib.event_types import (
     EventDefaultStreamGroups,
     EventDefaultStreams,
     EventDeleteMessage,
+    EventDeviceAdd,
+    EventDeviceUpdate,
     EventDirectMessage,
     EventDraftsAdd,
     EventDraftsRemove,
@@ -46,7 +48,6 @@ from zerver.lib.event_types import (
     EventNavigationViewRemove,
     EventNavigationViewUpdate,
     EventOnboardingSteps,
-    EventPushDevice,
     EventReactionAdd,
     EventReactionRemove,
     EventRealmBotAdd,
@@ -174,6 +175,8 @@ check_channel_folder_reorder = make_checker(EventChannelFolderReorder)
 check_custom_profile_fields = make_checker(EventCustomProfileFields)
 check_default_stream_groups = make_checker(EventDefaultStreamGroups)
 check_default_streams = make_checker(EventDefaultStreams)
+check_device_add = make_checker(EventDeviceAdd)
+check_device_update = make_checker(EventDeviceUpdate)
 check_direct_message = make_checker(EventDirectMessage)
 check_draft_add = make_checker(EventDraftsAdd)
 check_draft_remove = make_checker(EventDraftsRemove)
@@ -186,7 +189,6 @@ check_navigation_view_add = make_checker(EventNavigationViewAdd)
 check_navigation_view_remove = make_checker(EventNavigationViewRemove)
 check_navigation_view_update = make_checker(EventNavigationViewUpdate)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
-check_push_device = make_checker(EventPushDevice)
 check_reaction_add = make_checker(EventReactionAdd)
 check_reaction_remove = make_checker(EventReactionRemove)
 check_realm_bot_delete = make_checker(EventRealmBotDelete)

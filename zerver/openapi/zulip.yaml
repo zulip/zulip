@@ -1775,13 +1775,12 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to a user's clients when the metadata in the
-                                `push_devices` dictionary for the user changes.
+                                Event sent to a user's clients when they [register a device](/api/register-client-device).
 
-                                Helps clients to live-update the `push_devices` dictionary
+                                Helps clients to live-update the `devices` dictionary
                                 returned in [`POST /register`](/api/register-queue) response.
 
-                                **Changes**: New in Zulip 11.0 (feature level 406).
+                                **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1789,45 +1788,128 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - push_device
-                                push_account_id:
-                                  type: integer
-                                  description: |
-                                    The push account ID for this client registration.
-
-                                    See [`POST /mobile_push/register`](/api/register-push-device)
-                                    for details on push account IDs.
-
-                                    **Changes**: Prior to Zulip 12.0 (feature level 450),
-                                    the integer value was expressed as a string.
-                                status:
+                                        - device
+                                op:
                                   type: string
                                   enum:
-                                    - active
-                                    - failed
-                                    - pending
+                                    - add
+                                device_id:
+                                  type: integer
                                   description: |
-                                    The updated registration status. Will be `"active"`, `"failed"`, or
-                                    `"pending"`.
-                                error_code:
+                                    The ID of the new registered device.
+                              example:
+                                {
+                                  "id": 1,
+                                  "type": "device",
+                                  "op": "add",
+                                  "device_id": 1144,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to a user's clients when they deregister a device.
+
+                                Helps clients to live-update the `devices` dictionary
+                                returned in [`POST /register`](/api/register-queue) response.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - device
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                device_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the device which deregistered.
+                              example:
+                                {
+                                  "id": 1,
+                                  "type": "device",
+                                  "op": "remove",
+                                  "device_id": 1144,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to a user's clients when the metadata in the
+                                `devices` dictionary for the user changes.
+
+                                Helps clients to live-update the `devices` dictionary
+                                returned in [`POST /register`](/api/register-queue) response.
+
+                                Besides `id`, `type`, `op`, and `device_id`, all other fields
+                                are optional. Only fields whose values needs to be updated are
+                                included in the event.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - device
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                device_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the registered device whose metadata changed.
+                                push_key_id:
+                                  type: integer
+                                  description: |
+                                    ID to reference the encryption key used to encrypt
+                                    push notifications sent to the device.
+                                push_token_id:
                                   type: string
                                   nullable: true
                                   description: |
-                                    If the status is `"failed"`, a [Zulip API error
-                                    code](/api/rest-error-handling) indicating the type of failure that
-                                    occurred.
+                                    ID to reference the token provided by FCM/APNs to the device,
+                                    which is registered to the push bouncer service.
+
+                                    A `null` value means the referenced token expired.
+                                pending_push_token_id:
+                                  type: string
+                                  nullable: true
+                                  description: |
+                                    ID to reference the token provided by FCM/APNs to the device,
+                                    whose registration is in progress to the push bouncer service.
+
+                                    A `null` value means the pending registration succeeded.
+                                push_token_last_updated_timestamp:
+                                  type: integer
+                                  description: |
+                                    The UNIX timestamp for the last time when `pending_push_token_id`
+                                    was set to a new non-null value, in UTC seconds.
+                                push_registration_error_code:
+                                  type: string
+                                  nullable: true
+                                  description: |
+                                    If the push registration failed, a [Zulip API error code](/api/rest-error-handling)
+                                    indicating the type of failure that occurred.
 
                                     The following error codes have recommended client behavior:
 
                                     - `"INVALID_BOUNCER_PUBLIC_KEY"` - Inform the user to update app.
                                     - `"REQUEST_EXPIRED` - Retry with a fresh payload.
-                                      If the status is "failed", an error code explaining the failure.
                               example:
                                 {
-                                  "id": 1,
-                                  "type": "push_device",
-                                  "push_account_id": 1234,
-                                  "status": "active",
+                                  "id": 2,
+                                  "type": "device",
+                                  "op": "update",
+                                  "device_id": 12,
+                                  "push_key_id": 57,
                                 }
                             - type: object
                               additionalProperties: false
@@ -12721,9 +12803,9 @@ paths:
             schema:
               type: object
               properties:
-                push_account_id:
+                device_id:
                   description: |
-                    The push account ID for the device to which to send the test notification.
+                    The ID for the device to which to send the test notification.
 
                     If this parameter is not submitted, the E2EE test notification will
                     be sent to all of the user's devices registered on the server.
@@ -12731,10 +12813,14 @@ paths:
                     A mobile client should pass this parameter, to avoid triggering a test
                     notification for other clients.
 
-                    See [`POST /mobile_push/register`](/api/register-push-device)
-                    for details on push account IDs.
+                    See [`POST /register_client_device`](/api/register-client-device)
+                    for details on device ID.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd).
+
+                    Previously, `push_account_id` was used.
                   type: integer
-                  example: 111222
+                  example: 1144
       responses:
         "200":
           description: Success.
@@ -12773,9 +12859,24 @@ paths:
       summary: Register E2EE push device
       tags: ["mobile"]
       description: |
-        Register a device to receive end-to-end encrypted mobile push notifications.
+        Register a device to receive end-to-end encrypted mobile push notifications,
+        or update such a registration.
 
-        **Changes**: New in Zulip 11.0 (feature level 406).
+        To perform an initial registration, clients must provide both the
+        push key fields (`push_key` and `push_key_id`) and the token fields
+        (`token_kind`, `token_id`, `bouncer_public_key`, and `encrypted_push_registration`).
+
+        Once registered, clients should use this endpoint to rotate `push_key` or
+        FCM/APNs provided token:
+
+        - **Rotate push key**: Provide only the push key fields.
+        - **Rotate token**: Provide only the token fields.
+
+        **Changes**: In Zulip 12.0 (feature level ZF-42fbcd), the endpoint
+        was significantly redesigned to support rotation of `push_key` and
+        token provided by FCM/APNs.
+
+        New in Zulip 11.0 (feature level 406).
       requestBody:
         required: true
         content:
@@ -12783,20 +12884,19 @@ paths:
             schema:
               type: object
               properties:
-                token_kind:
+                device_id:
                   description: |
-                    Whether the token was generated by FCM or APNs.
-                  type: string
-                  enum:
-                    - fcm
-                    - apns
-                  example: "fcm"
-                push_account_id:
+                    The ID of the device to configure for push notifications.
+
+                    See [`POST /register_client_device`](/api/register-client-device)
+                    for how to obtain a device ID.
+                  type: integer
+                  example: 1
+                push_key_id:
                   description: |
-                    A random integer generated by the client that will be included
-                    in mobile push notifications along with encrypted payloads to
-                    identify pushes as being related to this registration.
-                    Must be unique in the client's table of accounts.
+                    A random unsigned 32-bit integer generated by the client as an identifier
+                    for `push_key`. It will be included in mobile push notifications
+                    along with encrypted payloads to identify the `push_key` to decrypt.
                   type: integer
                   example: 2408
                 push_key:
@@ -12828,6 +12928,22 @@ paths:
                     did not have a natural way to support multiple cryptosystems.
                   type: string
                   example: "MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt"
+                token_kind:
+                  description: |
+                    Whether the token was generated by FCM or APNs.
+                  type: string
+                  enum:
+                    - fcm
+                    - apns
+                  example: "fcm"
+                token_id:
+                  description: |
+                    Identifier for the FCM/APNs provided token to the device,
+                    produced by taking the first 8 bytes of the SHA-256 hash of
+                    the token, then encoding those bytes using standard Base64 encoding
+                    as defined in RFC 4648.
+                  type: string
+                  example: "hGsEWGmyyfI="
                 bouncer_public_key:
                   description: |
                     Which of the bouncer's public keys the client used to encrypt the
@@ -12837,6 +12953,9 @@ paths:
                     and the new public key is baked into a new client release. Because
                     the bouncer routinely rotates key, this field clarifies which
                     public key the client is using.
+
+                    The public key is encoded using standard Base64 encoding as defined
+                    in RFC 4648.
                   type: string
                   example: "bouncer-public-key"
                 encrypted_push_registration:
@@ -12851,11 +12970,7 @@ paths:
                   type: string
                   example: "encrypted-push-registration-data"
               required:
-                - token_kind
-                - push_account_id
-                - push_key
-                - bouncer_public_key
-                - encrypted_push_registration
+                - device_id
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -12903,12 +13018,15 @@ paths:
                     being registered belongs.
                   type: string
                   example: "9aa61d0b-8ce5-488d-8e9e-fedc346e6836"
-                push_account_id:
+                token_id:
                   description: |
-                    The `push_account_id` value provided by the mobile client
+                    The `token_id` value provided by the mobile client
                     to [register E2EE push device](/api/register-push-device).
-                  type: integer
-                  example: 2408
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd),
+                    replacing `push_account_id`.
+                  type: string
+                  example: "+wKIhyAx/Eg="
                 encrypted_push_registration:
                   description: |
                     The `encrypted_push_registration` value provided by the mobile client
@@ -12923,30 +13041,12 @@ paths:
                   example: "bouncer-public-key"
               required:
                 - realm_uuid
-                - push_account_id
+                - token_id
                 - encrypted_push_registration
                 - bouncer_public_key
       responses:
         "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccessBase"
-                  - required:
-                      - device_id
-                    additionalProperties: false
-                    properties:
-                      result: {}
-                      msg: {}
-                      ignored_parameters_unsupported: {}
-                      device_id:
-                        type: integer
-                        description: |
-                          Unique identifier assigned by the bouncer for the registration.
-                        example: 2408
-                    example: {"device_id": 2408, "msg": "", "result": "success"}
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -13001,6 +13101,38 @@ paths:
                     description: |
                       An example JSON response for when no realm is registered for
                       the authenticated server on the bouncer for the given `realm_uuid`:
+  /register_client_device:
+    post:
+      operationId: register-client-device
+      summary: Register a logged-in device
+      tags: ["mobile"]
+      description: |
+        Logged-in mobile devices use this endpoint as an initial step to
+        register themselves, before registering for E2EE push notifications.
+
+        This endpoint is currently not useful for clients other than mobile.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    required:
+                      - device_id
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      device_id:
+                        type: integer
+                        description: |
+                          The ID of the newly registered device.
+                    example: {"msg": "", "device_id": 2, "result": "success"}
   /user_topics:
     post:
       operationId: update-user-topic
@@ -18464,34 +18596,53 @@ paths:
                           [Tenor API TOS](https://developers.google.com/tenor/guides/api-terms).
 
                           **Changes**: New in Zulip 12.0 (feature level 442).
-                      push_devices:
+                      devices:
                         type: object
                         description: |
-                          Present if `push_device` is present in `fetch_event_types`.
+                          Present if `device` is present in `fetch_event_types`.
 
-                          Dictionary where each entry describes the user's push device's
-                          registration status and error code (if registration failed).
+                          Dictionary where each entry describes the user's logged-in devices,
+                          registered using [`POST /register_client_device`](/api/register-client-device).
 
-                          **Changes**: New in Zulip 11.0 (feature level 406).
+                          **Changes**: New in Zulip 12.0 (feature level ZF-42fbcd).
                         additionalProperties:
                           description: |
-                            `{push_account_id}`: Dictionary containing the details of
-                            a push device with the push account ID as the key.
+                            `{device_id}`: Dictionary containing the details of
+                            a device with the device ID as the key.
                           type: object
                           additionalProperties: false
                           properties:
-                            status:
-                              type: string
+                            push_key_id:
+                              type: integer
+                              nullable: true
                               description: |
-                                The push account's registration status.
-                                Either `"active"`, `"pending"`, or `"failed"`.
-                            error_code:
+                                ID to reference the encryption key used to encrypt
+                                push notifications sent to the device.
+                            push_token_id:
                               type: string
                               nullable: true
                               description: |
-                                If the status is `"failed"`, a [Zulip API error
-                                code](/api/rest-error-handling) indicating the type of failure that
-                                occurred.
+                                ID to reference the token provided by FCM/APNs to the device,
+                                which is registered to the push bouncer service.
+                            pending_push_token_id:
+                              type: string
+                              nullable: true
+                              description: |
+                                ID to reference the token provided by FCM/APNs to the device,
+                                whose registration is in progress to the push bouncer service.
+                            push_token_last_updated_timestamp:
+                              type: integer
+                              nullable: true
+                              description: |
+                                The UNIX timestamp for the last time when `pending_push_token_id`
+                                was set to a new non-null value, in UTC seconds.
+                            push_registration_error_code:
+                              type: string
+                              nullable: true
+                              description: |
+                                If the push registration failed, a [Zulip API error
+                                code](/api/rest-error-handling) indicating the type of
+                                failure that occurred.
 
                                 The following error codes have recommended client behavior:
 
