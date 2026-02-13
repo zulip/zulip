@@ -8,6 +8,7 @@ import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import type * as dropdown_widget from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -18,6 +19,7 @@ import * as overlays from "./overlays.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
 import * as popup_banners from "./popup_banners.ts";
+import * as recent_view_util from "./recent_view_util.ts";
 import * as resize from "./resize.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_list from "./stream_list.ts";
@@ -48,6 +50,35 @@ const ALL_TOPICS_OPTION_DESCRIPTION = $t({
 const ALL_TOPICS_OPTION_DESCRIPTION_FOR_CHANNEL_VIEW = $t({
     defaultMessage: "Includes muted topics",
 });
+
+const CHANNEL_UPDATE_PROPERTIES_REQUIRING_COMPLETE_RERENDER = new Set(["name", "invite_only"]);
+
+export function handle_channel_update_event(
+    event: {
+        op: string;
+        property?: string;
+    },
+    complete_inbox_rerender: () => void,
+    complete_recent_rerender: () => void,
+): void {
+    if (
+        event.op === "update" &&
+        (!event.property ||
+            !CHANNEL_UPDATE_PROPERTIES_REQUIRING_COMPLETE_RERENDER.has(event.property))
+    ) {
+        return;
+    }
+
+    if (event.op !== "update" && event.op !== "delete") {
+        return;
+    }
+
+    if (inbox_util.is_visible()) {
+        complete_inbox_rerender();
+    } else if (recent_view_util.is_visible()) {
+        complete_recent_rerender();
+    }
+}
 
 export function filters_dropdown_options(
     current_value: string | number | undefined,
