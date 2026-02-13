@@ -785,6 +785,12 @@
     background-color: var(--color-background-sidebar-action-heading-hover);
 }
 
+#stream_filters
+    .narrow-filter:has(a.subscription_block:focus-visible):not(.active-filter) {
+    background-color: var(--color-background-hover-narrow-filter);
+    border-radius: 4px;
+}
+
 #stream_filters .narrow-filter:has(a.subscription_block:focus-visible),
 #stream_filters .narrow-filter.highlighted_row {
     &.active-filter > .bottom_left_row {
@@ -798,10 +804,18 @@
 
     &.active-filter .topic-list .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
+
+        .sidebar-topic-check {
+            background-color: var(--color-background-active-narrow-filter);
+        }
     }
 
     .bottom_left_row:not(.active-sub-filter) {
         background-color: var(--color-background-hover-narrow-filter);
+
+        .sidebar-topic-check {
+            background-color: var(--color-background-hover-narrow-filter);
+        }
     }
 }
 
@@ -829,6 +843,12 @@
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-hover-narrow-filter);
+
+    .sidebar-topic-check {
+        /* 2px of the original 4px padding is now the outline, don't draw over that */
+        padding-left: 2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
 }
 
 #stream_filters .narrow-filter,
