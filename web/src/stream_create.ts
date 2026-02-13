@@ -124,6 +124,7 @@ class StreamNameError {
                 is_archived: stream.is_archived,
                 show_rename: can_rename,
                 can_view_channel: true,
+                is_private: stream.invite_only,
             });
             this.report_already_exists(rendered_error);
             return;
@@ -150,6 +151,7 @@ class StreamNameError {
                 is_archived: stream.is_archived,
                 show_rename: can_rename,
                 can_view_channel: true,
+                is_private: stream.invite_only,
             });
             this.report_already_exists(rendered_error);
             this.select();
@@ -406,6 +408,43 @@ function create_stream(): void {
             // The rest of the work is done via the subscribe event we will get
         },
         error(xhr): void {
+            const error_response_schema = z.object({
+                msg: z.string(),
+                stream_id: z.optional(z.number()),
+                is_archived: z.optional(z.boolean()),
+                can_view_channel: z.optional(z.boolean()),
+                is_private: z.optional(z.boolean()),
+                code: z.optional(z.string()),
+            });
+
+            const result = error_response_schema.safeParse(xhr.responseJSON);
+            const error_data = result.success ? result.data : undefined;
+
+            // Handle specific channel conflict error (409)
+            if (xhr.status === 409 && error_data) {
+                const can_view = error_data.can_view_channel ?? false;
+
+                const rendered_error = render_channel_name_conflict_error({
+                    stream_id: can_view ? error_data.stream_id : undefined,
+                    is_archived: can_view ? (error_data.is_archived ?? false) : false,
+                    show_rename: can_view ? (error_data.is_archived ?? false) : false,
+                    can_view_channel: can_view,
+                    is_private: can_view ? (error_data.is_private ?? false) : false,
+                });
+
+                stream_name_error.report_already_exists(rendered_error);
+                stream_name_error.select();
+                loading.destroy_indicator($("#stream_creating_indicator"));
+
+                // If user can view the channel, show settings
+                if (can_view) {
+                    stream_settings_components.show_subs_pane.create_stream(
+                        "configure_channel_settings",
+                    );
+                }
+                return;
+            }
+
             const error_message = z.object({msg: z.optional(z.string())}).parse(xhr.responseJSON);
             if (error_message?.msg?.includes("access")) {
                 // If we can't access the stream, we can safely

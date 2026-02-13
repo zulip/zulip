@@ -57,6 +57,7 @@ from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
+    ChannelExistsError,
     JsonableError,
     OrganizationOwnerRequiredError,
 )
@@ -77,7 +78,6 @@ from zerver.lib.streams import (
     access_web_public_stream,
     channel_events_topic_name,
     check_channel_creation_permissions,
-    check_stream_name_available,
     create_stream_if_needed,
     do_get_streams,
     filter_stream_authorization_for_adding_subscribers,
@@ -89,6 +89,7 @@ from zerver.lib.streams import (
     validate_can_create_topic_group_setting_for_protected_history_streams,
     validate_topics_policy,
 )
+from zerver.lib.string_validation import check_stream_name
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
     get_topic_history_for_public_stream,
@@ -112,7 +113,15 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import ChannelFolder, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models import (
+    ChannelFolder,
+    Recipient,
+    Stream,
+    Subscription,
+    UserMessage,
+    UserProfile,
+    UserTopic,
+)
 from zerver.models.groups import SystemGroups
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
@@ -452,12 +461,43 @@ def update_stream_backend(
         do_change_stream_description(stream, description, acting_user=user_profile)
     if new_name is not None:
         new_name = new_name.strip()
+        check_stream_name(new_name)
         if stream.name == new_name:
             raise JsonableError(_("Channel already has that name."))
         if stream.name.lower() != new_name.lower():
             # Check that the stream name is available (unless we are
-            # are only changing the casing of the stream name).
-            check_stream_name_available(user_profile.realm, new_name)
+            # only changing the casing of the stream name).
+            existing_stream = (
+                # nosemgrep: tools.dont-use-stream-objects-filter
+                Stream.objects.filter(
+                    realm=user_profile.realm,
+                    name__iexact=new_name,
+                )
+                .exclude(id=stream_id)
+                .first()
+            )
+
+            if existing_stream is not None:
+                # Avoid extra query: check admin first, then public/private, then subscription
+                if user_profile.is_realm_admin:
+                    can_view = True
+                elif existing_stream.is_public():
+                    can_view = True
+                else:
+                    can_view = Subscription.objects.filter(
+                        user_profile=user_profile,
+                        recipient__type=Recipient.STREAM,
+                        recipient__type_id=existing_stream.id,
+                        active=True,
+                    ).exists()
+
+                raise ChannelExistsError(
+                    channel_name=new_name,
+                    stream_id=existing_stream.id,
+                    is_archived=existing_stream.deactivated,
+                    can_view_channel=can_view,
+                    is_private=bool(existing_stream.invite_only) if can_view else False,
+                )
         do_rename_stream(stream, new_name, user_profile)
 
     if not isinstance(folder_id, MissingType):
@@ -705,7 +745,37 @@ def create_channel(
     realm = user_profile.realm
     request_settings_dict = locals()
 
-    check_stream_name_available(realm, name)
+    # nosemgrep: tools.dont-use-stream-objects-filter
+    existing_stream = Stream.objects.filter(realm=realm, name__iexact=name).first()
+    if existing_stream is not None:
+        # Determine if user can view the existing stream:
+        # user can view if stream is public, or the user is subscribed, or is a realm admin.
+        is_private_stream = bool(existing_stream.invite_only)
+
+        # Avoid extra query: check admin first, then public/private, then subscription
+        if user_profile.is_realm_admin:
+            can_view = True
+        elif not is_private_stream:
+            # Public streams are viewable by all
+            can_view = True
+        else:
+            # Only check subscription for private streams
+            can_view = Subscription.objects.filter(
+                user_profile=user_profile,
+                recipient__type=Recipient.STREAM,
+                recipient__type_id=existing_stream.id,
+                active=True,
+            ).exists()
+
+        # Only reveal that the channel is private if the user can view it
+        # to prevent information leakage about private channels
+        raise ChannelExistsError(
+            channel_name=name,
+            stream_id=existing_stream.id,
+            is_archived=existing_stream.deactivated,
+            can_view_channel=can_view,
+            is_private=is_private_stream if can_view else False,
+        )
 
     folder: ChannelFolder | None = None
     if folder_id is not None:
