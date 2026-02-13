@@ -179,6 +179,27 @@ def get_prereg_key_and_redirect(
     except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
 
+    # If this is an invitation link for an existing realm user signup,
+    # send the user to the nicer /register page with a pre-filled email,
+    # allowing them to edit it. We carry the invitation key in the query.
+    try:
+        confirmation_obj = prereg_object.confirmation.get()
+    except Exception:
+        confirmation_obj = None
+
+    if (
+        not realm_creation
+        and confirmation_obj is not None
+        and confirmation_obj.type == Confirmation.INVITATION
+    ):
+        assert isinstance(prereg_object, PreregistrationUser)
+        return HttpResponseRedirect(
+            reverse(
+                "register",
+                query={"email": prereg_object.email, "invitation_key": confirmation_key},
+            )
+        )
+
     registration_url = reverse("accounts_register")
     if realm_creation:
         assert isinstance(prereg_object, PreregistrationRealm)
@@ -217,7 +238,11 @@ def check_prereg_key(
     )
     assert isinstance(prereg_object, PreregistrationRealm | PreregistrationUser)
 
-    confirmation_obj = prereg_object.confirmation.get()
+    # Handle case where multiple confirmations exist for the same prereg object
+    # by getting the most recent one.
+    confirmation_obj = prereg_object.confirmation.order_by("-date_sent").first()
+    if confirmation_obj is None:
+        raise ConfirmationKeyError(ConfirmationKeyError.DOES_NOT_EXIST)  # nocoverage
     realm_creation = confirmation_obj.type == Confirmation.NEW_REALM_USER_REGISTRATION
 
     if realm_creation:
@@ -1706,6 +1731,11 @@ def accounts_home(
         include_realm_default_subscriptions = multiuse_object.include_realm_default_subscriptions
         welcome_message_custom_text = multiuse_object.welcome_message_custom_text
 
+    # If the request came from an invitation confirmation, we may have
+    # an invitation key and a suggested email to prefill.
+    invitation_key = request.GET.get("invitation_key", "")
+    prefill_email = request.GET.get("email")
+
     if request.method == "POST":
         form = HomepageForm(
             request.POST,
@@ -1714,6 +1744,50 @@ def accounts_home(
             from_multiuse_invite=from_multiuse_invite,
             invited_as=invited_as,
         )
+        # Extract posted email early for invitation handling before validation.
+        posted_email = request.POST.get("email", "")
+
+        # If we have an invitation key, handle enforcement/matching before general validation.
+        if invitation_key:
+            try:
+                confirmation_obj = get_object_from_key(
+                    invitation_key, [Confirmation.INVITATION], mark_object_used=False
+                )
+                assert isinstance(confirmation_obj, PreregistrationUser)
+                invited_email = confirmation_obj.email
+                if getattr(confirmation_obj, "require_invited_email", False) and (
+                    invited_email.lower() != posted_email.lower()
+                ):
+                    # Enforce matching email when the invitation requires it.
+                    form.add_error(
+                        "email",
+                        _(
+                            "This invitation requires using the invited email address: {invited}."
+                        ).format(invited=invited_email),
+                    )
+                    context = login_context(request)
+                    context.update(
+                        form=form,
+                        current_url=request.get_full_path,
+                        multiuse_object_key=multiuse_object_key,
+                        from_multiuse_invite=from_multiuse_invite,
+                    )
+                    return render(request, "zerver/create_user/accounts_home.html", context=context)
+
+                if invited_email.lower() == posted_email.lower():
+                    return TemplateResponse(
+                        request,
+                        "confirmation/confirm_preregistrationuser.html",
+                        context={
+                            "key": invitation_key,
+                            "full_name": None,
+                            "registration_url": reverse("accounts_register"),
+                        },
+                    )
+            except ConfirmationKeyError:
+                # Fall through to standard flow if the key is invalid/expired.
+                pass
+
         if form.is_valid():
             try:
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
@@ -1757,7 +1831,10 @@ def accounts_home(
             return HttpResponseRedirect(reverse("signup_send_confirm", query={"email": email}))
 
     else:
-        form = HomepageForm(realm=realm)
+        if prefill_email:
+            form = HomepageForm(initial={"email": prefill_email}, realm=realm)
+        else:
+            form = HomepageForm(realm=realm)
     context = login_context(request)
     context.update(
         form=form,

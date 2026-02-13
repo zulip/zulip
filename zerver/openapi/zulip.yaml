@@ -15933,6 +15933,17 @@ paths:
                   type: boolean
                   example: false
                   default: true
+                require_invited_email:
+                  description: |
+                    Whether to require that invited users sign up using the exact
+                    email address to which the invitation was sent. When set to
+                    `true`, users must register with the invited email; otherwise,
+                    they may edit the email address on the registration page.
+
+                    **Changes**: New in Zulip 11.0 (feature level 416).
+                  type: boolean
+                  default: false
+                  example: false
                 welcome_message_custom_text:
                   description: |
                     Custom message text, in Zulip Markdown format, to be sent by the

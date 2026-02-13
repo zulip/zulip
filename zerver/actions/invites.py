@@ -196,6 +196,7 @@ def do_invite_users(
     include_realm_default_subscriptions: bool,
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
     welcome_message_custom_text: str | None = None,
+    require_invited_email: bool = False,
 ) -> list[tuple[str, str, bool]]:
     num_invites = len(invitee_emails)
 
@@ -282,6 +283,7 @@ def do_invite_users(
             include_realm_default_subscriptions=include_realm_default_subscriptions,
             notify_referrer_on_join=notify_referrer_on_join,
             welcome_message_custom_text=welcome_message_custom_text,
+            require_invited_email=require_invited_email,
         )
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]

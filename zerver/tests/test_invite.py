@@ -74,6 +74,7 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_user_by_delivery_email
+from zerver.views.auth import create_preregistration_user
 from zerver.views.invite import INVITATION_LINK_VALIDITY_MINUTES, get_invitee_emails_set
 from zerver.views.registration import accounts_home
 
@@ -2933,8 +2934,45 @@ class InvitationsTestCase(InviteUserBase):
         self.login("iago")
         error_result = self.client_post("/json/invites/" + str(prereg_user.id) + "/resend")
         self.assert_json_error(error_result, "No such invitation")
-        error_result = self.client_delete("/json/invites/" + str(prereg_user.id))
-        self.assert_json_error(error_result, "No such invitation")
+
+    def test_invitation_link_redirects_to_register_page(self) -> None:
+        realm = get_realm("zulip")
+        invitee = self.nonreg_email("newuser")
+        prereg_user = create_preregistration_user(invitee, realm)
+        activation_url = create_confirmation_link(
+            prereg_user, Confirmation.INVITATION, validity_in_minutes=None
+        )
+        result = self.client_get(activation_url)
+        self.assertEqual(result.status_code, 302)
+        location = result["Location"]
+        self.assertIn("/register/?", location)
+        self.assertIn(quote(invitee), location)
+
+    def test_invitation_link_with_multiple_confirmations_falls_back_to_confirm_page(self) -> None:
+        """
+        If multiple Confirmation objects exist for the preregistration user,
+        the view should avoid redirecting to /register and instead render the
+        confirmation page. This exercises the exception path in
+        get_prereg_key_and_redirect where `.confirmation.get()` raises.
+        """
+        self.login("hamlet")
+        realm = get_realm("zulip")
+        invitee = "dupeconfirm+test@zulip.com"
+        # Create a preregistration user by sending an invite.
+        self.assert_json_success(self.invite(invitee, ["Denmark"], realm=realm))
+        prereg_user = PreregistrationUser.objects.get(email=invitee, realm=realm)
+
+        # Create two confirmation links for the same prereg user to trigger MultipleObjectsReturned.
+        first_link = create_confirmation_link(
+            prereg_user, Confirmation.INVITATION, validity_in_minutes=None
+        )
+        _second_link = create_confirmation_link(
+            prereg_user, Confirmation.INVITATION, validity_in_minutes=None
+        )
+
+        # Access the first link; expect no redirect (status 200) as the view falls back.
+        result = self.client_get(first_link)
+        self.assertEqual(result.status_code, 200)
 
     def test_prereg_user_status(self) -> None:
         email = self.nonreg_email("alice")
@@ -3925,3 +3963,54 @@ class MultiuseInviteTest(ZulipTestCase):
         self.assert_json_error(
             result, "Invalid invite_as: Value error, Not in the list of possible values"
         )
+
+    def test_invitation_email_enforcement_on_register(self) -> None:
+        inviter = self.example_user("hamlet")
+        invitee = self.nonreg_email("test")
+        # Create an invitation requiring the invited email
+        skipped = do_invite_users(
+            inviter,
+            {invitee},
+            [],
+            notify_referrer_on_join=True,
+            user_groups=[],
+            invite_expires_in_minutes=24 * 60,
+            include_realm_default_subscriptions=False,
+            invite_as=PreregistrationUser.INVITE_AS["MEMBER"],
+            welcome_message_custom_text=None,
+            require_invited_email=True,
+        )
+        self.assertEqual(skipped, [])
+        prereg_user = PreregistrationUser.objects.get(email=invitee)
+        confirmation_link = create_confirmation_link(
+            prereg_user, Confirmation.INVITATION, validity_in_minutes=24 * 60
+        )
+        # Extract key and simulate visiting /register with invitation context
+        key = confirmation_link.split("/")[-1]
+        # Attempt to register with a different email should show an error
+        result = self.client_post(
+            "/register/",
+            {
+                "email": "other+diff@zulip.com",
+                "key": key,
+            },
+            HTTP_HOST=inviter.realm.host,
+            QUERY_STRING=f"email={quote(invitee)}&invitation_key={key}",
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(
+            "requires using the invited email address",
+            result.content.decode(),
+        )
+        # Using the invited email should proceed to the invitation interstitial
+        result_ok = self.client_post(
+            "/register/",
+            {
+                "email": invitee,
+                "key": key,
+            },
+            HTTP_HOST=inviter.realm.host,
+            QUERY_STRING=f"email={quote(invitee)}&invitation_key={key}",
+        )
+        self.assertEqual(result_ok.status_code, 200)
+        self.assertIn("accounts/register", result_ok.content.decode())

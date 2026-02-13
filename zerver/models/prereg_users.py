@@ -118,6 +118,10 @@ class PreregistrationUser(models.Model):
 
     include_realm_default_subscriptions = models.BooleanField(default=True)
 
+    # When true, the invited user must register using the email
+    # address specified in the invitation.
+    require_invited_email = models.BooleanField(default=False)
+
     # Used in realm import flow to allow importer (the person
     # whose email is set as PreregistrationRealm.email) to create
     # a new user if a imported user with the matching

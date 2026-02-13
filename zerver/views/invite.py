@@ -147,6 +147,7 @@ def invite_users_backend(
     invitee_emails_raw: Annotated[str, ApiParamConfig("invitee_emails")],
     notify_referrer_on_join: Json[bool] = True,
     stream_ids: Json[list[int]],
+    require_invited_email: Json[bool] = False,
     welcome_message_custom_text: Annotated[
         str | None,
         StringConstraints(
@@ -189,6 +190,7 @@ def invite_users_backend(
         include_realm_default_subscriptions=include_realm_default_subscriptions,
         invite_as=invite_as,
         welcome_message_custom_text=welcome_message_custom_text,
+        require_invited_email=require_invited_email,
     )
 
     if skipped:
