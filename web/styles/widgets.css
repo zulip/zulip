@@ -341,3 +341,22 @@ input {
         cursor: not-allowed;
     }
 }
+
+.todo-task-delete {
+    background: none;
+    border: none;
+    padding: 4px;
+    margin-left: 6px;
+    cursor: pointer;
+    color: var(--color-text-default);
+    opacity: 0.6;
+}
+
+.todo-task-delete:hover {
+    opacity: 1;
+    color: var(--color-danger);
+}
+
+.todo-task-delete:focus:not(:focus-visible) {
+    outline: none;
+}
