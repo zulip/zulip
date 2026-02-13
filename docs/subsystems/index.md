@@ -21,6 +21,7 @@ performance
 realms
 management-commands
 schema-migrations
+database-concurrency
 hashchange-system
 emoji
 onboarding-steps

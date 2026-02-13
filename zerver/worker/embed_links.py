@@ -44,7 +44,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
         # https://zulip.readthedocs.io/en/latest/subsystems/queuing.html#publishing-events-into-a-queue
         with transaction.atomic(savepoint=False):
             try:
-                message = Message.objects.select_for_update().get(id=event["message_id"])
+                message = Message.objects.select_for_update(no_key=True).get(id=event["message_id"])
             except Message.DoesNotExist:
                 # Message may have been deleted
                 return

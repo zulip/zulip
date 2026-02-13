@@ -137,7 +137,7 @@ def confirm_email_change(request: HttpRequest, *, key: str) -> HttpResponse:
         new_email = email_change_object.new_email
         old_email = email_change_object.old_email
 
-        user_profile = UserProfile.objects.select_for_update().get(
+        user_profile = UserProfile.objects.select_for_update(no_key=True).get(
             id=email_change_object.user_profile_id
         )
 

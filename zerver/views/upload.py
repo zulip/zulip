@@ -343,7 +343,11 @@ def serve_file(
             # currently processing the row.
             with transaction.atomic(savepoint=False):
                 ensure_thumbnails(
-                    ImageAttachment.objects.select_for_update().get(id=image_attachment.id),
+                    # ensure_thumbnails can in rare cases end up deleting the ImageAttachment row, if thumbnailing
+                    # fails. Since a DELETE can happen, we want a full FOR UPDATE lock.
+                    ImageAttachment.objects.select_for_update(no_key=False).get(
+                        id=image_attachment.id
+                    ),
                 )
 
         # Update the path that we are fetching to be the thumbnail

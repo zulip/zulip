@@ -668,8 +668,14 @@ class UserMessage(AbstractUserMessage):
         simultaneous duplicate API requests to mark a certain set of
         messages as read).
 
+        Note: Since we don't expect these UserMessage rows to be deleted by the
+        caller, a FOR NO KEY UPDATE lock might be sufficient here. However, we
+        don't expect the stronger FOR UPDATE lock to cause any issues,
+        so for now, we still pass no_key=False, acquiring the stronger lock.
         """
-        return UserMessage.objects.select_for_update(of=("self",)).order_by("message_id")
+        return UserMessage.objects.select_for_update(of=("self",), no_key=False).order_by(
+            "message_id"
+        )
 
     @staticmethod
     def has_any_mentions(user_profile_id: int, message_id: int) -> bool:

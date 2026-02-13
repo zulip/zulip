@@ -1767,7 +1767,7 @@ def check_update_message(
 def re_thumbnail(
     message_class: type[Message] | type[ArchivedMessage], message_id: int, enqueue: bool
 ) -> None:
-    message = message_class.objects.select_for_update().get(id=message_id)
+    message = message_class.objects.select_for_update(no_key=True).get(id=message_id)
     assert message.rendered_content is not None
     image_metadata = manifest_and_get_user_upload_previews(
         message.realm_id,

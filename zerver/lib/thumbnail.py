@@ -442,7 +442,7 @@ def manifest_and_get_user_upload_previews(
         realm_id=realm_id, path_id__in=path_ids
     ).order_by("id")
     if lock:
-        image_attachments = image_attachments.select_for_update(of=("self",))
+        image_attachments = image_attachments.select_for_update(of=("self",), no_key=True)
     for image_attachment in image_attachments:
         if image_attachment.thumbnail_metadata == []:
             # Image exists, and header of it parsed as a valid image,

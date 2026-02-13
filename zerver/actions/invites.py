@@ -200,7 +200,7 @@ def do_invite_users(
     num_invites = len(invitee_emails)
 
     # Lock the realm, since we need to not race with other invitations
-    realm = Realm.objects.select_for_update().get(id=user_profile.realm_id)
+    realm = Realm.objects.select_for_update(no_key=True).get(id=user_profile.realm_id)
     check_invite_limit(realm, num_invites)
 
     if settings.BILLING_ENABLED:
@@ -491,7 +491,7 @@ def do_send_user_invite_email(
 ) -> None:
     # Take a lock on the realm, so we can check for invitation limits without races
     realm_id = assert_is_not_none(prereg_user.realm_id)
-    realm = Realm.objects.select_for_update().get(id=realm_id)
+    realm = Realm.objects.select_for_update(no_key=True).get(id=realm_id)
     check_invite_limit(realm, 1)
     referrer = assert_is_not_none(prereg_user.referred_by)
 
