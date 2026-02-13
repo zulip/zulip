@@ -1022,17 +1022,17 @@ div.overlay .flex.overlay-content > .overlay-container,
 }
 
 .dropdown-current-value-not-in-options,
-.setting-disabled-option {
+.setting-styled-option {
     color: hsl(38deg 46% 54%);
 
-    .setting-disabled-option-text,
-    .setting-disabled-option-icon {
+    .setting-styled-option-text,
+    .setting-styled-option-icon {
         color: hsl(38deg 46% 54%);
     }
+}
 
-    .setting-disabled-option-icon {
-        align-self: center;
-    }
+.setting-disabled-option .setting-disabled-option-icon {
+    align-self: center;
 }
 
 .empty-list-message,
