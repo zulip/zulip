@@ -1937,7 +1937,7 @@ label.preferences-radio-choice-label {
     opacity: var(--opacity-readonly-modal-input);
 }
 
-@media (width < $lg_min) {
+@media (width < 768px) {
     .settings-email-column {
         display: none;
     }
@@ -1966,7 +1966,7 @@ label.preferences-radio-choice-label {
 
 /* We should eventually consolidate some of these styles with the styles
    in subscriptions.css, using shared classnames. */
-@container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
+@container settings-overlay (width < 600px) {
     .profile-settings-form {
         .user-avatar-section {
             flex: 100%;
@@ -2056,7 +2056,7 @@ label.preferences-radio-choice-label {
     }
 }
 
-@container (width > $settings_overlay_sidebar_collapse_breakpoint) {
+@container (width > 600px) {
     #attachments-settings .upload-file-name {
         min-width: 10em;
     }
@@ -2089,7 +2089,7 @@ label.preferences-radio-choice-label {
     }
 }
 
-@media (width < $sm_min) {
+@media (width < 768px) {
     #admin-user-list,
     #admin-bot-list {
         .user_row,
@@ -2154,7 +2154,7 @@ label.preferences-radio-choice-label {
     }
 }
 
-@media (width < $ml_min) {
+@media (width < 600px) {
     #api_key_buttons,
     #download_zuliprc {
         flex-direction: column;

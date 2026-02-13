@@ -285,7 +285,7 @@ h4.user_group_setting_subsection_title {
         max-width: 160px;
     }
 
-    @media (max-width: $ms_min) {
+    @media (width <= 600px) {
         float: none;
         display: flex;
         justify-content: flex-start;
@@ -789,14 +789,18 @@ h4.user_group_setting_subsection_title {
     align-items: center;
 
     .check {
-        width: 1.5625em; /* 25px at 16px font size */
-        height: 1.5625em; /* 25px at 16px font size */
-        margin-right: 0.75em; /* 12px at 16px font size */
+        /* UPDATED: Fixed width of 28px to prevent visual jitter */
+        width: 28px;
+        height: 1.5625em; /* Keep height consistent */
+        margin-right: 0.75em;
         background-size: 60% auto;
         background-repeat: no-repeat;
         background-position: center center;
-        display: flex;
-        justify-content: center;
+
+        /* UPDATED: Use inline-block/text-align per your fix */
+        display: inline-block;
+        text-align: center;
+        flex-shrink: 0;
 
         & .sub-unsub-icon {
             display: flex;
@@ -1045,7 +1049,7 @@ h4.user_group_setting_subsection_title {
             border-top: 1px solid var(--color-border-modal-bar);
         }
 
-        @container settings-overlay (width > $settings_overlay_sidebar_collapse_breakpoint) {
+        @container settings-overlay (width > 600px) {
             .settings-sticky-footer {
                 border-radius: 0 0 6px;
             }
@@ -1437,7 +1441,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-@media (width < $lg_min) {
+@media (width <= 1200px) {
     .two-pane-settings-container {
         max-width: 95%;
     }
@@ -1445,7 +1449,7 @@ h4.user_group_setting_subsection_title {
 
 /* This ensures the left-border is tall enough. We can't keep this style for
     narrow screens because `right` is absolutely positioned on narrow screens. */
-@container settings-overlay (width >= $settings_overlay_sidebar_collapse_breakpoint) {
+@container settings-overlay (width >= 900px) {
     .two-pane-settings-container .right {
         height: 100%;
     }
@@ -1453,7 +1457,7 @@ h4.user_group_setting_subsection_title {
 
 /* We should eventually consolidate some of these styles with the styles
    in settings.css, using shared classnames. */
-@container settings-overlay (width < $settings_overlay_sidebar_collapse_breakpoint) {
+@container settings-overlay (width < 900px) {
     .two-pane-settings-container {
         position: relative;
         overflow: hidden;
@@ -1495,7 +1499,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-@media (width < $sm_min) {
+@media (width <= 600px) {
     #groups_overlay .user_group_settings_wrapper,
     #subscription_overlay .subscription_settings {
         .button-group {
@@ -1590,7 +1594,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-@media (width < $lg_min) {
+@media (width <= 1200px) {
     #stream_members_list,
     #user_group_settings .member-list,
     #stream_creation_form .subscriber-list,
