@@ -494,10 +494,7 @@ test("left_sidebar_search", ({override}) => {
         );
         const history = stream_topic_history.find_or_create(stream.stream_id);
         history.add_or_update("an important topic", 1);
-        return stream_list_sort.sort_groups(
-            stream_data.subscribed_stream_ids().filter((id) => id !== stream.stream_id),
-            "import",
-        ).sections;
+        return stream_list_sort.sort_groups(stream_data.subscribed_stream_ids(), "import").sections;
     }
     let sorted_sections = setup_search_around_stream(scalene);
     // The topic matches the search query, so the stream appears in the search result.
@@ -506,7 +503,7 @@ test("left_sidebar_search", ({override}) => {
     assert.deepEqual(sorted_sections[0].default_visible_streams, [scalene.stream_id]);
 
     sorted_sections = stream_list_sort.sort_groups(
-        stream_data.subscribed_stream_ids().filter((id) => id !== scalene.stream_id),
+        stream_data.subscribed_stream_ids(),
         "any",
     ).sections;
     assert.deepEqual(sorted_sections.length, 2);
@@ -521,7 +518,8 @@ test("left_sidebar_search", ({override}) => {
     assert.deepEqual(sorted_sections.length, 3);
     assert.deepEqual(sorted_sections[1].folder_id, fast_tortoise.folder_id);
     assert.deepEqual(sorted_sections[1].default_visible_streams, [fast_tortoise.stream_id]);
-    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
+    // Topic match on "import", even though that isn't the current narrow stream.
+    assert.deepEqual(sorted_sections[0].default_visible_streams, [scalene.stream_id]);
     assert.deepEqual(sorted_sections[2].default_visible_streams, []);
 });
 
