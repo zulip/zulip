@@ -1610,6 +1610,14 @@ class RealmImportExportTest(ExportFile):
         # Verify strange invariant for UserStatus/RealmEmoji.
         self.assertEqual(user_status.emoji_code, str(realm_emoji.id))
 
+        # data to test import of external auth IDs
+        ExternalAuthID.objects.create(
+            user=hamlet,
+            realm=original_realm,
+            external_auth_method_name="saml:idp_name",
+            external_auth_id="hamlet-saml-id",
+        )
+
         # data to test import of botstoragedata and botconfigdata
         bot_profile = do_create_user(
             email="bot-1@zulip.com",
@@ -2314,6 +2322,13 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_channel_folders(r: Realm) -> set[str]:
             return set(ChannelFolder.objects.filter(realm=r).values_list("name", flat=True))
+
+        @getter
+        def get_external_auth_ids(r: Realm) -> set[tuple[str, str, str]]:
+            return {
+                (rec.user.delivery_email, rec.external_auth_method_name, rec.external_auth_id)
+                for rec in ExternalAuthID.objects.filter(realm=r)
+            }
 
         return getters
 
@@ -3255,6 +3270,73 @@ class RealmImportExportTest(ExportFile):
         self.assertHTMLEqual(
             imported_poll_message.rendered_content,
             poll_message.rendered_content,
+        )
+
+
+class ExportImportSymmetryTest(ZulipTestCase):
+    def test_exported_tables_have_import_handling(self) -> None:
+        """Verify that every table in the export Config tree has
+        corresponding import logic in import_realm.py. This prevents
+        future bugs where a table is exported but silently dropped on
+        import."""
+        from zerver.lib.export import get_realm_config
+        from zerver.lib.import_realm import ID_MAP
+
+        def collect_exported_tables(config: Any) -> set[str]:
+            tables: set[str] = set()
+            if config.table is not None:
+                tables.add(config.table)
+            if config.custom_tables is not None:
+                tables.update(config.custom_tables)
+            for child in config.children:
+                tables.update(collect_exported_tables(child))
+            return tables
+
+        exported_tables = collect_exported_tables(get_realm_config())
+
+        # Virtual/internal tables that are merged into their parent
+        # during export or import and don't need separate import
+        # handling.
+        virtual_tables = {
+            "zerver_userprofile_mirrordummy",
+            "zerver_userprofile_crossrealm",
+            # These are intermediate tables that get
+            # concat_and_destroy'd into zerver_recipient and
+            # zerver_subscription during export.
+            "_user_recipient",
+            "_stream_recipient",
+            "_huddle_recipient",
+            "_user_subscription",
+            "_stream_subscription",
+            "_huddle_subscription",
+        }
+
+        # Exceptions where the ID_MAP key doesn't match the simple
+        # "strip zerver_ prefix" pattern.
+        special_id_map_keys = {
+            "zerver_userprofile": "user_profile",
+            "zerver_userpresence": "user_presence",
+            # NamedUserGroup shares import handling with UserGroup.
+            "zerver_namedusergroup": "usergroup",
+        }
+
+        def id_map_key_for_table(table: str) -> str:
+            if table in special_id_map_keys:
+                return special_id_map_keys[table]
+            return table.removeprefix("zerver_")
+
+        missing_tables = []
+        for table in sorted(exported_tables - virtual_tables):
+            key = id_map_key_for_table(table)
+            if key not in ID_MAP:
+                missing_tables.append(table)  # nocoverage
+
+        self.assertEqual(
+            missing_tables,
+            [],
+            "These exported tables have no corresponding import handling in "
+            "import_realm.py. Add import logic or add to virtual_tables if "
+            "they are handled specially.",
         )
 
 
