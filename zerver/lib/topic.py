@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Callable
 from datetime import datetime
 from typing import Any
@@ -18,6 +19,8 @@ ORIG_TOPIC = "orig_subject"
 TOPIC_NAME = "subject"
 TOPIC_LINKS = "topic_links"
 MATCH_TOPIC = "match_subject"
+
+logger = logging.getLogger(__name__)
 
 # Prefix use to mark topic as resolved.
 RESOLVED_TOPIC_PREFIX = "✔ "
@@ -232,7 +235,32 @@ def update_messages_for_topic_edit(
     message_ids = [edited_message.id, *messages.values_list("id", flat=True)]
 
     def propagate() -> QuerySet[Message]:
-        messages.update(**update_fields)
+        batch_size = 1000
+        ids_to_update = [msg_id for msg_id in message_ids if msg_id != edited_message.id]
+
+        if ids_to_update:
+            logger.info(
+                "Updating %d messages in topic edit operation (batch size: %d)",
+                len(ids_to_update),
+                batch_size
+            )
+
+            total_updated = 0
+            for i in range(0, len(ids_to_update), batch_size):
+                batch_ids = ids_to_update[i:i + batch_size]
+                updated_count = Message.objects.filter(id__in=batch_ids).update(**update_fields)
+                total_updated += updated_count
+
+                if len(batch_ids) >= batch_size or i + batch_size >= len(ids_to_update):
+                    logger.debug(
+                        "Updated batch %d-%d: %d messages",
+                        i + 1,
+                        min(i + batch_size, len(ids_to_update)),
+                        updated_count
+                    )
+
+            logger.info("Successfully updated %d messages in topic edit operation", total_updated)
+
         return Message.objects.filter(id__in=message_ids).select_related(
             *Message.DEFAULT_SELECT_RELATED
         )
