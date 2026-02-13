@@ -707,6 +707,14 @@ export function compare_group_setting_options(
     assert(option_a.type === "user");
     assert(option_b.type === "user");
 
+    if (option_a.user.is_bot && !option_b.user.is_bot) {
+        return 1;
+    }
+
+    if (!option_a.user.is_bot && option_b.user.is_bot) {
+        return -1;
+    }
+
     if (target_group !== undefined) {
         if (
             !target_group.members.has(option_a.user.user_id) &&
