@@ -177,6 +177,48 @@ run_test("find_li", ({override}) => {
     assert.equal($li, $bob_li);
 });
 
+run_test("presence_row_template_structure", ({mock_template}) => {
+    const buddy_list = new BuddyList();
+    let rendered_html;
+
+    mock_template("presence_row.hbs", true, (_data, html) => {
+        rendered_html = html;
+        return html;
+    });
+
+    const data = {
+        name: "Iago",
+        user_id: 10,
+        user_list_style: {
+            WITH_AVATAR: true,
+            WITH_STATUS: false,
+        },
+        has_status_text: false,
+        user_circle_class: "user-circle-active",
+        profile_picture: "http://example.com/avatar.png",
+        href: "#user/10/Iago",
+        status_text: "",
+        num_unread: 0,
+    };
+
+    buddy_list.item_to_html({item: data});
+
+    assert.ok(rendered_html, "Should render presence row template");
+
+    const profile_pic_index = rendered_html.indexOf("user-profile-picture");
+    assert.ok(profile_pic_index !== -1, "Should render profile picture div");
+
+    const profile_pic_closing_tag_index = rendered_html.indexOf("</div>", profile_pic_index);
+
+    const status_circle_index = rendered_html.indexOf("user-circle");
+    assert.ok(status_circle_index !== -1, "Should render status circle");
+
+    assert.ok(
+        profile_pic_closing_tag_index < status_circle_index,
+        "The user-circle span must be outside (after) the user-profile-picture div.",
+    );
+});
+
 run_test("fill_screen_with_content early break on big list", ({override}) => {
     stub_buddy_list_elements();
     const buddy_list = new BuddyList();
