@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 # usage: clean-branches
 # Deletes any local branches which are ancestors of origin/main,
