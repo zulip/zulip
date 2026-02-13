@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const {make_email} = require("./lib/test_email.cjs");
 
 set_global("page_params", {
     is_spectator: false,
@@ -36,7 +37,7 @@ const {built_in_views_meta_data} = zrequire("navigation_views");
 const {initialize_user_settings} = zrequire("user_settings");
 
 people.add_active_user({
-    email: "tester@zulip.com",
+    email: make_email("tester"),
     full_name: "Tester von Tester",
     user_id: 42,
 });

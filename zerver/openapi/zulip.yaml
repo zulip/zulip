@@ -86,7 +86,7 @@ paths:
                     See the `require_email_format_usernames` parameter documented in
                     [GET /server_settings](/api/get-server-settings) for details.
                   type: string
-                  example: iago@zulip.com
+                  example: iago@example.com
                 password:
                   type: string
                   example: abcd1234
@@ -132,7 +132,7 @@ paths:
                   description: |
                     The email address for the user that owns the API key.
                   type: string
-                  example: iago@zulip.com
+                  example: iago@example.com
               required:
                 - username
       security: []
@@ -1044,7 +1044,7 @@ paths:
                                   "op": "add",
                                   "person":
                                     {
-                                      "email": "foo@zulip.com",
+                                      "email": "foo@example.com",
                                       "delivery_email": null,
                                       "user_id": 38,
                                       "avatar_version": 1,
@@ -8299,19 +8299,19 @@ paths:
                                   {
                                     "id": 4,
                                     "is_mirror_dummy": false,
-                                    "email": "hamlet@zulip.com",
+                                    "email": "hamlet@example.com",
                                     "full_name": "King Hamlet",
                                   },
                                   {
                                     "id": 5,
                                     "is_mirror_dummy": false,
-                                    "email": "iago@zulip.com",
+                                    "email": "iago@example.com",
                                     "full_name": "Iago",
                                   },
                                   {
                                     "id": 8,
                                     "is_mirror_dummy": false,
-                                    "email": "prospero@zulip.com",
+                                    "email": "prospero@example.com",
                                     "full_name": "Prospero from The Tempest",
                                   },
                                 ],
@@ -8325,7 +8325,7 @@ paths:
                               "client": "ZulipDataImport",
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "submessages": [],
-                              "sender_email": "hamlet@zulip.com",
+                              "sender_email": "hamlet@example.com",
                               "reactions": [],
                             },
                             {
@@ -8347,7 +8347,7 @@ paths:
                               "client": "ZulipDataImport",
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "submessages": [],
-                              "sender_email": "hamlet@zulip.com",
+                              "sender_email": "hamlet@example.com",
                               "reactions": [],
                             },
                           ],
@@ -8544,7 +8544,7 @@ paths:
                       - example:
                           {
                             "code": "BAD_REQUEST",
-                            "msg": "Invalid email 'eeshan@zulip.com'",
+                            "msg": "Invalid email 'eeshan@example.com'",
                             "result": "error",
                           }
                         description: |
@@ -9658,19 +9658,19 @@ paths:
                                 {
                                   "id": 4,
                                   "is_mirror_dummy": false,
-                                  "email": "hamlet@zulip.com",
+                                  "email": "hamlet@example.com",
                                   "full_name": "King Hamlet",
                                 },
                                 {
                                   "id": 5,
                                   "is_mirror_dummy": false,
-                                  "email": "iago@zulip.com",
+                                  "email": "iago@example.com",
                                   "full_name": "Iago",
                                 },
                                 {
                                   "id": 8,
                                   "is_mirror_dummy": false,
-                                  "email": "prospero@zulip.com",
+                                  "email": "prospero@example.com",
                                   "full_name": "Prospero from The Tempest",
                                 },
                               ],
@@ -9684,7 +9684,7 @@ paths:
                             "client": "ZulipDataImport",
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "submessages": [],
-                            "sender_email": "hamlet@zulip.com",
+                            "sender_email": "hamlet@example.com",
                             "reactions": [],
                           },
                       }
@@ -10465,7 +10465,7 @@ paths:
                           [
                             {
                               "is_active": true,
-                              "email": "AARON@zulip.com",
+                              "email": "AARON@example.com",
                               "delivery_email": null,
                               "is_admin": false,
                               "is_owner": false,
@@ -10517,7 +10517,7 @@ paths:
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "is_active": true,
-                              "email": "hamlet@zulip.com",
+                              "email": "hamlet@example.com",
                               "delivery_email": null,
                               "is_imported_stub": false,
                             },
@@ -10876,7 +10876,7 @@ paths:
             identifying the user by Zulip API email.
           schema:
             type: string
-          example: iago@zulip.com
+          example: iago@example.com
           required: true
       responses:
         "200":
@@ -10977,7 +10977,7 @@ paths:
                         type: string
                         description: |
                           Zulip API email of the requesting user.
-                        example: "iago@zulip.com"
+                        example: "iago@example.com"
                       full_name:
                         type: string
                         description: |
@@ -11092,8 +11092,8 @@ paths:
                       {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
                         "avatar_version": 1,
-                        "email": "iago@zulip.com",
-                        "delivery_email": iago@zulip.com,
+                        "email": "iago@example.com",
+                        "delivery_email": iago@example.com,
                         "full_name": "Iago",
                         "is_admin": true,
                         "is_owner": false,
@@ -12439,7 +12439,7 @@ paths:
                       {
                         "msg": "",
                         "subscribed": {},
-                        "already_subscribed": {"iago@zulip.com": ["Verona"]},
+                        "already_subscribed": {"iago@example.com": ["Verona"]},
                         "not_removed": [],
                         "removed": ["testing-help"],
                         "result": "success",
@@ -13693,7 +13693,7 @@ paths:
                         "msg": "",
                         "presences":
                           {
-                            "iago@zulip.com":
+                            "iago@example.com":
                               {
                                 "website":
                                   {
@@ -14930,7 +14930,7 @@ paths:
             Previously, lookups were done only using the Zulip API email addresses.
           schema:
             type: string
-          example: iago@zulip.com
+          example: iago@example.com
           required: true
         - $ref: "#/components/parameters/ClientGravatar"
         - $ref: "#/components/parameters/IncludeCustomProfileFields"
@@ -14990,7 +14990,7 @@ paths:
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
-                            "email": "hamlet@zulip.com",
+                            "email": "hamlet@example.com",
                             "delivery_email": null,
                             "is_imported_stub": false,
                           },
@@ -15019,7 +15019,7 @@ paths:
             [`GET /users/{email}`](/api/get-user-by-email).
           schema:
             type: string
-          example: hamlet@zulip.com
+          example: hamlet@example.com
       requestBody:
         $ref: "#/components/requestBodies/UpdateUser"
       responses:
@@ -15131,7 +15131,7 @@ paths:
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
-                            "email": "hamlet@zulip.com",
+                            "email": "hamlet@example.com",
                             "delivery_email": null,
                             "is_imported_stub": false,
                           },
@@ -15806,7 +15806,7 @@ paths:
                         "invites":
                           [
                             {
-                              email: "example@zulip.com",
+                              email: "example@example.com",
                               expiry_date: null,
                               id: 1,
                               invited: 1710606654,
@@ -15855,7 +15855,7 @@ paths:
                     The string containing the email addresses, separated by commas or
                     newlines, that will be sent an invitation.
                   type: string
-                  example: example@zulip.com, logan@zulip.com
+                  example: example@example.com, logan@example.com
                 invite_expires_in_minutes:
                   $ref: "#/components/schemas/InviteExpirationParameter"
                 invite_as:
@@ -15991,7 +15991,7 @@ paths:
                             "errors":
                               [
                                 [
-                                  "hamlet@zulip.com",
+                                  "hamlet@example.com",
                                   "Already has an account.",
                                   false,
                                 ],
@@ -25224,7 +25224,7 @@ paths:
                     "message":
                       {
                         "subject": "Verona2",
-                        "sender_email": "iago@zulip.com",
+                        "sender_email": "iago@example.com",
                         "timestamp": 1527876931,
                         "client": "website",
                         "submessages": [],
@@ -28270,7 +28270,7 @@ components:
           example:
             {
               "api_key": "gjA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
-              "email": "iago@zulip.com",
+              "email": "iago@example.com",
               "msg": "",
               "result": "success",
               "user_id": 5,
@@ -28768,7 +28768,7 @@ components:
         - type: array
           items:
             type: integer
-      example: ["ZOE@zulip.com"]
+      example: ["ZOE@example.com"]
     ReactionType:
       description: |
         A string indicating the type of emoji. Each emoji `reaction_type`

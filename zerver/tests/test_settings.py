@@ -300,7 +300,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login("hamlet")
 
         with self.settings(
-            LDAP_APPEND_DOMAIN="zulip.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
+            LDAP_APPEND_DOMAIN="example.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
         ):
             result = self.client_patch(
                 "/json/settings",
@@ -322,7 +322,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
         with (
             self.settings(
-                LDAP_APPEND_DOMAIN="example.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
+                LDAP_APPEND_DOMAIN="zulip.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
             ),
             self.assertLogs("zulip.ldap", "DEBUG") as debug_log,
         ):
@@ -337,7 +337,7 @@ class ChangeSettingsTest(ZulipTestCase):
             self.assertEqual(
                 debug_log.output,
                 [
-                    "DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email hamlet@zulip.com does not match LDAP domain example.com."
+                    "DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email hamlet@example.com does not match LDAP domain zulip.com."
                 ],
             )
 

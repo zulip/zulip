@@ -98,7 +98,7 @@
         "type": "card"
       },
       "radar_options": {},
-      "receipt_email": "hamlet@zulip.com",
+      "receipt_email": "hamlet@example.com",
       "receipt_number": null,
       "receipt_url": "https://pay.stripe.com/receipts/invoices/NORMALIZED?s=ap",
       "refunded": false,

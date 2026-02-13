@@ -13,6 +13,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const {make_email} = require("./lib/test_email.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -56,39 +57,39 @@ const user_settings = {};
 initialize_user_settings({user_settings});
 
 const me = {
-    email: "me@zulip.com",
+    email: make_email("me"),
     user_id: 999,
     full_name: "Me Myself",
 };
 
 const alice = {
-    email: "alice@zulip.com",
+    email: make_email("alice"),
     user_id: 1,
     full_name: "Alice Smith",
 };
 const fred = {
-    email: "fred@zulip.com",
+    email: make_email("fred"),
     user_id: 2,
     full_name: "Fred Flintstone",
 };
 const jill = {
-    email: "jill@zulip.com",
+    email: make_email("jill"),
     user_id: 3,
     full_name: "Jill Hill",
 };
 const mark = {
-    email: "mark@zulip.com",
+    email: make_email("mark"),
     user_id: 4,
     full_name: "Marky Mark",
 };
 const norbert = {
-    email: "norbert@zulip.com",
+    email: make_email("norbert"),
     user_id: 5,
     full_name: "Norbert Oswald",
 };
 
 const zoe = {
-    email: "zoe@example.com",
+    email: make_email("zoe"),
     user_id: 6,
     full_name: "Zoe Yang",
 };

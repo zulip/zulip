@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const {make_email} = require("./lib/test_email.cjs");
 
 const direct_message_group_data = zrequire("direct_message_group_data");
 const people = zrequire("people");
@@ -16,31 +17,31 @@ function create_user(info) {
 }
 
 const me = create_user({
-    email: "me@zulip.com",
+    email: make_email("me"),
     user_id: 999,
     full_name: "Me Myself",
 });
 
 const alice = create_user({
-    email: "alice@zulip.com",
+    email: make_email("alice"),
     user_id: 1,
     full_name: "Alice Smith",
 });
 
 const fred = create_user({
-    email: "fred@zulip.com",
+    email: make_email("fred"),
     user_id: 2,
     full_name: "Fred Flintstone",
 });
 
 const jill = create_user({
-    email: "jill@zulip.com",
+    email: make_email("jill"),
     user_id: 3,
     full_name: "Jill Hill",
 });
 
 const norbert = create_user({
-    email: "norbert@zulip.com",
+    email: make_email("norbert"),
     user_id: 5,
     full_name: "Norbert Oswald",
 });
@@ -48,10 +49,10 @@ const norbert = create_user({
 people.initialize_current_user(me.user_id);
 
 run_test("direct_message_group_data.process_loaded_messages", () => {
-    const direct_message_group1 = "jill@zulip.com,norbert@zulip.com";
+    const direct_message_group1 = `${make_email("jill")},${make_email("norbert")}`;
     const timestamp1 = 1382479029; // older
 
-    const direct_message_group2 = "alice@zulip.com,fred@zulip.com";
+    const direct_message_group2 = `${make_email("alice")},${make_email("fred")}`;
     const timestamp2 = 1382479033; // newer
 
     const old_timestamp = 1382479000;

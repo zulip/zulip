@@ -33,6 +33,7 @@ from zerver.lib.avatar import (
     get_avatar_field,
     get_static_avatar_url,
 )
+from zerver.lib.avatar_hash import gravatar_hash
 from zerver.lib.cache import cache_delete, cache_get, get_realm_used_upload_space_cache_key
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.initial_password import initial_password
@@ -799,7 +800,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         test_subdomain = "uploadtest.example.com"
         user1_email = "user1@uploadtest.example.com"
-        user2_email = "test-og-bot@zulip.com"
+        user2_email = "test-og-bot@example.com"
         user3_email = "other-user@uploadtest.example.com"
 
         r1 = do_create_realm(string_id=test_subdomain, name=test_subdomain)
@@ -811,7 +812,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         user_3 = create_user(user3_email, test_subdomain)
         host = user_3.realm.host
 
-        # Send a message from @zulip.com -> @uploadtest.example.com
+        # Send a message from @example.com -> @uploadtest.example.com
         self.login_user(user_2)
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
@@ -1268,26 +1269,26 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
         cordelia.save()
         with self.settings(ENABLE_GRAVATAR=True):
-            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            response = self.client_get("/avatar/cordelia@example.com", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertEqual(redirect_url, str(avatar_url(cordelia)) + "&foo=bar")
 
         with self.settings(
             ENABLE_GRAVATAR=False, GRAVATAR_REALM_OVERRIDE={get_realm("zulip").id: True}
         ):
-            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            response = self.client_get("/avatar/cordelia@example.com", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertTrue("gravatar" in redirect_url)
 
         with self.settings(ENABLE_GRAVATAR=False):
-            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            response = self.client_get("/avatar/cordelia@example.com", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "&foo=bar"))
 
         with self.settings(
             ENABLE_GRAVATAR=True, GRAVATAR_REALM_OVERRIDE={get_realm("zulip").id: False}
         ):
-            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            response = self.client_get("/avatar/cordelia@example.com", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertTrue("gravatar" not in redirect_url)
 
@@ -1299,7 +1300,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         with self.settings(
             ENABLE_GRAVATAR=False, DEFAULT_AVATAR_URI="http://other.server/avatar.svg"
         ):
-            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            response = self.client_get("/avatar/cordelia@example.com", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertEqual(redirect_url, "http://other.server/avatar.svg?version=1&foo=bar")
 
@@ -1315,7 +1316,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
-        response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+        response = self.client_get("/avatar/cordelia@example.com", {"foo": "bar"})
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "?foo=bar"))
 
@@ -1330,7 +1331,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             # Test /avatar/<email_or_id> endpoint with HTTP basic auth.
-            response = self.api_get(hamlet, "/avatar/cordelia@zulip.com", {"foo": "bar"})
+            response = self.api_get(hamlet, "/avatar/cordelia@example.com", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "?foo=bar"))
 
@@ -1339,7 +1340,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "?foo=bar"))
 
             # Test cross_realm_bot avatar access using email.
-            response = self.api_get(hamlet, "/avatar/welcome-bot@zulip.com", {"foo": "bar"})
+            response = self.api_get(hamlet, f"/avatar/{settings.WELCOME_BOT}", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "?foo=bar"))
 
@@ -1349,7 +1350,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + "?foo=bar"))
 
             # Without spectators enabled, no unauthenticated access.
-            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            response = self.client_get("/avatar/cordelia@example.com", {"foo": "bar"})
             self.assert_json_error(
                 response,
                 "Not logged in: API authentication or user session required",
@@ -1369,7 +1370,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(302, response.status_code)
 
         # Disallow unauthenticated/spectator requests by email.
-        response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+        response = self.client_get("/avatar/cordelia@example.com", {"foo": "bar"})
         self.assert_json_error(
             response,
             "Not logged in: API authentication or user session required",
@@ -1384,7 +1385,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith("images/unknown-user-avatar.png?foo=bar"))
 
-        response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+        response = self.client_get("/avatar/cordelia@example.com", {"foo": "bar"})
         self.assertEqual(302, response.status_code)
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith("images/unknown-user-avatar.png?foo=bar"))
@@ -1404,7 +1405,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
-        response = self.client_get("/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
+        response = self.client_get("/avatar/cordelia@example.com/medium", {"foo": "bar"})
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "?foo=bar"))
 
@@ -1416,7 +1417,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             # Test /avatar/<email_or_id>/medium endpoint with HTTP basic auth.
-            response = self.api_get(hamlet, "/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
+            response = self.api_get(hamlet, "/avatar/cordelia@example.com/medium", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "?foo=bar"))
 
@@ -1425,7 +1426,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "?foo=bar"))
 
             # Without spectators enabled, no unauthenticated access.
-            response = self.client_get("/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
+            response = self.client_get("/avatar/cordelia@example.com/medium", {"foo": "bar"})
             self.assert_json_error(
                 response,
                 "Not logged in: API authentication or user session required",
@@ -1437,7 +1438,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(302, response.status_code)
 
         # Disallow unauthenticated/spectator requests by email.
-        response = self.client_get("/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
+        response = self.client_get("/avatar/cordelia@example.com/medium", {"foo": "bar"})
         self.assert_json_error(
             response,
             "Not logged in: API authentication or user session required",
@@ -1459,9 +1460,13 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         # but this test just validates the current code's behavior.
         self.login("hamlet")
 
-        response = self.client_get("/avatar/nonexistent_user@zulip.com", {"foo": "bar"})
+        response = self.client_get("/avatar/nonexistent_user@example.com", {"foo": "bar"})
         redirect_url = response["Location"]
-        actual_url = "https://secure.gravatar.com/avatar/444258b521f152129eb0c162996e572d?d=identicon&version=1&foo=bar"
+        actual_url = (
+            "https://secure.gravatar.com/avatar/"
+            f"{gravatar_hash('nonexistent_user@example.com')}"
+            "?d=identicon&version=1&foo=bar"
+        )
         self.assertEqual(redirect_url, actual_url)
 
     def test_valid_avatars(self) -> None:
@@ -1518,7 +1523,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         source_user_profile = self.example_user("hamlet")
         target_user_profile = do_create_user(
-            "user@zulip.com", "password", get_realm("zulip"), "user", acting_user=None
+            "user@example.com", "password", get_realm("zulip"), "user", acting_user=None
         )
 
         # 'visibility_policy_banner' is already marked as read for new users.
@@ -1662,12 +1667,12 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             patch("zerver.lib.avatar.staticfiles_storage.exists") as mock_exists,
         ):
             mock_exists.return_value = False
-            static_avatar_url = get_static_avatar_url("false-bot@zulip.com", False)
+            static_avatar_url = get_static_avatar_url("false-bot@example.com", False)
         self.assertIn(default_avatar, static_avatar_url)
 
         with self.settings(DEBUG=True), self.assertRaises(AssertionError) as e:
-            get_static_avatar_url("false-bot@zulip.com", False)
-        expected_error_message = "Unknown avatar file for: false-bot@zulip.com"
+            get_static_avatar_url("false-bot@example.com", False)
+        expected_error_message = "Unknown avatar file for: false-bot@example.com"
         self.assertEqual(str(e.exception), expected_error_message)
 
 

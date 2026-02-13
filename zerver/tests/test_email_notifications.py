@@ -76,7 +76,7 @@ class TestCustomEmails(ZulipTestCase):
         self.assert_length(mail.outbox, 1)
         msg = mail.outbox[0]
         self.assertEqual(msg.subject, email_subject)
-        self.assertEqual(msg.to, ["remotezulipserver@zulip.com"])
+        self.assertEqual(msg.to, ["remotezulipserver@example.com"])
         self.assert_length(msg.reply_to, 1)
         self.assertEqual(msg.reply_to[0], reply_to)
         self.assertNotIn("{% block content %}", msg.body)
@@ -292,16 +292,16 @@ class TestFollowupEmails(ZulipTestCase):
             mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m,
         ):
             self.login_with_return(
-                "newuser_email_as_uid@zulip.com",
-                self.ldap_password("newuser_email_as_uid@zulip.com"),
+                "newuser_email_as_uid@example.com",
+                self.ldap_password("newuser_email_as_uid@example.com"),
             )
-            user = UserProfile.objects.get(delivery_email="newuser_email_as_uid@zulip.com")
+            user = UserProfile.objects.get(delivery_email="newuser_email_as_uid@example.com")
             self.assert_length(ScheduledEmail.objects.filter(users=user), 2)
             m.assert_called_once()
             email_data = m.call_args[0][1]
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(
-                email_data["context"]["ldap_username"], "newuser_email_as_uid@zulip.com"
+                email_data["context"]["ldap_username"], "newuser_email_as_uid@example.com"
             )
 
     @override_settings(
@@ -316,13 +316,13 @@ class TestFollowupEmails(ZulipTestCase):
 
         with (
             self.settings(
-                LDAP_APPEND_DOMAIN="zulip.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
+                LDAP_APPEND_DOMAIN="example.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
             ),
             mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m,
         ):
-            self.login_with_return("newuser@zulip.com", self.ldap_password("newuser"))
+            self.login_with_return("newuser@example.com", self.ldap_password("newuser"))
 
-            user = UserProfile.objects.get(delivery_email="newuser@zulip.com")
+            user = UserProfile.objects.get(delivery_email="newuser@example.com")
             self.assert_length(ScheduledEmail.objects.filter(users=user), 2)
             m.assert_called_once()
             email_data = m.call_args[0][1]
@@ -344,7 +344,7 @@ class TestFollowupEmails(ZulipTestCase):
             mock_queue_publish("zerver.lib.send_email.queue_event_on_commit") as m,
         ):
             self.login_with_return("newuser_with_email", self.ldap_password("newuser_with_email"))
-            user = UserProfile.objects.get(delivery_email="newuser_email@zulip.com")
+            user = UserProfile.objects.get(delivery_email="newuser_email@example.com")
             self.assert_length(ScheduledEmail.objects.filter(users=user), 2)
             m.assert_called_once()
             email_data = m.call_args[0][1]

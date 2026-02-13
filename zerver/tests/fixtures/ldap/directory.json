@@ -8,7 +8,7 @@
         "objectClass": ["user"],
         "cn": ["King Hamlet"],
         "uid": ["hamlet"],
-        "mail": ["hamlet@zulip.com"],
+        "mail": ["hamlet@example.com"],
         "userAccountControl": ["512"],
         "sn": ["Hamlet"],
         "homePhone": ["123456789"],
@@ -20,7 +20,7 @@
         "objectClass": ["user"],
         "cn": ["Cordelia, Lear's daughter"],
         "uid": ["cordelia"],
-        "mail": ["cordelia@zulip.com"],
+        "mail": ["cordelia@example.com"],
         "sn": ["Cordelia"]
     },
 
@@ -28,7 +28,7 @@
         "objectClass": ["user"],
         "cn": ["aaron"],
         "uid": ["letham"],
-        "mail": ["aaron@zulip.com"],
+        "mail": ["aaron@example.com"],
         "sn": ["aaron"]
     },
 
@@ -53,13 +53,13 @@
         "cn": ["New LDAP fullname"],
         "uid": ["newuser_with_email"],
         "sn": ["shortname"],
-        "mail": ["newuser_email@zulip.com"]
+        "mail": ["newuser_email@example.com"]
     },
 
-    "uid=newuser_email_as_uid@zulip.com,ou=users,dc=zulip,dc=com": {
+    "uid=newuser_email_as_uid@example.com,ou=users,dc=zulip,dc=com": {
         "objectClass": ["user"],
         "cn": ["New LDAP fullname"],
-        "uid": ["newuser_email_as_uid@zulip.com"],
+        "uid": ["newuser_email_as_uid@example.com"],
         "sn": ["shortname"]
     },
 
@@ -68,7 +68,7 @@
         "cn": ["New LDAP fullname"],
         "uid": ["user1_with_shared_email"],
         "sn": ["shortname"],
-        "mail": ["shared_email@zulip.com"]
+        "mail": ["shared_email@example.com"]
     },
 
     "uid=user2_with_shared_email,ou=users,dc=zulip,dc=com": {
@@ -76,7 +76,7 @@
         "cn": ["New LDAP fullname"],
         "uid": ["user2_with_shared_email"],
         "sn": ["shortname"],
-        "mail": ["shared_email@zulip.com"]
+        "mail": ["shared_email@example.com"]
     },
 
     "ou=groups,dc=zulip,dc=com": {

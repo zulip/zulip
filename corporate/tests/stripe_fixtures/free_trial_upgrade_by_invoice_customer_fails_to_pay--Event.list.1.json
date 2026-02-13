@@ -54,7 +54,7 @@
             "link"
           ],
           "processing": null,
-          "receipt_email": "hamlet@zulip.com",
+          "receipt_email": "hamlet@example.com",
           "review": null,
           "setup_future_usage": null,
           "shipping": null,

@@ -6,6 +6,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const {make_email} = require("./lib/test_email.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 set_global("navigator", {});
@@ -36,12 +37,12 @@ set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
 const alice = {
-    email: "alice@zulip.com",
+    email: make_email("alice"),
     user_id: 101,
     full_name: "Alice",
 };
 const bob = {
-    email: "bob@zulip.com",
+    email: make_email("bob"),
     user_id: 102,
     full_name: "Bob",
 };

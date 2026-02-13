@@ -194,16 +194,16 @@ class PermissionTest(ZulipTestCase):
         UserProfile.objects.filter(realm=realm).delete()
 
         UserProfile.objects.create(
-            realm=realm, email="bot1@zulip.com", delivery_email="bot1@zulip.com", is_bot=True
+            realm=realm, email="bot1@example.com", delivery_email="bot1@example.com", is_bot=True
         )
         first_human_user = UserProfile.objects.create(
-            realm=realm, email="user1@zulip.com", delivery_email="user1@zulip.com", is_bot=False
+            realm=realm, email="user1@example.com", delivery_email="user1@example.com", is_bot=False
         )
         UserProfile.objects.create(
-            realm=realm, email="user2@zulip.com", delivery_email="user2@zulip.com", is_bot=False
+            realm=realm, email="user2@example.com", delivery_email="user2@example.com", is_bot=False
         )
         UserProfile.objects.create(
-            realm=realm, email="bot2@zulip.com", delivery_email="bot2@zulip.com", is_bot=True
+            realm=realm, email="bot2@example.com", delivery_email="bot2@example.com", is_bot=True
         )
         self.assertEqual(first_human_user, realm.get_first_human_user())
 
@@ -1123,13 +1123,13 @@ class QueryCountTest(ZulipTestCase):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 user_profile=self.example_user("hamlet"),
-                invitee_emails=["fred@zulip.com"],
+                invitee_emails=["fred@example.com"],
                 streams=streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
 
-        prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
+        prereg_user = PreregistrationUser.objects.get(email="fred@example.com")
 
         with (
             self.assert_database_query_count(86),
@@ -1137,7 +1137,7 @@ class QueryCountTest(ZulipTestCase):
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
             fred = do_create_user(
-                email="fred@zulip.com",
+                email="fred@example.com",
                 password="password",
                 realm=realm,
                 full_name="Fred Flintstone",
@@ -1180,19 +1180,19 @@ class BulkCreateUserTest(ZulipTestCase):
         realm_user_default.save()
 
         name_list = [
-            ("Fred Flintstone", "fred@zulip.com"),
-            ("Lisa Simpson", "lisa@zulip.com"),
+            ("Fred Flintstone", "fred@example.com"),
+            ("Lisa Simpson", "lisa@example.com"),
         ]
 
         create_users(realm, name_list)
 
-        fred = get_user_by_delivery_email("fred@zulip.com", realm)
+        fred = get_user_by_delivery_email("fred@example.com", realm)
         self.assertEqual(
             fred.email,
             f"user{fred.id}@zulip.testserver",
         )
 
-        lisa = get_user_by_delivery_email("lisa@zulip.com", realm)
+        lisa = get_user_by_delivery_email("lisa@example.com", realm)
         self.assertEqual(lisa.full_name, "Lisa Simpson")
         self.assertEqual(lisa.is_bot, False)
         self.assertEqual(lisa.bot_type, None)
@@ -1203,8 +1203,8 @@ class BulkCreateUserTest(ZulipTestCase):
         realm_user_default.save()
 
         name_list = [
-            ("Bono", "bono@zulip.com"),
-            ("Cher", "cher@zulip.com"),
+            ("Bono", "bono@example.com"),
+            ("Cher", "cher@example.com"),
         ]
 
         now = timezone_now()
@@ -1213,9 +1213,9 @@ class BulkCreateUserTest(ZulipTestCase):
             SystemGroups.FULL_MEMBERS,
         }
         create_users(realm, name_list)
-        bono = get_user_by_delivery_email("bono@zulip.com", realm)
-        self.assertEqual(bono.email, "bono@zulip.com")
-        self.assertEqual(bono.delivery_email, "bono@zulip.com")
+        bono = get_user_by_delivery_email("bono@example.com", realm)
+        self.assertEqual(bono.email, "bono@example.com")
+        self.assertEqual(bono.delivery_email, "bono@example.com")
         user_group_names = set(
             RealmAuditLog.objects.filter(
                 realm=realm,
@@ -1229,7 +1229,7 @@ class BulkCreateUserTest(ZulipTestCase):
             expected_user_group_names,
         )
 
-        cher = get_user_by_delivery_email("cher@zulip.com", realm)
+        cher = get_user_by_delivery_email("cher@example.com", realm)
         self.assertEqual(cher.full_name, "Cher")
         user_group_names = set(
             RealmAuditLog.objects.filter(
@@ -1308,7 +1308,7 @@ class AdminChangeUserEmailTest(ZulipTestCase):
         realm_admin = self.example_user("iago")
         self.login_user(realm_admin)
 
-        valid_params = dict(new_email="cordelia_new@zulip.com")
+        valid_params = dict(new_email="cordelia_new@example.com")
 
         self.assertEqual(realm_admin.can_change_user_emails, False)
         result = self.client_patch(f"/json/users/{cordelia.id}", valid_params)
@@ -1329,7 +1329,7 @@ class AdminChangeUserEmailTest(ZulipTestCase):
 
         result = self.client_patch(
             f"/json/users/{UserProfile.objects.latest('id').id + 1}",
-            dict(new_email="new@zulip.com"),
+            dict(new_email="new@example.com"),
         )
         self.assert_json_error(result, "No such user")
 
@@ -1343,7 +1343,7 @@ class AdminChangeUserEmailTest(ZulipTestCase):
         self.assert_json_success(result)
 
         cordelia.refresh_from_db()
-        self.assertEqual(cordelia.delivery_email, "cordelia_new@zulip.com")
+        self.assertEqual(cordelia.delivery_email, "cordelia_new@example.com")
 
         last_realm_audit_log = RealmAuditLog.objects.last()
         assert last_realm_audit_log is not None
@@ -1406,7 +1406,7 @@ class AdminCreateUserTest(ZulipTestCase):
         result = self.client_post(
             "/json/users",
             dict(
-                email="romeo@zulip.com",
+                email="romeo@example.com",
                 password="xxxx",
                 full_name="Romeo Montague",
                 short_name="DEPRECATED",
@@ -1480,7 +1480,7 @@ class AdminCreateUserTest(ZulipTestCase):
         realm.emails_restricted_to_domains = True
         realm.save()
 
-        valid_params["email"] = "iago+label@zulip.com"
+        valid_params["email"] = "iago+label@example.com"
         result = self.client_post("/json/users", valid_params)
         self.assert_json_error(result, "Email addresses containing + are not allowed.")
 
@@ -1489,7 +1489,7 @@ class AdminCreateUserTest(ZulipTestCase):
         realm.emails_restricted_to_domains = False
         realm.save()
 
-        valid_params["email"] = "iago+label@zulip.com"
+        valid_params["email"] = "iago+label@example.com"
         result = self.client_post("/json/users", valid_params)
         self.assert_json_success(result)
 
@@ -1631,21 +1631,21 @@ class UserProfileTest(ZulipTestCase):
 
         lear_realm = get_realm("lear")
         cordelia_in_zulip = self.example_user("cordelia")
-        cordelia_in_lear = get_user_by_delivery_email("cordelia@zulip.com", lear_realm)
+        cordelia_in_lear = get_user_by_delivery_email("cordelia@example.com", lear_realm)
 
-        email = "cordelia@zulip.com"
+        email = "cordelia@example.com"
         accounts = get_accounts_for_email(email)
         self.assert_length(accounts, 2)
         check_account_present_in_accounts(cordelia_in_zulip, accounts)
         check_account_present_in_accounts(cordelia_in_lear, accounts)
 
-        email = "CORDelia@zulip.com"
+        email = "CORDelia@EXAMPLE.com"
         accounts = get_accounts_for_email(email)
         self.assert_length(accounts, 2)
         check_account_present_in_accounts(cordelia_in_zulip, accounts)
         check_account_present_in_accounts(cordelia_in_lear, accounts)
 
-        email = "IAGO@ZULIP.COM"
+        email = "IAGO@EXAMPLE.COM"
         accounts = get_accounts_for_email(email)
         self.assert_length(accounts, 1)
         check_account_present_in_accounts(self.example_user("iago"), accounts)
@@ -1661,23 +1661,23 @@ class UserProfileTest(ZulipTestCase):
     def test_get_source_profile(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
         zulip_realm_id = get_realm("zulip").id
-        iago = get_source_profile("iago@zulip.com", zulip_realm_id)
+        iago = get_source_profile("iago@example.com", zulip_realm_id)
         assert iago is not None
-        self.assertEqual(iago.email, "iago@zulip.com")
+        self.assertEqual(iago.email, "iago@example.com")
         self.assertEqual(iago.realm, get_realm("zulip"))
 
-        iago = get_source_profile("IAGO@ZULIP.com", zulip_realm_id)
+        iago = get_source_profile("IAGO@EXAMPLE.com", zulip_realm_id)
         assert iago is not None
-        self.assertEqual(iago.email, "iago@zulip.com")
+        self.assertEqual(iago.email, "iago@example.com")
 
         lear_realm_id = get_realm("lear").id
-        cordelia = get_source_profile("cordelia@zulip.com", lear_realm_id)
+        cordelia = get_source_profile("cordelia@example.com", lear_realm_id)
         assert cordelia is not None
-        self.assertEqual(cordelia.email, "cordelia@zulip.com")
+        self.assertEqual(cordelia.email, "cordelia@example.com")
 
-        self.assertIsNone(get_source_profile("iagod@zulip.com", zulip_realm_id))
-        self.assertIsNone(get_source_profile("iago@zulip.com", 0))
-        self.assertIsNone(get_source_profile("iago@zulip.com", lear_realm_id))
+        self.assertIsNone(get_source_profile("iagod@example.com", zulip_realm_id))
+        self.assertIsNone(get_source_profile("iago@example.com", 0))
+        self.assertIsNone(get_source_profile("iago@example.com", lear_realm_id))
 
     def test_copy_default_settings_from_another_user(self) -> None:
         iago = self.example_user("iago")
@@ -1845,9 +1845,9 @@ class UserProfileTest(ZulipTestCase):
             )
 
         expected_emails = [
-            "emailgateway@zulip.com",
-            "notification-bot@zulip.com",
-            "welcome-bot@zulip.com",
+            settings.EMAIL_GATEWAY_BOT,
+            settings.NOTIFICATION_BOT,
+            settings.WELCOME_BOT,
         ]
 
         expected_dicts = [user_row(email) for email in expected_emails]
@@ -1864,7 +1864,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(actual_dicts, expected_dicts)
 
         # Test cache invalidation
-        welcome_bot = UserProfile.objects.get(email="welcome-bot@zulip.com")
+        welcome_bot = UserProfile.objects.get(email=settings.WELCOME_BOT)
         welcome_bot.full_name = "fred"
         welcome_bot.save()
 
@@ -2221,7 +2221,7 @@ class ActivateTest(ZulipTestCase):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 iago,
-                ["new1@zulip.com", "new2@zulip.com"],
+                ["new1@example.com", "new2@example.com"],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -2229,7 +2229,7 @@ class ActivateTest(ZulipTestCase):
             )
             do_invite_users(
                 desdemona,
-                ["new3@zulip.com", "new4@zulip.com"],
+                ["new3@example.com", "new4@example.com"],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -2238,7 +2238,7 @@ class ActivateTest(ZulipTestCase):
 
             do_invite_users(
                 iago,
-                ["new5@zulip.com"],
+                ["new5@example.com"],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=None,
@@ -2246,7 +2246,7 @@ class ActivateTest(ZulipTestCase):
             )
             do_invite_users(
                 desdemona,
-                ["new6@zulip.com"],
+                ["new6@example.com"],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=None,
@@ -2789,7 +2789,7 @@ class DeactivateActionsTest(ZulipTestCase):
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_USER)
 
         bot = do_create_user(
-            email="bot@zulip.com",
+            email="bot@example.com",
             password="",
             realm=user.realm,
             full_name="Bot 1",
@@ -3109,7 +3109,7 @@ class RecipientInfoTest(ZulipTestCase):
 
         # Add a service bot.
         service_bot = do_create_user(
-            email="service-bot@zulip.com",
+            email="service-bot@example.com",
             password="",
             realm=realm,
             full_name="",
@@ -3133,7 +3133,7 @@ class RecipientInfoTest(ZulipTestCase):
 
         # Add a normal bot.
         normal_bot = do_create_user(
-            email="normal-bot@zulip.com",
+            email="normal-bot@example.com",
             password="",
             realm=realm,
             full_name="",

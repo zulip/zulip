@@ -651,20 +651,20 @@ Output:
         )
 
     example_user_map = dict(
-        hamlet="hamlet@zulip.com",
-        cordelia="cordelia@zulip.com",
-        iago="iago@zulip.com",
-        prospero="prospero@zulip.com",
-        othello="othello@zulip.com",
-        AARON="AARON@zulip.com",
-        aaron="aaron@zulip.com",
-        ZOE="ZOE@zulip.com",
-        polonius="polonius@zulip.com",
-        desdemona="desdemona@zulip.com",
-        shiva="shiva@zulip.com",
-        webhook_bot="webhook-bot@zulip.com",
-        outgoing_webhook_bot="outgoing-webhook@zulip.com",
-        default_bot="default-bot@zulip.com",
+        hamlet="hamlet@example.com",
+        cordelia="cordelia@example.com",
+        iago="iago@example.com",
+        prospero="prospero@example.com",
+        othello="othello@example.com",
+        AARON="AARON@example.com",
+        aaron="aaron@example.com",
+        ZOE="ZOE@example.com",
+        polonius="polonius@example.com",
+        desdemona="desdemona@example.com",
+        shiva="shiva@example.com",
+        webhook_bot="webhook-bot@example.com",
+        outgoing_webhook_bot="outgoing-webhook@example.com",
+        default_bot="default-bot@example.com",
     )
 
     mit_user_map = dict(
@@ -674,20 +674,20 @@ Output:
     )
 
     lear_user_map = dict(
-        cordelia="cordelia@zulip.com",
+        cordelia="cordelia@example.com",
         king="king@lear.org",
     )
 
     # Non-registered test users
     nonreg_user_map = dict(
-        test="test@zulip.com",
-        test1="test1@zulip.com",
-        alice="alice@zulip.com",
-        newuser="newuser@zulip.com",
-        bob="bob@zulip.com",
-        cordelia="cordelia@zulip.com",
-        newguy="newguy@zulip.com",
-        me="me@zulip.com",
+        test="test@example.com",
+        test1="test1@example.com",
+        alice="alice@example.com",
+        newuser="newuser@example.com",
+        bob="bob@example.com",
+        cordelia="cordelia@example.com",
+        newguy="newguy@example.com",
+        me="me@example.com",
     )
 
     example_user_ldap_username_map = dict(
@@ -2475,7 +2475,7 @@ class WebhookTestCase(ZulipTestCase):
       supported event types.
     """
 
-    TEST_USER_EMAIL = "webhook-bot@zulip.com"
+    TEST_USER_EMAIL = "webhook-bot@example.com"
     URL_TEMPLATE: str = ""
     WEBHOOK_DIR_NAME: str | None = None
     DEFAULT_URL_TEMPLATE: str = (

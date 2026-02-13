@@ -55,7 +55,7 @@
       "customer_details": {
         "address": null,
         "business_name": null,
-        "email": "hamlet@zulip.com",
+        "email": "hamlet@example.com",
         "individual_name": null,
         "name": null,
         "phone": null,

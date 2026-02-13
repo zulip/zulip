@@ -198,7 +198,7 @@ Adding a comment. Oh, what a comment it is!
 
     def test_priority_updated(self) -> None:
         expected_topic_name = "TEST-1: Fix That"
-        expected_message = """Leonardo Franchi [Administrator] updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1) (assigned to **leo@zulip.com**):
+        expected_message = """Leonardo Franchi [Administrator] updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1) (assigned to **leo@example.com**):
 
 * Changed priority from **Critical** to **Major**"""
         self.check_webhook("updated_priority_v1", expected_topic_name, expected_message)
