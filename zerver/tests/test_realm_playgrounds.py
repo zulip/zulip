@@ -60,7 +60,10 @@ class RealmPlaygroundTests(ZulipTestCase):
             "url_template": "https://template.com{code}",
         }
         resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
-        self.assert_json_error(resp, "Invalid characters in pygments language")
+        self.assert_json_error(
+            resp,
+            "Language names can only contain letters, numbers, and the characters . - _ / # +.",
+        )
 
         payload = {
             "name": "Template with an unexpected variable",
@@ -87,6 +90,30 @@ class RealmPlaygroundTests(ZulipTestCase):
         }
         resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
         self.assert_json_error(resp, 'Missing the required variable "code" in the URL template')
+
+    def test_add_realm_playground_validation(self) -> None:
+        iago = self.example_user("iago")
+
+        # Test to check that spaces are rejected
+        payload = {
+            "name": "Bad Name",
+            "pygments_language": "rust lang",
+            "url_template": "https://example.com",
+        }
+        result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(
+            result,
+            "Language names can only contain letters, numbers, and the characters . - _ / # +.",
+        )
+
+        # Test to check that restricted keywords are rejected
+        payload = {
+            "name": "Bad Keyword",
+            "pygments_language": "math",
+            "url_template": "https://example.com",
+        }
+        result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(result, "Language 'math' is not allowed.")
 
     def test_create_already_existing_playground(self) -> None:
         iago = self.example_user("iago")
