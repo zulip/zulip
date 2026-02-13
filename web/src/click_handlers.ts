@@ -814,7 +814,7 @@ export function initialize(): void {
     // Recent conversations direct messages (Not displayed on small widths)
     $("body").on(
         "mouseenter",
-        ".recent_topic_stream .pm_status_icon",
+        ".recent_topic_name .pm_status_icon",
         function (this: HTMLElement, e) {
             e.stopPropagation();
             const $elem = $(this);

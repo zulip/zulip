@@ -5,8 +5,9 @@ const assert = require("node:assert/strict");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
+const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 // TODO: Remove after we enable support for
@@ -642,7 +643,8 @@ test("get_streams_for_user", async ({override}) => {
     ]);
 });
 
-test("renames", () => {
+test("renames", ({override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     const id = 42;
     let sub = {
         name: "Denmark",
@@ -1345,7 +1347,7 @@ test("creator_id", ({override}) => {
     );
 });
 
-test("initialize", ({override}) => {
+test("initialize", ({override, override_rewire}) => {
     function get_params() {
         return {
             subscriptions: [
@@ -1381,6 +1383,7 @@ test("initialize", ({override}) => {
     }
 
     override(realm, "realm_new_stream_announcements_stream_id", -1);
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
 
     initialize();
 
@@ -2580,4 +2583,40 @@ run_test("is_empty_topic_only_channel", ({override}) => {
     override(current_user, "is_admin", true);
     assert.equal(stream_data.is_empty_topic_only_channel(social.stream_id), true);
     assert.equal(stream_data.is_empty_topic_only_channel(scotland.stream_id), false);
+});
+
+test("set_max_channel_width_css_variable", async () => {
+    const stream = {
+        subscribed: true,
+        color: "blue",
+        name: "abc",
+        stream_id: 500,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: true,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
+    };
+    stream_data.add_sub_for_tests(stream);
+
+    const $measure_div = $("<div>");
+    const $root = $(":root");
+
+    $measure_div.css = () => $measure_div;
+    $measure_div.get = () => ({
+        getBoundingClientRect: () => ({width: $measure_div.text().length}),
+    });
+    $measure_div.remove = () => {};
+
+    const set_property_calls = [];
+    $root.css = (name, value) => {
+        set_property_calls.push({name, value});
+    };
+
+    await stream_data.set_max_channel_width_css_variable();
+
+    assert.equal(set_property_calls.length, 1);
+    assert.equal(set_property_calls[0].name, "--longest-subscribed-channel-name-width");
+    assert.equal(set_property_calls[0].value, "3px");
 });

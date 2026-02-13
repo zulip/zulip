@@ -1,3 +1,4 @@
+import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
@@ -145,6 +146,7 @@ export function rename_sub(sub: StreamSubscription, new_name: string): void {
     stream_info.set(sub.stream_id, sub);
     stream_ids_by_name.delete(old_name);
     stream_ids_by_name.set(new_name, sub.stream_id);
+    void set_max_channel_width_css_variable();
 }
 
 export function subscribe_myself(sub: StreamSubscription): void {
@@ -153,6 +155,7 @@ export function subscribe_myself(sub: StreamSubscription): void {
     sub.subscribed = true;
     sub.newly_subscribed = true;
     stream_info.set_true(sub.stream_id, sub);
+    void set_max_channel_width_css_variable();
 }
 
 export function unsubscribe_myself(sub: StreamSubscription): void {
@@ -162,6 +165,7 @@ export function unsubscribe_myself(sub: StreamSubscription): void {
     sub.subscribed = false;
     sub.newly_subscribed = false;
     stream_info.set_false(sub.stream_id, sub);
+    void set_max_channel_width_css_variable();
 }
 
 export function add_sub_for_tests(sub: StreamSubscription, subscriber_count = 0): void {
@@ -1296,6 +1300,8 @@ export function initialize(params: StateData["stream_data"]): void {
     populate_subscriptions(subscriptions, true, true);
     populate_subscriptions(unsubscribed, false, true);
     populate_subscriptions(never_subscribed, false, false);
+
+    void set_max_channel_width_css_variable();
 }
 
 export function remove_default_stream(stream_id: number): void {
@@ -1331,4 +1337,43 @@ export function get_streams_for_move_messages_widget(): (dropdown_widget.Option 
             unique_id: stream.stream_id,
             stream,
         }));
+}
+
+function longest_subscribed_channel_name_width(): number {
+    let longest_channel_name_width = 0;
+    const $measure_div = $("<div>").css({
+        position: "absolute",
+        visibility: "hidden",
+        whiteSpace: "nowrap",
+        left: "-9999px",
+        top: "0",
+    });
+    $("body").append($measure_div);
+
+    for (const channel_name of subscribed_streams()) {
+        $measure_div.text(channel_name);
+        const width = $measure_div.get(0)!.getBoundingClientRect().width;
+        if (width > longest_channel_name_width) {
+            longest_channel_name_width = width;
+        }
+    }
+
+    $measure_div.remove();
+    return longest_channel_name_width;
+}
+
+export let set_max_channel_width_css_variable = async (): Promise<void> => {
+    // Return a promise to avoid blocking main thread.
+    const promise = new Promise<void>((resolve) => {
+        const length = longest_subscribed_channel_name_width();
+        $(":root").css("--longest-subscribed-channel-name-width", `${length}px`);
+        resolve();
+    });
+    return promise;
+};
+
+export function rewire_set_max_channel_width_css_variable(
+    value: typeof set_max_channel_width_css_variable,
+): void {
+    set_max_channel_width_css_variable = value;
 }
