@@ -156,6 +156,7 @@ function test_ui(label, f) {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
         stream_list.stream_sidebar.rows.clear();
+        $("#left-sidebar-filter-query").text("");
         f(helpers);
     });
 }
