@@ -114,10 +114,10 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
+from zerver.models.bots import Service
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.recipients import get_direct_message_group_user_ids
-from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import (
     StreamTopicsPolicyEnum,
     get_realm_stream,
@@ -591,21 +591,33 @@ def get_service_bot_events(
         # So even though this is implied by the logic below, we filter
         # these not-actually-mentioned users here, to help keep this
         # function future-proof.
-        if user_profile_id not in mentioned_user_ids and user_profile_id not in active_user_ids:
+        if user_profile_id not in (mentioned_user_ids | active_user_ids):
             return
 
-        # Mention triggers, for stream messages
+        # The order of `received_trigger_events` matters: they should be
+        # sorted from the most specific trigger event (e.g., mention, DM)
+        # to the least specific one. If a bot receives multiple valid
+        # trigger events, it should report the most specific trigger as
+        # the one that triggered it. Bot workers rely on `received_trigger_events`
+        # being sorted this way for that logic.
+        received_trigger_events: list[tuple[int, str]] = []
+
+        # Mention triggers, for channel messages
         if is_stream and user_profile_id in mentioned_user_ids:
-            trigger = "mention"
+            received_trigger_events.append((0, Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS))
+
         # Direct message triggers for personal and group direct messages
-        elif not is_stream and user_profile_id in active_user_ids:
-            trigger = NotificationTriggers.DIRECT_MESSAGE
-        else:
+        if not is_stream and user_profile_id in active_user_ids:
+            received_trigger_events.append((1, Service.BOT_TRIGGER_DMS_RECEIVED))
+
+        if received_trigger_events == []:
             return
 
         event_dict[queue_name].append(
             {
-                "trigger": trigger,
+                "received_trigger_events": [
+                    t[1] for t in sorted(received_trigger_events, key=lambda t: t[1])
+                ],
                 "user_profile_id": user_profile_id,
             }
         )
@@ -1297,7 +1309,7 @@ def do_send_messages(
                     queue_name,
                     {
                         "message": wide_message_dict,
-                        "trigger": event["trigger"],
+                        "received_trigger_events": event["received_trigger_events"],
                         "user_profile_id": event["user_profile_id"],
                     },
                 )

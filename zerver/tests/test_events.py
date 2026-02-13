@@ -303,7 +303,7 @@ from zerver.models import (
     UserStatus,
     UserTopic,
 )
-from zerver.models.bots import get_bot_services
+from zerver.models.bots import get_bot_services, get_default_service_bot_triggers
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -3437,6 +3437,7 @@ class NormalActionsTest(BaseAction):
                 payload_url=orjson.dumps("https://foo.bar.com").decode(),
                 interface_type=Service.GENERIC,
                 bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+                service_triggers=orjson.dumps(get_default_service_bot_triggers()).decode(),
             )
         # The third event is the second call of notify_created_bot, which contains additional
         # data for services (in contrast to the first call).
@@ -3554,12 +3555,14 @@ class NormalActionsTest(BaseAction):
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
             payload_url=orjson.dumps("http://hostname.domain2.com").decode(),
             interface_type=Service.GENERIC,
+            service_triggers=orjson.dumps(get_default_service_bot_triggers()).decode(),
         )
         with self.verify_action() as events:
             do_update_outgoing_webhook_service(
                 bot,
                 interface=2,
                 base_url="http://hostname.domain2.com",
+                triggers=[Service.BOT_TRIGGER_DMS_RECEIVED],
                 acting_user=self.user_profile,
             )
 
@@ -3573,6 +3576,7 @@ class NormalActionsTest(BaseAction):
                 "base_url": bot_service.base_url,
                 "interface": bot_service.interface,
                 "token": bot_service.token,
+                "triggers": bot_service.triggers,
             },
             event_data_service,
         )
@@ -3586,6 +3590,7 @@ class NormalActionsTest(BaseAction):
                 bot,
                 interface=2,
                 base_url="http://hostname.domain2.com",
+                triggers=[Service.BOT_TRIGGER_DMS_RECEIVED],
                 acting_user=self.user_profile,
             )
 

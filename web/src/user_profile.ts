@@ -11,6 +11,7 @@ import render_admin_human_form from "../templates/settings/admin_human_form.hbs"
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
 import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
+import render_settings_checkbox from "../templates/settings/settings_checkbox.hbs";
 import render_stream_list_item from "../templates/stream_list_item.hbs";
 import render_user_custom_profile_fields from "../templates/user_custom_profile_fields.hbs";
 import render_user_full_name from "../templates/user_full_name.hbs";
@@ -887,11 +888,13 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         | {
               config_data: Record<string, string>;
               service_name: string;
+              triggers: string[];
           }
         | {
               base_url: string;
               interface: number;
               token: string;
+              triggers: string[];
           };
     if (services?.[0] !== undefined) {
         service = services[0];
@@ -924,6 +927,13 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         }
 
         const url = "/json/bots/" + encodeURIComponent(bot.user_id);
+        const selected_service_bot_triggers = $(
+            "#bot_triggers_checkbox_container .setting-widget:checked",
+        )
+            .map(function () {
+                return this.id;
+            })
+            .get();
 
         const formData = new FormData();
         assert(csrf_token !== undefined);
@@ -943,6 +953,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             ).val()!;
             formData.append("service_payload_url", JSON.stringify(service_payload_url));
             formData.append("service_interface", service_interface);
+            formData.append("service_triggers", JSON.stringify(selected_service_bot_triggers));
         } else if (bot_type === EMBEDDED_BOT_TYPE && service !== undefined) {
             const config_data: Record<string, string> = {};
             $<HTMLInputElement>("#config_edit_inputbox input").each(function () {
@@ -1068,6 +1079,10 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             );
             assert(service && "interface" in service);
             $("#edit_service_interface").val(service.interface);
+            show_service_bot_trigger_options(
+                $("#bot_triggers_checkbox_container"),
+                service.triggers,
+            );
         }
         if (bot_type === EMBEDDED_BOT_TYPE) {
             $("#service_data").append(
@@ -1077,6 +1092,8 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                     }),
                 ),
             );
+            // TODO: Add `show_service_bot_trigger_options` here once
+            // embedded bots `service` is available.
         }
 
         // Hide the avatar if the user has uploaded an image
@@ -1391,6 +1408,38 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             },
         });
     });
+}
+
+export const service_bot_trigger_options = [
+    // Keep this in sync with zerver/models/bots.Service.BOT_SERVICE_TRIGGERS
+    {
+        setting_name: "all_direct_mentions",
+        is_checked: true,
+        label: $t_html({
+            defaultMessage: "Mentions of the bot, whether or not it received the message",
+        }),
+    },
+    {
+        setting_name: "dms_received",
+        is_checked: false,
+        label: $t_html({defaultMessage: "Direct messages the bot receives"}),
+    },
+];
+
+export function show_service_bot_trigger_options(
+    $checkbox_inputs_container: JQuery,
+    bot_triggers?: string[],
+): void {
+    $checkbox_inputs_container.empty();
+
+    for (const trigger_option of service_bot_trigger_options) {
+        const option = {...trigger_option};
+        if (bot_triggers) {
+            option.is_checked = bot_triggers.includes(trigger_option.setting_name);
+        }
+        const $row = $(render_settings_checkbox(option));
+        $checkbox_inputs_container.append($row);
+    }
 }
 
 export function initialize(): void {

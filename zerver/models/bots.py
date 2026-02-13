@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import CASCADE
+from django.db.models import CASCADE, JSONField
 
 from zerver.models.users import UserProfile
 
@@ -49,9 +49,23 @@ class Service(models.Model):
         SLACK: SLACK_INTERFACE,
     }
 
+    BOT_TRIGGER_ALL_DIRECT_MENTIONS = "all_direct_mentions"
+    BOT_TRIGGER_DMS_RECEIVED = "dms_received"
+
+    BOT_SERVICE_TRIGGERS = [
+        BOT_TRIGGER_ALL_DIRECT_MENTIONS,
+        BOT_TRIGGER_DMS_RECEIVED,
+    ]
+
+    triggers = JSONField(default=list)
+
     def interface_name(self) -> str:
         # Raises KeyError if invalid
         return self._interfaces[self.interface]
+
+
+def get_default_service_bot_triggers() -> list[str]:
+    return [Service.BOT_TRIGGER_DMS_RECEIVED, Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS]
 
 
 def get_bot_services(user_profile_id: int) -> list[Service]:

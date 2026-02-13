@@ -1,6 +1,6 @@
 from collections import defaultdict
 from email.headerregistry import Address
-from typing import Any
+from typing import Any, TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
@@ -787,19 +787,25 @@ def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> 
     )
 
 
+BotServiceOutgoingT: TypeAlias = dict[str, str | int | list[str]]
+
+
 @transaction.atomic(durable=True)
 def do_update_outgoing_webhook_service(
     bot_profile: UserProfile,
     *,
     interface: int | None = None,
     base_url: str | None = None,
+    triggers: list[str] | None = None,
     acting_user: UserProfile | None,
 ) -> None:
-    update_fields: dict[str, str | int] = {}
+    update_fields: BotServiceOutgoingT = {}
     if interface is not None:
         update_fields["interface"] = interface
     if base_url is not None:
         update_fields["base_url"] = base_url
+    if triggers is not None:
+        update_fields["triggers"] = triggers
 
     if len(update_fields) < 1:
         return
@@ -820,10 +826,11 @@ def do_update_outgoing_webhook_service(
 
     # Keep the event payload of the updated bot service in sync with the
     # schema expected by `bot_data.update()` method.
-    updated_service: dict[str, str | int] = BotServicesOutgoing(
+    updated_service: BotServiceOutgoingT = BotServicesOutgoing(
         base_url=service.base_url,
         interface=service.interface,
         token=service.token,
+        triggers=service.triggers,
     ).model_dump()
     send_event_on_commit(
         bot_profile.realm,
@@ -867,6 +874,7 @@ def get_service_dicts_for_bot(user_profile_id: int) -> list[dict[str, Any]]:
                 "base_url": service.base_url,
                 "interface": service.interface,
                 "token": service.token,
+                "triggers": service.triggers,
             }
             for service in services
         ]
@@ -876,6 +884,7 @@ def get_service_dicts_for_bot(user_profile_id: int) -> list[dict[str, Any]]:
                 {
                     "config_data": get_bot_config(user_profile),
                     "service_name": services[0].name,
+                    "triggers": services[0].triggers,
                 }
             ]
         # A ConfigError just means that there are no config entries for user_profile.
@@ -910,6 +919,7 @@ def get_service_dicts_for_bots(
                     "base_url": service.base_url,
                     "interface": service.interface,
                     "token": service.token,
+                    "triggers": service.triggers,
                 }
                 for service in services
             ]
@@ -919,6 +929,7 @@ def get_service_dicts_for_bots(
                 {
                     "config_data": bot_config,
                     "service_name": services[0].name,
+                    "triggers": service.triggers,
                 }
             ]
         service_dicts_by_uid[bot_profile_id] = service_dicts

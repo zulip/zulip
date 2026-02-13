@@ -1106,6 +1106,19 @@
     width: 17.8571em;
 }
 
+/* This is used in the "Add a new bot" modal and
+   Outgoing webhook bots "Manage a bot" edit user
+   profile modal. */
+#service_bot_triggers_field {
+    .input-group {
+        margin: var(--settings-nested-checkbox-vertical-margins);
+    }
+
+    .inline {
+        display: inline;
+    }
+}
+
 .dialog-widget-footer-minor-text {
     font-size: smaller;
     font-style: italic;
