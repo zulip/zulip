@@ -45,7 +45,7 @@ run_test("starred", ({override}) => {
         posted_data = opts.data;
     });
 
-    starred_messages_ui.toggle_starred_and_update_server(message);
+    starred_messages_ui.toggle_starred_and_update_server(message.id);
 
     assert.ok(ui_updated);
 
@@ -62,7 +62,7 @@ run_test("starred", ({override}) => {
 
     ui_updated = false;
 
-    starred_messages_ui.toggle_starred_and_update_server(message);
+    starred_messages_ui.toggle_starred_and_update_server(message.id);
 
     assert.ok(ui_updated);
 
