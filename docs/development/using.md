@@ -98,3 +98,75 @@ and contribute to the mobile app][mobile-development-guide].
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
 [testing-docs]: ../testing/testing.md
 [mobile-development-guide]: https://github.com/zulip/zulip-flutter/blob/main/docs/setup.md
+
+
+## Exposing the development environment for testing integrations
+
+Zulip provides an excellent integrations development panel for testing webhooks locally. However, some external services (for example, GitHub, Jira, or GitLab) need to send HTTP requests directly to Zulip. To test these integrations end-to-end, your local Zulip development server must be reachable outside the VM — and in many cases, from the public internet.
+
+This section explains how to expose a local Zulip development environment and describes alternative approaches if direct exposure is not possible.
+
+## Why this is needed
+
+By default, the Vagrant-based Zulip development environment is only accessible from the host machine. External services cannot reach it because:
+
+The VM only listens on 127.0.0.1 (localhost).
+Webhook providers require a reachable URL to deliver events.
+Many services cannot send webhooks to private IP addresses.
+Exposing the development server allows you to:
+Receive real webhook payloads from external services
+Debug integrations in a realistic environment.
+
+### Allow the Vagrant VM to accept external connections
+
+Edit `zulip/Vagrantfile` and change:
+  `host_ip_addr = "127.0.0.1`
+to:
+  `host_ip_addr = "0.0.0.0"`
+
+This allows the Zulip development server running inside the VM to listen on all network interfaces instead of only localhost.
+After making this change, reload the VM:
+`vagrant reload`
+### Configure the external host
+Set the `EXTERNAL_HOST` environment variable so Zulip generates webhook URLs using an externally reachable address:
+  `export EXTERNAL_HOST="<IP_OF_HOST>:9991"`
+Alternatively, prefix the development server command:
+  `EXTERNAL_HOST="<IP_OF_HOST>:9991" ./tools/run-dev.py`
+### Start the development server
+Run the development server with external interfaces enabled:
+  `./tools/run-dev.py --interfaces=''`
+At this point, the server should be reachable from outside the VM using the value of EXTERNAL_HOST.
+ You will need a publicly reachable address, typically provided by a tunneling or proxy tool.
+## Using a tunneling or proxy tool
+ 
+A tunneling or proxy tool (such as Cloudflare Tunnel, ngrok, or similar services) can be used to expose the local Zulip development server through a publicly reachable HTTPS URL. This is the most reliable way to send webhooks from cloud-based services.
+
+---
+
+## What a tunneling or proxy tool does
+
+- A tunneling or proxy tool will:
+ - Expose your local Zulip development server (typically running on `localhost:9991`)
+ - Provide a publicly reachable HTTPS URL
+ - Forward incoming requests from the public internet to your local machine
+ - Allow external services to send webhooks without requiring a public IP address or router configuration
+
+---
+
+- Install a tunneling or proxy tool
+ - Choose and install a tunneling or proxy tool on your host machine. Common options include Cloudflare Tunnel, ngrok, and similar services.Verify that the tool is installed by running its version or help command.
+
+
+ - Inside the Vagrant VM, start the Zulip development server by
+ (`./tools/run-dev.py`).Confirm that the server is reachable from your host machine by opening the following URL in a browser:`http://localhost:9991`
+ 
+ - Start the tunnel or proxy
+ On your host machine, start the tunneling or proxy tool and configure it to forward traffic to the local Zulip development server:`http://localhost:9991`The tool will provide a publicly reachable HTTPS URL. This URL will forward incoming requests to your local Zulip server.
+ 
+ - Configure the webhook URL
+ Use the public HTTPS URL provided by the tunneling or proxy tool when configuring the webhook in the external service.
+ For example, the webhook URL will typically look like:
+ `https://<public-hostname>/api/v1/external/<integration-name>`
+
+ - Successful webhook requests should appear.
+
