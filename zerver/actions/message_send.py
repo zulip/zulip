@@ -80,8 +80,12 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
-from zerver.lib.topic_link_util import get_stream_link_syntax
+from zerver.lib.topic_link_util import (
+    escape_invalid_stream_topic_characters,
+    get_stream_link_syntax,
+)
 from zerver.lib.types import UserProfileChangeDict
+from zerver.lib.url_encoding import encode_hash_component, message_link_url
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -125,6 +129,28 @@ from zerver.models.streams import (
 )
 from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
+
+
+def can_use_pretty_stream_url(
+    sender: UserProfile,
+    stream: Stream,
+    is_sender_subscribed: bool,
+) -> bool:
+    """
+    Determines if we can include stream name in the message URL without
+    triggering database queries. Returns False for uncertain cases, which
+    is always safe since the ID-only URL format works for all users.
+    """
+    if is_sender_subscribed:
+        return True
+
+    if is_cross_realm_bot_email(sender.delivery_email):
+        return True
+
+    if stream.is_public() and sender.role != UserProfile.ROLE_GUEST:
+        return True
+
+    return False
 
 
 def compute_irc_user_fullname(email: str) -> str:
@@ -236,6 +262,8 @@ class UserProfileAnnotations(TypedDict):
 @dataclass
 class SentMessageResult:
     message_id: int
+    message_url: str
+    message_link: str
     automatic_new_visibility_policy: int | None = None
 
 
@@ -1095,7 +1123,6 @@ def do_send_messages(
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
         wide_message_dict = MessageDict.wide_dict(send_request.message, realm_id)
-
         user_flags = user_message_flags.get(send_request.message.id, {})
 
         """
@@ -1302,13 +1329,63 @@ def do_send_messages(
                     },
                 )
 
-    sent_message_results = [
-        SentMessageResult(
+        # Compute URL of the message.
+        if send_request.stream is not None:
+            # STREAM MESSAGES
+            is_subscribed = send_request.sender_muted_stream is not None
+
+            use_pretty_url = can_use_pretty_stream_url(
+                send_request.message.sender,
+                send_request.stream,
+                is_subscribed,
+            )
+
+            if use_pretty_url:
+                # Human-friendly URL including the stream name.
+                send_request.message_url = message_link_url(
+                    send_request.realm,
+                    wide_message_dict,
+                )
+                # Generate the Markdown Label: "#Stream > Topic"
+                escaped_stream = escape_invalid_stream_topic_characters(send_request.stream.name)
+                topic_display_name = get_topic_display_name(
+                    send_request.message.topic_name(),
+                    send_request.message.sender.default_language,
+                )
+                escaped_topic = escape_invalid_stream_topic_characters(topic_display_name)
+
+                label = f"#{escaped_stream} > {escaped_topic}"
+                send_request.message_link = f"[{label}]({send_request.message_url})"
+            else:
+                # Use ID-only URL to avoid leaking private stream names.
+                encoded_topic = encode_hash_component(send_request.message.topic_name())
+                relative_url = (
+                    f"#narrow/channel/{send_request.stream.id}/topic/"
+                    f"{encoded_topic}/near/{send_request.message.id}"
+                )
+                send_request.message_url = f"{send_request.realm.url}/{relative_url}"
+                send_request.message_link = send_request.message_url
+        else:
+            # DIRECT MESSAGES
+            send_request.message_url = message_link_url(
+                send_request.realm,
+                wide_message_dict,
+            )
+            send_request.message_link = send_request.message_url
+
+    sent_message_results = []
+    for send_request in send_message_requests:
+        assert send_request.message_url is not None
+        assert send_request.message_link is not None
+
+        result = SentMessageResult(
             message_id=send_request.message.id,
+            message_url=send_request.message_url,
+            message_link=send_request.message_link,
             automatic_new_visibility_policy=send_request.automatic_new_visibility_policy,
         )
-        for send_request in send_message_requests
-    ]
+        sent_message_results.append(result)
+
     return sent_message_results
 
 

@@ -8521,10 +8521,40 @@ paths:
                           user automatically unmuting or following the topic in question.
 
                           **Changes**: New in Zulip 8.0 (feature level 218).
+                      message_url:
+                        type: string
+                        description: |
+                          A URL that links to the sent message within its conversation.
+
+                          The URL format depends on the sender's access to channel
+                          metadata. For channels where the sender has metadata access,
+                          a human-readable URL including the channel name is returned.
+                          For channels where the sender does not have metadata access,
+                          an ID-only URL (without the channel name) is returned to
+                          prevent leaking private channel names to write-only bots or
+                          guests.
+
+                          Direct messages use the standard URL format.
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-1aabde).
+                      message_link:
+                        type: string
+                        description: |
+                          The URL of the sent message, formatted as a Markdown link.
+
+                          For channel messages where the sender has metadata access, this
+                          uses the human-readable format `[#stream > topic](url)`.
+
+                          In cases where metadata is restricted (e.g. write-only bots)
+                          or for direct messages, this field falls back to the raw URL.
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-1aabde).
                     example:
                       {
                         "msg": "",
                         "id": 42,
+                        "message_url": "https://example.zulipchat.com/#narrow/channel/399637/topic/private.20streams/near/382320733",
+                        "message_link": "[#general > private streams](https://example.zulipchat.com/#narrow/channel/399637/topic/private.20streams/near/382320733)",
                         "automatic_new_visibility_policy": 2,
                         "result": "success",
                       }
