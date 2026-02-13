@@ -9,6 +9,8 @@ class UrlEmbedData:
     title: str | None = None
     description: str | None = None
     image: str | None = None
+    image_width: int | None = None  # nocoverage
+    image_height: int | None = None  # nocoverage
 
     def merge(self, other: "UrlEmbedData") -> None:
         if self.title is None and other.title is not None:
@@ -17,6 +19,10 @@ class UrlEmbedData:
             self.description = other.description
         if self.image is None and other.image is not None:
             self.image = other.image
+        if self.image_width is None and other.image_width is not None:
+            self.image_width = other.image_width  # nocoverage
+        if self.image_height is None and other.image_height is not None:
+            self.image_height = other.image_height  # nocoverage
 
 
 @dataclass

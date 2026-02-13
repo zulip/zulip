@@ -1,3 +1,4 @@
+from contextlib import suppress
 from urllib.parse import urlsplit
 
 from typing_extensions import override
@@ -32,5 +33,11 @@ class OpenGraphParser(BaseParser):
                 except ValueError:
                     continue
                 data.image = tag["content"]
+            elif tag["property"] == "og:image:width":
+                with suppress(ValueError, TypeError):  # nocoverage
+                    data.image_width = int(tag["content"])  # nocoverage
+            elif tag["property"] == "og:image:height":
+                with suppress(ValueError, TypeError):  # nocoverage
+                    data.image_height = int(tag["content"])  # nocoverage
 
         return data

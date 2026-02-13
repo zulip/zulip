@@ -722,6 +722,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         img.set("href", link)
         img.set("class", "message_embed_image")
 
+        if extracted_data.image_width is not None:
+            img.set("data-image-width", str(extracted_data.image_width))
+        if extracted_data.image_height is not None:
+            img.set("data-image-height", str(extracted_data.image_height))
+
         data_container = SubElement(container, "div")
         data_container.set("class", "data-container")
 

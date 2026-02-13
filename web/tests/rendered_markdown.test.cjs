@@ -152,6 +152,7 @@ const get_content_element = () => {
     $content.set_find_results("div.codehilite", $array([]));
     $content.set_find_results(".message_inline_video video", $array([]));
     $content.set_find_results("audio", $array([]));
+    $content.set_find_results(".message_embed_image", $array([]));
 
     set_message_for_message_content($content, undefined);
 
@@ -200,6 +201,7 @@ run_test("message_inline_video", () => {
     };
 
     $content.set_find_results(".message_inline_video video", $array([$elem]));
+    $content.set_find_results(".message_embed_image", $array([]));
     window.GestureEvent = true;
     rm.update_elements($content);
     assert.equal(load_called, true);
@@ -838,4 +840,25 @@ run_test("rtl", () => {
     assert.ok(!$content.hasClass("rtl"));
     rm.update_elements($content);
     assert.ok($content.hasClass("rtl"));
+});
+
+run_test("message_embed_image_coverage", () => {
+    const $content = get_content_element();
+    const $image = $.create("message_embed_image");
+
+    let applied_width;
+    $image.css = (property, value) => {
+        if (property === "width") {
+            applied_width = value;
+        }
+    };
+
+    $image.attr("data-image-width", "400");
+    $image.attr("data-image-height", "300");
+
+    $content.set_find_results(".message_embed_image", $array([$image]));
+
+    rm.update_elements($content);
+
+    assert.equal(applied_width, "133px");
 });
