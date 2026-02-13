@@ -11,6 +11,7 @@ import * as message_fetch from "./message_fetch.ts";
 import * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
 import {reload_metadata_schema} from "./reload.ts";
+import * as stream_list from "./stream_list.ts";
 
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
@@ -102,6 +103,13 @@ export function initialize(): void {
 
         activity.set_new_user_input(false);
         message_view.changehash(data.hash, "reload");
+
+        // Restore the "more topics" zoomed state in the left sidebar.
+        if (data.left_sidebar_topics_zoomed) {
+            // We need to defer this until the stream list is rendered.
+            // The stream_list module handles the actual zoom-in logic.
+            stream_list.set_left_sidebar_topics_zoomed_on_reload();
+        }
     } else {
         load_from_legacy_data(fragment);
     }
