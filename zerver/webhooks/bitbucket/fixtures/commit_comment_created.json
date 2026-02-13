@@ -2,15 +2,16 @@
   "comment":{
       "user":{
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
+         "account_id":"557058:678ab31f-9f88-4d7a-b343-1bdf9f024917",
          "links":{
             "html":{
-               "href":"https://bitbucket.org/kolaszek/"
+               "href":"https://bitbucket.org/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/"
             },
             "self":{
-               "href":"https://api.bitbucket.org/2.0/users/kolaszek"
+               "href":"https://api.bitbucket.org/2.0/users/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917"
             },
             "avatar":{
-               "href":"https://bitbucket.org/account/kolaszek/avatar/32/"
+               "href":"https://bitbucket.org/account/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/avatar/32/"
             }
          },
          "nickname":"Tomasz Kolaszek",
@@ -56,15 +57,16 @@
    },
   "actor":{
       "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
+      "account_id":"557058:678ab31f-9f88-4d7a-b343-1bdf9f024917",
       "links":{
          "html":{
-            "href":"https://bitbucket.org/kolaszek/"
+            "href":"https://bitbucket.org/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/"
          },
          "self":{
-            "href":"https://api.bitbucket.org/2.0/users/kolaszek"
+            "href":"https://api.bitbucket.org/2.0/users/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917"
          },
          "avatar":{
-            "href":"https://bitbucket.org/account/kolaszek/avatar/32/"
+            "href":"https://bitbucket.org/account/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/avatar/32/"
          }
       },
       "nickname":"Tomasz Kolaszek",
@@ -77,15 +79,16 @@
       "is_private":true,
       "owner":{
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
+         "account_id":"557058:678ab31f-9f88-4d7a-b343-1bdf9f024917",
          "links":{
             "html":{
-               "href":"https://bitbucket.org/kolaszek/"
+               "href":"https://bitbucket.org/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/"
             },
             "self":{
-               "href":"https://api.bitbucket.org/2.0/users/kolaszek"
+               "href":"https://api.bitbucket.org/2.0/users/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917"
             },
             "avatar":{
-               "href":"https://bitbucket.org/account/kolaszek/avatar/32/"
+               "href":"https://bitbucket.org/account/557058:678ab31f-9f88-4d7a-b343-1bdf9f024917/avatar/32/"
             }
          },
          "nickname":"Tomasz Kolaszek",
