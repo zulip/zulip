@@ -1179,8 +1179,11 @@ nav {
 
         .nav-logo {
             display: inline-block;
+            width: auto;
             height: 1.25em; /* 20px at 16px em */
             max-width: var(--realm-logo-max-width);
+            /* Defensive: Handle wide logos uploaded via API or legacy methods. */
+            object-fit: contain;
 
             @media (height < $short_navbar_cutoff_height) {
                 height: 0.9375em; /* 15px at 16px em */
