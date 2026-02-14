@@ -21,9 +21,22 @@ import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as rows from "./rows.ts";
 import * as stream_data from "./stream_data.ts";
 import * as unread_ops from "./unread_ops.ts";
+import * as util from "./util.ts";
+import * as message_fetch from './message_fetch.ts'
 
+type QuoteMessageOpts = {
+    message_id?: number;
+    quote_content?: string | undefined;
+    keep_composebox_empty?: boolean;
+    reply_type?: "personal";
+    trigger?: string;
+    forward_message?: boolean;
+};
+
+const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 export let respond_to_message = (opts: {
     keep_composebox_empty?: boolean;
     message_id?: number;
@@ -172,29 +185,37 @@ export function reply_with_mention(opts: {
     compose_ui.insert_syntax_and_focus(mention);
 }
 
-export let selection_within_message_id = (
+export let get_highlighted_message_ids = (
     selection = window.getSelection(),
-): number | undefined => {
-    // Returns the message_id if the selection is entirely within a message,
-    // otherwise returns undefined.
+): number[] | undefined => {
+    // Returns the message_ids for a selection.
     assert(selection !== null);
     if (!selection.toString()) {
         return undefined;
     }
     const {start_id, end_id} = copy_messages.analyze_selection(selection);
-    if (start_id === end_id) {
-        return start_id;
+    // Unlikely to ever occur.
+    if (start_id === undefined && end_id === undefined) {
+        return undefined;
     }
-    return undefined;
+    // This is a weird case and we should fallback to quoting
+    // the selected message.
+    if (start_id === undefined || end_id === undefined) {
+        return undefined;
+    }
+    return rows.get_ids_in_range(start_id, end_id);
 };
 
-export function rewire_selection_within_message_id(
-    value: typeof selection_within_message_id,
+export function rewire_get_highlighted_message_ids(
+    value: typeof get_highlighted_message_ids,
 ): void {
-    selection_within_message_id = value;
+    get_highlighted_message_ids = value;
 }
 
-function get_quote_target(opts: {message_id?: number; quote_content?: string | undefined}): {
+function get_quote_target_for_single_message(opts: {
+    message_id?: number;
+    quote_content?: string | undefined;
+}): {
     message_id: number;
     message: Message;
     quote_content: string | undefined;
@@ -210,11 +231,11 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string | u
         }
     } else {
         // If triggered via hotkey
-        const selection_message_id = selection_within_message_id();
-        if (selection_message_id) {
-            // If the current selection is entirely within a message, we
-            // quote that selection.
-            message_id = selection_message_id;
+        const highlighted_message_ids = get_highlighted_message_ids();
+        if (highlighted_message_ids) {
+            // If the current content selection is entirely within a message,
+            // we quote that selection.
+            message_id = util.the(highlighted_message_ids);
             quote_content = get_message_selection();
         } else {
             // Else we pick the currently focused message.
@@ -233,17 +254,7 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string | u
     return {message_id, message, quote_content};
 }
 
-export function quote_message(opts: {
-    message_id?: number;
-    quote_content?: string | undefined;
-    keep_composebox_empty?: boolean;
-    reply_type?: "personal";
-    trigger?: string;
-    forward_message?: boolean;
-}): void {
-    const {message_id, message, quote_content} = get_quote_target(opts);
-    const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
-
+function get_textarea(opts: QuoteMessageOpts): JQuery<HTMLTextAreaElement> {
     // If the last compose type textarea focused on is still in the DOM, we add
     // the quote in that textarea, else we default to the compose box.
     const last_focused_compose_type_input = compose_state.get_last_focused_compose_type_input();
@@ -251,75 +262,162 @@ export function quote_message(opts: {
         last_focused_compose_type_input?.isConnected && !opts.forward_message
             ? $(last_focused_compose_type_input)
             : $<HTMLTextAreaElement>("textarea#compose-textarea");
+    return $textarea;
+}
 
-    if (opts.forward_message) {
-        let topic = "";
-        let stream_id: number | undefined;
-        if (message.is_stream) {
-            topic = message.topic;
-            stream_id = message.stream_id;
-        }
-        compose_state.set_is_processing_forward_message(true);
-        compose_actions.start({
-            message_type: message.type,
-            topic,
-            keep_composebox_empty: opts.keep_composebox_empty,
-            content: quoting_placeholder,
-            stream_id,
-            private_message_recipient_ids: [],
+function setup_compose_to_forward_single_message(message: Message, opts: QuoteMessageOpts): void {
+    let topic = "";
+    let stream_id: number | undefined;
+    if (message.is_stream) {
+        topic = message.topic;
+        stream_id = message.stream_id;
+    }
+    compose_state.set_is_processing_forward_message(true);
+    compose_actions.start({
+        message_type: message.type,
+        topic,
+        keep_composebox_empty: opts.keep_composebox_empty,
+        content: quoting_placeholder,
+        stream_id,
+        private_message_recipient_ids: [],
+    });
+    compose_recipient.toggle_compose_recipient_dropdown();
+}
+
+function setup_compose_to_quote_single_message(message_id: number, opts: QuoteMessageOpts): void {
+    if (
+        get_textarea(opts).attr("id") === "compose-textarea" &&
+        !compose_state.has_message_content()
+    ) {
+        // Whether or not the compose box is open, it's empty, so
+        // we start a new message replying to the quoted message.
+        respond_to_message({
+            ...opts,
+            // Critically, we pass the message_id of the message we
+            // just quoted, to avoid incorrectly replying to an
+            // unrelated selected message in interleaved views.
+            message_id,
+            keep_composebox_empty: true,
         });
-        compose_recipient.toggle_compose_recipient_dropdown();
-    } else {
-        if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
-            // Whether or not the compose box is open, it's empty, so
-            // we start a new message replying to the quoted message.
-            respond_to_message({
-                ...opts,
-                // Critically, we pass the message_id of the message we
-                // just quoted, to avoid incorrectly replying to an
-                // unrelated selected message in interleaved views.
-                message_id,
-                keep_composebox_empty: true,
-            });
-        }
-
-        compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
     }
 
-    function replace_content(message: Message, raw_content: string): void {
-        // Final message looks like:
-        //     @_**Iago|5** [said](link to message):
-        //     ```quote
-        //     message content
-        //     ```
-        // Keep syntax in sync with zerver/lib/reminders.py
-        let content = $t(
-            {defaultMessage: "{username} [said]({link_to_message}):"},
-            {
-                username: `@_**${message.sender_full_name}|${message.sender_id}**`,
-                link_to_message: hash_util.by_conversation_and_time_url(message),
-            },
-        );
-        content += "\n";
-        const fence = fenced_code.get_unused_fence(raw_content);
-        content += `${fence}quote\n${raw_content}\n${fence}`;
+    compose_ui.insert_syntax_and_focus(quoting_placeholder, get_textarea(opts), "block");
+}
 
-        compose_ui.replace_syntax(quoting_placeholder, content, $textarea, opts.forward_message);
-        compose_ui.autosize_textarea($textarea);
+function replace_content(message: Message, raw_content: string, opts: QuoteMessageOpts): void {
+    // Final message looks like:
+    //     @_**Iago|5** [said](link to message):
+    //     ```quote
+    //     message content
+    //     ```
+    // Keep syntax in sync with zerver/lib/reminders.py
+    let content = $t(
+        {defaultMessage: "{username} [said]({link_to_message}):"},
+        {
+            username: `@_**${message.sender_full_name}|${message.sender_id}**`,
+            link_to_message: hash_util.by_conversation_and_time_url(message),
+        },
+    );
+    content += "\n";
+    const fence = fenced_code.get_unused_fence(raw_content);
+    content += `${fence}quote\n${raw_content}\n${fence}`;
 
-        if (!opts.forward_message) {
-            return;
+    compose_ui.replace_syntax(
+        quoting_placeholder,
+        content,
+        get_textarea(opts),
+        opts.forward_message,
+    );
+    compose_ui.autosize_textarea(get_textarea(opts));
+
+    if (!opts.forward_message) {
+        return;
+    }
+    const select_recipient_widget: tippy.ReferenceElement | undefined = $(
+        "#compose_select_recipient_widget",
+    )[0];
+    if (select_recipient_widget !== undefined) {
+        void select_recipient_widget._tippy?.popperInstance?.update();
+    }
+}
+
+function is_quoting_single_message(opts: QuoteMessageOpts): boolean {
+    if (opts.message_id) {
+        return true;
+    }
+    const highlighted_message_ids = get_highlighted_message_ids();
+    return highlighted_message_ids === undefined || highlighted_message_ids.length === 1;
+}
+
+export function quote_message(opts: QuoteMessageOpts): void {
+    if (is_quoting_single_message(opts)) {
+        quote_single_message(opts);
+    }
+}
+
+type QuoteAsset = {
+    message:Message,
+    quote_content:string
+}
+
+async function maybe_hydrate_messages_with_raw_content(message_ids:number[]){
+    const message_ids_with_missing_raw_content = message_ids.filter((id)=>{
+        const message = message_store.get(id);
+        if(message?.raw_content){
+            return false;
         }
-        const select_recipient_widget: tippy.ReferenceElement | undefined = $(
-            "#compose_select_recipient_widget",
-        )[0];
-        if (select_recipient_widget !== undefined) {
-            void select_recipient_widget._tippy?.popperInstance?.update();
+        return true;
+    })
+
+    if(message_ids_with_missing_raw_content.length === 0)return;
+
+    await channel.get({
+        url: "/json/messages/",
+        data: {allow_empty_topic_name: true, apply_markdown: false, message_ids:message_ids_with_missing_raw_content},
+        success(raw_data) {
+            const data = message_fetch.response_schema.parse(raw_data);
+            for(const raw_message of data.messages){
+                const cached_message = message_store.get(raw_message.id);
+                const fetched_message = single_message_content_schema.shape.message.parse(raw_message)
+                assert(cached_message!== undefined && fetched_message.content_type === "text/x-markdown");
+                message_store.maybe_update_raw_content(cached_message, fetched_message.content);
+            }
+        },
+        timeout:1000
+    });
+}
+
+async function get_quote_assets_for_highlighted_messages(highlighted_msg_ids:number[]){
+    const quote_assets:QuoteAsset[] = []
+    await maybe_hydrate_messages_with_raw_content(highlighted_msg_ids)
+    for(const id of highlighted_msg_ids){
+        const cached_message = message_store.get(id);
+        assert(cached_message!==undefined)
+        if(cached_message.raw_content){
+            quote_assets.push({
+                message:cached_message, quote_content:cached_message.raw_content, 
+            });
+        }else{
+            // Fallback to using markdown obtained by local turndown setup.
+            quote_assets.push({
+                message:cached_message, quote_content:compose_paste.paste_handler_converter(cached_message.content), 
+            })
         }
+    }
+    return quote_assets
+}
+
+
+function quote_single_message(opts: QuoteMessageOpts): void {
+    const {message_id, message, quote_content} = get_quote_target_for_single_message(opts);
+    if (opts.forward_message) {
+        setup_compose_to_forward_single_message(message, opts);
+    } else {
+        setup_compose_to_quote_single_message(message_id, opts);
     }
 
     if (message && quote_content) {
-        replace_content(message, quote_content);
+        replace_content(message, quote_content, opts);
         return;
     }
 
@@ -330,7 +428,7 @@ export function quote_message(opts: {
             const data = single_message_content_schema.parse(raw_data);
             assert(data.message.content_type === "text/x-markdown");
             message_store.maybe_update_raw_content(message, data.message.content);
-            replace_content(message, data.message.content);
+            replace_content(message, data.message.content, opts);
         },
         // We set a timeout here to trigger usage of the fallback markdown via the
         // error callback below, which is much better UX than waiting for 10 seconds and
@@ -345,7 +443,7 @@ export function quote_message(opts: {
             // We try to access message.raw_content one last time here, just in case
             // it was populated during the waiting time.
             const md = message.raw_content ?? compose_paste.paste_handler_converter(message_html);
-            replace_content(message, md);
+            replace_content(message, md, opts);
         },
     });
 }
