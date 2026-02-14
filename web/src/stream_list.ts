@@ -64,6 +64,10 @@ const collapsed_sections_ls_key = "left_sidebar_collapsed_stream_sections";
 const collapsed_sections_ls_schema = z._default(z.array(z.string()), []);
 const ls = localstorage();
 
+const expanded_topic_list_channels = new Set<number>();
+const expanded_channels_ls_key = "left_sidebar_expanded_topic_list_channels";
+const expanded_channels_ls_schema = z._default(z.array(z.number()), []);
+
 export function is_zoomed_in(): boolean {
     return zoomed_in;
 }
@@ -229,6 +233,10 @@ export function add_sidebar_row(sub: StreamSubscription): void {
 
 export function remove_sidebar_row(stream_id: number): void {
     stream_sidebar.remove_row(stream_id);
+    if (expanded_topic_list_channels.has(stream_id)) {
+        expanded_topic_list_channels.delete(stream_id);
+        save_expanded_topic_list_channels();
+    }
     const force_rerender = stream_id === topic_list.active_stream_id();
     update_streams_sidebar(force_rerender);
 }
@@ -572,6 +580,31 @@ function restore_collapsed_sections_state(): void {
     for (const section_id of collapsed_array) {
         collapsed_sections.add(section_id);
     }
+}
+
+function save_expanded_topic_list_channels(): void {
+    ls.set(expanded_channels_ls_key, [...expanded_topic_list_channels]);
+}
+
+function restore_expanded_topic_list_channels(): void {
+    const expanded_array = expanded_channels_ls_schema.parse(ls.get(expanded_channels_ls_key));
+    expanded_topic_list_channels.clear();
+    for (const stream_id of expanded_array) {
+        expanded_topic_list_channels.add(stream_id);
+    }
+}
+
+function is_topic_list_expanded(stream_id: number): boolean {
+    return expanded_topic_list_channels.has(stream_id);
+}
+
+function set_topic_list_expanded(stream_id: number, expanded: boolean): void {
+    if (expanded) {
+        expanded_topic_list_channels.add(stream_id);
+    } else {
+        expanded_topic_list_channels.delete(stream_id);
+    }
+    save_expanded_topic_list_channels();
 }
 
 export let set_sections_states = function (): void {
@@ -1150,6 +1183,19 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     // We want to update channel view for inbox for the same reasons
     // we want to the topics list here.
     update_inbox_channel_view_callback(stream_id);
+
+    if (
+        user_settings.web_channel_default_view ===
+            web_channel_default_view_values.list_of_topics.code &&
+        !info.topic_selected &&
+        !is_topic_list_expanded(stream_id)
+    ) {
+        // Channel is in collapsed state and no topic is selected.
+        // Don't expand the topic list in the sidebar.
+        maybe_hide_topic_bracket(get_section_id_for_stream_li($stream_li));
+        return $stream_li;
+    }
+
     topic_list.rebuild_left_sidebar($stream_li, stream_id);
     topic_list.topic_state_typeahead?.lookup(true);
 
@@ -1202,6 +1248,7 @@ export function initialize({
 }): void {
     update_inbox_channel_view_callback = update_inbox_channel_view;
     restore_collapsed_sections_state();
+    restore_expanded_topic_list_channels();
     create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
@@ -1312,6 +1359,37 @@ export function on_sidebar_channel_click(
         user_settings.web_channel_default_view ===
         web_channel_default_view_values.list_of_topics.code
     ) {
+        const is_same_channel = current_narrow_stream_id === stream_id;
+
+        if (is_same_channel && current_topic === undefined) {
+            // Already viewing this channel's topic list in the middle pane.
+            // Toggle the topic list in the sidebar.
+            const currently_expanded = is_topic_list_expanded(stream_id);
+            set_topic_list_expanded(stream_id, !currently_expanded);
+
+            const $stream_li = get_stream_li(stream_id);
+            if (!$stream_li) {
+                blueslip.error("No stream_li for subscribed stream", {stream_id});
+                return;
+            }
+
+            if (!currently_expanded) {
+                topic_list.rebuild_left_sidebar($stream_li, stream_id);
+            } else {
+                clear_topics();
+            }
+            return;
+        }
+
+        if (is_same_channel && current_topic !== undefined) {
+            // Viewing a topic in this channel. Navigate to topic list,
+            // keep sidebar expanded so user can see topic list.
+            set_topic_list_expanded(stream_id, true);
+        } else {
+            // Navigating to a different channel. Start collapsed.
+            set_topic_list_expanded(stream_id, false);
+        }
+
         browser_history.go_to_location(hash_util.by_channel_topic_list_url(stream_id));
         return;
     }
@@ -1385,6 +1463,12 @@ export function set_event_handlers({
 }: {
     show_channel_feed: (stream_id: number, trigger: string) => void;
 }): void {
+    $("#stream_filters").on("mousedown", "li .subscription_block", (e) => {
+        if (e.detail > 1) {
+            e.preventDefault();
+        }
+    });
+
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         // Left sidebar channel links have an `href` so that the
         // browser will preview the URL and you can middle-click it.
