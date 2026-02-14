@@ -37,7 +37,7 @@ export function hide_scroll_to_bottom(): void {
     hide_scroll_to_bottom_timer = setTimeout(() => {
         // Don't hide if user is hovered on it.
         if (
-            !narrow_state.narrowed_by_topic_reply() &&
+            message_viewport.bottom_rendered_message_visible() &&
             !the($show_scroll_to_bottom_button).matches(":hover")
         ) {
             $show_scroll_to_bottom_button.removeClass("show");
