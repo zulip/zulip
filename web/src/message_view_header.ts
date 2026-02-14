@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_message_view_header from "../templates/message_view_header.hbs";
 
+import * as buddy_data from "./buddy_data.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -11,12 +12,22 @@ import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+
+let dm_avatars_resize_observer: ResizeObserver | undefined;
+
+type DmUserInfo = {
+    user_id: number;
+    avatar_url: string;
+    user_circle_class: string;
+    name: string;
+};
 
 type MessageViewHeaderContext = {
     title?: string | undefined;
@@ -30,6 +41,8 @@ type MessageViewHeaderContext = {
     is_admin?: boolean;
     stream?: StreamSubscription;
     stream_settings_link?: string;
+    is_dm_narrow?: boolean;
+    dm_users?: DmUserInfo[];
 } & (
     | {
           zulip_icon: string;
@@ -145,6 +158,29 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         };
     }
 
+    if (filter.has_operator("dm")) {
+        const user_ids = filter.terms_with_operator("dm")[0]!.operand;
+        const dm_users: DmUserInfo[] = [];
+        for (const user_id of user_ids) {
+            const person = people.maybe_get_user_by_id(user_id, true);
+            if (person) {
+                dm_users.push({
+                    user_id: person.user_id,
+                    avatar_url: people.small_avatar_url_for_person(person),
+                    user_circle_class: buddy_data.get_user_circle_class(person.user_id),
+                    name: person.full_name,
+                });
+            }
+        }
+        if (dm_users.length > 0) {
+            return {
+                ...context,
+                is_dm_narrow: true,
+                dm_users,
+            };
+        }
+    }
+
     return context;
 }
 
@@ -155,6 +191,40 @@ export function colorize_message_view_header(): void {
     }
     // selecting i instead of .fa because web public streams have custom icon.
     $("#message_view_header a.stream i").css("color", current_sub.color);
+}
+
+function update_dm_avatars_overflow(container: HTMLElement): void {
+    const has_overflow = container.scrollWidth > container.clientWidth;
+    $(container).toggleClass("dm-avatars-overflowing", has_overflow);
+}
+
+function setup_dm_avatars_overflow_detection(context: MessageViewHeaderContext): void {
+    // Clean up previous observer.
+    if (dm_avatars_resize_observer) {
+        dm_avatars_resize_observer.disconnect();
+        dm_avatars_resize_observer = undefined;
+    }
+
+    if (!context.is_dm_narrow || !context.dm_users || context.dm_users.length === 0) {
+        return;
+    }
+
+    const container = $(".navbar-dm-avatars")[0];
+    if (!container) {
+        return;
+    }
+
+    // Check overflow after the browser has completed layout so
+    // that scrollWidth / clientWidth are accurate.
+    requestAnimationFrame(() => {
+        update_dm_avatars_overflow(container);
+    });
+
+    // Re-check whenever the container is resized (e.g. window resize).
+    dm_avatars_resize_observer = new ResizeObserver(() => {
+        update_dm_avatars_overflow(container);
+    });
+    dm_avatars_resize_observer.observe(container);
 }
 
 function append_and_display_title_area(context: MessageViewHeaderContext): void {
@@ -169,12 +239,18 @@ function append_and_display_title_area(context: MessageViewHeaderContext): void 
         // Update syntax like stream names, emojis, mentions, timestamps.
         rendered_markdown.update_elements($content);
     }
+    setup_dm_avatars_overflow_detection(context);
 }
 
 function build_message_view_header(filter: Filter | undefined): void {
     // This makes sure we don't waste time appending
     // message_view_header on a template where it's never used
     if (filter && !filter.is_common_narrow()) {
+        // Clean up DM avatar observer when leaving a DM narrow.
+        if (dm_avatars_resize_observer) {
+            dm_avatars_resize_observer.disconnect();
+            dm_avatars_resize_observer = undefined;
+        }
         search.open_search_bar_and_close_narrow_description();
     } else {
         const context = get_message_view_header_context(filter);

@@ -920,6 +920,15 @@ function register_click_handlers(): void {
         toggle_sidebar_user_card_popover($target);
     });
 
+    // Click on a DM avatar in the message view header navbar.
+    $("#message_view_header").on("click", ".navbar-dm-avatar", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const user_id = Number.parseInt($(this).attr("data-user-id")!, 10);
+        const user = people.get_by_user_id(user_id);
+        toggle_user_card_popover(this, user);
+    });
+
     $("body").on("click", ".sidebar-popover-mute-user", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
         hide_all_user_card_popovers();

@@ -209,6 +209,61 @@ export function initialize(): void {
         },
     });
 
+    // Individual DM avatar tooltip – shows the user's name when
+    // avatars fit without overflowing.  Suppressed when the
+    // container overflows so the container-level tooltip takes over.
+    tippy.delegate("body", {
+        target: ".navbar-dm-avatar",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const container = instance.reference.closest(".navbar-dm-avatars");
+            if (container instanceof HTMLElement && container.scrollWidth > container.clientWidth) {
+                return false;
+            }
+            const content = instance.reference.getAttribute("data-tippy-content");
+            if (!content) {
+                return false;
+            }
+            instance.setContent(content);
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    // Container tooltip for overflowing DM avatars – lists every
+    // participant in the conversation.
+    tippy.delegate("body", {
+        target: ".navbar-dm-avatars",
+        appendTo: () => document.body,
+        placement: "bottom",
+        onShow(instance) {
+            const el = instance.reference;
+            assert(el instanceof HTMLElement);
+            if (el.scrollWidth <= el.clientWidth) {
+                return false;
+            }
+            const names: string[] = [];
+            for (const avatar of el.querySelectorAll<HTMLElement>(".navbar-dm-avatar")) {
+                const name = avatar.getAttribute("data-tippy-content");
+                if (name) {
+                    names.push(name);
+                }
+            }
+            if (names.length === 0) {
+                return false;
+            }
+            instance.setContent(
+                $t({defaultMessage: "DM conversation with {names}"}, {names: names.join(", ")}),
+            );
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
     // The below definitions are for specific tooltips that require
     // custom JavaScript code or configuration.  Note that since the
     // below specify the target directly, elements using those should
