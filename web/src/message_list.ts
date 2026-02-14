@@ -10,6 +10,7 @@ import type {MessageListData} from "./message_list_data.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import {MessageListView} from "./message_list_view.ts";
 import type {Message} from "./message_store.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
@@ -293,6 +294,29 @@ export class MessageList {
         return this.data.is_keyword_search();
     }
 
+    oldest_unread_above_viewport(): boolean {
+        // Check if the oldest unread message in this list is above the visible viewport.
+        // This is used to allow marking messages as read in /near/ views once the user
+        // has scrolled past the target message.
+        const first_unread_id = this.first_unread_message_id();
+        if (first_unread_id === undefined) {
+            // No unread messages, so we can allow marking as read
+            return true;
+        }
+
+        const $first_unread_row = this.get_row(first_unread_id);
+        if ($first_unread_row.length === 0) {
+            // Message not rendered, conservatively return false
+            return false;
+        }
+
+        const viewport_info = message_viewport.message_viewport_info();
+        const message_top = $first_unread_row.get_offset_to_window().top;
+        
+        // Return true if the top of the message is above the visible viewport
+        return message_top < viewport_info.visible_top;
+    }
+
     can_mark_messages_read(): boolean {
         /* Automatically marking messages as read can be disabled for
            three different reasons:
@@ -305,8 +329,14 @@ export class MessageList {
         */
         const filter = this.data.filter;
         const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
+        
+        // Special handling for /near/ views: Allow marking as read if the oldest
+        // unread message is above the viewport (user has scrolled past it)
+        const is_near_view = filter !== undefined && filter.has_operator("near");
+        const can_mark_in_near_view = is_near_view && this.oldest_unread_above_viewport();
+        
         return (
-            this.data.can_mark_messages_read() &&
+            (this.data.can_mark_messages_read() || can_mark_in_near_view) &&
             !this.reading_prevented &&
             !(
                 user_settings.web_mark_read_on_scroll_policy ===
@@ -326,7 +356,17 @@ export class MessageList {
             function to check if messages can be automatically read without
             the "Automatically mark messages as read" setting.
         */
-        return this.data.can_mark_messages_read() && !this.reading_prevented;
+        const filter = this.data.filter;
+        
+        // Special handling for /near/ views: Allow marking as read if the oldest
+        // unread message is above the viewport (user has scrolled past it)
+        const is_near_view = filter !== undefined && filter.has_operator("near");
+        const can_mark_in_near_view = is_near_view && this.oldest_unread_above_viewport();
+        
+        return (
+            (this.data.can_mark_messages_read() || can_mark_in_near_view) &&
+            !this.reading_prevented
+        );
     }
 
     clear({clear_selected_id = true} = {}): void {
