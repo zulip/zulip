@@ -190,9 +190,7 @@ export function reply_with_mention(opts: {
     compose_ui.insert_syntax_and_focus(mention);
 }
 
-export let selection_within_message_id = (
-    selection = window.getSelection(),
-): number | undefined => {
+export let get_highlighted_message_id = (selection = window.getSelection()): number | undefined => {
     // Returns the message_id if the selection is entirely within a message,
     // otherwise returns undefined.
     assert(selection !== null);
@@ -206,10 +204,8 @@ export let selection_within_message_id = (
     return undefined;
 };
 
-export function rewire_selection_within_message_id(
-    value: typeof selection_within_message_id,
-): void {
-    selection_within_message_id = value;
+export function rewire_get_highlighted_message_id(value: typeof get_highlighted_message_id): void {
+    get_highlighted_message_id = value;
 }
 
 function get_quote_target_for_single_message(opts: {
@@ -231,11 +227,11 @@ function get_quote_target_for_single_message(opts: {
         }
     } else {
         // If triggered via hotkey
-        const selection_message_id = selection_within_message_id();
-        if (selection_message_id) {
-            // If the current selection is entirely within a message, we
-            // quote that selection.
-            message_id = selection_message_id;
+        const highlighted_msg_id = get_highlighted_message_id();
+        if (highlighted_msg_id) {
+            // If the current content selection is entirely within a message,
+            // we quote that selection.
+            message_id = highlighted_msg_id;
             quote_content = get_message_selection();
         } else {
             // Else we pick the currently focused message.
