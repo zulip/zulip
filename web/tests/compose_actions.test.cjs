@@ -451,7 +451,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
 test("quote_message", ({disallow, override, override_rewire}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
-    override_rewire(compose_reply, "get_highlighted_message_id", () => undefined);
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => undefined);
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
@@ -621,7 +621,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     opts = {
         trigger: "hotkey",
     };
-    override_rewire(compose_reply, "get_highlighted_message_id", () => 50);
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => [50]);
     override_rewire(compose_reply, "get_message_selection", () => "Hello world");
 
     const stub = make_stub();
@@ -648,7 +648,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     // to quote, then message_id passed to `respond_to_message` will be same as as the
     // id of the message having the pointer.
     const message_with_pointer = highlighted_message;
-    override_rewire(compose_reply, "get_highlighted_message_id", () => undefined);
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => undefined);
     override(message_lists.current, "selected_id", () => 100);
     override(message_lists.current, "get", (id) => (id === 100 ? message_with_pointer : undefined));
     expected_replacement =

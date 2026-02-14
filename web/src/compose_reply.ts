@@ -21,8 +21,10 @@ import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as rows from "./rows.ts";
 import * as stream_data from "./stream_data.ts";
 import * as unread_ops from "./unread_ops.ts";
+import * as util from "./util.ts";
 
 type QuoteMessageOpts = {
     message_id?: number;
@@ -182,25 +184,37 @@ export function reply_with_mention(opts: {
     compose_ui.insert_syntax_and_focus(mention);
 }
 
-export let get_highlighted_message_id = (selection = window.getSelection()): number | undefined => {
-    // Returns the message_id if the selection is entirely within a message,
-    // otherwise returns undefined.
+export let get_highlighted_message_ids = (
+    selection = window.getSelection(),
+): number[] | undefined => {
+    // Returns the message_ids for a selection.
     assert(selection !== null);
     if (!selection.toString()) {
         return undefined;
     }
     const {start_id, end_id} = copy_messages.analyze_selection(selection);
-    if (start_id === end_id) {
-        return start_id;
+    // Unlikely to ever occur.
+    if (start_id === undefined && end_id === undefined) {
+        return undefined;
     }
-    return undefined;
+    // This is a weird case and we should fallback to quoting
+    // the selected message.
+    if (start_id === undefined || end_id === undefined) {
+        return undefined;
+    }
+    return rows.get_ids_in_range(start_id, end_id);
 };
 
-export function rewire_get_highlighted_message_id(value: typeof get_highlighted_message_id): void {
-    get_highlighted_message_id = value;
+export function rewire_get_highlighted_message_ids(
+    value: typeof get_highlighted_message_ids,
+): void {
+    get_highlighted_message_ids = value;
 }
 
-function get_quote_target_for_single_message(opts: {message_id?: number; quote_content?: string | undefined}): {
+function get_quote_target_for_single_message(opts: {
+    message_id?: number;
+    quote_content?: string | undefined;
+}): {
     message_id: number;
     message: Message;
     quote_content: string | undefined;
@@ -216,11 +230,11 @@ function get_quote_target_for_single_message(opts: {message_id?: number; quote_c
         }
     } else {
         // If triggered via hotkey
-        const highlighted_msg_id = get_highlighted_message_id();
-        if (highlighted_msg_id) {
+        const highlighted_message_ids = get_highlighted_message_ids();
+        if (highlighted_message_ids) {
             // If the current content selection is entirely within a message,
             // we quote that selection.
-            message_id = highlighted_msg_id;
+            message_id = util.the(highlighted_message_ids);
             quote_content = get_message_selection();
         } else {
             // Else we pick the currently focused message.
@@ -326,8 +340,18 @@ function replace_content(message: Message, raw_content: string, opts: QuoteMessa
     }
 }
 
+function is_quoting_single_message(opts: QuoteMessageOpts): boolean {
+    if (opts.message_id) {
+        return true;
+    }
+    const highlighted_message_ids = get_highlighted_message_ids();
+    return highlighted_message_ids === undefined || highlighted_message_ids.length === 1;
+}
+
 export function quote_message(opts: QuoteMessageOpts): void {
-    quote_single_message(opts);
+    if (is_quoting_single_message(opts)) {
+        quote_single_message(opts);
+    }
 }
 
 function quote_single_message(opts: QuoteMessageOpts): void {

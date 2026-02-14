@@ -102,7 +102,12 @@ export function initialize({
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
             let quote_content: string | undefined;
-            if (compose_reply.get_highlighted_message_id() === message_id) {
+            const highlighted_message_ids = compose_reply.get_highlighted_message_ids();
+            if (
+                highlighted_message_ids &&
+                highlighted_message_ids?.length === 1 &&
+                highlighted_message_ids[0] === message_id
+            ) {
                 // If the user has selected text within this message, quote only that.
                 // We track the selection right now, before the popover option for Quote
                 // and reply is clicked, since by then the selection is lost, due to the
