@@ -886,7 +886,7 @@ test("people_suggestions", ({override}) => {
 
     let expected = [
         "te",
-        `dm:${bob.user_id}`, // bob térry
+        `dm:${bob.user_id}`,
         `dm:${ted.user_id}`,
         `sender:${bob.user_id}`,
         `sender:${ted.user_id}`,
@@ -987,5 +987,61 @@ test("queries_with_spaces", () => {
     query = 'channel:"dev h';
     suggestions = get_suggestions(query);
     expected = [`channel:${dev_help_id}`];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("people_suggestion_sorting", ({override}) => {
+    override(narrow_state, "stream_id", () => undefined);
+
+    const active_user = {
+        email: "active@zulip.com",
+        user_id: 998,
+        full_name: "User A",
+    };
+    people.add_active_user(active_user);
+
+    const deactivated_user = {
+        email: "deactivate@zulip.com",
+        user_id: 999,
+        full_name: "User B",
+    };
+    people._add_user(deactivated_user);
+    people.deactivate(deactivated_user);
+
+    let query = "user";
+    let suggestions = get_suggestions(query);
+    let expected = [
+        "user",
+        "dm:998",
+        "dm:999",
+        "sender:998",
+        "sender:999",
+        "dm-including:998",
+        "dm-including:999",
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // test with 3 users
+    const another_active_user = {
+        email: "another@zulip.com",
+        user_id: 1000,
+        full_name: "User C",
+    };
+    people.add_active_user(another_active_user);
+
+    query = "user";
+    suggestions = get_suggestions(query);
+    expected = [
+        "user",
+        "dm:998",
+        "dm:1000",
+        "dm:999",
+        "sender:998",
+        "sender:1000",
+        "sender:999",
+        "dm-including:998",
+        "dm-including:1000",
+        "dm-including:999",
+    ];
     assert.deepEqual(suggestions, expected);
 });
