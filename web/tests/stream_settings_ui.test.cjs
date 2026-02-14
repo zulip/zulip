@@ -366,7 +366,8 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         [utopia, abcd, denmark, jerry],
     );
 
-    // active stream-row is not included in results
+    // When the active stream-row is hidden by filters, the right
+    // panel is cleared and the row is deselected.
     $(".stream-row-denmark").addClass("active");
     $(".stream-row.active").hasClass = (cls) => {
         assert.equal(cls, "notdisplayed");
@@ -378,9 +379,15 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
     };
 
     test_filter({input: "d", show_subscribed: true}, [poland]);
-    assert.ok($(".stream-row-denmark").hasClass("active"));
+    // Denmark is hidden by the filter, so it should be deselected
+    // and the right panel cleared.
+    assert.ok(!$(".stream-row-denmark").hasClass("active"));
+    assert.ok(!$(".right .settings").visible());
+    assert.ok($(".nothing-selected").visible());
 
-    $(".stream-row.active").attr("data-stream-id", 101);
+    // Same behavior when triggered via tab switch.
+    $(".stream-row-denmark").addClass("active");
+    $(".stream-row.active").attr("data-stream-id", denmark.stream_id);
     stream_settings_ui.switch_stream_tab("subscribed");
     assert.ok(!$(".stream-row-denmark").hasClass("active"));
     assert.ok(!$(".right .settings").visible());
