@@ -25,6 +25,7 @@ import * as rows from "./rows.ts";
 import * as stream_data from "./stream_data.ts";
 import * as unread_ops from "./unread_ops.ts";
 import * as util from "./util.ts";
+import * as message_fetch from './message_fetch.ts'
 
 type QuoteMessageOpts = {
     message_id?: number;
@@ -353,6 +354,59 @@ export function quote_message(opts: QuoteMessageOpts): void {
         quote_single_message(opts);
     }
 }
+
+type QuoteAsset = {
+    message:Message,
+    quote_content:string
+}
+
+async function maybe_hydrate_messages_with_raw_content(message_ids:number[]){
+    const message_ids_with_missing_raw_content = message_ids.filter((id)=>{
+        const message = message_store.get(id);
+        if(message?.raw_content){
+            return false;
+        }
+        return true;
+    })
+
+    if(message_ids_with_missing_raw_content.length === 0)return;
+
+    await channel.get({
+        url: "/json/messages/",
+        data: {allow_empty_topic_name: true, apply_markdown: false, message_ids:message_ids_with_missing_raw_content},
+        success(raw_data) {
+            const data = message_fetch.response_schema.parse(raw_data);
+            for(const raw_message of data.messages){
+                const cached_message = message_store.get(raw_message.id);
+                const fetched_message = single_message_content_schema.shape.message.parse(raw_message)
+                assert(cached_message!== undefined && fetched_message.content_type === "text/x-markdown");
+                message_store.maybe_update_raw_content(cached_message, fetched_message.content);
+            }
+        },
+        timeout:1000
+    });
+}
+
+async function get_quote_assets_for_highlighted_messages(highlighted_msg_ids:number[]){
+    const quote_assets:QuoteAsset[] = []
+    await maybe_hydrate_messages_with_raw_content(highlighted_msg_ids)
+    for(const id of highlighted_msg_ids){
+        const cached_message = message_store.get(id);
+        assert(cached_message!==undefined)
+        if(cached_message.raw_content){
+            quote_assets.push({
+                message:cached_message, quote_content:cached_message.raw_content, 
+            });
+        }else{
+            // Fallback to using markdown obtained by local turndown setup.
+            quote_assets.push({
+                message:cached_message, quote_content:compose_paste.paste_handler_converter(cached_message.content), 
+            })
+        }
+    }
+    return quote_assets
+}
+
 
 function quote_single_message(opts: QuoteMessageOpts): void {
     const {message_id, message, quote_content} = get_quote_target_for_single_message(opts);
