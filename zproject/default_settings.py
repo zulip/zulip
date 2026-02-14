@@ -170,6 +170,7 @@ S3_UPLOADS_STORAGE_CLASS: Literal[
 ] = "STANDARD"
 S3_AVATAR_PUBLIC_URL_PREFIX: str | None = None
 S3_SKIP_CHECKSUM: bool = False
+S3_SIGNATURE_VERSION: Literal["s3v4", "s3"] | None = None
 LOCAL_UPLOADS_DIR: str | None = None
 LOCAL_AVATARS_DIR: str | None = None
 LOCAL_FILES_DIR: str | None = None
