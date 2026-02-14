@@ -112,6 +112,7 @@ export function confirm_bot_deactivation(
         html_submit_button: $t_html({defaultMessage: "Deactivate"}),
         on_click: handle_confirm,
         loading_spinner,
+        focus_submit_on_open: true,
     });
 }
 
