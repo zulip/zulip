@@ -417,6 +417,13 @@ run_test("stream-links", ({mock_template}) => {
     $stream.set_find_results(".highlight", false);
     $stream.attr("data-stream-id", stream.stream_id);
 
+    // Capture the prepended icon
+    let prepended_icon = null;
+    $stream.prepend = (icon) => {
+        prepended_icon = icon;
+        return $stream;
+    };
+
     const $stream_topic = $.create("a.stream-topic");
     $stream_topic.set_find_results(".highlight", false);
     $stream_topic.attr(
@@ -445,7 +452,16 @@ run_test("stream-links", ({mock_template}) => {
     rm.update_elements($content);
 
     // Final asserts
-    assert.equal($stream.text(), `#${stream.name}`);
+    assert.equal($stream.text(), stream.name);
+
+    // Verify correct icon (Hashtag) was prepended
+    assert.ok(prepended_icon, "Icon should be prepended");
+    assert.ok(
+        prepended_icon.hasClass("zulip-icon-hashtag"),
+        "Should have hashtag icon for public stream",
+    );
+    assert.ok(prepended_icon.hasClass("channel-privacy-type-icon"), "Should have sizing class");
+
     assert.deepEqual(topic_link_context, {
         channel_id: stream.stream_id,
         channel_name: stream.name,
@@ -828,6 +844,188 @@ run_test("code playground multiple", ({override, mock_template}) => {
     assert.equal($view_code.attr("data-tippy-content"), "translated: View in playground");
     assert.equal($view_code.attr("aria-label"), "translated: View in playground");
     assert.equal($view_code.attr("aria-haspopup"), "true");
+});
+
+run_test("stream-private", ({mock_template}) => {
+    // Setup
+    const private_stream = {
+        stream_id: 88,
+        name: "secret-stream",
+        invite_only: true,
+        is_web_public: false,
+        is_archived: false,
+    };
+    stream_data.add_sub_for_tests(private_stream);
+
+    const $content = get_content_element();
+    const $stream = $.create("a.stream");
+    $stream.attr("data-stream-id", private_stream.stream_id);
+    $stream.set_find_results(".highlight", false);
+
+    // Capture the prepended icon
+    let prepended_stream_icon = null;
+    $stream.prepend = (icon) => {
+        prepended_stream_icon = icon;
+        return $stream;
+    };
+
+    const $topic = $.create("a.stream-topic");
+    $topic.attr("href", `/#narrow/channel/${private_stream.stream_id}-secret-stream/topic/test`);
+    $topic.set_find_results(".highlight", false);
+    $topic.hasClass = (class_name) => class_name === "stream-topic";
+
+    let $replaced_topic;
+    $topic.replaceWith = ($new_elem) => {
+        $replaced_topic = $new_elem;
+    };
+
+    $content.set_find_results("a.stream", $array([$stream]));
+    $content.set_find_results("a.stream-topic, a.message-link", $array([$topic]));
+
+    mock_template(
+        "topic_link.hbs",
+        true,
+        () => '<a class="stream-topic">#secret-stream > test</a>',
+    );
+
+    rm.update_elements($content);
+
+    // Final asserts
+    assert.equal($stream.text(), private_stream.name);
+
+    // Verify correct icon (Lock) was prepended
+    assert.ok(prepended_stream_icon, "Stream icon should be prepended");
+    assert.ok(prepended_stream_icon.hasClass("zulip-icon-lock"), "Should have lock icon");
+    assert.ok(
+        prepended_stream_icon.hasClass("channel-privacy-type-icon"),
+        "Should have sizing class",
+    );
+
+    assert.ok($replaced_topic, "Topic link should be replaced");
+    const topic_text = $replaced_topic.text().trim();
+    assert.ok(!topic_text.startsWith("#"), "Topic should not start with #");
+    assert.equal(topic_text, "secret-stream > test");
+});
+
+run_test("stream-web-public", ({mock_template}) => {
+    // Setup
+    const web_public_stream = {
+        stream_id: 99,
+        name: "web-public-stream",
+        invite_only: false,
+        is_web_public: true,
+        is_archived: false,
+    };
+    stream_data.add_sub_for_tests(web_public_stream);
+
+    const $content = get_content_element();
+    const $stream = $.create("a.stream");
+    $stream.attr("data-stream-id", web_public_stream.stream_id);
+    $stream.set_find_results(".highlight", false);
+
+    // Capture the prepended icon
+    let prepended_stream_icon = null;
+    $stream.prepend = (icon) => {
+        prepended_stream_icon = icon;
+        return $stream;
+    };
+
+    const $topic = $.create("a.stream-topic");
+    $topic.attr(
+        "href",
+        `/#narrow/channel/${web_public_stream.stream_id}-web-public-stream/topic/test`,
+    );
+    $topic.set_find_results(".highlight", false);
+    $topic.hasClass = (class_name) => class_name === "stream-topic";
+
+    let $replaced_topic;
+    $topic.replaceWith = ($new_elem) => {
+        $replaced_topic = $new_elem;
+    };
+
+    $content.set_find_results("a.stream", $array([$stream]));
+    $content.set_find_results("a.stream-topic, a.message-link", $array([$topic]));
+
+    mock_template(
+        "topic_link.hbs",
+        true,
+        () => '<a class="stream-topic">#web-public-stream > test</a>',
+    );
+
+    rm.update_elements($content);
+
+    // Final asserts
+    assert.equal($stream.text(), web_public_stream.name);
+
+    // Verify correct icon (Globe) was prepended
+    assert.ok(prepended_stream_icon, "Stream icon should be prepended");
+    assert.ok(prepended_stream_icon.hasClass("zulip-icon-globe"), "Should have globe icon");
+    assert.ok(
+        prepended_stream_icon.hasClass("channel-privacy-type-icon"),
+        "Should have sizing class",
+    );
+
+    assert.ok($replaced_topic, "Topic link should be replaced");
+    const topic_text = $replaced_topic.text().trim();
+    assert.ok(!topic_text.startsWith("#"), "Topic should not start with #");
+    assert.equal(topic_text, "web-public-stream > test");
+});
+
+run_test("stream-archived", ({mock_template}) => {
+    // Setup
+    const archived_stream = {
+        stream_id: 77,
+        name: "old-stream",
+        invite_only: false,
+        is_web_public: false,
+        is_archived: true,
+    };
+    stream_data.add_sub_for_tests(archived_stream);
+
+    const $content = get_content_element();
+    const $stream = $.create("a.stream");
+    $stream.attr("data-stream-id", archived_stream.stream_id);
+    $stream.set_find_results(".highlight", false);
+
+    // Capture the prepended icon
+    let prepended_stream_icon = null;
+    $stream.prepend = (icon) => {
+        prepended_stream_icon = icon;
+        return $stream;
+    };
+
+    const $topic = $.create("a.stream-topic");
+    $topic.attr("href", `/#narrow/channel/${archived_stream.stream_id}-old-stream/topic/test`);
+    $topic.set_find_results(".highlight", false);
+    $topic.hasClass = (class_name) => class_name === "stream-topic";
+
+    let $replaced_topic;
+    $topic.replaceWith = ($new_elem) => {
+        $replaced_topic = $new_elem;
+    };
+
+    $content.set_find_results("a.stream", $array([$stream]));
+    $content.set_find_results("a.stream-topic, a.message-link", $array([$topic]));
+
+    mock_template("topic_link.hbs", true, () => '<a class="stream-topic">#old-stream > test</a>');
+
+    rm.update_elements($content);
+
+    // Final asserts
+    assert.equal($stream.text(), archived_stream.name);
+
+    // Verify correct icon (Archive) was prepended
+    assert.ok(prepended_stream_icon, "Stream icon should be prepended");
+    assert.ok(prepended_stream_icon.hasClass("zulip-icon-archive"), "Should have archive icon");
+    assert.ok(
+        prepended_stream_icon.hasClass("channel-privacy-type-icon"),
+        "Should have sizing class",
+    );
+
+    assert.ok($replaced_topic, "Topic link should be replaced");
+    const topic_text = $replaced_topic.text().trim();
+    assert.ok(!topic_text.startsWith("#"), "Topic should not start with #");
+    assert.equal(topic_text, "old-stream > test");
 });
 
 run_test("rtl", () => {
