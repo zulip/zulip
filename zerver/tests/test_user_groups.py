@@ -775,6 +775,48 @@ class UserGroupTestCase(ZulipTestCase):
         with self.assertRaises(JsonableError):
             user_group_ids_to_user_groups([hamletcharacters_group.id, admins_group.id], realm)
 
+    def test_get_user_group_members_openapi_coverage(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        self.login_user(iago)
+
+        user_group = self.create_user_group_for_test("test_group", acting_user=iago)
+        UserGroupMembership.objects.create(user_profile=hamlet, user_group=user_group)
+
+        result = self.api_get(
+            iago,
+            f"/api/v1/user_groups/{user_group.id}/members",
+        )
+
+        self.assert_json_success(result)
+        result_dict = orjson.loads(result.content)
+
+        self.assertIn("members", result_dict)
+        self.assertIsInstance(result_dict["members"], list)
+
+
+def test_get_subgroups_of_user_group_openapi_coverage(self: UserGroupTestCase) -> None:
+    iago = self.example_user("iago")
+
+    self.login_user(iago)
+
+    parent_group = check_add_user_group(get_realm("zulip"), "parent_group", [], acting_user=iago)
+    child_group = check_add_user_group(get_realm("zulip"), "child_group", [], acting_user=iago)
+
+    GroupGroupMembership.objects.create(supergroup=parent_group, subgroup=child_group)
+
+    result = self.api_get(
+        iago,
+        f"/api/v1/user_groups/{parent_group.id}/subgroups",
+    )
+
+    self.assert_json_success(result)
+    result_dict = orjson.loads(result.content)
+
+    self.assertIn("subgroups", result_dict)
+    self.assertIsInstance(result_dict["subgroups"], list)
+
 
 class UserGroupAPITestCase(UserGroupTestCase):
     def test_user_group_create(self) -> None:
