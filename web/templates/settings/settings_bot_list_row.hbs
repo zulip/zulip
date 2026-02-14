@@ -20,7 +20,9 @@
     <td class="bot_type">
         <span class="bot type">{{bot_type}}</span>
     </td>
+    {{#if show_actions_column}}
     <td class="actions">
+        {{#if show_actions_for_this_row}}
         <span class="user-status-settings">
             {{#if show_download_zuliprc_button}}
             <a type="submit" download="zuliprc" data-user-id="{{user_id}}" class="hidden-zuliprc-download" hidden></a>
@@ -41,8 +43,9 @@
                   }}
             </span>
             {{/if}}
-            <span class="{{#if cannot_edit}}tippy-zulip-tooltip{{else}}tippy-zulip-delayed-tooltip{{/if}}"
-              {{#if cannot_edit}}
+            {{#if show_edit_button}}
+            <span class="{{#if is_system_bot}}tippy-zulip-tooltip{{else}}tippy-zulip-delayed-tooltip{{/if}}"
+              {{#if is_system_bot}}
               data-tippy-content="{{t 'This bot cannot be managed.'}}"
               {{else}}
               data-tippy-content="{{t 'Manage bot'}}"
@@ -51,28 +54,35 @@
                   icon="user-cog"
                   intent="neutral"
                   custom_classes="open-user-form manage-user-button"
-                  disabled=cannot_edit
-                  }}
-            </span>
-            {{#if is_active}}
-            <span class="deactivate-bot-tooltip {{#if cannot_deactivate}}tippy-zulip-tooltip{{/if}}"
-              {{#if cannot_deactivate}}data-tippy-content="{{t 'This bot cannot be deactivated.'}}"{{/if}}>
-                {{> ../components/icon_button
-                  icon="user-x"
-                  intent="danger"
-                  custom_classes="deactivate"
-                  disabled=cannot_deactivate
-                  }}
-            </span>
-            {{else}}
-            <span class="reactivate-bot-tooltip">
-                {{> ../components/icon_button
-                  icon="user-plus"
-                  intent="success"
-                  custom_classes="reactivate"
+                  disabled=is_system_bot
                   }}
             </span>
             {{/if}}
+            {{#if show_deactivate_or_reactivate_button}}
+                {{#if is_active}}
+                <span class="deactivate-bot-tooltip {{#if is_system_bot}}tippy-zulip-tooltip{{/if}}"
+                  {{#if is_system_bot}}data-tippy-content="{{t 'This bot cannot be deactivated.'}}"{{/if}}>
+                    {{> ../components/icon_button
+                      icon="user-x"
+                      intent="danger"
+                      custom_classes="deactivate"
+                      disabled=is_system_bot
+                      }}
+                </span>
+                {{else}}
+                <span class="reactivate-bot-tooltip {{#if is_system_bot}}tippy-zulip-tooltip{{/if}}"
+                  {{#if is_system_bot}}data-tippy-content="{{t 'This bot cannot be reactivated.'}}"{{/if}}>
+                    {{> ../components/icon_button
+                      icon="user-plus"
+                      intent="success"
+                      custom_classes="reactivate"
+                      disabled=is_system_bot
+                      }}
+                </span>
+                {{/if}}
+            {{/if}}
         </span>
+        {{/if}}
     </td>
+    {{/if}}
 </tr>
