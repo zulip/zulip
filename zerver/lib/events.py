@@ -1532,6 +1532,13 @@ def apply_event(
                     state["max_file_upload_size_mib"] = value
                     continue
 
+                if key == "rendered_description":
+                    # realm_rendered_description field is not included in
+                    # the state data returned by fetch_initial_state_data,
+                    # and is added separately to the page_params data
+                    # returned to clients in build_page_params_for_home_load.
+                    continue
+
                 state["realm_" + key] = value
                 # It's a bit messy, but this is where we need to
                 # update the state for whether password authentication

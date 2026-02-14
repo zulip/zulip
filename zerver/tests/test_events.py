@@ -4476,6 +4476,7 @@ class RealmPropertyActionTest(BaseAction):
                 "allow_message_editing",
                 "message_content_edit_limit_seconds",
                 "topics_policy",
+                "description",
             ]:
                 check_realm_update_dict("events[0]", events[0])
             else:

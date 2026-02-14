@@ -119,6 +119,7 @@ from zerver.lib.event_types import (
     PersonRole,
     PersonTimezone,
     PlanTypeData,
+    RealmDescriptionData,
     RealmTopicsPolicyData,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
@@ -465,10 +466,6 @@ def check_realm_update(
     assert prop == event["property"]
     value = event["value"]
 
-    if prop == "description":
-        assert "rendered_description" in event
-        assert isinstance(event["rendered_description"], str)
-
     if prop in [
         "moderation_request_channel_id",
         "new_stream_announcements_stream_id",
@@ -531,6 +528,8 @@ def check_realm_update_dict(
             sub_type = PlanTypeData
         elif "topics_policy" in event["data"]:
             sub_type = RealmTopicsPolicyData
+        elif "description" in event["data"]:
+            sub_type = RealmDescriptionData
         else:
             raise AssertionError("unhandled fields in data")
 

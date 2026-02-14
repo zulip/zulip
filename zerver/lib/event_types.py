@@ -586,6 +586,11 @@ class RealmTopicsPolicyData(BaseModel):
     mandatory_topics: bool
 
 
+class RealmDescriptionData(BaseModel):
+    description: str
+    rendered_description: str
+
+
 class NightLogoData(BaseModel):
     night_logo_url: str
     night_logo_source: str
