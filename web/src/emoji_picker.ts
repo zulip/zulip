@@ -128,13 +128,13 @@ class UserStatusSession {
         out to user_status_ui.
     */
 
-    update_the_status_emoji_for_our_user(emoji_name: string): void {
+    update_the_status_emoji_for_our_user(emoji_name: string, include_emoji_details = false): void {
         // THIS IS THE MAIN POINT OF THE EXERCISE!
         let emoji_info = {
             emoji_name,
             emoji_alt_code: user_settings.emojiset === "text",
         };
-        if (!emoji_info.emoji_alt_code) {
+        if (include_emoji_details) {
             emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
         }
         user_status_ui.set_selected_emoji_info(emoji_info);
@@ -878,7 +878,7 @@ function toggle_emoji_popover(
 function handle_status_emoji_clicked(emoji_name: string): void {
     const user_status_session = session_manager.user_status_session;
     assert(user_status_session);
-    user_status_session.update_the_status_emoji_for_our_user(emoji_name);
+    user_status_session.update_the_status_emoji_for_our_user(emoji_name, true);
     hide_emoji_popover();
 }
 
