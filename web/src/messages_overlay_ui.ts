@@ -51,18 +51,50 @@ export function focus_on_sibling_element(context: Context): void {
 }
 
 export function modals_handle_events(event_key: string, context: Context): void {
+    const had_focus = row_with_focus(context).length > 0;
     initialize_focus(event_key, context);
+    const has_focus = row_with_focus(context).length > 0;
 
     // This detects up arrow key presses when the overlay
     // is open and scrolls through.
     if (event_key === "up_arrow" || event_key === "vim_up") {
-        scroll_to_element(row_before_focus(context), context);
+        if (has_focus) {
+            if (!had_focus) {
+                scroll_to_element(row_with_focus(context), context);
+            } else {
+                const $focused_row = row_with_focus(context);
+                const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
+                if (should_scroll_within_row($focused_row, $items_list, -1)) {
+                    // Keep the scroll behavior symmetric with the down-arrow path
+                    // to avoid jumpy upward scrolling for tall rows.
+                    scroll_list_by_arrow(context, -1);
+                } else {
+                    scroll_to_element(row_before_focus(context), context);
+                }
+            }
+        } else {
+            scroll_list_by_arrow(context, -1);
+        }
     }
 
     // This detects down arrow key presses when the overlay
     // is open and scrolls through.
     if (event_key === "down_arrow" || event_key === "vim_down") {
-        scroll_to_element(row_after_focus(context), context);
+        if (has_focus) {
+            if (!had_focus) {
+                scroll_to_element(row_with_focus(context), context);
+            } else {
+                const $focused_row = row_with_focus(context);
+                const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
+                if (should_scroll_within_row($focused_row, $items_list, 1)) {
+                    scroll_list_by_arrow(context, 1);
+                } else {
+                    scroll_to_element(row_after_focus(context), context);
+                }
+            }
+        } else {
+            scroll_list_by_arrow(context, 1);
+        }
     }
 
     if (event_key === "backspace" || event_key === "delete") {
@@ -72,6 +104,53 @@ export function modals_handle_events(event_key: string, context: Context): void 
     if (event_key === "enter") {
         context.on_enter();
     }
+}
+
+function scroll_list_by_arrow(context: Context, direction: -1 | 1): void {
+    const active_element = document.activeElement;
+    if (
+        active_element instanceof HTMLElement &&
+        (active_element.tagName === "INPUT" ||
+            active_element.tagName === "TEXTAREA" ||
+            active_element.isContentEditable)
+    ) {
+        return;
+    }
+
+    const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
+    if ($items_list.length === 0) {
+        return;
+    }
+
+    const $scroll_element = scroll_util.get_scroll_element($items_list);
+    const scroll_element = util.the($scroll_element);
+    const step = Math.max(32, Math.round(scroll_element.clientHeight * 0.1));
+    const prefers_reduced_motion =
+        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const behavior: ScrollBehavior = prefers_reduced_motion ? "auto" : "smooth";
+    scroll_element.scrollBy({top: direction * step, behavior});
+}
+
+function should_scroll_within_row($row: JQuery, $items_list: JQuery, direction: -1 | 1): boolean {
+    if ($row.length === 0 || $items_list.length === 0) {
+        return false;
+    }
+
+    const scroll_element = util.the(scroll_util.get_scroll_element($items_list));
+    const view_rect = scroll_element.getBoundingClientRect();
+    const row_rect = util.the($row).getBoundingClientRect();
+    const view_height = view_rect.bottom - view_rect.top;
+
+    if (row_rect.height <= view_height) {
+        return false;
+    }
+
+    const PADDING_BOTTOM = 12;
+    const PADDING_TOP = 4;
+    if (direction === 1) {
+        return row_rect.bottom > view_rect.bottom + PADDING_BOTTOM;
+    }
+    return row_rect.top < view_rect.top - PADDING_TOP;
 }
 
 export function set_initial_element(element_id: string | undefined, context: Context): void {
@@ -154,34 +233,63 @@ function scroll_to_element($element: JQuery, context: Context): void {
     activate_element($element[0].children[0], context);
 
     const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
-    const $items_container = $(`.${CSS.escape(context.items_container_selector)}`);
     const $box_item = $(`.${CSS.escape(context.box_item_selector)}`);
+    const $scroll_element = scroll_util.get_scroll_element($items_list);
+    const scroll_element = util.the($scroll_element);
+    const prefers_reduced_motion =
+        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const behavior: ScrollBehavior = prefers_reduced_motion ? "auto" : "smooth";
+    const section_id = $element.parent().attr("id");
+    const is_first_in_section =
+        $element.parent().children().first()[0] !== undefined &&
+        $element.parent().children().first()[0] === $element[0];
+    const is_section_boundary =
+        (section_id === "drafts-from-conversation" || section_id === "other-drafts") &&
+        is_first_in_section;
+
+    // When crossing between draft sections, align the first row of the new section
+    // to the top of the list so navigation starts from the beginning, not the end.
+    if (is_section_boundary) {
+        const view_top = scroll_element.getBoundingClientRect().top;
+        const elem_top = $element[0].getBoundingClientRect().top;
+        const delta = elem_top - view_top;
+        if (Math.abs(delta) > 2) {
+            scroll_element.scrollTo({top: scroll_element.scrollTop + delta, behavior});
+        }
+        return;
+    }
 
     // If focused element is first, scroll to the top.
     if (util.the($box_item.first()).parentElement === $element[0]) {
-        util.the($items_list).scrollTop = 0;
+        const view_rect = scroll_element.getBoundingClientRect();
+        const row_rect = $element[0].getBoundingClientRect();
+        const view_height = view_rect.bottom - view_rect.top;
+        if (row_rect.height > view_height) {
+            const delta = row_rect.bottom - view_rect.bottom;
+            scroll_element.scrollTo({top: scroll_element.scrollTop + delta, behavior});
+        } else {
+            scroll_element.scrollTo({top: 0, behavior});
+        }
+        return;
     }
-
     // If focused element is last, scroll to the bottom.
     if (util.the($box_item.last()).parentElement === $element[0]) {
-        util.the($items_list).scrollTop =
-            util.the($items_list).scrollHeight - ($items_list.height() ?? 0);
+        const view_rect = scroll_element.getBoundingClientRect();
+        const row_rect = $element[0].getBoundingClientRect();
+        const view_height = view_rect.bottom - view_rect.top;
+        if (row_rect.height > view_height) {
+            const delta = row_rect.top - view_rect.top;
+            scroll_element.scrollTo({top: scroll_element.scrollTop + delta, behavior});
+        } else {
+            scroll_element.scrollTo({
+                top: scroll_element.scrollHeight - scroll_element.clientHeight,
+                behavior,
+            });
+        }
+        return;
     }
 
-    // If focused element is cut off from the top, scroll up halfway in modal.
-    if ($element.position().top < 55) {
-        // 55 is the minimum distance from the top that will require extra scrolling.
-        util.the($items_list).scrollTop -= util.the($items_list).clientHeight / 2;
-    }
-
-    // If focused element is cut off from the bottom, scroll down halfway in modal.
-    const dist_from_top = $element.position().top;
-    const total_dist = dist_from_top + $element[0].clientHeight;
-    const dist_from_bottom = util.the($items_container).clientHeight - total_dist;
-    if (dist_from_bottom < -4) {
-        // -4 is the min dist from the bottom that will require extra scrolling.
-        util.the($items_list).scrollTop += util.the($items_list).clientHeight / 2;
-    }
+    scroll_util.scroll_element_into_container($element, $items_list);
 }
 
 function get_element_by_id(id: string, context: Context): JQuery {
