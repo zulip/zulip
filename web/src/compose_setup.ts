@@ -682,9 +682,34 @@ export function initialize(): void {
         $compose_recipient.addClass("recently-focused");
     });
 
+    // Shake animation when topic hits character limit
+    function shake_topic_input(): void {
+        const $topic_input = $("input#stream_message_recipient_topic");
+        $topic_input.removeClass("shake");
+        // Force browser to register removal before re-adding
+        setTimeout(() => {
+            $topic_input.addClass("shake");
+        }, 10);
+    }
+
+    function check_topic_limit_and_shake(): void {
+        const $topic_input = $("input#stream_message_recipient_topic");
+        const max_length = $topic_input.attr("maxlength");
+        const current_length = $topic_input.val()?.toString().length ?? 0;
+        if (max_length && current_length >= Number(max_length)) {
+            shake_topic_input();
+        }
+    }
+
     $("input#stream_message_recipient_topic").on("input", () => {
         compose_recipient.update_placeholder_visibility();
         compose_recipient.update_compose_area_placeholder_text();
+        check_topic_limit_and_shake();
+    });
+
+    // Trigger shake on paste (setTimeout needed because paste fires before value updates)
+    $("input#stream_message_recipient_topic").on("paste", () => {
+        setTimeout(check_topic_limit_and_shake, 0);
     });
 
     $("#private_message_recipient").on("focus", () => {
