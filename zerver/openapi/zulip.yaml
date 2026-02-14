@@ -4427,11 +4427,15 @@ paths:
                                 events into the corresponding [realm/update_dict](#realm-update_dict)
                                 event and then process that.
 
-                                **Changes**: Removed `extra_data` optional property in Zulip 10.0
-                                (feature level 306). The `extra_data` used to include an
-                                `upload_quota` field when changed property was `plan_type`. The
-                                server now sends a standard `realm/update_dict` event for plan
-                                changes.
+                                **Changes**: Removed `rendered_description` property in Zulip 12.0
+                                (feature level ZF-b3337) that was present only when `description`
+                                was changed. The server now sends a standard `realm/update_dict`
+                                event when updating `description`.
+
+                                Removed `extra_data` optional property in Zulip 10.0 (feature level 306).
+                                The `extra_data` used to include an `upload_quota` field when changed
+                                property was `plan_type`. The server now sends a standard
+                                `realm/update_dict` event for plan changes.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4456,21 +4460,6 @@ paths:
                                     - type: boolean
                                     - type: integer
                                       nullable: true
-                                rendered_description:
-                                  type: string
-                                  description: |
-                                    Note: Only present if the changed property was `description`.
-
-                                    The organization description rendered as HTML, intended to
-                                    be used when displaying the organization description in a UI.
-
-                                    One should use the standard Zulip rendered_markdown CSS when
-                                    displaying this content so that emoji, LaTeX, and other syntax
-                                    work correctly. And any client-side security logic for
-                                    user-generated message content should be applied when displaying
-                                    this HTML as though it were the body of a Zulip message.
-
-                                    **Changes**: New in Zulip 12.0 (feature level 462).
                               example:
                                 {
                                   "type": "realm",
@@ -5419,6 +5408,22 @@ paths:
                                         indicated timestamp is near.
 
                                         **Changes**: New in Zulip 8.0 (feature level 231).
+                                    rendered_description:
+                                      type: string
+                                      description: |
+                                        Note: Only present if the changed property was `description`.
+
+                                        The organization description rendered as HTML, intended to
+                                        be used when displaying the organization description in a UI.
+
+                                        One should use the standard Zulip rendered_markdown CSS when
+                                        displaying this content so that emoji, LaTeX, and other syntax
+                                        work correctly. And any client-side security logic for
+                                        user-generated message content should be applied when displaying
+                                        this HTML as though it were the body of a Zulip message.
+
+                                        **Changes**: New in Zulip 12.0 (feature level ZF-b3337d). Previously
+                                        `update` event was sent when updating `description`.
                                     require_e2ee_push_notifications:
                                       type: boolean
                                       description: |

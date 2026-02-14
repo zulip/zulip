@@ -215,10 +215,12 @@ class RealmTest(ZulipTestCase):
             event,
             dict(
                 type="realm",
-                op="update",
-                property="description",
-                value=new_description,
-                rendered_description=f"<p>{new_description}</p>",
+                op="update_dict",
+                property="default",
+                data={
+                    "description": new_description,
+                    "rendered_description": f"<p>{new_description}</p>",
+                },
             ),
         )
 
@@ -237,10 +239,12 @@ class RealmTest(ZulipTestCase):
             event,
             dict(
                 type="realm",
-                op="update",
-                property="description",
-                value=new_description,
-                rendered_description=f"<p>{new_description}</p>",
+                op="update_dict",
+                property="default",
+                data={
+                    "description": new_description,
+                    "rendered_description": f"<p>{new_description}</p>",
+                },
             ),
         )
 

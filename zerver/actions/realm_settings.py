@@ -102,9 +102,6 @@ def do_set_realm_property(
         value=value,
     )
 
-    if name == "description":
-        event["rendered_description"] = realm.rendered_description
-
     # These settings have a different event format due to their history.
     message_edit_settings = [
         "allow_message_editing",
@@ -132,6 +129,16 @@ def do_set_realm_property(
             data={
                 name: RealmTopicsPolicyEnum(value).name,
                 "mandatory_topics": value == RealmTopicsPolicyEnum.disable_empty_topic.value,
+            },
+        )
+    if name == "description":
+        event = dict(
+            type="realm",
+            op="update_dict",
+            property="default",
+            data={
+                "description": realm.description,
+                "rendered_description": realm.rendered_description,
             },
         )
 
