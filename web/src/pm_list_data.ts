@@ -35,6 +35,10 @@ export function get_active_user_ids_string(): string | undefined {
     return people.sorted_other_user_ids(user_ids).join(",");
 }
 
+export type PMListConversation = {
+    user_ids_string: string;
+};
+
 export type DisplayObject = {
     recipients: string;
     user_ids_string: string;
