@@ -65,7 +65,7 @@ def get_bucket(bucket_name: str, authed: bool = True) -> "Bucket":
         region_name=settings.S3_REGION,
         endpoint_url=settings.S3_ENDPOINT_URL,
         config=Config(
-            signature_version=None if authed else botocore.UNSIGNED,
+            signature_version=settings.S3_SIGNATURE_VERSION if authed else botocore.UNSIGNED,
             s3={"addressing_style": settings.S3_ADDRESSING_STYLE},
             request_checksum_calculation=checksum,
         ),
