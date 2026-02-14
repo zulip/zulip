@@ -1132,6 +1132,10 @@ input[type="checkbox"] {
         }
     }
 
+    td.follow_topic_with_alert_word_cell {
+        padding-left: 85px;
+    }
+
     .alert_word_listing .value {
         overflow-wrap: break-word;
         word-break: break-all;

@@ -14,7 +14,10 @@ const alert_words_ui = zrequire("alert_words_ui");
 const banners = mock_esm("../src/banners");
 
 alert_words.initialize({
-    alert_words: ["foo", "bar"],
+    alert_words: [
+        {word: "foo", automatically_follow_topics: true},
+        {word: "bar", automatically_follow_topics: false},
+    ],
 });
 
 run_test("rerender_alert_words_ui", ({mock_template}) => {
@@ -33,8 +36,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
     });
 
     mock_template("settings/alert_word_settings_item.hbs", true, (args, html) => {
-        assert.ok(["foo", "bar"].includes(args.alert_word.word));
-        // do a super easy sanity check
+        assert.ok(["foo", "bar"].includes(args.word));
         assert.ok(html.includes("alert_word_listing"));
     });
 

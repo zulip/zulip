@@ -23,9 +23,14 @@ class BaseEvent(BaseModel):
     id: int
 
 
+class AlertWordData(BaseModel):
+    word: str
+    automatically_follow_topics: bool
+
+
 class EventAlertWords(BaseEvent):
     type: Literal["alert_words"]
-    alert_words: list[str]
+    alert_words: list[str | AlertWordData]
 
 
 class AttachmentMessage(BaseModel):

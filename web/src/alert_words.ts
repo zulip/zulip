@@ -1,13 +1,19 @@
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import type {Message} from "./message_store.ts";
 import * as message_store from "./message_store.ts";
 import * as people from "./people.ts";
-import type {StateData} from "./state_data.ts";
 
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.
 let my_alert_words: string[] = [];
+const follow_topic_containing_alert_word = new Map<string, boolean>();
+
+type AlertWordData = {
+    word: string;
+    automatically_follow_topics: boolean;
+};
 
 export function set_words(words: string[]): void {
     // This module's highlighting algorithm of greedily created
@@ -18,6 +24,21 @@ export function set_words(words: string[]): void {
     my_alert_words.sort((a, b) => b.length - a.length);
 }
 
+export function set_follow_topic_containing_alert_word(
+    alert_words_list: AlertWordData[] | string[],
+): void {
+    for (const word of alert_words_list) {
+        if (typeof word === "string") {
+            follow_topic_containing_alert_word.set(word, false);
+        } else {
+            follow_topic_containing_alert_word.set(
+                word.word,
+                word.automatically_follow_topics,
+            );
+        }
+    }
+}
+
 export function get_word_list(): {word: string}[] {
     // Returns a array of objects
     // (with each alert_word as value and 'word' as key to the object.)
@@ -26,6 +47,12 @@ export function get_word_list(): {word: string}[] {
         words.push({word});
     }
     return words;
+}
+
+export function get_follow_topic_containing_alert_word_policy(alert_word: string): boolean {
+    const alert_word_policy = follow_topic_containing_alert_word.get(alert_word);
+    assert(alert_word_policy !== undefined);
+    return alert_word_policy;
 }
 
 export function has_alert_word(word: string): boolean {
@@ -94,6 +121,15 @@ export function notifies(message: Message): boolean {
     return !people.is_my_user_id(message.sender_id) && message.alerted;
 }
 
-export const initialize = (params: StateData["alert_words"]): void => {
-    set_words(params.alert_words);
+export const initialize = (params: {alert_words: AlertWordData[] | string[]}): void => {
+    my_alert_words = [];
+    follow_topic_containing_alert_word.clear();
+    for (const word of params.alert_words) {
+        if (typeof word === "string") {
+            my_alert_words.push(word);
+        } else {
+            my_alert_words.push(word.word);
+        }
+    }
+    set_follow_topic_containing_alert_word(params.alert_words);
 };
