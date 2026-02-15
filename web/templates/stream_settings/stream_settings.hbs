@@ -4,7 +4,7 @@
     <div class="button-group">
         <div class="sub_unsub_button_wrapper inline-block {{#unless should_display_subscription_button }}cannot-subscribe-tooltip{{/unless}}" data-tooltip-template-id="cannot-subscribe-tooltip-template">
             <template id="cannot-subscribe-tooltip-template">
-                <span>
+                <span class="subscription-info-tooltip">
                     {{#tr}}
                         Cannot subscribe to private channel <z-stream></z-stream>
                         {{#*inline "z-stream"}}{{> ../inline_decorated_channel_name stream=../sub}}{{/inline}}

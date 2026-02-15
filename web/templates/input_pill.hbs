@@ -24,7 +24,7 @@
             {{#if is_empty_string_topic}}
             {{sign}}topic:{{#if topic_display_name}}<span class="empty-topic-display"> {{topic_display_name}}</span>{{/if}}
             {{else}}
-            {{ display_value }}
+            {{~ display_value }}
             {{/if}}
         </span>
         {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}

@@ -756,8 +756,9 @@ input.settings_text_input {
 .channel-privacy-type-icon {
     position: relative;
     top: 0.06rem;
-    padding-right: 1px;
-    width: 12px;
+    padding-right: var(--channel-privacy-icon-padding);
+    width: 1em;
+    height: 1em;
 
     &.zulip-icon-globe,
     &.zulip-icon-archive,
@@ -777,6 +778,22 @@ input.settings_text_input {
        uniform margin throughout the UI. */
     /* 3.5px at 16px/1em */
     margin-top: -0.2188em !important;
+}
+
+.modal__title,
+.modal__subtitle,
+.main-view-banner .banner_message,
+#feedback_container .feedback_content,
+.subscription-info-tooltip,
+#announce-new-stream,
+#first_stream_created_modal .modal__content {
+    .channel-privacy-type-icon {
+        /* In places where the decorated channel name is used
+           inline with text prefixing it, we add a small left
+           padding, enough to visually indicate that the privacy
+           icon and the channel name are cohesive. */
+        padding-left: var(--prefix-text-channel-privacy-icon-gap);
+    }
 }
 
 .dropdown-list-container

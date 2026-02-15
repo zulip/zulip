@@ -95,6 +95,8 @@ tippy.default.setDefaultProps({
     // To add an HTML tooltip, set data-tooltip-template-id to the id of a <template>.
     // Or, override this with a function returning string (text) or DocumentFragment (HTML).
     content: get_tooltip_content,
+    // hideOnClick: false,
+    // trigger: 'click',
 });
 
 export let typeahead_status_emoji_tooltip: tippy.Instance | undefined;
