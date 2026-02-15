@@ -31,8 +31,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as util from "./util.ts";
 
-export const response_schema = z.object({
-    anchor: z.number(),
+export const message_ids_response_schema = z.object({
     found_newest: z.boolean(),
     found_oldest: z.boolean(),
     found_anchor: z.boolean(),
@@ -42,7 +41,12 @@ export const response_schema = z.object({
     msg: z.string(),
 });
 
-type MessageFetchResponse = z.infer<typeof response_schema>;
+export const message_fetch_response_schema = z.object({
+    ...message_ids_response_schema.shape,
+    anchor: z.number(),
+});
+
+type MessageFetchResponse = z.infer<typeof message_fetch_response_schema>;
 
 type MessageFetchOptions = {
     anchor: string | number;
@@ -419,7 +423,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         data,
         success(raw_data) {
             popup_banners.close_connection_error_popup_banner("message_fetch");
-            const data = response_schema.parse(raw_data);
+            const data = message_fetch_response_schema.parse(raw_data);
             get_messages_success(data, opts);
         },
         error(xhr) {

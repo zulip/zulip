@@ -879,7 +879,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                     ) {
                         return;
                     }
-                    const data = message_fetch.response_schema.parse(raw_data);
+                    const data = message_fetch.message_fetch_response_schema.parse(raw_data);
                     const first_unread_message_id = data.anchor;
                     const current_selected_id = msg_list.selected_id();
                     if (
