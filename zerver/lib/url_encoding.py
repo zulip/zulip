@@ -1,13 +1,13 @@
 # See the Zulip URL spec at https://zulip.com/api/zulip-urls
 
 import urllib.parse
-from typing import Any
+from typing import Any, cast
 from urllib.parse import urlsplit
 
 import re2
 
 from zerver.lib.topic import get_topic_from_message_info
-from zerver.lib.types import UserDisplayRecipient
+from zerver.lib.types import TopicMessageInfo, UserDisplayRecipient
 from zerver.models import Realm, Stream, UserProfile
 
 hash_replacements = {
@@ -175,7 +175,7 @@ def stream_message_url(
     message_id = str(message["id"])
     stream_id = message["stream_id"]
     stream_name = message["display_recipient"]
-    topic_name = get_topic_from_message_info(message)
+    topic_name = get_topic_from_message_info(cast(TopicMessageInfo, message))
     encoded_topic_name = encode_hash_component(topic_name)
     encoded_stream = encode_channel(stream_id, stream_name)
 
