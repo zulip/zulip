@@ -272,7 +272,7 @@ jobs:
           content: ${{ steps.failure_report_string.outputs.content }}
 
   required-jobs:
-    name: "Required jobs"
+    name: "Required CI jobs"
     if: always()
     needs:
       - tests
