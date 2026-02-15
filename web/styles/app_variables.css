@@ -870,6 +870,15 @@
         hsl(240deg 100% 15%),
         hsl(240deg 100% 90%)
     );
+    --color-user-status-online: light-dark(
+        hsl(140deg 42% 45%),
+        hsl(140deg 42% 55%)
+    );
+    --color-user-status-idle: light-dark(
+        hsl(30deg 87% 68%),
+        hsl(30deg 87% 36%)
+    );
+    --color-user-status-dnd: light-dark(hsl(0deg 80% 55%), hsl(0deg 70% 60%));
     --background-color-modal-selectable-icon-hover: light-dark(
         hsl(240deg 100% 50% / 7%),
         hsl(240deg 100% 75% / 20%)

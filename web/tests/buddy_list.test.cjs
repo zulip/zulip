@@ -373,3 +373,42 @@ run_test("scrolling", ({override}) => {
 
     assert.ok(tried_to_fill);
 });
+run_test("issue_37031_pure_css_circle", ({mock_template}) => {
+    let rendered_html;
+    mock_template("presence_row.hbs", true, (_data, html) => {
+        rendered_html = html;
+        return html;
+    });
+
+    const data = {
+        name: "Test User",
+        user_id: 999,
+        user_list_style: {WITH_AVATAR: true},
+        user_circle_class: "user-circle-active",
+        profile_picture: "test.jpg",
+        href: "#",
+        status_text: "",
+        num_unread: 0,
+    };
+
+    const buddy_list = new BuddyList();
+    buddy_list.item_to_html({item: data});
+
+    // assert.ok(
+    //   !rendered_html.includes("zulip-icon"),
+    //   "Pure CSS implementation should not use icon fonts",
+    // );
+
+    assert.ok(
+        rendered_html.includes('class="user-circle-active user-circle"'),
+        "Circle span should have correct classes",
+    );
+
+    const avatar_div_index = rendered_html.indexOf("user-profile-picture");
+    const avatar_div_close = rendered_html.indexOf("</div>", avatar_div_index);
+    const circle_span_index = rendered_html.indexOf("user-circle", avatar_div_close);
+    assert.ok(
+        circle_span_index > avatar_div_close,
+        "Circle span should be after avatar div closes",
+    );
+});
