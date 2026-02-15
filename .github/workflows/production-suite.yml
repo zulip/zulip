@@ -323,3 +323,17 @@ jobs:
           topic: ${{ steps.failure_report_string.outputs.topic }}
           type: "stream"
           content: ${{ steps.failure_report_string.outputs.content }}
+
+  required-jobs:
+    name: "Required jobs"
+    if: always()
+    needs:
+      - production_build
+      - production_install
+      - production_upgrade
+    runs-on: ubuntu-slim
+    steps:
+      - name: "Check required jobs"
+        run: jq 'with_entries(.value |= .result | select(.value | IN("success", "skipped") | not)) | if . != {} then halt_error end' <<<"$NEEDS"
+        env:
+          NEEDS: ${{ toJSON(needs) }}
