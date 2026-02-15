@@ -221,7 +221,8 @@ div.overlay {
     transition-property: opacity, visibility;
     overflow: hidden;
 
-    .overlay-content {
+    .overlay-container {
+        background-color: var(--color-background-modal);
         transform: translateY(20px);
         transition: transform 0.2s ease-in;
         z-index: 102;
@@ -233,7 +234,7 @@ div.overlay {
         visibility: visible;
         transition: opacity 0.2s ease-out;
 
-        .overlay-content {
+        .overlay-container {
             transform: translateY(0);
             transition-timing-function: ease-out;
         }
@@ -242,10 +243,6 @@ div.overlay {
     .overlay-scroll-container {
         max-height: 60vh;
         padding: 15px;
-    }
-
-    .overlay-container {
-        background-color: var(--color-background-modal);
     }
 }
 
@@ -972,10 +969,17 @@ input.settings_text_input {
     }
 }
 
-div.overlay .flex.overlay-content > .overlay-container,
-#settings_page,
-.informational-overlays .overlay-content {
+div.overlay:not(#about-zulip) .overlay-container {
     box-shadow: var(--box-shadow-overlay);
+}
+
+#subscription_overlay.overlay .overlay-container,
+#draft_overlay.overlay .overlay-container,
+#message-history-overlay.overlay .overlay-container,
+#reminders-overlay.overlay .overlay-container,
+#scheduled_messages_overlay.overlay .overlay-container,
+#groups_overlay.overlay .overlay-container {
+    margin: 2.5vh auto;
 }
 
 .delete-selected-drafts-button-container {

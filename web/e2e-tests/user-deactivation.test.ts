@@ -13,7 +13,7 @@ async function navigate_to_user_list(page: Page): Promise<void> {
     await page.waitForSelector(organization_settings, {visible: true});
     await page.click(organization_settings);
 
-    await page.waitForSelector("#settings_overlay_container.show", {visible: true});
+    await page.waitForSelector("#settings_overlay_container .overlay.show", {visible: true});
     await page.click("li[data-section='users']");
     await page.waitForSelector("#admin-user-list.show", {visible: true});
 }
