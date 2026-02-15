@@ -161,12 +161,45 @@
     }
 
     .user-circle {
-        grid-area: starting-anchor-element;
-        place-self: center center;
-        /* Tighten the line-height to match the icon's size... */
-        line-height: 1;
-        /* ...which is approximately 8px at 15px/1em in Vlad's design. */
-        font-size: 0.5333em;
+        position: absolute;
+        bottom: -0.5px;
+        right: -0.5px;
+        width: 1em;
+        height: 1em;
+        display: inline-block;
+        background-color: var(--color-background) !important;
+        border: 1.5px solid var(--color-background);
+        border-radius: 50%;
+        box-sizing: content-box;
+        font-size: 0.6875em;
+
+        &::before {
+            content: "";
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        &.user-circle-active::before {
+            background-color: var(--color-user-status-online);
+        }
+
+        &.user-circle-idle::before {
+            background-color: var(--color-user-status-idle);
+        }
+
+        &.user-circle-busy::before {
+            background-color: var(--color-user-status-dnd);
+        }
+
+        &.user-circle-deactivated::before {
+            background-color: var(--color-user-status-dnd);
+        }
+
+        &.user-circle-offline {
+            display: none;
+        }
     }
 
     .user_sidebar_entry.with_avatar {
