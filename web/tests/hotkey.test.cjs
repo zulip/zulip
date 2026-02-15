@@ -476,8 +476,8 @@ test_while_not_editing_text("misc", ({override}) => {
     assert_mapping("u", popovers, "toggle_sender_info");
     assert_mapping("i", message_actions_popover, "toggle_message_actions_menu");
     assert_mapping(":", emoji_picker, "start_picker_for_message_reaction", true);
-    assert_mapping(">", compose_reply, "quote_message");
-    assert_mapping("<", compose_reply, "quote_message");
+    assert_mapping(">", compose_reply, "quote_messages");
+    assert_mapping("<", compose_reply, "quote_messages");
     assert_mapping("e", message_edit, "start");
 
     override(

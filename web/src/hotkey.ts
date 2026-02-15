@@ -1490,10 +1490,10 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             unread_ops.mark_as_unread_from_here(msg.id);
             return true;
         case "compose_quote_message": // > : respond to selected message with quote
-            compose_reply.quote_message({trigger: "hotkey"});
+            compose_reply.quote_messages({trigger: "hotkey"});
             return true;
         case "compose_forward_message": // < : forward selected message
-            compose_reply.quote_message({trigger: "hotkey", forward_message: true});
+            compose_reply.quote_messages({trigger: "hotkey", forward_message: true});
             return true;
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);
