@@ -314,7 +314,11 @@ function setup_compose_to_quote_single_message(message_id: number, opts: QuoteMe
     );
 }
 
-function replace_content(message: Message, raw_content: string, forward_message?: boolean): void {
+function generate_replace_content(
+    message: Message,
+    raw_content: string,
+    forward_message: boolean | undefined,
+): string {
     let content;
     const sender_mention = `@_**${message.sender_full_name}|${message.sender_id}**`;
 
@@ -394,7 +398,13 @@ function replace_content(message: Message, raw_content: string, forward_message?
     content += "\n";
     const fence = fenced_code.get_unused_fence(raw_content);
     content += `${fence}quote\n${raw_content}\n${fence}`;
+    return content;
+}
 
+function replace_quoting_placeholder_with(
+    content: string,
+    forward_message: boolean | undefined,
+): void {
     compose_ui.replace_syntax(
         quoting_placeholder,
         content,
@@ -437,7 +447,8 @@ function quote_single_message(opts: QuoteMessageOpts): void {
     }
 
     if (message && quote_content) {
-        replace_content(message, quote_content, opts.forward_message);
+        const content = generate_replace_content(message, quote_content, opts.forward_message);
+        replace_quoting_placeholder_with(content, opts.forward_message);
         return;
     }
 
@@ -448,7 +459,12 @@ function quote_single_message(opts: QuoteMessageOpts): void {
             const data = single_message_content_schema.parse(raw_data);
             assert(data.message.content_type === "text/x-markdown");
             message_store.maybe_update_raw_content(message, data.message.content);
-            replace_content(message, data.message.content, opts.forward_message);
+            const content = generate_replace_content(
+                message,
+                data.message.content,
+                opts.forward_message,
+            );
+            replace_quoting_placeholder_with(content, opts.forward_message);
         },
         // We set a timeout here to trigger usage of the fallback markdown via the
         // error callback below, which is much better UX than waiting for 10 seconds and
@@ -463,7 +479,8 @@ function quote_single_message(opts: QuoteMessageOpts): void {
             // We try to access message.raw_content one last time here, just in case
             // it was populated during the waiting time.
             const md = message.raw_content ?? compose_paste.paste_handler_converter(message_html);
-            replace_content(message, md, opts.forward_message);
+            const content = generate_replace_content(message, md, opts.forward_message);
+            replace_quoting_placeholder_with(content, opts.forward_message);
         },
     });
 }
