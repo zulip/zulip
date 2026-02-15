@@ -1514,6 +1514,21 @@ export function clear_search(): void {
 export let scroll_stream_into_view = function ($stream_li?: JQuery): void {
     if ($stream_li === undefined) {
         if (narrow_state.filter()?.terms_with_operator("topic").length === 1) {
+            $stream_li = get_current_stream_li();
+            if ($stream_li !== undefined) {
+                const $container = $("#left_sidebar_scroll_container");
+                const $stream_header = $stream_li.find(".subscription_block");
+                const header_height =
+                    $stream_li
+                        .closest(".stream-list-section-container")
+                        .children(".stream-list-subsection-header")
+                        .outerHeight()! + 2; // + 2px for top border
+                scroll_util.scroll_element_into_container(
+                    $stream_header,
+                    $container,
+                    header_height,
+                );
+            }
             topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
             return;
         }
@@ -1531,8 +1546,6 @@ export let scroll_stream_into_view = function ($stream_li?: JQuery): void {
         return;
     }
 
-    // Get the element with the channel name which we want to
-    // be visible.
     const $stream_header = $stream_li.find(".subscription_block");
     const header_height =
         $stream_li
@@ -1540,9 +1553,6 @@ export let scroll_stream_into_view = function ($stream_li?: JQuery): void {
             .children(".stream-list-subsection-header")
             .outerHeight()! + 2; // + 2px for top border
     scroll_util.scroll_element_into_container($stream_header, $container, header_height);
-    // Note: If the stream is in a collapsed folder, we don't uncollapse
-    // the folder. We do uncollapse when the user clicks on the channel,
-    // but that's handled elsewhere.
 };
 
 export function rewire_scroll_stream_into_view(value: typeof scroll_stream_into_view): void {
