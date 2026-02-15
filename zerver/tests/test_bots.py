@@ -11,6 +11,7 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 from zerver.actions.bots import do_change_bot_owner, do_change_default_sending_stream
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
+    do_set_realm_property,
     do_set_realm_user_default_setting,
 )
 from zerver.actions.streams import do_change_stream_permission
@@ -1552,6 +1553,136 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
         self.assertTrue(os.path.exists(avatar_disk_path(profile)))
+
+    def test_set_bot_avatar_multiple_files_failure(self) -> None:
+        """
+        Attempting to upload two files should fail.
+        """
+        self.login("hamlet")
+        self.create_bot()
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_realm = get_realm("zulip")
+        profile = get_user(bot_email, bot_realm)
+
+        with get_test_image_file("img.png") as fp1, get_test_image_file("img.png") as fp2:
+            result = self.client_post(f"/json/bots/{profile.id}/avatar", dict(file1=fp1, file2=fp2))
+        self.assert_json_error(result, "You must upload exactly one avatar.")
+
+    def test_set_bot_avatar_no_file_failure(self) -> None:
+        """
+        Calling this endpoint with no files should fail.
+        """
+        self.login("hamlet")
+        self.create_bot()
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_realm = get_realm("zulip")
+        profile = get_user(bot_email, bot_realm)
+
+        result = self.client_post(f"/json/bots/{profile.id}/avatar")
+        self.assert_json_error(result, "You must upload exactly one avatar.")
+
+    def test_set_bot_avatar_changes_disabled(self) -> None:
+        """
+        Attempting to upload avatar on a realm with avatar changes disabled should fail.
+        """
+        self.login("hamlet")
+        self.create_bot()
+        do_set_realm_property(
+            self.example_user("hamlet").realm,
+            "avatar_changes_disabled",
+            True,
+            acting_user=None,
+        )
+
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_realm = get_realm("zulip")
+        profile = get_user(bot_email, bot_realm)
+
+        with get_test_image_file("img.png") as fp1:
+            result = self.client_post(f"/json/bots/{profile.id}/avatar", {"f1": fp1})
+        self.assert_json_error(result, "Avatar changes are disabled in this organization.")
+
+    def test_delete_bot_avatar_changes_disabled(self) -> None:
+        """
+        Attempting to upload avatar on a realm with avatar changes disabled should fail.
+        """
+        self.login("hamlet")
+        self.create_bot()
+
+        bot_email = "hambot-bot@zulip.testserver"
+        do_set_realm_property(
+            self.example_user("hamlet").realm,
+            "avatar_changes_disabled",
+            True,
+            acting_user=None,
+        )
+
+        bot_realm = get_realm("zulip")
+        profile = get_user(bot_email, bot_realm)
+
+        with get_test_image_file("img.png") as fp1:
+            result = self.client_post(f"/json/bots/{profile.id}/avatar", {"f1": fp1})
+        result = self.client_delete(f"/json/bots/{profile.id}/avatar")
+        self.assert_json_error(result, "Avatar changes are disabled in this organization.")
+
+    def test_set_bot_avatar_upload_limit(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_realm = get_realm("zulip")
+        profile = get_user(bot_email, bot_realm)
+
+        with (
+            get_test_image_file("img.png") as fp,
+            self.settings(MAX_AVATAR_FILE_SIZE_MIB=0),
+        ):
+            result = self.client_post(f"/json/bots/{profile.id}/avatar", {"file": fp})
+        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
+
+    def test_set_bot_avatar(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_realm = get_realm("zulip")
+        profile = get_user(bot_email, bot_realm)
+
+        # HAPPY PATH
+        with get_test_image_file("img.png") as fp:
+            result = self.client_post(f"/json/bots/{profile.id}/avatar", dict(file=fp))
+            profile = get_user(bot_email, bot_realm)
+            self.assertEqual(profile.avatar_version, 2)
+            # Make sure that avatar image that we've uploaded is same with avatar image in the server
+            self.assertTrue(
+                filecmp.cmp(fp.name, os.path.splitext(avatar_disk_path(profile))[0] + ".original")
+            )
+        self.assert_json_success(result)
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+        self.assertTrue(os.path.exists(avatar_disk_path(profile)))
+
+    def test_delete_bot_avatar(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_realm = get_realm("zulip")
+        profile = get_user(bot_email, bot_realm)
+
+        result = self.client_delete(f"/json/bots/{profile.id}/avatar")
+        self.assert_json_success(result)
+        profile.refresh_from_db()
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
+        with get_test_image_file("img.png") as fp:
+            self.client_post(f"/json/bots/{profile.id}/avatar", dict(file=fp))
+        profile.refresh_from_db()
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+
+        result = self.client_delete(f"/json/bots/{profile.id}/avatar")
+        self.assert_json_success(result)
+        profile.refresh_from_db()
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
     def test_patch_bot_to_stream(self) -> None:
         self.login("hamlet")
