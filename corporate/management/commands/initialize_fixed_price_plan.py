@@ -22,7 +22,10 @@ if settings.BILLING_ENABLED:
 
 
 class Command(ZulipBaseCommand):
-    help = """Initialize a paid fixed-price plan for a billing customer (Realm, RemoteRealm or RemoteZulipServer)."""
+    help = """
+    Initialize a paid fixed-price plan for a billing customer (Realm, RemoteRealm or RemoteZulipServer).
+    Defaults to `--dry-run=True` so that the billing changes are run in preview mode first.
+    """
 
     @override
     def add_arguments(self, parser: CommandParser) -> None:
@@ -57,8 +60,9 @@ class Command(ZulipBaseCommand):
             "--dry-run",
             dest="dry_run",
             action="store_true",
+            default=True,
             required=False,
-            help="Check for errors before initializing paid fixed-price plan.",
+            help="Check for errors before initializing paid fixed-price plan. Default value is True.",
         )
 
     @override
