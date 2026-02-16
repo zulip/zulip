@@ -140,6 +140,10 @@ export let respond_to_message = (opts: {
         private_message_recipient_ids = people.pm_with_user_ids(message);
     }
 
+    // On message click, if compose box is already open,
+    // never scroll the selected message.
+    const skip_scrolling_selected_message =
+        opts.trigger === "message click" && compose_state.composing();
     compose_actions.start({
         message_type: msg_type,
         stream_id,
@@ -148,6 +152,7 @@ export let respond_to_message = (opts: {
         ...(opts.trigger !== undefined && {trigger: opts.trigger}),
         is_reply: true,
         keep_composebox_empty: opts.keep_composebox_empty,
+        skip_scrolling_selected_message,
     });
 };
 
