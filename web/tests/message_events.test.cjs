@@ -110,10 +110,10 @@ run_test("update_messages", ({override, override_rewire}) => {
 
     message_lists.current.view = {};
 
-    let rendered_mgs;
+    let rendered_msgs;
 
     message_lists.current.view.rerender_messages = (msgs_to_rerender, message_content_edited) => {
-        rendered_mgs = msgs_to_rerender;
+        rendered_msgs = msgs_to_rerender;
         assert.equal(message_content_edited, true);
     };
 
@@ -144,7 +144,7 @@ run_test("update_messages", ({override, override_rewire}) => {
 
     helper.verify();
 
-    assert.deepEqual(rendered_mgs, [
+    assert.deepEqual(rendered_msgs, [
         {
             avatar_url: `/avatar/${alice.user_id}`,
             display_reply_to: undefined,
