@@ -3009,6 +3009,18 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             return None
 
 
+@external_auth_method
+class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
+    # Default ["identify"] scope from social_core.backends.DiscordOAuth2
+    # not sufficient to get email from /users/@me API endpoint
+    DEFAULT_SCOPE = ["identify email"]
+
+    sort_order = 120
+    auth_backend_name = "Discord"
+    name = "discord"
+    display_icon = staticfiles_storage.url("images/authentication_backends/discord-icon.png")
+
+
 class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
     @override
     def get_user_details(self, attributes: dict[str, Any]) -> dict[str, Any]:
@@ -3649,14 +3661,6 @@ def patch_saml_auth_require_messages_signed(auth: OneLogin_Saml2_Auth) -> None:
     # be applied to the actual settings of `auth` - e.g. due to us only
     # receiving a copy of the dict.
     assert auth.get_settings().get_security_data()["wantMessagesSigned"] is True
-
-
-@external_auth_method
-class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
-    sort_order = 120
-    auth_backend_name = "Discord"
-    name = "discord"
-    display_icon = staticfiles_storage.url("images/authentication_backends/discord-icon.png")
 
 @external_auth_method
 class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
