@@ -750,7 +750,7 @@ def _start_social_auth_flow(
         return config_error(request, "apple")
 
     # TODO: Add AzureAD also.
-    if backend in ["github", "google", "gitlab"]:
+    if backend in ["github", "google", "gitlab", "discord"]:
         key_setting = "SOCIAL_AUTH_" + backend.upper() + "_KEY"
         secret_setting = "SOCIAL_AUTH_" + backend.upper() + "_SECRET"
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):
