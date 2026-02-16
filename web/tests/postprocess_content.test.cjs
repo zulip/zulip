@@ -51,17 +51,19 @@ run_test("postprocess_basic_links", () => {
     assert.equal(
         postprocess_content(
             '<a href="http://example.com">good</a> ' +
+                '<a href="http://example.com">http://example.com</a> ' +
                 '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png">upload</a> ' +
                 '<a href="http://localhost:NNNN">invalid</a> ' +
                 '<a href="javascript:alert(1)">unsafe</a> ' +
                 '<a href="/#fragment" target="_blank">fragment</a>' +
                 "<a>missing href</a>",
         ),
-        '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
-            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="translated: Download file.png">upload</a> ' +
+        '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/" data-message-link-type="external_named_link">good</a> ' +
+            '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/" data-message-link-type="external_plain_url">http://example.com</a> ' +
+            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="translated: Download file.png" data-message-link-type="user_upload">upload</a> ' +
             "<a>invalid</a> " +
             "<a>unsafe</a> " +
-            '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>' +
+            '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment" data-message-link-type="internal_named_link">fragment</a>' +
             "<a>missing href</a>",
     );
 });

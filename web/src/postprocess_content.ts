@@ -7,6 +7,8 @@ import * as util from "./util.ts";
 
 let inertDocument: Document | undefined;
 
+const STANDARD_INTERNAL_URLS = new Set(["stream", "stream-topic", "message-link"]);
+
 export function postprocess_content(html: string): string {
     inertDocument ??= new DOMParser().parseFromString("", "text/html");
     const template = inertDocument.createElement("template");
@@ -81,35 +83,71 @@ export function postprocess_content(html: string): string {
         }
 
         if (!elt.parentElement?.classList.contains("message_inline_image")) {
-            // For non-media (images, video) user uploads, the following block
-            // ensures that the title attribute always displays the filename,
-            // as a security measure.
-            let title: string;
-            let legacy_title: string;
-            if (
-                url.origin === window.location.origin &&
-                url.pathname.startsWith("/user_uploads/")
-            ) {
-                // We add the word "download" to make clear what will
-                // happen when clicking the file.  This is particularly
-                // important in the desktop app, where hovering a URL does
-                // not display the URL like it does in the web app.
-                title = legacy_title = $t(
-                    {defaultMessage: "Download {filename}"},
-                    {
-                        filename: decodeURIComponent(
-                            url.pathname.slice(url.pathname.lastIndexOf("/") + 1),
-                        ),
-                    },
+            const link_class = elt.getAttribute("class") ?? "";
+            const is_standard_internal = STANDARD_INTERNAL_URLS.has(link_class);
+            if (!is_standard_internal) {
+                // For non-media (images, video) user uploads, the following block
+                // ensures that the title attribute always displays the filename,
+                // as a security measure.
+                let title: string;
+                let legacy_title: string;
+                if (
+                    url.origin === window.location.origin &&
+                    url.pathname.startsWith("/user_uploads/")
+                ) {
+                    // We add the word "download" to make clear what will
+                    // happen when clicking the file.  This is particularly
+                    // important in the desktop app, where hovering a URL does
+                    // not display the URL like it does in the web app.
+                    title = legacy_title = $t(
+                        {defaultMessage: "Download {filename}"},
+                        {
+                            filename: decodeURIComponent(
+                                url.pathname.slice(url.pathname.lastIndexOf("/") + 1),
+                            ),
+                        },
+                    );
+                } else {
+                    title = url.toString();
+                    legacy_title = href;
+                }
+                elt.setAttribute(
+                    "title",
+                    ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
                 );
-            } else {
-                title = url.toString();
-                legacy_title = href;
             }
-            elt.setAttribute(
-                "title",
-                ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
-            );
+
+            if (
+                !elt.classList.contains("message_embed_image") &&
+                !elt.classList.contains("message-embed-title-link") &&
+                !elt.classList.contains("media-anchor-element")
+            ) {
+                const link_text = elt.textContent?.trim() ?? "";
+                const link_href = elt.href.replace(/\/$/, "");
+
+                const text_matches_href = link_text === link_href;
+                const is_external_link = url.origin !== window.location.origin;
+                const is_user_upload =
+                    !is_external_link && url.pathname.startsWith("/user_uploads/");
+
+                if (is_external_link && !text_matches_href) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore - TS4111 in CI requires bracket notation, but ESLint requires dot notation
+                    elt.dataset.messageLinkType = "external_named_link";
+                } else if (is_external_link && text_matches_href) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore - TS4111 in CI requires bracket notation, but ESLint requires dot notation
+                    elt.dataset.messageLinkType = "external_plain_url";
+                } else if (is_user_upload) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore - TS4111 in CI requires bracket notation, but ESLint requires dot notation
+                    elt.dataset.messageLinkType = "user_upload";
+                } else if (!is_external_link && !is_standard_internal && !text_matches_href) {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore - TS4111 in CI requires bracket notation, but ESLint requires dot notation
+                    elt.dataset.messageLinkType = "internal_named_link";
+                }
+            }
         }
     }
 
