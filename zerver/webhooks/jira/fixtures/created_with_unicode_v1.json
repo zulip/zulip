@@ -4,6 +4,7 @@
   "user": {
     "self": "http://lfranchi.com:8080/rest/api/2/user?username=lfranchi",
     "name": "lfranchi",
+    "accountId": "99:27935d01-92a7-4687-8272-a9b8d3b2ae2e",
     "emailAddress": "othello@zulip.com",
     "avatarUrls": {
       "16x16": "http://lfranchi.com:8080/secure/useravatar?size=small&avatarId=10122",
@@ -43,6 +44,7 @@
       "reporter": {
         "self": "http://lfranchi.com:8080/rest/api/2/user?username=lfranchi",
         "name": "lfranchi",
+        "accountId": "99:27935d01-92a7-4687-8272-a9b8d3b2ae2e",
         "emailAddress": "othello@zulip.com",
         "avatarUrls": {
           "16x16": "http://lfranchi.com:8080/secure/useravatar?size=small&avatarId=10122",
