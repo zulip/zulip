@@ -3653,7 +3653,7 @@ def patch_saml_auth_require_messages_signed(auth: OneLogin_Saml2_Auth) -> None:
 
 @external_auth_method
 class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
-    sort_order = 150
+    sort_order = 120
     auth_backend_name = "Discord"
     name = "discord"
     display_icon = staticfiles_storage.url("images/authentication_backends/discord-icon.png")
