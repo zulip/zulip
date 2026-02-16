@@ -3020,6 +3020,39 @@ class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
     name = "discord"
     display_icon = staticfiles_storage.url("images/authentication_backends/discord-icon.png")
 
+    def get_verified_emails(self, *args: Any, **kwargs: Any) -> list[str]:
+        # Discord account emails are only verified if specified as such
+        # with the verified boolean field of the user object
+        verified_emails: list[str] = []
+        details = kwargs["response"]
+        email_verified = details.get("verified", False)
+        if email_verified:
+            verified_emails.append(details["email"])
+        return verified_emails
+
+    @override
+    def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
+        # Translate discord user object fields to corresponding auth details.
+        # Reference: https://docs.discord.com/developers/resources/user#user-object
+        id = response.get("id")
+        name = response.get("global_name")
+        email = response.get("email", "")
+
+        # Build avatar URL from avatar hash field
+        avatar_hash = response.get("avatar")
+        avatar_extension = "png"
+        # Potentially support animated Discord avatars
+        animated_prefix = "a_" if avatar_extension == "gif" else ""
+        # TODO: figure out whether to scrape and upload avatar
+        avatar_url = f"https://cdn.discordapp.com/avatars/{id}/{animated_prefix}{avatar_hash}.{avatar_extension}"
+
+        user_details = {
+            "username": name,
+            "fullname": name,
+            "email": email,
+            "avatar": avatar_url,
+        }
+        return user_details
 
 class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
     @override
