@@ -10712,9 +10712,6 @@ paths:
 
                     **Changes**: New in Zulip 5.0 (feature level 86).
                   example: unicode_emoji
-            encoding:
-              away:
-                contentType: application/json
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
