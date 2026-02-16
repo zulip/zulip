@@ -304,7 +304,6 @@ export function show_convert_pasted_text_to_file_banner({
     $textarea: JQuery<HTMLTextAreaElement>;
 }): JQuery {
     const $banner_container = get_compose_banner_container($textarea);
-    $banner_container.find(CSS.escape(CLASSNAMES.convert_pasted_text_to_file)).remove();
     const $new_row = $(
         render_long_paste_options({
             banner_type: INFO,
@@ -314,6 +313,6 @@ export function show_convert_pasted_text_to_file_banner({
     );
     $new_row.on("click", ".main-view-banner-action-button.convert-to-file", convert_to_file_cb);
     $new_row.on("click", ".main-view-banner-action-button.paste-to-compose", paste_to_compose_cb);
-    append_compose_banner_to_banner_list($new_row, $banner_container);
+    update_or_append_banner($new_row, CLASSNAMES.convert_pasted_text_to_file, $banner_container);
     return $new_row;
 }
