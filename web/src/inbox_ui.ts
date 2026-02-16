@@ -421,7 +421,10 @@ export function hide(): void {
 }
 
 function get_topic_key(stream_id: number, topic: string): string {
-    return stream_id + ":" + topic;
+    // Topic names are case-preserving for display, but case insensitive
+    // otherwise. We convert the topic key to lowercase to ensure that
+    // topic keys with different casing are not treated differently.
+    return stream_id + ":" + topic.toLowerCase();
 }
 
 function get_stream_key(stream_id: number): string {

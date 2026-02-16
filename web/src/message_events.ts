@@ -561,6 +561,9 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             assert(orig_topic !== undefined);
             assert(new_topic !== undefined);
 
+            // Update Inbox UI to reflect the new case.
+            unread.update_unread_topic_name_case(old_stream_id, orig_topic, new_topic);
+
             // Update each message to reflect the new case.
             for (const message_id of event.message_ids) {
                 const message = message_store.get(message_id);

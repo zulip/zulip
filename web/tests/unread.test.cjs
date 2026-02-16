@@ -96,7 +96,7 @@ test("changing_topics", () => {
     let count = unread.num_unread_for_topic(social.stream_id, "lunch");
     assert.equal(count, 0);
 
-    const stream_id = 100;
+    const stream_id = social.stream_id;
     const wrong_stream_id = 110;
 
     const message = {
@@ -182,6 +182,11 @@ test("changing_topics", () => {
     assert.equal(count, 1);
     assert.ok(unread.topic_has_any_unread(stream_id, "snack"));
     assert.ok(!unread.topic_has_any_unread(wrong_stream_id, "snack"));
+
+    unread.update_unread_topic_name_case(stream_id, "snack", "SnaCK");
+    const topic_counts = unread.get_unread_topics().topic_counts.get(stream_id);
+    assert.ok(topic_counts.has("SnaCK"));
+    assert.ok(!topic_counts.has("snack"));
 
     // Test defensive code.  Trying to update a message we don't know
     // about should be a no-op.
