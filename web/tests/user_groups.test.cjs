@@ -479,7 +479,7 @@ run_test("is_user_in_group", () => {
     assert.equal(user_groups.is_user_in_group(admins.id, 6), false);
 });
 
-run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
+function set_up_system_groups_for_test() {
     const nobody = make_user_group({
         name: "role:nobody",
         description: "foo",
@@ -543,6 +543,14 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
         is_system_group: true,
         direct_subgroup_ids: new Set([5]),
     });
+
+    return {nobody, owners, admins, moderators, members, everyone, full_members, internet};
+}
+
+run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
+    const {nobody, owners, admins, moderators, members, everyone, full_members, internet} =
+        set_up_system_groups_for_test();
+
     const students = make_user_group({
         description: "Students group",
         name: "Students",
