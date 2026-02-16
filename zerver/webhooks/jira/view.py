@@ -9,11 +9,15 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import AnomalousWebhookPayloadError, UnsupportedWebhookEventTypeError
+from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import (
+    check_send_webhook_message,
+    guess_zulip_user_from_external_account,
+)
 from zerver.models import Realm, UserProfile
 from zerver.models.users import get_user_by_delivery_email
 
@@ -128,18 +132,20 @@ def get_issue_string(
         return text
 
 
-def get_assignee_mention(assignee_email: str, realm: Realm) -> str:
-    if assignee_email != "":
-        try:
-            zulip_user = get_user_by_delivery_email(assignee_email, realm)
-            return silent_mention_syntax_for_user(zulip_user)
-        except UserProfile.DoesNotExist:
-            assignee_name = assignee_email
-        return f"**{assignee_name}**"
-    return ""
-
-
 def get_user_mention(realm: Realm, user_payload: WildValue) -> str:
+    # Try to find a Zulip user by Atlassian account ID (Jira Cloud)
+    if "accountId" in user_payload:
+        account_id = user_payload["accountId"].tame(check_string)
+        external_account_field_name = str(DEFAULT_EXTERNAL_ACCOUNTS["atlassian"].name)
+        zulip_user = guess_zulip_user_from_external_account(
+            realm,
+            account_id,
+            external_account_field_name,
+            external_username_case_insensitive=True,
+        )
+        if zulip_user is not None:
+            return silent_mention_syntax_for_user(zulip_user)
+
     # Try to find a Zulip user by email (Jira Cloud)
     if "emailAddress" in user_payload:
         email = user_payload["emailAddress"].tame(check_string)
@@ -223,10 +229,13 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
     issue_id = get_in(payload, ["issue", "key"]).tame(check_string)
     issue = get_issue_string(payload, issue_id, True)
 
-    assignee_email = get_in(payload, ["issue", "fields", "assignee", "emailAddress"], "").tame(
-        check_string
-    )
-    assignee_mention = get_assignee_mention(assignee_email, user_profile.realm)
+    assignee = get_in(payload, ["issue", "fields", "assignee"])
+
+    # Check if assignee exists and is a dict (can be null or missing)
+    if assignee.value and isinstance(assignee.value, dict):
+        assignee_mention = get_user_mention(user_profile.realm, assignee)
+    else:
+        assignee_mention = ""
 
     if assignee_mention != "":
         assignee_blurb = f" (assigned to {assignee_mention})"
