@@ -85,6 +85,7 @@ SOCIAL_AUTH_GITLAB_KEY = get_secret("social_auth_gitlab_key", development_only=T
 SOCIAL_AUTH_SUBDOMAIN: str | None = None
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = get_secret("social_auth_azuread_oauth2_key", development_only=True)
 SOCIAL_AUTH_GOOGLE_KEY = get_secret("social_auth_google_key", development_only=True)
+SOCIAL_AUTH_DISCORD_KEY = get_secret("social_auth_discord_key", development_only=True)
 # SAML:
 SOCIAL_AUTH_SAML_SP_ENTITY_ID: str | None = None
 SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ""
