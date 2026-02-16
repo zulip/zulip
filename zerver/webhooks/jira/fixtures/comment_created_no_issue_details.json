@@ -7,6 +7,7 @@
     "author": {
       "self": "https://f20171170.atlassian.net/rest/api/2/user?accountId=5c76b994e1bcdf6294d0eb0f",
       "name": "admin",
+      "accountId": "99:b8d8a054-2e12-4839-bd5f-5f2b7c5f5e3a",
       "key": "admin",
       "avatarUrls": {
         "48x48": "https://secure.gravatar.com/avatar/bc3f74559ceceb488f4189b7e7bdfec2?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FHA-1.png&size=48&s=48",
@@ -22,6 +23,7 @@
     "updateAuthor": {
       "self": "https://f20171170.atlassian.net/rest/api/2/user?accountId=5c76b994e1bcdf6294d0eb0f",
       "name": "admin",
+      "accountId": "99:b8d8a054-2e12-4839-bd5f-5f2b7c5f5e3a",
       "key": "admin",
       "avatarUrls": {
         "48x48": "https://secure.gravatar.com/avatar/bc3f74559ceceb488f4189b7e7bdfec2?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FHA-1.png&size=48&s=48",

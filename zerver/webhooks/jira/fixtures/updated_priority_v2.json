@@ -4,6 +4,7 @@
   "user": {
     "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
     "name": "leo",
+    "accountId": "99:e2f12cf6-839d-4ea2-ae07-e1a59cb009c8",
     "emailAddress": "leo@zulip.com",
     "avatarUrls": {
       "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
@@ -37,6 +38,7 @@
       "reporter": {
         "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
         "name": "leo",
+        "accountId": "99:e2f12cf6-839d-4ea2-ae07-e1a59cb009c8",
         "emailAddress": "leo@zulip.com",
         "avatarUrls": {
           "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
@@ -115,6 +117,7 @@
             "author": {
               "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
               "name": "leo",
+              "accountId": "99:e2f12cf6-839d-4ea2-ae07-e1a59cb009c8",
               "emailAddress": "leo@zulip.com",
               "avatarUrls": {
                 "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
@@ -129,6 +132,7 @@
             "updateAuthor": {
               "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
               "name": "leo",
+              "accountId": "99:e2f12cf6-839d-4ea2-ae07-e1a59cb009c8",
               "emailAddress": "leo@zulip.com",
               "avatarUrls": {
                 "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
@@ -160,6 +164,7 @@
       "creator": {
         "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
         "name": "leo",
+        "accountId": "99:e2f12cf6-839d-4ea2-ae07-e1a59cb009c8",
         "emailAddress": "leo@zulip.com",
         "avatarUrls": {
           "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
@@ -188,6 +193,7 @@
       "assignee": {
         "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
         "name": "leo",
+        "accountId": "99:e2f12cf6-839d-4ea2-ae07-e1a59cb009c8",
         "emailAddress": "leo@zulip.com",
         "avatarUrls": {
           "16x16": "https://zulipp.atlassian.net/secure/useravatar?size=xsmall&avatarId=10122",
