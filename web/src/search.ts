@@ -423,6 +423,7 @@ export function rewire_exit_search(value: typeof exit_search): void {
 
 export let open_search_bar_and_close_narrow_description = (clear = false): void => {
     reset_searchbox(clear);
+    $("#search_query").attr("contenteditable", "true");
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
     popovers.hide_all();
@@ -444,6 +445,7 @@ export function close_search_bar_and_open_narrow_description(): void {
         search_pill_widget.clear(true);
     }
 
+    $("#search_query").attr("contenteditable", "false");
     $(".navbar-search").removeClass("expanded");
     $("#message_view_header").removeClass("hidden");
 
