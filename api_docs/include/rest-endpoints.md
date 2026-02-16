@@ -111,6 +111,7 @@
 * [Get user group membership status](/api/get-is-user-group-member)
 * [Get user group members](/api/get-user-group-members)
 * [Get subgroups of a user group](/api/get-user-group-subgroups)
+* [Reorder user group color priorities](/api/reorder-user-group-colors)
 * [Mute a user](/api/mute-user)
 * [Unmute a user](/api/unmute-user)
 * [Get all alert words](/api/get-alert-words)

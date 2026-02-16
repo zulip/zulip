@@ -18,7 +18,7 @@
                         {{#if is_bot}}
                             <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                         {{/if}}
-                        <span class="user-profile-name">{{> user_full_name name=full_name}}</span>
+                        <span class="user-profile-name">{{> user_full_name name=full_name name_color=name_color}}</span>
                         <span class="user-profile-header-actions">
                             {{> components/icon_button custom_classes="copy-link-to-user-profile tippy-zulip-delayed-tooltip" icon="link-alt" intent="neutral" data-tippy-content=(t "Copy link to profile") aria-label=(t "Copy link to profile") }}
                             {{#if is_me}}

@@ -10,11 +10,15 @@ const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
 const group_permission_settings = zrequire("group_permission_settings");
+const settings_config = zrequire("settings_config");
 const user_groups = zrequire("user_groups");
 const {set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
 
 const realm = make_realm();
 set_realm(realm);
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const get_test_subgroup = (id) =>
     make_user_group({
@@ -1182,4 +1186,75 @@ run_test("get_assigned_group_permission_object", ({override}) => {
         setting_name,
         can_edit: true,
     });
+});
+
+run_test("get_color_for_user", () => {
+    const red_group = make_user_group({
+        name: "Red team",
+        id: 101,
+        members: new Set([1, 2]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        color: "#ff0000",
+        color_priority: 2,
+    });
+    const blue_group = make_user_group({
+        name: "Blue team",
+        id: 102,
+        members: new Set([1, 3]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        color: "#0000ff",
+        color_priority: 1,
+    });
+    const no_color_group = make_user_group({
+        name: "Plain group",
+        id: 103,
+        members: new Set([1, 4]),
+        is_system_group: false,
+        direct_subgroup_ids: new Set(),
+        color: "",
+        color_priority: null,
+    });
+
+    user_groups.initialize({
+        realm_user_groups: [red_group, blue_group, no_color_group],
+    });
+
+    // User 1 is in both colored groups; blue has lower priority number
+    // (= higher priority), so blue's color wins.
+    assert.equal(user_groups.get_color_for_user(1), "#0000ff");
+
+    // User 2 is only in the red group.
+    assert.equal(user_groups.get_color_for_user(2), "#ff0000");
+
+    // User 3 is only in the blue group.
+    assert.equal(user_groups.get_color_for_user(3), "#0000ff");
+
+    // User 4 is only in a group with no color set.
+    assert.equal(user_groups.get_color_for_user(4), "");
+
+    // User not in any group returns empty string.
+    assert.equal(user_groups.get_color_for_user(99), "");
+});
+
+run_test("get_user_name_color", ({override}) => {
+    // Empty string returns empty regardless of theme.
+    assert.equal(user_groups.get_user_name_color(""), "");
+
+    // In light theme, the function clamps lightness to a maximum of 45,
+    // darkening bright colors for readability on white backgrounds.
+    override(user_settings, "color_scheme", settings_config.color_scheme_values.light.code);
+    // Red (#ff0000) has LCH lightness ~54, which exceeds 45.
+    assert.equal(user_groups.get_user_name_color("#ff0000"), "#e00000");
+    // A dark brown already below the lightness threshold.
+    assert.equal(user_groups.get_user_name_color("#331a00"), "#331a00");
+
+    // In dark theme, the function raises lightness to a minimum of 55,
+    // brightening dark colors for readability on dark backgrounds.
+    override(user_settings, "color_scheme", settings_config.color_scheme_values.dark.code);
+    // Navy (#000080) has very low lightness, so it should be brightened.
+    assert.equal(user_groups.get_user_name_color("#000080"), "#946bfa");
+    // Red in dark theme — lightness ~54 is below 55 so slightly raised.
+    assert.equal(user_groups.get_user_name_color("#ff0000"), "#ff0902");
 });

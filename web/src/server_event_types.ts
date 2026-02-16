@@ -17,6 +17,8 @@ export const user_group_update_event_schema = z.object({
         can_mention_group: z.optional(group_setting_value_schema),
         can_remove_members_group: z.optional(group_setting_value_schema),
         deactivated: z.optional(z.boolean()),
+        color: z.optional(z.string()),
+        color_priority: z.optional(z.nullable(z.number())),
     }),
 });
 export type UserGroupUpdateEvent = z.output<typeof user_group_update_event_schema>;

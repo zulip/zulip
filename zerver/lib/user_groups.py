@@ -59,6 +59,8 @@ class UserGroupDict(TypedDict):
     can_mention_group: int | UserGroupMembersDict
     can_remove_members_group: int | UserGroupMembersDict
     deactivated: bool
+    color: str
+    color_priority: int | None
 
 
 @dataclass
@@ -753,6 +755,8 @@ def user_groups_in_realm_serialized(
                 user_group.can_remove_members_group_id, realm_group_ids, group_members_dict
             ),
             deactivated=user_group.deactivated,
+            color=user_group.color,
+            color_priority=user_group.color_priority,
         )
 
         group_dicts[user_group.id] = group_dict

@@ -1171,6 +1171,10 @@ export function dispatch_normal_event(event) {
                     const group = user_groups.get_user_group_from_id(group_id);
                     user_groups.update(event, group);
                     user_group_edit.update_group(event, group);
+                    if (event.data.color !== undefined || event.data.color_priority !== undefined) {
+                        activity_ui.redraw();
+                        message_live_update.rerender_messages_view();
+                    }
                     break;
                 }
                 default:

@@ -1,0 +1,37 @@
+<div class="popover-menu color-picker-popover no-auto-hide-left-sidebar-overlay" data-simplebar data-simplebar-tab-index="-1">
+    <div class="group-color-preview-header">
+        <span class="group-color-preview-name" style="color: {{preview_color}};">{{group_name}}</span>
+        <button class="color_picker_confirm_button icon-button icon-button-square icon-button-neutral tippy-zulip-delayed-tooltip" data-tooltip-template-id="color-picker-confirm-button-tooltip-template" aria-label="{{t 'Confirm new color' }}" tabindex="0">
+            <i class="zulip-icon zulip-icon-check"></i>
+        </button>
+    </div>
+    <ul role="menu" class="popover-menu-list">
+        <li role="none">
+            <div role="group" class="color-swatch-list" aria-label="{{t 'Group color' }}">
+                {{#each stream_color_palette as |row|}}
+                    {{#each row as |hex_color|}}
+                        <input type="radio" id="group-color-{{hex_color}}" class="color-swatch-input" name="color-picker-select" data-swatch-color="{{hex_color}}" {{#if (eq hex_color ../../group_color)}}checked{{/if}} />
+                        <label role="menuitemradio" class="color-swatch-label tippy-zulip-delayed-tooltip" for="group-color-{{hex_color}}" style="background-color: {{hex_color}};" aria-label="{{hex_color}}" data-tippy-content="{{hex_color}}" data-swatch-color="{{hex_color}}" data-row="{{@../index}}" data-column="{{@index}}" tabindex="0"></label>
+                    {{/each}}
+                {{/each}}
+            </div>
+        </li>
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <label role="menuitem" class="custom-color-picker popover-menu-link" tabindex="0">
+                <i class="custom-color-swatch-icon popover-menu-icon" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Custom color"}}</span>
+                <input type="color" class="color-picker-input" tabindex="-1" value="{{group_color_for_input}}" />
+            </label>
+        </li>
+        {{#if has_color}}
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="remove-group-color popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-eraser" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Remove color"}}</span>
+            </a>
+        </li>
+        {{/if}}
+    </ul>
+</div>

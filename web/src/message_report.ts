@@ -25,6 +25,7 @@ import * as stream_data from "./stream_data.ts";
 import {process_submessages} from "./submessage.ts";
 import * as ui_report from "./ui_report.ts";
 import {toggle_user_card_popover_for_message} from "./user_card_popover.ts";
+import * as user_groups from "./user_groups.ts";
 
 function register_message_preview_click_handlers(
     $message_preview_container: JQuery,
@@ -76,6 +77,9 @@ function get_message_container_for_preview(message: Message): MessageContainer {
         sender_is_bot: people.sender_is_bot(message),
         sender_is_deactivated: people.sender_is_deactivated(message),
         sender_is_guest: people.sender_is_guest(message),
+        sender_name_color: user_groups.get_user_name_color(
+            user_groups.get_color_for_user(message.sender_id),
+        ),
         should_add_guest_indicator_for_sender: people.should_add_guest_user_indicator(
             message.sender_id,
         ),

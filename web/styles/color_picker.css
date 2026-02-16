@@ -57,3 +57,11 @@
         outline-offset: -2px;
     }
 }
+
+.group-color-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    font-weight: 600;
+}
