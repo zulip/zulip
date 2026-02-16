@@ -1,6 +1,5 @@
 <div class="selected-stream-title">
-    <a {{#if preview_url}}class="tippy-zulip-delayed-tooltip selected-stream" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="top" href="{{preview_url}}"{{/if}}>
-    {{#unless preview_url}}{{t "Add subscribers to "}}{{/unless}}
+    <a class="tippy-zulip-delayed-tooltip selected-stream" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="top" href="{{preview_url}}">
     {{> stream_privacy_icon
       invite_only=sub.invite_only
       is_web_public=sub.is_web_public
