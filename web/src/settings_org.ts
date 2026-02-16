@@ -121,12 +121,50 @@ export function maybe_disable_widgets(): void {
         .addClass("control-label-disabled");
 }
 
+const DEFAULT_PLACEHOLDER = $t({defaultMessage: "Add roles, groups or users"});
+const NOBODY_DISABLED_PLACEHOLDER = $t({defaultMessage: "Nobody"});
+const NOBODY_ENABLED_PLACEHOLDER = $t({
+    defaultMessage: "Nobody. You can add roles, groups or users.",
+});
+const ADMINS_DISABLED_PLACEHOLDER = $t({defaultMessage: "Administrators"});
+const ADMINS_ENABLED_PLACEHOLDER = $t({
+    defaultMessage: "Administrators. You can add roles, groups or users.",
+});
+
+function set_special_org_permission_placeholders(enabled: boolean): void {
+    // Admins always have permission to add subscribers and to set
+    // topics and message deletion policy for a channel regardless
+    // of the setting value, so "Administrators" is a more accurate
+    // placeholder than "Nobody".
+    $(
+        "#id_realm_can_add_subscribers_group, #id_realm_can_set_topics_policy_group, #id_realm_can_set_delete_message_policy_group",
+    )
+        .find(".input")
+        .attr(
+            "data-placeholder",
+            enabled ? ADMINS_ENABLED_PLACEHOLDER : ADMINS_DISABLED_PLACEHOLDER,
+        );
+
+    // The effective permission to delete own messages also depends on
+    // realm_can_delete_any_message_group and the permission to create
+    // write only bots also depends on realm_can_create_bots_group, so we
+    // don't use "Nobody" here. When enabled, restore the default template
+    // placeholder.
+    $("#id_realm_can_delete_own_message_group, #id_realm_can_create_write_only_bots_group")
+        .find(".input")
+        .attr("data-placeholder", enabled ? DEFAULT_PLACEHOLDER : "");
+}
+
 export function enable_or_disable_group_permission_settings(): void {
     if (current_user.is_owner) {
         const $permission_pill_container_elements = $("#organization-permissions").find(
             ".pill-container",
         );
-        settings_components.enable_group_permission_setting($permission_pill_container_elements);
+        settings_components.enable_group_permission_setting(
+            $permission_pill_container_elements,
+            NOBODY_ENABLED_PLACEHOLDER,
+        );
+        set_special_org_permission_placeholders(true);
         return;
     }
 
@@ -134,7 +172,10 @@ export function enable_or_disable_group_permission_settings(): void {
         const $permission_pill_container_elements = $("#organization-permissions").find(
             ".pill-container",
         );
-        settings_components.enable_group_permission_setting($permission_pill_container_elements);
+        settings_components.enable_group_permission_setting(
+            $permission_pill_container_elements,
+            NOBODY_ENABLED_PLACEHOLDER,
+        );
 
         // Admins are not allowed to update organization joining and group
         // related settings.
@@ -146,15 +187,23 @@ export function enable_or_disable_group_permission_settings(): void {
         ];
         for (const setting_name of owner_editable_settings) {
             const $permission_pill_container = $(`#id_${CSS.escape(setting_name)}`);
-            settings_components.disable_group_permission_setting($permission_pill_container);
+            settings_components.disable_group_permission_setting(
+                $permission_pill_container,
+                NOBODY_DISABLED_PLACEHOLDER,
+            );
         }
+        set_special_org_permission_placeholders(true);
         return;
     }
 
     const $permission_pill_container_elements = $("#organization-permissions").find(
         ".pill-container",
     );
-    settings_components.disable_group_permission_setting($permission_pill_container_elements);
+    settings_components.disable_group_permission_setting(
+        $permission_pill_container_elements,
+        NOBODY_DISABLED_PLACEHOLDER,
+    );
+    set_special_org_permission_placeholders(false);
 }
 
 type OrganizationSettingsOptions = {
@@ -359,6 +408,7 @@ function disable_create_user_groups_if_on_limited_plan(): void {
     if (!realm.zulip_plan_is_not_limited) {
         settings_components.disable_group_permission_setting(
             $("#id_realm_can_create_groups").closest(".input-group"),
+            NOBODY_DISABLED_PLACEHOLDER,
         );
     }
 }
@@ -473,10 +523,12 @@ export function check_disable_direct_message_initiator_group_widget(): void {
     if (user_groups.is_setting_group_empty(direct_message_permission_value)) {
         settings_components.disable_group_permission_setting(
             $("#id_realm_direct_message_initiator_group"),
+            NOBODY_DISABLED_PLACEHOLDER,
         );
     } else if (current_user.is_admin) {
         settings_components.enable_group_permission_setting(
             $("#id_realm_direct_message_initiator_group"),
+            NOBODY_ENABLED_PLACEHOLDER,
         );
     }
 }
