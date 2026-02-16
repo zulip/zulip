@@ -326,6 +326,7 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                     negated: render_data.negated,
                 },
                 is_operator_suggestion,
+                suggestion,
             );
             const capitalized_first_letter = description_html.charAt(0).toUpperCase();
             description_html = capitalized_first_letter + description_html.slice(1);
