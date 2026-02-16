@@ -418,6 +418,7 @@ function topic_resolve_toggled(new_topic: string, original_topic: string): boole
 
 function get_post_edit_topic(
     topic_edited: boolean,
+    only_topic_case_changed: boolean,
     event: UpdateMessageEvent,
     new_topic: string | undefined,
     anchor_message: Message | undefined,
@@ -425,7 +426,7 @@ function get_post_edit_topic(
     const pre_edit_topic = util.get_edit_event_orig_topic(event);
     assert(pre_edit_topic !== undefined);
 
-    if (topic_edited) {
+    if (topic_edited || only_topic_case_changed) {
         assert(new_topic !== undefined);
         return new_topic;
     }
@@ -536,11 +537,17 @@ export function update_messages(events: UpdateMessageEvent[]): void {
         // A topic or stream edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message
         // where the user initiated the edit.
-        const topic_edited = new_topic !== undefined;
+        const orig_topic = util.get_edit_event_orig_topic(event);
+        const only_topic_case_changed =
+            new_topic !== undefined &&
+            orig_topic !== undefined &&
+            util.lower_same(new_topic, orig_topic) &&
+            new_topic !== orig_topic;
+        const topic_edited = new_topic !== undefined && !only_topic_case_changed;
         const stream_changed = new_stream_id !== undefined;
         const stream_archived = old_stream === undefined;
 
-        if (!topic_edited && !stream_changed) {
+        if (!topic_edited && !stream_changed && !only_topic_case_changed) {
             // If the topic or stream of the anchor message was changed,
             // it will be rerendered if present in any rendered list.
             //
@@ -549,10 +556,30 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             if (anchor_message !== undefined) {
                 messages_to_rerender.push(anchor_message);
             }
+        } else if (only_topic_case_changed && !stream_changed) {
+            assert(old_stream_id !== undefined);
+            assert(orig_topic !== undefined);
+            assert(new_topic !== undefined);
+
+            // Update each message to reflect the new case.
+            for (const message_id of event.message_ids) {
+                const message = message_store.get(message_id);
+                if (message === undefined) {
+                    continue;
+                }
+                assert(message.type === "stream");
+
+                message.topic = new_topic;
+                assert(event.topic_links !== undefined);
+                message.topic_links = event.topic_links;
+                messages_to_rerender.push(message);
+            }
+
+            // Update name case in the sidebar.
+            stream_topic_history.update_topic_name_case(old_stream_id, orig_topic, new_topic);
         } else {
             // We must be moving stream messages.
             assert(old_stream_id !== undefined);
-            const orig_topic = util.get_edit_event_orig_topic(event);
             assert(orig_topic !== undefined);
 
             const going_forward_change =
@@ -874,13 +901,14 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             alert_words.process_message(anchor_message);
         }
 
-        if (topic_edited || stream_changed) {
-            // We must be moving stream messages.
+        if (topic_edited || stream_changed || only_topic_case_changed) {
+            // We must be moving stream messages or changing the case of a topic.
             assert(old_stream_id !== undefined);
             const pre_edit_topic = util.get_edit_event_orig_topic(event);
             assert(pre_edit_topic !== undefined);
             const post_edit_topic = get_post_edit_topic(
                 topic_edited,
+                only_topic_case_changed,
                 event,
                 new_topic,
                 anchor_message,

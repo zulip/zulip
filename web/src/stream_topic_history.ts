@@ -299,6 +299,23 @@ export function remove_messages(opts: {
     }
 }
 
+export function update_topic_name_case(
+    stream_id: number,
+    old_topic_name: string,
+    new_topic_name: string,
+): void {
+    const history = stream_dict.get(stream_id);
+    if (!history) {
+        return;
+    }
+
+    const existing_topic = history.topics.get(old_topic_name);
+    if (!existing_topic) {
+        return;
+    }
+    existing_topic.pretty_name = new_topic_name;
+}
+
 export function find_or_create(stream_id: number): PerStreamHistory {
     let history = stream_dict.get(stream_id);
 
