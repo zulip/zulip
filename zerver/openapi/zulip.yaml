@@ -24351,7 +24351,7 @@ paths:
                   example: true
                   default: false
             encoding:
-              allow_deactivated:
+              include_deactivated_groups:
                 contentType: application/json
       responses:
         "200":
