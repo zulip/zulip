@@ -640,6 +640,8 @@ class MarkdownFixtureTest(ZulipTestCase):
         def replaced(payload: str, url: str, phrase: str = "") -> str:
             if url[:4] == "http":
                 href = url
+            elif "://" in url:
+                href = url
             elif "@" in url:
                 href = "mailto:" + url
             else:
