@@ -1810,7 +1810,7 @@ const throttled_update_empty_left_panel_message = _.throttle(() => {
 }, 100);
 
 export function remove_deactivated_user_from_all_groups(user_id: number): void {
-    const all_user_groups = user_groups.get_realm_user_groups(true);
+    const all_user_groups = user_groups.get_all_realm_user_groups(true, false, true);
 
     for (const user_group of all_user_groups) {
         if (user_groups.is_direct_member_of(user_id, user_group.id)) {
