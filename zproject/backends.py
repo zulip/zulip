@@ -53,6 +53,7 @@ from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
+from social_core.backends.discord import DiscordOAuth2
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.google import GoogleOAuth2
@@ -235,6 +236,12 @@ def apple_auth_enabled(
     realm: Realm | None = None, realm_authentication_methods: dict[str, bool] | None = None
 ) -> bool:
     return auth_enabled_helper(["Apple"], realm, realm_authentication_methods)
+
+
+def discord_auth_enabled(
+    realm: Realm | None = None, realm_authentication_methods: dict[str, bool] | None = None
+) -> bool:
+    return auth_enabled_helper(["Discord"], realm, realm_authentication_methods)
 
 
 def saml_auth_enabled(
@@ -3643,6 +3650,13 @@ def patch_saml_auth_require_messages_signed(auth: OneLogin_Saml2_Auth) -> None:
     # receiving a copy of the dict.
     assert auth.get_settings().get_security_data()["wantMessagesSigned"] is True
 
+
+@external_auth_method
+class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
+    sort_order = 150
+    auth_backend_name = "Discord"
+    name = "discord"
+    display_icon = staticfiles_storage.url("images/authentication_backends/discord-icon.png")
 
 @external_auth_method
 class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
