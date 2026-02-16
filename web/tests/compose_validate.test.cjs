@@ -26,6 +26,7 @@ const people = zrequire("people");
 const resolved_topic = zrequire("resolved_topic");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+stream_data.set_channel_has_topic_name(() => false);
 const compose_recipient = zrequire("/compose_recipient");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -286,6 +287,7 @@ test_ui("validate", ({mock_template, override}) => {
     const denmark = {
         stream_id: 100,
         name: "Denmark",
+        topics_policy: "inherit",
     };
     stream_data.add_sub_for_tests(denmark);
     compose_state.set_stream_id(denmark.stream_id);

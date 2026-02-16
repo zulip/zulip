@@ -42,6 +42,15 @@ const DEFAULT_COLOR = "#c2c2c2";
 // Expose get_subscriber_count for our automated puppeteer tests.
 export const get_subscriber_count = peer_data.get_subscriber_count;
 
+// This is stream_topic_history.channel_has_topic_name.
+// We have to indirectly set it to avoid a circular dependency.
+let channel_has_topic_name: (channel_id: number, topic_name: string) => boolean;
+export function set_channel_has_topic_name(
+    f: (channel_id: number, topic_name: string) => boolean,
+): void {
+    channel_has_topic_name = f;
+}
+
 class BinaryDict<T> {
     /*
       A dictionary that keeps track of which objects had the predicate
@@ -1223,11 +1232,22 @@ export function can_use_empty_topic(stream_id: number | undefined): boolean {
     if (sub.topics_policy === settings_config.get_stream_topics_policy_values().inherit.code) {
         topics_policy = realm.realm_topics_policy;
     }
-    return (
-        topics_policy ===
-            settings_config.get_stream_topics_policy_values().allow_empty_topic.code ||
-        topics_policy === settings_config.get_stream_topics_policy_values().empty_topic_only.code
-    );
+
+    if (
+        topics_policy === settings_config.get_stream_topics_policy_values().disable_empty_topic.code
+    ) {
+        return false;
+    }
+
+    if (channel_has_topic_name(stream_id, "")) {
+        return true;
+    }
+
+    if (can_create_new_topics_in_stream(stream_id)) {
+        return true;
+    }
+
+    return false;
 }
 
 export function is_empty_topic_only_channel(stream_id: number | undefined): boolean {

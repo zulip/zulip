@@ -294,6 +294,22 @@ test("test_stream_has_topics", () => {
     assert.equal(stream_topic_history.stream_has_locally_available_named_topics(stream_id), true);
 });
 
+test("channel_has_topic_name", () => {
+    const stream_id = 90;
+
+    // Unknown stream returns false.
+    assert.equal(stream_topic_history.channel_has_topic_name(stream_id, "topic1"), false);
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 901,
+        topic_name: "topic1",
+    });
+
+    assert.equal(stream_topic_history.channel_has_topic_name(stream_id, "topic1"), true);
+    assert.equal(stream_topic_history.channel_has_topic_name(stream_id, "nonexistent"), false);
+});
+
 test("test_stream_has_resolved_topics", () => {
     const stream_id = 89;
 
