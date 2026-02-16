@@ -811,7 +811,7 @@ export class Filter {
     }
 
     // Convert a list of terms to a human-readable description.
-    static parts_for_describe(
+    static search_description_as_html(
         term: NarrowTermSuggestion,
         is_operator_suggestion: boolean,
         search_string: string,
@@ -856,14 +856,6 @@ export class Filter {
                     ? $t({defaultMessage: "exclude all public channels"})
                     : $t({defaultMessage: "all public channels"});
         }
-    }
-
-    static search_description_as_html(
-        term: NarrowTermSuggestion,
-        is_operator_suggestion: boolean,
-        search_string: string,
-    ): string {
-        return Filter.parts_for_describe(term, is_operator_suggestion, search_string);
     }
 
     static is_spectator_compatible(terms: NarrowTerm[]): boolean {
