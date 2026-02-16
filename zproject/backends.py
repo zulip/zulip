@@ -3695,6 +3695,7 @@ def patch_saml_auth_require_messages_signed(auth: OneLogin_Saml2_Auth) -> None:
     # receiving a copy of the dict.
     assert auth.get_settings().get_security_data()["wantMessagesSigned"] is True
 
+
 @external_auth_method
 class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     name = "oidc"
