@@ -465,6 +465,7 @@ test("check_is_suggestions", ({override}) => {
         `dm:${alice.user_id}`,
         `sender:${alice.user_id}`,
         `dm-including:${alice.user_id}`,
+        `mentions:${alice.user_id}`,
         "has:image",
     ];
     assert.deepEqual(suggestions, expected);
@@ -602,7 +603,13 @@ test("topic_suggestions", ({override}) => {
     stream_data.add_sub_for_tests({stream_id: office_id, name: "office", subscribed: true});
 
     suggestions = get_suggestions("te");
-    expected = ["te", `dm:${ted.user_id}`, `sender:${ted.user_id}`, `dm-including:${ted.user_id}`];
+    expected = [
+        "te",
+        `dm:${ted.user_id}`,
+        `sender:${ted.user_id}`,
+        `dm-including:${ted.user_id}`,
+        `mentions:${ted.user_id}`,
+    ];
     assert.deepEqual(suggestions, expected);
 
     stream_topic_history.add_message({
@@ -623,6 +630,7 @@ test("topic_suggestions", ({override}) => {
         `dm:${ted.user_id}`,
         `sender:${ted.user_id}`,
         `dm-including:${ted.user_id}`,
+        `mentions:${ted.user_id}`,
         `channel:${office_id} topic:team`,
         `channel:${office_id} topic:✔+team+work`,
         `channel:${office_id} topic:test`,
@@ -892,6 +900,8 @@ test("people_suggestions", ({override}) => {
         `sender:${ted.user_id}`,
         `dm-including:${bob.user_id}`,
         `dm-including:${ted.user_id}`,
+        `mentions:${bob.user_id}`,
+        `mentions:${ted.user_id}`,
     ];
 
     assert.deepEqual(suggestions, expected);
@@ -915,12 +925,21 @@ test("people_suggestions", ({override}) => {
         `dm-including:${bob.user_id}`,
         `dm-including:${ted.user_id}`,
         `dm-including:${inaccessible_user.user_id}`,
+        `mentions:${bob.user_id}`,
+        `mentions:${ted.user_id}`,
+        `mentions:${inaccessible_user.user_id}`,
     ];
     assert.deepEqual(suggestions, expected);
 
     suggestions = get_suggestions("Ted "); // note space
 
-    expected = ["Ted", `dm:${ted.user_id}`, `sender:${ted.user_id}`, `dm-including:${ted.user_id}`];
+    expected = [
+        "Ted",
+        `dm:${ted.user_id}`,
+        `sender:${ted.user_id}`,
+        `dm-including:${ted.user_id}`,
+        `mentions:${ted.user_id}`,
+    ];
 
     assert.deepEqual(suggestions, expected);
 

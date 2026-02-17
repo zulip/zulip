@@ -49,6 +49,7 @@ export const narrow_canonical_operator_schema = z.enum([
     "sender",
     "topic",
     "with",
+    "mentions",
 ]);
 export type NarrowCanonicalOperator = z.output<typeof narrow_canonical_operator_schema>;
 
@@ -136,6 +137,11 @@ export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
     z.object({
         operator: z.literal("dm"),
         operand: z.array(z.number()),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("mentions"),
+        operand: z.number(),
         negated: z.optional(z.boolean()),
     }),
 ]);

@@ -190,6 +190,15 @@
                             {{/tr}}
                         </td>
                     </tr>
+                    <tr>
+                        <td class="operator">mentions:<span class="operator_value">user</span></td>
+                        <td class="definition">
+                            {{#tr}}
+                                Narrow to messages that mentions <z-value></z-value>.
+                                {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
+                            {{/tr}}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
             <p>{{t "You can combine search filters as needed." }}</p>
