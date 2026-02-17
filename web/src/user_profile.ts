@@ -44,7 +44,6 @@ import * as modals from "./modals.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
-import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -1127,10 +1126,9 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                         $button,
                     );
                     if (!api_key) {
-                        scroll_util.scroll_element_into_container(
-                            $("#bot-edit-form-error"),
-                            $("#user-profile-modal .modal__content"),
-                        );
+                        $("#bot-edit-form")
+                            .closest(".simplebar-content-wrapper")
+                            .animate({scrollTop: 0}, "fast");
                         return;
                     }
                     integration_url_modal.show_generate_integration_url_modal(api_key);
