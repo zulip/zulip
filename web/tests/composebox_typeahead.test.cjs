@@ -8,6 +8,8 @@ const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const example_settings = require("./lib/example_settings.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user, make_cross_realm_bot} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -329,132 +331,103 @@ function emoji_objects(emoji_names) {
     return emoji_names.map((emoji_name) => emoji_list_by_name.get(emoji_name));
 }
 
-const ali = {
+const ali = make_user({
     email: "ali@zulip.com",
     user_id: 98,
     full_name: "Ali",
-    is_moderator: false,
-    is_bot: false,
-};
+});
 const ali_item = user_item(ali);
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 99,
     full_name: "Alice",
-    is_moderator: false,
-    is_bot: false,
-};
+});
 const alice_item = user_item(alice);
 
-const hamlet = {
+const hamlet = make_user({
     email: "hamlet@zulip.com",
     user_id: 100,
     full_name: "King Hamlet",
-    is_moderator: false,
-    is_bot: false,
-};
+});
 const hamlet_item = user_item(hamlet);
 
-const othello = {
+const othello = make_user({
     email: "othello@zulip.com",
     user_id: 101,
     full_name: "Othello, the Moor of Venice",
-    is_moderator: false,
-    delivery_email: null,
-    is_bot: false,
-};
+});
 const othello_item = user_item(othello);
 
-const cordelia = {
+const cordelia = make_user({
     email: "cordelia@zulip.com",
     user_id: 102,
     full_name: "Cordelia, Lear's daughter",
-    is_moderator: false,
-    is_bot: false,
-};
+});
 const cordelia_item = user_item(cordelia);
 
-const deactivated_user = {
+const deactivated_user = make_user({
     email: "other@zulip.com",
     user_id: 103,
     full_name: "Deactivated User",
-    is_moderator: false,
-    is_bot: false,
-};
+});
 const deactivated_user_item = user_item(deactivated_user);
 
-const lear = {
+const lear = make_user({
     email: "lear@zulip.com",
     user_id: 104,
     full_name: "King Lear",
-    is_moderator: false,
-    is_bot: false,
-};
+});
 const lear_item = user_item(lear);
 
-const twin1 = {
+const twin1 = make_user({
     full_name: "Mark Twin",
-    is_moderator: false,
     user_id: 105,
     email: "twin1@zulip.com",
-    is_bot: false,
-};
+});
 const twin1_item = user_item(twin1);
 
-const twin2 = {
+const twin2 = make_user({
     full_name: "Mark Twin",
-    is_moderator: false,
     user_id: 106,
     email: "twin2@zulip.com",
-    is_bot: false,
-};
+});
 const twin2_item = user_item(twin2);
 
-const gael = {
+const gael = make_user({
     full_name: "Gaël Twin",
-    is_moderator: false,
     user_id: 107,
     email: "twin3@zulip.com",
-    is_bot: false,
-};
+});
 const gael_item = user_item(gael);
 
-const hal = {
+const hal = make_user({
     full_name: "Earl Hal",
-    is_moderator: false,
     user_id: 108,
     email: "hal@zulip.com",
-    is_bot: false,
-};
+});
 const hal_item = user_item(hal);
 
-const harry = {
+const harry = make_user({
     full_name: "Harry",
-    is_moderator: false,
     user_id: 109,
     email: "harry@zulip.com",
-    is_bot: false,
-};
+});
 const harry_item = user_item(harry);
 
-const welcome_bot = {
+const welcome_bot = make_cross_realm_bot({
     full_name: "Welcome Bot",
-    is_bot: true,
-    is_system_bot: true,
     user_id: 110,
     email: "welcome-bot@zulip.com",
-};
+});
 
 const welcome_bot_item = user_item(welcome_bot);
 
-const notification_bot = {
+const notification_bot = make_cross_realm_bot({
     full_name: "Notification Bot",
-    is_bot: true,
-    is_system_bot: true,
     user_id: 111,
     email: "notification-bot@zulip.com",
-};
+});
 
 const notification_bot_item = user_item(notification_bot);
 
@@ -596,65 +569,77 @@ const full_members = user_group_item(
     }),
 );
 
-const sweden_stream = stream_item({
-    name: "Sweden",
-    description: "Cold, mountains and home decor.",
-    stream_id: 1,
-    subscribed: true,
-    can_administer_channel_group: support.id,
-    can_add_subscribers_group: support.id,
-    can_create_topic_group: admins.id,
-    can_subscribe_group: support.id,
-});
-const denmark_stream = stream_item({
-    name: "Denmark",
-    description: "Vikings and boats, in a serene and cold weather.",
-    stream_id: 2,
-    subscribed: true,
-    can_administer_channel_group: support.id,
-    can_add_subscribers_group: support.id,
-    can_create_topic_group: members.id,
-    can_subscribe_group: support.id,
-});
-const netherland_stream = stream_item({
-    name: "The Netherlands",
-    description: "The Netherlands, city of dream.",
-    stream_id: 3,
-    subscribed: false,
-    can_administer_channel_group: support.id,
-    can_add_subscribers_group: support.id,
-    can_create_topic_group: members.id,
-    can_subscribe_group: support.id,
-});
-const mobile_stream = stream_item({
-    name: "Mobile",
-    description: "Mobile development",
-    stream_id: 4,
-    subscribed: false,
-    can_administer_channel_group: support.id,
-    can_add_subscribers_group: support.id,
-    can_create_topic_group: members.id,
-    can_subscribe_group: support.id,
-});
-const mobile_team_stream = stream_item({
-    name: "Mobile team",
-    description: "Mobile development team",
-    stream_id: 5,
-    subscribed: true,
-    can_administer_channel_group: support.id,
-    can_add_subscribers_group: support.id,
-    can_create_topic_group: members.id,
-    can_subscribe_group: support.id,
-});
-const broken_link_stream = stream_item({
-    name: "A* Algorithm",
-    description: "A `*` in the stream name produces a broken #**stream>topic** link",
-    stream_id: 6,
-    subscribed: true,
-    can_administer_channel_group: support.id,
-    can_add_subscribers_group: support.id,
-    can_create_topic_group: members.id,
-});
+const sweden_stream = stream_item(
+    make_stream({
+        name: "Sweden",
+        description: "Cold, mountains and home decor.",
+        stream_id: 1,
+        subscribed: true,
+        can_administer_channel_group: support.id,
+        can_add_subscribers_group: support.id,
+        can_create_topic_group: admins.id,
+        can_subscribe_group: support.id,
+    }),
+);
+const denmark_stream = stream_item(
+    make_stream({
+        name: "Denmark",
+        description: "Vikings and boats, in a serene and cold weather.",
+        stream_id: 2,
+        subscribed: true,
+        can_administer_channel_group: support.id,
+        can_add_subscribers_group: support.id,
+        can_create_topic_group: members.id,
+        can_subscribe_group: support.id,
+    }),
+);
+const netherland_stream = stream_item(
+    make_stream({
+        name: "The Netherlands",
+        description: "The Netherlands, city of dream.",
+        stream_id: 3,
+        subscribed: false,
+        can_administer_channel_group: support.id,
+        can_add_subscribers_group: support.id,
+        can_create_topic_group: members.id,
+        can_subscribe_group: support.id,
+    }),
+);
+const mobile_stream = stream_item(
+    make_stream({
+        name: "Mobile",
+        description: "Mobile development",
+        stream_id: 4,
+        subscribed: false,
+        can_administer_channel_group: support.id,
+        can_add_subscribers_group: support.id,
+        can_create_topic_group: members.id,
+        can_subscribe_group: support.id,
+    }),
+);
+const mobile_team_stream = stream_item(
+    make_stream({
+        name: "Mobile team",
+        description: "Mobile development team",
+        stream_id: 5,
+        subscribed: true,
+        can_administer_channel_group: support.id,
+        can_add_subscribers_group: support.id,
+        can_create_topic_group: members.id,
+        can_subscribe_group: support.id,
+    }),
+);
+const broken_link_stream = stream_item(
+    make_stream({
+        name: "A* Algorithm",
+        description: "A `*` in the stream name produces a broken #**stream>topic** link",
+        stream_id: 6,
+        subscribed: true,
+        can_administer_channel_group: support.id,
+        can_add_subscribers_group: support.id,
+        can_create_topic_group: members.id,
+    }),
+);
 
 stream_data.add_sub_for_tests(sweden_stream);
 stream_data.add_sub_for_tests(denmark_stream);
