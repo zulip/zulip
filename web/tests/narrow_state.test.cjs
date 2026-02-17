@@ -65,7 +65,10 @@ test("stream", () => {
     assert.equal(narrow_state.stream_sub(), undefined);
 
     // Stream exists and user has access to the stream.
-    const test_stream = make_stream({name: "Test", stream_id: test_stream_id});
+    const test_stream = make_stream({
+        name: "Test",
+        stream_id: test_stream_id,
+    });
     stream_data.add_sub_for_tests(test_stream);
     set_filter([
         ["stream", test_stream_id.toString()],
@@ -305,7 +308,10 @@ test("stream_sub", () => {
     assert.equal(narrow_state.stream_name(), undefined);
     assert.equal(narrow_state.stream_sub(), undefined);
 
-    const sub = make_stream({name: "Foo", stream_id: 55});
+    const sub = make_stream({
+        name: "Foo",
+        stream_id: 55,
+    });
     stream_data.add_sub_for_tests(sub);
     assert.equal(narrow_state.stream_name(), "Foo");
     assert.deepEqual(narrow_state.stream_sub(), sub);

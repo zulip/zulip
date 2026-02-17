@@ -94,7 +94,11 @@ function test(label, f) {
 }
 
 test("unsubscribe", () => {
-    const devel = make_stream({name: "devel", subscribed: false, stream_id: 1});
+    const devel = make_stream({
+        name: "devel",
+        subscribed: false,
+        stream_id: 1,
+    });
     stream_data.add_sub_for_tests(devel);
 
     // verify clean slate
@@ -554,7 +558,11 @@ test("is_subscriber_subset", async () => {
 });
 
 test("get_unique_subscriber_count_for_streams", async () => {
-    const sub = make_stream({name: "Rome", subscribed: true, stream_id: 1001});
+    const sub = make_stream({
+        name: "Rome",
+        subscribed: true,
+        stream_id: 1001,
+    });
     stream_data.add_sub_for_tests(sub);
 
     people.add_active_user(fred);
@@ -579,7 +587,11 @@ test("fetch_subscriptions_for_user", async () => {
         subscribed: true,
     });
     stream_data.add_sub_for_tests(india);
-    const rome = make_stream({name: "Rome", subscribed: true, stream_id: 1001});
+    const rome = make_stream({
+        name: "Rome",
+        subscribed: true,
+        stream_id: 1001,
+    });
     stream_data.add_sub_for_tests(rome);
 
     let channel_get_calls = 0;

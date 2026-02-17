@@ -356,7 +356,13 @@ test("group_suggestions", () => {
 
     // Doesn't show dms because it's invalid in combination
     // with a channel. (Random channel id.)
-    stream_data.add_sub_for_tests(make_stream({stream_id: 66, name: "misc", subscribed: true}));
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: 66,
+            name: "misc",
+            subscribed: true,
+        }),
+    );
     query = `channel:66 has:link dm:${bob.user_id},Smit`;
     suggestions = get_suggestions(query);
     expected = [];
@@ -383,7 +389,11 @@ test("empty_query_suggestions", () => {
         }),
     );
     stream_data.add_sub_for_tests(
-        make_stream({stream_id: office_id, name: "office", subscribed: true}),
+        make_stream({
+            stream_id: office_id,
+            name: "office",
+            subscribed: true,
+        }),
     );
 
     const suggestions = get_suggestions(query);
@@ -416,8 +426,20 @@ test("has_suggestions", ({override}) => {
     // Checks that category wise suggestions are displayed instead of a single
     // default suggestion when suggesting `has` operator.
     let query = "h";
-    stream_data.add_sub_for_tests(make_stream({stream_id: 44, name: "devel", subscribed: true}));
-    stream_data.add_sub_for_tests(make_stream({stream_id: 77, name: "office", subscribed: true}));
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: 44,
+            name: "devel",
+            subscribed: true,
+        }),
+    );
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: 77,
+            name: "office",
+            subscribed: true,
+        }),
+    );
     override(narrow_state, "stream_id", noop);
 
     let suggestions = get_suggestions(query);
@@ -451,7 +473,13 @@ test("has_suggestions", ({override}) => {
     expected = ["att", "has:attachment"];
     assert.deepEqual(suggestions, expected);
 
-    stream_data.add_sub_for_tests(make_stream({stream_id: 66, name: "misc", subscribed: true}));
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: 66,
+            name: "misc",
+            subscribed: true,
+        }),
+    );
     query = "channel:66 is:alerted has:lin";
     suggestions = get_suggestions(query);
     expected = ["channel:66 is:alerted has:link"];
@@ -528,7 +556,13 @@ test("check_is_suggestions", ({override}) => {
     expected = ["st", "channels:", "channel:", "is:starred"];
     assert.deepEqual(suggestions, expected);
 
-    stream_data.add_sub_for_tests(make_stream({stream_id: 66, name: "misc", subscribed: true}));
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: 66,
+            name: "misc",
+            subscribed: true,
+        }),
+    );
     query = "channel:66 has:link is:sta";
     suggestions = get_suggestions(query);
     expected = ["channel:66 has:link is:starred"];
@@ -583,7 +617,10 @@ test("sent_by_me_suggestions", ({override}) => {
     assert.deepEqual(suggestions, expected);
 
     const denmark_id = new_stream_id();
-    const sub = make_stream({name: "Denmark", stream_id: denmark_id});
+    const sub = make_stream({
+        name: "Denmark",
+        stream_id: denmark_id,
+    });
     stream_data.add_sub_for_tests(sub);
     query = `channel:${denmark_id} topic:Denmark1 sent`;
     suggestions = get_suggestions(query);
@@ -606,16 +643,28 @@ test("topic_suggestions", ({override}) => {
     override(stream_topic_history_util, "get_server_history", noop);
     const office_id = new_stream_id();
     stream_data.add_sub_for_tests(
-        make_stream({stream_id: office_id, name: "office", subscribed: true}),
+        make_stream({
+            stream_id: office_id,
+            name: "office",
+            subscribed: true,
+        }),
     );
     override(narrow_state, "stream_id", () => office_id);
 
     const devel_id = new_stream_id();
     stream_data.add_sub_for_tests(
-        make_stream({stream_id: devel_id, name: "devel", subscribed: true}),
+        make_stream({
+            stream_id: devel_id,
+            name: "devel",
+            subscribed: true,
+        }),
     );
     stream_data.add_sub_for_tests(
-        make_stream({stream_id: office_id, name: "office", subscribed: true}),
+        make_stream({
+            stream_id: office_id,
+            name: "office",
+            subscribed: true,
+        }),
     );
 
     suggestions = get_suggestions("te");
@@ -829,7 +878,11 @@ test("whitespace_glitch", ({override}) => {
 
     override(stream_topic_history_util, "get_server_history", noop);
     stream_data.add_sub_for_tests(
-        make_stream({stream_id: office_stream_id, name: "office", subscribed: true}),
+        make_stream({
+            stream_id: office_stream_id,
+            name: "office",
+            subscribed: true,
+        }),
     );
 
     const suggestions = get_suggestions(query);
@@ -842,7 +895,11 @@ test("whitespace_glitch", ({override}) => {
 test("channel_completion", ({override}) => {
     const office_stream_id = new_stream_id();
     stream_data.add_sub_for_tests(
-        make_stream({stream_id: office_stream_id, name: "office", subscribed: true}),
+        make_stream({
+            stream_id: office_stream_id,
+            name: "office",
+            subscribed: true,
+        }),
     );
     const dev_help_stream_id = new_stream_id();
     stream_data.add_sub_for_tests(
@@ -983,7 +1040,13 @@ test("operator_suggestions", ({override}) => {
     expected = ["-s", "-sender:", "-channels:", "-channel:", `-sender:${me.user_id}`];
     assert.deepEqual(suggestions, expected);
 
-    stream_data.add_sub_for_tests(make_stream({stream_id: 66, name: "misc", subscribed: true}));
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: 66,
+            name: "misc",
+            subscribed: true,
+        }),
+    );
     query = "channel:66 is:alerted -f";
     suggestions = get_suggestions(query);
     expected = [
@@ -997,11 +1060,19 @@ test("operator_suggestions", ({override}) => {
 test("queries_with_spaces", () => {
     const office_id = new_stream_id();
     stream_data.add_sub_for_tests(
-        make_stream({stream_id: office_id, name: "office", subscribed: true}),
+        make_stream({
+            stream_id: office_id,
+            name: "office",
+            subscribed: true,
+        }),
     );
     const dev_help_id = new_stream_id();
     stream_data.add_sub_for_tests(
-        make_stream({stream_id: dev_help_id, name: "dev help", subscribed: true}),
+        make_stream({
+            stream_id: dev_help_id,
+            name: "dev help",
+            subscribed: true,
+        }),
     );
 
     // test allowing spaces with quotes surrounding operand
