@@ -233,34 +233,63 @@ function scroll_to_element($element: JQuery, context: Context): void {
     activate_element($element[0].children[0], context);
 
     const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
-    const $items_container = $(`.${CSS.escape(context.items_container_selector)}`);
     const $box_item = $(`.${CSS.escape(context.box_item_selector)}`);
+    const $scroll_element = scroll_util.get_scroll_element($items_list);
+    const scroll_element = util.the($scroll_element);
+    const prefers_reduced_motion =
+        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const behavior: ScrollBehavior = prefers_reduced_motion ? "auto" : "smooth";
+    const section_id = $element.parent().attr("id");
+    const is_first_in_section =
+        $element.parent().children().first()[0] !== undefined &&
+        $element.parent().children().first()[0] === $element[0];
+    const is_section_boundary =
+        (section_id === "drafts-from-conversation" || section_id === "other-drafts") &&
+        is_first_in_section;
+
+    // When crossing between draft sections, align the first row of the new section
+    // to the top of the list so navigation starts from the beginning, not the end.
+    if (is_section_boundary) {
+        const view_top = scroll_element.getBoundingClientRect().top;
+        const elem_top = $element[0].getBoundingClientRect().top;
+        const delta = elem_top - view_top;
+        if (Math.abs(delta) > 2) {
+            scroll_element.scrollTo({top: scroll_element.scrollTop + delta, behavior});
+        }
+        return;
+    }
 
     // If focused element is first, scroll to the top.
     if (util.the($box_item.first()).parentElement === $element[0]) {
-        util.the($items_list).scrollTop = 0;
+        const view_rect = scroll_element.getBoundingClientRect();
+        const row_rect = $element[0].getBoundingClientRect();
+        const view_height = view_rect.bottom - view_rect.top;
+        if (row_rect.height > view_height) {
+            const delta = row_rect.bottom - view_rect.bottom;
+            scroll_element.scrollTo({top: scroll_element.scrollTop + delta, behavior});
+        } else {
+            scroll_element.scrollTo({top: 0, behavior});
+        }
+        return;
     }
-
     // If focused element is last, scroll to the bottom.
     if (util.the($box_item.last()).parentElement === $element[0]) {
-        util.the($items_list).scrollTop =
-            util.the($items_list).scrollHeight - ($items_list.height() ?? 0);
+        const view_rect = scroll_element.getBoundingClientRect();
+        const row_rect = $element[0].getBoundingClientRect();
+        const view_height = view_rect.bottom - view_rect.top;
+        if (row_rect.height > view_height) {
+            const delta = row_rect.top - view_rect.top;
+            scroll_element.scrollTo({top: scroll_element.scrollTop + delta, behavior});
+        } else {
+            scroll_element.scrollTo({
+                top: scroll_element.scrollHeight - scroll_element.clientHeight,
+                behavior,
+            });
+        }
+        return;
     }
 
-    // If focused element is cut off from the top, scroll up halfway in modal.
-    if ($element.position().top < 55) {
-        // 55 is the minimum distance from the top that will require extra scrolling.
-        util.the($items_list).scrollTop -= util.the($items_list).clientHeight / 2;
-    }
-
-    // If focused element is cut off from the bottom, scroll down halfway in modal.
-    const dist_from_top = $element.position().top;
-    const total_dist = dist_from_top + $element[0].clientHeight;
-    const dist_from_bottom = util.the($items_container).clientHeight - total_dist;
-    if (dist_from_bottom < -4) {
-        // -4 is the min dist from the bottom that will require extra scrolling.
-        util.the($items_list).scrollTop += util.the($items_list).clientHeight / 2;
-    }
+    scroll_util.scroll_element_into_container($element, $items_list);
 }
 
 function get_element_by_id(id: string, context: Context): JQuery {
