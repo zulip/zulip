@@ -122,77 +122,93 @@ export function generate_and_insert_audio_or_video_call_link(
                 "width=800,height=500,noopener,noreferrer",
             );
         }
-    } else if (realm.realm_video_chat_provider === available_providers.big_blue_button?.id) {
-        const meeting_name = `${get_recipient_label()?.label_text ?? ""} meeting`;
-        const request = {
-            meeting_name,
-            voice_only: is_audio_call,
-        };
-        void channel.get({
-            url: "/json/calls/bigbluebutton/create",
-            data: request,
-            success(response) {
-                const data = call_response_schema.parse(response);
-                if (is_audio_call) {
-                    insert_audio_call_url(data.url, $target_textarea);
-                } else {
-                    insert_video_call_url(data.url, $target_textarea);
-                }
-            },
-        });
-    } else if (realm.realm_video_chat_provider === available_providers.constructor_groups?.id) {
-        compose_call.abort_video_callbacks(edit_message_id);
-        const key = edit_message_id ?? "";
-
-        const xhr = channel.post({
-            url: "/json/calls/constructorgroups/create",
-            data: {},
-            success(response) {
-                const data = call_response_schema.parse(response);
-                compose_call.video_call_xhrs.delete(key);
-                insert_video_call_url(data.url, $target_textarea);
-            },
-            error(_xhr, status) {
-                compose_call.video_call_xhrs.delete(key);
-                if (status !== "abort") {
-                    ui_report.generic_embed_error(
-                        $t_html({defaultMessage: "Failed to create video call."}),
-                        2000,
-                    );
-                }
-            },
-        });
-
-        if (xhr !== undefined) {
-            compose_call.video_call_xhrs.set(key, xhr);
-        }
     } else {
-        const video_call_id = util.random_int(100000000000000, 999999999999999);
-        const video_call_url = compose_call.get_jitsi_server_url(video_call_id.toString());
-        if (video_call_url === null) {
-            return;
-        }
-        /*  Because Jitsi remembers what last call type you joined
-            in browser local storage, we need to specify that video
-            should not be muted in the video call case, or your
-            next call will also join without video after joining an
-            audio-only call.
+        switch (realm.realm_video_chat_provider) {
+            case available_providers.big_blue_button?.id: {
+                const meeting_name = `${get_recipient_label()?.label_text ?? ""} meeting`;
+                const request = {
+                    meeting_name,
+                    voice_only: is_audio_call,
+                };
+                void channel.get({
+                    url: "/json/calls/bigbluebutton/create",
+                    data: request,
+                    success(response) {
+                        const data = call_response_schema.parse(response);
+                        if (is_audio_call) {
+                            insert_audio_call_url(data.url, $target_textarea);
+                        } else {
+                            insert_video_call_url(data.url, $target_textarea);
+                        }
+                    },
+                });
 
-            This has the annoying downside that it requires users
-            who have a personal preference to disable video every
-            time, but Jitsi's UI makes that very easy to do, and
-            that inconvenience is probably less important than letting
-            the person organizing a call specify their intended
-            call type (video vs audio).
-        */
-        const video_muted = is_audio_call ? "true" : "false";
-        video_call_url.hash = `config.startWithVideoMuted=${video_muted}`;
-        const video_call_link = video_call_url.toString();
+                break;
+            }
+            case available_providers.constructor_groups?.id: {
+                compose_call.abort_video_callbacks(edit_message_id);
+                const key = edit_message_id ?? "";
 
-        if (is_audio_call) {
-            insert_audio_call_url(video_call_link, $target_textarea);
-        } else {
-            insert_video_call_url(video_call_link, $target_textarea);
+                const xhr = channel.post({
+                    url: "/json/calls/constructorgroups/create",
+                    data: {},
+                    success(response) {
+                        const data = call_response_schema.parse(response);
+                        compose_call.video_call_xhrs.delete(key);
+                        insert_video_call_url(data.url, $target_textarea);
+                    },
+                    error(_xhr, status) {
+                        compose_call.video_call_xhrs.delete(key);
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(
+                                $t_html({defaultMessage: "Failed to create video call."}),
+                                2000,
+                            );
+                        }
+                    },
+                });
+
+                if (xhr !== undefined) {
+                    compose_call.video_call_xhrs.set(key, xhr);
+                }
+
+                break;
+            }
+            case available_providers.jitsi_meet?.id: {
+                const video_call_id = util.random_int(100000000000000, 999999999999999);
+                const video_call_url = compose_call.get_jitsi_server_url(video_call_id.toString());
+                if (video_call_url === null) {
+                    return;
+                }
+                /*  Because Jitsi remembers what last call type you joined
+                    in browser local storage, we need to specify that video
+                    should not be muted in the video call case, or your
+                    next call will also join without video after joining an
+                    audio-only call.
+
+                    This has the annoying downside that it requires users
+                    who have a personal preference to disable video every
+                    time, but Jitsi's UI makes that very easy to do, and
+                    that inconvenience is probably less important than letting
+                    the person organizing a call specify their intended
+                    call type (video vs audio).
+                */
+                const video_muted = is_audio_call ? "true" : "false";
+                video_call_url.hash = `config.startWithVideoMuted=${video_muted}`;
+                const video_call_link = video_call_url.toString();
+
+                if (is_audio_call) {
+                    insert_audio_call_url(video_call_link, $target_textarea);
+                } else {
+                    insert_video_call_url(video_call_link, $target_textarea);
+                }
+                break;
+            }
+            default: {
+                throw new Error(
+                    `Unknown video call provider ID ${realm.realm_video_chat_provider}`,
+                );
+            }
         }
     }
 }
