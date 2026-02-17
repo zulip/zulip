@@ -370,11 +370,20 @@ faster and easier to just plan and write them well the first time.
 
 ### PR Description Should:
 
-1. Explain **why** the change is needed, not just what changed
-2. Describe how you tested the change
-3. Include screenshots for UI changes
-4. Link to relevant issues or discussions
-5. Complete the self-review checklist
+Output the PR description in a markdown code block so that formatting
+(bold, headers, checkboxes, etc.) copy-pastes correctly into GitHub.
+
+1. Start with a `Fixes: #...` line linking the issue being addressed.
+2. Explain **why** the change is needed, not just what changed.
+3. Describe how you tested the change, using checkbox format for the
+   test plan (e.g., `- [x] ./tools/test-backend ...`).
+4. Include screenshots for UI changes.
+5. Link to relevant issues or discussions.
+6. Call out any open questions, concerns, or decisions you are uncertain
+   about, so they can be resolved during review.
+7. Include the self-review checklist from
+   `.github/pull_request_template.md` using checkbox format (`- [x]` /
+   `- [ ]`), checking off all applicable items.
 
 ### PR Description Should Not:
 
