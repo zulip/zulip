@@ -686,8 +686,11 @@ other IdPs (identity providers). You can configure it as follows:
         in your IdP's interface when setting up SAML authentication
         (referred to as "Attribute Statements" with Okta, or
         "Attribute Mapping" with Google Workspace). You'll want to connect
-        these so that Zulip gets the email address (used as a unique
-        user ID) and name for the user.
+        these so that Zulip gets the email address and name for the
+        user. The `attr_user_permanent_id` field should be set to a
+        **stable unique identifier** for the user (see
+        [Synchronizing email addresses with
+        SAML](#synchronizing-email-addresses-with-saml)).
      5. The `display_name` and `display_icon` fields are used to
         display the login/registration buttons for the IdP.
      6. The `auto_signup` field determines how Zulip should handle
@@ -872,6 +875,35 @@ using SAML, groups are synced as follows:
 Only direct membership of groups is synced through this protocol;
 subgroups of Zulip groups are managed entirely [inside
 Zulip](https://zulip.com/help/manage-user-groups#add-user-groups-to-a-group).
+
+### Synchronizing email addresses with SAML
+
+Zulip supports automatically handling changes in email address for
+SAML-authenticated users. This feature activates automatically when
+`attr_user_permanent_id` is set to an attribute **different from**
+`attr_email` in `SOCIAL_AUTH_SAML_ENABLED_IDPS`. When active, users
+are identified by their permanent ID rather than by email address, and
+Zulip will update their email on their next login instead of creating
+a duplicate account.
+
+For this to work correctly, `attr_user_permanent_id` must point to a
+**stable unique identifier** that does not change when the user's
+email address changes. Check your IdP's documentation for a suitable
+attribute — for example, an opaque user ID or UUID. If
+`attr_user_permanent_id` is set to the same attribute as `attr_email`
+(or left unset), email synchronization will not be active, and email
+changes at the IdP will result in duplicate accounts.
+
+:::{note}
+
+The first time a user logs in with SAML, the permanent ID is linked to
+their Zulip account. After a change in their email address at the IdP,
+Zulip will update the linked account's email address the next time the
+user logs in. If another Zulip user already has the new email address,
+the email will not be updated (a warning is logged), and the
+administrator should resolve the conflict manually.
+
+:::
 
 ### SCIM
 

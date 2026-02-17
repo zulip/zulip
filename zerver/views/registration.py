@@ -814,6 +814,12 @@ def registration_helper(
             )
 
         if user_profile is None:
+            external_auth_id_dict_for_registration: dict[str, str] | None = None
+            if prereg_user is not None and prereg_user.external_auth_method_name is not None:
+                external_auth_id_dict_for_registration = {
+                    prereg_user.external_auth_method_name: prereg_user.external_auth_id,
+                }
+
             try:
                 user_profile = do_create_user(
                     email,
@@ -832,6 +838,7 @@ def registration_helper(
                     acting_user=None,
                     enable_marketing_emails=enable_marketing_emails,
                     email_address_visibility=email_address_visibility,
+                    external_auth_id_dict_for_registration=external_auth_id_dict_for_registration,
                 )
 
                 # Mark the preregistration object as used if the user was
