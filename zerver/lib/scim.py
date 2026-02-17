@@ -32,6 +32,7 @@ from zerver.lib.user_groups import (
     get_role_based_system_groups_dict,
     get_user_group_direct_member_ids,
 )
+from zerver.lib.users import check_group_permission_updates_for_deactivating_user
 from zerver.models import Realm, UserProfile
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.realms import (
@@ -345,7 +346,16 @@ class ZulipSCIMUser(SCIMUser):
         if is_active_new_value is not None and is_active_new_value:
             do_reactivate_user(self.obj, acting_user=None)
         elif is_active_new_value is not None and not is_active_new_value:
-            do_deactivate_user(self.obj, acting_user=None)
+            try:
+                group_setting_updates = check_group_permission_updates_for_deactivating_user(
+                    self.obj
+                )
+            except JsonableError as e:
+                raise scim_exceptions.BadRequestError(e.msg)
+
+            do_deactivate_user(
+                self.obj, group_setting_updates=group_setting_updates, acting_user=None
+            )
 
     def delete(self) -> None:
         """
