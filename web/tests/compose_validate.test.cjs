@@ -6,6 +6,8 @@ const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_cross_realm_bot, make_user, Role} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
@@ -49,45 +51,45 @@ set_current_user(current_user);
 const user_settings = {default_language: "en"};
 initialize_user_settings({user_settings});
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
     date_joined: new Date(),
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 31,
     full_name: "Alice",
-};
+});
 
-const bob = {
+const bob = make_user({
     email: "bob@example.com",
     user_id: 32,
     full_name: "Bob",
-    is_admin: true,
-};
+    role: Role.ADMINISTRATOR,
+});
 
-const guest = {
+const guest = make_user({
     email: "guest@example.com",
     user_id: 33,
     full_name: "Guest",
-    is_guest: true,
-};
+    role: Role.GUEST,
+});
 
-const moderator = {
+const moderator = make_user({
     email: "moderator@example.com",
     user_id: 34,
     full_name: "Charlie",
-    is_moderator: true,
-};
+    role: Role.MODERATOR,
+});
 
-const social_sub = {
+const social_sub = make_stream({
     stream_id: 101,
     name: "social",
     subscribed: true,
-};
+});
 stream_data.add_sub_for_tests(social_sub);
 
 people.add_active_user(me);
@@ -97,13 +99,11 @@ people.add_active_user(alice);
 people.add_active_user(bob);
 people.add_active_user(guest);
 
-const welcome_bot = {
+const welcome_bot = make_cross_realm_bot({
     email: "welcome-bot@example.com",
     user_id: 4,
     full_name: "Welcome Bot",
-    is_bot: true,
-    // cross realm bots have no owner
-};
+});
 
 people.add_cross_realm_user(welcome_bot);
 
