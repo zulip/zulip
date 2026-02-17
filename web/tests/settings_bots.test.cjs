@@ -10,7 +10,6 @@ const bot_api_key = "QadL788EkiottHmukyhHgePUFHREiu8b";
 const bot_data_params = {
     realm_bots: [
         {
-            api_key: bot_api_key,
             avatar_url: "",
             bot_type: 1, // DEFAULT_BOT
             default_all_public_streams: true,
@@ -68,7 +67,7 @@ test("generate_zuliprc_url", () => {
 
 test("generate_zuliprc_content", () => {
     const bot_user = bot_data.get(1);
-    const content = bot_helper.generate_zuliprc_content(bot_user);
+    const content = bot_helper.generate_zuliprc_content({...bot_user, api_key: bot_api_key});
     const expected =
         "[api]\nemail=error-bot@zulip.org\n" +
         "key=QadL788EkiottHmukyhHgePUFHREiu8b\n" +

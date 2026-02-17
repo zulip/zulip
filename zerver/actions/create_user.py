@@ -487,7 +487,6 @@ def created_bot_event(user_profile: UserProfile) -> dict[str, Any]:
         full_name=user_profile.full_name,
         bot_type=user_profile.bot_type,
         is_active=user_profile.is_active,
-        api_key=user_profile.api_key,
         default_sending_stream=default_sending_stream_name,
         default_events_register_stream=default_events_register_stream_name,
         default_all_public_streams=user_profile.default_all_public_streams,

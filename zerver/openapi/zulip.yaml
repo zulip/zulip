@@ -4392,7 +4392,6 @@ paths:
                                       "full_name": "Foo Bot",
                                       "bot_type": 1,
                                       "is_active": true,
-                                      "api_key": "6hc6MC9mpNFvoo0gSOWnZEq4aJEn8UNK",
                                       "default_sending_stream": null,
                                       "default_events_register_stream": null,
                                       "default_all_public_streams": false,
@@ -4414,6 +4413,11 @@ paths:
 
                                 Only organization administrators and the user who owns the bot will
                                 receive this event.
+
+                                **Changes**: Starting from Zulip 12.0 (feature level ZF-1ba2c3), this
+                                event is no longer sent when a bot's API key is regenerated. Clients
+                                now use [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key) to get
+                                api key for the bot.
                               additionalProperties: false
                               properties:
                                 id:
@@ -17684,6 +17688,10 @@ paths:
                           administrator, this will include all bots in the organization. Otherwise,
                           it will only include bots owned by the user (either because the user created
                           the bot or an administrator transferred the bot's ownership to the user).
+
+                          **Changes**: Removed `api_key` field from the dictionary in Zulip 12.0
+                          (feature level ZF-1ba2c3). Clients now use [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key)
+                          to get api key for the bot.
                       realm_embedded_bots:
                         type: array
                         items:
@@ -26262,7 +26270,6 @@ components:
           properties:
             user_id: {}
             full_name: {}
-            api_key: {}
             default_sending_stream:
               nullable: true
             default_events_register_stream:
@@ -26299,10 +26306,6 @@ components:
           type: string
           description: |
             The full name of the bot.
-        api_key:
-          type: string
-          description: |
-            The API key of the bot which it uses to make API requests.
         default_sending_stream:
           type: string
           nullable: true
@@ -26381,11 +26384,15 @@ components:
         - $ref: "#/components/schemas/BasicBotBase"
         - description: |
             Object containing details of a bot.
+
+            **Changes**: Removed `api_key` field from the dictionary in
+            Zulip 12.0 (feature level ZF-1ba2c3). Clients now use
+            [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key) to get
+            api key for the bot.
           additionalProperties: false
           properties:
             user_id: {}
             full_name: {}
-            api_key: {}
             default_sending_stream:
               nullable: true
             default_events_register_stream:

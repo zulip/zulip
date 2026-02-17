@@ -324,7 +324,6 @@ class HomeTest(ZulipTestCase):
         # TODO: Inspect the page_params data further.
         # print(orjson.dumps(page_params, option=orjson.OPT_INDENT_2).decode())
         realm_bots_expected_keys = [
-            "api_key",
             "avatar_url",
             "bot_type",
             "default_all_public_streams",

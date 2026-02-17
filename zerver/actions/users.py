@@ -936,7 +936,6 @@ def get_owned_bot_dicts(
             "full_name": botdict["full_name"],
             "bot_type": botdict["bot_type"],
             "is_active": botdict["is_active"],
-            "api_key": botdict["api_key"],
             "default_sending_stream": botdict["default_sending_stream__name"],
             "default_events_register_stream": botdict["default_events_register_stream__name"],
             "default_all_public_streams": botdict["default_all_public_streams"],

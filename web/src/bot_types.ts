@@ -1,7 +1,6 @@
 import * as z from "zod/mini";
 
 const basic_bot_schema = z.object({
-    api_key: z.string(),
     avatar_url: z.string(),
     bot_type: z.number(),
     default_all_public_streams: z.boolean(),

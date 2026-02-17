@@ -3473,9 +3473,8 @@ class NormalActionsTest(BaseAction):
 
     def test_regenerate_bot_api_key(self) -> None:
         bot = self.create_bot("test")
-        with self.verify_action() as events:
+        with self.verify_action(num_events=0, state_change_expected=False):
             do_regenerate_api_key(bot, self.user_profile)
-        check_realm_bot_update("events[0]", events[0], "api_key")
 
     def test_change_bot_avatar_source(self) -> None:
         bot = self.create_bot("test")

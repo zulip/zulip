@@ -351,20 +351,6 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
         event_time=event_time,
     )
 
-    if user_profile.is_bot:
-        send_event_on_commit(
-            user_profile.realm,
-            dict(
-                type="realm_bot",
-                op="update",
-                bot=dict(
-                    user_id=user_profile.id,
-                    api_key=new_api_key,
-                ),
-            ),
-            bot_owner_user_ids(user_profile),
-        )
-
     event = {"type": "clear_push_device_tokens", "user_profile_id": user_profile.id}
     queue_event_on_commit("deferred_work", event)
 

@@ -29,7 +29,6 @@ const fred = make_user({
 const bot_data_params = {
     realm_bots: [
         {
-            api_key: "1234567890qwertyuioop",
             avatar_url: "",
             bot_type: 1, // DEFAULT_BOT
             default_all_public_streams: true,
@@ -44,7 +43,6 @@ const bot_data_params = {
             extra: "This field should be ignored",
         },
         {
-            api_key: "1234567890zxcvbnm",
             avatar_url: "",
             bot_type: 3, // OUTGOING_WEBHOOK_BOT
             default_all_public_streams: true,
@@ -76,7 +74,6 @@ function test(label, f) {
 test("test_basics", () => {
     people.add_active_user(fred);
     const test_bot = {
-        api_key: "qwertyuioop1234567890",
         avatar_url: "",
         // Default bot
         bot_type: 1,
@@ -92,7 +89,6 @@ test("test_basics", () => {
         extra: "This field should be ignored",
     };
     const test_embedded_bot = {
-        api_key: "zxcvbnm1234567890",
         avatar_url: "",
         bot_type: 4, // EMBEDDED_BOT
         default_all_public_streams: true,
@@ -115,7 +111,6 @@ test("test_basics", () => {
     (function test_add() {
         bot_data.add(test_bot);
         const bot = bot_data.get(43);
-        assert.equal("qwertyuioop1234567890", bot.api_key);
         assert.equal("", bot.avatar_url);
         assert.equal(1, bot.bot_type);
         assert.equal(true, bot.default_all_public_streams);
@@ -221,7 +216,6 @@ test("test_basics", () => {
 
 test("get_all_bots_ids_for_current_user", () => {
     bot_data.add({
-        api_key: "testkey123",
         avatar_url: "",
         bot_type: 1,
         default_all_public_streams: true,
@@ -236,7 +230,6 @@ test("get_all_bots_ids_for_current_user", () => {
     });
 
     bot_data.add({
-        api_key: "anotherkey456",
         avatar_url: "",
         bot_type: 1,
         default_all_public_streams: true,
@@ -255,7 +248,6 @@ test("get_all_bots_ids_for_current_user", () => {
 
     // Ensure bots owned by others are not included
     bot_data.add({
-        api_key: "anotherkey789",
         avatar_url: "",
         bot_type: 1,
         default_all_public_streams: true,

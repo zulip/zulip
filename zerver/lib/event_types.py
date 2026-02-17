@@ -411,7 +411,6 @@ class BotServicesEmbedded(BaseModel):
 
 class Bot(BaseModel):
     user_id: int
-    api_key: str
     avatar_url: str
     bot_type: int
     default_all_public_streams: bool
@@ -446,7 +445,6 @@ class BotTypeForUpdateCore(BaseModel):
 
 class BotTypeForUpdate(BotTypeForUpdateCore):
     # TODO: fix types to avoid optional fields
-    api_key: str | None = None
     avatar_url: str | None = None
     default_all_public_streams: bool | None = None
     default_events_register_stream: str | None = None

@@ -527,7 +527,6 @@ exports.fixtures = {
             email: "the-bot@example.com",
             user_id: 42,
             avatar_url: "/avatar/42",
-            api_key: "SOME_KEY",
             full_name: "The Bot",
             bot_type: 1,
             default_all_public_streams: true,
