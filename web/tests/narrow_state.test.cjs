@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -63,7 +65,7 @@ test("stream", () => {
     assert.equal(narrow_state.stream_sub(), undefined);
 
     // Stream exists and user has access to the stream.
-    const test_stream = {name: "Test", stream_id: test_stream_id};
+    const test_stream = make_stream({name: "Test", stream_id: test_stream_id});
     stream_data.add_sub_for_tests(test_stream);
     set_filter([
         ["stream", test_stream_id.toString()],
@@ -88,8 +90,10 @@ test("stream", () => {
     assert.deepEqual(public_terms, expected_terms);
 });
 
-const foo_stream_id = 72;
-const foo_stream = {name: "Foo", stream_id: foo_stream_id};
+const foo_stream = make_stream({
+    name: "Foo",
+    stream_id: 72,
+});
 test("narrowed", () => {
     assert.ok(!narrow_state.narrowed_to_pms());
     assert.ok(!narrow_state.narrowed_by_reply());
@@ -117,7 +121,7 @@ test("narrowed", () => {
     assert.ok(!narrow_state.is_search_view());
 
     set_filter([
-        ["stream", foo_stream_id.toString()],
+        ["stream", foo_stream.stream_id.toString()],
         ["topic", "bar"],
     ]);
     assert.ok(!narrow_state.narrowed_to_pms());
@@ -146,14 +150,14 @@ test("narrowed", () => {
 
 test("terms", () => {
     set_filter([
-        ["stream", foo_stream_id.toString()],
+        ["stream", foo_stream.stream_id.toString()],
         ["topic", "Bar"],
         ["search", "Yo"],
     ]);
     let result = narrow_state.search_terms();
     assert.equal(result.length, 3);
     assert.equal(result[0].operator, "channel");
-    assert.equal(result[0].operand, foo_stream_id.toString());
+    assert.equal(result[0].operand, foo_stream.stream_id.toString());
 
     assert.equal(result[1].operator, "topic");
     assert.equal(result[1].operand, "Bar");
@@ -165,15 +169,15 @@ test("terms", () => {
     result = narrow_state.search_terms();
     assert.equal(result.length, 0);
 
-    page_params.narrow = [{operator: "stream", operand: foo_stream_id.toString()}];
+    page_params.narrow = [{operator: "stream", operand: foo_stream.stream_id.toString()}];
     result = narrow_state.search_terms();
     assert.equal(result.length, 1);
     assert.equal(result[0].operator, "channel");
-    assert.equal(result[0].operand, foo_stream_id.toString());
+    assert.equal(result[0].operand, foo_stream.stream_id.toString());
 
     // `with` terms are excluded from search terms.
     page_params.narrow = [
-        {operator: "stream", operand: foo_stream_id.toString()},
+        {operator: "stream", operand: foo_stream.stream_id.toString()},
         {operator: "topic", operand: "Bar"},
         {operator: "with", operand: "12"},
     ];
@@ -209,7 +213,7 @@ test("excludes_muted_topics", () => {
 
 test("set_compose_defaults", () => {
     set_filter([
-        ["stream", foo_stream_id.toString()],
+        ["stream", foo_stream.stream_id.toString()],
         ["topic", "Bar"],
     ]);
 
@@ -220,18 +224,18 @@ test("set_compose_defaults", () => {
 
     stream_data.add_sub_for_tests(foo_stream);
     stream_and_topic = narrow_state.set_compose_defaults();
-    assert.equal(stream_and_topic.stream_id, foo_stream_id);
+    assert.equal(stream_and_topic.stream_id, foo_stream.stream_id);
     assert.equal(stream_and_topic.topic, "Bar");
 
     set_filter([["dm", [1]]]);
     let dm_test = narrow_state.set_compose_defaults();
     assert.equal(dm_test.private_message_recipient, undefined);
 
-    const john = {
+    const john = make_user({
         email: "john@doe.com",
         user_id: 57,
         full_name: "John Doe",
-    };
+    });
     people.add_active_user(john, "server_events");
 
     set_filter([["dm", [john.user_id]]]);
@@ -251,7 +255,12 @@ test("set_compose_defaults", () => {
     assert.deepEqual(narrow_state.set_compose_defaults(), {});
 
     const rome_id = 99;
-    stream_data.add_sub_for_tests({name: "ROME", stream_id: rome_id});
+    stream_data.add_sub_for_tests(
+        make_stream({
+            name: "ROME",
+            stream_id: rome_id,
+        }),
+    );
     set_filter([["stream", rome_id.toString()]]);
 
     const stream_test = narrow_state.set_compose_defaults();
@@ -296,7 +305,7 @@ test("stream_sub", () => {
     assert.equal(narrow_state.stream_name(), undefined);
     assert.equal(narrow_state.stream_sub(), undefined);
 
-    const sub = {name: "Foo", stream_id: 55};
+    const sub = make_stream({name: "Foo", stream_id: 55});
     stream_data.add_sub_for_tests(sub);
     assert.equal(narrow_state.stream_name(), "Foo");
     assert.deepEqual(narrow_state.stream_sub(), sub);
@@ -331,17 +340,17 @@ test("pm_ids_string", () => {
     assert.equal(narrow_state.pm_ids_string(), undefined);
     assert.deepStrictEqual(narrow_state.pm_ids_set(), new Set());
 
-    const alice = {
+    const alice = make_user({
         email: "alice@foo.com",
         user_id: 444,
         full_name: "Alice",
-    };
+    });
 
-    const bob = {
+    const bob = make_user({
         email: "bob@foo.com",
         user_id: 555,
         full_name: "Bob",
-    };
+    });
 
     people.add_active_user(alice, "server_events");
     people.add_active_user(bob, "server_events");
