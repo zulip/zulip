@@ -3,6 +3,8 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -36,19 +38,19 @@ set_realm(realm);
 
 initialize_user_settings({user_settings: {}});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 32,
     full_name: "Alice Patel",
-};
+});
 
 people.add_active_user(alice);
 
-const denmark = {
+const denmark = make_stream({
     subscribed: true,
     name: "Denmark",
     stream_id: 101,
-};
+});
 stream_data.add_sub_for_tests(denmark);
 
 function test_helper(side_effects) {
