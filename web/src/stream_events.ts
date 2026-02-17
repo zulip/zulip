@@ -235,6 +235,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         folder_id(value) {
             stream_settings_ui.update_channel_folder(sub, value);
             channel_folders_ui.update_channel_folder_channels_list(stream_id, value);
+            recent_view_ui.complete_rerender();
         },
     };
 
@@ -342,6 +343,10 @@ export function mark_subscribed(
     // The new stream in sidebar might need its unread counts
     // re-calculated.
     unread_ui.update_unread_counts();
+
+    // If the recent view folder filter is active, the new subscription
+    // may belong to the currently selected folder.
+    recent_view_ui.complete_rerender();
 }
 
 export function mark_unsubscribed(sub: StreamSubscription): void {
@@ -377,6 +382,10 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
     stream_list.remove_sidebar_row(sub.stream_id);
     stream_list.update_subscribe_to_more_streams_link();
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
+
+    // If the recent view folder filter is active, the unsubscribed
+    // channel may have been in the currently selected folder.
+    recent_view_ui.complete_rerender();
 }
 
 export function report_error_if_user_still_has_subscriptions(user_id: number): void {

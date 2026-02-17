@@ -124,6 +124,7 @@ export function dispatch_normal_event(event) {
                 case "add": {
                     channel_folders.add(event.channel_folder);
                     inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     settings_folders.populate_channel_folders();
                     stream_ui_updates.update_folder_dropdown_visibility();
                     break;
@@ -132,6 +133,7 @@ export function dispatch_normal_event(event) {
                     channel_folders.update(event);
                     if (event.data.name !== undefined) {
                         inbox_ui.complete_rerender();
+                        recent_view_ui.complete_rerender();
                         stream_list.update_streams_sidebar();
                         stream_settings_ui.update_channel_folder_name(event.channel_folder_id);
                     }
@@ -149,6 +151,7 @@ export function dispatch_normal_event(event) {
                     stream_list.update_streams_sidebar();
                     settings_folders.populate_channel_folders();
                     inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     break;
                 default:
                     blueslip.error("Unexpected event type channel_folder/" + event.op);
