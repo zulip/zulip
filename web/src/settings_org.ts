@@ -157,9 +157,9 @@ function set_special_org_permission_placeholders(enabled: boolean): void {
 
 export function enable_or_disable_group_permission_settings(): void {
     if (current_user.is_owner) {
-        const $permission_pill_container_elements = $("#organization-permissions").find(
-            ".pill-container",
-        );
+        const $permission_pill_container_elements = $(
+            "#organization-permissions, #organization-settings",
+        ).find(".pill-container");
         settings_components.enable_group_permission_setting(
             $permission_pill_container_elements,
             NOBODY_ENABLED_PLACEHOLDER,
@@ -169,9 +169,9 @@ export function enable_or_disable_group_permission_settings(): void {
     }
 
     if (current_user.is_admin) {
-        const $permission_pill_container_elements = $("#organization-permissions").find(
-            ".pill-container",
-        );
+        const $permission_pill_container_elements = $(
+            "#organization-permissions, #organization-settings",
+        ).find(".pill-container");
         settings_components.enable_group_permission_setting(
             $permission_pill_container_elements,
             NOBODY_ENABLED_PLACEHOLDER,
@@ -196,9 +196,9 @@ export function enable_or_disable_group_permission_settings(): void {
         return;
     }
 
-    const $permission_pill_container_elements = $("#organization-permissions").find(
-        ".pill-container",
-    );
+    const $permission_pill_container_elements = $(
+        "#organization-permissions, #organization-settings",
+    ).find(".pill-container");
     settings_components.disable_group_permission_setting(
         $permission_pill_container_elements,
         NOBODY_DISABLED_PLACEHOLDER,
