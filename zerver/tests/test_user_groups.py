@@ -143,7 +143,7 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[1]["direct_subgroup_ids"], [])
         self.assertEqual(user_groups[1]["can_manage_group"], user_group.id)
         self.assertEqual(user_groups[1]["can_mention_group"], user_group.id)
-        self.assertFalse(user_groups[0]["deactivated"])
+        self.assertFalse(user_groups[1]["deactivated"])
 
         admins_system_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm
@@ -173,7 +173,7 @@ class UserGroupTestCase(ZulipTestCase):
             UserGroupMembersDict(direct_members=[11], direct_subgroups=[]),
         )
         self.assertEqual(user_groups[9]["can_mention_group"], everyone_group.id)
-        self.assertFalse(user_groups[0]["deactivated"])
+        self.assertFalse(user_groups[9]["deactivated"])
 
         othello = self.example_user("othello")
         hamletcharacters_group = NamedUserGroup.objects.get(
@@ -218,7 +218,7 @@ class UserGroupTestCase(ZulipTestCase):
             user_groups[10]["can_mention_group"]["direct_subgroups"],
             [admins_system_group.id, hamletcharacters_group.id],
         )
-        self.assertFalse(user_groups[0]["deactivated"])
+        self.assertFalse(user_groups[10]["deactivated"])
 
         hamlet = self.example_user("hamlet")
         another_new_group = check_add_user_group(realm, "newgroup3", [hamlet], acting_user=hamlet)
