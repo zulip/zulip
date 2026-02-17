@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user, make_bot, Role} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -58,67 +60,54 @@ function user_group_item(user_group) {
     return {type: "user_group", ...user_group};
 }
 
-const a_bot = {
+const a_bot = make_bot({
     email: "a_bot@zulip.com",
     full_name: "A Zulip test bot",
-    is_admin: false,
-    is_bot: true,
     user_id: 1,
-};
+});
 const a_bot_item = user_item(a_bot);
 
-const a_user = {
+const a_user = make_user({
     email: "a_user@zulip.org",
     full_name: "A Zulip user",
-    is_admin: false,
-    is_bot: false,
     user_id: 2,
-};
+});
 const a_user_item = user_item(a_user);
 
-const b_user_1 = {
+const b_user_1 = make_user({
     email: "b_user_1@zulip.net",
     full_name: "Bob 1",
-    is_admin: false,
-    is_bot: false,
     user_id: 3,
-};
+});
 const b_user_1_item = user_item(b_user_1);
 
-const b_user_2 = {
+const b_user_2 = make_user({
     email: "b_user_2@zulip.net",
     full_name: "Bob 2",
-    is_admin: true,
-    is_bot: false,
+    role: Role.ADMINISTRATOR,
     user_id: 4,
-};
+});
 const b_user_2_item = user_item(b_user_2);
 
-const b_user_3 = {
+const b_user_3 = make_user({
     email: "b_user_3@zulip.net",
     full_name: "Bob 3",
-    is_admin: false,
-    is_bot: false,
     user_id: 5,
-};
+});
 const b_user_3_item = user_item(b_user_3);
 
-const b_bot = {
+const b_bot = make_bot({
     email: "b_bot@example.com",
     full_name: "B bot",
-    is_admin: false,
-    is_bot: true,
     user_id: 6,
-};
+});
 const b_bot_item = user_item(b_bot);
 
-const zman = {
+const zman = make_user({
     email: "zman@test.net",
     full_name: "Zman",
-    is_admin: false,
-    is_bot: false,
     user_id: 7,
-};
+});
 const zman_item = user_item(zman);
 
 const matches = [a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman];
@@ -127,19 +116,21 @@ for (const person of matches) {
     people.add_active_user(person);
 }
 
-const dev_sub = {
+const dev_sub = make_stream({
     name: "Dev",
     color: "blue",
     stream_id: 1,
     subscriber_count: 0,
-};
+    subscribed: true,
+});
 
-const linux_sub = {
+const linux_sub = make_stream({
     name: "Linux",
     color: "red",
     stream_id: 2,
     subscriber_count: 0,
-};
+    subscribed: true,
+});
 stream_data.create_streams([dev_sub, linux_sub]);
 stream_data.add_sub_for_tests(dev_sub);
 stream_data.add_sub_for_tests(linux_sub);
@@ -936,7 +927,7 @@ test("render_person when emails hidden", ({mock_template, override}) => {
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, b_user_1.full_name);
-        assert.equal(args.secondary, undefined);
+        assert.equal(args.secondary, null);
         rendered = true;
         return "typeahead-item-stub";
     });
