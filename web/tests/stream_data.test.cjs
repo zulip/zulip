@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user, make_bot, Role} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -48,24 +49,24 @@ mock_esm("../src/group_permission_settings", {
     },
 });
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     full_name: "Current User",
     user_id: 100,
-};
+});
 
-const test_user = {
+const test_user = make_user({
     email: "test@zulip.com",
     full_name: "Test User",
     user_id: 101,
-};
+});
 
-const guest_user = {
+const guest_user = make_user({
     email: "guest@example.com",
     user_id: 102,
     full_name: "Guest",
-    is_guest: true,
-};
+    role: Role.GUEST,
+});
 
 const admin_user_id = 1;
 const moderator_user_id = 2;
@@ -1978,12 +1979,11 @@ test("get_current_user_and_their_bots_with_post_messages_permission", ({override
         is_active: true,
         user_id: 999,
     };
-    const bot_user = {
+    const bot_user = make_bot({
         email: "bot@zulip.com",
         full_name: "Bot User",
         user_id: 999,
-        is_bot: true,
-    };
+    });
 
     people.add_active_user(bot_user);
     override(current_user, "user_id", me.user_id);
@@ -2023,12 +2023,11 @@ test("can_post_messages_in_stream", ({override}) => {
         is_active: true,
         user_id: 999,
     };
-    const bot_user = {
+    const bot_user = make_bot({
         email: "bot@zulip.com",
         full_name: "Bot User",
         user_id: 999,
-        is_bot: true,
-    };
+    });
     people.add_active_user(bot_user);
     override(current_user, "user_id", me.user_id);
 
