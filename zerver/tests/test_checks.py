@@ -53,7 +53,7 @@ class TestChecks(ZulipTestCase):
             ZULIP_ADMINISTRATOR=None,
         )
 
-    @override_settings(DEVELOPMENT=False, PRODUCTION=True)
+    @override_settings(DEVELOPMENT=False, PRODUCTION=True, EXTERNAL_URI_SCHEME="https://")
     def test_checks_external_host_domain(self) -> None:
         message_re = r"\(zulip\.E002\) EXTERNAL_HOST \(\S+\) does not contain a domain part"
         try:
@@ -97,6 +97,27 @@ class TestChecks(ZulipTestCase):
         self.assert_check_with_error(
             "EXTERNAL_HOST (-bogus-.example.com) does not validate as a hostname",
             EXTERNAL_HOST="-bogus-.example.com:443",
+        )
+
+    def test_checks_external_scheme(self) -> None:
+        self.assert_check_with_error(
+            None, EXTERNAL_URI_SCHEME="https://", DEVELOPMENT=False, PRODUCTION=True
+        )
+        self.assert_check_with_error(
+            None, EXTERNAL_URI_SCHEME="http://", DEVELOPMENT=True, PRODUCTION=False
+        )
+
+        self.assert_check_with_error(
+            "Zulip does not support a non-HTTPS external scheme in production",
+            EXTERNAL_URI_SCHEME="http://",
+            DEVELOPMENT=False,
+            PRODUCTION=True,
+        )
+        self.assert_check_with_error(
+            "Zulip does not support a non-HTTPS external scheme in production",
+            EXTERNAL_URI_SCHEME="https",
+            DEVELOPMENT=False,
+            PRODUCTION=True,
         )
 
     def test_checks_auth(self) -> None:
