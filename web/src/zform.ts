@@ -55,7 +55,7 @@ export function activate(opts: {
         return $elem;
     }
 
-    function render(): void {
+    function render_html(): void {
         if (data.type === "choices") {
             $outer_elem.html(make_choices(data).html());
         }
@@ -65,10 +65,10 @@ export function activate(opts: {
         if (events) {
             blueslip.info("unexpected");
         }
-        render();
+        render_html();
     };
 
-    render();
+    render_html();
 
     return handle_events;
 }
