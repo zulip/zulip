@@ -84,11 +84,17 @@ export function modals_handle_events(event_key: string, context: Context): void 
             if (!had_focus) {
                 scroll_to_element(row_with_focus(context), context);
             } else {
-
+                const $focused_row = row_with_focus(context);
+                const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
+                if (should_scroll_within_row($focused_row, $items_list, 1)) {
+                    scroll_list_by_arrow(context, 1);
+                } else {
                     scroll_to_element(row_after_focus(context), context);
                 }
-           
-       
+            }
+        } else {
+            scroll_list_by_arrow(context, 1);
+        }
     }
 
     if (event_key === "backspace" || event_key === "delete") {
@@ -98,6 +104,53 @@ export function modals_handle_events(event_key: string, context: Context): void 
     if (event_key === "enter") {
         context.on_enter();
     }
+}
+
+function scroll_list_by_arrow(context: Context, direction: -1 | 1): void {
+    const active_element = document.activeElement;
+    if (
+        active_element instanceof HTMLElement &&
+        (active_element.tagName === "INPUT" ||
+            active_element.tagName === "TEXTAREA" ||
+            active_element.isContentEditable)
+    ) {
+        return;
+    }
+
+    const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
+    if ($items_list.length === 0) {
+        return;
+    }
+
+    const $scroll_element = scroll_util.get_scroll_element($items_list);
+    const scroll_element = util.the($scroll_element);
+    const step = Math.max(32, Math.round(scroll_element.clientHeight * 0.1));
+    const prefers_reduced_motion =
+        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const behavior: ScrollBehavior = prefers_reduced_motion ? "auto" : "smooth";
+    scroll_element.scrollBy({top: direction * step, behavior});
+}
+
+function should_scroll_within_row($row: JQuery, $items_list: JQuery, direction: -1 | 1): boolean {
+    if ($row.length === 0 || $items_list.length === 0) {
+        return false;
+    }
+
+    const scroll_element = util.the(scroll_util.get_scroll_element($items_list));
+    const view_rect = scroll_element.getBoundingClientRect();
+    const row_rect = util.the($row).getBoundingClientRect();
+    const view_height = view_rect.bottom - view_rect.top;
+
+    if (row_rect.height <= view_height) {
+        return false;
+    }
+
+    const PADDING_BOTTOM = 12;
+    const PADDING_TOP = 4;
+    if (direction === 1) {
+        return row_rect.bottom > view_rect.bottom + PADDING_BOTTOM;
+    }
+    return row_rect.top < view_rect.top - PADDING_TOP;
 }
 
 export function set_initial_element(element_id: string | undefined, context: Context): void {
