@@ -3,6 +3,8 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -35,49 +37,49 @@ const {initialize_user_settings} = zrequire("user_settings");
 set_realm(make_realm());
 initialize_user_settings({user_settings: {}});
 
-const denmark = {
+const denmark = make_stream({
     subscribed: false,
     name: "Denmark",
     stream_id: 20,
-};
+});
 
-const devel = {
+const devel = make_stream({
     subscribed: true,
     name: "Devel",
     stream_id: 21,
-};
+});
 stream_data.add_sub_for_tests(denmark);
 stream_data.add_sub_for_tests(devel);
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 101,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 102,
     full_name: "Alice",
-};
+});
 
-const bob = {
+const bob = make_user({
     email: "bob@example.com",
     user_id: 103,
     full_name: "Bob",
-};
+});
 
-const cindy = {
+const cindy = make_user({
     email: "cindy@example.com",
     user_id: 104,
     full_name: "Cindy",
-};
+});
 
-const denise = {
+const denise = make_user({
     email: "denise@example.com",
     user_id: 105,
     full_name: "Denise ",
-};
+});
 
 people.add_active_user(me);
 people.add_active_user(alice);
