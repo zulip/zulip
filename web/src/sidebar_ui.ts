@@ -475,7 +475,7 @@ function get_header_rows_selectors(): string {
         // Views header.
         "#left-sidebar-navigation-area:not(.hidden-by-filters) #views-label-container, " +
         // DM Headers
-        "#direct-messages-section-header, " +
+        "#left_sidebar_scroll_container:not(.direct-messages-hidden-by-filters) #direct-messages-section-header, " +
         // All channel headers.
         ".stream-list-section-container:not(.no-display) .stream-list-subsection-header"
     );
