@@ -2372,7 +2372,8 @@ li.topic-list-item {
     display: none;
 }
 
-#left_sidebar_scroll_container.direct-messages-hidden-by-filters {
+#left_sidebar_scroll_container.direct-messages-hidden-by-filters,
+.spectator-view {
     #direct-messages-section-header {
         display: none;
     }
