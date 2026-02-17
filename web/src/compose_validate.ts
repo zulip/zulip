@@ -48,7 +48,6 @@ let message_too_long = false;
 //  we need to track when we are validating compose box.
 let is_validating_compose_box = false;
 let disabled_send_tooltip_message_html = "";
-let posting_policy_error_message = "";
 
 export const NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE = $t({
     defaultMessage: "You do not have permission to post in this channel.",
@@ -129,17 +128,6 @@ function set_message_too_long_for_edit(status: boolean, $container: JQuery): voi
 
     $container.find(".message_edit_save").prop("disabled", save_is_disabled);
     $message_edit_save_container.toggleClass("disabled-message-edit-save", save_is_disabled);
-}
-
-export function get_posting_policy_error_message(): string {
-    // Contains errors which are shown as compose banner before user
-    // clicks on the send button.
-    // Ensure you are calling `validate` for the current compose state,
-    // before calling this function.
-    // We directly add the error banner instead of setting
-    // `posting_policy_error_message`, when the banner contains special
-    // context for the current compose state.
-    return posting_policy_error_message;
 }
 
 export function get_disabled_send_tooltip_html(): string {
@@ -867,7 +855,6 @@ function validate_permission_to_post_messages_in_stream(sub: StreamSubscription)
 
         if (is_validating_compose_box) {
             disabled_send_tooltip_message_html = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
-            posting_policy_error_message = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
         }
         return false;
     }
@@ -983,7 +970,6 @@ export function validate_private_message(show_banner = true): boolean {
         compose_banner.cannot_send_direct_message_error(direct_message_error_string);
         if (is_validating_compose_box) {
             disabled_send_tooltip_message_html = direct_message_error_string;
-            posting_policy_error_message = direct_message_error_string;
         }
         return false;
     }
@@ -1089,28 +1075,6 @@ export function check_overflow_text($container: JQuery): number {
     return text.length;
 }
 
-export let update_posting_policy_banner_post_validation = (): void => {
-    const banner_text = get_posting_policy_error_message();
-    if (banner_text === "") {
-        compose_banner.clear_errors();
-        return;
-    }
-
-    let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    if (compose_state.selected_recipient_id === "direct") {
-        banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
-        compose_banner.cannot_send_direct_message_error(banner_text);
-    } else {
-        compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
-    }
-};
-
-export function rewire_update_posting_policy_banner_post_validation(
-    value: typeof update_posting_policy_banner_post_validation,
-): void {
-    update_posting_policy_banner_post_validation = value;
-}
-
 export let validate_and_update_send_button_status = function (): void {
     const is_valid = validate(false, false);
     const $send_button = $("#compose-send-button");
@@ -1122,7 +1086,6 @@ export let validate_and_update_send_button_status = function (): void {
         send_button_element._tippy.hide();
         send_button_element._tippy.show();
     }
-    update_posting_policy_banner_post_validation();
 };
 
 export function rewire_validate_and_update_send_button_status(
@@ -1169,8 +1132,10 @@ function report_validation_error(
 
 export let validate = (scheduling_message: boolean, show_banner = true): boolean => {
     is_validating_compose_box = true;
-    posting_policy_error_message = "";
     disabled_send_tooltip_message_html = "";
+    // Clear previous banners from previous compose state, we will apply relevant
+    // banners below again.
+    compose_banner.clear_errors();
     const message_content = compose_state.message_content();
     // The validation checks in this function are in a specific priority order. Don't
     // change their order unless you want to change which priority they're shown in.
