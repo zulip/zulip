@@ -83,6 +83,20 @@ function message_in_home(message: Message): boolean {
     return user_topics.is_topic_visible_in_home(message.stream_id, message.topic);
 }
 
+// Used in the dm predicate hot path; ~3x faster than _.isEqual
+// for the small (1–3 element) sorted user-ID arrays compared here.
+function sorted_number_arrays_equal(a: number[], b: number[]): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+    for (const [i, element] of a.entries()) {
+        if (element !== b[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // Compile a narrow term into a predicate, or null for operators that
 // don't need client-side filtering (near, with, search, etc.).
 // Negation is handled by the caller.
@@ -137,12 +151,15 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
                     return () => false;
             }
 
-        case "id":
-            return (message) => message.id.toString() === term.operand;
+        case "id": {
+            const target_id = Number(term.operand);
+            return (message) => message.id === target_id;
+        }
 
-        case "channel":
-            return (message) =>
-                message.type === "stream" && message.stream_id.toString() === term.operand;
+        case "channel": {
+            const target_id = Number(term.operand);
+            return (message) => message.type === "stream" && message.stream_id === target_id;
+        }
 
         case "channels":
             switch (term.operand) {
@@ -162,10 +179,11 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
                     return () => false;
             }
 
-        case "topic":
+        case "topic": {
+            const lower_operand = term.operand.toLowerCase();
             return (message) =>
-                message.type === "stream" &&
-                message.topic.toLowerCase() === term.operand.toLowerCase();
+                message.type === "stream" && message.topic.toLowerCase() === lower_operand;
+        }
 
         case "sender":
             return (message) => message.sender_id === term.operand;
@@ -180,7 +198,7 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
                 if (!user_ids) {
                     return false;
                 }
-                return _.isEqual(operand_ids, user_ids);
+                return sorted_number_arrays_equal(operand_ids, user_ids);
             };
         }
 
@@ -1746,10 +1764,22 @@ export class Filter {
             predicates.push(term.negated ? (message) => !pred(message) : pred);
         }
 
-        if (predicates.length === 0) {
-            return () => true;
+        // After no-op operators like `near` and `with` are filtered
+        // out, most narrows produce 1 predicate (channel, is:starred)
+        // or 2 (channel+topic, channel+topic+with). Specialize these
+        // cases to avoid .every() overhead.
+        switch (predicates.length) {
+            case 0:
+                return () => true;
+            case 1:
+                return predicates[0]!;
+            case 2: {
+                const [a, b] = predicates;
+                return (message) => a!(message) && b!(message);
+            }
+            default:
+                return (message) => predicates.every((pred) => pred(message));
         }
-        return (message) => predicates.every((pred) => pred(message));
     }
 
     can_show_next_unread_topic_conversation_button(): boolean {
