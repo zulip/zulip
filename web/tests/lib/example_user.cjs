@@ -25,6 +25,7 @@ const Bot = Object.freeze({
 const bot_or_user_props = (opts = {}) => {
     // Since other fields need `user_id`, we extract it early.
     const user_id = opts.user_id ?? get_user_id();
+    const role = opts.role ?? Role.MEMBER;
 
     const common_props = {
         user_id,
@@ -32,14 +33,14 @@ const bot_or_user_props = (opts = {}) => {
         email: `user-${user_id}@example.org`,
         full_name: `user-${user_id}-ex_name`,
         date_joined: Date.now(),
-        is_owner: false,
-        is_admin: false,
-        is_guest: false,
-        is_moderator: false,
+        // Derived from role, matching people._add_user() production logic.
+        is_owner: role === Role.OWNER,
+        is_admin: role === Role.OWNER || role === Role.ADMINISTRATOR,
+        is_guest: role === Role.GUEST,
+        is_moderator: role === Role.OWNER || role === Role.ADMINISTRATOR || role === Role.MODERATOR,
         timezone: "UTC",
         avatar_version: 0,
-        // By default a member.
-        role: Role.MEMBER,
+        role,
     };
 
     return {...common_props, ...opts};
@@ -68,3 +69,5 @@ const make_cross_realm_bot = (opts = {}) => ({
 exports.make_bot = make_bot;
 exports.make_user = make_user;
 exports.make_cross_realm_bot = make_cross_realm_bot;
+exports.Role = Role;
+exports.Bot = Bot;
