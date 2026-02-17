@@ -1174,9 +1174,10 @@ class Realm(models.Model):
         lambda realm: get_realm_used_upload_space_cache_key(realm.id), timeout=3600 * 24 * 7
     )
     def currently_used_upload_space_bytes(realm) -> int:  # noqa: N805
-        from analytics.models import RealmCount, installation_epoch
+        from analytics.models import RealmCount
         from zerver.models import Attachment
 
+        attachments = Attachment.objects.filter(realm=realm)
         try:
             latest_count_stat = RealmCount.objects.filter(
                 realm=realm,
@@ -1184,14 +1185,11 @@ class Realm(models.Model):
                 subgroup=None,
             ).latest("end_time")
             last_recorded_used_space = latest_count_stat.value
-            last_recorded_date = latest_count_stat.end_time
+            attachments = attachments.filter(create_time__gte=latest_count_stat.end_time)
         except RealmCount.DoesNotExist:
             last_recorded_used_space = 0
-            last_recorded_date = installation_epoch()
 
-        newly_used_space = Attachment.objects.filter(
-            realm=realm, create_time__gte=last_recorded_date
-        ).aggregate(Sum("size"))["size__sum"]
+        newly_used_space = attachments.aggregate(Sum("size"))["size__sum"]
 
         if newly_used_space is None:
             return last_recorded_used_space
