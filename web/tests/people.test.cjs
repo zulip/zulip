@@ -119,8 +119,6 @@ const realm_admin = example_user.make_user({
     email: "realm_admin@example.com",
     full_name: "Realm Admin",
     user_id: 32,
-    is_admin: true,
-    is_moderator: true,
     role: 200,
 });
 
@@ -128,7 +126,6 @@ const guest = example_user.make_user({
     email: "guest@example.com",
     full_name: "Guest User",
     user_id: 33,
-    is_guest: true,
     role: 600,
 });
 
@@ -136,9 +133,6 @@ const realm_owner = example_user.make_user({
     email: "realm_owner@example.com",
     full_name: "Realm Owner",
     user_id: 34,
-    is_owner: true,
-    is_admin: true,
-    is_moderator: true,
     role: 100,
 });
 
@@ -154,7 +148,6 @@ const moderator = example_user.make_user({
     email: "moderator@example.com",
     full_name: "Moderator",
     user_id: 36,
-    is_moderator: true,
     role: 300,
 });
 
@@ -642,6 +635,10 @@ run_test("get_custom_fields_by_type", ({override}) => {
     ]);
     assert.deepEqual(people.get_custom_fields_by_type(person.user_id, 8), ["he/him"]);
     assert.deepEqual(people.get_custom_fields_by_type(person.user_id, 100), []);
+
+    // Bots have no profile_data, so the function returns undefined.
+    people.add_active_user(bot_botson);
+    assert.equal(people.get_custom_fields_by_type(bot_botson.user_id, SHORT_TEXT_ID), undefined);
 });
 
 run_test("bot_custom_profile_data", () => {
@@ -709,11 +706,11 @@ run_test("updates", () => {
 
 run_test("get_by_user_id", () => {
     initialize();
-    let person = {
+    let person = example_user.make_user({
         email: "mary@example.com",
         user_id: 42,
         full_name: "Mary",
-    };
+    });
     people.add_active_user(person);
     person = people.get_by_email("mary@example.com");
     assert.equal(person.full_name, "Mary");
@@ -770,8 +767,6 @@ run_test("user_can_change_their_own_role", ({override}) => {
         email: "bob@example.com",
         user_id: 1,
         full_name: "Bob",
-        is_owner: false,
-        is_admin: false,
     });
     people.add_active_user(bob);
 
