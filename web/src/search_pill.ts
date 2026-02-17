@@ -47,6 +47,8 @@ type PillRenderData =
               sign?: string;
               topic_display_name?: string;
               description_html?: string;
+              is_combined_channel_topic?: boolean;
+              combined_channel_name?: string;
           })
     | SearchUserPill;
 
@@ -166,7 +168,11 @@ function maybe_generate_combined_channel_topic_pill(
     const channel_name = stream_data.get_valid_sub_by_id_string(channel_operand).name;
     return {
         ...search_pill,
-        display_value: `${sign}#${channel_name} > ${util.get_final_topic_display_name(search_pill.operand)}`,
+        sign,
+        combined_channel_name: channel_name,
+        is_combined_channel_topic: true,
+        topic_display_name: util.get_final_topic_display_name(search_pill.operand),
+        is_empty_string_topic: search_pill.operand === "",
     };
 }
 

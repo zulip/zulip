@@ -21,10 +21,14 @@
                 <i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i>
                 {{~/if~}}
             {{/if}}
+            {{#if is_combined_channel_topic}}
+            {{sign}}#{{combined_channel_name}} &gt;<span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}> {{topic_display_name}}</span>
+            {{else}}
             {{#if is_empty_string_topic}}
             {{sign}}topic:{{#if topic_display_name}}<span class="empty-topic-display"> {{topic_display_name}}</span>{{/if}}
             {{else}}
             {{ display_value }}
+            {{/if}}
             {{/if}}
         </span>
         {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
