@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const message_link_test_cases = require("../../zerver/tests/fixtures/message_link_test_cases.json");
 
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -13,19 +15,18 @@ const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const spectators = zrequire("spectators");
 
-const hamlet = {
+const hamlet = make_user({
     user_id: 15,
     email: "hamlet@example.com",
     full_name: "Hamlet",
-};
+});
 
 people.add_active_user(hamlet, "server_events");
 
-const frontend_id = 99;
-const frontend = {
-    stream_id: frontend_id,
+const frontend = make_stream({
+    stream_id: 99,
     name: "frontend",
-};
+});
 
 stream_data.add_sub_for_tests(frontend);
 
@@ -45,7 +46,7 @@ run_test("hash_util", () => {
     encode_decode_operand(operator, operand, "15-Hamlet");
 
     operator = "channel";
-    operand = frontend_id.toString();
+    operand = frontend.stream_id.toString();
 
     encode_decode_operand(operator, operand, "99-frontend");
 
@@ -176,11 +177,11 @@ run_test("test_is_in_specified_hash_category", () => {
 
 run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
-        {negated: false, operator: "channel", operand: frontend_id.toString()},
+        {negated: false, operator: "channel", operand: frontend.stream_id.toString()},
     ]);
 
     assert.deepEqual(hash_util.parse_narrow(["narrow", "-stream", "99-frontend"]), [
-        {negated: true, operator: "channel", operand: frontend_id.toString()},
+        {negated: true, operator: "channel", operand: frontend.stream_id.toString()},
     ]);
 
     assert.equal(hash_util.parse_narrow(["narrow", "BOGUS"]), undefined);
@@ -193,7 +194,7 @@ run_test("test_parse_narrow", () => {
 
     // Empty string as a topic name is valid.
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend", "topic", ""]), [
-        {negated: false, operator: "channel", operand: frontend_id.toString()},
+        {negated: false, operator: "channel", operand: frontend.stream_id.toString()},
         {negated: false, operator: "topic", operand: ""},
     ]);
 
