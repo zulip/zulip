@@ -59,6 +59,17 @@ def check_external_host_setting(
         return []
 
     errors = []
+    scheme = settings.EXTERNAL_URI_SCHEME
+    if scheme != "https://" and not settings.DEVELOPMENT:
+        errors.append(
+            checks.Error(
+                "Zulip does not support a non-HTTPS external scheme in production",
+                obj="settings.EXTERNAL_URI_SCHEME",
+                hint="Do not override EXTERNAL_URI_SCHEME in production",
+                id="zulip.E004",
+            )
+        )
+
     hostname = settings.EXTERNAL_HOST
     if "." not in hostname and os.environ.get("ZULIP_TEST_SUITE") != "true" and settings.PRODUCTION:
         suggest = ".localdomain" if hostname == "localhost" else ".local"
