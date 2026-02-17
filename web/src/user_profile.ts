@@ -1129,7 +1129,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                     if (!api_key) {
                         scroll_util.scroll_element_into_container(
                             $("#bot-edit-form-error"),
-                            $("#user-profile-modal .modal__body"),
+                            $("#user-profile-modal .modal__content"),
                         );
                         return;
                     }
