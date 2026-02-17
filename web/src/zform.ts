@@ -80,13 +80,8 @@ export function render(opts: {$elem: JQuery; message: Message; widget_data: Widg
         return $elem;
     }
 
-    function render_html(data: ZFormExtraData): void {
-        if (data.type === "choices") {
-            $outer_elem.html(make_choices(data).html());
-        }
+    if (data_with_choices_with_idx.type === "choices") {
+        $outer_elem.html(make_choices(data_with_choices_with_idx).html());
     }
-
-    render_html(data_with_choices_with_idx);
-
     return;
 }
