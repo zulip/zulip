@@ -88,7 +88,7 @@ def process_user(
             return full_name
         return user_dict["username"]
 
-    avatar_source = "G"
+    avatar_source = UserProfile.DEFAULT_AVATAR_SOURCE
     full_name = get_full_name(user_dict)
     id = user_id_mapper.get(user_dict["username"])
     delivery_email = user_dict["email"]
