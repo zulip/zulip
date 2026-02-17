@@ -91,7 +91,7 @@ page can be easily identified in it's respective JavaScript file. -->
                                 <input id="id_username" type="{% if not require_email_format_usernames %}text{% else %}email{% endif %}"
                                   name="username" class="{% if require_email_format_usernames %}email {% endif %}required"
                                   {% if email %} value="{{ email }}" {% else %} value="" autofocus {% endif %}
-                                  maxlength="72" required />
+                                  maxlength="{{ form.username.field.max_length }}" required />
                                 <label for="id_username">
                                     {% if not require_email_format_usernames and email_auth_enabled %}
                                     {{ _('Email or username') }}
