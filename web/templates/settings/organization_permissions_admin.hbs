@@ -367,20 +367,6 @@
                 {{> settings_save_discard_widget section_name="other-permissions" show_save_discard_buttons=true }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
-                {{#if is_plan_self_hosted}}
-                    {{> group_setting_value_pill_input
-                      setting_name="realm_can_manage_billing_group"
-                      label=group_setting_labels.can_manage_billing_group
-                      help_link="https://zulip.com//help/self-hosted-billing"
-                      }}
-                {{else}}
-                    {{> group_setting_value_pill_input
-                      setting_name="realm_can_manage_billing_group"
-                      label=group_setting_labels.can_manage_billing_group
-                      help_link="/help/zulip-cloud-billing"
-                      }}
-                {{/if}}
-
                 <div class="disabled-unfinished-feature"
                   {{#unless server_can_summarize_topics}}style="display: none"{{/unless}}>
                     {{#unless server_can_summarize_topics}}

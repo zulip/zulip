@@ -913,7 +913,6 @@ export const realm_group_permission_settings: {
         subsection_heading: $t({defaultMessage: "Other permissions"}),
         subsection_key: "org-other-permissions",
         settings: [
-            "can_manage_billing_group",
             "can_summarize_topics_group",
             "can_create_write_only_bots_group",
             "can_create_bots_group",
@@ -923,7 +922,7 @@ export const realm_group_permission_settings: {
     {
         subsection_heading: $t({defaultMessage: "Billing"}),
         subsection_key: "org-billing",
-        settings: ["workplace_users_group"],
+        settings: ["workplace_users_group", "can_manage_billing_group"],
     },
 ];
 
