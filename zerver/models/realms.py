@@ -1189,10 +1189,7 @@ class Realm(models.Model):
         except RealmCount.DoesNotExist:
             last_recorded_used_space = 0
 
-        newly_used_space = attachments.aggregate(Sum("size"))["size__sum"]
-
-        if newly_used_space is None:
-            return last_recorded_used_space
+        newly_used_space = attachments.aggregate(Sum("size", default=0))["size__sum"]
         return last_recorded_used_space + newly_used_space
 
     def ensure_not_on_limited_plan(self) -> None:
