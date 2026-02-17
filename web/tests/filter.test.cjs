@@ -1121,6 +1121,28 @@ test("predicate_basics", ({override}) => {
     assert.ok(!predicate({type: stream_message, stream_id: 9999999}));
     assert.ok(!predicate({type: direct_message}));
 
+    // Three or more terms: channel + topic + is:starred.
+    predicate = get_predicate([
+        ["channel", foo_stream_id.toString()],
+        ["topic", "Bar"],
+        ["is", "starred"],
+    ]);
+    assert.ok(
+        predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar", starred: true}),
+    );
+    assert.ok(
+        !predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar", starred: false}),
+    );
+    assert.ok(
+        !predicate({
+            type: stream_message,
+            stream_id: foo_stream_id,
+            topic: "whatever",
+            starred: true,
+        }),
+    );
+    assert.ok(!predicate({type: direct_message, starred: true}));
+
     // For old channels that we are no longer subscribed to, we may not have
     // a subscription, but these should still match by channel name.
     const old_sub_id = new_stream_id();
