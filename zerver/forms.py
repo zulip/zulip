@@ -607,6 +607,7 @@ class CreateUserForm(forms.Form):
 
 
 class OurAuthenticationForm(AuthenticationForm):
+    username = forms.CharField(max_length=254)
     logger = logging.getLogger("zulip.auth.OurAuthenticationForm")
 
     @override
