@@ -251,6 +251,7 @@ function external_account_item_click_callback(
         $("#custom_external_account_url_pattern").show();
         $("#profile_field_name").val("").prop("disabled", false);
         $("#profile_field_hint").val("").prop("disabled", false);
+        $("#profile_field_use_for_user_matching").prop("checked", true);
         widget.render();
         return;
     }
@@ -260,6 +261,9 @@ function external_account_item_click_callback(
     assert(external_account !== undefined);
     $("#profile_field_name").val(external_account.name).prop("disabled", true);
     $("#profile_field_hint").val(external_account.hint).prop("disabled", true);
+    // Atlassian account IDs are opaque identifiers, not useful for @-mention suggestions.
+    const use_for_user_matching = external_account_type !== "atlassian";
+    $("#profile_field_use_for_user_matching").prop("checked", use_for_user_matching);
     widget.render();
 }
 
@@ -318,7 +322,7 @@ function update_form_for_field_type_selection(): void {
 
     if (is_valid_to_use_for_user_matching(profile_field_type)) {
         $("#profile_field_use_for_user_matching").closest(".input-group").show();
-        const check_use_for_user_mentions = profile_field_type === field_types.EXTERNAL_ACCOUNT.id;
+        const check_use_for_user_mentions = profile_field_type !== field_types.EXTERNAL_ACCOUNT.id;
         $("#profile_field_use_for_user_matching").prop("checked", check_use_for_user_mentions);
     } else {
         $("#profile_field_use_for_user_matching").closest(".input-group").hide();
