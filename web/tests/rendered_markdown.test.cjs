@@ -2,7 +2,10 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user, Role} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -42,24 +45,24 @@ set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 
-const iago = {
+const iago = make_user({
     email: "iago@zulip.com",
     user_id: 30,
     full_name: "Iago",
-};
+});
 
-const cordelia = {
+const cordelia = make_user({
     email: "cordelia@zulip.com",
     user_id: 31,
     full_name: "Cordelia Lear",
-};
+});
 
-const polonius = {
+const polonius = make_user({
     email: "polonius@zulip.com",
     user_id: 32,
     full_name: "Polonius",
-    is_guest: true,
-};
+    role: Role.GUEST,
+});
 const inaccessible_user_id = 33;
 const inaccessible_user = people.add_inaccessible_user(inaccessible_user_id);
 people.init();
@@ -68,34 +71,34 @@ people.add_active_user(cordelia);
 people.add_active_user(polonius);
 people.initialize_current_user(iago.user_id);
 
-const group_me = {
+const group_me = make_user_group({
     name: "my user group",
     id: 1,
     members: [iago.user_id, cordelia.user_id],
-};
-const group_other = {
+});
+const group_other = make_user_group({
     name: "other user group",
     id: 2,
     members: [cordelia.user_id],
-};
-const group_me_via_subgroup = {
+});
+const group_me_via_subgroup = make_user_group({
     name: "I am part of this group via a subgroup",
     id: 3,
     members: [],
     direct_subgroup_ids: [group_me.id],
-};
+});
 user_groups.initialize({
     realm_user_groups: [group_me, group_other, group_me_via_subgroup],
 });
 
-const stream = {
+const stream = make_stream({
     subscribed: true,
     color: "yellow",
     name: "test",
     stream_id: 3,
     is_muted: true,
     invite_only: false,
-};
+});
 stream_data.add_sub_for_tests(stream);
 
 const $array = (array) => {
