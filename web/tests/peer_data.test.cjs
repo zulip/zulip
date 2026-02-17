@@ -11,6 +11,8 @@ const assert = require("node:assert/strict");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const example_settings = require("./lib/example_settings.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_bot, make_cross_realm_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -30,34 +32,33 @@ const realm = make_realm();
 set_realm(realm);
 
 page_params.realm_users = [];
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     full_name: "Current User",
     user_id: 100,
-};
+});
 // set up user data
-const fred = {
+const fred = make_user({
     email: "fred@zulip.com",
     full_name: "Fred",
     user_id: 101,
-};
-const gail = {
+});
+const gail = make_user({
     email: "gail@zulip.com",
     full_name: "Gail",
     user_id: 102,
-};
-const george = {
+});
+const george = make_user({
     email: "george@zulip.com",
     full_name: "George",
     user_id: 103,
-};
-const bot_botson = {
+});
+const bot_botson = make_bot({
     email: "botson-bot@example.com",
     user_id: 35,
     full_name: "Bot Botson",
-    is_bot: true,
     role: 300,
-};
+});
 
 const nobody_group = make_user_group({
     name: "Nobody",
@@ -93,7 +94,7 @@ function test(label, f) {
 }
 
 test("unsubscribe", () => {
-    const devel = {name: "devel", subscribed: false, stream_id: 1};
+    const devel = make_stream({name: "devel", subscribed: false, stream_id: 1});
     stream_data.add_sub_for_tests(devel);
 
     // verify clean slate
@@ -119,14 +120,14 @@ test("unsubscribe", () => {
 });
 
 test("subscribers", async () => {
-    const sub = {
+    const sub = make_stream({
         name: "Rome",
         subscribed: true,
         stream_id: 1001,
         can_add_subscribers_group: nobody_group.id,
         can_administer_channel_group: nobody_group.id,
         can_subscribe_group: nobody_group.id,
-    };
+    });
     stream_data.add_sub_for_tests(sub);
 
     people.add_active_user(fred);
@@ -176,11 +177,11 @@ test("subscribers", async () => {
 
     peer_data.set_subscribers(stream_id, []);
 
-    const brutus = {
+    const brutus = make_user({
         email: "brutus@zulip.com",
         full_name: "Brutus",
         user_id: 104,
-    };
+    });
     people.add_active_user(brutus);
     assert.ok(!stream_data.is_user_loaded_and_subscribed(stream_id, brutus.user_id));
 
@@ -276,11 +277,11 @@ test("subscribers", async () => {
 });
 
 test("maybe_fetch_stream_subscribers", async () => {
-    const india = {
+    const india = make_stream({
         stream_id: 102,
         name: "India",
         subscribed: true,
-    };
+    });
     stream_data.add_sub_for_tests(india);
     let channel_get_calls = 0;
     mock_channel_get(channel, (opts) => {
@@ -433,20 +434,19 @@ test("get_subscriber_count", async () => {
     people.add_active_user(fred);
     people.add_active_user(gail);
     people.add_active_user(george);
-    const welcome_bot = {
+    const welcome_bot = make_cross_realm_bot({
         email: "welcome-bot@example.com",
         user_id: 40,
         full_name: "Welcome Bot",
-        is_bot: true,
-    };
+    });
     people.add_active_user(welcome_bot);
 
-    const india = {
+    const india = make_stream({
         stream_id: 102,
         name: "India",
         subscribed: true,
         subscriber_count: 0,
-    };
+    });
     stream_data.clear_subscriptions();
 
     blueslip.expect("warn", "We called get_subscriber_count for an untracked stream: 102");
@@ -491,10 +491,10 @@ test("get_subscriber_count", async () => {
 
 test("is_subscriber_subset", async () => {
     function make_sub(stream_id, user_ids) {
-        const sub = {
+        const sub = make_stream({
             stream_id,
             name: `stream ${stream_id}`,
-        };
+        });
         stream_data.add_sub_for_tests(sub);
         peer_data.set_subscribers(sub.stream_id, user_ids);
         return sub;
@@ -554,7 +554,7 @@ test("is_subscriber_subset", async () => {
 });
 
 test("get_unique_subscriber_count_for_streams", async () => {
-    const sub = {name: "Rome", subscribed: true, stream_id: 1001};
+    const sub = make_stream({name: "Rome", subscribed: true, stream_id: 1001});
     stream_data.add_sub_for_tests(sub);
 
     people.add_active_user(fred);
@@ -573,13 +573,13 @@ test("get_unique_subscriber_count_for_streams", async () => {
 test("fetch_subscriptions_for_user", async () => {
     people.add_active_user(fred);
 
-    const india = {
+    const india = make_stream({
         stream_id: 102,
         name: "India",
         subscribed: true,
-    };
+    });
     stream_data.add_sub_for_tests(india);
-    const rome = {name: "Rome", subscribed: true, stream_id: 1001};
+    const rome = make_stream({name: "Rome", subscribed: true, stream_id: 1001});
     stream_data.add_sub_for_tests(rome);
 
     let channel_get_calls = 0;
