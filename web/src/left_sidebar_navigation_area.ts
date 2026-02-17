@@ -241,6 +241,14 @@ export function highlight_all_messages_view(): void {
     }, 0);
 }
 
+export function highlight_catch_up_view(): void {
+    select_top_left_corner_item(".top_left_catch_up");
+
+    setTimeout(() => {
+        resize.resize_stream_filters_container();
+    }, 0);
+}
+
 export function get_view_rows_by_view_name(view: string): JQuery {
     if (view === settings_config.web_home_view_values.all_messages.code) {
         return $(".top_left_all_messages");

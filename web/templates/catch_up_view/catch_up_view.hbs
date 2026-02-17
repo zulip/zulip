@@ -1,0 +1,40 @@
+<div id="catch-up-main">
+    {{#if loading}}
+    <div id="catch-up-loading" class="catch-up-loading">
+        <div class="loading_indicator_spinner"></div>
+        <span>{{t "Loading catch-up data…" }}</span>
+    </div>
+    {{else if has_no_data}}
+    <div class="catch-up-empty">
+        <div class="catch-up-empty-icon">
+            <i class="zulip-icon zulip-icon-check-circle" aria-hidden="true"></i>
+        </div>
+        <h2>{{t "You're all caught up!" }}</h2>
+        <p>{{t "No new activity since you were last active." }}</p>
+    </div>
+    {{else}}
+    <div class="catch-up-header">
+        <div class="catch-up-header-text">
+            <h1>{{t "What did I miss?" }}</h1>
+            <p class="catch-up-subtitle">
+                {{catch_up_period_display}}
+            </p>
+        </div>
+        <div class="catch-up-stats">
+            <span class="catch-up-stat">
+                <i class="zulip-icon zulip-icon-message-square" aria-hidden="true"></i>
+                {{total_messages}} {{t "messages" }}
+            </span>
+            <span class="catch-up-stat">
+                <i class="zulip-icon zulip-icon-hash" aria-hidden="true"></i>
+                {{total_topics}} {{t "topics" }}
+            </span>
+        </div>
+    </div>
+    <div class="catch-up-topics-container">
+        {{#each topics}}
+            {{> catch_up_topic_card }}
+        {{/each}}
+    </div>
+    {{/if}}
+</div>

@@ -5,6 +5,7 @@ import * as about_zulip from "./about_zulip.ts";
 import * as admin from "./admin.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
+import * as catch_up_ui from "./catch_up_ui.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import {Filter} from "./filter.ts";
 import * as hash_parser from "./hash_parser.ts";
@@ -240,6 +241,9 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
             break;
         case "#inbox":
             inbox_ui.show();
+            break;
+        case "#catch-up":
+            catch_up_ui.show();
             break;
         case "#all_messages":
             // "#all_messages" was renamed to "#feed" in 2024. Unlike

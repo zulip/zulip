@@ -58,6 +58,7 @@ import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
 import * as hotkey from "./hotkey.ts";
 import * as i18n from "./i18n.ts";
+import * as catch_up_ui from "./catch_up_ui.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
 import * as invite from "./invite.ts";
@@ -556,10 +557,16 @@ export async function initialize_everything(state_data) {
                 first_unread_message_id,
             });
         },
-        hide_other_views: inbox_ui.hide,
+        hide_other_views() {
+            inbox_ui.hide();
+            catch_up_ui.hide();
+        },
     });
     inbox_ui.initialize({
-        hide_other_views: recent_view_ui.hide,
+        hide_other_views() {
+            recent_view_ui.hide();
+            catch_up_ui.hide();
+        },
     });
     alert_words.initialize(state_data.alert_words);
     saved_snippets.initialize(state_data.saved_snippets);

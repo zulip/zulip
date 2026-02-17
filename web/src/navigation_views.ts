@@ -165,6 +165,22 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         home_view_code: "",
         prioritize_in_condensed_view: false,
     },
+    catch_up: {
+        fragment: "catch-up",
+        name: $t({defaultMessage: "Catch up"}),
+        is_pinned: true,
+        icon: "zulip-icon-clock",
+        css_class_suffix: "catch_up",
+        tooltip_template_id: "catch-up-tooltip-template",
+        has_unread_count: false,
+        unread_count_type: "",
+        supports_masked_unread: false,
+        hidden_for_spectators: true,
+        menu_icon_class: "",
+        menu_aria_label: "",
+        home_view_code: "",
+        prioritize_in_condensed_view: false,
+    },
 };
 
 let navigation_views_dict: Map<string, NavigationView>;

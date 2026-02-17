@@ -12,7 +12,7 @@
 |-------|-------------|--------|
 | **Phase 1** | Backend Foundation | **COMPLETE** |
 | **Phase 2** | Extractive Summarization | **COMPLETE** |
-| Phase 3 | Frontend — View Infrastructure | Not Started |
+| **Phase 3** | Frontend — View Infrastructure | **COMPLETE** |
 | Phase 4 | Frontend — Interactive Features | Not Started |
 | Phase 5 | Refinement & User Preferences | Not Started |
 | Phase 6 | Testing & Polish | Not Started |
@@ -255,7 +255,192 @@ Added 9 new test cases across 3 new test classes:
 
 ---
 
-## Phase 3–6: Upcoming
+## Phase 3: Frontend — View Infrastructure
 
-See [PLAN.md](./PLAN.md) for detailed plans for frontend implementation,
-interactive features, refinement, and testing/polish.
+**Status: COMPLETE**
+**Completed: 2026-02-10**
+
+### What was built
+
+A complete frontend view infrastructure for the catch-up feature, including
+a new sidebar navigation item, hash-based URL routing, a view module with
+show/hide/render lifecycle, data fetching via the backend API, Handlebars
+templates for the dashboard and topic cards, and full CSS styling.
+
+### Files Created
+
+#### `web/src/catch_up_data.ts` — Data/API Module
+
+Manages fetch calls to the backend and caches the current catch-up data.
+
+| Export | Purpose |
+|--------|---------|
+| `CatchUpTopic` type | TypeScript type for a single topic's data (stream info, scores, messages, keywords) |
+| `CatchUpData` type | TypeScript type for the full API response |
+| `get_current_data()` | Returns the currently cached catch-up data |
+| `clear_data()` | Clears cached data (called when view is hidden) |
+| `fetch_catch_up_data(include_extractive_summary)` | Calls `GET /json/catch-up` and caches the result |
+| `fetch_topic_summary(stream_id, topic_name)` | Calls `GET /json/catch-up/summary` for AI-generated summary |
+
+Both functions use `channel.get()` (Zulip's standard HTTP wrapper) and return Promises.
+
+#### `web/src/catch_up_ui.ts` — View Module
+
+Main UI module following the `inbox_ui.ts` / `recent_view_ui.ts` pattern.
+
+| Export | Purpose |
+|--------|---------|
+| `is_visible()` | Whether the catch-up view is currently shown |
+| `show()` | Hides other views (inbox, recent), calls `views_util.show()` with catch-up config |
+| `hide()` | Hides catch-up view, clears cached data |
+| `complete_rerender()` | Fetches data from API, renders loading → content or empty state |
+
+**Internal functions:**
+
+| Function | Purpose |
+|----------|---------|
+| `format_period_display(hours)` | Converts `catch_up_period_hours` to human-readable string |
+| `prepare_topic_for_render(topic)` | Enriches topic data with stream color, topic URL, formatted sender list |
+| `render_loading()` / `render_empty()` / `render_data()` | Render respective states into `#catch-up-pane` |
+| `setup_event_handlers()` | Attaches click handler on "AI Summary" buttons |
+
+**AI Summary flow:** Clicking "AI Summary" on a topic card shows a loading spinner,
+calls `fetch_topic_summary()`, and inserts the result (or error) into the card's
+summary container.
+
+#### `web/templates/catch_up_view/catch_up_view.hbs` — Main Template
+
+Three states:
+- **Loading:** Spinner with "Loading catch-up data…" text
+- **Empty:** Check icon with "You're all caught up!" message
+- **Data:** Header (title, period, stats) + scrollable list of topic cards
+
+#### `web/templates/catch_up_view/catch_up_topic_card.hbs` — Topic Card Partial
+
+Each card shows:
+- Stream name (colored) → Topic name with separator
+- Badges: @mention, @all, reaction count, message count
+- Sender list
+- Key messages (with sender, content, tags) or sample messages (fallback)
+- Keywords as pill-shaped chips
+- Actions: "Open topic" link + "AI Summary" button
+- Summary container (hidden until AI summary is fetched)
+
+#### `web/styles/catch_up.css` — Styles
+
+Full CSS for the catch-up view including:
+- Container layout (max-width 900px, centered)
+- Loading/empty states
+- Header with stats
+- Topic cards with hover shadow
+- Badge styling (mention red, wildcard orange, reactions blue)
+- Key message display with tag pills
+- Keyword chips
+- AI summary container with left border accent
+- Responsive layout for narrow screens (≤750px)
+
+### Files Modified
+
+#### `web/src/navigation_views.ts`
+
+Added `catch_up` entry to the navigation views dictionary:
+- `fragment: "catch-up"` — URL hash
+- `icon: "zulip-icon-clock"` — sidebar icon
+- `css_class_suffix: "catch_up"` — generates `.top_left_catch_up` CSS class
+- `hidden_for_spectators: true` — not shown to spectators
+
+#### `web/src/hashchange.ts`
+
+Added `#catch-up` case in the hash routing switch that calls `catch_up_ui.show()`.
+Added import for `catch_up_ui`.
+
+#### `web/src/left_sidebar_navigation_area.ts`
+
+Added `highlight_catch_up_view()` function following the exact pattern of
+`highlight_inbox_view()` and `highlight_recent_view()`:
+- Calls `select_top_left_corner_item(".top_left_catch_up")`
+- Triggers `resize.resize_stream_filters_container()` in setTimeout
+
+#### `templates/zerver/app/index.html`
+
+Added the catch-up view container div between the inbox view and message feed:
+```html
+<div id="catch-up-view">
+    <div id="catch-up-pane"></div>
+</div>
+```
+
+#### `web/src/ui_init.js`
+
+- Added import for `catch_up_ui`
+- Updated `recent_view_ui.initialize()` and `inbox_ui.initialize()` to also call
+  `catch_up_ui.hide()` in their `hide_other_views` callbacks, ensuring all three
+  views properly hide each other on navigation
+
+#### `web/src/bundles/app.ts`
+
+Added CSS import: `import "../../styles/catch_up.css"`
+
+#### `web/templates/tooltip_templates.hbs`
+
+Added tooltip template for the catch-up sidebar item:
+```html
+<template id="catch-up-tooltip-template">
+    <div class="views-tooltip-container" data-view-code="catch_up">
+        <div>Catch up — What did I miss?</div>
+    </div>
+</template>
+```
+
+### Architecture Decisions
+
+1. **Follows existing view patterns:** Uses `views_util.show()` / `views_util.hide()` exactly
+   as inbox and recent views do. Same `show()` / `hide()` / `complete_rerender()` lifecycle.
+2. **Direct view hiding:** Instead of a callback-based pattern, `catch_up_ui.show()` directly
+   calls `inbox_ui.hide()` and `recent_view_ui.hide()`. The existing views are updated to also
+   hide catch-up via their `hide_other_views` callbacks.
+3. **Async data loading:** `complete_rerender()` shows a loading state immediately, fetches data
+   from the API, then renders data or empty state. The view remains responsive during fetch.
+4. **Extractive summaries by default:** `fetch_catch_up_data(true)` requests extractive summaries
+   (key messages + keywords) by default, since they're fast and add significant value.
+5. **AI summaries on demand:** AI summaries are fetched per-topic only when the user clicks the
+   "AI Summary" button, avoiding unnecessary API credit usage.
+
+---
+
+## Summary of All Files
+
+### New Files (Phases 1–3)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `zerver/lib/catch_up.py` | ~455 | Core business logic: inactivity detection, message aggregation, importance scoring |
+| `zerver/lib/catch_up_summarizer.py` | ~280 | Extractive summarization: key message selection, keyword extraction |
+| `zerver/actions/catch_up.py` | ~155 | Action layer: orchestrates catch-up data + extractive summaries |
+| `zerver/views/catch_up.py` | ~90 | API endpoints: `GET /json/catch-up`, `GET /json/catch-up/summary` |
+| `zerver/tests/test_catch_up.py` | ~690 | 26 test cases across 7 test classes |
+| `web/src/catch_up_data.ts` | ~100 | Frontend data/API module |
+| `web/src/catch_up_ui.ts` | ~155 | Frontend view module (show/hide/render) |
+| `web/templates/catch_up_view/catch_up_view.hbs` | ~45 | Main dashboard Handlebars template |
+| `web/templates/catch_up_view/catch_up_topic_card.hbs` | ~55 | Topic card Handlebars partial |
+| `web/styles/catch_up.css` | ~310 | Full CSS styling for catch-up view |
+
+### Modified Files
+
+| File | Change |
+|------|--------|
+| `zproject/urls.py` | Added imports + 2 `rest_path` registrations |
+| `web/src/navigation_views.ts` | Added `catch_up` navigation view entry |
+| `web/src/hashchange.ts` | Added `#catch-up` hash routing + import |
+| `web/src/left_sidebar_navigation_area.ts` | Added `highlight_catch_up_view()` |
+| `templates/zerver/app/index.html` | Added `#catch-up-view` container div |
+| `web/src/ui_init.js` | Added catch_up_ui import + updated hide callbacks |
+| `web/src/bundles/app.ts` | Added CSS import for `catch_up.css` |
+| `web/templates/tooltip_templates.hbs` | Added catch-up tooltip template |
+
+---
+
+## Phase 4–6: Upcoming
+
+See [PLAN.md](./PLAN.md) for detailed plans for interactive features,
+refinement, and testing/polish.

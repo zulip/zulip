@@ -59,6 +59,7 @@ import "../../styles/user_status.css";
 import "../../styles/widgets.css";
 import "../../styles/print.css";
 import "../../styles/inbox.css";
+import "../../styles/catch_up.css";
 import "../../styles/color_picker.css";
 import "../../styles/animate.css";
 import "@uppy/core/css/style.min.css";
