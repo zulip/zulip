@@ -5,6 +5,8 @@ const assert = require("node:assert/strict");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const example_settings = require("./lib/example_settings.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -20,11 +22,11 @@ const realm = make_realm();
 set_current_user(current_user);
 set_realm(realm);
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 5,
     full_name: "Me Myself",
-};
+});
 
 const me_group = make_user_group({
     name: "me_group",
@@ -41,23 +43,23 @@ const nobody_group = make_user_group({
     direct_subgroup_ids: new Set(),
 });
 
-const denmark = {
+const denmark = make_stream({
     stream_id: 101,
     name: "Denmark",
     subscribed: true,
     can_administer_channel_group: nobody_group.id,
     can_add_subscribers_group: nobody_group.id,
     can_subscribe_group: nobody_group.id,
-};
-const sweden = {
+});
+const sweden = make_stream({
     stream_id: 102,
     name: "Sweden",
     subscribed: false,
     can_administer_channel_group: nobody_group.id,
     can_add_subscribers_group: nobody_group.id,
     can_subscribe_group: nobody_group.id,
-};
-const germany = {
+});
+const germany = make_stream({
     stream_id: 103,
     name: "Germany",
     subscribed: false,
@@ -65,7 +67,7 @@ const germany = {
     can_administer_channel_group: nobody_group.id,
     can_add_subscribers_group: nobody_group.id,
     can_subscribe_group: nobody_group.id,
-};
+});
 
 const denmark_pill = {
     type: "stream",
