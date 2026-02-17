@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -13,17 +14,17 @@ const people = zrequire("people");
 // in zerver/models/users.py - UserProfile Class or
 // zever/openapi/zulip.yaml
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     full_name: "Me Myself",
     user_id: 2,
-};
+});
 
-const fred = {
+const fred = make_user({
     email: "fred@zulip.com",
     full_name: "Fred Frederickson",
     user_id: 3,
-};
+});
 
 const bot_data_params = {
     realm_bots: [
