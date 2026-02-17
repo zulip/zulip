@@ -203,6 +203,9 @@ and privacy in mind:
   on the new protocol's better privacy guarantees once [official
   mobile app support][e2ee-flutter-issue] for the new protocol is
   generally available.
+- This E2EE support applies only to mobile push notification payloads.
+  Zulip does not currently support end-to-end encryption for chat
+  message history.
 - A central design goal of the Push Notification Service is to
   avoid any message content being stored or logged by the service,
   even in error cases.
