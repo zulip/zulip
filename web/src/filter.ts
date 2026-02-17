@@ -83,124 +83,134 @@ function message_in_home(message: Message): boolean {
     return user_topics.is_topic_visible_in_home(message.stream_id, message.topic);
 }
 
-function message_matches_search_term(message: Message, term: NarrowTerm): boolean {
+// Compile a narrow term into a predicate, or null for operators that
+// don't need client-side filtering (near, with, search, etc.).
+// Negation is handled by the caller.
+function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) => boolean) | null {
     switch (term.operator) {
         case "has":
             switch (term.operand) {
                 case "image":
-                    return message_parser.message_has_image(message.content);
+                    return (message) => message_parser.message_has_image(message.content);
                 case "link":
-                    return message_parser.message_has_link(message.content);
+                    return (message) => message_parser.message_has_link(message.content);
                 case "attachment":
-                    return message_parser.message_has_attachment(message.content);
+                    return (message) => message_parser.message_has_attachment(message.content);
                 case "reaction":
-                    return message_parser.message_has_reaction(message);
+                    return (message) => message_parser.message_has_reaction(message);
                 default:
-                    return false; // has:something_else returns false
+                    return () => false;
             }
 
         case "is":
             switch (term.operand) {
                 case "dm":
-                    return message.type === "private";
+                    return (message) => message.type === "private";
                 case "starred":
-                    return message.starred;
+                    return (message) => message.starred;
                 case "mentioned":
-                    return message.mentioned;
+                    return (message) => message.mentioned;
                 case "alerted":
-                    return message.alerted;
+                    return (message) => message.alerted;
                 case "unread":
-                    return message.unread;
+                    return (message) => message.unread;
                 case "resolved":
-                    return message.type === "stream" && resolved_topic.is_resolved(message.topic);
+                    return (message) =>
+                        message.type === "stream" && resolved_topic.is_resolved(message.topic);
                 case "followed":
-                    return (
+                    return (message) =>
                         message.type === "stream" &&
-                        user_topics.is_topic_followed(message.stream_id, message.topic)
-                    );
+                        user_topics.is_topic_followed(message.stream_id, message.topic);
                 case "muted":
-                    return !message_in_home(message);
+                    return (message) => !message_in_home(message);
                 default:
-                    return false; // is:whatever returns false
+                    return () => false;
             }
 
         case "in":
             switch (term.operand) {
                 case "home":
-                    return message_in_home(message);
+                    return (message) => message_in_home(message);
                 case "all":
-                    return true;
+                    return null;
                 default:
-                    return false; // in:whatever returns false
+                    return () => false;
             }
-
-        case "near":
-            // this is all handled server side
-            return true;
 
         case "id":
-            return message.id.toString() === term.operand;
+            return (message) => message.id.toString() === term.operand;
 
-        case "channel": {
-            if (message.type !== "stream") {
-                return false;
-            }
+        case "channel":
+            return (message) =>
+                message.type === "stream" && message.stream_id.toString() === term.operand;
 
-            return message.stream_id.toString() === term.operand;
-        }
-
-        case "channels": {
-            if (message.type !== "stream") {
-                return false;
-            }
-            const stream_privacy_policy = stream_data.get_stream_privacy_policy(message.stream_id);
+        case "channels":
             switch (term.operand) {
                 case "public":
-                    return ["public", "web-public"].includes(stream_privacy_policy);
+                    return (message) => {
+                        if (message.type !== "stream") {
+                            return false;
+                        }
+                        const policy = stream_data.get_stream_privacy_policy(message.stream_id);
+                        return policy === "public" || policy === "web-public";
+                    };
                 case "web-public":
-                    return stream_privacy_policy === "web-public";
+                    return (message) =>
+                        message.type === "stream" &&
+                        stream_data.get_stream_privacy_policy(message.stream_id) === "web-public";
                 default:
-                    return false;
+                    return () => false;
             }
-        }
 
         case "topic":
-            if (message.type !== "stream") {
-                return false;
-            }
-
-            return message.topic.toLowerCase() === term.operand.toLowerCase();
+            return (message) =>
+                message.type === "stream" &&
+                message.topic.toLowerCase() === term.operand.toLowerCase();
 
         case "sender":
-            return message.sender_id === term.operand;
+            return (message) => message.sender_id === term.operand;
 
         case "dm": {
-            if (message.type !== "private") {
-                return false;
-            }
-
-            const operand_ids: number[] = people.sorted_other_user_ids(term.operand);
-            const user_ids = people.pm_with_user_ids(message);
-            if (!user_ids) {
-                return false;
-            }
-
-            return _.isEqual(operand_ids, user_ids);
+            const operand_ids = people.sorted_other_user_ids(term.operand);
+            return (message) => {
+                if (message.type !== "private") {
+                    return false;
+                }
+                const user_ids = people.pm_with_user_ids(message);
+                if (!user_ids) {
+                    return false;
+                }
+                return _.isEqual(operand_ids, user_ids);
+            };
         }
 
         case "dm-including": {
             const operand_ids = people.sorted_other_user_ids(term.operand);
-            const user_ids = people.all_user_ids_in_pm(message);
-            if (!user_ids) {
-                return false;
-            }
-            return operand_ids.every((operand_id) => user_ids.includes(operand_id));
+            return (message) => {
+                const user_ids = people.all_user_ids_in_pm(message);
+                if (!user_ids) {
+                    return false;
+                }
+                return operand_ids.every((id) => user_ids.includes(id));
+            };
         }
+
+        // Operators that don't filter messages on the client.
+        case "near":
+        case "with":
+        case "":
+            return null;
+
+        // Unreachable: _build_predicate bails out via
+        // can_apply_locally() when a search term is present.
+        // istanbul ignore next
+        case "search":
+            throw new Error("build_term_predicate called for search term");
     }
 
-    // We will never get here since operator type validation would fail.
+    // We should never reach here, because of operator validation.
     // istanbul ignore next
-    return true; // unknown operators return true (effectively ignored)
+    throw new Error("build_term_predicate called for unexpected term");
 }
 
 const USER_OPERATORS = new Set([
@@ -1723,24 +1733,23 @@ export class Filter {
 
     // Build a filter function from a list of operators.
     _build_predicate(): (message: Message) => boolean {
-        const terms = this._terms;
-
         if (!this.can_apply_locally()) {
             return () => true;
         }
 
-        // FIXME: This is probably pretty slow.
-        // We could turn it into something more like a compiler:
-        // build JavaScript code in a string and then eval() it.
+        const predicates: ((message: Message) => boolean)[] = [];
+        for (const term of this._terms) {
+            const pred = build_term_predicate(term);
+            if (pred === null) {
+                continue;
+            }
+            predicates.push(term.negated ? (message) => !pred(message) : pred);
+        }
 
-        return (message: Message) =>
-            terms.every((term) => {
-                let ok = message_matches_search_term(message, term);
-                if (term.negated) {
-                    ok = !ok;
-                }
-                return ok;
-            });
+        if (predicates.length === 0) {
+            return () => true;
+        }
+        return (message) => predicates.every((pred) => pred(message));
     }
 
     can_show_next_unread_topic_conversation_button(): boolean {

@@ -1314,6 +1314,14 @@ test("predicate_basics", ({override}) => {
         }),
     );
 
+    // A 1:1 DM message should not match a group DM predicate.
+    assert.ok(
+        !predicate({
+            type: direct_message,
+            display_recipient: [{id: joe.user_id}],
+        }),
+    );
+
     // Make sure your own user id is ignored
     predicate = get_predicate([["dm", [joe.user_id, steve.user_id, me.user_id]]]);
     assert.ok(
