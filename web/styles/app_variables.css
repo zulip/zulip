@@ -1161,10 +1161,6 @@
         hsl(0deg 0% 88%),
         hsl(211deg 18% 25%)
     );
-    --color-background-recent-view-selected: light-dark(
-        hsl(0deg 11% 93%),
-        hsl(228deg 11% 17%)
-    );
     --color-background-recent-view-table-thead-th: light-dark(
         var(--grey-50),
         hsl(0deg 0% 100% / 10%)

@@ -203,7 +203,7 @@
             background-color: var(--color-background-zulip-button-active);
         }
 
-        &:focus {
+        &:focus-visible {
             background-color: var(
                 --color-background-recent-filters-button-focus
             );
@@ -226,7 +226,20 @@
     }
 
     .button-recent-selected {
-        background-color: var(--color-background-recent-view-selected);
+        color: var(--color-text-brand-subtle-action-button);
+        background-color: var(--color-background-brand-subtle-action-button);
+
+        &:hover {
+            background-color: var(
+                --color-background-brand-subtle-action-button-hover
+            );
+        }
+
+        &:active {
+            background-color: var(
+                --color-background-brand-subtle-action-button-active
+            );
+        }
     }
 
     .unread_count {
