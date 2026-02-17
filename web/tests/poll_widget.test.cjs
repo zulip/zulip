@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -21,16 +22,16 @@ const {set_realm} = zrequire("state_data");
 
 set_realm(make_realm());
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     full_name: "Me Myself",
     user_id: 99,
-};
-const alice = {
+});
+const alice = make_user({
     email: "alice@zulip.com",
     full_name: "Alice Lee",
     user_id: 100,
-};
+});
 people.add_active_user(me);
 people.add_active_user(alice);
 people.initialize_current_user(me.user_id);
