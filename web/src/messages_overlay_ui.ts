@@ -51,18 +51,44 @@ export function focus_on_sibling_element(context: Context): void {
 }
 
 export function modals_handle_events(event_key: string, context: Context): void {
+    const had_focus = row_with_focus(context).length > 0;
     initialize_focus(event_key, context);
+    const has_focus = row_with_focus(context).length > 0;
 
     // This detects up arrow key presses when the overlay
     // is open and scrolls through.
     if (event_key === "up_arrow" || event_key === "vim_up") {
-        scroll_to_element(row_before_focus(context), context);
+        if (has_focus) {
+            if (!had_focus) {
+                scroll_to_element(row_with_focus(context), context);
+            } else {
+                const $focused_row = row_with_focus(context);
+                const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
+                if (should_scroll_within_row($focused_row, $items_list, -1)) {
+                    // Keep the scroll behavior symmetric with the down-arrow path
+                    // to avoid jumpy upward scrolling for tall rows.
+                    scroll_list_by_arrow(context, -1);
+                } else {
+                    scroll_to_element(row_before_focus(context), context);
+                }
+            }
+        } else {
+            scroll_list_by_arrow(context, -1);
+        }
     }
 
     // This detects down arrow key presses when the overlay
     // is open and scrolls through.
     if (event_key === "down_arrow" || event_key === "vim_down") {
-        scroll_to_element(row_after_focus(context), context);
+        if (has_focus) {
+            if (!had_focus) {
+                scroll_to_element(row_with_focus(context), context);
+            } else {
+
+                    scroll_to_element(row_after_focus(context), context);
+                }
+           
+       
     }
 
     if (event_key === "backspace" || event_key === "delete") {
