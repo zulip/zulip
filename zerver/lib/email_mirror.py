@@ -43,6 +43,7 @@ from zerver.models import (
 from zerver.models.clients import get_client
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zproject.backends import is_user_active
 
 logger = logging.getLogger(__name__)
@@ -198,13 +199,22 @@ def construct_zulip_body(
 
 
 def send_zulip(sender: UserProfile, stream: Stream, topic_name: str, content: str) -> None:
-    internal_send_stream_message(
-        sender,
-        stream,
-        truncate_topic(topic_name),
-        normalize_body(content),
-        email_gateway=True,
-    )
+    if (len(topic_name) <= MAX_TOPIC_NAME_LENGTH):
+        internal_send_stream_message(
+            sender,
+            stream,
+            truncate_topic(topic_name),
+            normalize_body(content),
+            email_gateway=True,
+        )
+    else:                            # If topic greater than 60 characters, place in body
+        internal_send_stream_message( 
+            sender,
+            stream,
+            truncate_topic(topic_name),
+            normalize_body("Subject: " + topic_name + "\n\n" + content),
+            email_gateway=True,
+        )
 
 
 def send_mm_reply_to_stream(
