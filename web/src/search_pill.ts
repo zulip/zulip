@@ -40,6 +40,16 @@ type SearchPill = ({type: "generic_operator"} & NarrowCanonicalTerm) | SearchUse
 
 export type SearchPillWidget = InputPillContainer<SearchPill>;
 
+type PillRenderData =
+    | ({type: "generic_operator"} & NarrowTermSuggestion & {
+              display_value?: string;
+              is_empty_string_topic?: boolean;
+              sign?: string;
+              topic_display_name?: string;
+              description_html?: string;
+          })
+    | SearchUserPill;
+
 export function create_item_from_search_string(search_string: string): SearchPill | undefined {
     const search_term = util.the(Filter.parse(search_string));
     const potential_narrow_term = Filter.convert_suggestion_to_term(search_term);
@@ -137,7 +147,7 @@ function maybe_generate_combined_channel_topic_pill(
     index: number,
     search_terms: NarrowTermSuggestion[],
     search_pill: SearchPill,
-): ({type: "generic_operator"} & NarrowTermSuggestion & {display_value: string}) | undefined {
+): PillRenderData | undefined {
     assert(search_pill.operator === "topic");
     if (index === 0) {
         return undefined;
@@ -169,15 +179,6 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
     // The index tracked here will then be removed from `pill_render_data`
     // before rendering the pills to avoid an extra channel pill.
     let redundant_channel_pill_index = -1;
-    type PillRenderData =
-        | ({type: "generic_operator"} & NarrowTermSuggestion & {
-                  display_value?: string;
-                  is_empty_string_topic?: boolean;
-                  sign?: string;
-                  topic_display_name?: string;
-                  description_html?: string;
-              })
-        | SearchUserPill;
     const pill_render_data: PillRenderData[] = search_terms.map((term, index) => {
         const narrow_term: NarrowCanonicalTerm | undefined =
             Filter.convert_suggestion_to_term(term);
