@@ -8,6 +8,8 @@ const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -81,39 +83,37 @@ function reset_jquery() {
     $.clear_all_elements();
 }
 
-const new_user = {
+const new_user = make_user({
     email: "new_user@example.com",
     user_id: 101,
     full_name: "New User",
     date_joined: new Date(),
-};
+});
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
     date_joined: new Date(),
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 31,
     full_name: "Alice",
-    is_bot: false,
-};
+});
 
-const bob = {
+const bob = make_user({
     email: "bob@example.com",
     user_id: 32,
     full_name: "Bob",
-};
+});
 
-const bot = {
+const bot = make_bot({
     email: "bot@example.com",
     user_id: 33,
     full_name: "Bot",
-    is_bot: true,
-};
+});
 
 people.add_active_user(new_user);
 people.add_active_user(me);
@@ -123,13 +123,13 @@ people.add_active_user(alice);
 people.add_active_user(bob);
 people.add_active_user(bot);
 
-const social = {
+const social = make_stream({
     stream_id: 101,
     name: "social",
     subscribed: true,
     can_send_message_group: 2,
     topics_policy: "inherit",
-};
+});
 stream_data.add_sub_for_tests(social);
 
 const nobody = make_user_group({
