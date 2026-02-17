@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -20,30 +21,29 @@ let pills = {
 };
 
 run_test("pills", ({override}) => {
-    const me = {
+    const me = make_user({
         email: "me@example.com",
         user_id: 30,
         full_name: "Me Myself",
-        date_joined: new Date(),
-    };
+    });
 
-    const othello = {
-        user_id: 1,
+    const othello = make_user({
         email: "othello@example.com",
+        user_id: 1,
         full_name: "Othello",
-    };
+    });
 
-    const iago = {
+    const iago = make_user({
         email: "iago@zulip.com",
         user_id: 2,
         full_name: "Iago",
-    };
+    });
 
-    const hamlet = {
+    const hamlet = make_user({
         email: "hamlet@example.com",
         user_id: 3,
         full_name: "Hamlet",
-    };
+    });
 
     people.initialize_current_user(me.user_id);
     people.add_active_user(me);
@@ -152,9 +152,7 @@ run_test("pills", ({override}) => {
 
     const persons = [othello, iago, hamlet];
     const items = compose_pm_pill.filter_taken_users(persons);
-    assert.deepEqual(items, [
-        {email: "iago@zulip.com", user_id: 2, full_name: "Iago", is_moderator: false},
-    ]);
+    assert.deepEqual(items, [iago]);
 
     test_create_item(create_item_handler);
 
@@ -199,22 +197,20 @@ run_test("has_unconverted_data", ({override}) => {
 });
 
 run_test("update_user_pill_active_status", ({override_rewire}) => {
-    const othello = {
-        user_id: 1,
+    const othello = make_user({
         email: "othello@example.com",
+        user_id: 1,
         full_name: "Othello",
         is_active: true,
-        is_bot: false,
-    };
+    });
 
-    const inaccessible_user = {
-        user_id: 2,
+    const inaccessible_user = make_user({
         email: "iago@zulip.com",
+        user_id: 2,
         full_name: "Iago",
         is_active: false,
         is_inaccessible_user: true,
-        is_bot: false,
-    };
+    });
 
     // Test with uninitialized widget - should return early without error
     override_rewire(compose_pm_pill, "widget", undefined);
@@ -289,7 +285,11 @@ run_test("update_user_pill_active_status", ({override_rewire}) => {
     pill_updated = false;
 
     // Test updating a user that doesn't have a pill - should be a no-op
-    const hamlet = {user_id: 3, email: "hamlet@example.com", full_name: "Hamlet"};
+    const hamlet = make_user({
+        email: "hamlet@example.com",
+        user_id: 3,
+        full_name: "Hamlet",
+    });
     compose_pm_pill.update_user_pill_active_status(hamlet, true);
 
     assert.ok(!pill_updated);
