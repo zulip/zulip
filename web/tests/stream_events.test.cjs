@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const example_settings = require("./lib/example_settings.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -71,21 +73,21 @@ const realm = make_realm();
 set_current_user({});
 set_realm(realm);
 
-const george = {
+const george = make_user({
     email: "george@zulip.com",
     full_name: "George",
     user_id: 103,
-};
-const me = {
+});
+const me = make_user({
     email: "me@zulip.com",
     full_name: "Me Myself",
     user_id: 104,
-};
+});
 people.add_active_user(george);
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-const dev_help = {
+const dev_help = make_stream({
     subscribed: true,
     color: "blue",
     name: "dev help",
@@ -94,9 +96,9 @@ const dev_help = {
     invite_only: false,
     can_administer_channel_group: 1,
     can_remove_subscribers_group: 1,
-};
+});
 
-const frontend = {
+const frontend = make_stream({
     subscribed: false,
     color: "yellow",
     name: "frontend",
@@ -105,7 +107,7 @@ const frontend = {
     invite_only: false,
     can_administer_channel_group: 1,
     can_remove_subscribers_group: 1,
-};
+});
 
 function narrow_to_frontend() {
     const filter = new Filter([{operator: "stream", operand: frontend.stream_id.toString()}]);
@@ -533,13 +535,14 @@ test("marked_subscribed (color)", ({override}) => {
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
 
-    const sub = {
+    const sub = make_stream({
         subscribed: false,
         name: "production help",
         stream_id: 201,
         is_muted: true,
         invite_only: false,
-    };
+        color: undefined,
+    });
     stream_data.add_sub_for_tests(sub);
 
     override(color_data, "pick_color", () => "green");
