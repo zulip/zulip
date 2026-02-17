@@ -5,6 +5,8 @@ const assert = require("node:assert/strict");
 const {parseOneAddress} = require("email-addresses");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user, Role} = require("./lib/example_user.cjs");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -33,43 +35,43 @@ initialize_user_settings({user_settings: {}});
 const stream_message = "stream";
 const direct_message = "private";
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-};
+});
 
-const joe = {
+const joe = make_user({
     email: "joe@example.com",
     user_id: 31,
     full_name: "joe",
-};
+});
 
-const steve = {
+const steve = make_user({
     email: "STEVE@foo.com",
     user_id: 32,
     full_name: "steve",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 33,
     full_name: "alice",
-    is_guest: true,
-};
+    role: Role.GUEST,
+});
 
-const jeff = {
+const jeff = make_user({
     email: "jeff@foo.com",
     user_id: 34,
     full_name: "jeff",
-};
+});
 
-const annie = {
+const annie = make_user({
     email: "annie@foo.com",
     user_id: 35,
     full_name: "annie",
-    is_guest: true,
-};
+    role: Role.GUEST,
+});
 
 // Add users to `valid_user_ids`.
 const source = "server_events";
@@ -100,10 +102,10 @@ function get_predicate(raw_terms) {
 }
 
 function make_sub(name, stream_id) {
-    const sub = {
+    const sub = make_stream({
         name,
         stream_id,
-    };
+    });
     stream_data.add_sub_for_tests(sub);
 }
 
@@ -114,15 +116,15 @@ function new_stream_id() {
 }
 
 const foo_stream_id = new_stream_id();
-const foo_sub = {
+const foo_sub = make_stream({
     name: "Foo",
     stream_id: foo_stream_id,
-};
+});
 
-const general_sub = {
+const general_sub = make_stream({
     name: "general",
     stream_id: new_stream_id(),
-};
+});
 stream_data.add_sub_for_tests(general_sub);
 
 const invalid_sub_id = new_stream_id();
