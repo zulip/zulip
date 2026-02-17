@@ -199,7 +199,7 @@
 .typeahead-image {
     display: grid;
     position: relative;
-    grid-template-rows: 1fr 1fr;   /* reserve space for status */
+    grid-template-rows: 1fr 1fr; /* reserve space for status */
     grid-template-columns: 1fr;
     height: 1.3125em; /* 21px at 16px/1em */
     width: 1.3125em; /* 21px at 16px/1em */
@@ -210,7 +210,7 @@
     }
 
     .user-circle {
-        grid-row: 3 / 2;
+        grid-row: 2 / 3;
         justify-self: last baseline;
         font-size: 0.4375em; /* 7px at 16px/1em */
         line-height: 1;
