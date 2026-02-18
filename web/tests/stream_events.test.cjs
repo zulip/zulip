@@ -58,10 +58,12 @@ const user_group_edit = mock_esm("../src/user_group_edit");
 const user_profile = mock_esm("../src/user_profile");
 
 const {Filter} = zrequire("../src/filter");
-const activity_ui = zrequire("activity_ui");
-const {buddy_list} = zrequire("buddy_list");
+const activity_ui = mock_esm("../src/activity_ui", {
+    build_user_sidebar: noop,
+    set_cursor_and_filter: noop,
+});
 const compose_state = zrequire("compose_state");
-const narrow_state = zrequire("narrow_state");
+zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -470,7 +472,6 @@ test("marked_subscribed (normal)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub_for_tests(sub);
     override(stream_color_events, "update_stream_color", noop);
-    override(buddy_list, "populate", noop);
     activity_ui.set_cursor_and_filter();
 
     narrow_to_frontend();
@@ -631,7 +632,6 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     override(unread_ui, "update_unread_counts", noop);
     override(unread_ui, "hide_unread_banner", noop);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
-    override(buddy_list, "populate", noop);
 
     $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
@@ -642,12 +642,12 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     message_lists.current = undefined;
 });
 
-test("process_subscriber_update", ({override, override_rewire}) => {
+test("process_subscriber_update", ({override}) => {
     const subsStub = make_stub();
     stream_settings_ui.update_subscribers_ui = subsStub.f;
 
     let build_user_sidebar_called = false;
-    override_rewire(activity_ui, "build_user_sidebar", () => {
+    override(activity_ui, "build_user_sidebar", () => {
         build_user_sidebar_called = true;
     });
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
@@ -677,9 +677,11 @@ test("process_subscriber_update", ({override, override_rewire}) => {
 
     // For a stream the user is currently viewing, we rebuild the user sidebar
     // when someone subscribes to that stream.
-    override_rewire(narrow_state, "stream_id", () => 1);
+    const filter = new Filter([{operator: "channel", operand: "1"}]);
+    message_lists.current = {data: {filter}};
     stream_events.process_subscriber_update(userIds, streamIds);
     assert.ok(build_user_sidebar_called);
+    message_lists.current = undefined;
 });
 
 test("marked_subscribed (new channel creation)", ({override}) => {
