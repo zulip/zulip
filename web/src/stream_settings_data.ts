@@ -35,11 +35,6 @@ export const ARCHIVED_STATUS_FILTERS = {
     ARCHIVED_CHANNELS: "archived_channels",
 };
 
-export const FOLDER_FILTERS = {
-    UNCATEGORIZED_DROPDOWN_OPTION: -1,
-    ANY_FOLDER_DROPDOWN_OPTION: -2,
-};
-
 export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscription {
     return {
         ...sub,

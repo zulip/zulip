@@ -13,6 +13,7 @@ import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
+import * as folder_dropdown_widget from "./folder_dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
@@ -368,7 +369,7 @@ export function archived_status_filter_includes_channel(sub: StreamSubscription)
 }
 
 export function folder_filter_includes_channel(sub: StreamSubscription): boolean {
-    const filters = stream_settings_data.FOLDER_FILTERS;
+    const filters = folder_dropdown_widget.FOLDER_FILTERS;
     const filter_value = get_folder_filter_dropdown_value();
     if (filter_value === filters.ANY_FOLDER_DROPDOWN_OPTION) {
         return true;

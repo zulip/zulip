@@ -1,7 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import * as tippy from "tippy.js";
+import type * as tippy from "tippy.js";
 
 import render_stream_creation_confirmation_banner from "../templates/modal_banner/stream_creation_confirmation_banner.hbs";
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
@@ -12,13 +12,13 @@ import render_stream_sorter_toggle_label from "../templates/stream_settings/stre
 import type {Banner} from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
-import * as channel_folders from "./channel_folders.ts";
 import * as components from "./components.ts";
 import type {Toggle} from "./components.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
+import * as folder_filter_dropdown_widget from "./folder_dropdown_widget.ts";
 import * as hash_parser from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -52,7 +52,6 @@ import type {StreamPermissionGroupSetting, StreamTopicsPolicy} from "./stream_ty
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
-import {LONG_HOVER_DELAY} from "./tippyjs.ts";
 import * as util from "./util.ts";
 import * as views_util from "./views_util.ts";
 
@@ -522,7 +521,7 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
 
 function triage_stream(left_panel_params: LeftPanelParams, sub: StreamSubscription): string {
     const archived_status_filters = stream_settings_data.ARCHIVED_STATUS_FILTERS;
-    const folder_filters = stream_settings_data.FOLDER_FILTERS;
+    const folder_filters = folder_filter_dropdown_widget.FOLDER_FILTERS;
     if (
         left_panel_params.archived_status_filter_value ===
             archived_status_filters.NON_ARCHIVED_CHANNELS &&
@@ -688,7 +687,7 @@ export function update_empty_left_panel_message(): void {
 function update_folder_filter_button(left_panel_params: LeftPanelParams): void {
     if (
         left_panel_params.folder_filter_value ===
-        stream_settings_data.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION
+        folder_filter_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION
     ) {
         $("#folder_filter_button").addClass("icon-button-neutral");
         $("#folder_filter_button").removeClass("icon-button-brand");
@@ -896,98 +895,29 @@ function set_up_dropdown_widget(): void {
 }
 
 function set_up_folder_filter_dropdown_widget(): void {
-    const folder_filters = stream_settings_data.FOLDER_FILTERS;
-
-    const folder_options = (
-        current_value: string | number | undefined,
-    ): dropdown_widget.Option[] => {
-        const folders = channel_folders.get_folders_with_accessible_channels();
-        const options: dropdown_widget.Option[] = folders.map((folder) => ({
-            name: folder.name,
-            unique_id: folder.id,
-            bold_current_selection: current_value === folder.id,
-        }));
-
-        // Show "Uncategorized" option only if user can access at least
-        // one channel that is uncategorized.
-        const show_uncategorized_option = stream_data
-            .get_unsorted_subs()
-            .some((sub) => sub.folder_id === null);
-        if (show_uncategorized_option) {
-            const uncategorized_option = {
-                is_setting_disabled: true,
-                show_disabled_icon: false,
-                show_disabled_option_name: true,
-                unique_id: folder_filters.UNCATEGORIZED_DROPDOWN_OPTION,
-                name: $t({defaultMessage: "Uncategorized"}),
-                bold_current_selection:
-                    current_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION,
-            };
-            options.unshift(uncategorized_option);
-        }
-
-        const any_folder_option = {
-            is_setting_disabled: true,
-            show_disabled_icon: false,
-            show_disabled_option_name: true,
-            unique_id: folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
-            name: $t({defaultMessage: "Any folder"}),
-            bold_current_selection: current_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
-        };
-        options.unshift(any_folder_option);
-
-        return options;
-    };
-
-    const widget = new dropdown_widget.DropdownWidget({
+    const widget = folder_filter_dropdown_widget.create_folder_filter_dropdown_widget({
         widget_name: "folder-filter",
         widget_selector: ".filter-folders-dropdown-widget-button",
-        get_options: folder_options,
         item_click_callback(
             event: JQuery.TriggeredEvent,
             dropdown: tippy.Instance,
             widget: dropdown_widget.DropdownWidget,
         ) {
             filter_click_handler(event, dropdown, widget);
-            update_tooltip_for_folder_filter();
+            folder_filter_dropdown_widget.update_tooltip_for_folder_filter(
+                "folder_filter_container",
+                stream_settings_components.get_folder_filter_dropdown_value(),
+            );
         },
         $events_container: $("#stream_filter"),
-        unique_id_type: "number",
-        default_id: folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
+        default_id: folder_filter_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION,
     });
     widget.setup();
     stream_settings_components.set_folder_filter_dropdown_widget(widget);
-    update_tooltip_for_folder_filter();
-}
-
-export function update_tooltip_for_folder_filter(): void {
-    // Destroy the previous tooltip instance.
-    $<tippy.PopperElement>("#folder_filter_container")[0]!._tippy?.destroy();
-
-    const folder_filters = stream_settings_data.FOLDER_FILTERS;
-    const filter_value = stream_settings_components.get_folder_filter_dropdown_value();
-
-    let content;
-    if (filter_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
-        content = $t({defaultMessage: "Filter by folder"});
-    } else if (filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION) {
-        content = $t({defaultMessage: "Viewing uncategorized channels"});
-    } else {
-        const folder = channel_folders.get_channel_folder_by_id(filter_value);
-        content = $t(
-            {defaultMessage: "Viewing channels in {folder_name}"},
-            {folder_name: folder.name},
-        );
-    }
-
-    tippy.default(util.the($("#folder_filter_container")), {
-        animation: false,
-        hideOnClick: false,
-        placement: "bottom",
-        appendTo: () => document.body,
-        delay: LONG_HOVER_DELAY,
-        content,
-    });
+    folder_filter_dropdown_widget.update_tooltip_for_folder_filter(
+        "folder_filter_container",
+        stream_settings_components.get_folder_filter_dropdown_value(),
+    );
 }
 
 function setup_page(callback: () => void): void {
@@ -1243,7 +1173,7 @@ export function change_state(
             stream_settings_components.set_archived_status_filter_dropdown_value(selected_filter);
         }
         if (sub && !stream_settings_components.folder_filter_includes_channel(sub)) {
-            const folder_filters = stream_settings_data.FOLDER_FILTERS;
+            const folder_filters = folder_filter_dropdown_widget.FOLDER_FILTERS;
             let selected_filter;
             if (sub.folder_id === null) {
                 selected_filter = folder_filters.UNCATEGORIZED_DROPDOWN_OPTION;
