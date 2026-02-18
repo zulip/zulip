@@ -3042,13 +3042,15 @@ class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
         # Potentially support animated Discord avatars
         animated_prefix = "a_" if avatar_extension == "gif" else ""
         # TODO: figure out whether to scrape and upload avatar
-        avatar_url = f"https://cdn.discordapp.com/avatars/{id}/{animated_prefix}{avatar_hash}.{avatar_extension}"
+        _avatar_url = f"https://cdn.discordapp.com/avatars/{id}/{animated_prefix}{avatar_hash}.{avatar_extension}"
 
+        # prevent updating User with empty strings
         user_details = {
             "username": name,
             "fullname": name,
+            "first_name": None,
+            "last_name": None,
             "email": email,
-            "avatar": avatar_url,
         }
         return user_details
 
