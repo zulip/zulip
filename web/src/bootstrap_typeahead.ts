@@ -472,6 +472,41 @@ export class Typeahead<ItemType extends string | object> {
                         // the placement of typeahead.
                         void instance.popperInstance?.update();
                     });
+
+                    // While the above requestAnimationFrame call works well in
+                    // fast environments, it fails to preventOverflow if the
+                    // typeahead has still not completely rendered after 1 frame.
+                    // So, this is a safe guard to ensure that typeahead never
+                    // overflows.
+                    function check_and_update_position(): boolean {
+                        if (!instance.state.isVisible) {
+                            return true;
+                        }
+
+                        const popper_rect = instance.popper.getBoundingClientRect();
+                        if (popper_rect.x + popper_rect.width <= window.innerWidth) {
+                            return true;
+                        }
+                        void instance.popperInstance?.update();
+                        return false;
+                    }
+
+                    function scheduleCheck(attempts: number): void {
+                        if (check_and_update_position() || attempts <= 0) {
+                            return;
+                        }
+                        setTimeout(() => {
+                            scheduleCheck(attempts - 1);
+                        }, 10);
+                    }
+
+                    const MAX_ATTEMPTS = 5;
+                    // In chrome browser for @amanagr, just one call at 1ms is
+                    // sufficient to preventOverflow of typeahead.
+                    setTimeout(() => {
+                        void instance.popperInstance?.update();
+                        scheduleCheck(MAX_ATTEMPTS);
+                    }, 1);
                 },
                 onHidden: (instance) => {
                     this.clear_typeahead_tooltip?.();
