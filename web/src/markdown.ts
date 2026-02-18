@@ -34,6 +34,25 @@ const preview_regexes = [
     /\S*youtube\.com\/\S*/,
 ];
 
+const common_marked_options = {
+    // Enable GitHub Flavored Markdown.
+    gfm: true,
+    // Enable GFM tables.
+    tables: true,
+    // Enable GFM line breaks.
+    breaks: true,
+    // Conform to obscure parts of markdown.pl as much as possible.
+    pedantic: false,
+    // Sanitize the output. Ignore any HTML that has been input.
+    sanitize: true,
+    // Use smarter list behavior than the original markdown.pl.
+    smartLists: true,
+    // Use "smart" typograhic punctuation for things like quotes and dashes.
+    smartypants: false,
+    // Custom Zulip extensions.
+    zulip: true,
+};
+
 function contains_preview_link(content: string): boolean {
     return preview_regexes.some((re) => re.test(content));
 }
@@ -824,14 +843,7 @@ export function parse({
         streamTopicMessageHandler,
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
-        gfm: true,
-        tables: true,
-        breaks: true,
-        pedantic: false,
-        sanitize: true,
-        smartLists: true,
-        smartypants: false,
-        zulip: true,
+        ...common_marked_options,
         renderer,
         preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
     };
