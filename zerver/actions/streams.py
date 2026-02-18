@@ -231,7 +231,10 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
 
     if not stream.deactivated:
         raise JsonableError(_("Channel is not currently deactivated"))
-    if stream.name != new_name and Stream.objects.filter(realm=realm, name=new_name).exists():
+    if (
+        stream.name != new_name
+        and Stream.objects.filter(realm=realm, name__iexact=new_name).exists()
+    ):
         raise JsonableError(
             _("Channel named {channel_name} already exists").format(channel_name=new_name)
         )
