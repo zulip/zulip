@@ -1372,7 +1372,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             collapsed: message.collapsed,
             alerted: message.alerted,
             mentioned: message.mentioned,
-            mentioned_me_directly: message.mentioned,
+            mentioned_me_directly: message.mentioned_me_directly,
         });
         edit_locally_echoed = true;
 
