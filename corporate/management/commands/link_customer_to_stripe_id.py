@@ -6,6 +6,7 @@ from typing_extensions import override
 
 if settings.BILLING_ENABLED:
     from corporate.lib.billing_management import BillingSessionCommand
+    from corporate.lib.stripe import BillingError, stripe_get_customer
     from corporate.models.plans import get_current_plan_by_customer
 
 
@@ -28,6 +29,11 @@ class Command(BillingSessionCommand):
             raise CommandError("Billing system not enabled.")
 
         stripe_id = options["stripe_id"]
+        try:
+            stripe_get_customer(stripe_id)
+        except BillingError:
+            raise CommandError(f"Error checking for Stripe Customer with ID {stripe_id}. Aborting.")
+
         billing_session = self.get_billing_session_from_args(options)
         customer = billing_session.get_customer()
 
