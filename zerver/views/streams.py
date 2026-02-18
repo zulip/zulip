@@ -441,7 +441,7 @@ def update_stream_backend(
         )
 
     if is_archived is not None and not is_archived:
-        do_unarchive_stream(stream, stream.name, acting_user=None)
+        do_unarchive_stream(stream, stream.name, acting_user=user_profile)
 
     if (
         can_delete_any_message_group is not None or can_delete_own_message_group is not None
