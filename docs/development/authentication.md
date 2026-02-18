@@ -85,6 +85,18 @@ details worth understanding:
   ID as `social_auth_gitlab_key` and the Secret as
   `social_auth_gitlab_secret`.
 
+### Discord
+
+- Register an OAuth application with Discord at
+  <https://discord.com/developers/applications>.
+  Specify `http://auth.zulipdev.com:9991/complete/discord/` as the callback URL.
+
+- Navigate to "OAuth2" in the "Settings" section of the sidebar and you should
+  get a box containing the Client ID for your new application. Click "Reset
+  Secret" to generate a Client Secret. In `dev-secrets.conf`, enter the Client
+  ID as `social_auth_discord_key` and the Client Secret as
+  `social_auth_discord_secret`.
+
 ### Apple
 
 - Visit <https://developer.apple.com/account/resources/>,
