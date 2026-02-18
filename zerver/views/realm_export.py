@@ -81,7 +81,7 @@ def export_realm(
         realm=realm, property="messages_sent:message_type:day"
     )
     if export_type_value == RealmExport.EXPORT_PUBLIC:
-        realm_count_query.filter(subgroup="public_stream")
+        realm_count_query = realm_count_query.filter(subgroup="public_stream")
     exportable_messages_estimate = sum(realm_count.value for realm_count in realm_count_query)
 
     if (
