@@ -57,7 +57,7 @@ mock_esm("../src/settings_data", {
 });
 
 const compose_ui = zrequire("compose_ui");
-const compose_banner = zrequire("compose_banner");
+zrequire("compose_banner");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_recipient = zrequire("compose_recipient");
 const compose_state = zrequire("compose_state");
@@ -271,7 +271,6 @@ test_ui("send_message_success", ({override, override_rewire}) => {
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
     MockDate.set(new Date(fake_now * 1000));
-    override_rewire(drafts, "sync_count", noop);
 
     const fake_compose_box = new FakeComposeBox();
 
@@ -434,7 +433,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
 test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
-    override_rewire(compose_banner, "clear_message_sent_banners", noop);
     window.addEventListener = noop;
 
     disable_document_triggers(override);
@@ -488,8 +486,6 @@ test_ui("finish", ({override, override_rewire}) => {
     disable_document_triggers(override);
 
     const fake_compose_box = new FakeComposeBox();
-
-    override_rewire(compose_banner, "clear_message_sent_banners", noop);
 
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {

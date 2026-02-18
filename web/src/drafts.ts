@@ -258,13 +258,9 @@ export function rewire_update_compose_draft_count(value: typeof update_compose_d
     update_compose_draft_count = value;
 }
 
-export let sync_count = (): void => {
+export function sync_count(): void {
     const drafts = draft_model.get();
     set_count(Object.keys(drafts).length);
-};
-
-export function rewire_sync_count(value: typeof sync_count): void {
-    sync_count = value;
 }
 
 export function delete_all_drafts(): void {
