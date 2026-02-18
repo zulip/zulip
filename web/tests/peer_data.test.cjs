@@ -12,7 +12,7 @@ const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const example_settings = require("./lib/example_settings.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
-const {make_bot, make_cross_realm_bot, make_user} = require("./lib/example_user.cjs");
+const {make_bot, make_cross_realm_bot, make_user, Role} = require("./lib/example_user.cjs");
 const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -57,7 +57,7 @@ const bot_botson = make_bot({
     email: "botson-bot@example.com",
     user_id: 35,
     full_name: "Bot Botson",
-    role: 300,
+    role: Role.MODERATOR,
 });
 
 const nobody_group = make_user_group({

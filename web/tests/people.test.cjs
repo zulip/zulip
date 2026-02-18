@@ -9,6 +9,8 @@ const MockDate = require("mockdate");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const example_user = require("./lib/example_user.cjs");
+
+const {Role} = example_user;
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -119,21 +121,21 @@ const realm_admin = example_user.make_user({
     email: "realm_admin@example.com",
     full_name: "Realm Admin",
     user_id: 32,
-    role: 200,
+    role: Role.ADMINISTRATOR,
 });
 
 const guest = example_user.make_user({
     email: "guest@example.com",
     full_name: "Guest User",
     user_id: 33,
-    role: 600,
+    role: Role.GUEST,
 });
 
 const realm_owner = example_user.make_user({
     email: "realm_owner@example.com",
     full_name: "Realm Owner",
     user_id: 34,
-    role: 100,
+    role: Role.OWNER,
 });
 
 const bot_botson = example_user.make_bot({
@@ -141,14 +143,14 @@ const bot_botson = example_user.make_bot({
     user_id: 35,
     full_name: "Bot Botson",
     bot_owner_id: isaac.user_id,
-    role: 300,
+    role: Role.MODERATOR,
 });
 
 const moderator = example_user.make_user({
     email: "moderator@example.com",
     full_name: "Moderator",
     user_id: 36,
-    role: 300,
+    role: Role.MODERATOR,
 });
 
 const bot_with_inaccessible_owner = example_user.make_bot({
@@ -156,7 +158,7 @@ const bot_with_inaccessible_owner = example_user.make_bot({
     user_id: 37,
     full_name: "Inaccessible owner bot",
     bot_owner_id: 38,
-    role: 300,
+    role: Role.MODERATOR,
 });
 
 const steven = example_user.make_user({
@@ -1438,7 +1440,7 @@ run_test("predicate_for_user_settings_filters", ({override}) => {
     */
     override(current_user, "is_admin", false);
 
-    const fred_smith = {full_name: "Fred Smith", role: 100};
+    const fred_smith = {full_name: "Fred Smith", role: Role.OWNER};
 
     // Test only when text_search filter is true
     assert.equal(
