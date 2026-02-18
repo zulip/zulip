@@ -25928,7 +25928,7 @@ components:
             sent by any user in the Zulip organization who sent a
             message containing a link to the uploaded file.
 
-            **Changes**: In Zulip 12.0 (feature level 472), this
+            **Changes**: In Zulip 12.0 (feature level ZF-af2d4c), this
             replaced the previous `messages` field, which was an array
             of objects containing both `id` and `date_sent` properties.
           items:
