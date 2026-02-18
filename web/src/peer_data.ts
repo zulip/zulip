@@ -304,7 +304,7 @@ function decrement_subscriber_count(
 // Note: `subscriber_count` can sometimes be wrong due to races on the backend,
 // so we should fetch full subscriber data if we care about this number being
 // accurate.
-export let get_subscriber_count = (stream_id: number, include_bots = true): number => {
+export function get_subscriber_count(stream_id: number, include_bots = true): number {
     const count = subscriber_counts.get(stream_id);
     if (count === undefined) {
         blueslip.warn(`We called get_subscriber_count for an untracked stream: ${stream_id}`);
@@ -322,10 +322,6 @@ export let get_subscriber_count = (stream_id: number, include_bots = true): numb
         }
     }
     return count - bot_count;
-};
-
-export function rewire_get_subscriber_count(value: typeof get_subscriber_count): void {
-    get_subscriber_count = value;
 }
 
 export function set_subscriber_count(stream_id: number, count: number): void {

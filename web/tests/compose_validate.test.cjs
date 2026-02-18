@@ -305,12 +305,18 @@ test_ui("validate", ({mock_template, override}) => {
     }
 });
 
-test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) => {
+test_ui("test_stream_wildcard_mention_allowed", ({override}) => {
     override(current_user, "user_id", me.user_id);
 
     // First, check for large streams (>15 subscribers) where the wildcard mention
-    // policy matters.
-    override_rewire(peer_data, "get_subscriber_count", () => 16);
+    // policy matters. Set 16 subscribers so is_recipient_large_stream() returns true.
+    const large_stream = {stream_id: 100, name: "Denmark"};
+    stream_data.add_sub_for_tests(large_stream);
+    compose_state.set_stream_id(large_stream.stream_id);
+    peer_data.set_subscribers(
+        large_stream.stream_id,
+        Array.from({length: 16}, (_, i) => i + 1),
+    );
 
     override(realm, "realm_can_mention_many_users_group", everyone.id);
     override(current_user, "user_id", guest.user_id);
@@ -343,7 +349,7 @@ test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) =>
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 });
 
-test_ui("validate_stream_message", ({override, override_rewire, mock_template}) => {
+test_ui("validate_stream_message", ({override, mock_template}) => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -367,10 +373,10 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
 
-    override_rewire(peer_data, "get_subscriber_count", (stream_id) => {
-        assert.equal(stream_id, 101);
-        return 16;
-    });
+    peer_data.set_subscribers(
+        special_sub.stream_id,
+        Array.from({length: 16}, (_, i) => i + 1),
+    );
     let stream_wildcard_warning_rendered = false;
     $("#compose_banner_area .wildcard_warning").length = 0;
     mock_template("compose_banner/stream_wildcard_warning.hbs", false, (data) => {
