@@ -131,6 +131,7 @@ class ClientDescriptor:
         # loading event queues that lack that key.
         return dict(
             user_profile_id=self.user_profile_id,
+            user_recipient_id=self.user_recipient_id,
             realm_id=self.realm_id,
             event_queue=self.event_queue.to_dict(),
             queue_timeout=self.queue_timeout,
