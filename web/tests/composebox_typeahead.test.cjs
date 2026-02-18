@@ -713,11 +713,20 @@ function test(label, f) {
     });
 }
 
-test("topics_seen_for", ({override, override_rewire}) => {
-    override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
-        assert.equal(stream_id, denmark_stream.stream_id);
-        return ["With Twisted Metal", "acceptance", "civil fears"];
-    });
+test("topics_seen_for", ({override}) => {
+    // Initialize topic history with test data, using message_ids
+    // to control the recency ordering.
+    for (const [message_id, topic_name] of [
+        [3, "With Twisted Metal"],
+        [2, "acceptance"],
+        [1, "civil fears"],
+    ]) {
+        stream_topic_history.add_message({
+            stream_id: denmark_stream.stream_id,
+            message_id,
+            topic_name,
+        });
+    }
 
     override(stream_topic_history_util, "get_server_history", (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
@@ -1185,6 +1194,18 @@ const sweden_topics_to_show = [
     "",
 ];
 
+// Initialize stream_topic_history with test data so we can query
+// get_recent_topic_names without rewiring. Assign message_ids in
+// reverse so the recency order matches the alphabetical order of
+// sweden_topics_to_show.
+for (const [index, topic_name] of sweden_topics_to_show.entries()) {
+    stream_topic_history.add_message({
+        stream_id: sweden_stream.stream_id,
+        message_id: sweden_topics_to_show.length - index,
+        topic_name,
+    });
+}
+
 test("initialize", ({override, override_rewire, mock_template}) => {
     mock_banners();
 
@@ -1240,11 +1261,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     override(bootstrap_typeahead, "Typeahead", (input_element, options) => {
         switch (input_element.$element) {
             case $("input#stream_message_recipient_topic"): {
-                override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
-                    assert.equal(stream_id, sweden_stream.stream_id);
-                    return sweden_topics_to_show;
-                });
-
                 compose_state.set_stream_id(sweden_stream.stream_id);
                 const lear_user_data = [
                     {
@@ -1837,10 +1853,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 });
 
 test("begins_typeahead", ({override, override_rewire}) => {
-    override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
-        assert.equal(stream_id, sweden_stream.stream_id);
-        return sweden_topics_to_show;
-    });
     override(stream_topic_history_util, "get_server_history", noop);
 
     const input_element = {
