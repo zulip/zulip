@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const MockDate = require("mockdate");
+
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
@@ -120,7 +122,7 @@ mock_esm("tippy.js", {
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const drafts_overlay_ui = zrequire("drafts_overlay_ui");
-const timerender = zrequire("timerender");
+zrequire("timerender");
 
 const mock_current_timestamp = 1234;
 const stream_id = 30;
@@ -437,7 +439,7 @@ test("delete_all_drafts", () => {
     assert.deepEqual(draft_model.get(), {});
 });
 
-test("format_drafts", ({override, override_rewire, mock_template}) => {
+test("format_drafts", ({override, mock_template}) => {
     override(settings_data, "using_dark_theme", () => false);
 
     function feb12() {
@@ -613,10 +615,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     expected[5].is_empty_string_topic = true;
     assert.deepEqual(draft_model.get(), data);
 
-    const stub_render_now = timerender.render_now;
-    override_rewire(timerender, "render_now", (time) =>
-        stub_render_now(time, new Date(1549958107000)),
-    );
+    MockDate.set(1549958107000);
 
     override(user_pill, "get_user_ids", () => []);
     compose_state.set_message_type("private");
@@ -637,7 +636,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     drafts_overlay_ui.launch();
 });
 
-test("filter_drafts", ({override, override_rewire, mock_template}) => {
+test("filter_drafts", ({override, mock_template}) => {
     override(settings_data, "using_dark_theme", () => true);
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
@@ -768,10 +767,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
-    const stub_render_now = timerender.render_now;
-    override_rewire(timerender, "render_now", (time) =>
-        stub_render_now(time, new Date(1549958107000)),
-    );
+    MockDate.set(1549958107000);
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests splitting up drafts by current narrow.
@@ -789,4 +785,8 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
+});
+
+run_test("reset MockDate", () => {
+    MockDate.reset();
 });
