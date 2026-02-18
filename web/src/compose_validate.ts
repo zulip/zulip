@@ -974,15 +974,11 @@ export function validate_private_message(show_banner = true): boolean {
         return false;
     }
 
-    let context = {};
-
     for (const user_id of user_ids) {
         if (!people.is_person_active(user_id)) {
-            context = {full_name: people.get_by_user_id(user_id).full_name};
-            const error_message = $t(
-                {defaultMessage: "You cannot send messages to deactivated users."},
-                context,
-            );
+            const error_message = $t({
+                defaultMessage: "You cannot send messages to deactivated users.",
+            });
             compose_banner.show_error_message(
                 error_message,
                 compose_banner.CLASSNAMES.deactivated_user,
