@@ -556,6 +556,102 @@ class PreviewTestCase(ZulipTestCase):
             int(UserMessage.flags.mentioned | UserMessage.flags.is_private),
         )
 
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_topic_wildcard_mention_preserved(self) -> None:
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.subscribe(hamlet, "Denmark")
+        self.subscribe(cordelia, "Denmark")
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            msg_id = self.send_stream_message(
+                hamlet,
+                "Denmark",
+                topic_name="test",
+                content=url + " @**topic**",
+            )
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        # Hamlet sent the message, so he is a topic participant.
+        self.assertEqual(
+            int(UserMessage.objects.get(message_id=msg_id, user_profile=hamlet).flags),
+            int(UserMessage.flags.topic_wildcard_mentioned | UserMessage.flags.read),
+        )
+        # Cordelia is not a participant in the topic
+        self.assertEqual(
+            int(UserMessage.objects.get(message_id=msg_id, user_profile=cordelia).flags),
+            0,
+        )
+
+        self.create_mock_response(url)
+        with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO") as info_logs:
+            FetchLinksEmbedData().consume(event)
+        self.assertTrue(
+            "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
+            in info_logs.output[0]
+        )
+
+        # The topic wildcard mention flag must be preserved.
+        self.assertEqual(
+            int(UserMessage.objects.get(message_id=msg_id, user_profile=hamlet).flags),
+            int(UserMessage.flags.topic_wildcard_mentioned | UserMessage.flags.read),
+        )
+        self.assertEqual(
+            int(UserMessage.objects.get(message_id=msg_id, user_profile=cordelia).flags),
+            0,
+        )
+
+        # Test the topic wildcard mention flag is preserved when editing a message as well.
+        msg_id = self.send_stream_message(
+            cordelia, "Denmark", topic_name="test", content=" @**topic**"
+        )
+        # Both Hamlet and Cordelia are topic participants.
+        self.assertEqual(
+            int(UserMessage.objects.get(message_id=msg_id, user_profile=hamlet).flags),
+            int(UserMessage.flags.topic_wildcard_mentioned),
+        )
+        self.assertEqual(
+            int(UserMessage.objects.get(message_id=msg_id, user_profile=cordelia).flags),
+            int(UserMessage.flags.topic_wildcard_mentioned | UserMessage.flags.read),
+        )
+
+        self.login("cordelia")
+        with mock_queue_publish("zerver.actions.message_edit.queue_event_on_commit") as patched:
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "content": url + " @**topic**",
+                },
+            )
+            self.assert_json_success(result)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        self.create_mock_response(url)
+        with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO") as info_logs:
+            FetchLinksEmbedData().consume(event)
+        self.assertTrue(
+            "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
+            in info_logs.output[0]
+        )
+
+        # The topic wildcard mention flag must be preserved.
+        self.assertEqual(
+            int(UserMessage.objects.get(message_id=msg_id, user_profile=hamlet).flags),
+            int(UserMessage.flags.topic_wildcard_mentioned),
+        )
+        self.assertEqual(
+            int(UserMessage.objects.get(message_id=msg_id, user_profile=cordelia).flags),
+            int(UserMessage.flags.topic_wildcard_mentioned | UserMessage.flags.read),
+        )
+
     def test_get_link_embed_data(self) -> None:
         url = "http://test.org/"
         embedded_link = f'<a href="{url}" title="The Rock">The Rock</a>'
