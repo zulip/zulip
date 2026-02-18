@@ -134,6 +134,7 @@ from zproject.backends import (
     GitHubAuthBackend,
     GitLabAuthBackend,
     GoogleAuthBackend,
+    DiscordAuthBackend,
     NoMatchingLDAPUserError,
     OutsideLDAPDomainError,
     PopulateUserLDAPError,
@@ -158,6 +159,7 @@ from zproject.backends import (
     github_auth_enabled,
     gitlab_auth_enabled,
     google_auth_enabled,
+    discord_auth_enabled,
     password_auth_enabled,
     query_ldap,
     require_email_format_usernames,
@@ -5712,6 +5714,26 @@ class GoogleAuthBackendTest(SocialAuthBase):
         }
         result = self.get_log_into_subdomain(data)
         self.assert_json_error(result, "Invalid subdomain")
+
+
+class DiscordAuthBackendTest(SocialAuthBase):
+    BACKEND_CLASS = DiscordAuthBackend
+    CLIENT_KEY_SETTING = "SOCIAL_AUTH_DISCORD_KEY"
+    CLIENT_SECRET_SETTING = "SOCIAL_AUTH_DISCORD_SECRET"
+    LOGIN_URL = "/accounts/login/social/discord"
+    SIGNUP_URL = "/accounts/register/social/discord"
+    AUTHORIZATION_URL = "https://discord.com/oauth2/authorize"
+    ACCESS_TOKEN_URL = "https://discord.com/api/oauth2/token"
+    USER_INFO_URL = "https://discord.com/api/users/@me"
+    AUTH_FINISH_URL = "/complete/discord/"
+
+    def test_discord_auth_enabled(self) -> None:
+        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.DiscordAuthBackend",)):
+            self.assertTrue(discord_auth_enabled())
+
+    @override
+    def get_account_data_dict(self, email: str, name: str) -> dict[str, Any]:
+        return dict(email=email, name=name, email_verified=True)
 
 
 class JSONFetchAPIKeyTest(ZulipTestCase):
