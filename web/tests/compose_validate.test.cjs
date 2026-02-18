@@ -587,10 +587,10 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
     }
 
     compose_state.set_selected_recipient_id(undefined);
-    void test_noop_case(false);
+    await test_noop_case(false);
     // invite_only=true and current compose stream subscribers are a subset
     // of mentioned_stream subscribers.
-    void test_noop_case(true);
+    await test_noop_case(true);
 
     $("#compose_private").hide();
     compose_state.set_message_type("stream");
