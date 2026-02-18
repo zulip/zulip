@@ -102,6 +102,7 @@ import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as presence from "./presence.ts";
+import * as preview_urls from "./preview_urls.ts";
 import * as pygments_data from "./pygments_data.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
@@ -767,9 +768,9 @@ export async function initialize_everything(state_data) {
     message_edit_history.initialize();
     hotkey.initialize();
     desktop_integration.initialize();
-
     group_permission_settings.initialize();
     overlays.trap_focus_for_settings_overlay();
+    preview_urls.initialize();
 
     $("#app-loading").addClass("loaded");
 }

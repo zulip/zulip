@@ -1,19 +1,23 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
+import * as z from "zod/mini";
 
 import render_buddy_list_title_tooltip from "../templates/buddy_list/title_tooltip.hbs";
 import render_change_visibility_policy_button_tooltip from "../templates/change_visibility_policy_button_tooltip.hbs";
 import render_information_density_update_button_tooltip from "../templates/information_density_update_button_tooltip.hbs";
 import render_org_logo_tooltip from "../templates/org_logo_tooltip.hbs";
+import render_tooltip_loader from "../templates/tooltip_loader.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 import render_topics_not_allowed_error from "../templates/topics_not_allowed_error.hbs";
 
+import * as channel from "./channel.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as people from "./people.ts";
+import * as preview_urls from "./preview_urls.ts";
 import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -40,6 +44,10 @@ export function get_tooltip_content(reference: Element): string | Element | Docu
     }
     return "";
 }
+
+export type PreviewInstance = {
+    _shouldDestroy: boolean;
+} & tippy.Instance;
 
 // We use different delay settings for tooltips. The default "instant"
 // version has just a tiny bit of delay to create a natural feeling
@@ -688,6 +696,49 @@ export function initialize(): void {
         appendTo: () => document.body,
         onHidden(instance: tippy.Instance) {
             instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".rendered_markdown .previewable",
+        appendTo: () => document.body,
+        content() {
+            return ui_util.parse_html(render_tooltip_loader());
+        },
+        maxWidth: "350px",
+        delay: [300, 20],
+        onShow(instance: PreviewInstance) {
+            channel.post({
+                url: "/json/previewable",
+                data: {
+                    url: $(instance.reference).attr("href"),
+                },
+                success(data) {
+                    const preview_data = preview_urls.preview_response_schema.parse(data);
+                    preview_urls.set_url_preview_tooltip_content(preview_data, instance);
+                },
+                error(xhr) {
+                    const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                    if (parsed.success) {
+                        instance.setContent(
+                            ui_util.parse_html(`<strong>${parsed.data.msg}</strong>`),
+                        );
+                    } else {
+                        // If the response does not contain a msg, it implies that the request
+                        // failed prior to reaching the server.
+                        // Therefore, the data should be re-fetched.
+                        instance._shouldDestroy = true;
+                        instance.setContent(
+                            ui_util.parse_html(`<strong>Unable to preview link.</strong>`),
+                        );
+                    }
+                },
+            });
+        },
+        onHidden(instance: PreviewInstance) {
+            if (instance._shouldDestroy) {
+                instance.destroy();
+            }
         },
     });
 
