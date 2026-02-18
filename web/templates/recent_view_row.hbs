@@ -29,7 +29,7 @@
             {{#if is_private}}
             <a href="{{pm_url}}" class="recent-view-conversation-link recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}" tabindex="-1">{{{rendered_pm_with_html}}}</a>
             {{else}}
-            <a class="recent-view-conversation-link recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" href="{{topic_url}}" tabindex="-1">{{topic_display_name}}</a>
+            <a class="recent-view-conversation-link recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" data-tippy-content="{{topic_display_name}}" href="{{topic_url}}" tabindex="-1">{{topic_display_name}}</a>
             {{/if}}
             <div class="recent-view-unread-mention-and-count-wrapper">
                 {{#if is_private}}

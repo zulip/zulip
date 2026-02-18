@@ -500,6 +500,9 @@
 
         .recent-view-conversation-link {
             grid-area: conversation-name;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .recent-view-unread-mention-and-count-wrapper {
