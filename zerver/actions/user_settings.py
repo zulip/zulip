@@ -46,7 +46,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.users import bot_owner_user_ids, get_user_profile_by_id
+from zerver.models.users import get_user_profile_by_id
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -133,15 +133,6 @@ def do_change_user_delivery_email(
     delivery_email_visible_user_ids = get_users_with_access_to_real_email(user_profile)
 
     send_event_on_commit(user_profile.realm, event, delivery_email_visible_user_ids)
-
-    if user_profile.is_bot:
-        bot_payload = dict(user_id=user_profile.id, email=new_email)
-        bot_event = dict(type="realm_bot", op="update", bot=bot_payload)
-        send_event_on_commit(
-            user_profile.realm,
-            bot_event,
-            bot_owner_user_ids(user_profile),
-        )
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
         # If the user is using Gravatar to manage their email address,
@@ -257,12 +248,6 @@ def do_change_full_name(
         dict(type="realm_user", op="update", person=payload),
         get_user_ids_who_can_access_user(user_profile),
     )
-    if user_profile.is_bot:
-        send_event_on_commit(
-            user_profile.realm,
-            dict(type="realm_bot", op="update", bot=payload),
-            bot_owner_user_ids(user_profile),
-        )
 
     if notify:
         changes: list[UserProfileChangeDict] = [
@@ -364,21 +349,6 @@ def bulk_regenerate_api_keys(user_profile_ids: Iterable[int]) -> None:
 
 
 def notify_avatar_url_change(user_profile: UserProfile) -> None:
-    if user_profile.is_bot:
-        bot_event = dict(
-            type="realm_bot",
-            op="update",
-            bot=dict(
-                user_id=user_profile.id,
-                avatar_url=avatar_url(user_profile),
-            ),
-        )
-        send_event_on_commit(
-            user_profile.realm,
-            bot_event,
-            bot_owner_user_ids(user_profile),
-        )
-
     payload = dict(
         avatar_source=user_profile.avatar_source,
         avatar_url=avatar_url(user_profile),

@@ -490,13 +490,15 @@ export function dispatch_normal_event(event) {
 
         case "realm_bot":
             switch (event.op) {
-                case "add":
+                case "add": {
                     bot_data.add(event.bot);
-                    if (event.bot.owner_id === current_user.user_id) {
+                    const user = people.get_by_user_id(event.bot.user_id);
+                    if (user.bot_owner_id === current_user.user_id) {
                         settings_bots.redraw_your_bots_list();
                         settings_bots.toggle_bot_config_download_container();
                     }
                     break;
+                }
                 case "delete":
                     bot_data.del(event.bot.user_id);
                     settings_bots.redraw_your_bots_list();
@@ -504,13 +506,6 @@ export function dispatch_normal_event(event) {
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
-                    if ("owner_id" in event.bot) {
-                        settings_bots.redraw_your_bots_list();
-                        settings_bots.toggle_bot_config_download_container();
-                    }
-                    if ("is_active" in event.bot) {
-                        settings_bots.toggle_bot_config_download_container();
-                    }
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_bot/" + event.op);

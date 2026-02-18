@@ -324,15 +324,9 @@ class HomeTest(ZulipTestCase):
         # TODO: Inspect the page_params data further.
         # print(orjson.dumps(page_params, option=orjson.OPT_INDENT_2).decode())
         realm_bots_expected_keys = [
-            "avatar_url",
-            "bot_type",
             "default_all_public_streams",
             "default_events_register_stream",
             "default_sending_stream",
-            "email",
-            "full_name",
-            "is_active",
-            "owner_id",
             "services",
             "user_id",
         ]
@@ -923,12 +917,13 @@ class HomeTest(ZulipTestCase):
             users = page_params["state_data"][field]
             self.assertGreaterEqual(len(users), 3, field)
             for rec in users:
-                self.assertEqual(rec["user_id"], get_user(rec["email"], realm).id)
                 if field == "realm_bots":
+                    self.assertIn("user_id", rec)
                     self.assertNotIn("is_bot", rec)
-                    self.assertIn("is_active", rec)
-                    self.assertIn("owner_id", rec)
+                    self.assertNotIn("owner_id", rec)
+                    self.assertNotIn("is_active", rec)
                 else:
+                    self.assertEqual(rec["user_id"], get_user(rec["email"], realm).id)
                     self.assertIn("is_bot", rec)
                     self.assertNotIn("is_active", rec)
 

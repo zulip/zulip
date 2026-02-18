@@ -1365,11 +1365,7 @@ def apply_event(
         elif event["op"] == "update":
             for bot in state["realm_bots"]:
                 if bot["user_id"] == event["bot"]["user_id"]:
-                    if "owner_id" in event["bot"]:
-                        bot_owner_id = event["bot"]["owner_id"]
-                        bot["owner_id"] = bot_owner_id
-                    else:
-                        bot.update(event["bot"])
+                    bot.update(event["bot"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "stream":

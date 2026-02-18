@@ -48,7 +48,7 @@ const bot_or_user_props = (opts = {}) => {
 
 const make_user = (opts = {}) => ({
     ...bot_or_user_props(opts),
-    is_bot: false,
+    is_bot: opts.is_bot ?? false,
     // By default an empty dictionary.
     profile_data: opts.profile_data ?? {},
 });

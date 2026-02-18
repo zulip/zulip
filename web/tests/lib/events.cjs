@@ -524,16 +524,10 @@ exports.fixtures = {
         type: "realm_bot",
         op: "add",
         bot: {
-            email: "the-bot@example.com",
             user_id: 42,
-            avatar_url: "/avatar/42",
-            full_name: "The Bot",
-            bot_type: 1,
             default_all_public_streams: true,
             default_events_register_stream: "whatever",
             default_sending_stream: "whatever",
-            is_active: true,
-            owner_id: test_user.user_id,
             services: [],
         },
     },
@@ -551,25 +545,7 @@ exports.fixtures = {
         op: "update",
         bot: {
             user_id: 4321,
-            full_name: "The Bot Has A New Name",
-        },
-    },
-
-    realm_bot__update_is_active: {
-        type: "realm_bot",
-        op: "update",
-        bot: {
-            user_id: 4321,
-            is_active: false,
-        },
-    },
-
-    realm_bot__update_owner: {
-        type: "realm_bot",
-        op: "update",
-        bot: {
-            user_id: 4321,
-            owner_id: test_user.user_id,
+            default_sending_stream: "new-stream",
         },
     },
 

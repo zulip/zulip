@@ -20,7 +20,10 @@ const settings_account = mock_esm("../src/settings_account", {
     add_or_remove_owner_from_role_dropdown() {},
     update_user_own_role_dropdown_state() {},
 });
-const settings_bots = mock_esm("../src/settings_bots");
+const settings_bots = mock_esm("../src/settings_bots", {
+    redraw_your_bots_list() {},
+    toggle_bot_config_download_container() {},
+});
 mock_esm("../src/settings_users", {
     update_user_data() {},
     update_view_on_deactivate() {},
@@ -73,6 +76,7 @@ mock_esm("../src/settings_streams", {
     maybe_disable_widgets() {},
 });
 
+const bot_data = zrequire("bot_data");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -273,6 +277,13 @@ run_test("updates", ({override}) => {
         bot_owner_id: isaac.id,
     });
     people.add_active_user(test_bot);
+    bot_data.add({
+        default_all_public_streams: true,
+        default_events_register_stream: "register stream test",
+        default_sending_stream: "sending stream test",
+        user_id: 35,
+        services: [],
+    });
 
     user_events.update_person({user_id: test_bot.user_id, bot_owner_id: me.user_id});
     person = people.get_by_email(test_bot.email);

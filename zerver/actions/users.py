@@ -25,7 +25,6 @@ from zerver.actions.user_groups import (
     update_users_in_full_members_system_group,
 )
 from zerver.actions.user_settings import do_change_avatar_fields, do_change_full_name
-from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields, flush_user_profile
 from zerver.lib.create_user import create_user_profile
@@ -548,16 +547,6 @@ def do_deactivate_user(
 
         send_events_for_user_deactivation(user_profile)
 
-        if user_profile.is_bot:
-            event_deactivate_bot = dict(
-                type="realm_bot",
-                op="update",
-                bot=dict(user_id=user_profile.id, is_active=False),
-            )
-            send_event_on_commit(
-                user_profile.realm, event_deactivate_bot, bot_owner_user_ids(user_profile)
-            )
-
 
 def send_stream_events_for_role_update(
     user_profile: UserProfile, old_accessible_streams: list[Stream]
@@ -931,24 +920,10 @@ def get_owned_bot_dicts(
     services_by_ids = get_service_dicts_for_bots(result, user_profile.realm)
     return [
         {
-            "email": botdict["email"],
             "user_id": botdict["id"],
-            "full_name": botdict["full_name"],
-            "bot_type": botdict["bot_type"],
-            "is_active": botdict["is_active"],
             "default_sending_stream": botdict["default_sending_stream__name"],
             "default_events_register_stream": botdict["default_events_register_stream__name"],
             "default_all_public_streams": botdict["default_all_public_streams"],
-            "owner_id": botdict["bot_owner_id"],
-            "avatar_url": get_avatar_field(
-                user_id=botdict["id"],
-                realm_id=botdict["realm_id"],
-                email=botdict["email"],
-                avatar_source=botdict["avatar_source"],
-                avatar_version=botdict["avatar_version"],
-                medium=False,
-                client_gravatar=False,
-            ),
             "services": services_by_ids[botdict["id"]],
         }
         for botdict in result

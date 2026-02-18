@@ -525,7 +525,7 @@ class BaseAction(ZulipTestCase):
                         # this isn't guaranteed to match
                         del stream["subscriber_count"]
             if "realm_bots" in state:
-                state["realm_bots"] = {u["email"]: u for u in state["realm_bots"]}
+                state["realm_bots"] = {u["user_id"]: u for u in state["realm_bots"]}
             # Since time is different for every call, just fix the value
             state["server_timestamp"] = 0
             if "presence_last_update_id" in state:
@@ -3441,7 +3441,7 @@ class NormalActionsTest(BaseAction):
     def test_create_bot(self) -> None:
         with self.verify_action(num_events=4) as events:
             self.create_bot("test")
-        check_realm_bot_add("events[3]", events[3])
+        check_realm_bot_add("events[3]", events[3], UserProfile.DEFAULT_BOT)
 
         with self.verify_action(num_events=4) as events:
             self.create_bot(
@@ -3453,7 +3453,7 @@ class NormalActionsTest(BaseAction):
             )
         # The third event is the second call of notify_created_bot, which contains additional
         # data for services (in contrast to the first call).
-        check_realm_bot_add("events[3]", events[3])
+        check_realm_bot_add("events[3]", events[3], UserProfile.OUTGOING_WEBHOOK_BOT)
 
         with self.verify_action(num_events=4) as events:
             self.create_bot(
@@ -3463,13 +3463,13 @@ class NormalActionsTest(BaseAction):
                 config_data=orjson.dumps({"foo": "bar"}).decode(),
                 bot_type=UserProfile.EMBEDDED_BOT,
             )
-        check_realm_bot_add("events[3]", events[3])
+        check_realm_bot_add("events[3]", events[3], UserProfile.EMBEDDED_BOT)
 
     def test_change_bot_full_name(self) -> None:
         bot = self.create_bot("test")
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=1) as events:
             do_change_full_name(bot, "New Bot Name", self.user_profile, notify=False)
-        check_realm_bot_update("events[1]", events[1], "full_name")
+        check_realm_user_update("events[0]", events[0], "full_name")
 
     def test_regenerate_bot_api_key(self) -> None:
         bot = self.create_bot("test")
@@ -3478,10 +3478,9 @@ class NormalActionsTest(BaseAction):
 
     def test_change_bot_avatar_source(self) -> None:
         bot = self.create_bot("test")
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=1) as events:
             do_change_avatar_fields(bot, bot.AVATAR_FROM_USER, acting_user=self.user_profile)
-        check_realm_bot_update("events[0]", events[0], "avatar_url")
-        self.assertEqual(events[1]["type"], "realm_user")
+        check_realm_user_update("events[0]", events[0], "avatar_fields")
 
     def test_change_realm_icon_source(self) -> None:
         with self.verify_action(state_change_expected=True) as events:
@@ -3536,10 +3535,9 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user("iago")
         owner = self.example_user("hamlet")
         bot = self.create_bot("test")
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=1) as events:
             do_change_bot_owner(bot, owner, self.user_profile)
-        check_realm_bot_update("events[0]", events[0], "owner_id")
-        check_realm_user_update("events[1]", events[1], "bot_owner_id")
+        check_realm_user_update("events[0]", events[0], "bot_owner_id")
 
         self.user_profile = self.example_user("aaron")
         owner = self.example_user("hamlet")
@@ -3554,7 +3552,7 @@ class NormalActionsTest(BaseAction):
         bot = self.create_test_bot("test2", previous_owner, full_name="Test2 Testerson")
         with self.verify_action(num_events=2) as events:
             do_change_bot_owner(bot, self.user_profile, previous_owner)
-        check_realm_bot_add("events[0]", events[0])
+        check_realm_bot_add("events[0]", events[0], UserProfile.DEFAULT_BOT)
         check_realm_user_update("events[1]", events[1], "bot_owner_id")
 
     def test_do_update_outgoing_webhook_service(self) -> None:
@@ -3603,10 +3601,9 @@ class NormalActionsTest(BaseAction):
 
     def test_do_deactivate_bot(self) -> None:
         bot = self.create_bot("test")
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=1) as events:
             do_deactivate_user(bot, acting_user=None)
         check_realm_user_update("events[0]", events[0], "is_active")
-        check_realm_bot_update("events[1]", events[1], "is_active")
 
     def test_do_deactivate_user(self) -> None:
         user_profile = self.example_user("cordelia")
@@ -3761,21 +3758,21 @@ class NormalActionsTest(BaseAction):
         self.make_stream("Test private stream", invite_only=True)
         self.subscribe(bot, "Test private stream")
         do_deactivate_user(bot, acting_user=None)
-        with self.verify_action(num_events=5) as events:
+        with self.verify_action(num_events=4) as events:
             do_reactivate_user(bot, acting_user=None)
-        check_realm_bot_update("events[1]", events[1], "is_active")
-        check_subscription_peer_add("events[2]", events[2])
+        check_realm_user_update("events[0]", events[0], "is_active")
+        check_subscription_peer_add("events[1]", events[1])
+        check_user_group_add_members("events[2]", events[2])
         check_user_group_add_members("events[3]", events[3])
-        check_user_group_add_members("events[4]", events[4])
 
         # Test 'peer_add' event for private stream is received only if user is subscribed to it.
         do_deactivate_user(bot, acting_user=None)
         self.subscribe(self.example_user("hamlet"), "Test private stream")
-        with self.verify_action(num_events=6) as events:
+        with self.verify_action(num_events=5) as events:
             do_reactivate_user(bot, acting_user=None)
-        check_realm_bot_update("events[1]", events[1], "is_active")
+        check_realm_user_update("events[0]", events[0], "is_active")
+        check_subscription_peer_add("events[1]", events[1])
         check_subscription_peer_add("events[2]", events[2])
-        check_subscription_peer_add("events[3]", events[3])
 
         do_deactivate_user(bot, acting_user=None)
         do_deactivate_user(self.example_user("hamlet"), acting_user=None)
@@ -3784,13 +3781,12 @@ class NormalActionsTest(BaseAction):
         bot.refresh_from_db()
 
         self.user_profile = self.example_user("iago")
-        with self.verify_action(num_events=8) as events:
+        with self.verify_action(num_events=6) as events:
             do_reactivate_user(bot, acting_user=self.example_user("iago"))
-        check_realm_bot_update("events[1]", events[1], "is_active")
-        check_realm_bot_update("events[2]", events[2], "owner_id")
-        check_realm_user_update("events[3]", events[3], "bot_owner_id")
-        check_subscription_peer_add("events[4]", events[4])
-        check_subscription_peer_add("events[5]", events[5])
+        check_realm_user_update("events[0]", events[0], "is_active")
+        check_realm_user_update("events[1]", events[1], "bot_owner_id")
+        check_subscription_peer_add("events[2]", events[2])
+        check_subscription_peer_add("events[3]", events[3])
 
         user_profile = self.example_user("cordelia")
         members_group = NamedUserGroup.objects.get(

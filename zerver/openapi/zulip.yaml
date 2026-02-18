@@ -4387,17 +4387,11 @@ paths:
                                   "op": "add",
                                   "bot":
                                     {
-                                      "email": "test-bot@zulip.testserver",
                                       "user_id": 36,
-                                      "full_name": "Foo Bot",
-                                      "bot_type": 1,
-                                      "is_active": true,
                                       "default_sending_stream": null,
                                       "default_events_register_stream": null,
                                       "default_all_public_streams": false,
-                                      "avatar_url": "https://secure.gravatar.com/avatar/af8abc2537d283b212a6bd4d1289956d?d=identicon&version=1",
                                       "services": [],
-                                      "owner_id": 10,
                                     },
                                   "id": 1,
                                 }
@@ -4414,9 +4408,13 @@ paths:
                                 Only organization administrators and the user who owns the bot will
                                 receive this event.
 
-                                **Changes**: Starting from Zulip 12.0 (feature level ZF-1ba2c3), this
-                                event is no longer sent when a bot's API key is regenerated. Clients
-                                now use [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key) to get
+                                **Changes**: Starting from Zulip 12.0 (feature level ZF-1ba2c3),
+                                this event is not sent when updating bot's avatar, email, name or
+                                owner and also when reactivating or deactivating a bot.
+
+                                Starting from Zulip 12.0 (feature level ZF-1ba2c3), this event is
+                                no longer sent when a bot's API key is regenerated. Clients now
+                                use [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key) to get
                                 api key for the bot.
                               additionalProperties: false
                               properties:
@@ -17689,8 +17687,12 @@ paths:
                           it will only include bots owned by the user (either because the user created
                           the bot or an administrator transferred the bot's ownership to the user).
 
-                          **Changes**: Removed `api_key` field from the dictionary in Zulip 12.0
-                          (feature level ZF-1ba2c3). Clients now use [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key)
+                          **Changes**: Removed `avatar_url`, `bot_type`, `email`, `full_name`, `is_active`
+                          and `owner_id` fields from the dictionary in Zulip 12.0 (feature level ZF-1ba2c3).
+                          Clients can get all these data from the corresponding user object.
+
+                          Removed `api_key` field from the dictionary in Zulip 12.0 (feature level ZF-1ba2c3).
+                          Clients now use [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key)
                           to get api key for the bot.
                       realm_embedded_bots:
                         type: array
@@ -26269,32 +26271,12 @@ components:
         - additionalProperties: false
           properties:
             user_id: {}
-            full_name: {}
             default_sending_stream:
               nullable: true
             default_events_register_stream:
               nullable: true
             default_all_public_streams: {}
-            avatar_url: {}
-            owner_id:
-              nullable: true
             services: {}
-            email:
-              type: string
-              description: |
-                The Zulip display email address of the bot, used for authentication.
-
-                **Changes**: New in Zulip 12.0 (feature level 461). Previously,
-                only `realm_user` events were sent when updating a bot’s email.
-            is_active:
-              type: boolean
-              description: |
-                A boolean describing whether the user account has been deactivated.
-
-                **Changes**: New in Zulip 8.0 (feature level 222). Previously
-                we sent `realm_user` event with `op` field set to `remove`
-                when deactivating a bot and `realm_user` event with `op`
-                field set to `add` when reactivating a bot.
     BasicBotBase:
       type: object
       properties:
@@ -26302,10 +26284,6 @@ components:
           type: integer
           description: |
             The user ID of the bot.
-        full_name:
-          type: string
-          description: |
-            The full name of the bot.
         default_sending_stream:
           type: string
           nullable: true
@@ -26322,17 +26300,6 @@ components:
           type: boolean
           description: |
             Whether the bot can send messages to all channels by default.
-        avatar_url:
-          type: string
-          description: |
-            The URL of the bot's avatar.
-        owner_id:
-          type: integer
-          nullable: true
-          description: |
-            The user ID of the bot's owner.
-
-            If `null`, the bot has no owner.
         services:
           type: array
           description: |
@@ -26385,41 +26352,24 @@ components:
         - description: |
             Object containing details of a bot.
 
-            **Changes**: Removed `api_key` field from the dictionary in
+            **Changes**: Removed `avatar_url`, `bot_type`, `email`,
+            `full_name`, `is_active` and `owner_id` fields from the
+            dictionary in Zulip 12.0 (feature level ZF-1ba2c3). Clients
+            can get all these data from the corresponding user object.
+
+            Removed `api_key` field from the dictionary in
             Zulip 12.0 (feature level ZF-1ba2c3). Clients now use
             [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key) to get
             api key for the bot.
           additionalProperties: false
           properties:
             user_id: {}
-            full_name: {}
             default_sending_stream:
               nullable: true
             default_events_register_stream:
               nullable: true
             default_all_public_streams: {}
-            avatar_url: {}
-            owner_id:
-              nullable: true
             services: {}
-            email:
-              type: string
-              description: |
-                The email of the bot.
-            bot_type:
-              type: integer
-              nullable: true
-              description: |
-                An integer describing the type of bot:
-
-                - `1` for a `Generic` bot.
-                - `2` for an `Incoming webhook` bot.
-                - `3` for an `Outgoing webhook` bot.
-                - `4` for an `Embedded` bot.
-            is_active:
-              type: boolean
-              description: |
-                A boolean describing whether the user account has been deactivated.
     BotConfiguration:
       type: object
       description: |

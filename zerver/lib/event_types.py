@@ -411,15 +411,9 @@ class BotServicesEmbedded(BaseModel):
 
 class Bot(BaseModel):
     user_id: int
-    avatar_url: str
-    bot_type: int
     default_all_public_streams: bool
     default_events_register_stream: str | None
     default_sending_stream: str | None
-    email: str
-    full_name: str
-    is_active: bool
-    owner_id: int
     services: list[BotServicesOutgoing | BotServicesEmbedded]
 
 
@@ -445,13 +439,9 @@ class BotTypeForUpdateCore(BaseModel):
 
 class BotTypeForUpdate(BotTypeForUpdateCore):
     # TODO: fix types to avoid optional fields
-    avatar_url: str | None = None
     default_all_public_streams: bool | None = None
     default_events_register_stream: str | None = None
     default_sending_stream: str | None = None
-    full_name: str | None = None
-    is_active: bool | None = None
-    owner_id: int | None = None
     services: list[BotServicesOutgoing | BotServicesEmbedded] | None = None
 
 

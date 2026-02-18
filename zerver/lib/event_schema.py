@@ -374,11 +374,11 @@ def check_modern_presence(var_name: str, event: dict[str, object], user_id: int)
 def check_realm_bot_add(
     var_name: str,
     event: dict[str, object],
+    bot_type: int,
 ) -> None:
     _check_realm_bot_add(var_name, event)
 
     assert isinstance(event["bot"], dict)
-    bot_type = event["bot"]["bot_type"]
 
     services = event["bot"]["services"]
 
