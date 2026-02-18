@@ -2143,6 +2143,34 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.assertEqual(read_user_ids, {hamlet.id})
         self.assertEqual(unread_user_ids, {cordelia.id, admin_user.id})
 
+    def test_case_only_topic_rename_does_not_is_nontrivial_move(self) -> None:
+        admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("stream", hamlet.realm)
+
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+
+        old_topic_name = "old topic"
+        new_topic_name = "Old Topic"
+        message_id = self.send_stream_message(hamlet, stream.name, topic_name=old_topic_name)
+
+        result = self.api_patch(
+            hamlet,
+            "/api/v1/messages/" + str(message_id),
+            {
+                "topic": new_topic_name,
+                "send_notification_to_old_thread": "true",
+                "send_notification_to_new_thread": "true",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages_in_topic = get_topic_messages(admin_user, stream, new_topic_name)
+        self.assert_length(messages_in_topic, 1)
+        self.assertEqual(messages_in_topic[0].id, message_id)
+        self.assertEqual(messages_in_topic[0].content, "test content")
+
     @override_settings(RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS=60)
     def test_mark_topic_as_resolved_within_grace_period(self) -> None:
         self.login("iago")

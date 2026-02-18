@@ -1279,7 +1279,7 @@ def do_update_message(
             )
         )
 
-    if message_edit_request.is_message_moved:
+    if message_edit_request.is_nontrivial_move:
         # Notify users that the topic was moved.
         old_thread_notification_string = None
         if send_notification_to_old_thread:
@@ -1478,6 +1478,7 @@ def build_message_edit_request(
         )
 
     is_topic_edited = False
+    is_topic_case_only_rename = False
     topic_resolved = False
     topic_unresolved = False
     old_topic_name = message.topic_name()
@@ -1487,6 +1488,7 @@ def build_message_edit_request(
         is_topic_edited = True
         pre_truncation_target_topic_name = topic_name
         target_topic_name = truncate_topic(topic_name)
+        is_topic_case_only_rename = old_topic_name.lower() == target_topic_name.lower()
 
         resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
         topic_resolved = (
@@ -1528,6 +1530,8 @@ def build_message_edit_request(
         is_topic_edited=is_topic_edited,
         target_topic_name=target_topic_name,
         is_stream_edited=is_stream_edited,
+        is_nontrivial_move=is_stream_edited
+        or (is_topic_edited and not is_topic_case_only_rename),
         topic_resolved=topic_resolved,
         topic_unresolved=topic_unresolved,
         orig_content=message.content,
