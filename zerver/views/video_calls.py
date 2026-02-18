@@ -76,22 +76,16 @@ class UnknownZoomUserError(JsonableError):
 
 class ConstructorGroupsService:
     def __init__(self) -> None:
-        if not self._is_configured():
+        if (
+            (url := settings.CONSTRUCTOR_GROUPS_URL) is None
+            or (access_key := settings.CONSTRUCTOR_GROUPS_ACCESS_KEY) is None
+            or (secret_key := settings.CONSTRUCTOR_GROUPS_SECRET_KEY) is None
+        ):
             raise CreateVideoCallFailedError("Constructor Groups")
 
-        self.access_key = settings.CONSTRUCTOR_GROUPS_ACCESS_KEY
-        self.secret_key = settings.CONSTRUCTOR_GROUPS_SECRET_KEY
-        self.base_url = (
-            settings.CONSTRUCTOR_GROUPS_URL.rstrip("/") if settings.CONSTRUCTOR_GROUPS_URL else ""
-        )
-
-    @staticmethod
-    def _is_configured() -> bool:
-        return (
-            settings.CONSTRUCTOR_GROUPS_URL is not None
-            and settings.CONSTRUCTOR_GROUPS_ACCESS_KEY is not None
-            and settings.CONSTRUCTOR_GROUPS_SECRET_KEY is not None
-        )
+        self.access_key = access_key
+        self.secret_key = secret_key
+        self.base_url = url.rstrip("/")
 
     def _make_authenticated_request(
         self, method: str, endpoint: str, data: dict[str, Any] | None = None
