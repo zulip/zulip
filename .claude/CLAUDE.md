@@ -497,3 +497,8 @@ message content.
 ./tools/run-mypy            # Run type checker
 git grep "pattern"          # Search codebase (use extensively!)
 ```
+
+If a tool complains that provision is outdated, run `./tools/provision`
+to fix it. Do not use `--skip-provision-check` to work around the
+error; the check exists because tests and linters depend on provisioned
+dependencies being current.
