@@ -1499,6 +1499,24 @@ class AdminCreateUserTest(ZulipTestCase):
         result = self.client_post("/json/users", valid_params)
         self.assert_json_success(result)
 
+        # Test require_unique_names.
+        do_set_realm_property(realm, "require_unique_names", True, acting_user=None)
+        params = dict(
+            email="same-name@zulip.net",
+            password="xxxx",
+            full_name=admin.full_name,
+        )
+        result = self.client_post("/json/users", params)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        params["full_name"] = self.example_user("iago").full_name
+        result = self.client_post("/json/users", params)
+        self.assert_json_error(result, "Unique names required in this organization.")
+
+        params["full_name"] = "Iago new"
+        result = self.client_post("/json/users", params)
+        self.assert_json_success(result)
+
 
 class UserProfileTest(ZulipTestCase):
     def test_valid_user_id(self) -> None:
