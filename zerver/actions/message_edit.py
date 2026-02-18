@@ -456,7 +456,13 @@ def do_update_embedded_data(
         for group_id in rendered_content.mentions_user_group_ids:
             members = mention_data.get_group_members(group_id)
             rendered_content.mentions_user_ids.update(members)
-        update_user_message_flags(rendered_content, ums)
+
+        topic_participant_user_ids: set[int] = set()
+        if rendered_content.mentions_topic_wildcard and message.is_channel_message:
+            topic_participant_user_ids = participants_for_topic(
+                message.realm_id, message.recipient_id, message.topic_name()
+            )
+        update_user_message_flags(rendered_content, ums, topic_participant_user_ids)
         message.rendered_content = rendered_content.rendered_content
         message.rendered_content_version = markdown_version
         update_fields.append("rendered_content_version")
