@@ -14,6 +14,7 @@ const assert = require("node:assert/strict");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
+mock_esm("../src/channel", {post: noop});
 const electron_bridge = mock_esm("../src/electron_bridge");
 
 set_global("document", {
@@ -24,9 +25,7 @@ set_global("document", {
 
 const activity = zrequire("activity");
 
-run_test("electron_bridge", ({override_rewire}) => {
-    override_rewire(activity, "send_presence_to_server", noop);
-
+run_test("electron_bridge", () => {
     function with_bridge_idle(bridge_idle, f) {
         with_overrides(({override}) => {
             override(electron_bridge, "electron_bridge", {
