@@ -8,10 +8,12 @@ import code_buttons_container from "../templates/code_buttons_container.hbs";
 import render_markdown_audio from "../templates/markdown_audio.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
+import render_realm_emoji from "../templates/realm_emoji.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as emoji from "./emoji.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
@@ -20,6 +22,7 @@ import * as people from "./people.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as rows from "./rows.ts";
 import * as rtl from "./rtl.ts";
+import * as settings_config from "./settings_config.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as user_groups from "./user_groups.ts";
@@ -392,5 +395,36 @@ export const update_elements = ($content: JQuery): void => {
             })
             .contents()
             .unwrap();
+    } else if (
+        user_settings.web_animate_image_previews !==
+        settings_config.web_animate_image_previews_values.always.code
+    ) {
+        $content.find("img.emoji").each(function (): void {
+            const $emoji = $(this);
+            const emoji_url = $emoji.attr("src");
+            if (!emoji_url) {
+                return;
+            }
+
+            const emoji_obj = emoji.all_realm_emojis_by_url.get(emoji_url);
+            if (!emoji_obj) {
+                return;
+            }
+            // const emoji_animation_setting = user_settings.web_animate_image_previews;
+            // const $emoji_html = $(
+            //     render_realm_emoji({
+            //         emoji_animation_setting,
+            //         display_name: emoji_obj.emoji_name,
+            //         still_url: emoji_obj.still_url,
+            //         url: emoji_obj.emoji_url,
+            //     }),
+            // );
+
+            // $emoji.replaceWith($emoji_html);
+
+            $emoji.attr("data-animated-url", emoji_obj.emoji_url);
+            $emoji.attr("data-still-url", emoji_obj.still_url);
+            $emoji.attr("src", emoji_obj.still_url);
+        });
     }
 };

@@ -227,6 +227,11 @@ p.n-margin {
     }
 }
 
+.emoji.tooltip-emoji {
+    height: calc(var(--length-line-oversize-block) * 2.5);
+    width: calc(var(--length-line-oversize-block) * 2.5);
+}
+
 .messages-logo-svg {
     width: 1.7188em; /* 27.5px at 16px/1em */
 }
@@ -1440,6 +1445,20 @@ div.topic_edit_spinner .loading_indicator_spinner {
       `vertical-align` value, while inline-block contexts will ignore
       the `align-self` property: */
     align-self: center;
+}
+
+.realm-emoji-wrapper {
+    &:not(:hover) {
+        .animated-emoji {
+            display: none;
+        }
+    }
+
+    &:hover {
+        .still-emoji {
+            display: none;
+        }
+    }
 }
 
 .status-emoji {

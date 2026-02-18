@@ -1208,12 +1208,17 @@ run_test("user_settings", ({override}) => {
     assert_same(toggled, ["notdisplayed"]);
 
     let called = false;
+    let called_buddy_list_redraw = false;
     message_lists.current.rerender = () => {
         called = true;
     };
+
     let called_for_cached_msg_list = false;
     cached_message_list.rerender = () => {
         called_for_cached_msg_list = true;
+    };
+    activity_ui.redraw = () => {
+        called_buddy_list_redraw = true;
     };
     event = event_fixtures.user_settings__twenty_four_hour_time;
     override(user_settings, "twenty_four_hour_time", false);
@@ -1333,20 +1338,25 @@ run_test("user_settings", ({override}) => {
         override(user_settings, "web_animate_image_previews", "on_hover");
         dispatch(event);
         assert.equal(user_settings.web_animate_image_previews, "always");
+        assert.equal(called_buddy_list_redraw, true);
     }
 
     {
+        called_buddy_list_redraw = false;
         event = event_fixtures.user_settings__web_animate_image_previews_on_hover;
         override(user_settings, "web_animate_image_previews", "never");
         dispatch(event);
         assert.equal(user_settings.web_animate_image_previews, "on_hover");
+        assert.equal(called_buddy_list_redraw, true);
     }
 
     {
+        called_buddy_list_redraw = false;
         event = event_fixtures.user_settings__web_animate_image_previews_never;
         override(user_settings, "web_animate_image_previews", "always");
         dispatch(event);
         assert.equal(user_settings.web_animate_image_previews, "never");
+        assert.equal(called_buddy_list_redraw, true);
     }
 
     {
