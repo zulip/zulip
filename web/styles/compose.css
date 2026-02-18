@@ -1853,7 +1853,6 @@ textarea.new_message_textarea {
        margin is handled on the vdots icon
        below, so as to make for a maximum
        clickable vdots area. */
-    margin-left: -4px;
     border-radius: 0 4px 4px 0;
     /* Flex items respect z-index values;
        this is needed to keep the vdots
