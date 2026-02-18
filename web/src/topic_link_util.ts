@@ -64,6 +64,9 @@ export function get_topic_link_content(
     assert(stream_id !== undefined);
     const escape = html_escape_markdown_syntax_characters;
     if (topic_name !== undefined) {
+        // This url is relative, which is fine since it aims to mimic the behavior of the
+        // #**stream>topic** syntax, which also appears as a relative link in the web app
+        // and is not expected to work outside of the current realm / Zulip.
         const stream_topic_url = hash_util.by_stream_topic_url(stream_id, topic_name);
         const topic_display_name = util.get_final_topic_display_name(topic_name);
         if (message_id !== undefined) {
