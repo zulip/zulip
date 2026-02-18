@@ -1040,7 +1040,7 @@ export class Filter {
                 }
                 const narrow_stream = stream_data.get_sub_by_name(page_params.narrow_stream);
                 assert(narrow_stream !== undefined);
-                return Number.parseInt(term.operand, 10) === narrow_stream.stream_id;
+                return Number.parseInt(term.operand, 10) !== narrow_stream.stream_id;
             },
         );
         return safe_to_return;

@@ -968,7 +968,7 @@ test("public_terms", ({override}) => {
     assert_same_terms(filter.public_terms(), expected_terms);
     assert.ok(filter.can_bucket_by("channel"));
 
-    terms = [{operator: "channel", operand: some_channel_id.toString()}];
+    terms = [{operator: "channel", operand: default_channel_id.toString()}];
     filter = new Filter(terms);
     override(page_params, "narrow_stream", "default");
     assert_same_terms(filter.public_terms(), []);
