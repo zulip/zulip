@@ -949,8 +949,6 @@ export function validate_private_message(show_banner = true): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
     const $banner_container = $("#compose_banners");
-    // We will need to disable compose textarea if the recipient has invalid users.
-    $("textarea#compose-textarea").prop("disabled", false);
     const missing_direct_message_recipient = user_ids.length === 0;
 
     if (missing_direct_message_recipient) {
@@ -995,6 +993,10 @@ export function validate_private_message(show_banner = true): boolean {
             return false;
         }
     }
+
+    // We have valid recipient for DM and we enable the compose-textarea
+    // in case it was disabled before this function was called
+    $("textarea#compose-textarea").prop("disabled", false);
 
     return true;
 }
