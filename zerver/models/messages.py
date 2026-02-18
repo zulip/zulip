@@ -818,13 +818,7 @@ class Attachment(AbstractAttachment):
             "path_id": self.path_id,
             "size": self.size,
             "create_time": int(time.mktime(self.create_time.timetuple())),
-            "messages": [
-                {
-                    "id": m.id,
-                    "date_sent": int(time.mktime(m.date_sent.timetuple())),
-                }
-                for m in self.messages.all()
-            ],
+            "message_ids": [m.id for m in self.messages.all()],
         }
 
 

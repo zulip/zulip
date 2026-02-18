@@ -28,18 +28,13 @@ class EventAlertWords(BaseEvent):
     alert_words: list[str]
 
 
-class AttachmentMessage(BaseModel):
-    id: int
-    date_sent: int
-
-
 class Attachment(BaseModel):
     id: int
     name: str
     size: int
     path_id: str
     create_time: int
-    messages: list[AttachmentMessage]
+    message_ids: list[int]
 
 
 class EventAttachmentAdd(BaseEvent):

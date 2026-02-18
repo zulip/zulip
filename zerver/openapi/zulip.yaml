@@ -1704,7 +1704,7 @@ paths:
                                       "path_id": "2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt",
                                       "size": 6,
                                       "create_time": 1594825414,
-                                      "messages": [],
+                                      "message_ids": [],
                                     },
                                   "upload_space_used": 6,
                                   "id": 0,
@@ -1745,7 +1745,7 @@ paths:
                                       "path_id": "2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt",
                                       "size": 6,
                                       "create_time": 1594825414,
-                                      "messages": [],
+                                      "message_ids": [],
                                     },
                                   "upload_space_used": 6,
                                   "id": 0,
@@ -6704,11 +6704,7 @@ paths:
                               "path_id": "2/ce/DfOkzwdg_IwlrN3myw3KGtiJ/166050.jpg",
                               "size": 571946,
                               "create_time": 1588145417,
-                              "messages":
-                                [
-                                  {"id": 102, "date_sent": 1588145424},
-                                  {"id": 103, "date_sent": 1588145448},
-                                ],
+                              "message_ids": [102, 103],
                             },
                           ],
                         "upload_space_used": 571946,
@@ -10116,7 +10112,7 @@ paths:
                               "path_id": "2/5d/BD5NRptFxPDKY3RUKwhhup8r/1253601-1.jpg",
                               "size": 1339060,
                               "create_time": 1687984706,
-                              "messages": [],
+                              "message_ids": [],
                             },
                           ],
                       }
@@ -25924,34 +25920,19 @@ components:
 
             Changed in Zulip 3.0 (feature level 22). This field was
             previously a floating point number.
-        messages:
+        message_ids:
           type: array
           description: |
-            Contains basic details on any Zulip messages that have been
-            sent referencing this [uploaded file](/api/upload-file).
-            This includes messages sent by any user in the Zulip
-            organization who sent a message containing a link to the
-            uploaded file.
+            Array containing the IDs of messages that reference this
+            [uploaded file](/api/upload-file). This includes messages
+            sent by any user in the Zulip organization who sent a
+            message containing a link to the uploaded file.
+
+            **Changes**: In Zulip 12.0 (feature level 472), this
+            replaced the previous `messages` field, which was an array
+            of objects containing both `id` and `date_sent` properties.
           items:
-            type: object
-            additionalProperties: false
-            properties:
-              date_sent:
-                type: integer
-                description: |
-                  Time when the message was sent as a UNIX timestamp.
-
-                  **Changes**: Before Zulip 12.0 (feature level 443), this value
-                  was milliseconds since the epoch, not seconds.
-
-                  Changed in Zulip 3.0 (feature level 22). This
-                  field was previously strangely called `name` and was a floating
-                  point number.
-              id:
-                type: integer
-                description: |
-                  The unique message ID. Messages should always be
-                  displayed sorted by ID.
+            type: integer
     BasicChannel:
       allOf:
         - $ref: "#/components/schemas/BasicChannelBase"

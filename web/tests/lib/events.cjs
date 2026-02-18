@@ -143,12 +143,7 @@ exports.fixtures = {
             size: 4096,
             path_id: "path_id",
             create_time: fake_now,
-            messages: [
-                {
-                    id: 1000,
-                    date_sent: fake_now,
-                },
-            ],
+            message_ids: [1000],
         },
         upload_space_used: 90000,
     },
