@@ -21,13 +21,9 @@ import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
 import * as util from "./util.ts";
 
-export let set_count = (count: number): void => {
+export function set_count(count: number): void {
     const $drafts_li = $(".top_left_drafts");
     ui_util.update_unread_count_in_dom($drafts_li, count);
-};
-
-export function rewire_set_count(value: typeof set_count): void {
-    set_count = value;
 }
 
 function getTimestamp(): number {

@@ -10,7 +10,7 @@ const {mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs"
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
-const user_pill = mock_esm("../src/user_pill");
+const user_pill = mock_esm("../src/user_pill", {get_user_ids: () => []});
 const settings_data = mock_esm("../src/settings_data");
 const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
 
@@ -156,6 +156,11 @@ const short_msg = {
 function test(label, f) {
     run_test(label, (helpers) => {
         $("#draft_overlay").css = noop;
+        $(".top_left_drafts").set_find_results(".unread_count", $("<unread-count-stub>"));
+        $(".compose-drafts-count-container").set_find_results(
+            ".compose-drafts-count",
+            $("<compose-drafts-count-stub>"),
+        );
         window.localStorage.clear();
         f(helpers);
     });
@@ -168,9 +173,7 @@ function test(label, f) {
 //
 // This test must run before others, so that
 // fixed_buggy_drafts is false.
-test("fix buggy drafts", ({override_rewire}) => {
-    override_rewire(drafts, "set_count", noop);
-
+test("fix buggy drafts", () => {
     const buggy_draft = {
         stream_id: stream_B.stream_id,
         topic: undefined,
@@ -209,27 +212,19 @@ test("fix buggy drafts", ({override_rewire}) => {
     assert.deepEqual(fixed_draft.private_message_recipient_ids, [iago.user_id, zoe.user_id]);
 });
 
-test("draft_model add", ({override_rewire}) => {
+test("draft_model add", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
-
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
 });
 
-test("draft_model edit", ({override_rewire}) => {
+test("draft_model edit", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
-
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
@@ -238,14 +233,10 @@ test("draft_model edit", ({override_rewire}) => {
     assert.deepEqual(draft_model.getDraft(id), draft_2);
 });
 
-test("draft_model delete", ({override_rewire}) => {
+test("draft_model delete", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
-
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
@@ -306,15 +297,12 @@ test("initialize", ({override_rewire}) => {
         assert.ok(called);
     };
 
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-
     drafts.initialize();
     drafts.initialize_ui();
     drafts_overlay_ui.initialize();
 });
 
-test("update_draft", ({override, override_rewire}) => {
+test("update_draft", ({override}) => {
     compose_state.set_message_type(undefined);
     let draft_id = drafts.update_draft();
     assert.equal(draft_id, undefined);
@@ -322,11 +310,6 @@ test("update_draft", ({override, override_rewire}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");
     compose_state.message_content("dummy content");
-
-    const $container = $(".top_left_drafts");
-    const $child = $(".unread_count");
-    $container.set_find_results(".unread_count", $child);
-    override_rewire(drafts, "update_compose_draft_count", noop);
 
     tippy_args = {
         content: "translated: Saved as draft",
@@ -374,10 +357,7 @@ test("update_draft", ({override, override_rewire}) => {
     assert.ok(!tippy_destroy_called);
 });
 
-test("rename_stream_recipient", ({override_rewire}) => {
-    override_rewire(drafts, "set_count", noop);
-    override_rewire(drafts, "update_compose_draft_count", noop);
-
+test("rename_stream_recipient", () => {
     const draft_1 = {
         stream_id: stream_A.stream_id,
         topic: "a",
@@ -446,16 +426,12 @@ test("rename_stream_recipient", ({override_rewire}) => {
     assert_draft("id4", stream_B.stream_id, "e");
 });
 
-test("delete_all_drafts", ({override_rewire}) => {
+test("delete_all_drafts", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {draft_1, draft_2, short_msg};
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
-
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
 
     drafts.delete_all_drafts();
     assert.deepEqual(draft_model.get(), {});
@@ -655,9 +631,6 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
 
     override(messages_overlay_ui, "set_initial_element", noop);
 
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-
     $.create(".drafts-list", {children: []});
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
@@ -808,9 +781,6 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     });
 
     override(messages_overlay_ui, "set_initial_element", noop);
-
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");
