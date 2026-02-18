@@ -259,7 +259,7 @@ addresses](https://en.wikipedia.org/wiki/Private_network), including
 [adjust those rules][smokescreen-acls]. For instance, if you have an
 outgoing webhook at `http://10.17.17.17:80/`, you would need to:
 
-1. Add the following block to `/etc/zulip/zulip.com`, substituting
+1. Add the following block to `/etc/zulip/zulip.conf`, substituting
    your internal host's IP address:
 
    ```ini
