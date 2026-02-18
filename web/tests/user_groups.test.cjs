@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
-const example_settings = require("./lib/example_settings.cjs");
+const {server_supported_permission_settings} = require("./lib/example_settings.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -560,11 +560,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", ({override}) => {
         direct_subgroup_ids: new Set([4, 5]),
     });
 
-    override(
-        realm,
-        "server_supported_permission_settings",
-        example_settings.server_supported_permission_settings,
-    );
+    override(realm, "server_supported_permission_settings", server_supported_permission_settings);
 
     let expected_groups_list = [
         {name: "translated: Admins, moderators, members and guests", unique_id: 6},
@@ -922,11 +918,7 @@ run_test("get_assigned_group_permission_object", ({override}) => {
     user_groups.initialize({
         realm_user_groups: [admins, moderators, all, students],
     });
-    override(
-        realm,
-        "server_supported_permission_settings",
-        example_settings.server_supported_permission_settings,
-    );
+    override(realm, "server_supported_permission_settings", server_supported_permission_settings);
 
     const setting_name = "can_manage_group";
     let setting_value = moderators.id;
@@ -1253,11 +1245,7 @@ run_test("get_all_realm_user_groups", ({override}) => {
         ],
     });
 
-    override(
-        realm,
-        "server_supported_permission_settings",
-        example_settings.server_supported_permission_settings,
-    );
+    override(realm, "server_supported_permission_settings", server_supported_permission_settings);
     override(realm, "realm_waiting_period_threshold", 0);
     // By default deactivated groups and internet group is not included.
     // Full members group is not included since waiting period is 0.

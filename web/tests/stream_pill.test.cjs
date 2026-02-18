@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
-const example_settings = require("./lib/example_settings.cjs");
+const {server_supported_permission_settings} = require("./lib/example_settings.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
@@ -96,11 +96,7 @@ user_groups.initialize({realm_user_groups: [me_group, nobody_group]});
 run_test("create_item", ({override}) => {
     override(current_user, "user_id", me.user_id);
     override(current_user, "is_admin", true);
-    override(
-        realm,
-        "server_supported_permission_settings",
-        example_settings.server_supported_permission_settings,
-    );
+    override(realm, "server_supported_permission_settings", server_supported_permission_settings);
     override(realm, "realm_can_add_subscribers_group", me_group.id);
     function test_create_item(
         stream_name,

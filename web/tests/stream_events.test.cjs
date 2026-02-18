@@ -3,7 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
-const example_settings = require("./lib/example_settings.cjs");
+const {server_supported_permission_settings} = require("./lib/example_settings.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
@@ -129,11 +129,7 @@ function test(label, f) {
 test("update_property", ({override}) => {
     override(compose_recipient, "possibly_update_stream_name_in_compose", noop);
     override(compose_recipient, "on_compose_select_recipient_update", noop);
-    override(
-        realm,
-        "server_supported_permission_settings",
-        example_settings.server_supported_permission_settings,
-    );
+    override(realm, "server_supported_permission_settings", server_supported_permission_settings);
     override(user_group_edit, "update_stream_setting_in_permissions_panel", noop);
     const sub = {...frontend};
     stream_data.add_sub_for_tests(sub);

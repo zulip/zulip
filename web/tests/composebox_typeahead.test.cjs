@@ -7,7 +7,7 @@ const {get_final_topic_display_name} = require("../src/util.ts");
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
-const example_settings = require("./lib/example_settings.cjs");
+const {server_supported_permission_settings} = require("./lib/example_settings.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user, make_cross_realm_bot} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
@@ -678,7 +678,7 @@ function test(label, f) {
         helpers.override(
             realm,
             "server_supported_permission_settings",
-            example_settings.server_supported_permission_settings,
+            server_supported_permission_settings,
         );
         helpers.override(realm, "realm_can_access_all_users_group", members.id);
 

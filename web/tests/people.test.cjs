@@ -8,9 +8,7 @@ const MockDate = require("mockdate");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
-const example_user = require("./lib/example_user.cjs");
-
-const {Role} = example_user;
+const {make_bot, make_cross_realm_bot, make_user, Role} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -45,21 +43,21 @@ set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 
-const welcome_bot = example_user.make_cross_realm_bot({
+const welcome_bot = make_cross_realm_bot({
     email: "welcome-bot@example.com",
     user_id: 4,
     full_name: "Welcome Bot",
     // cross realm bots have no owner
 });
 
-const email_gateway_bot = example_user.make_cross_realm_bot({
+const email_gateway_bot = make_cross_realm_bot({
     email: "emailgateway@example.com",
     user_id: 5,
     full_name: "Email Gateway",
     // cross realm bots have no owner
 });
 
-const me = example_user.make_user({
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
@@ -67,7 +65,7 @@ const me = example_user.make_user({
     // no avatar, so client should construct a /avatar/{user_id} URL.
 });
 
-const isaac = example_user.make_user({
+const isaac = make_user({
     email: "isaac@example.com",
     delivery_email: "isaac-delivery@example.com",
     user_id: 32,
@@ -117,28 +115,28 @@ user_groups.initialize({realm_user_groups: [nobody, everyone]});
     to be rigorous about sort order.
 */
 
-const realm_admin = example_user.make_user({
+const realm_admin = make_user({
     email: "realm_admin@example.com",
     full_name: "Realm Admin",
     user_id: 32,
     role: Role.ADMINISTRATOR,
 });
 
-const guest = example_user.make_user({
+const guest = make_user({
     email: "guest@example.com",
     full_name: "Guest User",
     user_id: 33,
     role: Role.GUEST,
 });
 
-const realm_owner = example_user.make_user({
+const realm_owner = make_user({
     email: "realm_owner@example.com",
     full_name: "Realm Owner",
     user_id: 34,
     role: Role.OWNER,
 });
 
-const bot_botson = example_user.make_bot({
+const bot_botson = make_bot({
     email: "botson-bot@example.com",
     user_id: 35,
     full_name: "Bot Botson",
@@ -146,14 +144,14 @@ const bot_botson = example_user.make_bot({
     role: Role.MODERATOR,
 });
 
-const moderator = example_user.make_user({
+const moderator = make_user({
     email: "moderator@example.com",
     full_name: "Moderator",
     user_id: 36,
     role: Role.MODERATOR,
 });
 
-const bot_with_inaccessible_owner = example_user.make_bot({
+const bot_with_inaccessible_owner = make_bot({
     email: "inaccessible-owner-bot@example.com",
     user_id: 37,
     full_name: "Inaccessible owner bot",
@@ -161,35 +159,35 @@ const bot_with_inaccessible_owner = example_user.make_bot({
     role: Role.MODERATOR,
 });
 
-const steven = example_user.make_user({
+const steven = make_user({
     email: "steven@example.com",
     delivery_email: "steven-delivery@example.com",
     user_id: 77,
     full_name: "Steven",
 });
 
-const alice1 = example_user.make_user({
+const alice1 = make_user({
     email: "alice1@example.com",
     delivery_email: "alice1-delivery@example.com",
     user_id: 202,
     full_name: "Alice",
 });
 
-const bob = example_user.make_user({
+const bob = make_user({
     email: "bob@example.com",
     delivery_email: "bob-delivery@example.com",
     user_id: 203,
     full_name: "Bob van Roberts",
 });
 
-const charles = example_user.make_user({
+const charles = make_user({
     email: "charles@example.com",
     user_id: 301,
     full_name: "Charles Dickens",
     avatar_url: "http://charles.com/foo.png",
 });
 
-const maria = example_user.make_user({
+const maria = make_user({
     email: "Athens@example.com",
     user_id: 302,
     full_name: "Maria Athens",
@@ -197,7 +195,7 @@ const maria = example_user.make_user({
     avatar_url: null,
 });
 
-const cedar = example_user.make_user({
+const cedar = make_user({
     email: "Cedar@example.com",
     user_id: 305,
     full_name: "Cedar Athens",
@@ -205,7 +203,7 @@ const cedar = example_user.make_user({
     avatar_url: null,
 });
 
-const leo = example_user.make_user({
+const leo = make_user({
     email: "Leo@example.com",
     user_id: 306,
     full_name: "Leo Athens",
@@ -213,73 +211,73 @@ const leo = example_user.make_user({
     avatar_url: null,
 });
 
-const ashton = example_user.make_user({
+const ashton = make_user({
     email: "ashton@example.com",
     user_id: 303,
     full_name: "Ashton Smith",
 });
 
-const linus = example_user.make_user({
+const linus = make_user({
     email: "ltorvalds@example.com",
     user_id: 304,
     full_name: "Linus Torvalds",
 });
 
-const emp401 = example_user.make_user({
+const emp401 = make_user({
     email: "emp401@example.com",
     user_id: 401,
     full_name: "whatever 401",
 });
 
-const emp402 = example_user.make_user({
+const emp402 = make_user({
     email: "EMP402@example.com",
     user_id: 402,
     full_name: "whatever 402",
 });
 
-const debbie = example_user.make_user({
+const debbie = make_user({
     email: "deBBie71@example.com",
     user_id: 501,
     full_name: "Debra Henton",
 });
 
-const stephen1 = example_user.make_user({
+const stephen1 = make_user({
     email: "stephen-the-author@example.com",
     user_id: 601,
     full_name: "Stephen King",
 });
 
-const stephen2 = example_user.make_user({
+const stephen2 = make_user({
     email: "stephen-the-explorer@example.com",
     user_id: 602,
     full_name: "Stephen King",
 });
 
-const noah = example_user.make_user({
+const noah = make_user({
     email: "emnoa@example.com",
     user_id: 1200,
     full_name: "Nöôáàh Ëmerson",
 });
 
-const plain_noah = example_user.make_user({
+const plain_noah = make_user({
     email: "otheremnoa@example.com",
     user_id: 1201,
     full_name: "Nooaah Emerson",
 });
 
-const all1 = example_user.make_user({
+const all1 = make_user({
     email: "all1@example.com",
     user_id: 1202,
     full_name: "all",
 });
 
-const all2 = example_user.make_user({
+const all2 = make_user({
     email: "all2@example.com",
     user_id: 1203,
     full_name: "all",
 });
 
-const stewie = example_user.make_user({
+const stewie = make_user({
     email: "stewie@example.com",
     user_id: 1204,
     full_name: "Stewart Gilligan",
@@ -708,7 +706,7 @@ run_test("updates", () => {
 
 run_test("get_by_user_id", () => {
     initialize();
-    let person = example_user.make_user({
+    let person = make_user({
         email: "mary@example.com",
         user_id: 42,
         full_name: "Mary",
@@ -765,7 +763,7 @@ run_test("is_current_user_only_owner", ({override}) => {
 
 run_test("user_can_change_their_own_role", ({override}) => {
     initialize();
-    const bob = example_user.make_user({
+    const bob = make_user({
         email: "bob@example.com",
         user_id: 1,
         full_name: "Bob",
@@ -1219,7 +1217,7 @@ run_test("get_people_for_search_bar", ({override}) => {
     override(message_user_ids, "user_ids", () => user_ids);
 
     for (const i of _.range(20)) {
-        const person = example_user.make_user({
+        const person = make_user({
             email: "whatever@email.com",
             full_name: "James Jones",
             user_id: 1000 + i,
@@ -1247,7 +1245,7 @@ run_test("updates", () => {
     const new_email = "bar@example.com";
     const user_id = 502;
 
-    let person = example_user.make_user({
+    let person = make_user({
         email: old_email,
         user_id,
         full_name: "Foo Barson",
@@ -1368,25 +1366,25 @@ run_test("initialize", () => {
 
     const params = {};
 
-    const retiree = example_user.make_user({
+    const retiree = make_user({
         email: "retiree@example.com",
         user_id: 15,
         full_name: "Retiree",
     });
     params.realm_non_active_users = [retiree];
 
-    const current_user = example_user.make_user({
+    const current_user = make_user({
         email: "my_email@example.com",
         user_id: 42,
         full_name: "Me Myself",
     });
-    const alice = example_user.make_user({
+    const alice = make_user({
         email: "alice@example.com",
         user_id: 16,
         full_name: "Alice",
     });
     params.realm_users = [alice, current_user];
-    const test_bot = example_user.make_user({
+    const test_bot = make_user({
         email: "bot@example.com",
         user_id: 17,
         full_name: "Test Bot",
