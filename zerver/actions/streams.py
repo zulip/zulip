@@ -897,7 +897,7 @@ def bulk_add_subscriptions(
             subscriber_dict=subscriber_peer_info.subscribed_ids,
         )
         
-        #changed (sends notifications for private streams)
+        #changed (sends notifications for users joining private streams)
         if realm.send_channel_events_messages:
             for i in subs_to_add + subs_to_activate:
                 if not i.stream.invite_only:
@@ -919,7 +919,7 @@ def bulk_add_subscriptions(
             altered_streams_dict,
             subscribers_of_altered_user_subscriptions,
         )
-
+        
     send_peer_subscriber_events(
         op="peer_add",
         realm=realm,
@@ -1180,6 +1180,20 @@ def bulk_remove_subscriptions(
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
 
+    #change (sends notifications for users leaving private streams)
+    if realm.send_channel_events_messages:
+        for user_profile, i in removed_sub_tuples:
+            if not i.invite_only:
+                continue
+
+            with override_language(i.realm.default_language):
+                if acting_user and acting_user.id != user_profile.id:
+                    content = _("{acting_user} unsubscribed {target_user} from this channel.").format(acting_user = silent_mention_syntax_for_user(acting_user), target_user = silent_mention_syntax_for_user(user_profile))
+                else:
+                    content = _("{target_user} unsubscribed from this channel.").format(target_user = silent_mention_syntax_for_user(user_profile))
+                maybe_send_channel_events_notice(get_system_bot(settings.NOTIFICATION_BOT, realm.id), i, content)
+    #end of change
+    
     return (
         removed_sub_tuples,
         not_subscribed,
