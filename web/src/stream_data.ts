@@ -223,7 +223,7 @@ export function get_stream_name_from_id(stream_id: number): string {
     return get_sub_by_id(stream_id)?.name ?? "";
 }
 
-export let get_sub_by_name = (name: string): StreamSubscription | undefined => {
+export function get_sub_by_name(name: string): StreamSubscription | undefined {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
@@ -233,10 +233,6 @@ export let get_sub_by_name = (name: string): StreamSubscription | undefined => {
     }
 
     return sub_store.get(stream_id);
-};
-
-export function rewire_get_sub_by_name(value: typeof get_sub_by_name): void {
-    get_sub_by_name = value;
 }
 
 export function id_to_slug(stream_id: number): string {
