@@ -743,6 +743,55 @@ def send_user_creation_events_on_adding_subscriptions(
                 accessible_user = subscribers_user_id_map[accessible_user_id]
                 notify_created_user(accessible_user, [user.id])
 
+def send_subscription_change_channel_events_notifications(
+    sub_tuples: list[tuple[UserProfile, Stream]],
+    *,
+    acting_user: UserProfile | None,
+    operation: str,
+) -> None:
+    if acting_user is None:
+        return
+
+    assert operation in ["subscribe", "unsubscribe"]
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
+    acting_user_mention = silent_mention_syntax_for_user(acting_user)
+
+    for target_user, stream in sub_tuples:
+        if not stream.invite_only:
+            continue
+
+        with override_language(stream.realm.default_language):
+            if target_user.id == acting_user.id:
+                if operation == "subscribe":
+                    notification_string = _("{user} subscribed to this channel.").format(
+                        user=acting_user_mention
+                    )
+                else:
+                    notification_string = _("{user} unsubscribed from this channel.").format(
+                        user=acting_user_mention
+                    )
+            else:
+                target_user_mention = silent_mention_syntax_for_user(target_user)
+                if operation == "subscribe":
+                    notification_string = _("{user1} subscribed {user2} to this channel.").format(
+                        user1=acting_user_mention,
+                        user2=target_user_mention,
+                    )
+                else:
+                    notification_string = _(
+                        "{user1} unsubscribed {user2} from this channel."
+                    ).format(
+                        user1=acting_user_mention,
+                        user2=target_user_mention,
+                    )
+
+            maybe_send_channel_events_notice(
+                sender,
+                stream,
+                notification_string,
+                archived_channel_notice=stream.deactivated,
+            )
 
 SubT: TypeAlias = tuple[list[SubInfo], list[SubInfo]]
 

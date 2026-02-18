@@ -3398,6 +3398,103 @@ class SubscriptionRestApiTest(ZulipTestCase):
         streams = self.get_streams(user)
         self.assertTrue("my_test_stream_1" not in streams)
 
+    def test_private_channel_subscription_change_notifications(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        stream = self.make_stream("private_notifications", realm=user.realm, invite_only=True)
+
+        request = {
+            "add": orjson.dumps([{"name": stream.name}]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        self.assertEqual(msg.recipient.type, Recipient.STREAM)
+        self.assertEqual(msg.recipient.type_id, stream.id)
+        self.assertEqual(msg.sender_id, self.notification_bot(user.realm).id)
+        self.assertEqual(msg.topic_name(), "channel events")
+        self.assertEqual(msg.content, f"@_**King Hamlet|{user.id}** subscribed to this channel.")
+
+        request = {
+            "delete": orjson.dumps([stream.name]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        self.assertEqual(msg.recipient.type, Recipient.STREAM)
+        self.assertEqual(msg.recipient.type_id, stream.id)
+        self.assertEqual(msg.sender_id, self.notification_bot(user.realm).id)
+        self.assertEqual(msg.topic_name(), "channel events")
+        self.assertEqual(msg.content, f"@_**King Hamlet|{user.id}** unsubscribed from this channel.")
+
+    def test_private_channel_subscription_change_notifications_for_other_user(self) -> None:
+        acting_user = self.example_user("hamlet")
+        target_user = self.example_user("iago")
+        self.login_user(acting_user)
+
+        stream = self.make_stream(
+            "private_notifications_other", realm=acting_user.realm, invite_only=True
+        )
+
+        request = {
+            "add": orjson.dumps([{"name": stream.name}]).decode(),
+            "principals": orjson.dumps([target_user.id]).decode(),
+        }
+        result = self.api_patch(acting_user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        self.assertEqual(msg.recipient.type, Recipient.STREAM)
+        self.assertEqual(msg.recipient.type_id, stream.id)
+        self.assertEqual(msg.topic_name(), "channel events")
+        self.assertEqual(
+            msg.content,
+            f"@_**King Hamlet|{acting_user.id}** subscribed @_**Iago|{target_user.id}** to this channel.",
+        )
+
+    def test_private_channel_subscription_notifications_use_general_chat_topic(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        stream = self.make_stream(
+            "private_notifications_general_chat",
+            realm=user.realm,
+            invite_only=True,
+            topics_policy=StreamTopicsPolicyEnum.empty_topic_only.value,
+        )
+
+        request = {
+            "add": orjson.dumps([{"name": stream.name}]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        self.assertEqual(msg.recipient.type_id, stream.id)
+        self.assertEqual(msg.topic_name(), "")
+
+    def test_subscription_change_notifications_respect_channel_events_setting(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        do_set_realm_property(user.realm, "send_channel_events_messages", False, acting_user=None)
+
+        stream = self.make_stream(
+            "private_notifications_disabled", realm=user.realm, invite_only=True
+        )
+
+        previous_last_message = self.get_last_message()
+        request = {
+            "add": orjson.dumps([{"name": stream.name}]).decode(),
+        }
+        result = self.api_patch(user, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+
+        self.assertEqual(self.get_last_message().id, previous_last_message.id)
+        
     def test_add_with_color(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)
