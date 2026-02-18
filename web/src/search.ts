@@ -163,6 +163,24 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         $("#searchbox-input-container").toggleClass("focused", false);
     });
 
+    $("#searchbox-input-container").on("keydown", (e) => {
+        if (e.key === "Enter" && $("#searchbox .navbar-search.expanded").length === 0) {
+            // Prevent propagation, and wait for the keyup to open search, because
+            // we also need to prevent propagation there to not have the event caught
+            // by the typeahead event handlers.
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+
+    $("#searchbox-input-container").on("keyup", (e) => {
+        if (e.key === "Enter" && $("#searchbox .navbar-search.expanded").length === 0) {
+            initiate_search();
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+
     search_pill_widget = search_pill.create_pills($pill_container);
     search_pill_widget.onPillRemove(() => {
         search_input_has_changed = true;

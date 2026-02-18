@@ -13,6 +13,10 @@
         z-index: 1;
     }
 
+    .navbar-search:has(#searchbox-input-container:focus-visible) {
+        outline: 2px solid var(--color-outline-focus);
+    }
+
     .search_icon {
         grid-area: search-icon;
         align-self: center;
