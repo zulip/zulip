@@ -1682,6 +1682,7 @@ textarea.new_message_textarea {
 
 .message-send-controls {
     display: flex;
+    min-width: 0;
 
     @media (width < $sm_min) {
         /* At small widths, we display the
@@ -1844,7 +1845,7 @@ textarea.new_message_textarea {
     justify-content: center;
     width: 40px;
     /* Allow to grow but not shrink */
-    flex: 1 0 auto;
+    flex: 0 0 40px;
     height: var(--compose-formatting-buttons-row-height);
     /* Make the vdots appear to extend from
        beneath the send button when an
@@ -1853,7 +1854,6 @@ textarea.new_message_textarea {
        margin is handled on the vdots icon
        below, so as to make for a maximum
        clickable vdots area. */
-    margin-left: -4px;
     border-radius: 0 4px 4px 0;
     /* Flex items respect z-index values;
        this is needed to keep the vdots
