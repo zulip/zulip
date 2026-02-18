@@ -3054,6 +3054,7 @@ class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
         }
         return user_details
 
+
 class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
     @override
     def get_user_details(self, attributes: dict[str, Any]) -> dict[str, Any]:
