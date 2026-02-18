@@ -8580,6 +8580,15 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(fixed_price_plan_offer.sent_invoice_id, sent_invoice_id)
         self.assertEqual(fixed_price_plan_offer.get_plan_status_as_text(), "Configured")
 
+        audit_log = RemoteRealmAuditLog.objects.filter(
+            remote_realm=self.remote_realm,
+            event_type=AuditLogEventType.CUSTOMER_PROPERTY_CHANGED,
+        ).last()
+        assert audit_log is not None
+        self.assertEqual(audit_log.remote_realm, self.remote_realm)
+        self.assertIsNone(audit_log.extra_data["old_value"])
+        self.assertEqual(audit_log.extra_data["property"], "stripe_customer_id")
+
         invoice = Invoice.objects.get(stripe_invoice_id=sent_invoice_id)
         self.assertEqual(invoice.status, Invoice.SENT)
 
@@ -10502,6 +10511,15 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(fixed_price_plan_offer.fixed_price, annual_fixed_price * 100)
         self.assertEqual(fixed_price_plan_offer.sent_invoice_id, sent_invoice_id)
         self.assertEqual(fixed_price_plan_offer.get_plan_status_as_text(), "Configured")
+
+        audit_log = RemoteZulipServerAuditLog.objects.filter(
+            server=self.server,
+            event_type=AuditLogEventType.CUSTOMER_PROPERTY_CHANGED,
+        ).last()
+        assert audit_log is not None
+        self.assertEqual(audit_log.server, self.server)
+        self.assertIsNone(audit_log.extra_data["old_value"])
+        self.assertEqual(audit_log.extra_data["property"], "stripe_customer_id")
 
         invoice = Invoice.objects.get(stripe_invoice_id=sent_invoice_id)
         self.assertEqual(invoice.status, Invoice.SENT)

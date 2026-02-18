@@ -1145,6 +1145,24 @@ class BillingSession(ABC):
             self.replace_payment_method(customer.stripe_customer_id, payment_method, True)
         return customer
 
+    # Callers of this function should check if overwriting an existing stripe_customer_id
+    # on the Customer object is allowed for that specific billing action.
+    def link_stripe_customer_id(self, new_stripe_customer_id: str) -> None:
+        customer = self.get_customer()
+        assert customer is not None
+        old_stripe_customer_id = customer.stripe_customer_id
+        customer.stripe_customer_id = new_stripe_customer_id
+        customer.save(update_fields=["stripe_customer_id"])
+        self.write_to_audit_log(
+            event_type=BillingSessionEventType.CUSTOMER_PROPERTY_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                "old_value": old_stripe_customer_id,
+                "new_value": new_stripe_customer_id,
+                "property": "stripe_customer_id",
+            },
+        )
+
     def create_stripe_invoice_and_charge(
         self,
         metadata: dict[str, Any],
@@ -1540,8 +1558,7 @@ class BillingSession(ABC):
                 # invoices are manually created first in stripe, it's important
                 # for our billing page to have our Customer object correctly
                 # linked to the customer in stripe.
-                customer.stripe_customer_id = str(invoice_customer_id)
-                customer.save(update_fields=["stripe_customer_id"])
+                self.link_stripe_customer_id(str(invoice_customer_id))
 
             fixed_price_plan_params["sent_invoice_id"] = sent_invoice_id
             Invoice.objects.create(
