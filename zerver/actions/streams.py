@@ -896,6 +896,21 @@ def bulk_add_subscriptions(
             sub_info_list=subs_to_add + subs_to_activate,
             subscriber_dict=subscriber_peer_info.subscribed_ids,
         )
+        
+        #changed (sends notifications for private streams)
+        if realm.send_channel_events_messages:
+            for i in subs_to_add + subs_to_activate:
+                if not i.stream.invite_only:
+                    continue
+
+                with override_language(i.stream.realm.default_language):
+                    target_user = i.user
+                    if acting_user and acting_user.id != i.user.id:
+                        content = _("{acting_user} subscribed {target_user} to this channel.").format(acting_user = silent_mention_syntax_for_user(acting_user), target_user = silent_mention_syntax_for_user(target_user))
+                    else:
+                        content = _("{target_user} subscribed to this channel.").format(target_user = silent_mention_syntax_for_user(target_user))
+                    maybe_send_channel_events_notice(get_system_bot(settings.NOTIFICATION_BOT, realm.id), i.stream, content)
+        #end of change
 
     if not all_users_accessible_by_everyone_in_realm(realm):
         send_user_creation_events_on_adding_subscriptions(
