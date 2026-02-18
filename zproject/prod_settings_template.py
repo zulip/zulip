@@ -811,7 +811,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 
 ## Password strength requirements; learn about configuration at
 ## https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html.
-# PASSWORD_MIN_LENGTH = 6
+# PASSWORD_MIN_LENGTH = 8
 # PASSWORD_MAX_LENGTH = 100
 # PASSWORD_MIN_GUESSES = 10000
 
