@@ -949,6 +949,8 @@ export function validate_private_message(show_banner = true): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
     const $banner_container = $("#compose_banners");
+    // We will need to disable compose textarea if the recipient has invalid users.
+    $("textarea#compose-textarea").prop("disabled", false);
     const missing_direct_message_recipient = user_ids.length === 0;
 
     if (missing_direct_message_recipient) {
@@ -968,6 +970,7 @@ export function validate_private_message(show_banner = true): boolean {
     const direct_message_error_string = check_dm_permissions_and_get_error_string(user_ids_string);
     if (direct_message_error_string) {
         compose_banner.cannot_send_direct_message_error(direct_message_error_string);
+        $("textarea#compose-textarea").prop("disabled", true);
         if (is_validating_compose_box) {
             disabled_send_tooltip_message_html = direct_message_error_string;
         }
@@ -983,8 +986,8 @@ export function validate_private_message(show_banner = true): boolean {
                 error_message,
                 compose_banner.CLASSNAMES.deactivated_user,
                 $banner_container,
-                $("#private_message_recipient"),
             );
+            $("textarea#compose-textarea").prop("disabled", true);
 
             if (is_validating_compose_box) {
                 disabled_send_tooltip_message_html = error_message;
@@ -1132,6 +1135,10 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
     // Clear previous banners from previous compose state, we will apply relevant
     // banners below again.
     compose_banner.clear_errors();
+    // Reset the compose textarea disabled state; validate_private_message may
+    // disable it if the recipient has invalid users. This also ensures the
+    // textarea is re-enabled when validate runs again on compose state change.
+    $("textarea#compose-textarea").prop("disabled", false);
     const message_content = compose_state.message_content();
     // The validation checks in this function are in a specific priority order. Don't
     // change their order unless you want to change which priority they're shown in.
