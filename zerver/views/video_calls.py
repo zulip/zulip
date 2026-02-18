@@ -493,15 +493,24 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
             + checksum
         )
         response.raise_for_status()
-    except requests.RequestException:
-        raise JsonableError(_("Error connecting to the BigBlueButton server."))
+    except requests.RequestException as e:
+        if e.response is not None:
+            reason = f"HTTP {response.status_code}: {response.text:.200}"
+        else:
+            reason = str(e)
+        raise JsonableError(
+            _("Error connecting to the BigBlueButton server: {reason}").format(reason=reason)
+        )
 
     payload = ElementTree.fromstring(response.text)
     if assert_is_not_none(payload.find("messageKey")).text == "checksumError":
         raise JsonableError(_("Error authenticating to the BigBlueButton server."))
 
-    if assert_is_not_none(payload.find("returncode")).text != "SUCCESS":
-        raise JsonableError(_("BigBlueButton server returned an unexpected error."))
+    status = assert_is_not_none(payload.find("returncode")).text
+    if status != "SUCCESS":
+        raise JsonableError(
+            _("BigBlueButton server returned an unexpected error: {status}").format(status=status)
+        )
 
     join_params = urlencode(
         {
@@ -594,9 +603,14 @@ def create_nextcloud_talk_url(
     try:
         response = VideoCallSession().post(api_url, json=payload, headers=headers, timeout=10)
         response.raise_for_status()
-    except requests.RequestException:
-        raise JsonableError(_("Error connecting to the Nextcloud Talk server"))
-
+    except requests.RequestException as e:
+        if e.response is not None:
+            reason = f"HTTP {response.status_code}: {response.text:.200}"
+        else:
+            reason = str(e)
+        raise JsonableError(
+            _("Error connecting to the Nextcloud Talk server: {reason}").format(reason=reason)
+        )
     try:
         data = response.json()
         token = data["ocs"]["data"]["token"]

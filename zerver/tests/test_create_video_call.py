@@ -504,14 +504,31 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
         responses.add(
             responses.GET,
             "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
-            "",
             status=500,
+            body="Something went wrong",
         )
         response = self.client_get(
             "/calls/bigbluebutton/join",
             {"bigbluebutton": self.signed_bbb_a_object},
         )
-        self.assert_json_error(response, "Error connecting to the BigBlueButton server.")
+        self.assert_json_error(
+            response, "Error connecting to the BigBlueButton server: HTTP 500: Something went wrong"
+        )
+
+    @responses.activate
+    def test_join_bigbluebutton_connection_refused(self) -> None:
+        responses.add(
+            responses.GET,
+            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
+            body=requests.exceptions.ConnectionError("Connection refused"),
+        )
+        response = self.client_get(
+            "/calls/bigbluebutton/join",
+            {"bigbluebutton": self.signed_bbb_a_object},
+        )
+        self.assert_json_error(
+            response, "Error connecting to the BigBlueButton server: Connection refused"
+        )
 
     @responses.activate
     def test_join_bigbluebutton_redirect_error_by_server(self) -> None:
@@ -525,7 +542,9 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
             "/calls/bigbluebutton/join",
             {"bigbluebutton": self.signed_bbb_a_object},
         )
-        self.assert_json_error(response, "BigBlueButton server returned an unexpected error.")
+        self.assert_json_error(
+            response, "BigBlueButton server returned an unexpected error: FAILURE"
+        )
 
     def test_join_bigbluebutton_redirect_not_configured(self) -> None:
         with self.settings(BIG_BLUE_BUTTON_SECRET=None, BIG_BLUE_BUTTON_URL=None):
@@ -746,6 +765,23 @@ class NextcloudVideoCallTest(ZulipTestCase):
                 self.assert_json_error(response, "Nextcloud Talk is not configured")
 
     @responses.activate
+    def test_create_nextcloud_talk_server_error(self) -> None:
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            status=400,
+            body="Invalid request",
+        )
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create", {"room_name": "#Test > team check-in"}
+        )
+
+        self.assert_json_error(
+            response, "Error connecting to the Nextcloud Talk server: HTTP 400: Invalid request"
+        )
+
+    @responses.activate
     def test_create_nextcloud_talk_connection_error(self) -> None:
         responses.add(
             responses.POST,
@@ -757,7 +793,9 @@ class NextcloudVideoCallTest(ZulipTestCase):
             "/json/calls/nextcloud_talk/create", {"room_name": "#Test > team check-in"}
         )
 
-        self.assert_json_error(response, "Error connecting to the Nextcloud Talk server")
+        self.assert_json_error(
+            response, "Error connecting to the Nextcloud Talk server: Connection failed"
+        )
 
     @responses.activate
     def test_create_nextcloud_talk_invalid_response(self) -> None:
