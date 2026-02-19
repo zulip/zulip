@@ -273,10 +273,6 @@ export class Typeahead<ItemType extends string | object> {
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
-
-    // intersection observer to watch last item visibility
-    private lastItemObserver?: IntersectionObserver;
-
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
         if (this.input_element.type === "contenteditable") {
@@ -635,47 +631,7 @@ export class Typeahead<ItemType extends string | object> {
         // before we render it.
 
         scroll_util.get_scroll_element(this.$menu);
-        const $content = scroll_util.get_content_element(this.$menu);
-        $content.empty().append($items);
-
-        // intersection observer watching the  last element to add and remove fade
-        // overlay at the bottom depending on last list element visibility.
-
-        const lastItem = $items.at(-1)?.[0];
-        const rootElement = this.$menu[0];
-
-        if (lastItem && rootElement) {
-            this.$menu.addClass("fade-bottom");
-
-            this.lastItemObserver?.disconnect();
-
-            this.lastItemObserver = new IntersectionObserver(
-                (entries: IntersectionObserverEntry[]) => {
-                    const entry = entries[0];
-                    if (!entry) {
-                        return;
-                    }
-
-                    const lastItemBottom = entry.boundingClientRect.bottom;
-                    const containerBottom = entry.rootBounds?.bottom ?? Infinity;
-
-                    if (lastItemBottom <= containerBottom + 1) {
-                        this.$menu.removeClass("fade-bottom");
-                    } else {
-                        if (!this.$menu.hasClass("fade-bottom")) {
-                            this.$menu.addClass("fade-bottom");
-                        }
-                    }
-                },
-                {
-                    root: rootElement,
-                    threshold: Array.from({length: 101}, (_, i) => i / 100),
-                },
-            );
-
-            this.lastItemObserver.observe(lastItem);
-        }
-
+        scroll_util.get_content_element(this.$menu).empty().append($items);
         return this;
     }
 
