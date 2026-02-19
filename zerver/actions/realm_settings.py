@@ -37,6 +37,7 @@ from zerver.lib.utils import optional_bytes_to_mib
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
+    ImageAttachment,
     Message,
     NamedUserGroup,
     Realm,
@@ -724,6 +725,7 @@ def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> 
             if len(to_delete) > 0:
                 delete_message_attachments([row[1] for row in to_delete])
                 last_id = to_delete[len(to_delete) - 1][0]
+                ImageAttachment.objects.filter(path_id__in=[row[1] for row in to_delete]).delete()
             if len(to_delete) < batch_size:
                 break
         obj_class._default_manager.filter(realm=realm).delete()
