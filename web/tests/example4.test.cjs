@@ -127,11 +127,10 @@ run_test("update user with event", ({override}) => {
     const $option = $.create('option[value="100"]');
     $select.set_find_results('option[value="100"]', $option);
 
-    const new_bob = make_bot({
-        email: "bob@example.com",
+    const new_bob = {
         user_id: bob.user_id,
         full_name: "The Artist Formerly Known as Bob",
-    });
+    };
 
     const event = {
         type: "realm_user",
