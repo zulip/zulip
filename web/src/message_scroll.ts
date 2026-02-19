@@ -36,10 +36,7 @@ export function hide_scroll_to_bottom(): void {
     // Wait before hiding to allow user time to click on the button.
     hide_scroll_to_bottom_timer = setTimeout(() => {
         // Don't hide if user is hovered on it.
-        if (
-            !narrow_state.narrowed_by_topic_reply() &&
-            !the($show_scroll_to_bottom_button).matches(":hover")
-        ) {
+        if (!the($show_scroll_to_bottom_button).matches(":hover")) {
             $show_scroll_to_bottom_button.removeClass("show");
         }
     }, 3000);
