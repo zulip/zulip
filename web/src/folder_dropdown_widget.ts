@@ -41,9 +41,7 @@ export function get_folder_filter_dropdown_options(
         .some((sub) => sub.folder_id === null);
     if (show_uncategorized_option) {
         const uncategorized_option = {
-            is_setting_disabled: true,
-            show_disabled_icon: false,
-            show_disabled_option_name: true,
+            make_italic: true,
             unique_id: folder_filters.UNCATEGORIZED_DROPDOWN_OPTION,
             name: $t({defaultMessage: "Uncategorized"}),
             bold_current_selection: current_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION,
@@ -52,9 +50,7 @@ export function get_folder_filter_dropdown_options(
     }
 
     const any_folder_option = {
-        is_setting_disabled: true,
-        show_disabled_icon: false,
-        show_disabled_option_name: true,
+        make_italic: true,
         unique_id: folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
         name: $t({defaultMessage: "Any folder"}),
         bold_current_selection: current_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION,
