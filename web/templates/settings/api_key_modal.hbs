@@ -4,26 +4,50 @@
             <header class="modal__header">
                 <div class="modal__header-content">
                     <h1 class="modal__title" id="api_key_modal_label">
-                        {{t "Your API key" }}
+                        {{t "Your API key"}}
                     </h1>
                 </div>
-                {{> ../components/icon_button icon="close" intent="neutral" custom_classes="modal__close" aria-label=(t 'Close modal') data-micromodal-close=true }}
+                {{> ../components/icon_button
+                    icon="close"
+                    intent="neutral"
+                    custom_classes="modal__close"
+                    aria-label=(t 'Close modal')
+                    data-micromodal-close=true
+                }}
             </header>
             <main class="modal__content">
                 <div id="password_confirmation">
                     <span class="alert-notification" id="api_key_status"></span>
                     <div id="api_key_form">
-                        <p>{{t "Please re-enter your password to confirm your identity." }}</p>
+                        <p>{{t "Please re-enter your password to confirm your identity."}}</p>
                         <div class="settings-password-div">
-                            <label for="get_api_key_password" class="modal-field-label">{{t "Your password" }}</label>
+                            <label for="get_api_key_password" class="modal-field-label">
+                                {{t "Your password"}}
+                            </label>
                             <div class="password-input-row">
-                                <input type="password" autocomplete="off" name="password" id="get_api_key_password" class=" modal_password_input" value="" />
+                                <input
+                                    type="password"
+                                    autocomplete="off"
+                                    name="password"
+                                    id="get_api_key_password"
+                                    class="modal_password_input"
+                                    value=""
+                                />
                                 <i class="fa fa-eye-slash password_visibility_toggle tippy-zulip-tooltip" role="button"></i>
                             </div>
                         </div>
                         <p class="small">
-                            {{#tr}}If you don't know your password, you can <z-link>reset it</z-link>.
-                                {{#*inline "z-link"}}<a href="/accounts/password/reset/" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                            {{#tr}}
+                                If you don't know your password, you can <z-link>reset it</z-link>.
+                                {{#*inline "z-link"}}
+                                    <a
+                                        href="/accounts/password/reset/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {{> @partial-block}}
+                                    </a>
+                                {{/inline}}
                             {{/tr}}
                         </p>
                     </div>
@@ -32,23 +56,41 @@
                     <div class="api-key-details-container">
                         <p><b class="highlighted-element"><span id="api_key_value"></span></b></p>
                         {{> ../components/icon_button
-                          icon="copy"
-                          intent="success"
-                          id="user-copy-api-key-button"
-                          custom_classes="copy-api-key tippy-zulip-delayed-tooltip"
-                          data-tippy-content=(t "Copy API key")
-                          }}
+                            icon="copy"
+                            intent="success"
+                            id="user-copy-api-key-button"
+                            custom_classes="copy-api-key tippy-zulip-delayed-tooltip"
+                            data-tippy-content=(t "Copy API key")
+                        }}
                     </div>
                     <div id="user_api_key_error" class="text-error"></div>
                 </div>
             </main>
             <footer class="modal__footer">
-                <button type="submit" name="view_api_key" id="get_api_key_button" class="modal__button dialog_submit_button">
-                    {{t 'Get API key' }}
+                <button
+                    type="submit"
+                    name="view_api_key"
+                    id="get_api_key_button"
+                    class="modal__button dialog_submit_button"
+                >
+                    {{t "Get API key"}}
                 </button>
                 <div id="api_key_buttons">
-                    <button class="modal__button dialog_submit_button" id="regenerate_api_key" aria-label="{{t 'Generate new API key' }}">{{t "Generate new API key" }}</button>
-                    <a class="modal__button dialog_submit_button" id="download_zuliprc" download="zuliprc" tabindex="0">{{t "Download zuliprc" }}</a>
+                    <button
+                        class="modal__button dialog_submit_button"
+                        id="regenerate_api_key"
+                        aria-label="{{t 'Generate new API key'}}"
+                    >
+                        {{t "Generate new API key"}}
+                    </button>
+                    <a
+                        class="modal__button dialog_submit_button"
+                        id="download_zuliprc"
+                        download="zuliprc"
+                        tabindex="0"
+                    >
+                        {{t "Download zuliprc"}}
+                    </a>
                 </div>
             </footer>
         </div>
