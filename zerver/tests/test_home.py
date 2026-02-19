@@ -233,6 +233,7 @@ class HomeTest(ZulipTestCase):
         "realm_want_advertise_in_communities_directory",
         "realm_welcome_message_custom_text",
         "realm_wildcard_mention_policy",
+        "realm_workplace_users_group",
         "realm_zulip_update_announcements_stream_id",
         "realm_moderation_request_channel_id",
         "recent_private_conversations",

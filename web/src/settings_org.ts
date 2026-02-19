@@ -464,6 +464,21 @@ function set_welcome_message_custom_text_visibility(): void {
     update_test_welcome_bot_custom_message_button_status();
 }
 
+export let set_two_tier_billing_settings_visibility = (): void => {
+    const two_tier_billing_enabled = settings_data.two_tier_billing_enabled();
+    $("input#id_realm_enable_two_tier_billing").prop("checked", two_tier_billing_enabled);
+    settings_components.change_element_block_display_property(
+        "id_realm_workplace_users_group",
+        two_tier_billing_enabled,
+    );
+};
+
+export function rewire_set_two_tier_billing_settings_visibility(
+    value: typeof set_two_tier_billing_settings_visibility,
+): void {
+    set_two_tier_billing_settings_visibility = value;
+}
+
 function update_view_welcome_bot_custom_message_button_status(
     message_id: number | undefined,
     is_error: boolean,
@@ -639,6 +654,9 @@ function update_dependent_subsettings(property_name: string): void {
         case "realm_direct_message_permission_group":
             check_disable_direct_message_initiator_group_widget();
             break;
+        case "realm_workplace_users_group":
+            set_two_tier_billing_settings_visibility();
+            break;
     }
 }
 
@@ -690,7 +708,8 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
-        case "realm_direct_message_permission_group": {
+        case "realm_direct_message_permission_group":
+        case "realm_workplace_users_group": {
             const pill_widget = settings_components.get_group_setting_widget(property_name);
             assert(pill_widget !== null);
             settings_components.set_group_setting_widget_value(
@@ -1477,6 +1496,30 @@ export function register_save_discard_widget_handlers(
             }
         }
 
+        if ($(this).hasClass("realm_enable_two_tier_billing")) {
+            const is_checked = $(this).is(":checked");
+            settings_components.change_element_block_display_property(
+                "id_realm_workplace_users_group",
+                is_checked,
+            );
+            const pill_widget = settings_components.get_group_setting_widget(
+                "realm_workplace_users_group",
+            );
+            assert(pill_widget !== null);
+            if (!is_checked) {
+                const everyone_group = user_groups.get_user_group_from_name("role:everyone")!;
+                settings_components.set_group_setting_widget_value(
+                    pill_widget,
+                    group_setting_value_schema.parse(everyone_group.id),
+                );
+            } else {
+                settings_components.set_group_setting_widget_value(
+                    pill_widget,
+                    group_setting_value_schema.parse(realm.realm_workplace_users_group),
+                );
+            }
+        }
+
         const $subsection = $(this).closest(".settings-subsection-parent");
         if (for_realm_default_settings) {
             settings_components.save_discard_default_realm_settings_widget_status_handler(
@@ -1607,6 +1650,7 @@ export function build_page(): void {
     disable_create_user_groups_if_on_limited_plan();
     set_welcome_message_custom_text_visibility();
     set_default_avatar_source_setting();
+    set_two_tier_billing_settings_visibility();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
     maybe_restore_unsaved_welcome_message_custom_text();

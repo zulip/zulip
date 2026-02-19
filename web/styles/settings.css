@@ -1067,7 +1067,8 @@ input[type="checkbox"] {
     }
 }
 
-.org-permissions-form .pill-container {
+.org-permissions-form .pill-container,
+.org-settings-form .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
 

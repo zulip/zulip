@@ -891,7 +891,8 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
-        case "realm_direct_message_permission_group": {
+        case "realm_direct_message_permission_group":
+        case "realm_workplace_users_group": {
             const pill_widget = get_group_setting_widget(property_name);
             assert(pill_widget !== null);
             proposed_val = get_group_setting_widget_value(pill_widget);
@@ -1153,6 +1154,7 @@ export function populate_data_for_realm_settings_request(
                     "create_multiuse_invite_group",
                     "direct_message_initiator_group",
                     "direct_message_permission_group",
+                    "workplace_users_group",
                 ]);
                 if (realm_group_settings.has(property_name)) {
                     const old_value = get_realm_settings_property_value(
@@ -1681,6 +1683,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["realm_create_multiuse_invite_group", null],
     ["realm_direct_message_initiator_group", null],
     ["realm_direct_message_permission_group", null],
+    ["realm_workplace_users_group", null],
 ]);
 
 export function get_group_setting_widget(setting_name: string): GroupSettingPillContainer | null {

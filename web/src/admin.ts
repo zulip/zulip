@@ -92,6 +92,9 @@ const admin_settings_label = {
     realm_enable_guest_user_dm_warning: $t({
         defaultMessage: "Warn when composing a DM to a guest",
     }),
+    realm_enable_two_tier_billing: $t({
+        defaultMessage: "Discounted billing for non-workplace users",
+    }),
 };
 
 function insert_tip_box(): void {
@@ -311,6 +314,7 @@ export function build_page(): void {
                 realm_user_settings_defaults.web_line_height_percent,
             ),
         default_avatar_source_values: settings_config.default_avatar_source_values,
+        realm_enable_two_tier_billing: settings_data.two_tier_billing_enabled(),
     };
 
     const rendered_admin_tab = render_admin_tab(options);

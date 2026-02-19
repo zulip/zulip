@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 477**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `workplace_users_group`
+  field which is a [group-setting value](/api/group-setting-values)
+  describing the set of users who will be considered as workplace
+  users for billing.
+
 **Feature level 476**
 
 * [`POST /realm/profile_fields`](/api/create-custom-profile-field),
