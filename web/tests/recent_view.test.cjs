@@ -210,8 +210,8 @@ mock_esm("../src/channel_folders", {
 });
 mock_esm("../src/folder_dropdown_widget", {
     FOLDER_FILTERS: {
-        UNCATEGORIZED_DROPDOWN_OPTION: -1,
-        ANY_FOLDER_DROPDOWN_OPTION: -2,
+        UNCATEGORIZED_DROPDOWN_OPTION: -101,
+        ANY_FOLDER_DROPDOWN_OPTION: -102,
     },
 });
 const dropdown_widget = mock_esm("../src/dropdown_widget");
@@ -1241,7 +1241,7 @@ test("test_folder_filter", () => {
     );
 
     // "Uncategorized" filter — stream4 (no folder) visible, stream1 (folder A) hidden.
-    rt.set_folder_filter_for_tests(-1);
+    rt.set_folder_filter_for_tests(-101);
     assert.equal(
         rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
         true,
@@ -1258,7 +1258,7 @@ test("test_folder_filter", () => {
     );
 
     // Reset to "Any folder" — all visible again.
-    rt.set_folder_filter_for_tests(-2);
+    rt.set_folder_filter_for_tests(-102);
     assert.equal(
         rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
         false,

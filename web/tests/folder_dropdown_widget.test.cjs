@@ -200,7 +200,7 @@ run_test("create_folder_filter_dropdown_widget", () => {
         created_widget_params = params;
         return {
             render: noop,
-            value: () => -2,
+            value: () => -102,
         };
     };
 
