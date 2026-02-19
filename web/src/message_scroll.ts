@@ -141,6 +141,10 @@ export function initialize(): void {
         "scroll",
         _.throttle(() => {
             if (message_lists.current === undefined) {
+                // When in a non-message view, we don't need to process
+                // message scroll events. We just hide the scroll-to-bottom
+                // button instantly, if it is already visible.
+                hide_scroll_to_bottom();
                 return;
             }
 
