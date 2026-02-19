@@ -29,7 +29,16 @@
                     </div>
                 </div>
                 <div id="show_api_key">
-                    <p><b class="highlighted-element"><span id="api_key_value"></span></b></p>
+                    <div class="api-key-details-container">
+                        <p><b class="highlighted-element"><span id="api_key_value"></span></b></p>
+                        {{> ../components/icon_button
+                          icon="copy"
+                          intent="success"
+                          id="user-copy-api-key-button"
+                          custom_classes="copy-api-key tippy-zulip-delayed-tooltip"
+                          data-tippy-content=(t "Copy API key")
+                          }}
+                    </div>
                     <div id="user_api_key_error" class="text-error"></div>
                 </div>
             </main>
