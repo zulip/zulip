@@ -398,9 +398,7 @@ export function set_up_folder_dropdown_widget(sub?: StreamSubscription): Dropdow
         }));
 
         const disabled_option = {
-            is_setting_disabled: true,
-            show_disabled_icon: false,
-            show_disabled_option_name: true,
+            make_italic: true,
             unique_id: settings_config.no_folder_selected,
             name: $t({defaultMessage: "None"}),
         };
