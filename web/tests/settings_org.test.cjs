@@ -736,8 +736,6 @@ test("test combined_code_language_options", ({override}) => {
             is_setting_disabled: true,
             unique_id: "",
             name: $t({defaultMessage: "No language set"}),
-            show_disabled_icon: true,
-            show_disabled_option_name: false,
         },
         ...default_options,
     ];
@@ -755,8 +753,6 @@ test("test combined_code_language_options", ({override}) => {
             is_setting_disabled: true,
             unique_id: "",
             name: $t({defaultMessage: "No language set"}),
-            show_disabled_icon: true,
-            show_disabled_option_name: false,
         },
         {unique_id: "custom_lang_1", name: "custom_lang_1"},
         {unique_id: "custom_lang_2", name: "custom_lang_2"},
