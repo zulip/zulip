@@ -7,6 +7,8 @@ const katex = require("katex");
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const markdown_assert = require("./lib/markdown_assert.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -84,54 +86,68 @@ const emoji_params = {
 emoji.initialize(emoji_params);
 fenced_code.initialize(pygments_data);
 
-const cordelia = {
+const cordelia = make_user({
     full_name: "Cordelia, Lear's daughter",
     user_id: 101,
     email: "cordelia@zulip.com",
-};
+});
 people.add_active_user(cordelia);
 
-people.add_active_user({
-    full_name: "Leo",
-    user_id: 102,
-    email: "leo@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Leo",
+        user_id: 102,
+        email: "leo@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "Bobby <h1>Tables</h1>",
-    user_id: 103,
-    email: "bobby@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Bobby <h1>Tables</h1>",
+        user_id: 103,
+        email: "bobby@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "Mark Twin",
-    user_id: 104,
-    email: "twin1@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Mark Twin",
+        user_id: 104,
+        email: "twin1@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "Mark Twin",
-    user_id: 105,
-    email: "twin2@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Mark Twin",
+        user_id: 105,
+        email: "twin2@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "Brother of Bobby|123",
-    user_id: 106,
-    email: "bobby2@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Brother of Bobby|123",
+        user_id: 106,
+        email: "bobby2@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "& & &amp;",
-    user_id: 107,
-    email: "ampampamp@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "& & &amp;",
+        user_id: 107,
+        email: "ampampamp@zulip.com",
+    }),
+);
 
-people.add_active_user({
-    full_name: "Zoe",
-    user_id: 7,
-    email: "zoe@zulip.com",
-});
+people.add_active_user(
+    make_user({
+        full_name: "Zoe",
+        user_id: 7,
+        email: "zoe@zulip.com",
+    }),
+);
 
 people.add_inaccessible_user(108);
 
@@ -170,21 +186,21 @@ user_groups.add(backend);
 user_groups.add(edgecase_group);
 user_groups.add(amp_group);
 
-const denmark = {
+const denmark = make_stream({
     subscribed: false,
     color: "blue",
     name: "Denmark",
     stream_id: 1,
     is_muted: true,
-};
-const social = {
+});
+const social = make_stream({
     subscribed: true,
     color: "red",
     name: "social",
     stream_id: 2,
     is_muted: false,
     invite_only: true,
-};
+});
 const edgecase_stream = {
     subscribed: true,
     color: "green",
@@ -192,20 +208,20 @@ const edgecase_stream = {
     stream_id: 3,
     is_muted: false,
 };
-const edgecase_stream_2 = {
+const edgecase_stream_2 = make_stream({
     subscribed: true,
     color: "yellow",
     name: "Bobby <h1",
     stream_id: 4,
     is_muted: false,
-};
-const amp_stream = {
+});
+const amp_stream = make_stream({
     subscribed: true,
     color: "orange",
     name: "& & &amp;",
     stream_id: 5,
     is_muted: false,
-};
+});
 stream_data.add_sub_for_tests(denmark);
 stream_data.add_sub_for_tests(social);
 stream_data.add_sub_for_tests(edgecase_stream);
