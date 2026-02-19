@@ -1023,12 +1023,7 @@ div.overlay .flex.overlay-content > .overlay-container,
 
 .dropdown-current-value-not-in-options,
 .setting-disabled-option {
-    color: hsl(38deg 46% 54%);
-
-    .setting-disabled-option-text,
-    .setting-disabled-option-icon {
-        color: hsl(38deg 46% 54%);
-    }
+    font-style: italic;
 
     .setting-disabled-option-icon {
         align-self: center;
