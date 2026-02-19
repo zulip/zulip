@@ -617,6 +617,7 @@ type ConversationContext = {
           is_private: true;
           user_ids_string: string;
           rendered_pm_with_html: string;
+          pm_users_as_plain: string;
           pm_url: string;
           is_group: boolean;
           is_bot: boolean;
@@ -714,19 +715,32 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // Direct message info
         const user_ids_string = last_msg.to_user_ids;
         assert(typeof last_msg.display_recipient !== "string");
+        const sorted_pm_users = last_msg.display_recipient
+            .filter(
+                (recipient: DisplayRecipientUser) =>
+                    !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
+            )
+            .map((user: DisplayRecipientUser) => ({
+                name: people.get_display_full_name(user.id),
+                status_emoji_info: user_status.get_status_emoji(user.id),
+            }))
+            .toSorted((a, b) => util.strcmp(a.name, b.name));
+
         const rendered_pm_with_html = render_users_with_status_icons({
-            users: last_msg.display_recipient
-                .filter(
-                    (recipient: DisplayRecipientUser) =>
-                        !people.is_my_user_id(recipient.id) ||
-                        last_msg.display_recipient.length === 1,
-                )
-                .map((user: DisplayRecipientUser) => ({
-                    name: people.get_display_full_name(user.id),
-                    status_emoji_info: user_status.get_status_emoji(user.id),
-                }))
-                .toSorted((a, b) => util.strcmp(a.name, b.name)),
+            users: sorted_pm_users,
         });
+
+        const sorted_pm_usernames_only: string[] = [];
+
+        for (const user of sorted_pm_users) {
+            sorted_pm_usernames_only.push(user.name);
+        }
+
+        const pm_users_as_plain = util.format_array_as_list_with_conjunction(
+            sorted_pm_usernames_only,
+            "long",
+        );
+
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
         const has_unread_mention =
@@ -761,6 +775,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         dm_context = {
             user_ids_string,
             rendered_pm_with_html,
+            pm_users_as_plain,
             pm_url,
             is_group,
             is_bot,

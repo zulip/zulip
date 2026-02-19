@@ -27,7 +27,7 @@
             </div>
             <i class="zulip-icon zulip-icon-chevron-right"></i>
             {{#if is_private}}
-            <a href="{{pm_url}}" class="recent-view-conversation-link recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}" tabindex="-1">{{{rendered_pm_with_html}}}</a>
+            <a href="{{pm_url}}" class="recent-view-conversation-link recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}" data-tippy-content="{{pm_users_as_plain}}" tabindex="-1">{{{rendered_pm_with_html}}}</a>
             {{else}}
             <a class="recent-view-conversation-link recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" data-tippy-content="{{topic_display_name}}" href="{{topic_url}}" tabindex="-1">{{topic_display_name}}</a>
             {{/if}}
