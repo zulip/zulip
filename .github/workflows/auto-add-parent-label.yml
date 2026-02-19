@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   add-general-label:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
 
     steps:
       - name: Add general area label

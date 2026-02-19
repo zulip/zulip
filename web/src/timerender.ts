@@ -183,7 +183,7 @@ export type TimeRender = {
     needs_update: boolean;
 };
 
-export let render_now = (time: Date, today = new Date(), display_year?: boolean): TimeRender => {
+export function render_now(time: Date, today = new Date(), display_year?: boolean): TimeRender {
     let time_str = "";
     let needs_update = false;
     // render formal time to be used for tippy tooltip
@@ -218,10 +218,6 @@ export let render_now = (time: Date, today = new Date(), display_year?: boolean)
         formal_time_str,
         needs_update,
     };
-};
-
-export function rewire_render_now(value: typeof render_now): void {
-    render_now = value;
 }
 
 // Relative time rendering for use in most screens like Recent conversations.
@@ -373,7 +369,7 @@ export function render_date(time: Date, display_year?: boolean): HTMLElement {
     next_timerender_id += 1;
     const today = new Date();
     const rendered_time = render_now(time, today, display_year);
-    let $node = $("<span>").attr("class", `timerender-content ${className}`);
+    let $node = $("<span>").attr("class", `date_row_text timerender-content ${className}`);
     $node = render_date_span($node, rendered_time);
     maybe_add_update_list_entry({
         needs_update: rendered_time.needs_update,

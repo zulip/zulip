@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -9,60 +11,60 @@ const user_groups = zrequire("user_groups");
 const user_group_pill = zrequire("user_group_pill");
 const people = zrequire("people");
 
-const user1 = {
-    user_id: 10,
+const user1 = make_user({
     email: "user1@example.com",
+    user_id: 10,
     full_name: "User One",
-};
+});
 people.add_active_user(user1);
 
-const user2 = {
-    user_id: 20,
+const user2 = make_user({
     email: "user2@example.com",
+    user_id: 20,
     full_name: "User Two",
-};
+});
 people.add_active_user(user2);
 
-const user3 = {
-    user_id: 30,
+const user3 = make_user({
     email: "user3@example.com",
+    user_id: 30,
     full_name: "User Three",
-};
+});
 people.add_active_user(user3);
 
-const user4 = {
-    user_id: 40,
+const user4 = make_user({
     email: "user4@example.com",
+    user_id: 40,
     full_name: "User Four",
-};
+});
 people.add_active_user(user4);
 
-const user5 = {
-    user_id: 50,
+const user5 = make_user({
     email: "user5@example.com",
+    user_id: 50,
     full_name: "User Five",
-};
+});
 people.add_active_user(user5);
 
-const admins = {
+const admins = make_user_group({
     name: "Admins",
     description: "foo",
     id: 101,
     members: [10, 20],
-};
-const testers = {
+});
+const testers = make_user_group({
     name: "Testers",
     description: "bar",
     id: 102,
     members: [20, 50, 30, 40],
-};
-const everyone = {
+});
+const everyone = make_user_group({
     name: "role:everyone",
     description: "Everyone",
     id: 103,
     members: [],
     direct_subgroup_ids: [101, 102],
-};
+});
 
 const admins_pill = {
     group_id: admins.id,

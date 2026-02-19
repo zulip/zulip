@@ -38,7 +38,7 @@ from zerver.actions.users import (
     do_update_outgoing_webhook_service,
 )
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import require_member_or_admin, require_realm_admin
+from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
@@ -466,7 +466,7 @@ def get_stream_name(stream: Stream | None) -> str | None:
     return None
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def patch_bot_backend(
     request: HttpRequest,
@@ -598,7 +598,7 @@ def patch_bot_backend(
     return json_success(request, data=json_result)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint_without_parameters
 def regenerate_bot_api_key(
     request: HttpRequest, user_profile: UserProfile, bot_id: PathOnly[int]
@@ -612,7 +612,20 @@ def regenerate_bot_api_key(
     return json_success(request, data=json_result)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
+@typed_endpoint_without_parameters
+def get_bot_api_key(
+    request: HttpRequest, user_profile: UserProfile, bot_id: PathOnly[int]
+) -> HttpResponse:
+    bot = access_bot_by_id(user_profile, bot_id)
+
+    json_result = dict(
+        api_key=bot.api_key,
+    )
+    return json_success(request, data=json_result)
+
+
+@require_human_non_guest_user
 @typed_endpoint
 def add_bot_backend(
     request: HttpRequest,
@@ -680,12 +693,11 @@ def add_bot_backend(
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 
-    if len(request.FILES) == 0:
-        avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
-    elif len(request.FILES) != 1:
-        raise JsonableError(_("You may only upload one file at a time"))
-    else:
+    avatar_source = None
+    if len(request.FILES) == 1:
         avatar_source = UserProfile.AVATAR_FROM_USER
+    elif len(request.FILES) > 1:
+        raise JsonableError(_("You may only upload one file at a time"))
 
     default_sending_stream = None
     if default_sending_stream_name is not None:
@@ -755,7 +767,7 @@ def add_bot_backend(
     return json_success(request, data=json_result)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
     bot_profiles = bot_profiles.select_related(

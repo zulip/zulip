@@ -2,7 +2,10 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -65,27 +68,25 @@ const realm = make_realm({
 });
 set_realm(realm);
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-    date_joined: new Date(),
-};
+});
 
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-const everyone_group = {
+const everyone_group = make_user_group({
     name: "Everyone",
     id: 1,
-    description: "",
     members: new Set([30]),
     direct_subgroup_ids: new Set(),
-};
+});
 
 user_groups.initialize({realm_user_groups: [everyone_group]});
 
-const devel = {
+const devel = make_stream({
     name: "devel",
     stream_id: 100,
     color: "blue",
@@ -94,9 +95,9 @@ const devel = {
     is_recently_active: false,
     can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
-const social = {
+const social = make_stream({
     name: "social",
     stream_id: 200,
     color: "green",
@@ -104,7 +105,7 @@ const social = {
     is_recently_active: true,
     can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
 function create_devel_sidebar_row({mock_template}) {
     const $devel_count = $.create("devel-count");
@@ -303,7 +304,7 @@ function add_row(sub) {
     stream_list.stream_sidebar.set_row(sub.stream_id, row);
 }
 
-const develSub = {
+const develSub = make_stream({
     name: "devel",
     stream_id: 1000,
     color: "blue",
@@ -312,9 +313,9 @@ const develSub = {
     is_recently_active: true,
     can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
-const RomeSub = {
+const RomeSub = make_stream({
     name: "Rome",
     stream_id: 2000,
     color: "blue",
@@ -323,9 +324,9 @@ const RomeSub = {
     is_recently_active: true,
     can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
-const testSub = {
+const testSub = make_stream({
     name: "test",
     stream_id: 3000,
     color: "blue",
@@ -335,9 +336,9 @@ const testSub = {
     can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
     is_muted: true,
-};
+});
 
-const announceSub = {
+const announceSub = make_stream({
     name: "announce",
     stream_id: 4000,
     color: "green",
@@ -346,9 +347,9 @@ const announceSub = {
     is_recently_active: true,
     can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
-const DenmarkSub = {
+const DenmarkSub = make_stream({
     name: "Denmark",
     stream_id: 5000,
     color: "green",
@@ -357,9 +358,9 @@ const DenmarkSub = {
     is_recently_active: true,
     can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
-const carSub = {
+const carSub = make_stream({
     name: "cars",
     stream_id: 6000,
     color: "green",
@@ -368,7 +369,7 @@ const carSub = {
     is_recently_active: false,
     can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
 function initialize_stream_data() {
     // pinned streams
@@ -567,34 +568,34 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
     stream_list.build_stream_list();
 
     // pinned streams
-    const develSub = {
+    const develSub = make_stream({
         name: "devel",
         stream_id: 1000,
         color: "blue",
         pin_to_top: true,
         subscribed: true,
         is_recently_active: true,
-    };
+    });
     add_row(develSub);
 
-    const RomeSub = {
+    const RomeSub = make_stream({
         name: "Rome",
         stream_id: 2000,
         color: "blue",
         pin_to_top: true,
         subscribed: true,
         is_recently_active: true,
-    };
+    });
     add_row(RomeSub);
     // dormant stream
-    const DenmarkSub = {
+    const DenmarkSub = make_stream({
         name: "Denmark",
         stream_id: 3000,
         color: "blue",
         pin_to_top: false,
         subscribed: true,
         is_recently_active: false,
-    };
+    });
     add_row(DenmarkSub);
 
     const appended_sections = [];
@@ -636,9 +637,9 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
             name: "Development",
             id: 1000,
             url: "#narrow/channel/1000-Development",
-            is_muted: undefined,
-            invite_only: undefined,
-            is_web_public: undefined,
+            is_muted: false,
+            invite_only: false,
+            is_web_public: false,
             color: payload.color,
             pin_to_top: true,
             can_post_messages: true,
@@ -670,7 +671,7 @@ test_ui("refresh_pin", ({override_rewire}) => {
     override_rewire(stream_list, "set_sections_states", noop);
     initialize_stream_data();
 
-    const sub = {
+    const sub = make_stream({
         name: "maybe_pin",
         stream_id: 100,
         color: "blue",
@@ -678,7 +679,7 @@ test_ui("refresh_pin", ({override_rewire}) => {
         subscribed: true,
         can_create_topic_group: everyone_group.id,
         can_send_message_group: everyone_group.id,
-    };
+    });
 
     stream_data.add_sub_for_tests(sub);
     // We need to populate current_sections; unclear if this is the best way.

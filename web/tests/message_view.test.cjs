@@ -4,8 +4,10 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -15,6 +17,9 @@ const narrow_banner = zrequire("narrow_banner");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
+const message_fetch = mock_esm("../src/message_fetch", {
+    load_messages_around_anchor() {},
+});
 const message_view = zrequire("message_view");
 const narrow_title = zrequire("narrow_title");
 const recent_view_util = zrequire("recent_view_util");
@@ -31,7 +36,9 @@ set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
 set_global("document", "document-stub");
-const message_lists = mock_esm("../src/message_lists");
+const message_lists = mock_esm("../src/message_lists", {
+    update_current_message_list() {},
+});
 function MessageListView() {
     return {
         maybe_rerender: noop,
@@ -69,30 +76,29 @@ function set_filter(terms) {
     return new Filter(terms);
 }
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 5,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 23,
     full_name: "Alice Smith",
-};
+});
 
-const ray = {
+const ray = make_user({
     email: "ray@example.com",
     user_id: 22,
     full_name: "Raymond",
-};
+});
 
-const bot = {
+const bot = make_bot({
     email: "bot@example.com",
     user_id: 25,
     full_name: "Example Bot",
-    is_bot: true,
-};
+});
 
 const nobody = make_user_group({
     name: "role:nobody",
@@ -151,7 +157,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
         <div class="empty-feed-notice-description">
-            Common words were excluded from your search: <br/>
+            translated: Common words were excluded from your search: <br/>
                 <del>a</del>
                 <span class="search-query-word">search</span>
         </div>
@@ -174,7 +180,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
         <div class="empty-feed-notice-description">
-            Common words were excluded from your search: <br/>
+            translated: Common words were excluded from your search: <br/>
                 <del>a</del>
                 <span class="search-query-word">search</span>
                 <del>and</del>
@@ -237,7 +243,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages in your combined feed.",
-            'translated HTML: Would you like to <a href="#narrow/channels/public">view messages in all public channels</a>?',
+            'translated: Would you like to <a href="#narrow/channels/public">view messages in all public channels</a>?',
         ),
     );
 
@@ -273,7 +279,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages here.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
 
@@ -285,7 +291,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
+            'translated: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
         ),
     );
 
@@ -298,7 +304,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
+            'translated: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
         ),
     );
 
@@ -326,7 +332,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no starred messages.",
-            'translated HTML: Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>. <a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">Learn more</a>',
+            'translated: Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>. <a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">Learn more</a>',
         ),
     );
 
@@ -336,7 +342,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: This view will show messages where you are mentioned.",
-            'translated HTML: To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a channel. Type @ in the compose box, and choose who you\'d like to mention from the list of suggestions. <a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">Learn more</a>',
+            'translated: To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a channel. Type @ in the compose box, and choose who you\'d like to mention from the list of suggestions. <a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">Learn more</a>',
         ),
     );
 
@@ -348,7 +354,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages yet!",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
 
@@ -403,7 +409,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
-            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
+            'translated: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
         ),
     );
 
@@ -416,7 +422,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages with Example Bot yet.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
 
@@ -428,7 +434,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
-            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
+            'translated: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
         ),
     );
 
@@ -440,7 +446,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages with Alice Smith yet.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
 
@@ -463,7 +469,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You haven't sent yourself any notes yet!",
-            "translated HTML: Use this space for personal notes, or to test out Zulip features.",
+            "translated: Use this space for personal notes, or to test out Zulip features.",
         ),
     );
 
@@ -473,7 +479,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages with these users yet.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
 
@@ -511,7 +517,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
-            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
+            'translated: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
         ),
     );
 
@@ -573,7 +579,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages here.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
 
@@ -601,7 +607,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have muted all the topics in this channel.",
-            'translated HTML: To view a muted topic, click <b>show all topics</b> in the left sidebar, and select one from the list. <a target="_blank" rel="noopener noreferrer" href="/help/mute-a-topic">Learn more</a>',
+            'translated: To view a muted topic, click <b>show all topics</b> in the left sidebar, and select one from the list. <a target="_blank" rel="noopener noreferrer" href="/help/mute-a-topic">Learn more</a>',
         ),
     );
     // There are no muted topics in the channel.
@@ -611,7 +617,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages here.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
     // The channel does not exist.
@@ -633,7 +639,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: None of your messages have emoji reactions yet.",
-            'translated HTML: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
+            'translated: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
         ),
     );
 
@@ -736,7 +742,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
-            "translated HTML: <p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
+            "translated: <p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
         ),
     );
 
@@ -749,7 +755,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
-            "translated HTML: <p>You are searching for messages that belong to more than one topic, which is not possible.</p>",
+            "translated: <p>You are searching for messages that belong to more than one topic, which is not possible.</p>",
         ),
     );
 
@@ -765,7 +771,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
-            "translated HTML: <p>You are searching for messages that are sent by more than one person, which is not possible.</p>",
+            "translated: <p>You are searching for messages that are sent by more than one person, which is not possible.</p>",
         ),
     );
 });
@@ -908,6 +914,132 @@ run_test("narrow_to_compose_target direct messages", ({override, override_rewire
     assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
 });
 
+run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
+    const list = new MessageList({
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
+    });
+    list.data.add_messages(
+        [
+            {id: 101, type: "stream", topic: "test", timestamp: 100, sender_id: me.user_id},
+            {id: 102, type: "stream", topic: "test", timestamp: 200, sender_id: me.user_id},
+            {id: 103, type: "stream", topic: "test", timestamp: 300, sender_id: me.user_id},
+        ],
+        true,
+    );
+
+    let selected;
+    list.select_id = (id, opts) => {
+        selected = {id, opts};
+    };
+    message_lists.current = list;
+
+    const in_range = new Date(150 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", in_range);
+    assert.deepEqual(selected, {
+        id: 102,
+        opts: {then_scroll: true, from_scroll: false},
+    });
+
+    list.data.fetch_status.finish_older_batch({
+        found_oldest: true,
+        history_limited: false,
+        update_loading_indicator: false,
+    });
+    const before_range = new Date(50 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", before_range);
+    assert.deepEqual(selected, {
+        id: 101,
+        opts: {then_scroll: true, from_scroll: false},
+    });
+
+    // If we have not found the oldest message, and the anchor timestamp is
+    // at or before the first message, we should fetch from the server.
+    override(message_fetch, "load_messages_around_anchor", (anchor, callback, msg_list_data) => {
+        load_messages_calls += 1;
+        load_messages_anchor = anchor;
+        const new_message = {
+            id: 100,
+            type: "stream",
+            topic: "test",
+            timestamp: 75,
+            sender_id: me.user_id,
+        };
+        list.data.add_messages([new_message], true);
+        msg_list_data.add_messages(list.data.all_messages_after_mute_filtering(), true);
+        msg_list_data.fetch_status.finish_older_batch({
+            found_oldest: true,
+            history_limited: false,
+            update_loading_indicator: false,
+        });
+        callback();
+    });
+    list.data.fetch_status.finish_older_batch({
+        found_oldest: false,
+        history_limited: false,
+        update_loading_indicator: false,
+    });
+    let load_messages_anchor;
+    let load_messages_calls = 0;
+    message_view.fast_track_current_msg_list_to_anchor("date", before_range);
+    assert.equal(load_messages_calls, 1);
+    assert.equal(load_messages_anchor, "date");
+    assert.deepEqual(selected, {
+        id: 100,
+        opts: {then_scroll: true, from_scroll: false, force_rerender: true},
+    });
+
+    // Message 104 is not in the list so we need to fetch it from the API
+    // using load_messages_around_anchor.
+    load_messages_anchor = undefined;
+    load_messages_calls = 0;
+    override(message_fetch, "load_messages_around_anchor", (anchor, callback, msg_list_data) => {
+        load_messages_calls += 1;
+        load_messages_anchor = anchor;
+        const new_message = {
+            id: 104,
+            type: "stream",
+            topic: "test",
+            timestamp: 400,
+            sender_id: me.user_id,
+        };
+        list.data.add_messages([new_message], true);
+        msg_list_data.add_messages(list.data.all_messages_after_mute_filtering(), true);
+        callback();
+    });
+    assert.equal(list.data.get(104), undefined);
+    const after_range = new Date(400 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", after_range);
+    assert.equal(load_messages_calls, 1);
+    assert.equal(load_messages_anchor, "date");
+    assert.deepEqual(selected, {
+        id: 104,
+        opts: {then_scroll: true, from_scroll: false, force_rerender: true},
+    });
+
+    // If we have found the newest message, having anchor_date in
+    // future should give you back the newest message.
+    list.data.fetch_status.finish_newer_batch([], {
+        found_newest: true,
+        update_loading_indicator: false,
+    });
+    load_messages_calls = 0;
+    const future_range = new Date(500 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", future_range);
+    assert.deepEqual(selected, {
+        id: 104,
+        opts: {then_scroll: true, from_scroll: false},
+    });
+    assert.equal(load_messages_calls, 0);
+
+    selected = undefined;
+    blueslip.expect("error", "Missing required argument anchor_date");
+    message_view.fast_track_current_msg_list_to_anchor("date");
+    assert.equal(selected, undefined);
+});
+
 run_test("narrow_compute_title", () => {
     // Only tests cases where the narrow title is different from the filter title.
     let filter;
@@ -954,11 +1086,11 @@ run_test("narrow_compute_title", () => {
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Unknown channel");
 
     // Direct messages with narrows
-    const joe = {
+    const joe = make_user({
         email: "joe@example.com",
         user_id: 31,
         full_name: "joe",
-    };
+    });
     people.add_active_user(joe, "server_events");
 
     filter = new Filter([{operator: "dm", operand: [joe.user_id]}]);

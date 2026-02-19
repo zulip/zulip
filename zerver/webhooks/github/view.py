@@ -344,9 +344,9 @@ class LazyContext(dict[str, str | int]):
             ),
             "url": lambda: self.payload["discussion"]["html_url"].tame(check_string),
             "action": lambda: self.payload["action"].tame(check_string),
-            "configured_title": lambda: f" {self.template_values['title']()}"
-            if self.include_title
-            else "",
+            "configured_title": lambda: (
+                f" {self.template_values['title']()}" if self.include_title else ""
+            ),
             "category": lambda: self.payload["discussion"]["category"]["name"].tame(check_string),
             "title": lambda: self.payload["discussion"]["title"].tame(check_string),
             "body": lambda: self.payload["discussion"]["body"].tame(check_string),
@@ -365,16 +365,20 @@ class LazyContext(dict[str, str | int]):
             # locked_reason includes the " as " as prefix,
             # because locked_reason could be null too, in which case,
             # we drop this entire part from the message.
-            "locked_reason": lambda: f" as {self.payload['discussion']['active_lock_reason'].tame(check_string)}"
-            if self.payload["discussion"]["active_lock_reason"]
-            else "",
+            "locked_reason": lambda: (
+                f" as {self.payload['discussion']['active_lock_reason'].tame(check_string)}"
+                if self.payload["discussion"]["active_lock_reason"]
+                else ""
+            ),
             "closed_reason": lambda: self.payload["discussion"]["state_reason"].tame(check_string),
             # answer_field is used to determine which payload field to use.
             # It is either "answer" (for answered action)
             # or "old_answer" (for unanswered action)
-            "answer_field": lambda: "old_answer"
-            if self.payload["action"].tame(check_string) == "unanswered"
-            else "answer",
+            "answer_field": lambda: (
+                "old_answer"
+                if self.payload["action"].tame(check_string) == "unanswered"
+                else "answer"
+            ),
             "answer_url": lambda: self.payload[self.template_values["answer_field"]()][
                 "html_url"
             ].tame(check_string),
@@ -463,6 +467,26 @@ def get_watch_body(helper: Helper) -> str:
     )
 
 
+def get_repository_advisory_body(helper: Helper) -> str:
+    payload = helper.payload
+    action = payload["action"].tame(check_string)
+    if action == "reported":
+        return "{} reported [{}]({}) in {}: {}\n\n```quote\n{}\n```".format(
+            get_sender_name(helper),
+            payload["repository_advisory"]["ghsa_id"].tame(check_string),
+            payload["repository_advisory"]["html_url"].tame(check_string),
+            get_repository_full_name(payload),
+            payload["repository_advisory"]["summary"].tame(check_string),
+            payload["repository_advisory"]["description"].tame(check_string),
+        )
+    else:
+        return "{} published [{}]({})".format(
+            get_sender_name(helper),
+            payload["repository_advisory"]["ghsa_id"].tame(check_string),
+            payload["repository_advisory"]["html_url"].tame(check_string),
+        )
+
+
 def get_repository_body(helper: Helper) -> str:
     payload = helper.payload
     return "{} {} the repository [{}]({}).".format(
@@ -488,7 +512,7 @@ def get_team_body(helper: Helper) -> str:
     if "description" in changes:
         actor = get_sender_name(helper)
         new_description = payload["team"]["description"].tame(check_string)
-        return f"**{actor}** changed the team description to:\n\n~~~ quote\n{new_description}\n~~~"
+        return f"{actor} changed the team description to:\n\n~~~ quote\n{new_description}\n~~~"
     if "name" in changes:
         original_name = changes["name"]["from"].tame(check_string)
         new_name = payload["team"]["name"].tame(check_string)
@@ -602,7 +626,7 @@ def get_pull_request_auto_merge_body(helper: Helper) -> str:
 def get_pull_request_ready_for_review_body(helper: Helper) -> str:
     payload = helper.payload
 
-    message = "**{sender}** has marked [PR #{pr_number}]({pr_url}) as ready for review."
+    message = "{sender} has marked [PR #{pr_number}]({pr_url}) as ready for review."
     return message.format(
         sender=get_sender_name(helper),
         pr_number=payload["pull_request"]["number"].tame(check_int),
@@ -727,9 +751,9 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
     sender = get_sender_name(helper)
     pr_number = payload["pull_request"]["number"].tame(check_int)
     pr_url = payload["pull_request"]["html_url"].tame(check_string)
-    message = "**{sender}** requested {reviewers} for a review on [PR #{pr_number}]({pr_url})."
+    message = "{sender} requested {reviewers} for a review on [PR #{pr_number}]({pr_url})."
     message_with_title = (
-        "**{sender}** requested {reviewers} for a review on [PR #{pr_number} {title}]({pr_url})."
+        "{sender} requested {reviewers} for a review on [PR #{pr_number} {title}]({pr_url})."
     )
     body = message_with_title if include_title else message
 
@@ -1045,6 +1069,7 @@ EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "push_commits": get_push_commits_body,
     "push_tags": get_push_tags_body,
     "release": get_release_body,
+    "repository_advisory": get_repository_advisory_body,
     "repository": get_repository_body,
     "star": get_star_body,
     "status": get_status_body,
@@ -1118,7 +1143,7 @@ def api_github_webhook(
     """
     header_event = get_event_header(request, "X-GitHub-Event", "GitHub")
 
-    # Check if the repository is private and skip processing if ignore_private_repositories is True
+    # Ignore events from private repositories if the URL option is set
     if (
         "repository" in payload
         and payload["repository"]["private"].tame(check_bool)

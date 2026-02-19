@@ -6,6 +6,7 @@ const katex = require("katex");
 
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
@@ -153,33 +154,33 @@ people.add_inaccessible_user(108);
 
 people.initialize_current_user(cordelia.user_id);
 
-const hamletcharacters = {
+const hamletcharacters = make_user_group({
     name: "hamletcharacters",
     id: 1,
     description: "Characters of Hamlet",
     members: [cordelia.user_id],
-};
+});
 
-const backend = {
+const backend = make_user_group({
     name: "Backend",
     id: 2,
     description: "Backend team",
     members: [],
-};
+});
 
-const edgecase_group = {
+const edgecase_group = make_user_group({
     name: "Bobby <h1>Tables</h1>",
     id: 3,
     description: "HTML syntax to check for Markdown edge cases.",
     members: [],
-};
+});
 
-const amp_group = {
+const amp_group = make_user_group({
     name: "& & &amp;",
     id: 4,
     description: "Check ampersand escaping",
     members: [],
-};
+});
 
 user_groups.add(hamletcharacters);
 user_groups.add(backend);
@@ -201,13 +202,13 @@ const social = make_stream({
     is_muted: false,
     invite_only: true,
 });
-const edgecase_stream = {
+const edgecase_stream = make_stream({
     subscribed: true,
     color: "green",
     name: "Bobby <h1>Tables</h1>",
     stream_id: 3,
     is_muted: false,
-};
+});
 const edgecase_stream_2 = make_stream({
     subscribed: true,
     color: "yellow",

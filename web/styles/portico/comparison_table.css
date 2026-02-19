@@ -160,6 +160,71 @@
         background: var(--color-table-background);
     }
 
+    &.education-features-comparison {
+        --zulip-cell-background-color: hsl(217deg 71% 78%);
+        --zulip-cell-foreground-color: hsl(210deg 4% 10%);
+        --zulip-column-border-width: 8px;
+        --zulip-column-border-negative-offset: calc(
+            var(--zulip-column-border-width) * -1
+        );
+        padding-bottom: 48px;
+
+        .comparison-table {
+            font-weight: normal;
+            table-layout: fixed;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .comparison-table-feature {
+            width: 30%;
+        }
+
+        th.zulip-cell {
+            padding: 0;
+        }
+
+        th.zulip-cell .label-zulip {
+            display: block;
+            /* We make the border larger by 1px to avoid an
+               occasional rendering bug in Chrome that lets
+               daylight in between the border here and the
+               top of the table row. */
+            border-top: calc(var(--zulip-column-border-width) + 1px) solid
+                var(--zulip-cell-background-color);
+            margin: var(--zulip-column-border-negative-offset)
+                var(--zulip-column-border-negative-offset) 0;
+            /* The hard-coded numeric values here keep the Zulip
+               label aligned with other labels in the table-header
+               row. */
+            padding: calc(var(--zulip-column-border-width) + 7px)
+                calc(var(--zulip-column-border-width) + 2px)
+                calc(var(--zulip-column-border-width) + 5px);
+        }
+
+        .zulip-cell {
+            color: var(--zulip-cell-foreground-color);
+            background: var(--zulip-cell-background-color);
+            border-left: var(--zulip-column-border-width) solid
+                var(--zulip-cell-background-color);
+            border-right: var(--zulip-column-border-width) solid
+                var(--zulip-cell-background-color);
+            /* Don't display stripes in the Zulip column. */
+            border-top-color: var(--zulip-cell-background-color);
+        }
+
+        .zulip-cell .bottom-border {
+            display: block;
+            width: 100%;
+            padding: 0 var(--zulip-column-border-width);
+            border-bottom: var(--zulip-column-border-width) solid
+                var(--zulip-cell-background-color);
+            position: absolute;
+            bottom: var(--zulip-column-border-negative-offset);
+            left: var(--zulip-column-border-negative-offset);
+        }
+    }
+
     .comparison-table a {
         color: var(--color-table-link);
         text-underline-offset: 4px;
@@ -177,14 +242,6 @@
         text-decoration-color: var(--color-table-link-decoration-active);
     }
 
-    .comparison-table tr {
-        transition: background-color 200ms ease-out;
-    }
-
-    .comparison-table tbody tr:hover {
-        background-color: hsl(0deg 0% 100% / 30%);
-    }
-
     .comparison-table th:first-child {
         border-top-left-radius: var(--border-radius-table);
     }
@@ -199,6 +256,24 @@
         font-weight: 700;
         color: hsl(223deg 40% 30% / 100%);
         background: hsl(209deg 41% 94%);
+    }
+
+    .comparison-table .competitor-cell {
+        padding: 12px 10px 10px;
+        font-weight: normal;
+
+        /* Use gray color on competitor cells for
+           checkmarks and warnings (language counts). */
+        &.comparison-value-positive,
+        &.comparison-value-warning {
+            color: hsl(224deg 8% 50% / 100%);
+        }
+
+        /* Use red color on competitor cells for
+           X marks. */
+        &.comparison-value-negative {
+            color: hsl(0deg 36% 58%);
+        }
     }
 
     .comparison-table th .icon {
@@ -281,42 +356,52 @@
         font-size: 0.9em;
     }
 
-    .comparison-value-positive::after,
-    .comparison-value-warning::after,
-    .comparison-value-negative::after {
-        content: attr(data-title);
-        white-space: nowrap;
-        font-size: 14px;
-        line-height: 14px;
-        font-weight: 400;
-        display: block;
-        padding: 2px 4px;
-        border-radius: 5px;
-        background-color: hsl(208deg 43% 93%);
-        /* the color of mixed hover row with bg */
-        position: absolute;
-        top: calc(50% + 11px);
-        left: 50%;
-        /* Keep tooltips over top of other elements,
-           including the headers within the table. */
-        z-index: 3;
-        transform: translateX(-50%);
-        visibility: hidden;
-        opacity: 0;
-        transition:
-            visibility 301s linear,
-            opacity 250ms ease-out;
-    }
+    &:not(.education-features-comparison) {
+        .comparison-table tr {
+            transition: background-color 200ms ease-out;
+        }
 
-    .comparison-value-positive:hover::after,
-    .comparison-value-warning:hover::after,
-    .comparison-value-negative:hover::after {
-        transition:
-            visibility 0s linear,
-            opacity 250ms ease-out;
-        transition-delay: 200ms;
-        visibility: visible;
-        opacity: 1;
+        .comparison-table tbody tr:hover {
+            background-color: hsl(0deg 0% 100% / 30%);
+        }
+
+        .comparison-value-positive::after,
+        .comparison-value-warning::after,
+        .comparison-value-negative::after {
+            content: attr(data-title);
+            white-space: nowrap;
+            font-size: 14px;
+            line-height: 14px;
+            font-weight: 400;
+            display: block;
+            padding: 2px 4px;
+            border-radius: 5px;
+            background-color: hsl(208deg 43% 93%);
+            /* the color of mixed hover row with bg */
+            position: absolute;
+            top: calc(50% + 11px);
+            left: 50%;
+            /* Keep tooltips over top of other elements,
+            including the headers within the table. */
+            z-index: 3;
+            transform: translateX(-50%);
+            visibility: hidden;
+            opacity: 0;
+            transition:
+                visibility 301s linear,
+                opacity 250ms ease-out;
+        }
+
+        .comparison-value-positive:hover::after,
+        .comparison-value-warning:hover::after,
+        .comparison-value-negative:hover::after {
+            transition:
+                visibility 0s linear,
+                opacity 250ms ease-out;
+            transition-delay: 200ms;
+            visibility: visible;
+            opacity: 1;
+        }
     }
 
     @media (width <= 940px) {
@@ -367,6 +452,12 @@
         .comparison-table-feature-desc {
             font-size: 12px;
             line-height: 14px;
+        }
+    }
+
+    @media (width <= 670px) {
+        .comparison-table .competitor-cell {
+            padding: 12px 2px 10px;
         }
     }
 

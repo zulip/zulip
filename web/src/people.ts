@@ -1550,6 +1550,18 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
     return mention;
 }
 
+export function get_user_mentions_for_display(users: User[], is_silent: boolean): string {
+    const mentions: string[] = [];
+    for (const user of users) {
+        mentions.push(get_mention_syntax(user.full_name, user.user_id, is_silent));
+    }
+    if (mentions.length === 1) {
+        return mentions[0]!;
+    }
+    mentions.sort(util.make_strcmp());
+    return util.format_array_as_list(mentions, "long", "conjunction");
+}
+
 function full_name_matches_wildcard_mention(full_name: string): boolean {
     return ["all", "everyone", "stream", "channel", "topic"].includes(full_name);
 }
@@ -1962,6 +1974,7 @@ export function is_displayable_conversation_participant(user_id: number): boolea
 export function populate_valid_user_ids(
     params: StateData["user_groups"],
     cross_realm_bots: StateData["people"]["cross_realm_bots"],
+    realm_non_active_users: StateData["people"]["realm_non_active_users"],
 ): void {
     // Every valid user ID is guaranteed to exist in at least one
     // system group, so we can us that to compute the set of valid
@@ -1974,6 +1987,10 @@ export function populate_valid_user_ids(
 
     for (const bot of cross_realm_bots) {
         valid_user_ids.add(bot.user_id);
+    }
+
+    for (const user of realm_non_active_users) {
+        valid_user_ids.add(user.user_id);
     }
 }
 
@@ -2247,7 +2264,11 @@ export async function initialize(
     user_group_params: StateData["user_groups"],
 ): Promise<void> {
     initialize_current_user(my_user_id);
-    populate_valid_user_ids(user_group_params, people_params.cross_realm_bots);
+    populate_valid_user_ids(
+        user_group_params,
+        people_params.cross_realm_bots,
+        people_params.realm_non_active_users,
+    );
 
     // Compute the set of user IDs that we know are valid in the
     // organization, but do not have a copy of.

@@ -11,14 +11,7 @@ from typing_extensions import override
 
 from analytics.models import BaseCount
 from zerver.lib.rate_limiter import RateLimitedObject
-from zerver.lib.rate_limiter import rules as rate_limiter_rules
-from zerver.models import (
-    AbstractPushDevice,
-    AbstractPushDeviceToken,
-    AbstractRealmAuditLog,
-    Realm,
-    UserProfile,
-)
+from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog, Realm, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 
 
@@ -535,7 +528,7 @@ class RateLimitedRemoteZulipServer(RateLimitedObject):
 
     @override
     def rules(self) -> list[tuple[int, int]]:
-        return rate_limiter_rules[self.domain]
+        return settings.RATE_LIMITING_RULES[self.domain]
 
 
 @dataclass
@@ -631,12 +624,12 @@ def has_stale_audit_log(server: RemoteZulipServer) -> bool:
     return False
 
 
-class RemotePushDevice(AbstractPushDevice):
+class RemotePushDevice(models.Model):
     """Core bouncer server table storing registrations to receive
     mobile push notifications via the bouncer server.
 
-    Each row corresponds to an account on an install of the app
-    registered to receive mobile push notifications.
+    Each row corresponds to an install of the app registered
+    to receive mobile push notifications for a specific realm.
     """
 
     # Unique identifier assigned by the bouncer for this registration.
@@ -654,6 +647,14 @@ class RemotePushDevice(AbstractPushDevice):
     # FCM and APNs don't specify a maximum token length, so we only enforce
     # that they're at most the maximum FCM / APNs payload size of 4096 bytes.
     token = models.CharField(max_length=4096)
+    # ID to reference the `token`.
+    token_id = models.BigIntegerField()
+
+    class TokenKind(models.TextChoices):
+        APNS = "apns", "APNs"
+        FCM = "fcm", "FCM"
+
+    token_kind = models.CharField(max_length=4, choices=TokenKind.choices)
 
     # If the token is expired, the date when the bouncer learned it
     # was expired via an error from the FCM/APNs server. Used to
@@ -667,13 +668,9 @@ class RemotePushDevice(AbstractPushDevice):
     class Meta:
         constraints = [
             UniqueConstraint(
-                # Each app install (token) can have multiple accounts (push_account_id).
-                # The (push_account_id, token) pair needs to be unique to avoid sending
-                # redundant notifications to the same account on a device.
-                #
-                # Also, the unique index created is used by a query in
+                # The unique index created is used by a query in
                 # 'do_register_remote_push_device'.
-                fields=["push_account_id", "token"],
-                name="unique_remote_push_device_push_account_id_token",
+                fields=["token_id", "realm", "remote_realm"],
+                name="unique_remote_push_device_token_id_realm_remote_realm",
             ),
         ]

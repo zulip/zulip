@@ -92,7 +92,7 @@
                 {{> components/icon_button icon="more-vertical" intent="neutral" custom_classes="recipient-bar-control-icon" data-tippy-content=(t "Topic actions") aria-label=(t "Topic actions") }}
             </span>
         </span>
-        <span class="recipient_row_date {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}">{{{date_html}}}</span>
+        <span class="recipient_row_date scroll-to-time {{#if (and (not always_display_date) date_unchanged )}}recipient_row_date_unchanged{{/if}}" role="button" tabindex="0">{{{date_html}}}</span>
     </div>
 </div>
 {{else}}

@@ -824,8 +824,8 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
 
             const message_markdown_content = data.message.content;
             if (message_lists.current === msg_list) {
-                message.raw_content = message_markdown_content;
-                start_edit_with_content($row, message.raw_content, edit_box_open_callback);
+                message_store.maybe_update_raw_content(message, message_markdown_content);
+                start_edit_with_content($row, message_markdown_content, edit_box_open_callback);
             }
         },
     });
@@ -1048,7 +1048,7 @@ function do_toggle_resolve_topic(
 
                 if (report_errors_in_global_banner) {
                     const {msg} = z.object({msg: z.string()}).parse(xhr.responseJSON);
-                    ui_report.generic_embed_error(msg, 3500);
+                    ui_report.generic_embed_error(_.escape(msg), 3500);
                 }
             }
         },

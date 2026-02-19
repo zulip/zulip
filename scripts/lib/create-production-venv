@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import platform
 import sys
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -8,14 +9,14 @@ if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
 from scripts.lib.setup_venv import get_venv_dependencies
-from scripts.lib.zulip_tools import os_families, parse_os_release, run
+from scripts.lib.zulip_tools import os_families, run
 
 parser = argparse.ArgumentParser(description="Create a production virtualenv with caching")
 parser.add_argument("deploy_path")
 args = parser.parse_args()
 
 # install dependencies for setting up the virtualenv
-distro_info = parse_os_release()
+distro_info = platform.freedesktop_os_release()
 vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
 VENV_DEPENDENCIES = get_venv_dependencies(vendor, os_version)

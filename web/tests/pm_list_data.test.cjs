@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -37,43 +38,41 @@ const {initialize_user_settings} = zrequire("user_settings");
 set_realm(make_realm());
 initialize_user_settings({user_settings: {}});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 101,
     full_name: "Alice",
-};
-const bob = {
+});
+const bob = make_user({
     email: "bob@zulip.com",
     user_id: 102,
     full_name: "Bob",
-};
-const me = {
+});
+const me = make_user({
     email: "me@zulip.com",
     user_id: 103,
     full_name: "Me Myself",
-};
-const zoe = {
+});
+const zoe = make_user({
     email: "zoe@zulip.com",
     user_id: 104,
     full_name: "Zoe",
-};
-const cardelio = {
+});
+const cardelio = make_user({
     email: "cardelio@zulip.com",
     user_id: 105,
     full_name: "Cardelio",
-};
-const iago = {
+});
+const iago = make_user({
     email: "iago@zulip.com",
     user_id: 106,
     full_name: "Iago",
-};
-const bot_test = {
+});
+const bot_test = make_bot({
     email: "outgoingwebhook@zulip.com",
     user_id: 314,
     full_name: "Outgoing webhook",
-    is_admin: false,
-    is_bot: true,
-};
+});
 // Add users to `valid_user_ids`.
 const source = "server_events";
 people.add_active_user(alice, source);

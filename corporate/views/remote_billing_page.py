@@ -703,7 +703,11 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         prereg_object = get_object_from_key(
             confirmation_key,
             [Confirmation.REMOTE_SERVER_BILLING_LEGACY_LOGIN],
-            # These links are reusable.
+            # These links are reusable. The legacy server login flow requires
+            # credentials only available to the server admin. They might want to
+            # just do the authentication step, obtain the confirmation link
+            # for login and pass it on to a different person responsible for
+            # setting up the billing.
             mark_object_used=False,
         )
     except ConfirmationKeyError as exception:

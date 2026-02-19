@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -20,19 +21,19 @@ const narrow_state = zrequire("narrow_state");
 const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
 
-const current_user = {
+const current_user = make_user({
     email: "me@example.com",
     user_id: 123,
     full_name: "me",
-};
+});
 set_current_user(current_user);
 set_realm(make_stream());
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 11,
     full_name: "Alice",
-};
+});
 
 const bogus_stream_id = "999999";
 
@@ -68,10 +69,10 @@ run_test("get_unread_ids", () => {
     let unread_ids;
     let terms;
 
-    const sub = {
+    const sub = make_stream({
         name: "My stream",
         stream_id: 55,
-    };
+    });
 
     const stream_msg = {
         id: 101,

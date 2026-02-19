@@ -12,7 +12,7 @@ MESSAGE_TEMPLATE = "{body}\n\n{footer}"
 
 
 def get_url(text: str) -> str:
-    return text.split("\n")[-1]
+    return text.rsplit("\n", 1)[-1]
 
 
 def get_hyperlinked_url(text: str) -> str:

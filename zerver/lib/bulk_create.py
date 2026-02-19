@@ -4,6 +4,7 @@ from typing import Any
 from django.db.models import Model, QuerySet
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
 from zerver.lib.create_user import create_user_profile, get_display_email_address
 from zerver.lib.initial_password import initial_password
 from zerver.lib.streams import (
@@ -94,6 +95,9 @@ def bulk_create_users(
         for user_profile in profiles_to_create:
             user_profile.email = get_display_email_address(user_profile)
         UserProfile.objects.bulk_update(profiles_to_create, ["email"])
+
+    for user_profile in profiles_to_create:
+        generate_and_upload_jdenticon_avatar(user_profile, str(realm.uuid), future=False)
 
     user_ids = {user.id for user in profiles_to_create}
 

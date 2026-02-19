@@ -10,7 +10,6 @@ const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
 const handlebars = require("./handlebars.cjs");
-const stub_i18n = require("./i18n.cjs");
 const namespace = require("./namespace.cjs");
 const test = require("./test.cjs");
 const blueslip = require("./zblueslip.cjs");
@@ -121,8 +120,6 @@ process.exitCode = 1;
 
         namespace.mock_esm("../../src/blueslip", blueslip);
         require("../../src/blueslip.ts");
-        namespace.mock_esm("../../src/i18n", stub_i18n);
-        require("../../src/i18n.ts");
         namespace.mock_esm("../../src/base_page_params", zpage_params);
         require("../../src/base_page_params.ts");
         namespace.mock_esm("../../src/billing/page_params", zpage_billing_params);

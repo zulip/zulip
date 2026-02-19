@@ -296,7 +296,7 @@ def create_is_mirror_dummy_user(
     user_full_name = f"Deleted Teams user {microsoft_team_user_id}"
     email = Address(username=microsoft_team_user_id, domain=domain_name).addr_spec
     user_profile_dict = build_user_profile(
-        avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+        avatar_source=UserProfile.DEFAULT_AVATAR_SOURCE,
         date_joined=int(timezone_now().timestamp()),
         delivery_email=email,
         email=email,
@@ -350,7 +350,7 @@ def convert_users(
         found_emails[microsoft_teams_user_email.lower()] = zulip_user_id
 
         user_profile_dict = build_user_profile(
-            avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+            avatar_source=UserProfile.DEFAULT_AVATAR_SOURCE,
             date_joined=timestamp,
             delivery_email=microsoft_teams_user_email,
             email=microsoft_teams_user_email,

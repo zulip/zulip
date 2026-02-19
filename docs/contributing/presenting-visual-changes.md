@@ -343,6 +343,7 @@ You can check out the following tools for capturing screenshots and videos/GIFs.
 #### Linux
 
 - [GNOME Screenshots and screencasts](https://help.gnome.org/gnome-help/screen-shot-record.html)
+- [Spectacle by KDE](https://apps.kde.org/spectacle/)
 
 ### GIF tools by platform
 

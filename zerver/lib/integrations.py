@@ -79,7 +79,7 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "mastodon",
     "mercurial",
     "nagios",
-    "notion",
+    "notion_via_zapier",
     "openshift",
     "perforce",
     "puppet",
@@ -216,7 +216,7 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return self.name != "intercom"
+        return self.name not in ("intercom", "notion")
 
     def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
         paths_to_check = [
@@ -677,7 +677,14 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
             )
         ],
         display_name="GitLab",
-        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
+        url_options=[
+            WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
+            WebhookUrlOption(
+                name="ignore_private_projects",
+                label="Exclude notifications from private projects",
+                validator=check_bool,
+            ),
+        ],
     ),
     IncomingWebhookIntegration(
         "gocd",
@@ -762,6 +769,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         [WebhookScreenshotConfig("incident_activated_new_default_payload.json")],
         display_name="New Relic",
     ),
+    IncomingWebhookIntegration("notion", ["productivity", "project-management"]),
     IncomingWebhookIntegration(
         "opencollective",
         ["financial"],
@@ -958,7 +966,13 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
     Integration(
         "big-blue-button", ["video-calling", "communication"], display_name="BigBlueButton"
     ),
+    Integration(
+        "constructor-groups", ["video-calling", "communication"], display_name="Constructor Groups"
+    ),
     Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
+    Integration(
+        "nextcloud-talk", ["video-calling", "communication"], display_name="Nextcloud Talk"
+    ),
     Integration("zoom", ["video-calling", "communication"]),
 ]
 
@@ -972,7 +986,16 @@ ZAPIER_INTEGRATIONS: list[Integration] = [
     Integration("asana", ["project-management"]),
     # Can be used with RSS integration too
     Integration("mastodon", ["communication"]),
-    Integration("notion", ["productivity", "project-management"]),
+    Integration(
+        "notion_via_zapier",
+        ["productivity", "project-management"],
+        fixtureless_screenshot_config_options=[
+            FixturelessScreenshotConfigOptions(image_dir="notion")
+        ],
+        display_name="Notion",
+        logo="images/integrations/logos/notion.svg",
+        doc="zerver/integrations/notion.md",
+    ),
 ]
 
 PLUGIN_INTEGRATIONS: list[Integration] = [
@@ -982,6 +1005,7 @@ PLUGIN_INTEGRATIONS: list[Integration] = [
         ["continuous-integration"],
         [FixturelessScreenshotConfigOptions(image_name="004.png")],
     ),
+    Integration("nextcloud", ["productivity"]),
     Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
 ]
 
@@ -1111,7 +1135,7 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # so the screenshot config is commented out.
     {"beeminder"}
     # Disabled integrations that are in the process of being added or rewritten.
-    | {"intercom"}
+    | {"intercom", "notion"}
     # Integrations that call external API endpoints.
     | {"slack"}
     # Integrations that require screenshots of message threads - support is yet to be added
@@ -1134,10 +1158,11 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Outgoing integrations
     | {"email", "onyx"}
     # Video call integrations
-    | {"big-blue-button", "jitsi", "zoom"}
+    | {"big-blue-button", "constructor-groups", "jitsi", "nextcloud-talk", "zoom"}
     | {
         # these integrations do not send messages
         "giphy",
+        "nextcloud",
         "tenor",
         # the integration is planned to be removed
         "twitter",

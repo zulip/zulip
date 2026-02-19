@@ -1400,7 +1400,8 @@ export function render_and_show_preview(
             // wrong, users will see a brief flicker of the locally
             // echoed frontend rendering before receiving the
             // authoritative backend rendering from the server).
-            markdown.render(content);
+            const rendered_content = markdown.render(content).content;
+            show_preview(rendered_content);
         }
         void channel.post({
             url: "/json/messages/render",

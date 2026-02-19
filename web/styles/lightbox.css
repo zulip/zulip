@@ -20,6 +20,10 @@
 
         & img {
             cursor: move;
+            /* Disallow flex behavior; we want to center this, but
+               not have the image container grow beyond the bounds
+               of the replaced media (the actual image.) */
+            flex: 0 0 0;
             max-height: 100%;
             max-width: 100%;
             object-fit: contain;

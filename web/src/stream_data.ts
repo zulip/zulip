@@ -223,7 +223,7 @@ export function get_stream_name_from_id(stream_id: number): string {
     return get_sub_by_id(stream_id)?.name ?? "";
 }
 
-export let get_sub_by_name = (name: string): StreamSubscription | undefined => {
+export function get_sub_by_name(name: string): StreamSubscription | undefined {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
@@ -233,10 +233,6 @@ export let get_sub_by_name = (name: string): StreamSubscription | undefined => {
     }
 
     return sub_store.get(stream_id);
-};
-
-export function rewire_get_sub_by_name(value: typeof get_sub_by_name): void {
-    get_sub_by_name = value;
 }
 
 export function id_to_slug(stream_id: number): string {
@@ -582,11 +578,15 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
     return false;
 }
 
-export function has_content_access_via_group_permissions(sub: StreamSubscription): boolean {
+export function has_content_access_via_group_permissions(
+    sub: StreamSubscription,
+    user: CurrentUser | User = current_user,
+): boolean {
     const can_add_subscribers = settings_data.user_has_permission_for_group_setting(
         sub.can_add_subscribers_group,
         "can_add_subscribers_group",
         "stream",
+        user,
     );
     if (can_add_subscribers) {
         return true;
@@ -596,6 +596,7 @@ export function has_content_access_via_group_permissions(sub: StreamSubscription
         sub.can_subscribe_group,
         "can_subscribe_group",
         "stream",
+        user,
     );
     if (can_subscribe) {
         return true;
@@ -729,43 +730,6 @@ export function get_current_user_and_their_bots_with_post_messages_permission(
         }
     }
     return senders_with_post_messages_permission;
-}
-
-export function can_access_stream_email(sub: StreamSubscription): boolean {
-    // User can access stream email if they can send messages to that
-    // stream.
-
-    // Users without post permissions should not have email access
-    if (!can_post_messages_in_stream(sub, current_user.user_id)) {
-        return false;
-    }
-
-    // All users with posting permissions can access email of
-    // web-public streams.
-    if (sub.is_web_public) {
-        return true;
-    }
-
-    // All non-guest users with posting permissions can access
-    // email of public streams.
-    if (!sub.invite_only && !current_user.is_guest) {
-        return true;
-    }
-
-    // Subscribed users (including guests) have access to stream
-    // email for all types of streams.
-    if (sub.subscribed) {
-        return true;
-    }
-
-    // For private streams with public history, non subscribed
-    // users can access email if they have content access to
-    // streams via group permissions.
-    if (sub.invite_only && sub.history_public_to_subscribers && !current_user.is_guest) {
-        return has_content_access_via_group_permissions(sub);
-    }
-
-    return false;
 }
 
 export function can_access_topic_history(sub: StreamSubscription): boolean {
@@ -906,12 +870,49 @@ export let can_post_messages_in_stream = function (
         sender = people.get_by_user_id(sender_id);
     }
     const can_send_message_group = stream.can_send_message_group;
-    return settings_data.user_has_permission_for_group_setting(
+    const has_group_permission = settings_data.user_has_permission_for_group_setting(
         can_send_message_group,
         "can_send_message_group",
         "stream",
         sender,
     );
+    if (!has_group_permission) {
+        return false;
+    }
+
+    // All users have permission to send messages to
+    // web public streams, even though guests can
+    // access only subscribed streams for now.
+    if (stream.is_web_public) {
+        return true;
+    }
+
+    if (stream.subscribed) {
+        return true;
+    }
+
+    if (sender.is_guest) {
+        return false;
+    }
+
+    // All non-guest users can send messages to public
+    // streams.
+    if (!stream.invite_only) {
+        return true;
+    }
+
+    // For users with content access to stream via group permissions,
+    // we do not allow them to send messages to streams with protected
+    // history, because they will not be able to see the sent
+    // message themselves.
+    if (
+        stream.history_public_to_subscribers &&
+        has_content_access_via_group_permissions(stream, sender)
+    ) {
+        return true;
+    }
+
+    return false;
 };
 
 export function rewire_can_post_messages_in_stream(
@@ -1206,7 +1207,9 @@ export function can_use_empty_topic(stream_id: number | undefined): boolean {
         return false;
     }
     const sub = sub_store.get(stream_id);
-    assert(sub !== undefined);
+    if (!sub) {
+        return false;
+    }
 
     let topics_policy = sub.topics_policy;
     if (sub.topics_policy === settings_config.get_stream_topics_policy_values().inherit.code) {
@@ -1224,7 +1227,9 @@ export function is_empty_topic_only_channel(stream_id: number | undefined): bool
         return false;
     }
     const sub = sub_store.get(stream_id);
-    assert(sub !== undefined);
+    if (!sub) {
+        return false;
+    }
 
     let topics_policy = sub.topics_policy;
     if (sub.topics_policy === settings_config.get_stream_topics_policy_values().inherit.code) {

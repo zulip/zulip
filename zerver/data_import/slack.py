@@ -1,4 +1,5 @@
 import itertools
+import json
 import logging
 import os
 import re
@@ -62,6 +63,7 @@ from zerver.lib.parallel import run_parallel_queue
 from zerver.lib.partial import partial
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
+from zerver.lib.validator import to_wild_value
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -500,7 +502,7 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
 
 def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str | None]:
     avatar_url: str | None = None
-    avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+    avatar_source = UserProfile.DEFAULT_AVATAR_SOURCE
     if user["profile"].get("avatar_hash"):
         # Process avatar image for a typical Slack user.
         team_id = user["team_id"]
@@ -519,7 +521,7 @@ def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str 
                 "Unsupported avatar type (%s) for user -> %s\n", content_type, user.get("name")
             )
             avatar_url = None
-            avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+            avatar_source = UserProfile.DEFAULT_AVATAR_SOURCE
     else:
         logging.info("Failed to process avatar for user -> %s\n", user.get("name"))
     return avatar_source, avatar_url
@@ -1113,18 +1115,13 @@ def channel_message_to_zerver_message(
         ]:
             continue
 
-        formatted_block = process_slack_block_and_attachment(message)
-
-        # Leave it as is if formatted_block is an empty string, it's likely
-        # one of the unhandled_types.
-        if formatted_block != "":
-            # For most cases, the value of message["text"] will be just an
-            # empty string.
-            message["text"] = formatted_block
+        raw_content = process_slack_block_and_attachment(
+            (to_wild_value("message", json.dumps(message))),
+        )
 
         try:
             content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
-                message["text"], users, added_channels, slack_user_id_to_zulip_user_id
+                raw_content, users, added_channels, slack_user_id_to_zulip_user_id
             )
         except Exception:
             print("Slack message unexpectedly missing text representation:")

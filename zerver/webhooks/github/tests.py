@@ -339,6 +339,16 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker starred the repository [baxterthehacker/public-repo](https://github.com/baxterthehacker/public-repo)."
         self.check_webhook("watch__repository", TOPIC_REPO, expected_message)
 
+    def test_repository_advisory_reported(self) -> None:
+        expected_topic_name = "test-repo"
+        expected_message = "JohnDoe reported [GHSA-7jw9-r89j-6gg9](https://github.com/Niloth-p/test-repo/security/advisories/GHSA-7jw9-r89j-6gg9) in Niloth-p/test-repo: test report\n\n```quote\n### Summary\r\ntest\r\n\r\n\n```"
+        self.check_webhook("repository_advisory__reported", expected_topic_name, expected_message)
+
+    def test_repository_advisory_published(self) -> None:
+        expected_topic_name = "test-repo"
+        expected_message = "Niloth-p published [GHSA-vw49-7xw6-7ghw](https://github.com/Niloth-p/test-repo/security/advisories/GHSA-vw49-7xw6-7ghw)"
+        self.check_webhook("repository_advisory__published", expected_topic_name, expected_message)
+
     def test_repository_msg(self) -> None:
         expected_message = "baxterthehacker created the repository [baxterandthehackers/public-repo](https://github.com/baxterandthehackers/public-repo)."
         self.check_webhook("repository", TOPIC_REPO, expected_message)
@@ -469,7 +479,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__unassigned", expected_topic_name, expected_message)
 
     def test_pull_request_ready_for_review_msg(self) -> None:
-        expected_message = "**Hypro999** has marked [PR #2](https://github.com/Hypro999/temp-test-github-webhook/pull/2) as ready for review."
+        expected_message = "Hypro999 has marked [PR #2](https://github.com/Hypro999/temp-test-github-webhook/pull/2) as ready for review."
         self.check_webhook(
             "pull_request__ready_for_review",
             "temp-test-github-webhook / PR #2 Test",
@@ -477,7 +487,7 @@ class GitHubWebhookTest(WebhookTestCase):
         )
 
     def test_pull_request_review_requested_msg(self) -> None:
-        expected_message = "**eeshangarg** requested [showell](https://github.com/showell) for a review on [PR #1](https://github.com/eeshangarg/Scheduler/pull/1)."
+        expected_message = "eeshangarg requested [showell](https://github.com/showell) for a review on [PR #1](https://github.com/eeshangarg/Scheduler/pull/1)."
         self.check_webhook(
             "pull_request__review_requested",
             "Scheduler / PR #1 This is just a test commit",
@@ -485,7 +495,7 @@ class GitHubWebhookTest(WebhookTestCase):
         )
 
     def test_pull_request__review_requested_team_reviewer_msg(self) -> None:
-        expected_message = "**singhsourabh** requested [authority](https://github.com/orgs/test-org965/teams/authority) for a review on [PR #4](https://github.com/test-org965/webhook-test/pull/4)."
+        expected_message = "singhsourabh requested [authority](https://github.com/orgs/test-org965/teams/authority) for a review on [PR #4](https://github.com/test-org965/webhook-test/pull/4)."
         self.check_webhook(
             "pull_request__review_requested_team_reviewer",
             "webhook-test / PR #4 testing webhook",
@@ -495,7 +505,7 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_pull_request_review_requested_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "**eeshangarg** requested [showell](https://github.com/showell) for a review on [PR #1 This is just a test commit](https://github.com/eeshangarg/Scheduler/pull/1)."
+        expected_message = "eeshangarg requested [showell](https://github.com/showell) for a review on [PR #1 This is just a test commit](https://github.com/eeshangarg/Scheduler/pull/1)."
         self.check_webhook("pull_request__review_requested", expected_topic_name, expected_message)
 
     def test_pull_request_labeled_msg(self) -> None:
@@ -560,7 +570,7 @@ Check [randscape](http://github.com/github/hello-world/runs/4) completed (succes
     def test_team_edited_description(self) -> None:
         expected_topic_name = "team Testing"
         expected_message = """\
-**Hypro999** changed the team description to:
+Hypro999 changed the team description to:
 \n~~~ quote
 A temporary team so that I can get some webhook fixtures!
 ~~~"""

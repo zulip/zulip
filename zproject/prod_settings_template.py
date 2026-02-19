@@ -167,7 +167,23 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
 ## optionally using LDAP as an authentication mechanism.
 
 import ldap
-from django_auth_ldap.config import GroupOfNamesType, LDAPGroupQuery, LDAPSearch  # noqa: F401
+from django_auth_ldap.config import (  # noqa: F401
+    ActiveDirectoryGroupType,
+    GroupOfNamesType,
+    GroupOfUniqueNamesType,
+    LDAPGroupQuery,
+    LDAPGroupType,
+    LDAPSearch,
+    LDAPSearchUnion,
+    MemberDNGroupType,
+    NestedActiveDirectoryGroupType,
+    NestedGroupOfNamesType,
+    NestedGroupOfUniqueNamesType,
+    NestedMemberDNGroupType,
+    NestedOrganizationalRoleGroupType,
+    OrganizationalRoleGroupType,
+    PosixGroupType,
+)
 
 ## Connecting to the LDAP server.
 ##
@@ -728,6 +744,16 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## set big_blue_button_secret in zulip-secrets.conf.
 # BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 
+## Controls the Constructor Groups video call integration. You must also
+## set constructor_groups_access_key and constructor_groups_secret_key in
+## zulip-secrets.conf.
+# CONSTRUCTOR_GROUPS_URL = "https://example.constructor.app/api/groups/xapi"
+
+## Controls the Nextcloud Talk video call integration. You must also
+## set nextcloud_talk_username and nextcloud_talk_password in
+## zulip-secrets.conf.
+# NEXTCLOUD_SERVER = "https://nextcloud.example.com"
+
 ################
 ## AI Features
 ##
@@ -785,7 +811,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 
 ## Password strength requirements; learn about configuration at
 ## https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html.
-# PASSWORD_MIN_LENGTH = 6
+# PASSWORD_MIN_LENGTH = 8
 # PASSWORD_MAX_LENGTH = 100
 # PASSWORD_MIN_GUESSES = 10000
 

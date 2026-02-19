@@ -6,6 +6,7 @@ import type {RawLocalMessage} from "./echo.ts";
 import type {LocalMessage, NewMessage, ProcessedMessage} from "./message_helper.ts";
 import type {TimeFormattedReminder} from "./message_reminder.ts";
 import * as people from "./people.ts";
+import * as stream_data from "./stream_data.ts";
 import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
@@ -450,4 +451,18 @@ export function get_message_ids_in_stream(stream_id: number): number[] {
                 message_data.message.stream_id === stream_id,
         )
         .map((message_data) => message_data.message.id);
+}
+
+export function maybe_update_raw_content(message: Message, raw_content: string | undefined): void {
+    // We shouldn't cache raw_content for messages we won't be receiving update events
+    // for, which in this case are messages from channels the current user isn't
+    // subscribed to.
+    if (message.type === "stream" && !stream_data.is_subscribed(message.stream_id)) {
+        // Clear any existing cached raw_content for this type of message.
+        // Not doing so poses the risk of us using a stale version of the
+        // raw_content after we manually fetch it.
+        message.raw_content = undefined;
+        return;
+    }
+    message.raw_content = raw_content;
 }

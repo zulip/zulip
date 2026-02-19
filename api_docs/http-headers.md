@@ -2,16 +2,29 @@
 
 This page documents the HTTP headers used by the Zulip API.
 
+!!! tip ""
+
+    The `curl` example on each endpoint's documentation page, details
+    the request format. You can access curl's documentation at `man curl`.
+
+## The `Authorization` header
+
 Most important is that API clients authenticate to the server using
 HTTP Basic authentication. If you're using the official [Python or
 JavaScript bindings](/api/installation-instructions), this is taken
 care of when you configure said bindings.
 
-Otherwise, see the `curl` example on each endpoint's documentation
-page, which details the request format.
+Otherwise, to authenticate an API request:
 
-Documented below are additional HTTP headers and header conventions
-generally used by Zulip:
+- Use HTTP Basic authentication, which is described [here][mdn-auth-headers].
+  This means sending an HTTP header named Authorization, with your
+  credentials [in a certain format][mdn-basic-auth].
+
+- For your credentials in HTTP Basic authentication, use a bot's email
+  as the "username" and its [API key](/api/api-keys) as the "password".
+  In the `curl` example for each endpoint, this is shown as:
+
+    `-u BOT_EMAIL_ADDRESS:BOT_API_KEY`.
 
 ## The `User-Agent` header
 
@@ -79,3 +92,5 @@ limit.
 
 [rate-limiting-rules]: https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html#rate-limiting
 [integrations-channel]: https://chat.zulip.org/#narrow/channel/127-integrations/
+[mdn-auth-headers]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Authorization
+[mdn-basic-auth]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Authorization#basic_authentication_2

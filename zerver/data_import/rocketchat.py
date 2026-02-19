@@ -92,7 +92,7 @@ def process_users(
             ]
 
         # TODO: Change this to use actual exported avatar
-        avatar_source = "G"
+        avatar_source = UserProfile.DEFAULT_AVATAR_SOURCE
         full_name = user_dict["name"]
         id = user_id_mapper.get(rc_user_id)
         delivery_email = user_dict["emails"][0]["address"]

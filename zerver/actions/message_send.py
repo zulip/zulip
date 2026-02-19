@@ -103,8 +103,8 @@ from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
     Client,
+    Device,
     Message,
-    PushDevice,
     PushDeviceToken,
     Realm,
     Recipient,
@@ -427,12 +427,10 @@ def get_recipient_info(
                 "QuerySet[WithAnnotations[UserProfile, UserProfileAnnotations], ActiveUserDict]",
                 UserProfile.objects.filter(is_active=True)
                 .annotate(
-                    # Uses index "zerver_pushdevice_user_bouncer_device_id_idx"
+                    # Uses index "zerver_device_user_push_token_id_idx"
                     # and "zerver_pushdevicetoken_user_id_015e5dc1".
                     has_push_device_registered=Exists(
-                        PushDevice.objects.filter(
-                            user_id=OuterRef("id"), bouncer_device_id__isnull=False
-                        )
+                        Device.objects.filter(user_id=OuterRef("id"), push_token_id__isnull=False)
                     )
                     | Exists(PushDeviceToken.objects.filter(user_id=OuterRef("id")))
                 )

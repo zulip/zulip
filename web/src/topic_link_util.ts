@@ -61,7 +61,7 @@ export function get_topic_link_content_with_stream_name(opts: {
     stream_name: string;
     topic_name: string | undefined;
     message_id: string | undefined;
-}): {text: string; url: string} {
+}): {label_text_markdown: string; label_text_plain: string; url: string} {
     const stream = stream_data.get_sub(opts.stream_name);
     assert(stream !== undefined);
     return _get_topic_link_content({stream, ...opts});
@@ -71,7 +71,7 @@ export function get_topic_link_content_with_stream_id(opts: {
     stream_id: number;
     topic_name: string | undefined;
     message_id: string | undefined;
-}): {text: string; url: string} {
+}): {label_text_markdown: string; label_text_plain: string; url: string} {
     const stream = stream_data.get_sub_by_id(opts.stream_id);
     assert(stream !== undefined);
     return _get_topic_link_content({stream, ...opts});
@@ -81,27 +81,33 @@ function _get_topic_link_content(opts: {
     stream: StreamSubscription;
     topic_name: string | undefined;
     message_id: string | undefined;
-}): {text: string; url: string} {
+}): {label_text_markdown: string; label_text_plain: string; url: string} {
     const {stream, topic_name, message_id} = opts;
     const stream_name = stream.name;
     const stream_id = stream.stream_id;
     const escape = html_escape_markdown_syntax_characters;
     if (topic_name !== undefined) {
+        // This url is relative, which is fine since it aims to mimic the behavior of the
+        // #**stream>topic** syntax, which also appears as a relative link in the web app
+        // and is not expected to work outside of the current realm / Zulip.
         const stream_topic_url = hash_util.by_stream_topic_url(stream_id, topic_name);
         const topic_display_name = util.get_final_topic_display_name(topic_name);
         if (message_id !== undefined) {
             return {
-                text: `#${escape(stream_name)} > ${escape(topic_display_name)} @ 💬`,
+                label_text_markdown: `#${escape(stream_name)} > ${escape(topic_display_name)} @ 💬`,
+                label_text_plain: `#${stream_name} > ${topic_display_name} @ 💬`,
                 url: `${stream_topic_url}/near/${message_id}`,
             };
         }
         return {
-            text: `#${escape(stream_name)} > ${escape(topic_display_name)}`,
+            label_text_markdown: `#${escape(stream_name)} > ${escape(topic_display_name)}`,
+            label_text_plain: `#${stream_name} > ${topic_display_name}`,
             url: stream_topic_url,
         };
     }
     return {
-        text: `#${escape(stream_name)}`,
+        label_text_markdown: `#${escape(stream_name)}`,
+        label_text_plain: `#${stream_name}`,
         url: hash_util.channel_url_by_user_setting(stream_id),
     };
 }
@@ -126,12 +132,12 @@ export function get_fallback_markdown_link(
     // Generates the vanilla markdown link syntax for a stream/topic/message link, as
     // a fallback for cases where the nicer Zulip link syntax would not
     // render properly due to special characters in the channel or topic name.
-    const {text, url} = get_topic_link_content_with_stream_name({
+    const {label_text_markdown, url} = get_topic_link_content_with_stream_name({
         stream_name,
         topic_name,
         message_id,
     });
-    return as_markdown_link_syntax(text, url);
+    return as_markdown_link_syntax(label_text_markdown, url);
 }
 
 export function get_stream_topic_link_syntax(stream_name: string, topic_name: string): string {

@@ -653,13 +653,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     timezone = models.CharField(max_length=40, default="")
 
     AVATAR_FROM_GRAVATAR = "G"
+    AVATAR_FROM_JDENTICON = "J"
     AVATAR_FROM_USER = "U"
     AVATAR_SOURCES = (
         (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
+        (AVATAR_FROM_JDENTICON, "Generated using Jdenticon"),
         (AVATAR_FROM_USER, "Uploaded by user"),
     )
+    DEFAULT_AVATAR_SOURCE = AVATAR_FROM_GRAVATAR
     avatar_source = models.CharField(
-        default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1
+        default=DEFAULT_AVATAR_SOURCE, choices=AVATAR_SOURCES, max_length=1
     )
     avatar_version = models.PositiveSmallIntegerField(default=1)
     # This is only used for LDAP-provided avatars; it contains the
@@ -730,7 +733,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         }
         data: ProfileData = []
         for field in custom_profile_fields_for_realm(self.realm_id):
-            field_values = user_data.get(field.id, None)
+            field_values = user_data.get(field.id)
             if field_values:
                 value, rendered_value = (
                     field_values.get("value"),

@@ -195,6 +195,13 @@ TENOR_API_KEY = get_secret("tenor_api_key")
 # development; this is useful since there are no public BigBlueButton servers.
 BIG_BLUE_BUTTON_URL = get_secret("big_blue_button_url", development_only=True)
 
+# Allow setting Constructor Groups URL in development.
+CONSTRUCTOR_GROUPS_URL = get_secret("constructor_groups_url", development_only=True)
+
+# Allow setting Nextcloud Talk settings in zulip-secrets.conf in
+# development; this is useful since there are no public Nextcloud Talk servers.
+NEXTCLOUD_SERVER = get_secret("nextcloud_server", development_only=True)
+
 # Max state storage per user
 # TODO: Add this to zproject/prod_settings_template.py once stateful bots are fully functional.
 USER_STATE_SIZE_LIMIT = 10000000
@@ -233,7 +240,7 @@ INLINE_IMAGE_PREVIEW = True
 INLINE_URL_EMBED_PREVIEW = True
 NAME_CHANGES_DISABLED = False
 AVATAR_CHANGES_DISABLED = False
-PASSWORD_MIN_LENGTH = 6
+PASSWORD_MIN_LENGTH = 8
 PASSWORD_MAX_LENGTH = 100
 PASSWORD_MIN_GUESSES = 10000
 
@@ -352,6 +359,10 @@ DEFAULT_RATE_LIMITING_RULES = {
     # organization feature.
     "demo_realm_creation_by_ip": [
         # 10 demos per day
+        (86400, 10),
+    ],
+    "transfer_remote_server_registration_endpoint_by_ip": [
+        # 10 transfer registration requests per day per IP
         (86400, 10),
     ],
 }
