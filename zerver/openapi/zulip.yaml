@@ -10499,6 +10499,73 @@ paths:
                         "url": "/user_uploads/temporary/322F32632F39765378464E4C63306D3961396F4970705A4D74424565432F7A756C69702E7478743A316A5053616A3A3938625F44393446466D37357254315F4F414C425A4553464F6A55",
                       }
 
+  /avatar/{email_or_id}:
+    get:
+      operationId: get-avatar
+      summary: Get a user's avatar
+      tags: ["users"]
+      description: |
+        Fetches the avatar for a user, by redirecting (HTTP 302) to
+        the URL of the avatar image.
+
+        The redirect target depends on the user's avatar source:
+
+        - User-uploaded avatars: `/user_avatars/{realm_id}/{hash}.png`
+        - Gravatar users: `https://secure.gravatar.com/avatar/{hash}?d=identicon`
+        - System bots: `/static/images/static_avatars/{name}.png`
+
+        The default avatar is at most 100x100 pixels. Non-Gravatar
+        avatars are always served as PNG files. Gravatar avatars may
+        be in other formats depending on the user's Gravatar settings.
+
+        Clients can construct custom-sized Gravatar URLs as described
+        in the [Gravatar documentation](https://docs.gravatar.com/api/avatars/images/).
+
+        This endpoint does not require authentication.
+      parameters:
+        - name: email_or_id
+          in: path
+          description: |
+            The user ID or email of the target user.
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+          example: 12
+          required: true
+      responses:
+        "302":
+          description: |
+            Redirects to the avatar image URL.
+  /avatar/{email_or_id}/medium:
+    get:
+      operationId: get-avatar-medium
+      summary: Get a user's medium-size avatar
+      tags: ["users"]
+      description: |
+        Like [`GET /avatar/{email_or_id}`](/api/get-avatar), but
+        returns the 500x500 pixel version of the avatar.
+
+        Clients can also obtain the medium-size avatar by appending
+        `-medium` before the file extension in the default avatar
+        URL (e.g., `avatar.png` becomes `avatar-medium.png`). This
+        works for user-uploaded avatars and system bot avatars.
+      parameters:
+        - name: email_or_id
+          in: path
+          description: |
+            The user ID or email of the target user.
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+          example: 12
+          required: true
+      responses:
+        "302":
+          description: |
+            Redirects to the medium-size avatar image URL.
+
   /users:
     get:
       operationId: get-users

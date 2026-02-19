@@ -210,6 +210,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # and thus may be complicated to document with our current tooling.
         # (No /api/v1/ or /json prefix).
         "/avatar/{email_or_id}",
+        "/avatar/{email_or_id}/medium",
         ## This one isn't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
@@ -921,7 +922,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
         * All example events in `/get-events` match an event schema.
         * That no opaque object exists.
         """
-        EXCLUDE = ["/real-time"]
+        EXCLUDE = ["/real-time", "/avatar/{email_or_id}", "/avatar/{email_or_id}/medium"]
         VALID_TAGS = [
             "users",
             "server_and_organizations",
@@ -1043,6 +1044,9 @@ class APIDocsSidebarTest(ZulipTestCase):
         exempted_docs = {
             # (No /api/v1/ or /json prefix).
             "get-file-temporary-url",
+            # (No /api/v1/ or /json prefix).
+            "get-avatar",
+            "get-avatar-medium",
             # This one is not used by any clients and is likely to get
             # deprecated.
             "update-subscriptions",

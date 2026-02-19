@@ -32,23 +32,21 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
         filename: str | None = None,
     ) -> str:
         """
-        Because the protocol for getting medium-size avatar URLs
-        was never fully documented, the mobile apps use a
-        substitution of the form s/.png/-medium.png/ to get the
-        medium-size avatar URLs.
+        Generate hashed filenames for system bot avatars that follow the
+        same "-medium" suffix convention used for user-uploaded avatars.
 
-        This function hashes system bots' avatar files in a way
-        that follows the pattern used for user-uploaded avatars.
+        Clients obtain medium-size avatar URLs by adding the "-medium"
+        suffix before the file extension:
 
-        It ensures the following:
+            avatar.png → avatar-medium.png
 
-            * Hashed filenames for system bot avatars follow this
-            naming convention:
-            - avatar.png -> avatar-medium.png
+        This function ensures that:
 
-            * The system bots' default avatar file and its medium
-            version share the same hash:
-            - bot.36f721bad3d0.png -> bot.36f721bad3d0-medium.png
+        * System bot avatars follow the same naming convention as
+        user-uploaded avatars.
+        * The default and medium versions share the same hash:
+
+            bot.36f721bad3d0.png → bot.36f721bad3d0-medium.png
         """
 
         def reformat_medium_filename(hashed_name: str) -> str:
