@@ -30,6 +30,7 @@ export const update_bot_schema = z.object({
     // Server does not send realm_bot/update events for
     // the below fields. We instead update these fields
     // based on the realm_user/update events.
+    bot_type: z.optional(z.number()),
     email: z.optional(z.string()),
     full_name: z.optional(z.string()),
     is_active: z.optional(z.boolean()),
