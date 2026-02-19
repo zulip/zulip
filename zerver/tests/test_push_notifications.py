@@ -3050,7 +3050,7 @@ class RegistrationTakeoverFlowTest(ZulipTestCase):
             ],
         )
 
-        # HttpError:
+        # Status code
         responses.add(
             method=responses.GET,
             url=base_url,
@@ -3061,7 +3061,7 @@ class RegistrationTakeoverFlowTest(ZulipTestCase):
                 "/api/v1/remotes/server/register/verify_challenge",
                 {"hostname": self.hostname, "access_token": access_token},
             )
-        self.assert_json_error(result, "Error response received from the host: 403")
+        self.assert_json_error(result, "Unexpected status code received from the host: 403")
         self.assertIn(
             "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
         )
@@ -3128,6 +3128,44 @@ class RegistrationTakeoverFlowTest(ZulipTestCase):
                 {"hostname": self.hostname, "access_token": access_token},
             )
         self.assert_json_error(result, "An error occurred while communicating with the host.")
+        self.assertIn(
+            "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
+        )
+
+        # JSONDecodeError
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            status=200,
+            body="",
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(
+            result, "An error occurred while parsing the response from the host."
+        )
+        self.assertIn(
+            "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
+        )
+
+        # KeyError
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            status=200,
+            body=orjson.dumps({"other": "response"}),
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(
+            result, "An error occurred while parsing the response from the host."
+        )
         self.assertIn(
             "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
         )
