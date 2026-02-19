@@ -10275,9 +10275,9 @@ paths:
       summary: Report a message
       tags: ["messages"]
       description: |
-        Sends a notification to the organization's moderation request channel,
-        if it is configured, that reports the targeted message for review and
-        moderation.
+        Sends a notification to the organization's [moderation request
+        channel](/help/enable-moderation-requests), if it is configured, that
+        reports the targeted message for [review and moderation](/help/report-a-message).
 
         Clients should check the `moderation_request_channel` realm setting to
         decide whether to show the option to report messages in the UI.
@@ -10302,13 +10302,14 @@ paths:
                   description: |
                     The reason that best describes why the current user is reporting the
                     target message for moderation.
+
+                    Must be one of the `key` values in the `server_report_message_types`
+                    field in the [`POST /register`](/api/register-queue) response.
+
+                    **Changes**: Prior to Zulip 12.0 (feature level 435), the allowed
+                    values for this parameter were limited to: `"harassment"`,
+                    `"inappropriate"`, `"norms"`, `"other"`, `"spam"`.
                   type: string
-                  enum:
-                    - spam
-                    - harassment
-                    - inappropriate
-                    - norms
-                    - other
                   example: harassment
                 description:
                   description: |

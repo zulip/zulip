@@ -286,6 +286,12 @@ element to plain escaped text.
 * [`POST /register`](/api/register-queue): Added `server_report_message_types`
   field which contains a list of supported report types for the [message
   report](/help/report-a-message) feature.
+* [`POST /message/{message_id}/report`](/api/report-message): Clients
+  that support the [message report](/help/report-a-message) feature
+  should use the `key` values in the `server_report_message_types` as the
+  valid values for the `report_type` parameter. Prior to this feature
+  level, the valid values for the `report_type` parameter were limited to:
+  `"harassment"`, `"inappropriate"`, `"norms"`, `"other"`, `"spam"`.
 
 **Feature level 434**
 
@@ -774,8 +780,9 @@ No changes; API feature level used for the Zulip 11.0 release.
 
 **Feature level 382**
 
-* `POST /message/{message_id}/report`: Added a new endpoint for submitting
-  a moderation request for a message.
+* [`POST /message/{message_id}/report`](/api/report-message): Added a new
+  endpoint for [submitting a moderation request](/help/report-a-message)
+  for a message.
 
 **Feature level 381**
 
