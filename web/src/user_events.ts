@@ -43,6 +43,7 @@ export const user_update_schema = z.intersection(
             avatar_version: z.number(),
         }),
         z.object({bot_owner_id: z.number()}),
+        z.object({bot_type: z.number()}),
         z.object({
             custom_profile_field: z.object({
                 id: z.number(),
@@ -242,6 +243,12 @@ export const update_person = function update(event: UserUpdate): void {
         }
         settings_bots.redraw_your_bots_list();
         settings_bots.toggle_bot_config_download_container();
+    }
+
+    if ("bot_type" in event) {
+        assert(user.is_bot);
+        user.bot_type = event.bot_type;
+        user_profile.update_profile_modal_ui(user, event);
     }
 
     if ("is_active" in event) {
