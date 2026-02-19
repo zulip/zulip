@@ -624,6 +624,21 @@
     }
 }
 
+#recent_view_folder_filter_container {
+    display: flex;
+    align-items: center;
+    height: var(--recent-topics-filters-height);
+}
+
+#recent_view_folder_filter_button {
+    font-size: 1.5625em; /* 25px at 16px/1em */
+    padding: 0;
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
 #recent-view-filter_widget {
     display: inline-flex;
     width: 10.7142em; /* 150px at 14px em */

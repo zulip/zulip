@@ -1,4 +1,11 @@
 {{> ./dropdown_widget widget_name="recent-view-filter"}}
+{{#if show_folder_filter}}
+<div id="recent_view_folder_filter_container">
+    <button type="button" id="recent_view_folder_filter_button" class="recent-view-folder-filter-button icon-button icon-button-neutral" tabindex="0" aria-label="{{t 'Filter by folder' }}">
+        <i class="zulip-icon zulip-icon-folder-chevron" aria-hidden="true"></i>
+    </button>
+</div>
+{{/if}}
 <button data-filter="include_private" type="button" class="button-recent-filters {{#if is_spectator}}fake_disabled_button{{/if}}" role="checkbox" aria-checked="true">
     {{#if filter_pm}}
     <i class="fa fa-check-square-o"></i>

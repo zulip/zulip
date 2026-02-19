@@ -13,11 +13,13 @@ import render_users_with_status_icons from "../templates/users_with_status_icons
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as folder_dropdown_widget from "./folder_dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -101,10 +103,13 @@ const MAX_SELECTABLE_DIRECT_MESSAGE_COLS = 2;
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";
 const ls_dropdown_key = "recent_topic_dropdown_filters";
+const ls_folder_filter_key = "recent_topic_folder_filter";
 const ls = localstorage();
 
 let filters = new Set<string>();
 let dropdown_filters = new Set<string>();
+let folder_filter_value: number = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
+let folder_filter_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
 
 const recent_conversation_key_prefix = "recent_conversation:";
 
@@ -133,6 +138,7 @@ export function set_backfill_in_progress(value: boolean): void {
 export function clear_for_tests(): void {
     filters.clear();
     dropdown_filters.clear();
+    folder_filter_value = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
     recent_view_data.conversations.clear();
     topics_widget = undefined;
 }
@@ -141,9 +147,14 @@ export function set_filters_for_tests(new_filters = [views_util.FILTERS.UNMUTED_
     dropdown_filters = new Set(new_filters);
 }
 
+export function set_folder_filter_for_tests(value: number): void {
+    folder_filter_value = value;
+}
+
 export function save_filters(): void {
     ls.set(ls_key, [...filters]);
     ls.set(ls_dropdown_key, [...dropdown_filters]);
+    ls.set(ls_folder_filter_key, folder_filter_value);
 }
 
 export function is_in_focus(): boolean {
@@ -447,6 +458,10 @@ export function revive_current_focus(): boolean {
     assert($current_focus_elem !== "table");
     if ($current_focus_elem.hasClass("dropdown-widget-button")) {
         $("#recent-view-filter_widget").trigger("focus");
+        return true;
+    }
+    if ($current_focus_elem.hasClass("recent-view-folder-filter-button")) {
+        $("#recent_view_folder_filter_button").trigger("focus");
         return true;
     }
 
@@ -907,6 +922,22 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
         }
     }
 
+    const folder_filters = folder_dropdown_widget.FOLDER_FILTERS;
+    if (folder_filter_value !== folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        // When a folder filter is active, hide all DMs.
+        if (msg.type === "private") {
+            return true;
+        }
+        const sub = sub_store.get(msg.stream_id);
+        if (folder_filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION) {
+            if (sub?.folder_id !== null) {
+                return true;
+            }
+        } else if (sub?.folder_id !== folder_filter_value) {
+            return true;
+        }
+    }
+
     if (filters.has("unread")) {
         const unread_count = message_to_conversation_unread_count(msg);
         if (unread_count === 0) {
@@ -1126,6 +1157,7 @@ function get_recent_view_filters_params(): {
     filter_muted: boolean;
     filter_pm: boolean;
     is_spectator: boolean;
+    show_folder_filter: boolean;
 } {
     return {
         filter_unread: filters.has("unread"),
@@ -1133,6 +1165,7 @@ function get_recent_view_filters_params(): {
         filter_muted: filters.has("include_muted"),
         filter_pm: filters.has("include_private"),
         is_spectator: page_params.is_spectator,
+        show_folder_filter: channel_folders.user_has_folders(),
     };
 }
 
@@ -1149,11 +1182,71 @@ function setup_dropdown_filters_widget(): void {
     filters_dropdown_widget.setup();
 }
 
+function update_recent_view_folder_filter_button(): void {
+    const folder_filters = folder_dropdown_widget.FOLDER_FILTERS;
+    if (folder_filter_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        $("#recent_view_folder_filter_button").addClass("icon-button-neutral");
+        $("#recent_view_folder_filter_button").removeClass("icon-button-brand");
+        $("#recent_view_folder_filter_button .zulip-icon")
+            .removeClass("zulip-icon-folder-search")
+            .addClass("zulip-icon-folder-chevron");
+    } else {
+        $("#recent_view_folder_filter_button").removeClass("icon-button-neutral");
+        $("#recent_view_folder_filter_button").addClass("icon-button-brand");
+        $("#recent_view_folder_filter_button .zulip-icon")
+            .removeClass("zulip-icon-folder-chevron")
+            .addClass("zulip-icon-folder-search");
+    }
+}
+
+function folder_filter_click_handler(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const filter_id = $(event.currentTarget).attr("data-unique-id");
+    assert(filter_id !== undefined);
+    folder_filter_value = Number.parseInt(filter_id, 10);
+    dropdown.hide();
+    widget.render();
+    save_filters();
+    update_recent_view_folder_filter_button();
+    folder_dropdown_widget.update_tooltip_for_folder_filter(
+        "recent_view_folder_filter_container",
+        folder_filter_value,
+    );
+
+    assert(topics_widget !== undefined);
+    topics_widget.hard_redraw();
+}
+
+function setup_folder_dropdown_widget(): void {
+    const folder_filter_dropdown_widget =
+        folder_dropdown_widget.create_folder_filter_dropdown_widget({
+            widget_name: "recent-view-folder-filter",
+            widget_selector: ".recent-view-folder-filter-button",
+            item_click_callback: folder_filter_click_handler,
+            $events_container: $("#recent_view_filter_buttons"),
+            default_id: folder_filter_value,
+        });
+    folder_filter_dropdown_widget.setup();
+    folder_dropdown_widget.update_tooltip_for_folder_filter(
+        "recent_view_folder_filter_container",
+        folder_filter_value,
+    );
+}
+
 export function update_filters_view(): void {
     const rendered_filters = render_recent_view_filters(get_recent_view_filters_params());
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
     filters_dropdown_widget.render();
+    if (folder_filter_dropdown_widget) {
+        update_recent_view_folder_filter_button();
+    }
     assert(topics_widget !== undefined);
     topics_widget.hard_redraw();
 }
@@ -1389,6 +1482,10 @@ export function complete_rerender(coming_from_other_views = false): void {
         get_min_load_count,
     });
     setup_dropdown_filters_widget();
+    if (channel_folders.user_has_folders()) {
+        setup_folder_dropdown_widget();
+        update_recent_view_folder_filter_button();
+    }
 }
 
 export function update_recent_view_rendered_time(): void {
@@ -1648,7 +1745,8 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
             if (
                 post_tab_focus_elem.id === "recent_view_search" ||
                 post_tab_focus_elem.classList.contains("button-recent-filters") ||
-                post_tab_focus_elem.classList.contains("dropdown-widget-button")
+                post_tab_focus_elem.classList.contains("dropdown-widget-button") ||
+                post_tab_focus_elem.classList.contains("recent-view-folder-filter-button")
             ) {
                 $current_focus_elem = $(post_tab_focus_elem);
             }
@@ -1724,7 +1822,11 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if ($elt.hasClass("button-recent-filters") || $elt.hasClass("dropdown-widget-button")) {
+    } else if (
+        $elt.hasClass("button-recent-filters") ||
+        $elt.hasClass("dropdown-widget-button") ||
+        $elt.hasClass("recent-view-folder-filter-button")
+    ) {
         switch (input_key) {
             case "click":
                 $current_focus_elem = $elt;
@@ -1733,16 +1835,38 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
             case "left_arrow":
                 if (filter_buttons().first()[0] === $elt[0]) {
                     $current_focus_elem = $("#recent_view_search");
+                } else if ($elt.hasClass("recent-view-folder-filter-button")) {
+                    // The folder filter button is inside a container div,
+                    // so navigate to the container's previous sibling.
+                    $current_focus_elem = $elt.parent().prev();
                 } else {
-                    $current_focus_elem = $elt.prev();
+                    const $prev = $elt.prev();
+                    // If the previous sibling is the folder filter container,
+                    // focus the button inside it.
+                    if ($prev.attr("id") === "recent_view_folder_filter_container") {
+                        $current_focus_elem = $prev.find(".recent-view-folder-filter-button");
+                    } else {
+                        $current_focus_elem = $prev;
+                    }
                 }
                 break;
             case "vim_right":
             case "right_arrow":
                 if (filter_buttons().last()[0] === $elt[0]) {
                     $current_focus_elem = $("#recent_view_search");
+                } else if ($elt.hasClass("recent-view-folder-filter-button")) {
+                    // The folder filter button is inside a container div,
+                    // so navigate to the container's next sibling.
+                    $current_focus_elem = $elt.parent().next();
                 } else {
-                    $current_focus_elem = $elt.next();
+                    const $next = $elt.next();
+                    // If the next sibling is the folder filter container,
+                    // focus the button inside it.
+                    if ($next.attr("id") === "recent_view_folder_filter_container") {
+                        $current_focus_elem = $next.find(".recent-view-folder-filter-button");
+                    } else {
+                        $current_focus_elem = $next;
+                    }
                 }
                 break;
             case "vim_down":
@@ -1852,6 +1976,20 @@ function load_filters(): void {
     if (dropdown_filters.size === 0 || !is_subset) {
         dropdown_filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
     }
+
+    // Load and validate folder filter.
+    const folder_filters = folder_dropdown_widget.FOLDER_FILTERS;
+    const saved_folder_filter = ls.get(ls_folder_filter_key);
+    if (
+        typeof saved_folder_filter === "number" &&
+        (saved_folder_filter === folder_filters.ANY_FOLDER_DROPDOWN_OPTION ||
+            saved_folder_filter === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION ||
+            channel_folders.is_valid_folder_id(saved_folder_filter))
+    ) {
+        folder_filter_value = saved_folder_filter;
+    } else {
+        folder_filter_value = folder_filters.ANY_FOLDER_DROPDOWN_OPTION;
+    }
 }
 
 export function initialize({
@@ -1957,6 +2095,11 @@ export function initialize({
             // Filter buttons are disabled for spectator.
             return;
         }
+        assert(e.currentTarget instanceof HTMLElement);
+        change_focused_element($(e.currentTarget), "click");
+    });
+
+    $("body").on("click", "#recent_view_folder_filter_button", (e) => {
         assert(e.currentTarget instanceof HTMLElement);
         change_focused_element($(e.currentTarget), "click");
     });
