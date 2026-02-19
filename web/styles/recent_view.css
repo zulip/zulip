@@ -387,6 +387,9 @@
         margin-right: 5px;
 
         .last-msg-link {
+            /* Prevent time strings from collapsing over multiple lines. */
+            display: block;
+            min-width: max-content;
             color: var(--color-text-recent-view-last-msg-time);
         }
     }
