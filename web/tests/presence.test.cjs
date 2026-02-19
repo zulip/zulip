@@ -29,6 +29,7 @@ const me = make_user({
     email: "me@zulip.com",
     user_id: 101,
     full_name: "Me Myself",
+    date_joined: undefined,
 });
 
 const alice = make_user({
@@ -42,6 +43,7 @@ const fred = make_user({
     email: "fred@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
+    date_joined: undefined,
 });
 
 const sally = make_user({
@@ -62,6 +64,7 @@ const bot = make_bot({
     email: "bot@zulip.com",
     user_id: 7,
     full_name: "The Bot",
+    date_joined: undefined,
 });
 
 const john = make_user({
@@ -76,6 +79,7 @@ const jane = make_user({
     email: "jane@zulip.com",
     user_id: 9,
     full_name: "Jane Doe",
+    date_joined: undefined,
 });
 
 people.add_active_user(me);
