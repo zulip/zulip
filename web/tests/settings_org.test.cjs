@@ -571,6 +571,8 @@ test("set_up", ({override, override_rewire}) => {
     );
     override_rewire(settings_components, "resize_textareas_in_subsection", noop);
 
+    override_rewire(settings_org, "set_two_tier_billing_settings_visibility", noop);
+
     // Make our plan not limited so we don't have to stub all the
     // elements involved in disabling the can_create_groups input.
     override(realm, "zulip_plan_is_not_limited", true);

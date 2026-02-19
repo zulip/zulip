@@ -817,6 +817,7 @@ export const all_group_setting_labels = {
                     "Who can configure the per-channel <i>general chat</i> topic configuration <i>(also requires being a channel administrator)</i>",
             }),
         ),
+        workplace_users_group: $t({defaultMessage: "Workplace users"}),
     },
     stream: {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
@@ -918,6 +919,11 @@ export const realm_group_permission_settings: {
             "can_create_bots_group",
             "can_add_custom_emoji_group",
         ],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "Billing"}),
+        subsection_key: "org-billing",
+        settings: ["workplace_users_group"],
     },
 ];
 

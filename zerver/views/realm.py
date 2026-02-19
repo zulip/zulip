@@ -219,6 +219,7 @@ def update_realm(
             max_length=Realm.MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH,
         ),
     ] = None,
+    workplace_users_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
     # Realm object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a

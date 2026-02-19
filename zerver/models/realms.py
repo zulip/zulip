@@ -729,6 +729,11 @@ class Realm(models.Model):
     # Whether to notify client when a DM has a guest recipient.
     enable_guest_user_dm_warning = models.BooleanField(default=True)
 
+    # UserGroup whose users will be considered as workplace users for billing.
+    workplace_users_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Avatar source for new users
     AVATAR_FROM_GRAVATAR = "G"
     AVATAR_FROM_JDENTICON = "J"
@@ -912,6 +917,11 @@ class Realm(models.Model):
             default_group_name=SystemGroups.EVERYONE,
         ),
         direct_message_permission_group=GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+        ),
+        workplace_users_group=GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,
