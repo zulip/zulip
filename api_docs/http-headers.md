@@ -4,8 +4,9 @@ This page documents the HTTP headers used by the Zulip API.
 
 !!! tip ""
 
-    The `curl` example on each endpoint's documentation page, details
-    the request format. You can access curl's documentation at `man curl`.
+    Full details of the HTTP requests are given in the `curl` example
+    on each endpoint's documentation page. You can access curl's
+    documentation at [`man curl`](https://curl.se/docs/manpage.html).
 
 ## The `Authorization` header
 
@@ -16,15 +17,21 @@ care of when you configure said bindings.
 
 Otherwise, to authenticate an API request:
 
-- Use HTTP Basic authentication, which is described [here][mdn-auth-headers].
-  This means sending an HTTP header named Authorization, with your
+- Use HTTP `Basic` authentication, which is described [here][mdn-auth-headers].
+  This means sending an HTTP header named `Authorization`, with your
   credentials [in a certain format][mdn-basic-auth].
 
-- For your credentials in HTTP Basic authentication, use a bot's email
-  as the "username" and its [API key](/api/api-keys) as the "password".
-  In the `curl` example for each endpoint, this is shown as:
+- For `Basic` authentication credentials in the Zulip API, a "username"
+  takes the form of an email address, and a "password" takes the form of
+  an API key. In the `curl` example for each endpoint, this is shown as:
+  `-u BOT_EMAIL_ADDRESS:BOT_API_KEY`.
 
-    `-u BOT_EMAIL_ADDRESS:BOT_API_KEY`.
+- A bot's credentials can be obtained through the web and desktop apps'
+  [bot management UI](/help/manage-a-bot) or by [downloading the bot's
+  zuliprc file](/api/configuring-python-bindings#download-a-zuliprc-file).
+
+- See [fetch an API key (production)](/api/fetch-api-key) for the
+  password-based authentication flow for getting a user's credentials.
 
 ## The `User-Agent` header
 
