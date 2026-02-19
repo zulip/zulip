@@ -10,8 +10,8 @@ import {LONG_HOVER_DELAY} from "./tippyjs.ts";
 import * as util from "./util.ts";
 
 export const FOLDER_FILTERS = {
-    UNCATEGORIZED_DROPDOWN_OPTION: -1,
-    ANY_FOLDER_DROPDOWN_OPTION: -2,
+    UNCATEGORIZED_DROPDOWN_OPTION: -101,
+    ANY_FOLDER_DROPDOWN_OPTION: -102,
 } as const;
 
 export type FolderFilterDropdownWidgetConfig = {
