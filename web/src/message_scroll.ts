@@ -14,7 +14,7 @@ import * as unread_ops from "./unread_ops.ts";
 import * as unread_ui from "./unread_ui.ts";
 import {the} from "./util.ts";
 
-let hide_scroll_to_bottom_timer: ReturnType<typeof setTimeout> | undefined;
+let hide_scroll_to_bottom_timer: ReturnType<typeof setInterval> | undefined;
 export function hide_scroll_to_bottom(): void {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
     if (message_lists.current === undefined) {
@@ -33,11 +33,15 @@ export function hide_scroll_to_bottom(): void {
         return;
     }
 
-    // Wait before hiding to allow user time to click on the button.
-    hide_scroll_to_bottom_timer = setTimeout(() => {
-        // Don't hide if user is hovered on it.
+    hide_scroll_to_bottom_timer = setInterval(() => {
+        // Check if the user is hovered over the scroll-to-bottom
+        // button every 3 seconds to allow time for interaction.
+        // If the user is not hovered on the button, hide the button
+        // and clear the timer until the next scroll event triggers
+        // showing the button again.
         if (!the($show_scroll_to_bottom_button).matches(":hover")) {
             $show_scroll_to_bottom_button.removeClass("show");
+            clearInterval(hide_scroll_to_bottom_timer);
         }
     }, 3000);
 }
@@ -50,7 +54,7 @@ export function show_scroll_to_bottom_button(): void {
         return;
     }
 
-    clearTimeout(hide_scroll_to_bottom_timer);
+    clearInterval(hide_scroll_to_bottom_timer);
     $("#scroll-to-bottom-button-container").addClass("show");
 }
 
