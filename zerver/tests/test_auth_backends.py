@@ -5722,7 +5722,7 @@ class DiscordAuthBackendTest(SocialAuthBase):
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_DISCORD_SECRET"
     LOGIN_URL = "/accounts/login/social/discord"
     SIGNUP_URL = "/accounts/register/social/discord"
-    AUTHORIZATION_URL = "https://discord.com/oauth2/authorize"
+    AUTHORIZATION_URL = "https://discord.com/api/oauth2/authorize"
     ACCESS_TOKEN_URL = "https://discord.com/api/oauth2/token"
     USER_INFO_URL = "https://discord.com/api/users/@me"
     AUTH_FINISH_URL = "/complete/discord/"
