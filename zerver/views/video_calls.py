@@ -236,15 +236,20 @@ class OAuthVideoCallProvider(ABC):
         self.update_token(request.user, token)
         return render(request, "zerver/close_window.html")
 
-    def make_video_call(
-        self, request: HttpRequest, user: UserProfile, payload: object = {}, **kwargs: Any
-    ) -> HttpResponse:
+    def oauth_post(
+        self,
+        user: UserProfile,
+        url: str,
+        *,
+        json: object = None,
+        **kwargs: Any,
+    ) -> Response:
         oauth = self.__get_session(user)
         if not oauth.authorized:
             raise InvalidVideoCallProviderTokenError(self.provider_name)
 
         try:
-            response = oauth.post(self.create_meeting_url, json=payload, **kwargs)
+            response = oauth.post(url, json=json, **kwargs)
         except OAuth2Error:
             self.update_token(user, None)
             raise InvalidVideoCallProviderTokenError(self.provider_name)
@@ -252,7 +257,14 @@ class OAuthVideoCallProvider(ABC):
         if response.status_code == 401:
             self.update_token(user, None)
             raise InvalidVideoCallProviderTokenError(self.provider_name)
-        elif not response.ok:
+
+        return response
+
+    def make_video_call(
+        self, request: HttpRequest, user: UserProfile, payload: object = {}, **kwargs: Any
+    ) -> HttpResponse:
+        response = self.oauth_post(user, self.create_meeting_url, json=payload, **kwargs)
+        if not response.ok:
             raise CreateVideoCallFailedError(self.provider_name)
 
         return self.get_meeting_details(request, response)
