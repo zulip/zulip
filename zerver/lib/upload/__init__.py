@@ -98,7 +98,7 @@ def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithS
         # so we set a much lower threshold if that's the best guess.
         # https://en.wikipedia.org/wiki/Popularity_of_text_encodings
         fake_msg.set_param("charset", detected["encoding"], replace=True)
-    return fake_msg["content-type"]
+    return str(fake_msg["content-type"])
 
 
 def create_attachment(
@@ -154,7 +154,7 @@ def get_file_info(user_file: UploadedFile) -> tuple[str, str]:
     if user_file.content_type_extra:
         extras = {k: v.decode() if v else None for k, v in user_file.content_type_extra.items()}
     fake_msg.add_header("content-type", content_type, **extras)
-    content_type = fake_msg["content-type"]
+    content_type = str(fake_msg["content-type"])
 
     uploaded_file_name = unquote(uploaded_file_name)
 
