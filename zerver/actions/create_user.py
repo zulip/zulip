@@ -26,7 +26,7 @@ from zerver.actions.users import (
     get_service_dicts_for_bot,
     send_update_events_for_anonymous_group_settings,
 )
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import avatar_url, generate_and_upload_jdenticon_avatar
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
@@ -520,7 +520,7 @@ def do_create_user(
     bot_owner: UserProfile | None = None,
     tos_version: str | None = None,
     timezone: str = "",
-    avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
+    avatar_source: str | None = None,
     default_language: str | None = None,
     default_sending_stream: Stream | None = None,
     default_events_register_stream: Stream | None = None,
@@ -559,6 +559,9 @@ def do_create_user(
         enable_marketing_emails=enable_marketing_emails,
         email_address_visibility=email_address_visibility,
     )
+
+    if user_profile.avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
+        generate_and_upload_jdenticon_avatar(user_profile, str(realm.uuid), future=False)
 
     event_time = user_profile.date_joined
     if not acting_user:

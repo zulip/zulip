@@ -1376,6 +1376,25 @@ export const bot_type_values = {
     },
 };
 
+export const user_deactivation_action_values = [
+    {
+        key: "delete_profile",
+        value: $t({defaultMessage: "Name and profile picture"}),
+    },
+    {
+        key: "delete_public_channel_messages",
+        value: $t({defaultMessage: "Messages in public channels"}),
+    },
+    {
+        key: "delete_private_channel_messages",
+        value: $t({defaultMessage: "Messages in private channels"}),
+    },
+    {
+        key: "delete_direct_messages",
+        value: $t({defaultMessage: "Direct messages"}),
+    },
+];
+
 export const realm_plan_types = {
     self_hosted: {code: 1},
     limited: {code: 2},

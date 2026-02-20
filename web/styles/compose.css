@@ -21,6 +21,7 @@
            would likely be a better choice here.
            1.2em is 16.8px at 14px em. */
         font-size: 1.2em;
+        font-family: inherit;
         /* 1.2em is 16.8px at 14px em; this
            maintains the 20px em-equivalent compose
            line height, but at a 16.8px em. */
@@ -75,6 +76,7 @@
             /* Keep the new message button sized to match
                adjacent buttons. */
             font-size: inherit;
+            font-family: inherit;
             min-width: inherit;
             padding: 3px 10px;
             outline: none;
@@ -144,6 +146,7 @@
            adjacent buttons. */
         align-self: stretch;
         font-size: inherit;
+        font-family: inherit;
         min-width: inherit;
         line-height: var(--line-height-compose-buttons);
         padding: 3px 10px;
@@ -416,6 +419,7 @@
             opacity 0.4s ease-in,
             color 0.1s ease-in,
             background-color 0.1s ease-in;
+        font-size: inherit;
 
         &:hover {
             background-color: var(--color-composebox-button-background-hover);
@@ -548,6 +552,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s;
+    font-size: inherit;
 
     &:focus {
         outline: 0;
@@ -756,6 +761,8 @@
         font-weight: 600;
         margin-top: 4.5px;
         margin-bottom: 4.5px;
+        font-family: inherit;
+        font-size: inherit;
         /* Buttons take a minimum height for
            when their text fits on a single
            line. 2.1333em is 32px at 15px/1em. */
@@ -1074,7 +1081,7 @@ textarea.new_message_textarea {
 
     font-size: 1em;
     line-height: var(--base-line-height-unitless);
-    font-family: "Source Sans 3 VF", sans-serif;
+    font-family: inherit;
 
     &:focus {
         outline: 0;
@@ -1134,6 +1141,7 @@ textarea.new_message_textarea {
         padding: 0 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
+        font-family: inherit;
 
         &.empty-topic-display::placeholder {
             color: var(--color-compose-recipient-box-text-color);
@@ -1411,6 +1419,7 @@ textarea.new_message_textarea {
        button over top of the vdots
        background */
     z-index: 1;
+    font-size: inherit;
 
     @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
         /* Drop to a square button,
@@ -1470,6 +1479,7 @@ textarea.new_message_textarea {
             accent-color: hsl(217deg 100% 60%);
             grid-area: radio-button;
             align-self: center;
+            font-size: inherit;
 
             &:focus {
                 outline: 1px dotted hsl(0deg 0% 20%);
@@ -1567,6 +1577,7 @@ textarea.new_message_textarea {
         padding: 6px;
         margin: 1px;
         color: var(--color-compose-embedded-button-text-color);
+        font-size: inherit;
 
         .zulip-icon {
             display: block;
@@ -1831,7 +1842,7 @@ textarea.new_message_textarea {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
+    width: 38px;
     /* Allow to grow but not shrink */
     flex: 1 0 auto;
     height: var(--compose-formatting-buttons-row-height);
@@ -1842,12 +1853,13 @@ textarea.new_message_textarea {
        margin is handled on the vdots icon
        below, so as to make for a maximum
        clickable vdots area. */
-    margin-left: -4px;
+    margin-left: -2px;
     border-radius: 0 4px 4px 0;
     /* Flex items respect z-index values;
        this is needed to keep the vdots
        background beneath the send button. */
     z-index: 0;
+    font-size: inherit;
 
     &:focus-visible {
         /* Use a border, not an outline, to preserve the
@@ -1875,7 +1887,7 @@ textarea.new_message_textarea {
     }
 
     .zulip-icon {
-        padding: 5px 0 5px 4px;
+        padding: 5px 0 5px 2px;
         /* 17px at 14px/1em */
         font-size: 1.2143em;
         flex-grow: 1;

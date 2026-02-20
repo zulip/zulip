@@ -6,12 +6,12 @@
     {{/if}}
 {{else if (eq contains_dm "some")}}
     {{#if can_create_new_topics_in_stream}}
-    <em>{{t 'Start or select a topic, or switch to DM.' }}</em>
+    <em>{{t 'Start or continue a topic, or switch to DM.' }}</em>
     {{else}}
-    <em>{{t 'Select a topic, or switch to DM.' }}</em>
+    <em>{{t 'Continue a conversation or switch to DM.' }}</em>
     {{/if}}
 {{else if can_create_new_topics_in_stream}}
-    <em>{{t 'Start a new topic or select one from the list.' }}</em>
+    <em>{{t 'Start a new topic or continue a conversation.' }}</em>
 {{else}}
-    <em>{{t 'Select a topic from the list.' }}</em>
+    <em>{{t 'Continue a conversation.' }}</em>
 {{/if}}

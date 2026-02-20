@@ -339,6 +339,35 @@ def write_avatar_images(
     )
 
 
+def write_jdenticon_avatars(
+    file_path: str,
+    user_profile: UserProfile,
+    *,
+    image_data: bytes,
+    image_data_medium: bytes,
+    backend: ZulipUploadBackend | None = None,
+    future: bool = True,
+) -> None:
+    if backend is None:
+        backend = upload_backend
+
+    backend.upload_single_avatar_image(
+        backend.get_avatar_path(file_path, medium=False),
+        user_profile=user_profile,
+        image_data=image_data,
+        content_type="image/png",
+        future=future,
+    )
+
+    backend.upload_single_avatar_image(
+        backend.get_avatar_path(file_path, medium=True),
+        user_profile=user_profile,
+        image_data=image_data_medium,
+        content_type="image/png",
+        future=future,
+    )
+
+
 def upload_avatar_image(
     user_file: IO[bytes],
     user_profile: UserProfile,
@@ -367,7 +396,9 @@ def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> Non
     source_file_path = user_avatar_path(source_profile, future=False)
     target_file_path = user_avatar_path(target_profile, future=True)
 
-    image_data, content_type = upload_backend.get_avatar_contents(source_file_path)
+    image_data, content_type = upload_backend.get_avatar_contents(
+        source_file_path, source_profile.avatar_source
+    )
     write_avatar_images(
         target_file_path, target_profile, image_data, content_type=content_type, future=True
     )
@@ -387,7 +418,7 @@ def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None
         if os.path.isfile(output_path):
             return
 
-    image_data, _ = upload_backend.get_avatar_contents(file_path)
+    image_data, _ = upload_backend.get_avatar_contents(file_path, user_profile.avatar_source)
 
     if medium:
         resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)

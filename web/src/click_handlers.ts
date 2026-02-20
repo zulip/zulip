@@ -6,6 +6,7 @@ import * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
+import render_scroll_to_time_popover from "../templates/popovers/scroll_to_time_popover.hbs";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
@@ -14,6 +15,7 @@ import * as compose_actions from "./compose_actions.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
 import * as emoji_picker from "./emoji_picker.ts";
+import * as flatpickr from "./flatpickr.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
 import * as message_edit from "./message_edit.ts";
@@ -427,6 +429,120 @@ export function initialize(): void {
         if ($row.hasClass("preview_mode")) {
             message_edit.render_preview_area($row);
         }
+    });
+
+    function open_date_picker(trigger_element: HTMLElement, message_id: number): void {
+        assert(message_lists.current !== undefined);
+        const message = message_lists.current.get(message_id)!;
+
+        // Set maxDate to end of the month.
+        const endOfMonth = new Date();
+        endOfMonth.setMonth(endOfMonth.getMonth() + 1, 0);
+        endOfMonth.setHours(23, 59, 59, 999);
+
+        flatpickr.show_flatpickr(
+            trigger_element,
+            (time) => {
+                message_view.fast_track_current_msg_list_to_anchor(
+                    "date",
+                    new Date(time).toISOString(),
+                );
+            },
+            new Date(message.timestamp * 1000),
+            {
+                enableTime: false,
+                // Set to the end of the month so that we don't see too many
+                // disabled rows in the flatpickr calendar which looks visually
+                // unappealing.
+                maxDate: endOfMonth,
+            },
+            true,
+        );
+    }
+
+    function get_start_of_day(date: Date): Date {
+        const start = new Date(date);
+        start.setHours(0, 0, 0, 0);
+        return start;
+    }
+
+    function open_scroll_to_time_popover(trigger_element: HTMLElement, message_id: number): void {
+        popover_menus.toggle_popover_menu(trigger_element, {
+            theme: "popover-menu",
+            placement: "bottom",
+            popperOptions: {
+                modifiers: [
+                    {
+                        name: "flip",
+                        options: {
+                            fallbackPlacements: ["top"],
+                        },
+                    },
+                ],
+            },
+            onShow(instance) {
+                popover_menus.on_show_prep(instance);
+                instance.setContent(parse_html(render_scroll_to_time_popover()));
+            },
+            onMount(instance) {
+                const $popper = $(instance.popper);
+                popover_menus.popover_instances.scroll_to_time = instance;
+
+                $popper.on("click", "#scroll_to_oldest", () => {
+                    message_view.fast_track_current_msg_list_to_anchor("oldest");
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.on("click", "#scroll_to_last_week", () => {
+                    const week_ago = get_start_of_day(new Date());
+                    week_ago.setDate(week_ago.getDate() - 7);
+                    message_view.fast_track_current_msg_list_to_anchor(
+                        "date",
+                        week_ago.toISOString(),
+                    );
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.on("click", "#scroll_to_yesterday", () => {
+                    const yesterday = get_start_of_day(new Date());
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    message_view.fast_track_current_msg_list_to_anchor(
+                        "date",
+                        yesterday.toISOString(),
+                    );
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.on("click", "#scroll_to_newest", () => {
+                    message_view.fast_track_current_msg_list_to_anchor("newest");
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.on("click", "#scroll_to_custom", () => {
+                    popover_menus.hide_current_popover_if_visible(instance);
+                    open_date_picker(trigger_element, message_id);
+                });
+            },
+            onHidden(instance) {
+                instance.destroy();
+                popover_menus.popover_instances.scroll_to_time = null;
+            },
+        });
+    }
+
+    $("#message_feed_container").on("click", ".scroll-to-time", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        assert(message_lists.current !== undefined);
+        if ($(this).hasClass("recipient_row_date")) {
+            const $recipient_row = $(this).closest(".recipient_row");
+            const message_id = rows.id_for_recipient_row($recipient_row);
+            open_scroll_to_time_popover(this, message_id);
+            return;
+        }
+        const message_id = rows.id($(this).closest(".message_row"));
+        open_scroll_to_time_popover(this, message_id);
     });
 
     // RESOLVED TOPICS
@@ -965,13 +1081,10 @@ export function initialize(): void {
         if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
             const is_click_within_link = $(e.target).closest("a").length > 0;
             if (is_click_within_link || $(e.target).closest(".copy_codeblock").length > 0) {
-                const is_selecting_link_text =
-                    is_click_within_link &&
-                    (mouse_drag.is_drag(e) || document.getSelection()?.type === "Range");
+                const is_selecting_link_text = is_click_within_link && mouse_drag.is_drag(e);
                 if (is_selecting_link_text) {
                     // Avoid triggering the click handler for a link
-                    // when just dragging over it to select the text or
-                    // double/triple clicking it to select link text.
+                    // when just dragging over it to select the text.
                     e.preventDefault();
                     return;
                 }

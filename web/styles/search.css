@@ -48,6 +48,7 @@
         color: var(--color-search-icons);
         padding: 0;
         outline: none;
+        font-size: inherit;
 
         &:hover {
             opacity: 1;
@@ -84,6 +85,8 @@
             width: var(--search-box-width);
 
             @media (width < $md_min) {
+                /* Square off the icon-only presentation. */
+                width: var(--search-box-height);
                 grid-template:
                     "search-icon search-pills" var(--search-box-height)
                     / var(--search-box-height) 0;
@@ -196,7 +199,6 @@
         border: none;
         outline: none;
         border-radius: 0;
-        font-family: "Source Sans 3 VF", sans-serif;
         font-weight: 400;
         background: transparent;
         text-overflow: ellipsis;

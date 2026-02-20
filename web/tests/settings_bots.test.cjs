@@ -6,10 +6,11 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
+const bot_api_key = "QadL788EkiottHmukyhHgePUFHREiu8b";
 const bot_data_params = {
     realm_bots: [
         {
-            api_key: "QadL788EkiottHmukyhHgePUFHREiu8b",
+            api_key: bot_api_key,
             avatar_url: "",
             bot_type: 1, // DEFAULT_BOT
             default_all_public_streams: true,
@@ -53,7 +54,7 @@ function test(label, f) {
 }
 
 test("generate_zuliprc_url", () => {
-    const url = bot_helper.generate_zuliprc_url(1);
+    const url = bot_helper.generate_zuliprc_url(1, bot_api_key);
     const expected =
         "data:application/octet-stream;charset=utf-8," +
         encodeURIComponent(

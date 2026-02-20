@@ -907,8 +907,12 @@ def do_update_message(
         # longer have access to these messages.  Note: This could be
         # very expensive, since it's N guest users x M messages.
         UserMessage.objects.filter(
-            user_profile__in=users_losing_usermessages,
-            message__in=changed_messages,
+            id__in=UserMessage.objects.filter(
+                user_profile__in=users_losing_usermessages, message__in=changed_messages
+            )
+            .order_by("id")
+            .select_for_update(no_key=False)
+            .values_list("id", flat=True),
         ).delete()
 
         delete_event: DeleteMessagesEvent = {

@@ -33,6 +33,7 @@ from zerver.actions.user_settings import (
     do_change_user_setting,
     do_regenerate_api_key,
     do_start_email_change_process,
+    set_avatar_to_default,
 )
 from zerver.actions.users import generate_password_reset_url
 from zerver.decorator import human_users_only, require_post
@@ -50,7 +51,11 @@ from zerver.lib.exceptions import (
     UserDeactivatedError,
 )
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.rate_limiter import RateLimitedUser, should_rate_limit
+from zerver.lib.rate_limiter import (
+    RateLimitedUser,
+    readable_expiry_string_for_plaintext,
+    should_rate_limit,
+)
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.sounds import get_available_notification_sounds
@@ -481,9 +486,10 @@ def json_change_settings(
         except RateLimitedError as e:
             assert e.secs_to_freedom is not None
             secs_to_freedom = int(e.secs_to_freedom)
+            retry_after_string = readable_expiry_string_for_plaintext(secs_to_freedom)
             raise JsonableError(
-                _("You're making too many attempts! Try again in {seconds} seconds.").format(
-                    seconds=secs_to_freedom
+                _("You're making too many attempts! Try again in {retry_after_string}.").format(
+                    retry_after_string=retry_after_string
                 ),
             )
 
@@ -572,13 +578,11 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_USER:
-        do_change_avatar_fields(
-            user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=user_profile
-        )
+        set_avatar_to_default(user_profile, acting_user=user_profile)
 
-    gravatar_url = avatar_url(user_profile)
+    default_avatar_url = avatar_url(user_profile)
     json_result = dict(
-        avatar_url=gravatar_url,
+        avatar_url=default_avatar_url,
     )
     return json_success(request, data=json_result)
 

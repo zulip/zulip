@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
-const {unmock_module, zrequire} = require("./lib/namespace.cjs");
+const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -20,11 +20,8 @@ page_params.translation_data = {
         "<p>Le canal <b>{name}</b> n'existe pas.</p><p>Gérez vos abonnements <z-link>sur votre page canaux</z-link>.</p>",
 };
 
-// All of our other tests stub out i18n activity;
-// here we do a quick sanity check on the engine itself.
 // `i18n.ts` initializes FormatJS and is imported by
 // `templates.ts`.
-unmock_module("../src/i18n");
 const {$t, $t_html, get_language_name, get_language_list_columns, initialize} = zrequire("i18n");
 
 run_test("$t", () => {
@@ -43,7 +40,7 @@ run_test("$t", () => {
     );
 });
 
-run_test("$tr", () => {
+run_test("$t_html", () => {
     assert.equal(
         $t_html(
             {

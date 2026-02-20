@@ -8,9 +8,8 @@
         "./src/channel.ts"
     ],
     "dev-email-log": [
-        "./src/bundles/common.ts",
+        "./src/bundles/legacy_portico_bundle.ts",
         "./src/portico/email_log.ts",
-        "./src/portico/portico_modals.ts",
         "./styles/portico/email_log.css",
         "./src/reload_state.ts",
         "./src/channel.ts"

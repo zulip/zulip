@@ -29,7 +29,8 @@ from zerver.actions.realm_settings import (
     do_set_realm_new_stream_announcements_stream,
     do_set_realm_zulip_update_announcements_stream,
 )
-from zerver.actions.user_settings import do_change_avatar_fields
+from zerver.actions.user_settings import set_avatar_to_default
+from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableName
@@ -791,6 +792,7 @@ def update_model_ids(model: Any, data: ImportedTableData, related_table: TableNa
     # memory errors. We don't even use ids from ID_MAP.
     assert table != "usermessage"
 
+    data[table].sort(key=lambda r: r["id"])
     old_id_list = current_table_ids(data, table)
     allocated_id_list = allocate_ids(model, len(data[table]))
     for item in range(len(data[table])):
@@ -936,7 +938,7 @@ def process_avatars(record: dict[str, Any]) -> None:
             user_profile.id,
         )
         # Delete the record of the avatar to avoid 404s.
-        do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        set_avatar_to_default(user_profile, acting_user=None)
 
 
 def process_emojis(
@@ -1757,6 +1759,14 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         processes,
         default_user_profile_id=None,  # Fail if there is no user set
     )
+
+    # We need to generate Jdenticon avatars while importing Zulip export data
+    # as well because the export data doesn't include them. Jdenticon avatar
+    # is deterministically generated using a combination of user ID and realm UUID
+    # as input value. Since user ID possibly changes on import, the resulting
+    # Jdenticon would differ. We regenerate it here using the current user ID.
+    for user_profile in UserProfile.objects.filter(avatar_source=UserProfile.AVATAR_FROM_JDENTICON):
+        generate_and_upload_jdenticon_avatar(user_profile, str(realm.uuid), future=False)
 
     # We need to have this check as the emoji files may not
     # be present in import data from other services.

@@ -96,147 +96,58 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
     {
         {
-            const search_suggestions = {
-                lookup_table: new Map([
-                    [
-                        "dm:",
-                        {
-                            description_html: "direct messages with",
-                            search_string: "dm:",
-                        },
-                    ],
-                    [
-                        "dm",
-                        {
-                            description_html: "Search for dm",
-                            search_string: "dm",
-                        },
-                    ],
-                ]),
-                strings: ["dm", "dm:"],
-            };
-
-            /* Test source */
-            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
-            const expected_source_value = search_suggestions.strings;
-            const source = opts.source("dm");
-            assert.deepStrictEqual(source, expected_source_value);
+            const search_suggestions = ["dm", "dm:"];
 
             /* Test highlighter */
             let expected_value = `<div class="search_list_item">\n            <div class="description">Search for dm</div>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[0], "dm"), expected_value);
+            assert.equal(opts.item_html(search_suggestions[0], "dm"), expected_value);
 
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            dm:\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">Direct messages with</div>\n</div>\n`;
-            assert.equal(opts.item_html(source[1], "dm"), expected_value);
+            assert.equal(opts.item_html(search_suggestions[1], "dm"), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
         }
 
         {
-            const search_suggestions = {
-                lookup_table: new Map([
-                    [
-                        "stream:Verona",
-                        {
-                            description_html: "Messages in #Verona",
-                            search_string: "stream:Verona",
-                        },
-                    ],
-                    [
-                        "ver",
-                        {
-                            description_html: "Search for ver",
-                            search_string: "ver",
-                        },
-                    ],
-                ]),
-                strings: ["ver", "stream:Verona"],
-            };
-
-            /* Test source */
-            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
-            const expected_source_value = search_suggestions.strings;
-            const source = opts.source("ver");
-            assert.deepStrictEqual(source, expected_source_value);
+            const search_suggestions = ["ver", "stream:Verona"];
 
             /* Test highlighter */
             let description_html = "Search for ver";
             let expected_value = `<div class="search_list_item">\n            <div class="description">Search for ver</div>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[0], "ver"), expected_value);
+            assert.equal(opts.item_html(search_suggestions[0], "ver"), expected_value);
 
             const search_string = "channel: Verona";
             description_html = "Messages in #Verona";
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            ${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
-            assert.equal(opts.item_html(source[1], "ver"), expected_value);
+            assert.equal(opts.item_html(search_suggestions[1], "ver"), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
         }
 
         {
-            const search_suggestions = {
-                lookup_table: new Map([
-                    [
-                        "dm-including:zo",
-                        {
-                            description_html: "group direct messages including",
-                            search_string: "dm-including:" + zoe.user_id,
-                        },
-                    ],
-                    [
-                        "dm:zo",
-                        {
-                            description_html: "direct messages with",
-                            search_string: `dm:${zoe.user_id}`,
-                        },
-                    ],
-                    [
-                        "sender:zo",
-                        {
-                            description_html: "sent by",
-                            search_string: `sender:${zoe.user_id}`,
-                        },
-                    ],
-                    [
-                        "zo",
-                        {
-                            description_html: "Search for zo",
-                            search_string: "zo",
-                        },
-                    ],
-                ]),
-                strings: ["zo", "sender:zo", "dm:zo", "dm-including:zo"],
-            };
-
-            /* Test source */
-            override_rewire(search_suggestion, "get_suggestions", () => search_suggestions);
-            const expected_source_value = search_suggestions.strings;
-            const source = opts.source("zo");
-            assert.deepStrictEqual(source, expected_source_value);
+            const search_suggestions = [
+                "zo",
+                `sender:${zoe.user_id}`,
+                `dm:${zoe.user_id}`,
+                `dm-including:${zoe.user_id}`,
+            ];
 
             /* Test highlighter */
             const description_html = "Search for zo";
             let expected_value = `<div class="search_list_item">\n            <div class="description">${description_html}</div>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[0], "zo"), expected_value);
+            assert.equal(opts.item_html(search_suggestions[0], "zo"), expected_value);
 
-            people.add_active_user(
-                {
-                    email: "user7@zulipdev.com",
-                    user_id: 3,
-                    full_name: "Zoe",
-                },
-                "server_events",
-            );
             override(realm, "realm_enable_guest_user_indicator", true);
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">sender:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[1], "zo"), expected_value);
+            assert.equal(opts.item_html(search_suggestions[1], "zo"), expected_value);
 
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[2], "zo"), expected_value);
+            assert.equal(opts.item_html(search_suggestions[2], "zo"), expected_value);
 
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm-including:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
-            assert.equal(opts.item_html(source[3], "zo"), expected_value);
+            assert.equal(opts.item_html(search_suggestions[3], "zo"), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);

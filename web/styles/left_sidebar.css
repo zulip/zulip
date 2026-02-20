@@ -228,6 +228,23 @@
     }
 }
 
+.direct-message-section-bottom-divider-container {
+    display: block;
+    margin-right: var(--left-sidebar-right-margin);
+    padding: var(--left-sidebar-direct-messages-bottom-divider-padding) 0;
+    position: sticky;
+    top: var(--line-height-sidebar-row-prominent);
+    background: var(--color-background);
+    z-index: 3;
+}
+
+.direct-message-section-bottom-divider {
+    opacity: 1 !important; /* override .dark-theme:root hr */
+    border-color: var(--color-left-sidebar-direct-messages-bottom-divider);
+    border-width: 0.5px;
+    margin: 0;
+}
+
 #hide-more-direct-messages,
 #direct-messages-section-header {
     grid-template-columns:
@@ -269,11 +286,19 @@
 #direct-messages-section-header {
     cursor: pointer;
     white-space: nowrap;
-    border-radius: 4px;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+
+    /* The active direct messages section has a different background color */
+    &:not(.active-direct-messages-section) {
+        background-color: var(--color-background);
+    }
 
     /* Prevent hover styles set on other rows when zoomed in. */
     &:not(.zoom-in):hover {
         background-color: var(--color-background-hover-narrow-filter);
+        border-radius: 4px;
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
 
         .left-sidebar-title,
@@ -396,8 +421,13 @@
     cursor: pointer;
     background-color: var(--color-background);
     position: sticky;
-    top: 0;
-    /* Must be more than .sidebar-topic-check and less than #left-sidebar-search */
+    /* height of DM header + 1px divider line and its top/bottom padding */
+    top: calc(
+        var(--line-height-sidebar-row-prominent) + 1px + 2 *
+            var(--left-sidebar-direct-messages-bottom-divider-padding)
+    );
+    /* Must be more than .sidebar-topic-check and less than #left-sidebar-search
+       and #direct-messages-section-header */
     z-index: 2;
     color: var(--color-text-default);
     /* There seems to be a bug where when the header returns to normal position after
@@ -2338,7 +2368,21 @@ li.topic-list-item {
     display: none !important;
 }
 
-#left-sidebar-navigation-area.hidden-by-filters,
-#direct-messages-section-header.hidden-by-filters {
+#left-sidebar-navigation-area.hidden-by-filters {
     display: none;
+}
+
+#left_sidebar_scroll_container.direct-messages-hidden-by-filters,
+.spectator-view {
+    #direct-messages-section-header {
+        display: none;
+    }
+
+    .direct-message-section-bottom-divider-container {
+        display: none;
+    }
+
+    .stream-list-subsection-header {
+        top: 0;
+    }
 }

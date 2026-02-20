@@ -1151,6 +1151,22 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             "/user_avatars/5/ff062b0fee41738b38c4312bb33bdf3fe2aad463-medium.png",
         )
 
+        with self.settings(AVATAR_SALT="salt"):
+            url = get_avatar_field(
+                user_id=18,
+                realm_id=4,
+                email="bar@example.com",
+                avatar_source=UserProfile.AVATAR_FROM_JDENTICON,
+                avatar_version=2,
+                medium=True,
+                client_gravatar=False,
+            )
+
+        self.assertEqual(
+            url,
+            "/user_avatars/4/899f0055b9b2d23cd53c9370c681ccee3d50da7a-medium.png",
+        )
+
         url = get_avatar_field(
             user_id=9999,
             realm_id=9999,
@@ -1295,6 +1311,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.login("hamlet")
         cordelia = self.example_user("cordelia")
         cordelia.email = cordelia.delivery_email
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
         cordelia.save()
         with self.settings(
             ENABLE_GRAVATAR=False, DEFAULT_AVATAR_URI="http://other.server/avatar.svg"
@@ -1303,7 +1320,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             redirect_url = response["Location"]
             self.assertEqual(redirect_url, "http://other.server/avatar.svg?version=1&foo=bar")
 
-    def test_get_user_avatar(self) -> None:
+    def _test_get_avatar(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         cordelia = self.example_user("cordelia")
@@ -1313,8 +1330,6 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         cross_realm_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
 
-        cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
-        cordelia.save()
         response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + "?foo=bar"))
@@ -1395,15 +1410,27 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith("images/unknown-user-avatar.png?foo=bar"))
 
-    def test_get_user_avatar_medium(self) -> None:
+    def test_get_user_avatar(self) -> None:
+        cordelia = self.example_user("cordelia")
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
+        cordelia.save()
+
+        self._test_get_avatar()
+
+    def test_get_jdenticon_avatar(self) -> None:
+        cordelia = self.example_user("cordelia")
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_JDENTICON
+        cordelia.save()
+
+        self._test_get_avatar()
+
+    def _test_get_avatar_medium(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         cordelia = self.example_user("cordelia")
         cordelia.email = cordelia.delivery_email
         cordelia.save()
 
-        cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
-        cordelia.save()
         response = self.client_get("/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + "?foo=bar"))
@@ -1453,6 +1480,20 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
             response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
             self.assertEqual(429, response.status_code)
+
+    def test_get_user_avatar_medium(self) -> None:
+        cordelia = self.example_user("cordelia")
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
+        cordelia.save()
+
+        self._test_get_avatar_medium()
+
+    def test_get_jdenticon_avatar_medium(self) -> None:
+        cordelia = self.example_user("cordelia")
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_JDENTICON
+        cordelia.save()
+
+        self._test_get_avatar_medium()
 
     def test_non_valid_user_avatar(self) -> None:
         # It's debatable whether we should generate avatars for non-users,
@@ -1606,27 +1647,52 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_delete_avatar(self) -> None:
         """
-        A DELETE request to /json/users/me/avatar should delete the profile picture and return gravatar URL
+        A DELETE request to /json/users/me/avatar should delete the profile picture
+        and return URL corresponding to the realm's default avatar source.
         """
         self.login("cordelia")
         cordelia = self.example_user("cordelia")
+        realm = cordelia.realm
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
 
-        do_set_realm_property(cordelia.realm, "avatar_changes_disabled", True, acting_user=None)
+        # On deletion, cordelia's avatar should be Jdenticon generated.
+        do_set_realm_property(
+            realm, "default_avatar_source", Realm.AVATAR_FROM_JDENTICON, acting_user=None
+        )
+        self.assertEqual(realm.default_avatar_source, Realm.AVATAR_FROM_JDENTICON)
+
+        do_set_realm_property(realm, "avatar_changes_disabled", True, acting_user=None)
         result = self.client_delete("/json/users/me/avatar")
         self.assert_json_error(result, "Avatar changes are disabled in this organization.", 400)
 
-        do_set_realm_property(cordelia.realm, "avatar_changes_disabled", False, acting_user=None)
+        do_set_realm_property(realm, "avatar_changes_disabled", False, acting_user=None)
         result = self.client_delete("/json/users/me/avatar")
-        user_profile = self.example_user("cordelia")
-
         response_dict = self.assert_json_success(result)
-        self.assertIn("avatar_url", response_dict)
-        self.assertEqual(response_dict["avatar_url"], avatar_url(user_profile))
 
-        self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
-        self.assertEqual(user_profile.avatar_version, 2)
+        cordelia.refresh_from_db()
+        self.assertIn("avatar_url", response_dict)
+        self.assertEqual(response_dict["avatar_url"], avatar_url(cordelia))
+        self.assertEqual(cordelia.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertEqual(cordelia.avatar_version, 2)
+
+        # On deletion, hamlet's avatar should be a Gravatar.
+        do_set_realm_property(
+            realm, "default_avatar_source", Realm.AVATAR_FROM_GRAVATAR, acting_user=None
+        )
+
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        hamlet.avatar_source = UserProfile.AVATAR_FROM_USER
+        hamlet.save(update_fields=["avatar_source"])
+
+        result = self.client_delete("/json/users/me/avatar")
+        response_dict = self.assert_json_success(result)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(response_dict["avatar_url"], avatar_url(hamlet))
+        self.assertEqual(hamlet.avatar_version, 2)
 
     def test_avatar_upload_file_size_error(self) -> None:
         self.login("hamlet")

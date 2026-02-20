@@ -23,7 +23,12 @@ The import will include your organization's:
 * **Name**
 * **Users**, including names, emails, roles
 * **Teams** as Zulip channels, including all user subscriptions
-* **Message history**, excluding direct messages and messages in private channels.
+* **Message history**, excluding direct messages and messages in private channels
+
+<ZulipNote>
+  This feature is currently in beta. If you run into any problems, please
+  [report them](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html).
+</ZulipNote>
 
 ## Import process overview
 
@@ -38,13 +43,14 @@ steps, which are described in more detail below:
   1. [Get your organization started with Zulip](#get-your-organization-started-with-zulip)!
 </Steps>
 
-When planning to migrate from Microsoft Teams to Zulip, make sure your Microsoft tenant
-is active and still has access to Microsoft services for at least a couple of months.
-The process to gain access to the Teams data export tool can take around a month, and
-Zulip's import tool for Microsoft Teams requires an active Microsoft Entra ID application.
-Additionally, since the imported users' email addresses will be their Microsoft tenant
-emails, they will still need access to those accounts to [update their Zulip email
-addresses](/help/change-your-email-address).
+When planning to migrate from Microsoft Teams to Zulip, make sure your Microsoft
+tenant is active and still has access to Microsoft services for at least a
+couple of months. The process to gain access to the Teams data export tool [can
+take around a month](https://blog.zulip.com/2025/09/10/teams-export-vaporware/),
+and Zulip's import tool for Microsoft Teams requires an active Microsoft Entra
+ID application. Additionally, since the imported users' email addresses will be
+their Microsoft tenant emails, they will still need access to those accounts to
+[update their Zulip email addresses](/help/change-your-email-address).
 
 ## Import your organization from Microsoft Teams into Zulip
 
@@ -56,14 +62,14 @@ the export of data for tenants of up to 500 users. If your organization has more
 500 users, you can try the [Teams export
 APIs](https://learn.microsoft.com/en-us/microsoftteams/migration-from-teams#steps-to-access-the-teams-export-apis).
 
-#### Export message history using Teams data export tool
+#### Export message history using the Teams data export tool
 
 <Steps>
-  1. Make sure that you are an admin of your Microsoft organization. If you are one,
-     go to this [link](https://aka.ms/AccessTeamsDataExportTool) and contact support
-     through the Teams admin center.
+  1. Make sure that you are an admin of your Microsoft organization. [Request
+     access to the data export tool](https://aka.ms/AccessTeamsDataExportTool)
+     by contacting support through the **Teams admin center**.
   1. File a ticket using the predefined title. In the description, provide an
-     estimate of the size of your tenant and confirmation that you are accessing
+     estimate of the size of your tenant, and confirmation that you are accessing
      the tool for the purpose of switching from Teams.
   1. Once your request is approved, go to the [Microsoft Teams admin
      center](https://admin.teams.microsoft.com/) as the **global administrator**.
@@ -77,27 +83,27 @@ APIs](https://learn.microsoft.com/en-us/microsoftteams/migration-from-teams#step
 Some organization data are not exported by the Teams data export tool. The Zulip import
 tool will call several Microsoft Graph APIs to collect the following data:
 
-* **User roles**. The [import details](#import-details) section details how  Microsoft
+* **User roles**. The [user roles](#user-roles) section explains how  Microsoft
   Teams users roles and user types are mapped to Zulip user roles.
 
-To access those APIs, the following instructions will guide you through creating a Microsoft Entra ID application
-with the required permissions and [authorizing an access
+To access those APIs, create a Microsoft Entra ID application with the required
+permissions, and [authorize an access
 token](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow):
 
 <Steps>
   1. Log in to the [Microsoft Entra ID](https://entra.microsoft.com/) portal as
      the **global administrator**.
-  1. Navigate to the sidebar → **Entra ID** → **App registrations** and click **New
+  1. Navigate to the sidebar → **Entra ID** → **App registrations**, and click **New
      registration**.
-  1. In the **Register an application** menu, enter the application's name, it can be
-     anything.
+  1. In the **Register an application** menu, enter the application's name
+     (e.g., "Zulip export").
   1. In the **Supported accounts types** section, select **Accounts in this organizational
      directory only**.
   1. In the **Redirect URI** section, select **Web** as the platform type and enter
      `"https://chat.zulip.org/"`.
   1. In the app's menu, navigate to the **API permissions** menu.
   1. Click **Add a permission** and select **Microsoft Graph**.
-  1. Select the **Application permissions** as the permission type.
+  1. Select **Application permissions** as the permission type.
   1. Search and add these permissions:
 
      * `User.Read.All`
@@ -105,7 +111,7 @@ token](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-clien
 
      See the [required token permissions](#required-token-permissions) section for more
      details about these tokens and the endpoints that the import tool calls.
-  1. Click the **Grant admin consent for *org\_name*** button in the **API
+  1. Click the **Grant admin consent for `your organization`** button in the **API
      permissions** menu to grant admin consent to all scopes.
   1. Take note of the application's `redirect_uri`, `tenant_id`, `client_id`, and
      `client_secret`.
@@ -144,7 +150,7 @@ token](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-clien
 </Steps>
 
 <ZulipNote>
-  If the token expires and you need a new one, you can just repeat step 14.
+  If the token expires and you need a new one, repeat step 14 above.
 </ZulipNote>
 
 #### Required token permissions
@@ -201,38 +207,43 @@ tool:
   </TabItem>
 </Tabs>
 
-#### Import details
+### Import details
 
-Whether you are using Zulip Cloud or self-hosting Zulip, here are few notes to keep
-in mind about the import process:
+Because the import tool is currently in beta, the following data is not imported
+into Zulip. If importing any of this data is important for your organization,
+contact [support@zulip.com](mailto:support@zulip.com) to see if the import tool
+can be extended to include it.
 
-* Any kind of mentions in messages are not converted to Zulip mentions.
-* Custom emojis are not imported.
-* Direct messages are not imported.
-* Meeting chats and recordings are not imported.
-* Message attachments are not imported.
-* Message edit history and system messages such as `@user_a added @user_b to the chat`
-  are not imported.
-* Message reactions are not imported.
+* Direct messages and messages in private channels
+* Meeting chats and recordings
+* Message attachments
+* Message reactions
+* Message edit history, and system messages such as `@user_a added @user_b to the chat`
+* Custom emoji
+* User avatars
+
+A couple of additional caveats to keep in mind:
+
+* Mentions in messages are not converted to Zulip mentions.
 * Message thread replies will be combined to the main topic.
-* Messages in private channels are not imported.
-* Microsoft tenant's user roles are mapped to Zulip's [user
-  roles](/help/user-roles) in the following way:
-  | Microsoft Teams role | Zulip role |
-  | -------------------- | ---------- |
-  | Global Administrator | Owner      |
-  | Member               | Member     |
-  | Guest                | Guest      |
-* The Teams export tool does not export organization settings, so you will need to
-  [configure the settings for your Zulip
-  organization](/help/customize-organization-settings).
-  This includes settings like [email visibility](/help/configure-email-visibility),
-  [message editing permissions](/help/restrict-message-editing-and-deletion),
-  and [how users can join your organization](/help/restrict-account-creation).
-* The Teams export tool does not export the full user settings, so users in your
-  organization may want to [customize their account
-  settings](/help/getting-started-with-zulip).
-* User avatars are not imported.
+
+#### User roles
+
+Microsoft tenant's user roles are mapped to Zulip's [user
+roles](/help/user-roles) in the following way:
+
+| Microsoft Teams role | Zulip role |
+| -------------------- | ---------- |
+| Global Administrator | Owner      |
+| Member               | Member     |
+| Guest                | Guest      |
+
+#### Settings
+
+The Teams export tool does not export organization settings, or full user
+settings. Configure organization settings as described
+[below](#get-your-organization-started-with-zulip), and encourage users to
+[customize their account settings](/help/getting-started-with-zulip).
 
 ## Clean up after the Microsoft Teams export
 
@@ -257,10 +268,10 @@ Once the import process is completed, you will need to:
      in](/help/import-from-microsoft-teams#decide-how-users-will-log-in) for the first time.
   1. Share the URL for your new Zulip organization, and (recommended) the [Getting
      started with Zulip guide](/help/getting-started-with-zulip).
-  1. **Important**, make sure all users [change their Zulip
-     email addresses](/help/change-your-email-address) from their Microsoft tenant
-     emails to ones they can continue to access before your organization's Microsoft
-     subscription expires.
+  1. **Make sure all users [change their Zulip email
+     addresses](/help/change-your-email-address) from their Microsoft tenant
+     emails** to ones they can continue to access, before your organization's
+     Microsoft subscription expires.
   1. Migrate any [integrations](/integrations/).
 </Steps>
 
@@ -277,6 +288,6 @@ Once the import process is completed, you will need to:
 ## Related articles
 
 * [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
-* [Moving to Zulip](/help/moving-to-zulip)
+* [Moving from Microsoft Teams](/help/moving-from-teams)
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Change your email address](/help/change-your-email-address)

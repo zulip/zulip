@@ -290,11 +290,21 @@ class EventOnboardingSteps(BaseEvent):
     onboarding_steps: list[OnboardingSteps]
 
 
-class EventPushDevice(BaseEvent):
-    type: Literal["push_device"]
-    push_account_id: int
-    status: Literal["active", "failed", "pending"]
-    error_code: str | None = None
+class EventDeviceAdd(BaseEvent):
+    type: Literal["device"]
+    op: Literal["add"]
+    device_id: int
+
+
+class EventDeviceUpdate(BaseEvent):
+    type: Literal["device"]
+    op: Literal["update"]
+    device_id: int
+    push_key_id: int | None = None
+    push_token_id: str | None = None
+    pending_push_token_id: str | None = None
+    push_token_last_updated_timestamp: int | None = None
+    push_registration_error_code: str | None = None
 
 
 class NavigationViewFields(BaseModel):
@@ -586,6 +596,11 @@ class RealmTopicsPolicyData(BaseModel):
     mandatory_topics: bool
 
 
+class RealmDescriptionData(BaseModel):
+    description: str
+    rendered_description: str
+
+
 class NightLogoData(BaseModel):
     night_logo_url: str
     night_logo_source: str
@@ -650,6 +665,7 @@ class EventRealmUpdate(BaseEvent):
     op: Literal["update"]
     property: str
     value: bool | int | str | None
+    rendered_description: str | None = None
 
 
 class RealmUser(BaseModel):

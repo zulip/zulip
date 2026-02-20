@@ -707,6 +707,14 @@ export function compare_group_setting_options(
     assert(option_a.type === "user");
     assert(option_b.type === "user");
 
+    if (option_a.user.is_bot && !option_b.user.is_bot) {
+        return 1;
+    }
+
+    if (!option_a.user.is_bot && option_b.user.is_bot) {
+        return -1;
+    }
+
     if (target_group !== undefined) {
         if (
             !target_group.members.has(option_a.user.user_id) &&
@@ -1031,7 +1039,7 @@ function compare_by_user_group_name(group_a: UserGroup, group_b: UserGroup): num
     return util.strcmp(group_a.name, group_b.name);
 }
 
-export let sort_streams = (matches: StreamPillData[], query: string): StreamPillData[] => {
+export let sort_streams = <T extends StreamSubscription>(matches: T[], query: string): T[] => {
     const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
     const desc_results = typeahead.triage(
         query,

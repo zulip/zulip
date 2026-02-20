@@ -1280,8 +1280,9 @@ def delete_in_topic(
         )
         users_with_stale_user_topic_rows = list(
             filter(
-                lambda user_profile: user_profile.id
-                not in user_ids_with_access_to_protected_messages,
+                lambda user_profile: (
+                    user_profile.id not in user_ids_with_access_to_protected_messages
+                ),
                 users_with_stale_user_topic_rows,
             )
         )

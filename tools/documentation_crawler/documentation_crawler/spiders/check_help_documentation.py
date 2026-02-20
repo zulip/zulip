@@ -52,3 +52,6 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
         "http://localhost:9981/security/",
     ]
     deny_domains: list[str] = []
+    # Exclude /apps/download/* URLs to prevent crawler from following redirects
+    # to desktop-download.zulip.com and attempting to fetch large .dmg/.exe files
+    deny = [r".*/apps/download/.*"]

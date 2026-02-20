@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -24,56 +25,61 @@ initialize_user_settings({user_settings});
 
 const OFFLINE_THRESHOLD_SECS = 200;
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     user_id: 101,
     full_name: "Me Myself",
-};
+    date_joined: 0,
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 1,
     full_name: "Alice Smith",
-};
+    date_joined: 0,
+});
 
-const fred = {
+const fred = make_user({
     email: "fred@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
-};
+    date_joined: 0,
+});
 
-const sally = {
+const sally = make_user({
     email: "sally@example.com",
     user_id: 3,
     full_name: "Sally Jones",
-};
+    date_joined: 0,
+});
 
-const zoe = {
+const zoe = make_user({
     email: "zoe@example.com",
     user_id: 6,
     full_name: "Zoe Yang",
-};
+    date_joined: 0,
+});
 
-const bot = {
+const bot = make_bot({
     email: "bot@zulip.com",
     user_id: 7,
     full_name: "The Bot",
-    is_bot: true,
-};
+});
 
-const john = {
+const john = make_user({
     email: "john@zulip.com",
     user_id: 8,
     full_name: "John Doe",
     // Second 77.
     date_joined: "1970-01-01 00:01:15 UTC",
-};
+});
 
-const jane = {
+const jane = make_user({
     email: "jane@zulip.com",
     user_id: 9,
     full_name: "Jane Doe",
-};
+    date_joined: 0,
+});
 
 people.add_active_user(me);
 people.add_active_user(alice);

@@ -830,29 +830,6 @@ class MarkdownEmbedsTest(ZulipTestCase):
             f"""<p><a href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw">http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw</a></p>\n<div class="youtube-video message_inline_image"><a data-id="nOJgD4fcZhI" href="http://www.youtube.com/watch_videos?video_ids=nOJgD4fcZhI,i96UO8-GFvw"><img src="{get_camo_url("https://i.ytimg.com/vi/nOJgD4fcZhI/mqdefault.jpg")}"></a></div>""",
         )
 
-    def test_inline_image(self) -> None:
-        image_url = "https://www.google.com/images/srpr/logo4w.png"
-        msg = f"The Google logo looks like this: ![Google logo]({image_url}) and..."
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            f"""<p>The Google logo looks like this: <img alt="Google logo" data-original-src="{image_url}" src="{get_camo_url(image_url)}"> and...</p>""",
-        )
-
-        msg = '![foo](/url "the title")'
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            '<p><img alt="foo" data-original-src="/url" src="/url" title="the title"></p>',
-        )
-
-        msg = "![](/url)"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            '<p><img alt="" data-original-src="/url" src="/url"></p>',
-        )
-
     def test_inline_image_preview(self) -> None:
         url = "http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"
         camo_url = get_camo_url(url)
@@ -2417,7 +2394,33 @@ class MarkdownMentionTest(ZulipTestCase):
                 f"<p>{unicode_character}@<strong>King Hamlet</strong></p>",
             )
 
-    def test_mention_silent(self) -> None:
+    def test_mention_get_user_ids(self) -> None:
+        # possible_mentions() does NOT differentiate between silent and
+        # non-silent mentions, unlike possible_user_group_mentions().
+        # So we explicitly test that behaviour of possible_mentions(),
+        # when mentioning users, ensuring their Ids are fetched.
+        # This also tests the case where different mention types were used in the same
+        # message.
+        realm = get_realm("zulip")
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        # Mix 4 different types of mentions:
+        # non-silent mention by name, silent mention by name, non-silent mention by ID, silent mention by ID.
+        content = f"@**{aaron.full_name}**, @_**{hamlet.full_name}**, @**|{cordelia.id}**, @_**|{othello.id}**"
+
+        mention_backend = MentionBackend(realm.id)
+        mention_data = MentionData(mention_backend, content, message_sender=None)
+
+        # user_ids of all the mentioned users, by different mention types,
+        # should be captured in mention_data.get_user_ids().
+        self.assertEqual(
+            mention_data.get_user_ids(), {aaron.id, hamlet.id, cordelia.id, othello.id}
+        )
+
+    def test_render_silent_mention_user(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
         msg = Message(
@@ -2631,8 +2634,14 @@ class MarkdownMentionTest(ZulipTestCase):
         assert_mentions("smush@**steve**smush", set())
 
         assert_mentions(
-            f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234** @**all**",
-            {"King Hamlet", f"|{aaron.id}", "Cordelia, Lear's daughter", "Foo van Barson|1234"},
+            f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234**, @_**othello** @**all**",
+            {
+                "King Hamlet",
+                f"|{aaron.id}",
+                "Cordelia, Lear's daughter",
+                "Foo van Barson|1234",
+                "othello",
+            },
             False,
             True,
         )
@@ -2641,22 +2650,26 @@ class MarkdownMentionTest(ZulipTestCase):
         sender_user_profile = self.example_user("othello")
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
         msg = Message(
             sender=sender_user_profile,
             sending_client=get_client("test"),
             realm=sender_user_profile.realm,
         )
 
-        content = "@**King Hamlet** and @**Cordelia, Lear's daughter**, check this out"
+        content = (
+            "@**King Hamlet**, @**Cordelia, Lear's daughter**, and @_**aaron**, check this out"
+        )
 
         rendering_result = render_message_markdown(msg, content)
         self.assertEqual(
             rendering_result.rendered_content,
             "<p>"
             '<span class="user-mention" '
-            f'data-user-id="{hamlet.id}">@King Hamlet</span> and '
+            f'data-user-id="{hamlet.id}">@King Hamlet</span>, '
             '<span class="user-mention" '
-            f'data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>, '
+            f'data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>, and '
+            f'<span class="user-mention silent" data-user-id="{aaron.id}">aaron</span>, '
             "check this out</p>",
         )
         self.assertEqual(rendering_result.mentions_user_ids, {hamlet.id, cordelia.id})
@@ -3751,3 +3764,22 @@ class MarkdownErrorTests(ZulipTestCase):
 
         result = processor.run(markdown_input)
         self.assertEqual(result, expected)
+
+    def test_fenced_code_with_pygments_exception(self) -> None:
+        """Fallback to plain code when Pygments raises an exception."""
+        with (
+            self.assertLogs(level="ERROR") as log,
+            mock.patch("zerver.lib.markdown.fenced_code.CodeHilite.hilite") as mocked_hilite,
+        ):
+            mocked_hilite.side_effect = Exception("pygments crashed")
+
+            markdown_text = "```python\nprint('pygments fallback test')\n```"
+            rendered_html = markdown_convert(
+                markdown_text,
+                self.example_user("hamlet"),
+            ).rendered_content
+
+        self.assertIn("<pre", rendered_html)
+        self.assertIn("print('pygments fallback test')", rendered_html)
+        mocked_hilite.assert_called()
+        self.assertIn("Failed to highlight fenced code block", log.output[0])

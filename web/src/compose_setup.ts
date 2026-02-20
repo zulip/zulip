@@ -22,7 +22,7 @@ import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as drafts from "./drafts.ts";
 import * as flatpickr from "./flatpickr.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_view from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -481,9 +481,9 @@ export function initialize(): void {
         }
 
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Create a poll"}),
-            html_body: render_add_poll_modal(),
-            html_submit_button: $t_html({defaultMessage: "Add poll"}),
+            modal_title_html: $t_html({defaultMessage: "Create a poll"}),
+            modal_content_html: render_add_poll_modal(),
+            modal_submit_button_text: $t({defaultMessage: "Add poll"}),
             close_on_submit: true,
             on_click(e) {
                 // frame a message using data input in modal, then populate the compose textarea with it
@@ -543,9 +543,9 @@ export function initialize(): void {
             }
 
             dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Create a collaborative to-do list"}),
-                html_body: render_add_todo_list_modal(),
-                html_submit_button: $t_html({defaultMessage: "Create to-do list"}),
+                modal_title_html: $t_html({defaultMessage: "Create a collaborative to-do list"}),
+                modal_content_html: render_add_todo_list_modal(),
+                modal_submit_button_text: $t({defaultMessage: "Create to-do list"}),
                 close_on_submit: true,
                 on_click(e) {
                     // frame a message using data input in modal, then populate the compose textarea with it

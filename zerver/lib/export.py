@@ -160,6 +160,7 @@ ALL_ZULIP_TABLES = {
     "zerver_defaultstream",
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
+    "zerver_device",
     "zerver_draft",
     "zerver_emailchangestatus",
     "zerver_externalauthid",
@@ -180,7 +181,6 @@ ALL_ZULIP_TABLES = {
     "zerver_preregistrationuser_streams",
     "zerver_preregistrationuser_groups",
     "zerver_presencesequence",
-    "zerver_pushdevice",
     "zerver_pushdevicetoken",
     "zerver_reaction",
     "zerver_realm",
@@ -244,7 +244,7 @@ NON_EXPORTED_TABLES = {
     "zerver_scheduledmessagenotificationemail",
     # When switching servers, clients will need to re-log in and
     # reregister for push notifications anyway.
-    "zerver_pushdevice",
+    "zerver_device",
     "zerver_pushdevicetoken",
     # We don't use these generated Django tables
     "zerver_userprofile_groups",
@@ -1530,7 +1530,7 @@ def fetch_client_data(response: TableData, client_ids: set[int]) -> None:
 
 
 def fetch_submessage_data(response: TableData, message_ids: set[int]) -> None:
-    query = SubMessage.objects.filter(message_id__in=list(message_ids))
+    query = SubMessage.objects.filter(message_id__in=list(message_ids)).order_by("id")
     response["zerver_submessage"] = make_raw(query.iterator())
 
 
@@ -1557,11 +1557,20 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
 
     recipient_filter = Q()
     if export_type != RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
-        # First we find the set of recipient ids of DirectMessageGroups which can be exported.
-        # A DirectMessageGroup can be exported only if at least one of its users is consenting
-        # to the export of private data.
-        # We can find this set by gathering all the Subscriptions of consenting users to
-        # DirectMessageGroups and collecting the set of recipient_ids from those Subscriptions.
+        # First we find the set of recipient ids of DirectMessageGroups which
+        # can be exported.  A DirectMessageGroup can be exported only if at
+        # least one of its users is consenting to the export of private data.
+        #
+        # When that condition is met, all messages in the conversation are
+        # included, not just those sent by the consenting user -- the consent
+        # model is per-conversation, not per-message, matching the user-facing
+        # documentation: "direct messages that [consenting] members can
+        # access". This is necessary because exporting partial conversations
+        # would produce unusable data.
+        #
+        # We can find this set by gathering all the Subscriptions of consenting
+        # users to DirectMessageGroups and collecting the set of recipient_ids
+        # from those Subscriptions.
         exportable_direct_message_group_recipient_ids = set(
             Subscription.objects.filter(
                 recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__in=consented_user_ids
@@ -1794,6 +1803,12 @@ def export_partial_message_files(
     #   - received by someone in your exportable_user_ids (which
     #     equates to a recipient object we are exporting)
     #
+    # This means the consent model is per-conversation, not per-message:
+    # for EXPORT_FULL_WITH_CONSENT, a consenting user's DMs include both
+    # messages they sent and messages they received -- matching the help
+    # center documentation ("direct messages that [consenting] members
+    # can access").
+    #
     # TODO: In theory, you should be able to export messages in
     # cross-realm direct message threads; currently, this only
     # exports cross-realm messages received by your realm that
@@ -1837,7 +1852,7 @@ def export_partial_message_files(
             user_profile_id__in=consented_user_ids
         ).values_list("recipient_id", flat=True)
 
-        recipient_ids_set = set(public_stream_recipient_ids) | set(consented_recipient_ids) - set(
+        recipient_ids_set = (set(public_stream_recipient_ids) | set(consented_recipient_ids)) - set(
             streams_with_protected_history_recipient_ids
         )
         recipient_ids_for_us = get_ids(response["zerver_recipient"]) & recipient_ids_set
@@ -2069,6 +2084,13 @@ def export_uploads_and_avatars(
 
         avatar_hash_values = set()
         for avatar_user in users:
+            # We don't export Jdenticon avatar because it is deterministically
+            # generated using a combination of user ID and realm UUID as input
+            # value. Since user ID may change on import, the resulting Jdenticon
+            # would differ. Instead, we regenerate it during import using the new user ID.
+            if avatar_user.avatar_source != UserProfile.AVATAR_FROM_USER:
+                continue
+
             avatar_path = user_avatar_base_path_from_ids(
                 avatar_user.id, avatar_user.avatar_version, realm.id
             )
@@ -2349,7 +2371,7 @@ def export_avatars_from_local(
         ]
 
     for user in users:
-        if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
+        if user.avatar_source != UserProfile.AVATAR_FROM_USER:
             continue
 
         avatar_path = user_avatar_base_path_from_ids(user.id, user.avatar_version, realm.id)

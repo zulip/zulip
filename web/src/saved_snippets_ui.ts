@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_add_saved_snippet_modal from "../templates/add_saved_snippet_modal.hbs";
-import render_confirm_delete_saved_snippet from "../templates/confirm_dialog/confirm_delete_saved_snippet.hbs";
 import render_edit_saved_snippet_modal from "../templates/edit_saved_snippet_modal.hbs";
 
 import * as channel from "./channel.ts";
@@ -107,8 +106,9 @@ function item_button_click_callback(event: JQuery.ClickEvent): void {
             .length > 0
     ) {
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete saved snippet?"}),
-            html_body: render_confirm_delete_saved_snippet(),
+            modal_title_html: $t_html({defaultMessage: "Delete saved snippet?"}),
+            modal_content_html: $t({defaultMessage: "This action cannot be undone."}),
+            is_compact: true,
             on_click() {
                 const saved_snippet_id = $(event.target)
                     .closest(".list-item")
@@ -132,12 +132,12 @@ function item_button_click_callback(event: JQuery.ClickEvent): void {
         );
         assert(saved_snippet !== undefined);
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Edit saved snippet"}),
-            html_body: render_edit_saved_snippet_modal({
+            modal_title_html: $t_html({defaultMessage: "Edit saved snippet"}),
+            modal_content_html: render_edit_saved_snippet_modal({
                 title: saved_snippet.title,
                 content: saved_snippet.content,
             }),
-            html_submit_button: $t_html({defaultMessage: "Save"}),
+            modal_submit_button_text: $t({defaultMessage: "Save"}),
             id: "edit-saved-snippet-modal",
             form_id: "edit-saved-snippet-form",
             update_submit_disabled_state_on_change: true,
@@ -175,11 +175,11 @@ function item_click_callback(
     }
     if (is_sticky_bottom_option_clicked) {
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Create a new saved snippet"}),
-            html_body: render_add_saved_snippet_modal({
+            modal_title_html: $t_html({defaultMessage: "Create a new saved snippet"}),
+            modal_content_html: render_add_saved_snippet_modal({
                 prepopulated_content: $target_textarea.val(),
             }),
-            html_submit_button: $t_html({defaultMessage: "Save"}),
+            modal_submit_button_text: $t({defaultMessage: "Save"}),
             id: "add-new-saved-snippet-modal",
             form_id: "add-new-saved-snippet-form",
             update_submit_disabled_state_on_change: true,

@@ -2,33 +2,45 @@
     <div class="modal__overlay {{#unless close_on_overlay_click}}ignore-overlay-click{{/unless}}" tabindex="-1">
         <div {{#if id}}id="{{id}}" {{/if}}class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    {{#if heading_html}}
-                        {{{ heading_html }}}
-                    {{else}}
-                        {{ text_heading }}
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        {{#if modal_title_html}}
+                            {{{ modal_title_html }}}
+                        {{else}}
+                            {{ modal_title_text }}
+                        {{/if}}
+                        {{#if link}}
+                        {{> help_link_widget . }}
+                        {{/if}}
+                    </h1>
+                    {{#if modal_subtitle_html}}
+                    <div class="modal__subtitle">
+                        {{{ modal_subtitle_html }}}
+                    </div>
                     {{/if}}
-                    {{#if link}}
-                    {{> help_link_widget . }}
-                    {{/if}}
-                </h1>
-                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+                </div>
+                {{#if has_tab_switcher}}
+                <div class="modal__tab-switcher-container"></div>
+                {{/if}}
+                {{> components/icon_button icon="close" intent="neutral" custom_classes="modal__close" aria-label=(t 'Close modal') data-micromodal-close=true }}
             </header>
+            {{#unless is_compact}}
             <main class="modal__content {{#if hide_footer}} footer-hidden {{/if}}" data-simplebar data-simplebar-tab-index="-1" {{#if always_visible_scrollbar}}data-simplebar-auto-hide="false"{{/if}}>
                 <div class="alert" id="dialog_error"></div>
-                {{{ body_html }}}
+                {{{ modal_content_html }}}
             </main>
+            {{/unless}}
             {{#unless hide_footer}}
             <footer class="modal__footer">
                 {{#if footer_minor_text }}
                 <div class="dialog-widget-footer-minor-text">{{footer_minor_text}}</div>
                 {{/if}}
                 {{#unless single_footer_button}}
-                <button class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{{ exit_button_html }}}</button>
+                <button class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{ modal_exit_button_text }}</button>
                 {{/unless}}
                 <div class="dialog_submit_button_container">
                     <button class="modal__button dialog_submit_button"{{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}}>
-                        <span class="submit-button-text">{{{ submit_button_html }}}</span>
+                        <span class="submit-button-text">{{ modal_submit_button_text }}</span>
                         <span class="modal__spinner"></span>
                     </button>
                 </div>

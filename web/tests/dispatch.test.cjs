@@ -38,6 +38,10 @@ mock_esm("../src/inbox_ui", {
 const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
 const compose_recipient = mock_esm("../src/compose_recipient");
+mock_esm("../src/compose_validate", {
+    validate_and_update_send_button_status: noop,
+    warn_if_guest_in_dm_recipient: noop,
+});
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
     update_current_view_for_topic_visibility: noop,
@@ -148,7 +152,6 @@ page_params.test_suite = false;
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
 const channel_folders = zrequire("channel_folders");
-const compose_validate = zrequire("compose_validate");
 const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
@@ -648,8 +651,7 @@ run_test("channel_folders", ({override}) => {
     server_events_dispatch.dispatch_normal_event({type: "channel_folder", op: "other"});
 });
 
-run_test("realm settings", ({override, override_rewire}) => {
-    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
+run_test("realm settings", ({override}) => {
     override(current_user, "is_admin", true);
     override(realm, "realm_date_created", new Date("2023-01-01Z"));
 

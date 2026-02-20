@@ -155,7 +155,7 @@ page can be easily identified in it's respective JavaScript file. -->
                     <div class="actions signup-link-wrapper">
                         {{ _("Don't have an account?")}}
                         {% if not register_link_disabled %}
-                        <a class="register-link float-right" href="/register/">{{ _('Sign up') }}</a>
+                        <a class="register-link float-right" href="/register/{% if next %}?next={{ next|urlencode }}{% endif %}">{{ _('Sign up') }}</a>
                         {% endif %}
                     </div>
                 {% endif %}

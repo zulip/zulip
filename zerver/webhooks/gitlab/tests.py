@@ -16,6 +16,10 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/-/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 2 commits to branch tomek.\n\n* b ([66abd2da288](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n* c ([eb6ae1e591e](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9))"
         self.check_webhook("push_hook", expected_topic_name, expected_message)
 
+    def test_push_event_private_project_ignored(self) -> None:
+        self.url = self.build_webhook_url(ignore_private_projects="true")
+        self.check_webhook(fixture_name="push_hook", expect_noop=True)
+
     def test_push_local_branch_without_commits(self) -> None:
         expected_topic_name = "my-awesome-project / changes"
         expected_message = "Eeshan Garg [pushed](https://gitlab.com/eeshangarg/my-awesome-project/-/compare/0000000000000000000000000000000000000000...68d7a5528cf423dfaac37dd62a56ac9cc8a884e3) the branch changes."
@@ -422,6 +426,13 @@ A trivial change that should probably be ignored.
             "merge_request_hook__merge_request_merged", expected_topic_name, expected_message
         )
 
+    def test_merge_request_merged_event_message_ignored(self) -> None:
+        self.url = self.build_webhook_url(ignore_private_projects="true")
+        self.check_webhook(
+            fixture_name="merge_request_hook__merge_request_merged",
+            expect_noop=True,
+        )
+
     def test_wiki_page_opened_event_message(self) -> None:
         expected_topic_name = "my-awesome-project"
         expected_message = 'Tomasz Kolek created [wiki page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to).'
@@ -754,4 +765,72 @@ A trivial change that should probably be ignored.
             expected_topic_name,
             expected_message,
             HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
+
+    def test_emoji_award_in_snippet(self) -> None:
+        expected_topic_name = "sample / snippet #4831194 Sample Snippet"
+        expected_message = "Varun Kolanu added the emoji :thumbsup:."
+
+        self.check_webhook("emoji_hook__award__snippet", expected_topic_name, expected_message)
+
+    def test_emoji_award_in_snippet_with_custom_topic(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+
+        expected_topic_name = "notifications"
+        expected_message = "[[sample](https://gitlab.com/kolanuvarun/sample)] Varun Kolanu added the emoji :thumbsup: to [snippet #4831194](https://gitlab.com/kolanuvarun/sample/-/snippets/4831194)."
+
+        self.check_webhook(
+            "emoji_hook__award__snippet",
+            expected_topic_name,
+            expected_message,
+        )
+
+    def test_emoji_revoke_in_issue(self) -> None:
+        expected_topic_name = "sample / issue #1 Sample Issue"
+        expected_message = "Varun Kolanu removed the emoji :thumbsdown:."
+
+        self.check_webhook("emoji_hook__revoke__issue", expected_topic_name, expected_message)
+
+    def test_emoji_award_in_merge_request_without_merge_request_title(self) -> None:
+        expected_topic_name = "sample / MR #1"
+        expected_message = "Varun Kolanu added the emoji :thumbsup:."
+
+        self.url = self.build_webhook_url(use_merge_request_title="false")
+        self.check_webhook(
+            "emoji_hook__award__merge_request", expected_topic_name, expected_message
+        )
+
+    def test_emoji_award_in_merge_request_with_custom_topic(self) -> None:
+        expected_topic_name = "notifications"
+        expected_message = "[[sample](https://gitlab.com/kolanuvarun/sample)] Varun Kolanu added the emoji :thumbsup: to [MR #1](https://gitlab.com/kolanuvarun/sample/-/merge_requests/1)."
+        self.url = self.build_webhook_url(topic="notifications")
+        self.check_webhook(
+            "emoji_hook__award__merge_request",
+            expected_topic_name,
+            expected_message,
+        )
+
+    def test_emoji_revoke_in_merge_request_note(self) -> None:
+        expected_topic_name = "sample / MR #1 Edit README.md"
+        expected_message = "Varun Kolanu removed the emoji :heart: from [a comment](https://gitlab.com/kolanuvarun/sample/-/merge_requests/1#note_2431339003)."
+
+        self.check_webhook(
+            "emoji_hook__revoke__merge_request_note", expected_topic_name, expected_message
+        )
+
+    def test_emoji_award_in_design_note(self) -> None:
+        expected_topic_name = "sample / design Sample.png"
+        expected_message = "Varun Kolanu added the emoji :heart: to [a comment](https://gitlab.com/kolanuvarun/sample/-/issues/1/designs/Sample.png#note_2421525600)."
+
+        self.check_webhook("emoji_hook__award__design_note", expected_topic_name, expected_message)
+
+    def test_emoji_revoke_in_merge_request_note_with_custom_topic(self) -> None:
+        expected_topic_name = "notifications"
+        expected_message = "[[sample](https://gitlab.com/kolanuvarun/sample)] Varun Kolanu removed the emoji :heart: from [a comment](https://gitlab.com/kolanuvarun/sample/-/merge_requests/1#note_2431339003)."
+
+        self.url = self.build_webhook_url(topic="notifications")
+        self.check_webhook(
+            "emoji_hook__revoke__merge_request_note",
+            expected_topic_name,
+            expected_message,
         )

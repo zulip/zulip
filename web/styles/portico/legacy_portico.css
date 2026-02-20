@@ -1,5 +1,4 @@
 :root {
-    --color-background-modal: hsl(0deg 0% 98%);
     /*
         It is fine if footer is longer than that
         since we are only trying to avoid overlap.

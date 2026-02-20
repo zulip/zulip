@@ -227,7 +227,7 @@ def write_log_line(
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
         with tempfile.NamedTemporaryFile(
-            prefix="profile.data.{}.{}.".format(path.split("/")[-1], int(time_delta * 1000)),
+            prefix="profile.data.{}.{}.".format(path.rsplit("/", 1)[-1], int(time_delta * 1000)),
             delete=False,
         ) as stats_file:
             log_data["prof"].dump_stats(stats_file.name)

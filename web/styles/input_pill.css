@@ -408,10 +408,11 @@
     }
 }
 
+.group_entirely_not_subscribed .display_only_group_pill,
 .creator_details > .display_only_pill {
-    /* On channel and group creation details,
-       align the pill contents better with
-       the surrounding text. */
+    /* In places where the pills are not used in tables,
+       but instead alongside text, we revert back to the
+       baseline vertical alignment. */
     vertical-align: baseline;
 }
 

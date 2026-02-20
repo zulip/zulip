@@ -4,7 +4,9 @@ from unittest.mock import Mock, patch
 from django.conf import settings
 from moto.core.decorator import mock_aws
 
+from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -21,7 +23,7 @@ from zerver.lib.transfer import (
     transfer_uploads_to_s3,
 )
 from zerver.lib.upload import upload_message_attachment
-from zerver.models import Attachment, RealmEmoji
+from zerver.models import Attachment, Realm, RealmEmoji, UserProfile
 
 
 class TransferUploadsToS3Test(ZulipTestCase):
@@ -37,29 +39,45 @@ class TransferUploadsToS3Test(ZulipTestCase):
 
     @mock_aws
     def test_transfer_avatars_to_s3(self) -> None:
+        """Verify user uploaded avatar and Jdenticon generated avatar gets transferred"""
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
         self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        do_set_realm_property(
+            hamlet.realm, "default_avatar_source", Realm.AVATAR_FROM_JDENTICON, acting_user=None
+        )
+        jerry = do_create_user("email1", "password", hamlet.realm, "jerry", acting_user=None)
         with get_test_image_file("img.png") as image_file:
             self.client_post("/json/users/me/avatar", {"file": image_file})
 
-        user = self.example_user("hamlet")
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
+        self.assertEqual(jerry.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
 
         with self.assertLogs(level="INFO"):
             transfer_avatars_to_s3(1)
 
-        path_id = user_avatar_path(user)
-        image_key = bucket.Object(path_id + ".png")
-        original_image_key = bucket.Object(path_id + ".original")
-        medium_image_key = bucket.Object(path_id + "-medium.png")
+        path_id_hamlet = user_avatar_path(hamlet)
+        image_key_hamlet = bucket.Object(path_id_hamlet + ".png")
+        original_image_key_hamlet = bucket.Object(path_id_hamlet + ".original")
+        medium_image_key_hamlet = bucket.Object(path_id_hamlet + "-medium.png")
 
-        self.assert_length(list(bucket.objects.all()), 3)
-        with open(avatar_disk_path(user), "rb") as f:
-            self.assertEqual(image_key.get()["Body"].read(), f.read())
-        with open(avatar_disk_path(user, original=True), "rb") as f:
-            self.assertEqual(original_image_key.get()["Body"].read(), f.read())
-        with open(avatar_disk_path(user, medium=True), "rb") as f:
-            self.assertEqual(medium_image_key.get()["Body"].read(), f.read())
+        path_id_jerry = user_avatar_path(jerry)
+        image_key_jerry = bucket.Object(path_id_jerry + ".png")
+        medium_image_key_jerry = bucket.Object(path_id_jerry + "-medium.png")
+
+        self.assert_length(list(bucket.objects.all()), 5)
+        with open(avatar_disk_path(hamlet), "rb") as f:
+            self.assertEqual(image_key_hamlet.get()["Body"].read(), f.read())
+        with open(avatar_disk_path(hamlet, original=True), "rb") as f:
+            self.assertEqual(original_image_key_hamlet.get()["Body"].read(), f.read())
+        with open(avatar_disk_path(hamlet, medium=True), "rb") as f:
+            self.assertEqual(medium_image_key_hamlet.get()["Body"].read(), f.read())
+        with open(avatar_disk_path(jerry), "rb") as f:
+            self.assertEqual(image_key_jerry.get()["Body"].read(), f.read())
+        with open(avatar_disk_path(jerry, medium=True), "rb") as f:
+            self.assertEqual(medium_image_key_jerry.get()["Body"].read(), f.read())
 
     @mock_aws
     def test_transfer_message_files(self) -> None:

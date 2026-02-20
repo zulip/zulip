@@ -22,9 +22,7 @@ const login_page_params_schema = z.object({
 //
 // Sync this with zerver.lib.home.build_page_params_for_home_page_load.
 //
-// TODO/typescript: Replace z.looseObject with z.object when all consumers have
-// been converted to TypeScript and the schema is complete.
-const home_params_schema = z.looseObject({
+const home_params_schema = z.object({
     ...default_params_schema.shape,
     page_type: z.literal("home"),
     apps_page_url: z.string(),
@@ -48,12 +46,16 @@ const home_params_schema = z.looseObject({
     narrow: z.optional(z.array(narrow_term_schema)),
     narrow_stream: z.optional(z.string()),
     narrow_topic: z.optional(z.string()),
+    no_event_queue: z.boolean(),
     presence_history_limit_days_for_web_app: z.number(),
     promote_sponsoring_zulip: z.boolean(),
     realm_rendered_description: z.string(),
     show_try_zulip_modal: z.boolean(),
     state_data: z.nullable(state_data_schema),
+    test_suite: z.boolean(),
     translation_data: z.record(z.string(), z.string()),
+    two_fa_enabled: z.boolean(),
+    two_fa_enabled_user: z.boolean(),
     warn_no_email: z.boolean(),
 });
 
