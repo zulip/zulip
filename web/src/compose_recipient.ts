@@ -47,6 +47,9 @@ function composing_to_current_topic_narrow(): boolean {
 }
 
 function composing_to_current_private_message_narrow(): boolean {
+    if (compose_state.get_message_type() !== "private") {
+        return false;
+    }
     const compose_state_recipient = new Set(compose_state.private_message_recipient_ids());
     const narrow_state_recipient = narrow_state.pm_ids_set();
     if (narrow_state_recipient.size === 0) {
@@ -74,7 +77,8 @@ export let update_recipient_row_attention_level = (): void => {
     const has_unpilled_input = $("#private_message_recipient").text().length > 0;
     // We also want to watch out for cases where the DM isn't valid,
     // as when trying to message deactivated users.
-    const is_valid_dm = compose_validate.validate_private_message(false);
+    const is_valid_dm =
+        message_type === "private" && compose_validate.validate_private_message(false);
 
     // We're piggy-backing here, in a roundabout way, on
     // compose_ui.set_focus(). Any time the topic or DM recipient
