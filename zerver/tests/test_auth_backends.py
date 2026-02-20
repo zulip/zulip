@@ -5733,7 +5733,7 @@ class DiscordAuthBackendTest(SocialAuthBase):
 
     @override
     def get_account_data_dict(self, email: str, name: str) -> dict[str, Any]:
-        return dict(email=email, name=name, email_verified=True)
+        return dict(email=email, global_name=name, verified=True)
 
 
 class JSONFetchAPIKeyTest(ZulipTestCase):
