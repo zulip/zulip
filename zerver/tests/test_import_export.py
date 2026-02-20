@@ -894,6 +894,7 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(exported_huddle_ids, set())
 
     def test_export_realm_with_member_consent(self) -> None:
+        self.disable_channel_events_notifications()
         realm = Realm.objects.get(string_id="zulip")
 
         # Create private streams and subscribe users for testing export
