@@ -153,6 +153,7 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     # "zproject.backends.GoogleAuthBackend",  # Google auth, setup below
     # "zproject.backends.GitHubAuthBackend",  # GitHub auth, setup below
     # "zproject.backends.GitLabAuthBackend",  # GitLab auth, setup below
+    # "zproject.backends.DiscordAuthBackend", # Discord auth, setup below
     # "zproject.backends.AzureADAuthBackend",  # Microsoft Entra ID (AzureAD) auth, setup below
     # "zproject.backends.AppleAuthBackend",  # Apple auth, setup below
     # "zproject.backends.SAMLAuthBackend",  # SAML, setup below
