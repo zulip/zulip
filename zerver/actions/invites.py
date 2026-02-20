@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Collection, Sequence
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from email.utils import format_datetime as email_format_datetime
 from typing import Any
@@ -310,6 +311,29 @@ def get_invitation_expiry_date(confirmation_obj: Confirmation) -> int | None:
     return datetime_to_timestamp(expiry_date)
 
 
+@dataclass
+class PreregistrationInviteData:
+    email: str
+    invited_by_user_id: int
+    invited: int
+    expiry_date: int | None
+    id: int
+    invited_as: int
+    is_multiuse: bool
+    notify_referrer_on_join: bool
+
+
+@dataclass
+class MultiuseInviteData:
+    invited_by_user_id: int
+    invited: int
+    expiry_date: int | None
+    id: int
+    link_url: str
+    invited_as: int
+    is_multiuse: bool
+
+
 def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[str, Any]]:
     """
     Returns a list of dicts representing invitations that can be controlled by user_profile.
@@ -325,12 +349,12 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
             PreregistrationUser.objects.filter(referred_by=user_profile)
         )
 
-    invites = []
+    invites: list[PreregistrationInviteData | MultiuseInviteData] = []
 
     for invitee in prereg_users:
         assert invitee.referred_by is not None
         invites.append(
-            dict(
+            PreregistrationInviteData(
                 email=invitee.email,
                 invited_by_user_id=invitee.referred_by.id,
                 invited=datetime_to_timestamp(invitee.invited_at),
@@ -372,7 +396,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
 
         assert invite.status != confirmation_settings.STATUS_REVOKED
         invites.append(
-            dict(
+            MultiuseInviteData(
                 invited_by_user_id=invite.referred_by.id,
                 invited=datetime_to_timestamp(confirmation_obj.date_sent),
                 expiry_date=get_invitation_expiry_date(confirmation_obj),
@@ -382,7 +406,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
                 is_multiuse=True,
             )
         )
-    return invites
+    return [asdict(invite) for invite in invites]
 
 
 @transaction.atomic(durable=True)
