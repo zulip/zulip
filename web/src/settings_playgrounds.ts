@@ -3,7 +3,6 @@ import $ from "jquery";
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
-import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
@@ -14,6 +13,7 @@ import * as realm_playground from "./realm_playground.ts";
 import type {RealmPlayground} from "./realm_playground.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as typeahead from "./typeahead.ts";
 import {render_typeahead_item} from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
 
@@ -174,10 +174,48 @@ function build_page(): void {
             render_typeahead_item({primary: language_labels.get(item)}),
         matcher(item: string, query: string): boolean {
             const q = query.trim().toLowerCase();
-            return item.toLowerCase().startsWith(q);
+
+            if (q === "") {
+                return true;
+            }
+
+            return (
+                item.toLowerCase().startsWith(q) ||
+                realm_playground
+                    .get_aliases_for_pretty_name(item)
+                    .some((alias) => alias.toLowerCase().startsWith(q))
+            );
         },
         sorter(items: string[], query: string): string[] {
-            return bootstrap_typeahead.defaultSorter(items, query);
+            const q = query.trim().toLowerCase();
+
+            if (q === "") {
+                return items;
+            }
+
+            const {
+                exact_matches,
+                begins_with_case_sensitive_matches,
+                begins_with_case_insensitive_matches,
+            } = typeahead.triage_raw_with_multiple_items(query, items, (item) => [
+                item,
+                ...realm_playground.get_aliases_for_pretty_name(item),
+            ]);
+
+            const begins_with = [
+                ...exact_matches,
+                ...begins_with_case_sensitive_matches,
+                ...begins_with_case_insensitive_matches,
+            ];
+
+            // Move the "Custom language" option to the end so that canonical language names matched via aliases appear above it in the typeahead.
+            const exact_match_index = begins_with.indexOf(q);
+            if (exact_match_index !== -1 && begins_with.length > 1) {
+                begins_with.splice(exact_match_index, 1);
+                begins_with.push(q);
+            }
+
+            return begins_with;
         },
     });
 
