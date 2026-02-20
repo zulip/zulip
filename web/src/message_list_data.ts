@@ -33,7 +33,7 @@ export class MessageListData {
     _hash: Map<number, Message>;
     // Some views exclude muted topics / users.
     //
-    // Also, `all_messages_data` never excludes anything by definition.
+    // Also, `recent_view_messages_data` never excludes anything by definition.
     excludes_muted_topics: boolean;
     excludes_muted_users: boolean;
     // Tracks any locally echoed messages, which we know aren't present on the server.
