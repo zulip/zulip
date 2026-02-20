@@ -18,9 +18,8 @@ guide should help you find the API you need:
   [Python framework for interactive bots](/help/running-bots) or
   [Zulip's real-time events API](/api/get-events).
 
-And if you still need to build your own integration with Zulip, check out
-the full [REST API](/api/rest), generally starting with
-[installing the API client bindings](/api/installation-instructions).
+If you need to build your own integration with Zulip, use the full REST API (/api/rest).
+Most developers begin by installing the API client bindings (/api/installation-instructions).
 
 In case you already know how you want to build your integration and you're
 just looking for an API key, we've got you covered [here](/api/api-keys).
