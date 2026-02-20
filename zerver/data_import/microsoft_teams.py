@@ -388,7 +388,7 @@ def convert_users(
         )
 
     if not has_owner:
-        logging.info("Converted realm has no owners!")
+        logging.warning("Converted realm has no owners!")
 
     validate_user_emails_for_import(list(found_emails))
     realm["zerver_userprofile"] = zerver_user_profile

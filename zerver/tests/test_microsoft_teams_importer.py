@@ -529,7 +529,7 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                 microsoft_teams_user_role_data=microsoft_teams_user_role_data
             )
         self.assertIn(
-            "INFO:root:Converted realm has no owners!",
+            "WARNING:root:Converted realm has no owners!",
             info_logs.output,
         )
 
