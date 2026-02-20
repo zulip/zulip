@@ -552,6 +552,7 @@ class TestRealmAuditLog(ZulipTestCase):
             "Dev": True,
             "SAML": True,
             "GitLab": False,
+            "Discord": False,
             "OpenID Connect": False,
         }
 

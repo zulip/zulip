@@ -392,6 +392,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             "Dev": True,
             "SAML": True,
             "GitLab": False,
+            "Discord": False,
             "OpenID Connect": False,
         }
         do_set_realm_authentication_methods(zephyr_realm, new_auth_method_dict, acting_user=user)
