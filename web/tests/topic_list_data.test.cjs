@@ -421,15 +421,41 @@ test("get_list_info unreads", ({override}) => {
     override(narrow_state, "topic", () => {});
 
     add_unreads("topic 9", 1);
-
-    add_unreads("topic 4", 1);
+    add_unreads("topic 4", 2);
     override(user_topics, "is_topic_muted", (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
         return topic_name === "topic 4";
     });
 
-    // muting the stream and unmuting the topic 5
-    // this should make topic 5 at top in items array
+    // Muting topic 4 removes it from the list, and topic 6
+    // is added to the list even though it doesn't have any
+    // unread messages.
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 10);
+    // The unread messages in topic 4 are not added to the
+    // unread count, but the unread message in topic 9 is.
+    assert.equal(list_info.more_topics_unreads, 3);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, true);
+    assert.equal(list_info.num_possible_topics, 16);
+
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        [
+            "topic 0",
+            "topic 1",
+            "topic 2",
+            "topic 3",
+            "topic 5",
+            "topic 6",
+            "topic 9",
+            "topic 10",
+            "topic 11",
+            "topic 12",
+        ],
+    );
+
+    // Muting the stream and unmuting the topic 5
+    // means it moves to the top of the items array.
     general.is_muted = true;
     add_unreads("topic 5", 1);
     override(user_topics, "is_topic_unmuted_or_followed", (stream_id, topic_name) => {
@@ -439,6 +465,8 @@ test("get_list_info unreads", ({override}) => {
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 10);
+    // We still show the count for unread messages in
+    // unmuted topics.
     assert.equal(list_info.more_topics_unreads, 3);
     assert.equal(list_info.more_topics_have_unread_mention_messages, true);
     assert.equal(list_info.num_possible_topics, 16);
@@ -467,7 +495,7 @@ test("get_list_info unreads", ({override}) => {
     });
     list_info = get_list_info();
     assert.equal(list_info.items.length, 10);
-    assert.equal(list_info.more_topics_unreads, 3);
+    assert.equal(list_info.more_topics_unreads, 4);
     // Topic 14 now makes it above the "show all topics" fold.
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 16);
@@ -491,8 +519,8 @@ test("get_list_info unreads", ({override}) => {
     add_unreads_with_mention("topic 9", 1);
     list_info = get_list_info();
     assert.equal(list_info.items.length, 10);
-    assert.equal(list_info.more_topics_unreads, 4);
-    // Topic 8's new mention gets counted here.
+    assert.equal(list_info.more_topics_unreads, 5);
+    // Topic 9's new mention gets counted here.
     assert.equal(list_info.more_topics_have_unread_mention_messages, true);
     assert.equal(list_info.num_possible_topics, 16);
     assert.equal(list_info.more_topics_unread_count_muted, true);
@@ -529,6 +557,34 @@ test("get_list_info unreads", ({override}) => {
             "topic 1",
             "topic 2",
             "topic 3",
+            "topic 6",
+            "topic 11",
+            "topic 12",
+            "topic 13",
+            "topic 14",
+        ],
+    );
+
+    // Unmuting the channel drops topic 5 back down into chronological
+    // order.
+    general.is_muted = false;
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 10);
+    assert.equal(list_info.more_topics_unreads, 15);
+    // Topic 9's mention still gets counted here (the channel is no longer
+    // muted but the topic is), so that the mention indicator can still be
+    // shown.
+    assert.equal(list_info.more_topics_have_unread_mention_messages, true);
+    assert.equal(list_info.num_possible_topics, 16);
+    assert.equal(list_info.more_topics_unread_count_muted, false);
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        [
+            "topic 0",
+            "topic 1",
+            "topic 2",
+            "topic 3",
+            "topic 5",
             "topic 6",
             "topic 11",
             "topic 12",
