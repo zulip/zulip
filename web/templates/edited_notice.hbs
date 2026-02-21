@@ -11,8 +11,10 @@
             <i class="zulip-icon zulip-icon-message-edited message-edited-icon" role="presentation" aria-hidden="true"></i>
         </div>
     {{else}}
-        <div class="message_edit_notice">
-            {{t "MOVED"}}
+        <div class="message_edit_notice message-moved"
+          data-tippy-content="{{t 'Message moved'}}"
+          aria-label="{{t 'Message moved'}}">
+            <i class="zulip-icon zulip-icon-message-moved message-moved-icon" role="presentation" aria-hidden="true"></i>
         </div>
     {{/unless}}
 {{/if}}

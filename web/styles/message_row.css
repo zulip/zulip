@@ -1121,6 +1121,25 @@
     opacity: 1;
 }
 
+.message-moved-icon {
+    vertical-align: middle;
+    visibility: hidden;
+    align-items: center;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+
+    .message_row:hover &,
+    .selected_message & {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+        visibility: visible;
+        opacity: 0.7;
+    }
+}
+
 /* Locally echoed messages. */
 .locally-echoed .message-time {
     opacity: 0;
