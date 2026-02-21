@@ -730,6 +730,7 @@ export const all_group_setting_labels = {
         }),
         can_create_private_channel_group: $t({defaultMessage: "Who can create private channels"}),
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe others to channels"}),
+        can_change_name_group: $t({defaultMessage: "Who can change their name"}),
         direct_message_permission_group: $t({
             defaultMessage: "Who can authorize a direct message conversation",
         }),
@@ -856,6 +857,11 @@ export const realm_group_permission_settings: {
         subsection_heading: $t({defaultMessage: "Message deletion"}),
         subsection_key: "org-msg-deletion",
         settings: ["can_delete_any_message_group", "can_delete_own_message_group"],
+    },
+    {
+        subsection_heading: $t({defaultMessage: "User identity"}),
+        subsection_key: "org-user-identity",
+        settings: ["can_change_name_group"],
     },
     {
         subsection_heading: $t({defaultMessage: "Guests"}),

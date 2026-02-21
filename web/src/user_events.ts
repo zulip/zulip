@@ -107,21 +107,23 @@ export const update_person = function update(event: UserUpdate): void {
 
     if ("role" in event) {
         const was_owner = user.is_owner;
+        const is_current_user = people.is_my_user_id(event.user_id);
         user.role = event.role;
         user.is_owner = event.role === settings_config.user_role_values.owner.code;
         user.is_admin = event.role === settings_config.user_role_values.admin.code || user.is_owner;
         user.is_guest = event.role === settings_config.user_role_values.guest.code;
         user.is_moderator =
             user.is_admin || event.role === settings_config.user_role_values.moderator.code;
+        const is_admin_status_changing = is_current_user && current_user.is_admin !== user.is_admin;
         settings_users.update_user_data(event.user_id, event);
         user_profile.update_profile_modal_ui(user, event);
         settings_account.set_user_own_role_dropdown_value();
 
-        if (people.is_my_user_id(event.user_id)) {
+        if (is_current_user) {
             settings_account.update_role_text();
         }
 
-        if (people.is_my_user_id(event.user_id) && current_user.is_owner !== user.is_owner) {
+        if (is_current_user && current_user.is_owner !== user.is_owner) {
             current_user.is_owner = user.is_owner;
             settings_org.maybe_disable_widgets();
             settings_org.enable_or_disable_group_permission_settings();
@@ -130,7 +132,7 @@ export const update_person = function update(event: UserUpdate): void {
             settings_account.update_user_own_role_dropdown_state();
         }
 
-        if (people.is_my_user_id(event.user_id) && current_user.is_admin !== user.is_admin) {
+        if (is_admin_status_changing) {
             current_user.is_admin = user.is_admin;
             settings_linkifiers.maybe_disable_widgets();
             settings_org.maybe_disable_widgets();
@@ -143,18 +145,18 @@ export const update_person = function update(event: UserUpdate): void {
             settings_account.update_user_own_role_dropdown_state();
         }
 
-        if (
-            !people.is_my_user_id(event.user_id) &&
-            was_owner !== user.is_owner &&
-            current_user.is_owner
-        ) {
+        if (is_current_user && current_user.is_guest !== user.is_guest) {
+            current_user.is_guest = user.is_guest;
+            if (!is_admin_status_changing) {
+                settings_account.update_account_settings_display();
+            }
+        }
+
+        if (!is_current_user && was_owner !== user.is_owner && current_user.is_owner) {
             settings_account.update_user_own_role_dropdown_state();
         }
 
-        if (
-            people.is_my_user_id(event.user_id) &&
-            current_user.is_moderator !== user.is_moderator
-        ) {
+        if (is_current_user && current_user.is_moderator !== user.is_moderator) {
             current_user.is_moderator = user.is_moderator;
         }
     }

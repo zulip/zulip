@@ -888,6 +888,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_set_delete_message_policy_group":
         case "realm_can_set_topics_policy_group":
         case "realm_can_summarize_topics_group":
+        case "realm_can_change_name_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
         case "realm_direct_message_permission_group": {
@@ -1131,6 +1132,7 @@ export function populate_data_for_realm_settings_request(
                     "can_access_all_users_group",
                     "can_add_custom_emoji_group",
                     "can_add_subscribers_group",
+                    "can_change_name_group",
                     "can_create_bots_group",
                     "can_create_groups",
                     "can_create_private_channel_group",

@@ -99,6 +99,7 @@ initialize();
 
 run_test("updates", ({override}) => {
     let person;
+    let update_account_settings_display_calls = 0;
 
     const isaac = make_user({
         email: "isaac@example.com",
@@ -108,6 +109,9 @@ run_test("updates", ({override}) => {
     });
     people.add_active_user(isaac);
 
+    override(settings_account, "update_account_settings_display", () => {
+        update_account_settings_display_calls += 1;
+    });
     override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
     user_events.update_person({
         user_id: isaac.user_id,
@@ -180,6 +184,38 @@ run_test("updates", ({override}) => {
         role: settings_config.user_role_values.member.code,
     });
     assert.ok(!current_user.is_admin);
+    assert.ok(!current_user.is_guest);
+    const baseline_display_update_calls = update_account_settings_display_calls;
+
+    user_events.update_person({
+        user_id: me.user_id,
+        role: settings_config.user_role_values.admin.code,
+    });
+    assert.ok(current_user.is_admin);
+    assert.equal(update_account_settings_display_calls, baseline_display_update_calls + 1);
+
+    user_events.update_person({
+        user_id: me.user_id,
+        role: settings_config.user_role_values.member.code,
+    });
+    assert.ok(!current_user.is_admin);
+    assert.equal(update_account_settings_display_calls, baseline_display_update_calls + 2);
+
+    const guest_display_update_baseline = update_account_settings_display_calls;
+
+    user_events.update_person({
+        user_id: me.user_id,
+        role: settings_config.user_role_values.guest.code,
+    });
+    assert.ok(current_user.is_guest);
+    assert.equal(update_account_settings_display_calls, guest_display_update_baseline + 1);
+
+    user_events.update_person({
+        user_id: me.user_id,
+        role: settings_config.user_role_values.member.code,
+    });
+    assert.ok(!current_user.is_guest);
+    assert.equal(update_account_settings_display_calls, guest_display_update_baseline + 2);
 
     user_events.update_person({user_id: me.user_id, full_name: "Me V2"});
     assert.equal(people.my_full_name(), "Me V2");

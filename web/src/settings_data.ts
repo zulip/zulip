@@ -21,13 +21,15 @@ import {user_settings} from "./user_settings.ts";
 */
 
 export function user_can_change_name(): boolean {
-    if (current_user.is_admin) {
-        return true;
-    }
-    if (realm.realm_name_changes_disabled || realm.server_name_changes_disabled) {
+    if (realm.server_name_changes_disabled && !current_user.is_admin) {
         return false;
     }
-    return true;
+
+    return user_has_permission_for_group_setting(
+        realm.realm_can_change_name_group,
+        "can_change_name_group",
+        "realm",
+    );
 }
 
 export function user_can_change_avatar(): boolean {
