@@ -95,7 +95,11 @@ export function generate_and_insert_audio_or_video_call_link(
                         parsed.success &&
                         parsed.data.code === "INVALID_VIDEO_CALL_PROVIDER_TOKEN"
                     ) {
-                        current_user.has_zoom_token = false;
+                        if (oauth_call_provider === "webex") {
+                            current_user.has_webex_token = false;
+                        } else {
+                            current_user.has_zoom_token = false;
+                        }
                     }
                     if (
                         status === "error" &&
@@ -112,7 +116,11 @@ export function generate_and_insert_audio_or_video_call_link(
             });
         };
 
-        if (current_user.has_zoom_token || provider_is_zoom_server_to_server) {
+        if (
+            ((current_user.has_zoom_token || provider_is_zoom_server_to_server) &&
+                oauth_call_provider === "zoom") ||
+            (current_user.has_webex_token && oauth_call_provider === "webex")
+        ) {
             make_oauth_call();
         } else {
             compose_call.update_oauth_provider_callback_for_key(

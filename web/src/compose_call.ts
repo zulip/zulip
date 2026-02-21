@@ -2,9 +2,8 @@ import {realm} from "./state_data.ts";
 
 const call_xhrs = new Map<string, JQuery.jqXHR<unknown>[]>();
 export const ignored_call_xhrs = new Set<JQuery.jqXHR>();
-
-export type OAuthCallProvider = "zoom";
-const oauth_providers = new Set<OAuthCallProvider>(["zoom"]);
+export type OAuthCallProvider = "zoom" | "webex";
+const oauth_providers = new Set<OAuthCallProvider>(["zoom", "webex"]);
 
 export const oauth_call_provider_token_callbacks = new Map<
     OAuthCallProvider,
@@ -19,6 +18,9 @@ export function current_oauth_call_provider(): OAuthCallProvider | null {
         realm_provider === available_providers.zoom_server_to_server?.id
     ) {
         return "zoom";
+    }
+    if (realm_provider === available_providers.webex?.id) {
+        return "webex";
     }
     return null;
 }

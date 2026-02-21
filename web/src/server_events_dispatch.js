@@ -209,6 +209,18 @@ export function dispatch_normal_event(event) {
             }
             break;
 
+        case "has_webex_token":
+            current_user.has_webex_token = event.value;
+            if (event.value) {
+                for (const callback of compose_call.oauth_call_provider_token_callbacks
+                    .get("webex")
+                    .values()) {
+                    callback();
+                }
+                compose_call.oauth_call_provider_token_callbacks.get("webex").clear();
+            }
+            break;
+
         case "onboarding_steps":
             onboarding_steps.update_onboarding_steps_to_display(event.onboarding_steps);
             break;
