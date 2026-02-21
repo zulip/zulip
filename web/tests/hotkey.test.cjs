@@ -39,6 +39,13 @@ const activity_ui = mock_esm("../src/activity_ui");
 const activity = zrequire("../src/activity");
 const browser_history = mock_esm("../src/browser_history", {go_to_location() {}});
 const compose_actions = mock_esm("../src/compose_actions");
+const compose_state = mock_esm("../src/compose_state", {
+    composing: () => false,
+    get_message_type: () => "stream",
+    get_last_focused_compose_type_input: () => undefined,
+    focus_in_empty_compose: () => false,
+    focus_in_formatting_buttons: () => false,
+});
 const compose_reply = mock_esm("../src/compose_reply");
 const condense = mock_esm("../src/condense");
 const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
@@ -653,6 +660,140 @@ test_while_not_editing_text("motion_keys", () => {
     assert_mapping("down_arrow", drafts_overlay_ui, "handle_keyboard_events");
     delete overlays.any_active;
     delete overlays.drafts_open;
+});
+
+run_test("process_tab_key message edit save focuses cancel", () => {
+    const OldHTMLElement = global.HTMLElement;
+    global.HTMLElement = class {};
+
+    const $focused_element = $.create("#focused-message-edit-save");
+    $focused_element.addClass("message_edit_save");
+
+    const focused_element = new global.HTMLElement();
+    focused_element.to_$ = () => $focused_element;
+    document.activeElement = focused_element;
+
+    const $form = $.create("#message-edit-form");
+    const $cancel = $.create("#message-edit-cancel");
+
+    $form.set_find_results(".message_edit_cancel", $cancel);
+
+    $focused_element.closest = () => $form;
+
+    assert.equal(hotkey.process_tab_key(), true);
+    assert.equal($cancel.is_focused(), true);
+
+    document.activeElement = undefined;
+    global.HTMLElement = OldHTMLElement;
+});
+
+run_test("process_tab_key message edit cancel focuses preview toggle", () => {
+    const OldHTMLElement = global.HTMLElement;
+    global.HTMLElement = class {};
+
+    const $focused_element = $.create("#focused-message-edit-cancel");
+    $focused_element.addClass("message_edit_cancel");
+
+    const focused_element = new global.HTMLElement();
+    focused_element.to_$ = () => $focused_element;
+    document.activeElement = focused_element;
+
+    const $form = $.create("#message-edit-form");
+    const $row = $.create("#message-row");
+
+    const $preview = $.create("#preview");
+    $form.set_find_results(".markdown_preview", $preview);
+
+    $focused_element.closest = () => $form;
+    $form.closest = () => $row;
+
+    assert.equal(hotkey.process_tab_key(), true);
+    assert.equal($preview.is_focused(), true);
+
+    document.activeElement = undefined;
+    global.HTMLElement = OldHTMLElement;
+});
+
+run_test("cover compose_state mocked helpers", () => {
+    compose_state.get_message_type();
+    compose_state.get_last_focused_compose_type_input();
+    compose_state.focus_in_empty_compose();
+});
+
+run_test("process_tab_key help focuses reply button when not composing", ({override}) => {
+    const OldHTMLElement = global.HTMLElement;
+    global.HTMLElement = class {};
+
+    const $focused_element = $.create("#focused-help");
+    $focused_element.addClass("compose_help_button");
+
+    const focused_element = new global.HTMLElement();
+    focused_element.to_$ = () => $focused_element;
+    document.activeElement = focused_element;
+
+    const $form = $.create(".message_edit_form");
+    const $reply = $.create(".compose_reply_button");
+
+    $focused_element.closest = () => $form;
+    override(compose_state, "composing", () => false);
+
+    assert.equal(hotkey.process_tab_key(), true);
+    assert.equal($reply.is_focused(), true);
+
+    document.activeElement = undefined;
+    global.HTMLElement = OldHTMLElement;
+});
+
+run_test("process_tab_key help focuses stream recipient when composing stream", ({override}) => {
+    const OldHTMLElement = global.HTMLElement;
+    global.HTMLElement = class {};
+
+    const $focused_element = $.create("#focused-help");
+    $focused_element.addClass("compose_help_button");
+
+    const focused_element = new global.HTMLElement();
+    focused_element.to_$ = () => $focused_element;
+    document.activeElement = focused_element;
+
+    const $form = $.create(".message_edit_form");
+    const $recipient_widget = $.create("#compose_select_recipient_widget_wrapper");
+
+    $focused_element.closest = () => $form;
+
+    override(compose_state, "composing", () => true);
+    override(compose_state, "get_message_type", () => "stream");
+
+    assert.equal(hotkey.process_tab_key(), true);
+    assert.equal($recipient_widget.is_focused(), true);
+
+    document.activeElement = undefined;
+    global.HTMLElement = OldHTMLElement;
+});
+
+run_test("process_tab_key help focuses private recipient when composing private", ({override}) => {
+    const OldHTMLElement = global.HTMLElement;
+    global.HTMLElement = class {};
+
+    const $focused_element = $.create("#focused-help");
+    $focused_element.addClass("compose_help_button");
+
+    const focused_element = new global.HTMLElement();
+    focused_element.to_$ = () => $focused_element;
+    document.activeElement = focused_element;
+
+    const $form = $.create(".message_edit_form");
+    const $private_recipient = $.create("#private_message_recipient");
+
+    $focused_element.closest = () => $form;
+
+    override(compose_state, "composing", () => true);
+    override(compose_state, "get_message_type", () => "private");
+
+    assert.equal(hotkey.process_tab_key(), true);
+    assert.equal($private_recipient.is_focused(), true);
+
+    document.activeElement = undefined;
+    global.HTMLElement = OldHTMLElement;
 });
 
 run_test("test new user input hook called", () => {

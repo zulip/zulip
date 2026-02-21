@@ -1830,6 +1830,7 @@ export function show_preview_area($element: JQuery): void {
 
     $row.find(".markdown_preview").hide();
     $row.find(".undo_markdown_preview").show();
+    $row.find(".undo_markdown_preview").trigger("focus");
 
     render_preview_area($row);
 }
@@ -1852,6 +1853,7 @@ export function render_preview_area($row: JQuery): void {
 
 export function clear_preview_area($element: JQuery): void {
     const $row = rows.get_closest_row($element);
+    $row.find("textarea.message_edit_content").trigger("focus");
 
     // While in preview mode we disable unneeded compose_control_buttons,
     // so here we are re-enabling those compose_control_buttons

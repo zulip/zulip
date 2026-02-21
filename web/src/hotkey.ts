@@ -791,6 +791,34 @@ export function process_tab_key(): boolean {
         return true;
     }
 
+    // 3. Cancel -> Preview
+    if ($focused_element.hasClass("message_edit_cancel")) {
+        const $message_edit_form = $focused_element.closest(".message_edit_form");
+        const in_preview_mode = $message_edit_form.closest(".message_row").hasClass("preview_mode");
+
+        const $preview_toggle = in_preview_mode
+            ? $message_edit_form.find(".undo_markdown_preview")
+            : $message_edit_form.find(".markdown_preview");
+
+        if ($preview_toggle.length > 0) {
+            $preview_toggle.trigger("focus");
+            return true;
+        }
+    }
+
+    if ($focused_element.hasClass("compose_help_button")) {
+        if (compose_state.composing()) {
+            if (compose_state.get_message_type() === "private") {
+                $("#private_message_recipient").trigger("focus");
+            } else {
+                $("#compose_select_recipient_widget_wrapper").trigger("focus");
+            }
+        } else {
+            $(".compose_reply_button").trigger("focus");
+        }
+        return true;
+    }
+
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("tab");
     }
