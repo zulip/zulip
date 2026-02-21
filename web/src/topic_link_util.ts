@@ -87,9 +87,9 @@ function _get_topic_link_content(opts: {
     const stream_id = stream.stream_id;
     const escape = html_escape_markdown_syntax_characters;
     if (topic_name !== undefined) {
-        // This url is relative, which is fine since it aims to mimic the behavior of the
-        // #**stream>topic** syntax, which also appears as a relative link in the web app
-        // and is not expected to work outside of the current realm / Zulip.
+        // This URL is relative, unlike the absolute URLs we use in quoting a message.
+        // See discussion:
+        //   https://chat.zulip.org/#narrow/channel/101-design/topic/.E2.9C.94.20.22quote.20message.22.20uses.20absolute.20URL.20instead.20of.20realm-rela.2E.2E.2E/near/2325588
         const stream_topic_url = hash_util.by_stream_topic_url(stream_id, topic_name);
         const topic_display_name = util.get_final_topic_display_name(topic_name);
         if (message_id !== undefined) {
