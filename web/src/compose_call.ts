@@ -2,6 +2,7 @@ import {realm} from "./state_data.ts";
 
 export const zoom_token_callbacks = new Map();
 export const video_call_xhrs = new Map<string, JQuery.jqXHR<unknown>>();
+export const ignored_call_xhrs = new Set<JQuery.jqXHR>();
 
 export function get_jitsi_server_url(video_call_id?: string): URL | null {
     const base_url = realm.realm_jitsi_server_url ?? realm.server_jitsi_server_url;
@@ -19,7 +20,10 @@ export function abort_video_callbacks(edit_message_id = ""): void {
     zoom_token_callbacks.delete(edit_message_id);
     const xhr = video_call_xhrs.get(edit_message_id);
     if (xhr !== undefined) {
-        xhr.abort();
+        // TODO: Use xhr.abort(), if XHR methods are available
+        // after https://github.com/getsentry/sentry-javascript/issues/19242
+        // gets resolved.
+        ignored_call_xhrs.add(xhr);
         video_call_xhrs.delete(edit_message_id);
     }
 }

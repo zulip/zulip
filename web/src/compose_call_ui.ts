@@ -58,6 +58,7 @@ export function generate_and_insert_audio_or_video_call_link(
         $target_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
     }
 
+    let xhr: JQuery.jqXHR<unknown> | undefined;
     const available_providers = realm.realm_available_video_chat_providers;
     const provider_is_zoom = realm.realm_video_chat_provider === available_providers.zoom?.id;
     const provider_is_zoom_server_to_server =
@@ -72,10 +73,13 @@ export function generate_and_insert_audio_or_video_call_link(
         };
 
         const make_zoom_call = (): void => {
-            const xhr = channel.post({
+            xhr = channel.post({
                 url: "/json/calls/zoom/create",
                 data: request,
                 success(res) {
+                    if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
+                        return;
+                    }
                     const data = call_response_schema.parse(res);
                     compose_call.video_call_xhrs.delete(key);
                     if (is_audio_call) {
@@ -84,9 +88,12 @@ export function generate_and_insert_audio_or_video_call_link(
                         insert_video_call_url(data.url, $target_textarea);
                     }
                 },
-                error(xhr, status) {
+                error(_xhr, status) {
+                    if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
+                        return;
+                    }
                     compose_call.video_call_xhrs.delete(key);
-                    const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
+                    const parsed = z.object({code: z.string()}).safeParse(_xhr.responseJSON);
                     if (
                         status === "error" &&
                         parsed.success &&
@@ -149,15 +156,21 @@ export function generate_and_insert_audio_or_video_call_link(
                 compose_call.abort_video_callbacks(edit_message_id);
                 const key = edit_message_id ?? "";
 
-                const xhr = channel.post({
+                xhr = channel.post({
                     url: "/json/calls/constructorgroups/create",
                     data: {},
                     success(response) {
+                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
+                            return;
+                        }
                         const data = call_response_schema.parse(response);
                         compose_call.video_call_xhrs.delete(key);
                         insert_video_call_url(data.url, $target_textarea);
                     },
                     error(_xhr, status) {
+                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
+                            return;
+                        }
                         compose_call.video_call_xhrs.delete(key);
                         if (status !== "abort") {
                             ui_report.generic_embed_error(
