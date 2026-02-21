@@ -1,8 +1,12 @@
 <div class="edit-notifications"></div>
 {{#if modified}}
     {{#unless (eq msg/local_edit_timestamp undefined)}}
-        <div class="message_edit_notice">
-            {{t "SAVING"}}
+        <div class="message_edit_notice" data-tippy-content="{{t 'Saving message...'}}">
+            <span class="message-editing-animation" role="presentation" aria-hidden="true">
+                <span class="animated-dot"></span>
+                <span class="animated-dot"></span>
+                <span class="animated-dot"></span>
+            </span>
         </div>
     {{else if edited}}
         <div class="message_edit_notice message-edited"

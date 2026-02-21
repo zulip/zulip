@@ -949,22 +949,20 @@
 
 .message-editing-animation {
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
+    vertical-align: middle;
     margin-left: 3px;
     width: 40px;
-    height: 5px;
-
-    /* Avoid this animation element blocking clicks on .edit-notifications
-       to display the message's edit history. */
+    height: 1.4142em;
     pointer-events: none;
 
-    .y-animated-dot {
+    .animated-dot {
         width: 4px;
         height: 4px;
-        background-color: hsl(0deg 0% 53%);
+        vertical-align: middle;
+        background-color: hsl(0deg 0% 53% / 70%);
         border-radius: 50%;
-        margin-left: 3px;
-        opacity: 0;
+        margin: 0 3px;
 
         &:nth-child(1) {
             animation: typing 1s infinite 0.2s;
