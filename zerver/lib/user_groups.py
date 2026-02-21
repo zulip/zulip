@@ -2,6 +2,7 @@ from collections.abc import Collection, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from typing import Any, TypedDict
+from pydantic import BaseModel  ,ConfigDict
 
 from django.db import connection, transaction
 from django.db.models import F, Q, QuerySet, Value
@@ -60,6 +61,36 @@ class UserGroupDict(TypedDict):
     can_remove_members_group: int | UserGroupMembersDict
     deactivated: bool
 
+from typing import List, Union, Optional
+
+# Rename the classes to include 'Base' to avoid name clashes
+class UserGroupMembersBase(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    direct_members: List[int] = []
+    direct_subgroups: List[int] = []
+
+class UserGroupBase(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: Optional[int] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    members: List[int] = []
+    direct_subgroup_ids: List[int] = []
+    
+    realm: Any = None 
+
+    creator_id: Optional[int] = None
+    date_created: Optional[int] = None
+    is_system_group: bool = False
+    can_add_members_group: Optional[Union[int, UserGroupMembersBase]] = None
+    can_join_group: Optional[Union[int, UserGroupMembersBase]] = None
+    can_leave_group: Optional[Union[int, UserGroupMembersBase]] = None
+    can_manage_group: Optional[Union[int, UserGroupMembersBase]] = None
+    can_mention_group: Optional[Union[int, UserGroupMembersBase]] = None
+    can_remove_members_group: Optional[Union[int, UserGroupMembersBase]] = None
+    deactivated: bool = False
 
 @dataclass
 class LockedUserGroupContext:
