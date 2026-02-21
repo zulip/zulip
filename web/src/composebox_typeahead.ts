@@ -283,9 +283,12 @@ function handle_bulleting_or_numbering(
     if (bulleted_numbered_list_util.is_bulleted(previous_line)) {
         // if previous line had only bullet, remove it and stay on the same line
         if (bulleted_numbered_list_util.strip_bullet(previous_line) === "") {
-            // below we select and replace the last 2 characters in the textarea before
-            // the cursor - the bullet syntax - with an empty string
-            util.the($textarea).setSelectionRange($textarea.caret() - 2, $textarea.caret());
+            // below we select and replace the indentation and last 2 characters
+            // in the textarea before the cursor - the bullet syntax - with an empty string
+            util.the($textarea).setSelectionRange(
+                $textarea.caret() - indentation.length - 2,
+                $textarea.caret(),
+            );
             compose_ui.insert_and_scroll_into_view("", $textarea);
             e.preventDefault();
             return;
