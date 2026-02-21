@@ -61,6 +61,10 @@ const realm_available_video_chat_providers = {
         id: 7,
         name: "Nextcloud Talk",
     },
+    webex: {
+        id: 8,
+        name: "Webex",
+    },
 };
 
 function test(label, f) {
@@ -206,6 +210,52 @@ test("videos", ({override}) => {
         const audio_link_regex = /\[translated: Join voice call\.]\(example\.zoom\.com\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, audio_link_regex);
+    })();
+
+    (function test_webex_video_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const $textarea = $.create("webex-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+            called = true;
+        });
+
+        override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.webex.id);
+        override(current_user, "has_webex_token", false);
+
+        window.open = (url) => {
+            assert.ok(url.endsWith("/calls/webex/register"));
+
+            // The event here has value=true.  We keep it in events.js to
+            // allow our tooling to verify its schema.
+            server_events_dispatch.dispatch_normal_event(events.fixtures.has_webex_token);
+        };
+
+        channel.post = (payload) => {
+            assert.equal(payload.url, "/json/calls/webex/create");
+            payload.success({
+                result: "success",
+                msg: "",
+                url: "example.webex.com",
+            });
+            return {abort() {}};
+        };
+
+        $("textarea#compose-textarea").val("");
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler.call($textarea, ev);
+        const video_link_regex = /\[translated: Join video call\.]\(example\.webex\.com\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
     })();
 
     (function test_bbb_audio_and_video_links_compose_clicked() {
