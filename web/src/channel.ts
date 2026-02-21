@@ -14,6 +14,12 @@ import * as spectators from "./spectators.ts";
 type AjaxRequestHandlerOptions = Omit<JQuery.AjaxSettings, "success"> & {
     url: string;
     ignore_reload?: boolean;
+    rate_limit?: {
+        enabled?: boolean;
+        max_retries?: number;
+        min_delay_secs?: number;
+        attempts?: number;
+    };
     success?:
         | ((
               data: unknown,
@@ -83,6 +89,25 @@ function call_in_span(
         (() => {
             // Ignore errors by default
         });
+    const orig_success =
+        args.success ??
+        (() => {
+            // Do nothing by default
+        });
+    const rate_limit = {
+        enabled: args.rate_limit?.enabled ?? true,
+        max_retries: args.rate_limit?.max_retries ?? 3,
+        min_delay_secs: args.rate_limit?.min_delay_secs ?? 60,
+        attempts: args.rate_limit?.attempts ?? 0,
+    };
+
+    const original_args: AjaxRequestHandlerOptions = {
+        ...args,
+        error: orig_error,
+        success: orig_success,
+        rate_limit,
+    };
+
     args.error = function wrapped_error(xhr, error_type, xhn) {
         /* istanbul ignore if */
         if (span !== undefined) {
@@ -96,6 +121,36 @@ function call_in_span(
             // anyway.
             blueslip.log(`Ignoring ${args.type} ${args.url} error response while reloading`);
             return;
+        }
+        const rate_limited = z
+            .object({
+                code: z.literal("RATE_LIMIT_HIT"),
+                ["retry-after"]: z.union([z.number(), z.string(), z.undefined()]),
+            })
+            .safeParse(xhr.responseJSON);
+        if (xhr.status === 429 && rate_limit.enabled && rate_limited.success) {
+            const attempts = rate_limit.attempts;
+
+            if (attempts < rate_limit.max_retries) {
+                const data = rate_limited.data;
+
+                const retry_after = Number(data["retry-after"] ?? 0);
+                const delay_secs = Math.max(retry_after, rate_limit.min_delay_secs);
+
+                const next_args: AjaxRequestHandlerOptions = {
+                    ...original_args,
+                    rate_limit: {
+                        ...rate_limit,
+                        attempts: attempts + 1,
+                    },
+                };
+
+                setTimeout(() => {
+                    call_in_span(span, next_args);
+                }, delay_secs * 1000);
+
+                return;
+            }
         }
 
         if (xhr.status === 401) {
@@ -144,11 +199,6 @@ function call_in_span(
         orig_error(xhr, error_type, xhn);
     };
 
-    const orig_success =
-        args.success ??
-        (() => {
-            // Do nothing by default
-        });
     args.success = function wrapped_success(data, textStatus, jqXHR) {
         /* istanbul ignore if */
         if (span !== undefined) {

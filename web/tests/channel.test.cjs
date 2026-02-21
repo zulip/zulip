@@ -302,6 +302,85 @@ test("unexpected_403_response", () => {
     });
 });
 
+test("rate_limit_retries_request", () => {
+    const xhr_429 = {
+        status: 429,
+        responseJSON: {
+            code: "RATE_LIMIT_HIT",
+            "retry-after": 60,
+        },
+    };
+
+    const scheduled = [];
+    set_global("setTimeout", (fn, delay) => {
+        scheduled.push({fn, delay});
+    });
+
+    const ajax_calls = [];
+    $.ajax = (options) => {
+        ajax_calls.push(options);
+        return {};
+    };
+
+    let error_called = false;
+    let success_called = false;
+
+    channel.post({
+        url: "/json/endpoint",
+        rate_limit: {max_retries: 1, min_delay_secs: 60},
+        success() {
+            success_called = true;
+        },
+        error() {
+            error_called = true;
+        },
+    });
+
+    ajax_calls[0].error(xhr_429);
+    assert.equal(error_called, false);
+    assert.equal(scheduled.length, 1);
+    assert.equal(scheduled[0].delay, 60000);
+
+    scheduled[0].fn();
+    assert.equal(ajax_calls.length, 2);
+
+    ajax_calls[1].success({}, "success", xhr_429);
+    assert.equal(success_called, true);
+
+    ajax_calls[1].error(xhr_429);
+    assert.equal(error_called, true);
+});
+
+test("rate_limit_retry_disabled", () => {
+    const xhr_429 = {
+        status: 429,
+        responseJSON: {
+            code: "RATE_LIMIT_HIT",
+            "retry-after": 60,
+        },
+    };
+
+    const ajax_calls = [];
+    $.ajax = (options) => {
+        ajax_calls.push(options);
+        return {};
+    };
+
+    let error_called = false;
+
+    channel.post({
+        url: "/json/endpoint",
+        rate_limit: {enabled: false},
+        error() {
+            error_called = true;
+        },
+    });
+
+    ajax_calls[0].error(xhr_429);
+
+    assert.equal(error_called, true);
+});
+
 test("xhr_error_message", () => {
     let xhr = {
         status: "200",
