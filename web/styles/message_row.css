@@ -1083,28 +1083,38 @@
 }
 
 .message_edit_notice {
-    /* 10px at 14px/1em */
-    font-size: 0.7143em;
-    opacity: 0.5;
-    user-select: none;
-    white-space: nowrap;
-    overflow-x: hidden;
-    overflow-x: clip;
-    text-overflow: ellipsis;
-    padding-right: 5.5px;
+    display: inline-flex;
+    align-items: center;
+    margin-left: auto;
+    padding-right: 0.5714rem;
     cursor: pointer;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+
+    .zulip-icon {
+        font-size: 1.0714em;
+        width: 1.0666em;
+        height: 1.0666em;
+        vertical-align: middle;
+        transition: opacity 0.2s ease;
+        color: var(--color-text-muted);
+
+        &:hover {
+            opacity: 1;
+        }
+    }
 }
 
 .fade-in-message {
     animation-name: fadeInMessage;
     animation-duration: 1s;
     animation-iteration-count: 1;
+}
 
-    .message_edit_notice {
-        animation-name: fadeInEditNotice;
-        animation-duration: 1s;
-        animation-iteration-count: 1;
-    }
+.fade-in-message .message_edit_notice {
+    animation-name: fadeInEditNotice;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
 }
 
 .message_edit_notice_hover:hover {

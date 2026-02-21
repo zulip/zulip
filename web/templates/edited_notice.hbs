@@ -5,8 +5,10 @@
             {{t "SAVING"}}
         </div>
     {{else if edited}}
-        <div class="message_edit_notice">
-            {{t "EDITED"}}
+        <div class="message_edit_notice message-edited"
+          data-tippy-content="{{t 'Message edited'}}"
+          aria-label="{{t 'Message edited'}}">
+            <i class="zulip-icon zulip-icon-message-edited message-edited-icon" role="presentation" aria-hidden="true"></i>
         </div>
     {{else}}
         <div class="message_edit_notice">
