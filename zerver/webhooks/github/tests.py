@@ -148,6 +148,13 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "Deployment changed status to ✅ success."
         self.check_webhook("deployment_status", TOPIC_DEPLOYMENT, expected_message)
 
+    def test_deployment_status_failure_msg(self) -> None:
+        payload = orjson.loads(self.get_body("deployment_status"))
+        payload["deployment_status"]["state"] = "failure"
+        with patch.object(self, "get_body", return_value=orjson.dumps(payload).decode()):
+            expected_message = "Deployment changed status to ❌ failure."
+            self.check_webhook("deployment_status", TOPIC_DEPLOYMENT, expected_message)
+
     def test_fork_msg(self) -> None:
         expected_message = "baxterandthehackers forked [public-repo](https://github.com/baxterandthehackers/public-repo)."
         self.check_webhook("fork", TOPIC_REPO, expected_message)
