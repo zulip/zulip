@@ -63,10 +63,10 @@ export function generate_and_insert_audio_or_video_call_link(
     const provider_is_zoom = realm.realm_video_chat_provider === available_providers.zoom?.id;
     const provider_is_zoom_server_to_server =
         realm.realm_video_chat_provider === available_providers.zoom_server_to_server?.id;
+    const key = edit_message_id ?? "";
 
     if (provider_is_zoom || provider_is_zoom_server_to_server) {
         compose_call.abort_video_callbacks(edit_message_id);
-        const key = edit_message_id ?? "";
 
         const request = {
             is_video_call: !is_audio_call,
@@ -154,7 +154,6 @@ export function generate_and_insert_audio_or_video_call_link(
             }
             case available_providers.constructor_groups?.id: {
                 compose_call.abort_video_callbacks(edit_message_id);
-                const key = edit_message_id ?? "";
 
                 xhr = channel.post({
                     url: "/json/calls/constructorgroups/create",
