@@ -55,7 +55,9 @@ function setup_compose_actions_hooks(): void {
     compose_actions.register_compose_box_clear_hook(compose.clear_preview_area);
 
     compose_actions.register_compose_cancel_hook(abort_xhr);
-    compose_actions.register_compose_cancel_hook(compose_call.abort_video_callbacks);
+    compose_actions.register_compose_cancel_hook(() => {
+        compose_call.abandon_all_callbacks_for_key("");
+    });
 }
 
 export function initialize(): void {

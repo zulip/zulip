@@ -9,6 +9,7 @@ const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
+const compose_call = zrequire("compose_call");
 const channel = mock_esm("../src/channel");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
 const compose_ui = mock_esm("../src/compose_ui");
@@ -410,4 +411,33 @@ test("test_constructor_groups_video_chat_button_toggle enabled", ({override}) =>
     override(window, "to_$", () => $("window-stub"));
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), true);
+});
+
+test("abandon_all_callbacks_for_key", ({override}) => {
+    override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.zoom.id);
+    compose_call.track_xhr_for_key("1", {});
+    compose_call.track_xhr_for_key("1", {});
+    compose_call.track_xhr_for_key("1", {});
+
+    const token_callback = () => {};
+    compose_call.zoom_token_callbacks.set("1", token_callback);
+
+    assert.equal(compose_call.ignored_call_xhrs.size, 0);
+    assert.equal(compose_call.zoom_token_callbacks.get("1"), token_callback);
+    compose_call.abandon_all_callbacks_for_key("1");
+    assert.equal(compose_call.ignored_call_xhrs.size, 3);
+    assert.equal(compose_call.zoom_token_callbacks.get("1"), undefined);
+
+    // Callback abandon mechanism should not interfere with XHRs/token
+    // callbacks of other textareas.
+    compose_call.ignored_call_xhrs.clear();
+    assert.equal(compose_call.ignored_call_xhrs.size, 0);
+    compose_call.track_xhr_for_key("1", {});
+    compose_call.track_xhr_for_key("1", {});
+    compose_call.track_xhr_for_key("1", {});
+    compose_call.zoom_token_callbacks.set("1", token_callback);
+
+    compose_call.abandon_all_callbacks_for_key("2");
+    assert.equal(compose_call.ignored_call_xhrs.size, 0);
+    assert.equal(compose_call.zoom_token_callbacks.get("1"), token_callback);
 });

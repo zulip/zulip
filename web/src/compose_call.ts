@@ -1,7 +1,7 @@
 import {realm} from "./state_data.ts";
 
 export const zoom_token_callbacks = new Map();
-export const call_xhrs = new Map<string, JQuery.jqXHR<unknown>>();
+export const call_xhrs = new Map<string, JQuery.jqXHR<unknown>[]>();
 export const ignored_call_xhrs = new Set<JQuery.jqXHR>();
 
 export function get_jitsi_server_url(video_call_id?: string): URL | null {
@@ -16,16 +16,34 @@ export function get_jitsi_server_url(video_call_id?: string): URL | null {
     return url;
 }
 
-export function abort_video_callbacks(edit_message_id = ""): void {
-    zoom_token_callbacks.delete(edit_message_id);
-    const xhr = call_xhrs.get(edit_message_id);
-    if (xhr !== undefined) {
+export function track_xhr_for_key(key: string, xhr: JQuery.jqXHR): void {
+    const existing_xhrs = call_xhrs.get(key);
+    if (existing_xhrs) {
+        existing_xhrs.push(xhr);
+    } else {
+        call_xhrs.set(key, [xhr]);
+    }
+}
+
+// This abandons any Zoom OAuth completion callbacks as well as XHR related callbacks
+// by "aborting" the XHRs associated with a message textarea identified by the id.
+export function abandon_all_callbacks_for_key(key: string): void {
+    zoom_token_callbacks.delete(key);
+    abandon_pending_xhrs_for_key(key);
+}
+
+function abandon_pending_xhrs_for_key(key: string): void {
+    const existing_xhrs = call_xhrs.get(key);
+    if (existing_xhrs === undefined) {
+        return;
+    }
+    for (const xhr of existing_xhrs) {
         // TODO: Use xhr.abort(), if XHR methods are available
         // after https://github.com/getsentry/sentry-javascript/issues/19242
         // gets resolved.
         ignored_call_xhrs.add(xhr);
-        call_xhrs.delete(edit_message_id);
     }
+    call_xhrs.delete(key);
 }
 
 export function compute_show_video_chat_button(): boolean {

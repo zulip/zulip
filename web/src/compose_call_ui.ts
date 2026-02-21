@@ -66,8 +66,6 @@ export function generate_and_insert_audio_or_video_call_link(
     const key = edit_message_id ?? "";
 
     if (provider_is_zoom || provider_is_zoom_server_to_server) {
-        compose_call.abort_video_callbacks(edit_message_id);
-
         const request = {
             is_video_call: !is_audio_call,
         };
@@ -81,7 +79,6 @@ export function generate_and_insert_audio_or_video_call_link(
                         return;
                     }
                     const data = call_response_schema.parse(res);
-                    compose_call.call_xhrs.delete(key);
                     if (is_audio_call) {
                         insert_audio_call_url(data.url, $target_textarea);
                     } else {
@@ -92,7 +89,6 @@ export function generate_and_insert_audio_or_video_call_link(
                     if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
                         return;
                     }
-                    compose_call.call_xhrs.delete(key);
                     const parsed = z.object({code: z.string()}).safeParse(_xhr.responseJSON);
                     if (
                         status === "error" &&
@@ -114,9 +110,6 @@ export function generate_and_insert_audio_or_video_call_link(
                     }
                 },
             });
-            if (xhr !== undefined) {
-                compose_call.call_xhrs.set(key, xhr);
-            }
         };
 
         if (current_user.has_zoom_token || provider_is_zoom_server_to_server) {
@@ -153,8 +146,6 @@ export function generate_and_insert_audio_or_video_call_link(
                 break;
             }
             case available_providers.constructor_groups?.id: {
-                compose_call.abort_video_callbacks(edit_message_id);
-
                 xhr = channel.post({
                     url: "/json/calls/constructorgroups/create",
                     data: {},
@@ -163,14 +154,12 @@ export function generate_and_insert_audio_or_video_call_link(
                             return;
                         }
                         const data = call_response_schema.parse(response);
-                        compose_call.call_xhrs.delete(key);
                         insert_video_call_url(data.url, $target_textarea);
                     },
                     error(_xhr, status) {
                         if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
                             return;
                         }
-                        compose_call.call_xhrs.delete(key);
                         if (status !== "abort") {
                             ui_report.generic_embed_error(
                                 $t_html({defaultMessage: "Failed to create video call."}),
@@ -179,11 +168,6 @@ export function generate_and_insert_audio_or_video_call_link(
                         }
                     },
                 });
-
-                if (xhr !== undefined) {
-                    compose_call.call_xhrs.set(key, xhr);
-                }
-
                 break;
             }
             case available_providers.nextcloud_talk?.id: {
@@ -245,5 +229,8 @@ export function generate_and_insert_audio_or_video_call_link(
                 );
             }
         }
+    }
+    if (xhr !== undefined) {
+        compose_call.track_xhr_for_key(key, xhr);
     }
 }
