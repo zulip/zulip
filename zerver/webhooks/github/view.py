@@ -58,6 +58,34 @@ DISCUSSION_TEMPLATES = {
     "edited_body": "{sender} edited [discussion #{discussion_number}{configured_title}]({url}):\n\n~~~ quote\n{body}\n~~~",
 }
 
+SUCCESSFUL_STATES = {
+    "approved",
+    "success",
+    "successful",
+    "succeeded",
+}
+
+FAILED_STATES = {
+    "action_required",
+    "changes_requested",
+    "error",
+    "errored",
+    "failed",
+    "failure",
+    "failing",
+    "startup_failure",
+    "timed_out",
+}
+
+
+def get_status_emoji(status: str) -> str:
+    normalized_status = status.strip().lower()
+    if normalized_status in SUCCESSFUL_STATES:
+        return "✅"
+    if normalized_status in FAILED_STATES:
+        return "❌"
+    return ""
+
 
 class Helper:
     def __init__(
@@ -256,11 +284,12 @@ def get_deployment_body(helper: Helper) -> str:
     return f"{get_sender_name(helper)} created new deployment."
 
 
-def get_change_deployment_status_body(helper: Helper) -> str:
+def get_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
-    return "Deployment changed status to {}.".format(
-        payload["deployment_status"]["state"].tame(check_string),
-    )
+    state = payload["deployment_status"]["state"].tame(check_string)
+    emoji = get_status_emoji(state)
+    state_text = f"{emoji} {state}" if emoji else state
+    return f"Deployment changed status to {state_text}."
 
 
 def get_create_or_delete_body(action: str, helper: Helper) -> str:
@@ -637,6 +666,9 @@ def get_pull_request_ready_for_review_body(helper: Helper) -> str:
 def get_pull_request_review_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
+    review_state = payload["review"]["state"].tame(check_string)
+    emoji = get_status_emoji(review_state)
+    review_status = f"{emoji} {review_state}" if emoji else review_state
     title = "for #{} {}".format(
         payload["pull_request"]["number"].tame(check_int),
         payload["pull_request"]["title"].tame(check_string),
@@ -645,7 +677,7 @@ def get_pull_request_review_body(helper: Helper) -> str:
         user_name=get_sender_name(helper),
         action="submitted",
         url=payload["review"]["html_url"].tame(check_string),
-        type="PR review",
+        type=f"{review_status} PR review",
         title=title if include_title else None,
         message=payload["review"]["body"].tame(check_none_or(check_string)),
     )
@@ -785,6 +817,10 @@ def get_check_run_body(helper: Helper) -> str:
 Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
 """.strip()
 
+    conclusion = payload["check_run"]["conclusion"].tame(check_string)
+    emoji = get_status_emoji(conclusion)
+    conclusion_text = f"{emoji} {conclusion}" if emoji else conclusion
+
     kwargs = {
         "name": payload["check_run"]["name"].tame(check_string),
         "html_url": payload["check_run"]["html_url"].tame(check_string),
@@ -794,7 +830,7 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
             payload["repository"]["html_url"].tame(check_string),
             payload["check_run"]["head_sha"].tame(check_string),
         ),
-        "conclusion": payload["check_run"]["conclusion"].tame(check_string),
+        "conclusion": conclusion_text,
     }
 
     return template.format(**kwargs)
@@ -1036,7 +1072,7 @@ EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "check_run": get_check_run_body,
     "delete": partial(get_create_or_delete_body, "deleted"),
     "deployment": get_deployment_body,
-    "deployment_status": get_change_deployment_status_body,
+    "deployment_status": get_deployment_status_body,
     "discussion": get_discussion_body,
     "discussion_comment": get_discussion_comment_body,
     "fork": get_fork_body,

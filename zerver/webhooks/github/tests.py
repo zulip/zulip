@@ -145,7 +145,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("deployment", TOPIC_DEPLOYMENT, expected_message)
 
     def test_deployment_status_msg(self) -> None:
-        expected_message = "Deployment changed status to success."
+        expected_message = "Deployment changed status to ✅ success."
         self.check_webhook("deployment_status", TOPIC_DEPLOYMENT, expected_message)
 
     def test_fork_msg(self) -> None:
@@ -397,18 +397,18 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("status__with_target_url", TOPIC_REPO, expected_message)
 
     def test_pull_request_review_msg(self) -> None:
-        expected_message = "baxterthehacker submitted [PR review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
+        expected_message = "baxterthehacker submitted [✅ approved PR review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
         self.check_webhook("pull_request_review", TOPIC_PR, expected_message)
 
     def test_pull_request_review_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "baxterthehacker submitted [PR review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
+        expected_message = "baxterthehacker submitted [✅ approved PR review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
         self.check_webhook("pull_request_review", expected_topic_name, expected_message)
 
     def test_pull_request_review_msg_with_empty_body(self) -> None:
         expected_topic_name = "groonga / PR #1581 grn_db_value_lock: unlock GRN_TYPE obj..."
-        expected_message = "kou submitted [PR review](https://github.com/groonga/groonga/pull/1581#pullrequestreview-1483047907)."
+        expected_message = "kou submitted [commented PR review](https://github.com/groonga/groonga/pull/1581#pullrequestreview-1483047907)."
         self.check_webhook("pull_request_review__empty_body", expected_topic_name, expected_message)
 
     def test_pull_request_review_comment_msg(self) -> None:
@@ -563,7 +563,7 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_check_run(self) -> None:
         expected_topic_name = "hello-world / checks"
         expected_message = """
-Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
+Check [randscape](http://github.com/github/hello-world/runs/4) completed (✅ success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
 """.strip()
         self.check_webhook("check_run__completed", expected_topic_name, expected_message)
 
