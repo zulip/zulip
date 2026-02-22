@@ -3,21 +3,14 @@
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-// Minimal jQuery mock so DOM calls don’t crash
-mock_esm("jquery", {
-    default() {
-        return {
-            empty() {
-                return this;
-            },
-            html() {
-                return this;
-            },
-        };
-    },
-});
+// Mock all ES module dependencies
+mock_esm("../src/compose_validate.ts");
+mock_esm("../src/message_lists.ts");
+mock_esm("../src/people.ts");
+mock_esm("../src/spectators.ts");
+mock_esm("../src/stream_data.ts");
+mock_esm("../src/util.ts");
 
-// Mock narrow_error so we don’t render real HTML
 mock_esm("../src/narrow_error.ts", {
     narrow_error() {
         return "<div></div>";
