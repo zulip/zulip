@@ -15,7 +15,6 @@ mock_esm("../src/popup_banners.ts", {
     open_connection_error_popup_banner() {},
 });
 
-
 const narrow_banner = mock_esm("../src/narrow_banner.ts");
 
 const {Filter} = zrequire("filter");
@@ -68,7 +67,6 @@ run_test("load_messages error handling - server error message", ({override}) => 
         show_error_message_called = true;
         error_message_text = msg;
     });
-
 
     const msg_list_data = new MessageListData({
         excludes_muted_topics: false,
