@@ -1374,6 +1374,22 @@ label.preferences-radio-choice-label {
     min-width: initial !important;
 }
 
+#show_api_key {
+    .api-key-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .copy-button {
+            padding: 0;
+
+            &:focus {
+                outline: none;
+            }
+        }
+    }
+}
+
 #api_key_buttons {
     display: inline-flex;
 
