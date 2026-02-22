@@ -584,6 +584,11 @@ def fix_message_edit_history(
         message["edit_history"] = orjson.dumps(edit_history).decode()
 
 
+def sanitize_realm_emoji_file_name(data: TableData) -> None:
+    for emoji in data["zerver_realmemoji"]:
+        emoji["file_name"] = sanitize_name(emoji["file_name"])
+
+
 def current_table_ids(data: TableData, table: TableName) -> list[int]:
     """
     Returns the ids present in the current table
@@ -1528,6 +1533,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     re_map_foreign_keys(data, "zerver_defaultstream", "stream", related_table="stream")
     re_map_foreign_keys(data, "zerver_realmemoji", "author", related_table="user_profile")
+    sanitize_realm_emoji_file_name(data)
 
     if settings.BILLING_ENABLED:
         disable_restricted_authentication_methods(data)
