@@ -533,6 +533,16 @@ export function show_empty_narrow_message(current_filter: Filter): void {
     $(".empty_feed_notice_main").html(rendered_narrow_banner);
 }
 
+export function show_error_message(error_html: string): void {
+    $(".empty_feed_notice_main").empty();
+    const banner_data = {
+        title: _.escape(error_html),
+        html: "",
+    };
+    const rendered_narrow_banner = narrow_error(banner_data);
+    $(".empty_feed_notice_main").html(rendered_narrow_banner);
+}
+
 export function hide_empty_narrow_message(): void {
     $(".empty_feed_notice_main").empty();
 }

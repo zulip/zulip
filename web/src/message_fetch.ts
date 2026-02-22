@@ -443,11 +443,6 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 // Bad request: We probably specified a narrow operator
                 // for a nonexistent stream or something.  We shouldn't
                 // retry or display a connection error.
-                //
-                // FIXME: This logic unconditionally ignores the actual JSON
-                // error in the xhr status. While we have empty narrow messages
-                // for many common errors, and those have nicer HTML formatting,
-                // we certainly don't for every possible 400 error.
                 message_feed_loading.hide_indicators();
 
                 if (
@@ -456,7 +451,15 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                     !opts.msg_list.is_combined_feed_view &&
                     opts.msg_list.visibly_empty()
                 ) {
-                    narrow_banner.show_empty_narrow_message(opts.msg_list.data.filter);
+                    // Check if the server provided a specific error message
+                    const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
+                    if (parsed.success) {
+                        // Display the server's error message
+                        narrow_banner.show_error_message(parsed.data.msg);
+                    } else {
+                        // Fall back to the generic empty narrow banner
+                        narrow_banner.show_empty_narrow_message(opts.msg_list.data.filter);
+                    }
                 }
 
                 // TODO: This should probably do something explicit with
