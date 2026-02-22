@@ -245,6 +245,25 @@ def map_messages_to_attachments(data: ImportedTableData) -> None:
             )
 
 
+def validate_and_resolve_relative_path(
+    path: str,
+    *,
+    base_dir: Path,
+    safe_base_dir: str,
+    field_name_for_error: str,
+) -> tuple[str, str]:
+    assert path
+
+    if os.path.isabs(path):
+        raise AssertionError(f"Absolute {field_name_for_error} not allowed")
+
+    safe_resolved_path = os.path.realpath(os.path.join(base_dir, path))
+    if os.path.commonpath([safe_base_dir, safe_resolved_path]) != safe_base_dir:
+        raise AssertionError(f"Invalid path outside import dir: {path}")
+
+    return path, safe_resolved_path
+
+
 def load_sanitized_records(import_dir: Path) -> list[SanitizedRecord]:
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename, "rb") as records_file:
@@ -253,17 +272,13 @@ def load_sanitized_records(import_dir: Path) -> list[SanitizedRecord]:
     safe_import_dir = os.path.realpath(import_dir)
     sanitized_records = []
     for record in records:
-        record_path = record["path"]
-        if not isinstance(record_path, str):
-            raise AssertionError(f"Invalid path field in {records_filename}")
-        assert record_path
-
-        if os.path.isabs(record_path):
-            raise AssertionError(f"Absolute path field not allowed in {records_filename}")
-
-        safe_resolved_source_path = os.path.realpath(os.path.join(import_dir, record_path))
-        if os.path.commonpath([safe_import_dir, safe_resolved_source_path]) != safe_import_dir:
-            raise AssertionError(f"Invalid path outside import dir: {record_path}")
+        assert isinstance(record["path"], str)
+        record_path, safe_resolved_source_path = validate_and_resolve_relative_path(
+            record["path"],
+            base_dir=import_dir,
+            safe_base_dir=safe_import_dir,
+            field_name_for_error="path",
+        )
 
         # record_path joins safely with import_dir, so it's safe to use. Store on the record
         # for situation where we still need its original, relative form.
@@ -610,6 +625,22 @@ def fix_realm_emoji_author(data: ImportedTableData, default_author_id: int) -> N
 def sanitize_realm_emoji_file_name(data: ImportedTableData) -> None:
     for emoji in data["zerver_realmemoji"]:
         emoji["file_name"] = sanitize_name(emoji["file_name"])
+
+
+def sanitize_attachment_data(attachment_data: ImportedTableData, import_dir: Path) -> None:
+    uploads_import_dir = os.path.join(import_dir, "uploads")
+    safe_uploads_import_dir = os.path.realpath(uploads_import_dir)
+
+    for attachment in attachment_data["zerver_attachment"]:
+        assert attachment["file_name"] and attachment["path_id"]
+        attachment["file_name"] = sanitize_name(attachment["file_name"])
+        attachment["path_id"], _ = validate_and_resolve_relative_path(
+            attachment["path_id"],
+            base_dir=uploads_import_dir,
+            safe_base_dir=safe_uploads_import_dir,
+            field_name_for_error="path_id",
+        )
+        assert attachment["path_id"].endswith(attachment["file_name"])
 
 
 def current_table_ids(data: ImportedTableData, table: TableName) -> list[int]:
@@ -1893,6 +1924,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # which is called by import_message_data and another for zerver_scheduledmessage.
     with open(attachments_file, "rb") as f:
         attachment_data = orjson.loads(f.read())
+    sanitize_attachment_data(attachment_data, import_dir)
 
     # We need to import ImageAttachments before messages, as the message rendering logic
     # checks for existence of ImageAttachment records to determine if HTML content for image
