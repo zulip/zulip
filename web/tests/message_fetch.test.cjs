@@ -23,6 +23,9 @@ const {MessageListData} = zrequire("message_list_data");
 const message_lists = mock_esm("../src/message_lists.ts", {
     current: undefined,
 });
+const channel = mock_esm("../src/channel.ts", {
+    get() {},
+});
 const message_fetch = zrequire("message_fetch");
 
 run_test("get_parameters_for_message_fetch_api date anchor", () => {
@@ -59,7 +62,7 @@ run_test("load_messages error handling - server error message", ({override, over
     override(narrow_banner, "show_error_message", () => {});
     override(narrow_banner, "show_empty_narrow_message", () => {});
     
-    const message_lists = {};
+    
 
     let show_error_message_called = false;
     let show_empty_narrow_message_called = false;
@@ -103,13 +106,12 @@ run_test("load_messages error handling - server error message", ({override, over
         msg_list_data,
         num_before: 0,
         num_after: 0,
+        cont() {},
     };
 
     // Trigger error by calling load_messages with mocked channel.get that calls error callback
-    override(message_fetch, "channel", {
-        get(config) {
-            config.error(xhr);
-        },
+    override(channel, "get", (config) => {
+        config.error(xhr);
     });
 
     message_fetch.load_messages(opts);
@@ -125,7 +127,7 @@ run_test("load_messages error handling - no error message fallback", ({override,
     override(narrow_banner, "show_error_message", () => {});
     override(narrow_banner, "show_empty_narrow_message", () => {});
     
-    const message_lists = {};
+    
 
     let show_error_message_called = false;
     let show_empty_narrow_message_called = false;
@@ -164,12 +166,11 @@ run_test("load_messages error handling - no error message fallback", ({override,
         msg_list_data,
         num_before: 0,
         num_after: 0,
+        cont() {},
     };
 
-    override(message_fetch, "channel", {
-        get(config) {
-            config.error(xhr);
-        },
+    override(channel, "get", (config) => {
+        config.error(xhr);
     });
 
     message_fetch.load_messages(opts);
