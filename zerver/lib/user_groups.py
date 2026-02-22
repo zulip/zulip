@@ -2,7 +2,6 @@ from collections.abc import Collection, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from typing import Any, TypedDict
-from pydantic import BaseModel  ,ConfigDict
 
 from django.db import connection, transaction
 from django.db.models import F, Q, QuerySet, Value
@@ -10,6 +9,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import CTE, with_cte
 from psycopg2.sql import SQL, Literal
+from pydantic import BaseModel, ConfigDict
 
 from zerver.lib.exceptions import (
     CannotDeactivateGroupInUseError,
@@ -61,45 +61,49 @@ class UserGroupDict(TypedDict):
     can_remove_members_group: int | UserGroupMembersDict
     deactivated: bool
 
-from typing import List, Union, Optional
 
 # Renamed the classes with 'Base' to avoid name clashes in code
 class UserGroupMembersBase(BaseModel):
-    '''We use extra="ignore" because zulip's internal logic often attaches 
-    extra database attributes that shouldn't break our pydantic validation'''
+    """We use extra="ignore" because zulip's internal logic often attaches
+    extra database attributes that shouldn't break our pydantic validation"""
+
     model_config = ConfigDict(extra="ignore")
-    
-    direct_members: List[int] = []
-    direct_subgroups: List[int] = []
+
+    direct_members: list[int] = []
+    direct_subgroups: list[int] = []
+
 
 class UserGroupBase(BaseModel):
-    '''Using ConfigDict(extra="ignore") ensures backward compatibility 
-    with django ORM objects during this migration phase'''
+    """Using ConfigDict(extra="ignore") ensures backward compatibility
+    with django ORM objects during this migration phase"""
+
     model_config = ConfigDict(extra="ignore")
 
-    id: Optional[int] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
-    members: List[int] = []
-    direct_subgroup_ids: List[int] = []
-    
-    '''We use 'Any' for realm to handle the complex django realm objects 
-    without requiring a full Pydantic schema for the entire Realm model yet'''
-    realm: Any = None 
+    id: int | None = None
+    name: str | None = None
+    description: str | None = None
+    members: list[int] = []
+    direct_subgroup_ids: list[int] = []
 
-    creator_id: Optional[int] = None
-    date_created: Optional[int] = None
+    """We use 'Any' for realm to handle the complex django realm objects
+    without requiring a full Pydantic schema for the entire Realm model yet"""
+    realm: Any = None
+
+    creator_id: int | None = None
+    date_created: int | None = None
     is_system_group: bool = False
 
-    '''The union types here allow the code to handle both raw ID (integers) 
-    and nested pydantic models, providing flexibility during the migration'''
-    can_add_members_group: Optional[Union[int, UserGroupMembersBase]] = None
-    can_join_group: Optional[Union[int, UserGroupMembersBase]] = None
-    can_leave_group: Optional[Union[int, UserGroupMembersBase]] = None
-    can_manage_group: Optional[Union[int, UserGroupMembersBase]] = None
-    can_mention_group: Optional[Union[int, UserGroupMembersBase]] = None
-    can_remove_members_group: Optional[Union[int, UserGroupMembersBase]] = None
+    """The union types here allow the code to handle both raw ID (integers)
+    and nested pydantic models, providing flexibility during the migration"""
+    can_add_members_group: int | UserGroupMembersBase | None = None
+    can_join_group: int | UserGroupMembersBase | None = None
+    can_leave_group: int | UserGroupMembersBase | None = None
+    can_manage_group: int | UserGroupMembersBase | None = None
+    can_mention_group: int | UserGroupMembersBase | None = None
+    can_remove_members_group: int | UserGroupMembersBase | None = None
     deactivated: bool = False
+
+
 @dataclass
 class LockedUserGroupContext:
     """User groups in this dataclass are guaranteeed to be locked until the
