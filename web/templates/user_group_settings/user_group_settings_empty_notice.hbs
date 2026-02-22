@@ -1,13 +1,19 @@
 <div class="no-groups-to-show-message">
-    <span class="settings-empty-option-text">
+    <span class="settings-empty-option-text user-groups-top-align">
         {{empty_user_group_list_message}}
         {{#if all_groups_tab}}
             {{#if can_create_user_groups}}
-                <a href="#groups/new">{{t "Create a user group"}}</a>
+                <button type="button" class="action-button action-button-subtle-brand create-user-group-button">
+                    <span class="action-button-label">{{t "Create user group"}}</span>
+                </button>
             {{/if}}
-        {{else}}
-            <a href="#groups/all">{{t "View all user groups"}}</a>
+        {{/if}}
+        {{#if your_groups_tab}}
+            {{#if has_any_groups}}
+                <button type="button" class="action-button action-button-subtle-neutral view-all-groups-button">
+                    <span class="action-button-label">{{t "View all groups"}}</span>
+                </button>
+            {{/if}}
         {{/if}}
     </span>
 </div>
-
