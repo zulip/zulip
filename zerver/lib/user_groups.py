@@ -100,7 +100,6 @@ class UserGroupBase(BaseModel):
     can_mention_group: Optional[Union[int, UserGroupMembersBase]] = None
     can_remove_members_group: Optional[Union[int, UserGroupMembersBase]] = None
     deactivated: bool = False
-    
 @dataclass
 class LockedUserGroupContext:
     """User groups in this dataclass are guaranteeed to be locked until the
