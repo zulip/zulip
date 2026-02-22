@@ -130,10 +130,13 @@ export function generate_and_insert_audio_or_video_call_link(
                     meeting_name,
                     voice_only: is_audio_call,
                 };
-                void channel.get({
+                xhr = channel.get({
                     url: "/json/calls/bigbluebutton/create",
                     data: request,
                     success(response) {
+                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
+                            return;
+                        }
                         const data = call_response_schema.parse(response);
                         if (is_audio_call) {
                             insert_audio_call_url(data.url, $target_textarea);
@@ -174,14 +177,20 @@ export function generate_and_insert_audio_or_video_call_link(
                 const room_name = `${get_recipient_label()?.label_text ?? ""} conversation`;
                 const request = {room_name};
 
-                channel.post({
+                xhr = channel.post({
                     url: "/json/calls/nextcloud_talk/create",
                     data: request,
                     success(response) {
+                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
+                            return;
+                        }
                         const data = call_response_schema.parse(response);
                         insert_video_call_url(data.url, $target_textarea);
                     },
                     error(_, status) {
+                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
+                            return;
+                        }
                         if (status !== "abort") {
                             ui_report.generic_embed_error(
                                 $t_html({defaultMessage: "Failed to create video call."}),
