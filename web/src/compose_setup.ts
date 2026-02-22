@@ -10,6 +10,7 @@ import * as compose from "./compose.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
+import {compose_call_session_manager} from "./compose_call_session.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as compose_notifications from "./compose_notifications.ts";
@@ -57,7 +58,7 @@ function setup_compose_actions_hooks(): void {
 
     compose_actions.register_compose_cancel_hook(abort_xhr);
     compose_actions.register_compose_cancel_hook(() => {
-        compose_call.abandon_all_callbacks_for_key("");
+        compose_call_session_manager.abandon_session("");
     });
 }
 
