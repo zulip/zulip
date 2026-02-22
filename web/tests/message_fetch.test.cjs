@@ -20,6 +20,9 @@ const narrow_banner = mock_esm("../src/narrow_banner.ts");
 
 const {Filter} = zrequire("filter");
 const {MessageListData} = zrequire("message_list_data");
+const message_lists = mock_esm("../src/message_lists.ts", {
+    current: undefined,
+});
 const message_fetch = zrequire("message_fetch");
 
 run_test("get_parameters_for_message_fetch_api date anchor", () => {
@@ -57,7 +60,6 @@ run_test("load_messages error handling - server error message", ({override, over
     override(narrow_banner, "show_empty_narrow_message", () => {});
     
     const message_lists = {};
-    override_rewire(message_fetch, "message_lists", message_lists);
 
     let show_error_message_called = false;
     let show_empty_narrow_message_called = false;
@@ -124,7 +126,6 @@ run_test("load_messages error handling - no error message fallback", ({override,
     override(narrow_banner, "show_empty_narrow_message", () => {});
     
     const message_lists = {};
-    override_rewire(message_fetch, "message_lists", message_lists);
 
     let show_error_message_called = false;
     let show_empty_narrow_message_called = false;
