@@ -892,7 +892,7 @@ def fix_subscriptions_is_user_active_column(
 
 
 def process_avatars(record: dict[str, Any]) -> None:
-    if not record["s3_path"].endswith(".original"):
+    if not record["path"].endswith(".original"):
         return None
     user_profile = get_user_profile_by_id(record["user_profile_id"])
     if settings.LOCAL_AVATARS_DIR is not None:
@@ -927,7 +927,7 @@ def process_emojis(
     # 3rd party exports may not provide .original files. In that case we want to just
     # treat whatever file we have as the original.
     should_use_as_original = not filename_to_has_original[record["file_name"]]
-    if not (record["s3_path"].endswith(".original") or should_use_as_original):
+    if not (record["path"].endswith(".original") or should_use_as_original):
         return
 
     if "author_id" in record and record["author_id"] is not None:
@@ -953,7 +953,7 @@ def process_emojis(
         except BadImageError:
             logging.warning(
                 "Could not thumbnail emoji image %s; ignoring",
-                record["s3_path"],
+                record["path"],
             )
             # TODO:: should we delete the RealmEmoji object, or keep it with the files
             # that did get copied; even though they do generate this error?
@@ -1010,7 +1010,7 @@ def import_uploads(
         # for thumbnailing.
         filename_to_has_original = {record["file_name"]: False for record in records}
         for record in records:
-            if record["s3_path"].endswith(".original"):
+            if record["path"].endswith(".original"):
                 filename_to_has_original[record["file_name"]] = True
 
         if records and "author" in records[0]:
@@ -1040,7 +1040,7 @@ def import_uploads(
             relative_path = user_avatar_base_path_from_ids(
                 record["user_profile_id"], record["avatar_version"], record["realm_id"]
             )
-            if record["s3_path"].endswith(".original"):
+            if record["path"].endswith(".original"):
                 relative_path += ".original"
             else:
                 relative_path = upload_backend.get_avatar_path(relative_path, medium=False)
@@ -1049,7 +1049,7 @@ def import_uploads(
             relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
                 realm_id=record["realm_id"], emoji_file_name=record["file_name"]
             )
-            if record["s3_path"].endswith(".original"):
+            if record["path"].endswith(".original"):
                 relative_path += ".original"
             record["last_modified"] = timestamp
         elif processing_realm_icons:
@@ -1059,12 +1059,12 @@ def import_uploads(
         else:
             # This relative_path is basically the new location of the file,
             # which will later be copied from its original location as
-            # specified in record["s3_path"].
+            # specified in record["path"].
             relative_path = upload_backend.generate_message_upload_path(
                 str(record["realm_id"]), sanitize_name(os.path.basename(record["path"]))
             )
-            path_maps["old_attachment_path_to_new_path"][record["s3_path"]] = relative_path
-            path_maps["new_attachment_path_to_old_path"][relative_path] = record["s3_path"]
+            path_maps["old_attachment_path_to_new_path"][record["path"]] = relative_path
+            path_maps["new_attachment_path_to_old_path"][relative_path] = record["path"]
             path_maps["new_attachment_path_to_local_data_path"][relative_path] = os.path.join(
                 import_dir, record["path"]
             )
@@ -1095,7 +1095,7 @@ def import_uploads(
             # Zulip exports will always have a content-type, but third-party exports might not.
             content_type = record.get("content_type")
             if content_type is None:
-                content_type = guess_type(record["s3_path"])[0]
+                content_type = guess_type(record["path"])[0]
                 if content_type is None:
                     # This is the default for unknown data.  Note that
                     # for `.original` files, this is the value we'll
