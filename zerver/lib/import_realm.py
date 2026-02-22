@@ -607,6 +607,11 @@ def fix_realm_emoji_author(data: ImportedTableData, default_author_id: int) -> N
             emoji["author_id"] = default_author_id
 
 
+def sanitize_realm_emoji_file_name(data: ImportedTableData) -> None:
+    for emoji in data["zerver_realmemoji"]:
+        emoji["file_name"] = sanitize_name(emoji["file_name"])
+
+
 def current_table_ids(data: ImportedTableData, table: TableName) -> list[int]:
     """
     Returns the ids present in the current table
@@ -1585,6 +1590,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         data,
         realm_emoji_default_author_id,
     )
+    sanitize_realm_emoji_file_name(data)
 
     if settings.BILLING_ENABLED:
         disable_restricted_authentication_methods(data)
