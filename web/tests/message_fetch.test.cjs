@@ -57,13 +57,11 @@ run_test("get_parameters_for_message_fetch_api date anchor", () => {
     assert.equal(missing_date.anchor_date, undefined);
 });
 
-run_test("load_messages error handling - server error message", ({override, override_rewire}) => {
+run_test("load_messages error handling - server error message", ({override}) => {
     // Mock dependencies
-    
-    
 
     let show_error_message_called = false;
-    let show_empty_narrow_message_called = false;
+    const show_empty_narrow_message_called = false;
     let error_message_text = null;
 
     override(narrow_banner, "show_error_message", (msg) => {
@@ -117,11 +115,10 @@ run_test("load_messages error handling - server error message", ({override, over
     assert.ok(!show_empty_narrow_message_called, "show_empty_narrow_message should not be called");
 });
 
-run_test("load_messages error handling - no error message fallback", ({override, override_rewire}) => {
+run_test("load_messages error handling - no error message fallback", ({override}) => {
     // Mock dependencies
-    
-    
-    let show_error_message_called = false;
+
+    const show_error_message_called = false;
     let show_empty_narrow_message_called = false;
 
     override(narrow_banner, "show_empty_narrow_message", () => {
