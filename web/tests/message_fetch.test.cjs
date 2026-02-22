@@ -60,7 +60,6 @@ run_test("get_parameters_for_message_fetch_api date anchor", () => {
 run_test("load_messages error handling - server error message", ({override, override_rewire}) => {
     // Mock dependencies
     override(narrow_banner, "show_error_message", () => {});
-    override(narrow_banner, "show_empty_narrow_message", () => {});
     
     
 
@@ -73,9 +72,6 @@ run_test("load_messages error handling - server error message", ({override, over
         error_message_text = msg;
     });
 
-    override(narrow_banner, "show_empty_narrow_message", () => {
-        show_empty_narrow_message_called = true;
-    });
 
     const msg_list_data = new MessageListData({
         excludes_muted_topics: false,
@@ -124,17 +120,12 @@ run_test("load_messages error handling - server error message", ({override, over
 
 run_test("load_messages error handling - no error message fallback", ({override, override_rewire}) => {
     // Mock dependencies
-    override(narrow_banner, "show_error_message", () => {});
     override(narrow_banner, "show_empty_narrow_message", () => {});
     
     
 
     let show_error_message_called = false;
     let show_empty_narrow_message_called = false;
-
-    override(narrow_banner, "show_error_message", () => {
-        show_error_message_called = true;
-    });
 
     override(narrow_banner, "show_empty_narrow_message", () => {
         show_empty_narrow_message_called = true;
