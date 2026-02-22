@@ -1349,7 +1349,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("cordelia")
 
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(23):
             process_message(incoming_valid_message)
 
         # Confirm Iago received the message.
@@ -1367,6 +1367,48 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.content, "TestMissedGroupDirectMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("cordelia"))
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+
+    def test_recieve_missed_group_direct_message_with_deactivated_user_email_messages(self) -> None:
+        # Build dummy messages for message notification email reply.
+        # Hamlet send Othello and Cordelia a group direct message.
+        # Cordelia will reply via email Hamlet will receive
+        # the message and Othello should not.
+        self.login("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "Initial group DM",
+                "to": orjson.dumps([othello.id, cordelia.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        message = most_recent_message(cordelia)
+
+        mm_address = create_missed_message_address(cordelia, message)
+
+        do_deactivate_user(othello, acting_user=None)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestMissedMessageEmailMessages body")
+
+        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages subject"
+        incoming_valid_message["From"] = cordelia.delivery_email
+        incoming_valid_message["To"] = mm_address
+        incoming_valid_message["Reply-to"] = cordelia.delivery_email
+
+        initial_last_message = self.get_last_message()
+        process_message(incoming_valid_message)
+
+        # Cordelia's reply should still be posted, even though Othello (a recipient) is deactivated.
+        # The message should be delivered to the remaining active members.
+        self.assertNotEqual(initial_last_message, self.get_last_message())
+
+        new_last_message = self.get_last_message()
+        self.assertEqual(new_last_message.content, "TestMissedMessageEmailMessages body")
 
     def test_receive_missed_stream_message_email_messages(self) -> None:
         # build dummy messages for message notification email reply
