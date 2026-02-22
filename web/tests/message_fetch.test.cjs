@@ -10,6 +10,12 @@ mock_esm("../src/message_feed_loading", {
     hide_indicators() {},
 });
 
+mock_esm("../src/popup_banners.ts", {
+    close_connection_error_popup_banner() {},
+    open_connection_error_popup_banner() {},
+});
+
+
 const narrow_banner = mock_esm("../src/narrow_banner.ts");
 
 const {Filter} = zrequire("filter");
