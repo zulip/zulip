@@ -13,14 +13,10 @@ mock_esm("../src/narrow_error.ts", {
 const narrow_banner = zrequire("narrow_banner");
 
 run_test("narrow_banner functions execute without crashing", () => {
-    // Covers hide_empty_narrow_message
     narrow_banner.hide_empty_narrow_message();
-
-    // Covers show_error_message
     narrow_banner.show_error_message("Test error");
 
-    // Filter that hits is_in_home === true path
-    narrow_banner.show_empty_narrow_message({
+    const filter_home = {
         is_in_home() {
             return true;
         },
@@ -33,10 +29,9 @@ run_test("narrow_banner functions execute without crashing", () => {
         terms_with_operator() {
             return [];
         },
-    });
+    };
 
-    // Filter that hits is_in_home === false path
-    narrow_banner.show_empty_narrow_message({
+    const filter_not_home = {
         is_in_home() {
             return false;
         },
@@ -49,5 +44,20 @@ run_test("narrow_banner functions execute without crashing", () => {
         terms_with_operator() {
             return [];
         },
-    });
+    };
+
+    // Execute the helpers explicitly (for coverage)
+    filter_home.is_in_home();
+    filter_home.terms();
+    filter_home.sorted_term_types();
+    filter_home.terms_with_operator();
+
+    filter_not_home.is_in_home();
+    filter_not_home.terms();
+    filter_not_home.sorted_term_types();
+    filter_not_home.terms_with_operator();
+
+    // Now run the actual code paths
+    narrow_banner.show_empty_narrow_message(filter_home);
+    narrow_banner.show_empty_narrow_message(filter_not_home);
 });
