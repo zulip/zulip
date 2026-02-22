@@ -1,8 +1,27 @@
 import {realm} from "./state_data.ts";
 
-export const zoom_token_callbacks = new Map();
-export const call_xhrs = new Map<string, JQuery.jqXHR<unknown>[]>();
+const call_xhrs = new Map<string, JQuery.jqXHR<unknown>[]>();
 export const ignored_call_xhrs = new Set<JQuery.jqXHR>();
+
+export type OAuthCallProvider = "zoom";
+const oauth_providers = new Set<OAuthCallProvider>(["zoom"]);
+
+export const oauth_call_provider_token_callbacks = new Map<
+    OAuthCallProvider,
+    Map<string, () => void>
+>();
+
+export function current_oauth_call_provider(): OAuthCallProvider | null {
+    const available_providers = realm.realm_available_video_chat_providers;
+    const realm_provider = realm.realm_video_chat_provider;
+    if (
+        realm_provider === available_providers.zoom?.id ||
+        realm_provider === available_providers.zoom_server_to_server?.id
+    ) {
+        return "zoom";
+    }
+    return null;
+}
 
 export function get_jitsi_server_url(video_call_id?: string): URL | null {
     const base_url = realm.realm_jitsi_server_url ?? realm.server_jitsi_server_url;
@@ -25,10 +44,12 @@ export function track_xhr_for_key(key: string, xhr: JQuery.jqXHR): void {
     }
 }
 
-// This abandons any Zoom OAuth completion callbacks as well as XHR related callbacks
+// This abandons any OAuth completion callbacks as well as XHR related callbacks
 // by "aborting" the XHRs associated with a message textarea identified by the id.
 export function abandon_all_callbacks_for_key(key: string): void {
-    zoom_token_callbacks.delete(key);
+    for (const provider of oauth_providers) {
+        abandon_oauth_provider_token_callbacks_for_key(provider, key);
+    }
     abandon_pending_xhrs_for_key(key);
 }
 
@@ -44,6 +65,32 @@ function abandon_pending_xhrs_for_key(key: string): void {
         ignored_call_xhrs.add(xhr);
     }
     call_xhrs.delete(key);
+}
+
+export function update_oauth_provider_callback_for_key(
+    provider: OAuthCallProvider,
+    key: string,
+    callback: () => void,
+): void {
+    let provider_callbacks = oauth_call_provider_token_callbacks.get(provider);
+
+    if (provider_callbacks === undefined) {
+        provider_callbacks = new Map<string, () => void>();
+        oauth_call_provider_token_callbacks.set(provider, provider_callbacks);
+    }
+
+    provider_callbacks.set(key, callback);
+}
+
+function abandon_oauth_provider_token_callbacks_for_key(
+    provider: OAuthCallProvider,
+    key: string,
+): void {
+    const provider_callbacks = oauth_call_provider_token_callbacks.get(provider);
+    if (provider_callbacks === undefined || provider_callbacks.size === 0) {
+        return;
+    }
+    provider_callbacks.delete(key);
 }
 
 export function compute_show_video_chat_button(): boolean {

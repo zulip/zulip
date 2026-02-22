@@ -196,10 +196,12 @@ export function dispatch_normal_event(event) {
         case "has_zoom_token":
             current_user.has_zoom_token = event.value;
             if (event.value) {
-                for (const callback of compose_call.zoom_token_callbacks.values()) {
+                for (const callback of compose_call.oauth_call_provider_token_callbacks
+                    .get("zoom")
+                    .values()) {
                     callback();
                 }
-                compose_call.zoom_token_callbacks.clear();
+                compose_call.oauth_call_provider_token_callbacks.get("zoom").clear();
             }
             break;
 

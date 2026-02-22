@@ -420,24 +420,31 @@ test("abandon_all_callbacks_for_key", ({override}) => {
     compose_call.track_xhr_for_key("1", {});
 
     const token_callback = () => {};
-    compose_call.zoom_token_callbacks.set("1", token_callback);
+    compose_call.update_oauth_provider_callback_for_key("zoom", "1", token_callback);
 
     assert.equal(compose_call.ignored_call_xhrs.size, 0);
-    assert.equal(compose_call.zoom_token_callbacks.get("1"), token_callback);
+    assert.equal(
+        compose_call.oauth_call_provider_token_callbacks.get("zoom").get("1"),
+        token_callback,
+    );
     compose_call.abandon_all_callbacks_for_key("1");
     assert.equal(compose_call.ignored_call_xhrs.size, 3);
-    assert.equal(compose_call.zoom_token_callbacks.get("1"), undefined);
+    assert.equal(compose_call.oauth_call_provider_token_callbacks.get("zoom").get("1"), undefined);
 
     // Callback abandon mechanism should not interfere with XHRs/token
     // callbacks of other textareas.
     compose_call.ignored_call_xhrs.clear();
+    // For coverage
+    compose_call.abandon_all_callbacks_for_key("1");
     assert.equal(compose_call.ignored_call_xhrs.size, 0);
     compose_call.track_xhr_for_key("1", {});
     compose_call.track_xhr_for_key("1", {});
     compose_call.track_xhr_for_key("1", {});
-    compose_call.zoom_token_callbacks.set("1", token_callback);
-
+    compose_call.update_oauth_provider_callback_for_key("zoom", "1", token_callback);
     compose_call.abandon_all_callbacks_for_key("2");
     assert.equal(compose_call.ignored_call_xhrs.size, 0);
-    assert.equal(compose_call.zoom_token_callbacks.get("1"), token_callback);
+    assert.equal(
+        compose_call.oauth_call_provider_token_callbacks.get("zoom").get("1"),
+        token_callback,
+    );
 });

@@ -60,19 +60,19 @@ export function generate_and_insert_audio_or_video_call_link(
 
     let xhr: JQuery.jqXHR<unknown> | undefined;
     const available_providers = realm.realm_available_video_chat_providers;
-    const provider_is_zoom = realm.realm_video_chat_provider === available_providers.zoom?.id;
     const provider_is_zoom_server_to_server =
         realm.realm_video_chat_provider === available_providers.zoom_server_to_server?.id;
     const key = edit_message_id ?? "";
+    const oauth_call_provider = compose_call.current_oauth_call_provider();
 
-    if (provider_is_zoom || provider_is_zoom_server_to_server) {
+    if (oauth_call_provider !== null) {
         const request = {
             is_video_call: !is_audio_call,
         };
 
-        const make_zoom_call = (): void => {
+        const make_oauth_call = (): void => {
             xhr = channel.post({
-                url: "/json/calls/zoom/create",
+                url: `/json/calls/${oauth_call_provider}/create`,
                 data: request,
                 success(res) {
                     if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
@@ -93,7 +93,7 @@ export function generate_and_insert_audio_or_video_call_link(
                     if (
                         status === "error" &&
                         parsed.success &&
-                        parsed.data.code === "INVALID_ZOOM_TOKEN"
+                        parsed.data.code === "INVALID_VIDEO_CALL_PROVIDER_TOKEN"
                     ) {
                         current_user.has_zoom_token = false;
                     }
@@ -113,11 +113,18 @@ export function generate_and_insert_audio_or_video_call_link(
         };
 
         if (current_user.has_zoom_token || provider_is_zoom_server_to_server) {
-            make_zoom_call();
+            make_oauth_call();
         } else {
-            compose_call.zoom_token_callbacks.set(key, make_zoom_call);
+            compose_call.update_oauth_provider_callback_for_key(
+                oauth_call_provider,
+                key,
+                make_oauth_call,
+            );
             window.open(
-                window.location.protocol + "//" + window.location.host + "/calls/zoom/register",
+                window.location.protocol +
+                    "//" +
+                    window.location.host +
+                    `/calls/${oauth_call_provider}/register`,
                 "_blank",
                 "width=800,height=500,noopener,noreferrer",
             );
