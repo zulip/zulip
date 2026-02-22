@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from difflib import unified_diff
 from typing import Any
@@ -65,7 +66,7 @@ from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
-from zerver.lib.utils import generate_api_key, process_list_in_batches
+from zerver.lib.utils import assert_is_not_none, generate_api_key, process_list_in_batches
 from zerver.lib.zulip_update_announcements import send_zulip_update_announcements_to_realm
 from zerver.models import (
     AlertWord,
@@ -189,6 +190,15 @@ id_map_to_list: dict[str, dict[int, list[int]]] = {
     "huddle_to_user_list": {},
 }
 
+
+@dataclass
+class SanitizedRecord:
+    raw_record: dict[str, Any]
+    original_relative_path: str
+    sanitized_file_name: str | None
+    safe_resolved_source_path: str
+
+
 path_maps: dict[str, dict[str, str]] = {
     # Maps original attachment path pre-import to the final, post-import
     # attachment path.
@@ -217,6 +227,50 @@ def map_messages_to_attachments(data: TableData) -> None:
             message_id_to_attachments["zerver_scheduledmessage"][scheduled_message_id].append(
                 attachment["path_id"]
             )
+
+
+def load_sanitized_records(import_dir: Path) -> list[SanitizedRecord]:
+    records_filename = os.path.join(import_dir, "records.json")
+    with open(records_filename, "rb") as records_file:
+        records: list[dict[str, Any]] = orjson.loads(records_file.read())
+
+    safe_import_dir = os.path.realpath(import_dir)
+    sanitized_records = []
+    for record in records:
+        record_path = record["path"]
+        if not isinstance(record_path, str):
+            raise AssertionError(f"Invalid path field in {records_filename}")
+        assert record_path
+
+        if os.path.isabs(record_path):
+            raise AssertionError(f"Absolute path field not allowed in {records_filename}")
+
+        safe_resolved_source_path = os.path.realpath(os.path.join(import_dir, record_path))
+        if os.path.commonpath([safe_import_dir, safe_resolved_source_path]) != safe_import_dir:
+            raise AssertionError(f"Invalid path outside import dir: {record_path}")
+
+        # record_path joins safely with import_dir, so it's safe to use. Store on the record
+        # for situation where we still need its original, relative form.
+        original_relative_path = record_path
+
+        sanitized_file_name = None
+        if "file_name" in record and record["file_name"] is not None:
+            file_name = record["file_name"]
+            if not isinstance(file_name, str):
+                raise AssertionError(f"Invalid file_name field in {records_filename}")
+
+            sanitized_file_name = sanitize_name(file_name)
+
+        sanitized_records.append(
+            SanitizedRecord(
+                raw_record=record,
+                original_relative_path=original_relative_path,
+                sanitized_file_name=sanitized_file_name,
+                safe_resolved_source_path=safe_resolved_source_path,
+            )
+        )
+
+    return sanitized_records
 
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
@@ -891,13 +945,13 @@ def fix_subscriptions_is_user_active_column(
             sub["is_user_active"] = user_id_to_active_status[sub["user_profile_id"]]
 
 
-def process_avatars(record: dict[str, Any]) -> None:
-    if not record["path"].endswith(".original"):
+def process_avatars(sanitized_record: SanitizedRecord) -> None:
+    if not sanitized_record.safe_resolved_source_path.endswith(".original"):
         return None
-    user_profile = get_user_profile_by_id(record["user_profile_id"])
+    user_profile = get_user_profile_by_id(sanitized_record.raw_record["user_profile_id"])
     if settings.LOCAL_AVATARS_DIR is not None:
         avatar_path = user_avatar_base_path_from_ids(
-            user_profile.id, user_profile.avatar_version, record["realm_id"]
+            user_profile.id, user_profile.avatar_version, sanitized_record.raw_record["realm_id"]
         )
         medium_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path) + "-medium.png"
         if os.path.exists(medium_file_path):
@@ -919,47 +973,51 @@ def process_avatars(record: dict[str, Any]) -> None:
 
 
 def process_emojis(
-    import_dir: str,
     default_user_profile_id: int | None,
     filename_to_has_original: dict[str, bool],
-    record: dict[str, Any],
+    sanitized_record: SanitizedRecord,
 ) -> None:
     # 3rd party exports may not provide .original files. In that case we want to just
     # treat whatever file we have as the original.
-    should_use_as_original = not filename_to_has_original[record["file_name"]]
-    if not (record["path"].endswith(".original") or should_use_as_original):
+    emoji_file_name = assert_is_not_none(sanitized_record.sanitized_file_name)
+    should_use_as_original = not filename_to_has_original[emoji_file_name]
+    if not (
+        sanitized_record.safe_resolved_source_path.endswith(".original") or should_use_as_original
+    ):
         return
 
-    if "author_id" in record and record["author_id"] is not None:
-        user_profile = get_user_profile_by_id(record["author_id"])
+    if (
+        "author_id" in sanitized_record.raw_record
+        and sanitized_record.raw_record["author_id"] is not None
+    ):
+        user_profile = get_user_profile_by_id(sanitized_record.raw_record["author_id"])
     else:
         assert default_user_profile_id is not None
         user_profile = get_user_profile_by_id(default_user_profile_id)
 
-    # file_name has the proper file extension without the
+    # emoji_file_name has the proper file extension without the
     # .original suffix.
     # application/octet-stream will be rejected by upload_emoji_image,
     # but it's easier to use it here as the sensible default value
     # and let upload_emoji_image figure out the exact error; or handle
     # the file somehow anyway if it's ever changed to do that.
-    content_type = guess_type(record["file_name"])[0] or "application/octet-stream"
-    emoji_import_data_file_dath = os.path.join(import_dir, record["path"])
-    with open(emoji_import_data_file_dath, "rb") as f:
+    content_type = guess_type(emoji_file_name)[0] or "application/octet-stream"
+    with open(sanitized_record.safe_resolved_source_path, "rb") as f:
         try:
             # This will overwrite the files that got copied to the appropriate paths
             # for emojis (whether in S3 or in the local uploads dir), ensuring to
             # thumbnail them and generate stills for animated emojis.
-            is_animated = upload_emoji_image(f, record["file_name"], user_profile, content_type)
+            is_animated = upload_emoji_image(f, emoji_file_name, user_profile, content_type)
         except BadImageError:
             logging.warning(
                 "Could not thumbnail emoji image %s; ignoring",
-                record["path"],
+                sanitized_record.original_relative_path,
             )
             # TODO:: should we delete the RealmEmoji object, or keep it with the files
             # that did get copied; even though they do generate this error?
             return
 
-    if is_animated and not record.get("deactivated", False):
+    if is_animated and not sanitized_record.raw_record.get("deactivated", False):
         # We only update the is_animated field if the emoji is not deactivated.
         # That's because among deactivated emojis (name, realm_id) may not be
         # unique, making the implementation here a bit hairier.
@@ -967,7 +1025,9 @@ def process_emojis(
         # while 3rd party exports don't use the deactivated field, so this shouldn't
         # particularly matter.
         RealmEmoji.objects.filter(
-            file_name=record["file_name"], realm_id=user_profile.realm_id, deactivated=False
+            file_name=sanitized_record.sanitized_file_name,
+            realm_id=user_profile.realm_id,
+            deactivated=False,
         ).update(is_animated=True)
 
 
@@ -991,29 +1051,39 @@ def import_uploads(
     else:
         logging.info("Importing uploaded files")
 
-    records_filename = os.path.join(import_dir, "records.json")
-    with open(records_filename, "rb") as records_file:
-        records: list[dict[str, Any]] = orjson.loads(records_file.read())
+    sanitized_records = load_sanitized_records(import_dir)
+    raw_records = [sanitized_record.raw_record for sanitized_record in sanitized_records]
     timestamp = datetime_to_timestamp(timezone_now())
 
     re_map_foreign_keys_internal(
-        records, "records", "realm_id", related_table="realm", id_field=True
+        raw_records, "records", "realm_id", related_table="realm", id_field=True
     )
+    for sanitized_record in sanitized_records:
+        # These are used for forming file paths, so we add a hardening assert
+        # here to ensure nothing can sneak a string past here.
+        realm_id = sanitized_record.raw_record["realm_id"]
+        assert isinstance(realm_id, int)
+
     if not processing_emojis and not processing_realm_icons:
         re_map_foreign_keys_internal(
-            records, "records", "user_profile_id", related_table="user_profile", id_field=True
+            raw_records, "records", "user_profile_id", related_table="user_profile", id_field=True
         )
     if processing_emojis:
         # We need to build a mapping telling us which emojis have an .original file.
         # This will be used when thumbnailing them later, to know whether we have that
         # file available or whether we should just treat the regular image as the original
         # for thumbnailing.
-        filename_to_has_original = {record["file_name"]: False for record in records}
-        for record in records:
-            if record["path"].endswith(".original"):
-                filename_to_has_original[record["file_name"]] = True
+        filename_to_has_original = {
+            assert_is_not_none(sanitized_record.sanitized_file_name): False
+            for sanitized_record in sanitized_records
+        }
+        for sanitized_record in sanitized_records:
+            if sanitized_record.safe_resolved_source_path.endswith(".original"):
+                filename_to_has_original[
+                    assert_is_not_none(sanitized_record.sanitized_file_name)
+                ] = True
 
-        if records and "author" in records[0]:
+        if raw_records and "author" in raw_records[0]:
             # This condition only guarantees author field appears in the generated
             # records. Potentially the value of it might be None though. In that
             # case, this will be ignored by the remap below.
@@ -1021,7 +1091,7 @@ def import_uploads(
             # needs to be mindful of it potentially being None and use a fallback
             # value, most likely default_user_profile_id being the right choice.
             re_map_foreign_keys_internal(
-                records, "records", "author", related_table="user_profile", id_field=False
+                raw_records, "records", "author", related_table="user_profile", id_field=False
             )
 
     s3_uploads = settings.LOCAL_UPLOADS_DIR is None
@@ -1033,46 +1103,56 @@ def import_uploads(
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         bucket = get_bucket(bucket_name)
 
-    for count, record in enumerate(records, 1):
+    for count, sanitized_record in enumerate(sanitized_records, 1):
         if processing_avatars:
             # For avatars, we need to rehash the user ID with the
             # new server's avatar salt
             relative_path = user_avatar_base_path_from_ids(
-                record["user_profile_id"], record["avatar_version"], record["realm_id"]
+                sanitized_record.raw_record["user_profile_id"],
+                sanitized_record.raw_record["avatar_version"],
+                sanitized_record.raw_record["realm_id"],
             )
-            if record["path"].endswith(".original"):
+            if sanitized_record.safe_resolved_source_path.endswith(".original"):
                 relative_path += ".original"
             else:
                 relative_path = upload_backend.get_avatar_path(relative_path, medium=False)
         elif processing_emojis:
             # For emojis we follow the function 'upload_emoji_image'
+            emoji_file_name = assert_is_not_none(sanitized_record.sanitized_file_name)
             relative_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-                realm_id=record["realm_id"], emoji_file_name=record["file_name"]
+                realm_id=sanitized_record.raw_record["realm_id"], emoji_file_name=emoji_file_name
             )
-            if record["path"].endswith(".original"):
+            if sanitized_record.safe_resolved_source_path.endswith(".original"):
                 relative_path += ".original"
-            record["last_modified"] = timestamp
+            sanitized_record.raw_record["last_modified"] = timestamp
         elif processing_realm_icons:
-            icon_name = os.path.basename(record["path"])
-            relative_path = os.path.join(str(record["realm_id"]), "realm", icon_name)
-            record["last_modified"] = timestamp
+            icon_name = os.path.basename(sanitized_record.original_relative_path)
+            relative_path = os.path.join(
+                str(sanitized_record.raw_record["realm_id"]), "realm", icon_name
+            )
+            sanitized_record.raw_record["last_modified"] = timestamp
         else:
             # This relative_path is basically the new location of the file,
             # which will later be copied from its original location as
             # specified in record["path"].
             relative_path = upload_backend.generate_message_upload_path(
-                str(record["realm_id"]), sanitize_name(os.path.basename(record["path"]))
+                str(sanitized_record.raw_record["realm_id"]),
+                sanitize_name(os.path.basename(sanitized_record.original_relative_path)),
             )
-            path_maps["old_attachment_path_to_new_path"][record["path"]] = relative_path
-            path_maps["new_attachment_path_to_old_path"][relative_path] = record["path"]
-            path_maps["new_attachment_path_to_local_data_path"][relative_path] = os.path.join(
-                import_dir, record["path"]
+            path_maps["old_attachment_path_to_new_path"][
+                sanitized_record.original_relative_path
+            ] = relative_path
+            path_maps["new_attachment_path_to_old_path"][relative_path] = (
+                sanitized_record.original_relative_path
+            )
+            path_maps["new_attachment_path_to_local_data_path"][relative_path] = (
+                sanitized_record.safe_resolved_source_path
             )
 
         if s3_uploads:
             key = bucket.Object(relative_path)
             metadata = {}
-            if "user_profile_id" not in record:
+            if "user_profile_id" not in sanitized_record.raw_record:
                 # This should never happen for uploads or avatars; if
                 # so, it is an error, default_user_profile_id will be
                 # None, and we assert.  For emoji / realm icons, we
@@ -1080,7 +1160,7 @@ def import_uploads(
                 assert default_user_profile_id is not None
                 metadata["user_profile_id"] = str(default_user_profile_id)
             else:
-                user_profile_id = int(record["user_profile_id"])
+                user_profile_id = int(sanitized_record.raw_record["user_profile_id"])
                 # Support email gateway bot and other cross-realm messages
                 if user_profile_id in ID_MAP["user_profile"]:
                     logging.info("Uploaded by ID mapped user: %s!", user_profile_id)
@@ -1088,14 +1168,14 @@ def import_uploads(
                 user_profile = get_user_profile_by_id(user_profile_id)
                 metadata["user_profile_id"] = str(user_profile.id)
 
-            if "last_modified" in record:
-                metadata["orig_last_modified"] = str(record["last_modified"])
-            metadata["realm_id"] = str(record["realm_id"])
+            if "last_modified" in sanitized_record.raw_record:
+                metadata["orig_last_modified"] = str(sanitized_record.raw_record["last_modified"])
+            metadata["realm_id"] = str(sanitized_record.raw_record["realm_id"])
 
             # Zulip exports will always have a content-type, but third-party exports might not.
-            content_type = record.get("content_type")
+            content_type = sanitized_record.raw_record.get("content_type")
             if content_type is None:
-                content_type = guess_type(record["path"])[0]
+                content_type = guess_type(sanitized_record.safe_resolved_source_path)[0]
                 if content_type is None:
                     # This is the default for unknown data.  Note that
                     # for `.original` files, this is the value we'll
@@ -1104,7 +1184,7 @@ def import_uploads(
                     content_type = "application/octet-stream"
 
             key.upload_file(
-                Filename=os.path.join(import_dir, record["path"]),
+                Filename=sanitized_record.safe_resolved_source_path,
                 ExtraArgs={"ContentType": content_type, "Metadata": metadata},
             )
         else:
@@ -1115,12 +1195,12 @@ def import_uploads(
                 file_path = os.path.join(settings.LOCAL_AVATARS_DIR, relative_path)
             else:
                 file_path = os.path.join(settings.LOCAL_FILES_DIR, relative_path)
-            orig_file_path = os.path.join(import_dir, record["path"])
+            orig_file_path = sanitized_record.safe_resolved_source_path
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             shutil.copy(orig_file_path, file_path)
 
         if count % 1000 == 0:
-            logging.info("Processed %s/%s uploads", count, len(records))
+            logging.info("Processed %s/%s uploads", count, len(sanitized_records))
 
     if processing_avatars or processing_emojis:
         if processing_avatars:
@@ -1130,7 +1210,6 @@ def import_uploads(
 
             process_func = partial(
                 process_emojis,
-                import_dir,
                 default_user_profile_id,
                 filename_to_has_original,
             )
@@ -1141,7 +1220,7 @@ def import_uploads(
         # does get_user_profile_by_id for each user, and in that it
         # might be better to require the export to just have these.
         if processes == 1:
-            for record in records:
+            for record in sanitized_records:
                 process_func(record)
         else:
             connection.close()
@@ -1150,7 +1229,7 @@ def import_uploads(
             _cache.disconnect_all()
             with ProcessPoolExecutor(max_workers=processes) as executor:
                 for future in as_completed(
-                    executor.submit(process_func, record) for record in records
+                    executor.submit(process_func, record) for record in sanitized_records
                 ):
                     future.result()
 
