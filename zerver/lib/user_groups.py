@@ -63,14 +63,18 @@ class UserGroupDict(TypedDict):
 
 from typing import List, Union, Optional
 
-# Rename the classes to include 'Base' to avoid name clashes
+# Renamed the classes with 'Base' to avoid name clashes in code
 class UserGroupMembersBase(BaseModel):
+    '''We use extra="ignore" because zulip's internal logic often attaches 
+    extra database attributes that shouldn't break our pydantic validation'''
     model_config = ConfigDict(extra="ignore")
     
     direct_members: List[int] = []
     direct_subgroups: List[int] = []
 
 class UserGroupBase(BaseModel):
+    '''Using ConfigDict(extra="ignore") ensures backward compatibility 
+    with django ORM objects during this migration phase'''
     model_config = ConfigDict(extra="ignore")
 
     id: Optional[int] = None
@@ -79,11 +83,16 @@ class UserGroupBase(BaseModel):
     members: List[int] = []
     direct_subgroup_ids: List[int] = []
     
+    '''We use 'Any' for realm to handle the complex django realm objects 
+    without requiring a full Pydantic schema for the entire Realm model yet'''
     realm: Any = None 
 
     creator_id: Optional[int] = None
     date_created: Optional[int] = None
     is_system_group: bool = False
+
+    '''The union types here allow the code to handle both raw ID (integers) 
+    and nested pydantic models, providing flexibility during the migration'''
     can_add_members_group: Optional[Union[int, UserGroupMembersBase]] = None
     can_join_group: Optional[Union[int, UserGroupMembersBase]] = None
     can_leave_group: Optional[Union[int, UserGroupMembersBase]] = None
@@ -91,7 +100,7 @@ class UserGroupBase(BaseModel):
     can_mention_group: Optional[Union[int, UserGroupMembersBase]] = None
     can_remove_members_group: Optional[Union[int, UserGroupMembersBase]] = None
     deactivated: bool = False
-
+    
 @dataclass
 class LockedUserGroupContext:
     """User groups in this dataclass are guaranteeed to be locked until the
