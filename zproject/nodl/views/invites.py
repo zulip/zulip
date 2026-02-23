@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from datetime import timedelta
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -20,6 +21,12 @@ def invites_list(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
     GET /nodl/invites
     Authorization: Basic base64(email:apiKey)
     """
+    if request.method != "GET":
+        return JsonResponse(
+            {"result": "error", "msg": "Method not allowed", "code": "METHOD_NOT_ALLOWED"},
+            status=405,
+        )
+
     rate_resp = check_rate_limit(
         request,
         limit=20,
@@ -29,7 +36,11 @@ def invites_list(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
     if rate_resp is not None:
         return rate_resp
 
-    invites = NodlInvite.objects.filter(inviter=user_profile).select_related("invited_user")
+    invites = (
+        NodlInvite.objects.filter(inviter=user_profile)
+        .select_related("invited_user")
+        .order_by("-created_at")[:100]
+    )
     return JsonResponse(
         {
             "result": "success",
@@ -47,6 +58,12 @@ def invites_create(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
     Authorization: Basic base64(email:apiKey)
     Body: {"phone_hash": "sha256hex", "phone_display": "***1234"}
     """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "msg": "Method not allowed", "code": "METHOD_NOT_ALLOWED"},
+            status=405,
+        )
+
     rate_resp = check_rate_limit(
         request,
         limit=10,
@@ -67,10 +84,36 @@ def invites_create(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
     phone_hash = body.get("phone_hash", "")
     phone_display = body.get("phone_display", "")
 
-    if not phone_hash or len(phone_hash) != 64:
+    if not re.fullmatch(r"[0-9a-f]{64}", phone_hash):
         return JsonResponse(
             {"result": "error", "msg": "Invalid phone_hash", "code": "BAD_REQUEST"},
             status=400,
+        )
+
+    if not re.fullmatch(r"\*{3}\d{4}", phone_display):
+        return JsonResponse(
+            {"result": "error", "msg": "Invalid phone_display", "code": "BAD_REQUEST"},
+            status=400,
+        )
+
+    # Dedup: return existing active invite for same phone_hash if one exists
+    existing = (
+        NodlInvite.objects.filter(
+            inviter=user_profile,
+            invited_phone_hash=phone_hash,
+            invited_user__isnull=True,
+            expires_at__gt=timezone.now(),
+        )
+        .order_by("-created_at")
+        .first()
+    )
+    if existing is not None:
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "",
+                "invite": existing.to_api_dict(),
+            }
         )
 
     invite = NodlInvite.objects.create(
@@ -97,6 +140,12 @@ def invites_resend(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
     Authorization: Basic base64(email:apiKey)
     Body: {"invite_id": 123}
     """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "msg": "Method not allowed", "code": "METHOD_NOT_ALLOWED"},
+            status=405,
+        )
+
     rate_resp = check_rate_limit(
         request,
         limit=10,
@@ -127,6 +176,12 @@ def invites_resend(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
         return JsonResponse(
             {"result": "error", "msg": "Invite not found", "code": "NOT_FOUND"},
             status=404,
+        )
+
+    if invite.computed_status != "expired":
+        return JsonResponse(
+            {"result": "error", "msg": "Only expired invites can be resent", "code": "BAD_REQUEST"},
+            status=400,
         )
 
     invite.expires_at = timezone.now() + timedelta(days=INVITE_EXPIRY_DAYS)
