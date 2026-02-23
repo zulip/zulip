@@ -2,7 +2,7 @@
 
 > **Project:** AI-powered catch-up feature for Zulip
 > **Repository:** [zulip-what-did-i-miss](https://github.com/CtrlAltGiri/zulip-what-did-i-miss)
-> **Last Updated:** 2026-02-10
+> **Last Updated:** 2026-02-17
 
 ---
 
@@ -13,7 +13,8 @@
 | **Phase 1** | Backend Foundation | **COMPLETE** |
 | **Phase 2** | Extractive Summarization | **COMPLETE** |
 | **Phase 3** | Frontend — View Infrastructure | **COMPLETE** |
-| Phase 4 | Frontend — Interactive Features | Not Started |
+| **Phase 4** | Frontend — Interactive Features | **COMPLETE** |
+| **Phase 4.5** | Runtime Bug Fixes | **COMPLETE** |
 | Phase 5 | Refinement & User Preferences | Not Started |
 | Phase 6 | Testing & Polish | Not Started |
 
@@ -440,7 +441,286 @@ Added tooltip template for the catch-up sidebar item:
 
 ---
 
-## Phase 4–6: Upcoming
+## Phase 4: Frontend — Interactive Features
 
-See [PLAN.md](./PLAN.md) for detailed plans for interactive features,
-refinement, and testing/polish.
+**Status: COMPLETE**
+**Completed: 2026-02-10**
+
+### What was built
+
+Full interactivity for the catch-up view: client-side filtering (by type and
+channel), keyboard navigation with arrow keys / Enter, and collapsible
+topic cards with expand/collapse animation.
+
+### Features Implemented
+
+#### 1. Filter Bar
+
+Three filter buttons and a channel dropdown, placed between the header and the
+topic cards list:
+
+| Filter | Behavior |
+|--------|----------|
+| **All** (default) | Shows all topics |
+| **Mentions** | Only topics where user was @-mentioned or wildcard-mentioned |
+| **Important** | Topics with importance score ≥ 5.0 (mentions, high engagement) |
+
+Channel dropdown lists all channels that appear in the catch-up data, sorted
+alphabetically. Selecting a channel restricts the view to topics from that channel.
+Both filters compose — e.g., "Mentions" + a specific channel shows only mentioned
+topics in that channel.
+
+A "No topics match your current filters" message appears when filters hide
+everything.
+
+#### 2. Expand/Collapse Topic Cards
+
+- Cards start **collapsed** — showing only the header (stream/topic name, badges,
+  senders) and hiding the body (key messages, keywords, actions, AI summary)
+- Click the card header or the chevron button to **expand** and reveal full content
+- Chevron icon rotates between ▼ (collapsed) and ▲ (expanded)
+- Smooth CSS `max-height` transition animation (0.25s ease)
+- Left/Right arrow keys also toggle expand/collapse on the focused card
+
+#### 3. Keyboard Navigation
+
+Integrated with Zulip's existing `hotkey.ts` system:
+
+| Key | Action |
+|-----|--------|
+| ↓ / j | Move focus to next topic card |
+| ↑ / k | Move focus to previous card (or back to filters from first card) |
+| → / l | Expand focused card |
+| ← / h | Collapse focused card |
+| Enter | Open the focused topic (navigates to the topic narrow) |
+| Page Down | Jump 5 cards forward |
+| Page Up | Jump 5 cards back |
+| ← / → on filters | Navigate between filter buttons and channel dropdown |
+| ↓ from filters | Move focus to the first topic card |
+| Enter on filter | Activate the focused filter button |
+
+Focus management:
+- Cards have `tabindex="0"` and `role="article"` for accessibility
+- Focused card gets a visible blue outline (`focus-visible`)
+- Smooth scroll-into-view on keyboard navigation
+- `is_in_focus()` check prevents hotkey conflicts with other views
+
+### Files Modified
+
+#### `web/src/catch_up_ui.ts`
+
+Major expansion from ~170 lines to ~350 lines:
+
+| Addition | Purpose |
+|----------|---------|
+| `FilterMode` type | `"all" \| "mentions" \| "important"` |
+| `current_filter`, `current_stream_filter` | Filter state variables |
+| `card_focus` | Index of currently keyboard-focused card |
+| `IMPORTANT_SCORE_THRESHOLD` | Score cutoff for "Important" filter (5.0) |
+| `is_in_focus()` | Whether the catch-up view owns keyboard focus |
+| `get_unique_streams()` | Extracts deduplicated, sorted channel list from topic data |
+| `apply_filters()` | Shows/hides cards based on current filter + channel selection |
+| `toggle_card_expansion()` | Toggles `.expanded` class and chevron icon |
+| `change_focused_element(input_key)` | Arrow key handler (called from hotkey.ts) |
+| `handle_enter_key()` | Enter key handler — activates filter or opens topic |
+| `focus_card(index)` / `focus_filters()` | Focus management helpers |
+
+#### `web/templates/catch_up_view/catch_up_view.hbs`
+
+Added filter bar between header and topics list:
+- Three `<button class="catch-up-filter-btn">` elements (All, Mentions, Important)
+- `<select id="catch-up-stream-filter">` for channel filtering
+- `<div id="catch-up-no-filter-results">` empty state message
+
+#### `web/templates/catch_up_view/catch_up_topic_card.hbs`
+
+Restructured for expand/collapse:
+- Added `data-has-mention`, `data-has-wildcard`, `data-score` attributes for
+  client-side filtering
+- Added `tabindex="0"` and `role="article"` for keyboard accessibility
+- Added expand/collapse chevron button in the header badges
+- Wrapped key messages, keywords, and actions in a new `.catch-up-card-body`
+  div that is collapsed by default
+
+#### `web/styles/catch_up.css`
+
+Added ~100 lines of new styles:
+- `.catch-up-filters` — flexbox filter bar layout
+- `.catch-up-filter-btn` — filter button styling with `.active` state (blue)
+- `.catch-up-stream-filter` — native select dropdown styling
+- `.catch-up-no-filter-results` — empty filter state
+- `.catch-up-expand-btn` — chevron toggle button
+- `.catch-up-card-body` — collapse/expand with `max-height` transition
+- `:focus-visible` outlines on cards and filter controls
+- Responsive additions for filters on narrow screens
+
+#### `web/src/hotkey.ts`
+
+- Added import for `catch_up_ui`
+- Added arrow key routing block: when `catch_up_ui.is_in_focus()`,
+  routes `up/down/left/right/page_up/page_down/vim_*` to
+  `catch_up_ui.change_focused_element()`
+- Added Enter key handling: when `catch_up_ui.is_in_focus()`,
+  calls `catch_up_ui.handle_enter_key()`
+
+---
+
+## Summary of All Files
+
+### New Files (Phases 1–4)
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `zerver/lib/catch_up.py` | ~455 | Core business logic: inactivity detection, message aggregation, importance scoring |
+| `zerver/lib/catch_up_summarizer.py` | ~280 | Extractive summarization: key message selection, keyword extraction |
+| `zerver/actions/catch_up.py` | ~155 | Action layer: orchestrates catch-up data + extractive summaries |
+| `zerver/views/catch_up.py` | ~90 | API endpoints: `GET /json/catch-up`, `GET /json/catch-up/summary` |
+| `zerver/tests/test_catch_up.py` | ~690 | 26 test cases across 7 test classes |
+| `web/src/catch_up_data.ts` | ~100 | Frontend data/API module |
+| `web/src/catch_up_ui.ts` | ~350 | Frontend view module with filtering and keyboard navigation |
+| `web/templates/catch_up_view/catch_up_view.hbs` | ~60 | Main dashboard template with filter bar |
+| `web/templates/catch_up_view/catch_up_topic_card.hbs` | ~70 | Expandable topic card template |
+| `web/styles/catch_up.css` | ~500 | Full CSS with filters, expand/collapse, focus states |
+
+### Modified Files
+
+| File | Change |
+|------|--------|
+| `zproject/urls.py` | Added imports + 2 `rest_path` registrations |
+| `web/src/navigation_views.ts` | Added `catch_up` navigation view entry |
+| `web/src/hashchange.ts` | Added `#catch-up` hash routing + import |
+| `web/src/left_sidebar_navigation_area.ts` | Added `highlight_catch_up_view()` |
+| `templates/zerver/app/index.html` | Added `#catch-up-view` container div |
+| `web/src/ui_init.js` | Added catch_up_ui import + updated hide callbacks |
+| `web/src/bundles/app.ts` | Added CSS import for `catch_up.css` |
+| `web/templates/tooltip_templates.hbs` | Added catch-up tooltip template |
+| `web/src/hotkey.ts` | Added catch_up_ui import + keyboard routing |
+
+---
+
+## Phase 4.5: Runtime Bug Fixes
+
+**Status: COMPLETE**
+**Completed: 2026-02-17**
+
+### What was fixed
+
+First-run testing of the catch-up view revealed several runtime errors caused by
+incompatibilities with Zulip's strict Handlebars mode, incorrect Django ORM
+BitField lookups, and a missing view registration in the narrow title system.
+
+### Bug 1: Assertion failure in `narrow_title.ts`
+
+**Symptom:** Opening `#catch-up` immediately crashed with `Error: Assertion failed`
+at `compute_narrow_title`.
+
+**Root cause:** `compute_narrow_title()` handles views without a message feed
+(`filter === undefined`). It checked for recent view, then asserted inbox must be
+visible. The catch-up view is neither, so the assertion failed.
+
+**Fix:** Added a `catch_up_ui.is_visible()` check before the inbox assertion,
+returning `"Catch up"` as the page title.
+
+**File:** `web/src/narrow_title.ts`
+
+### Bug 2: `flags__and` BitField lookup error (HTTP 500)
+
+**Symptom:** `GET /json/catch-up` returned 500 with `FieldError: Unsupported lookup
+'and' for BitField`.
+
+**Root cause:** `annotate_mention_flags()` used `Q(flags__and=UserMessage.flags.mentioned)`
+which is not a valid Django BitField lookup. Zulip's BitField uses `andnz` (AND non-zero)
+with `.mask`.
+
+**Fix:** Changed all BitField queries to use `flags__andnz=UserMessage.flags.<flag>.mask`
+pattern, matching how the rest of the Zulip codebase queries UserMessage flags
+(see `zerver/models/messages.py`).
+
+**Files:** `zerver/lib/catch_up.py`, `zerver/lib/catch_up_summarizer.py`
+
+### Bug 3: Handlebars strict mode — arrays in `{{#if}}`
+
+**Symptom:** `BlueslipError: Cannot test a value of type object in a Zulip Handlebars template`
+
+**Root cause:** Zulip's custom `Handlebars.Utils.isEmpty` override (in `templates.ts`)
+rejects arrays in `{{#if}}` tests. The templates used `{{#if key_messages}}`,
+`{{#if sample_messages}}`, `{{#if keywords}}`, and `{{#if streams}}` — all arrays.
+
+**Fix:** Added boolean flags in `prepare_topic_for_render()` and `render_data()`:
+`has_key_messages`, `has_sample_messages`, `has_keywords`, `has_streams`. Updated
+both templates to use these boolean flags instead of testing arrays directly.
+
+**Files:** `web/src/catch_up_ui.ts`, `web/templates/catch_up_view/catch_up_view.hbs`,
+`web/templates/catch_up_view/catch_up_topic_card.hbs`
+
+### Bug 4: Handlebars strict mode — partial context
+
+**Symptom:** `"stream_id" not defined in undefined – 1:51`
+
+**Root cause:** Zulip's webpack config uses `explicitPartialContext: true`, which
+means partials don't automatically inherit the parent context. The template used
+`{{> catch_up_topic_card }}` without passing context.
+
+**Fix:** Changed to `{{> catch_up_topic_card this}}` to explicitly pass the loop
+context to the partial.
+
+**File:** `web/templates/catch_up_view/catch_up_view.hbs`
+
+### Bug 5: Handlebars strict mode — booleans in data attributes
+
+**Symptom:** `BlueslipError: Cannot use a value of type boolean in a Zulip Handlebars template`
+
+**Root cause:** Zulip's custom `escapeExpression` override rejects boolean values
+rendered as text. The template used `data-has-mention="{{has_mention}}"` and
+`data-has-wildcard="{{has_wildcard_mention}}"` — both booleans rendered into
+HTML attributes.
+
+**Fix:** Added string-converted versions (`data_has_mention`, `data_has_wildcard`)
+in `prepare_topic_for_render()` using `String()`. Updated template data attributes
+to use the string versions while keeping the original booleans for `{{#if}}` conditionals.
+
+**Files:** `web/src/catch_up_ui.ts`, `web/templates/catch_up_view/catch_up_topic_card.hbs`
+
+### Bug 6: Handlebars strict mode — numbers in `{{#if}}`
+
+**Symptom:** `BlueslipError: Cannot test a value of type number in a Zulip Handlebars template`
+
+**Root cause:** Zulip's custom `{{#if}}` helper rejects numbers. The template used
+`{{#if reaction_count}}` where `reaction_count` is a number.
+
+**Fix:** Added `has_reactions` boolean flag in `prepare_topic_for_render()`. Updated
+template to use `{{#if has_reactions}}` instead.
+
+**Files:** `web/src/catch_up_ui.ts`, `web/templates/catch_up_view/catch_up_topic_card.hbs`
+
+### Dev testing note
+
+`get_last_active_time()` in `zerver/lib/catch_up.py` has a temporary early return
+(`return timezone_now() - timedelta(hours=24)`) to force a 24-hour lookback for
+development testing. This **must be removed** before committing — it bypasses the
+real presence-based inactivity detection.
+
+### Summary of all changes
+
+| File | Changes |
+|------|---------|
+| `web/src/narrow_title.ts` | Added `catch_up_ui` import + `is_visible()` check for catch-up page title |
+| `zerver/lib/catch_up.py` | Fixed `flags__and` → `flags__andnz` with `.mask` in `annotate_mention_flags()` |
+| `zerver/lib/catch_up_summarizer.py` | Fixed `flags__and` → `flags__andnz` with `.mask` in mention flag query |
+| `web/src/catch_up_ui.ts` | Added boolean flags (`has_key_messages`, `has_sample_messages`, `has_keywords`, `has_reactions`, `has_streams`), string conversions (`data_has_mention`, `data_has_wildcard`) for Handlebars strict mode |
+| `web/templates/catch_up_view/catch_up_view.hbs` | `{{#if streams}}` → `{{#if has_streams}}`, `{{> catch_up_topic_card }}` → `{{> catch_up_topic_card this}}` |
+| `web/templates/catch_up_view/catch_up_topic_card.hbs` | `{{#if key_messages}}` → `{{#if has_key_messages}}`, `{{#if sample_messages}}` → `{{#if has_sample_messages}}`, `{{#if keywords}}` → `{{#if has_keywords}}`, `{{#if reaction_count}}` → `{{#if has_reactions}}`, `{{has_mention}}` → `{{data_has_mention}}`, `{{has_wildcard_mention}}` → `{{data_has_wildcard}}` |
+
+### Lessons learned
+
+1. **Zulip Handlebars is strict:** No arrays/objects in `{{#if}}`, no booleans in text output, no numbers in `{{#if}}`, partials need explicit context. Always use boolean flags for conditionals and string conversions for data attributes.
+2. **Django BitField lookups:** Use `flags__andnz=<flag>.mask`, not `flags__and=<flag>`.
+3. **Vagrant/Docker file sync:** Host-side edits may not be detected by file watchers inside the container. Restart `run-dev` after making changes to ensure they take effect.
+4. **Dev testing presence:** Since the user is actively browsing, `get_last_active_time()` returns "right now" — making catch-up data empty. A temporary override or the `since` API parameter is needed for testing.
+
+---
+
+## Phase 5–6: Upcoming
+
+See [PLAN.md](./PLAN.md) for detailed plans for refinement
+and testing/polish.

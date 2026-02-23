@@ -1,5 +1,6 @@
 import assert from "minimalistic-assert";
 
+import * as catch_up_ui from "./catch_up_ui.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import * as favicon from "./favicon.ts";
 import type {Filter} from "./filter.ts";
@@ -21,6 +22,10 @@ export function compute_narrow_title(filter?: Filter): string {
         // Views without a message feed in the center pane.
         if (recent_view_util.is_visible()) {
             return $t({defaultMessage: "Recent conversations"});
+        }
+
+        if (catch_up_ui.is_visible()) {
+            return $t({defaultMessage: "Catch up"});
         }
 
         assert(inbox_util.is_visible());

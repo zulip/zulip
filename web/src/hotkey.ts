@@ -27,6 +27,7 @@ import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
 import {$t} from "./i18n.ts";
+import * as catch_up_ui from "./catch_up_ui.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as lightbox from "./lightbox.ts";
@@ -700,6 +701,10 @@ function process_enter_key(e: JQuery.KeyDownEvent): boolean {
         return true;
     }
 
+    if (catch_up_ui.is_in_focus()) {
+        return catch_up_ui.handle_enter_key();
+    }
+
     if (recent_view_util.is_visible()) {
         if (e.target === $("body")[0]) {
             // There's a race when using `Esc` and `Enter` to navigate to
@@ -866,6 +871,22 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "page_down":
             if (inbox_ui.is_in_focus()) {
                 return inbox_ui.change_focused_element(event_name);
+            }
+    }
+
+    switch (event_name) {
+        case "up_arrow":
+        case "down_arrow":
+        case "left_arrow":
+        case "right_arrow":
+        case "vim_up":
+        case "vim_down":
+        case "vim_left":
+        case "vim_right":
+        case "page_up":
+        case "page_down":
+            if (catch_up_ui.is_in_focus()) {
+                return catch_up_ui.change_focused_element(event_name);
             }
     }
 

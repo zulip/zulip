@@ -1,4 +1,4 @@
-<div class="catch-up-topic-card" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}">
+<div class="catch-up-topic-card" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" data-has-mention="{{data_has_mention}}" data-has-wildcard="{{data_has_wildcard}}" data-score="{{score}}" tabindex="0" role="article" aria-label="{{stream_name}} › {{topic_name}}">
     <div class="catch-up-card-header">
         <div class="catch-up-card-title">
             <span class="catch-up-stream-name" style="color: {{stream_color}}">{{stream_name}}</span>
@@ -12,56 +12,61 @@
             {{#if has_wildcard_mention}}
             <span class="catch-up-badge catch-up-badge-wildcard" title="{{t 'Wildcard mention' }}">@all</span>
             {{/if}}
-            {{#if reaction_count}}
+            {{#if has_reactions}}
             <span class="catch-up-badge catch-up-badge-reactions" title="{{t 'Reactions' }}">
                 <i class="zulip-icon zulip-icon-smile" aria-hidden="true"></i> {{reaction_count}}
             </span>
             {{/if}}
             <span class="catch-up-message-count">{{message_count}} {{t "msgs" }}</span>
+            <button class="catch-up-expand-btn" tabindex="-1" aria-label="{{t 'Toggle details' }}">
+                <i class="zulip-icon zulip-icon-chevron-down" aria-hidden="true"></i>
+            </button>
         </div>
     </div>
     <div class="catch-up-card-senders">
         {{sender_list}}
     </div>
-    {{#if key_messages}}
-    <div class="catch-up-card-key-messages">
-        {{#each key_messages}}
-        <div class="catch-up-key-message">
-            <div class="catch-up-key-message-header">
-                <strong class="catch-up-key-message-sender">{{sender_full_name}}</strong>
-                {{#each tags}}
-                <span class="catch-up-tag catch-up-tag-{{this}}">{{this}}</span>
-                {{/each}}
+    <div class="catch-up-card-body">
+        {{#if has_key_messages}}
+        <div class="catch-up-card-key-messages">
+            {{#each key_messages}}
+            <div class="catch-up-key-message">
+                <div class="catch-up-key-message-header">
+                    <strong class="catch-up-key-message-sender">{{sender_full_name}}</strong>
+                    {{#each tags}}
+                    <span class="catch-up-tag catch-up-tag-{{this}}">{{this}}</span>
+                    {{/each}}
+                </div>
+                <div class="catch-up-key-message-content">{{content}}</div>
             </div>
-            <div class="catch-up-key-message-content">{{content}}</div>
+            {{/each}}
         </div>
-        {{/each}}
-    </div>
-    {{else if sample_messages}}
-    <div class="catch-up-card-preview">
-        {{#each sample_messages}}
-        <div class="catch-up-preview-message">
-            <strong>{{sender_full_name}}:</strong> {{content}}
+        {{else if has_sample_messages}}
+        <div class="catch-up-card-preview">
+            {{#each sample_messages}}
+            <div class="catch-up-preview-message">
+                <strong>{{sender_full_name}}:</strong> {{content}}
+            </div>
+            {{/each}}
         </div>
-        {{/each}}
+        {{/if}}
+        {{#if has_keywords}}
+        <div class="catch-up-card-keywords">
+            {{#each keywords}}
+            <span class="catch-up-keyword">{{this}}</span>
+            {{/each}}
+        </div>
+        {{/if}}
+        <div class="catch-up-card-actions">
+            <a class="catch-up-open-topic" href="{{topic_url}}" tabindex="-1">
+                <i class="zulip-icon zulip-icon-external-link" aria-hidden="true"></i>
+                {{t "Open topic" }}
+            </a>
+            <button class="catch-up-summarize-btn" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" tabindex="-1">
+                <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                {{t "AI Summary" }}
+            </button>
+        </div>
+        <div class="catch-up-summary-container"></div>
     </div>
-    {{/if}}
-    {{#if keywords}}
-    <div class="catch-up-card-keywords">
-        {{#each keywords}}
-        <span class="catch-up-keyword">{{this}}</span>
-        {{/each}}
-    </div>
-    {{/if}}
-    <div class="catch-up-card-actions">
-        <a class="catch-up-open-topic" href="{{topic_url}}">
-            <i class="zulip-icon zulip-icon-external-link" aria-hidden="true"></i>
-            {{t "Open topic" }}
-        </a>
-        <button class="catch-up-summarize-btn" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}">
-            <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
-            {{t "AI Summary" }}
-        </button>
-    </div>
-    <div class="catch-up-summary-container"></div>
 </div>

@@ -31,9 +31,35 @@
             </span>
         </div>
     </div>
+    <div class="catch-up-filters" role="group" aria-label="{{t 'Filters' }}">
+        <div class="catch-up-filter-buttons">
+            <button class="catch-up-filter-btn active" data-filter="all" tabindex="0">
+                {{t "All" }}
+            </button>
+            <button class="catch-up-filter-btn" data-filter="mentions" tabindex="0">
+                <i class="zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>
+                {{t "Mentions" }}
+            </button>
+            <button class="catch-up-filter-btn" data-filter="important" tabindex="0">
+                <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>
+                {{t "Important" }}
+            </button>
+        </div>
+        {{#if has_streams}}
+        <select id="catch-up-stream-filter" class="catch-up-stream-filter" aria-label="{{t 'Filter by channel' }}">
+            <option value="all">{{t "All channels" }}</option>
+            {{#each streams}}
+            <option value="{{this.id}}">{{this.name}}</option>
+            {{/each}}
+        </select>
+        {{/if}}
+    </div>
+    <div id="catch-up-no-filter-results" class="catch-up-no-filter-results" style="display: none;">
+        {{t "No topics match your current filters." }}
+    </div>
     <div class="catch-up-topics-container">
         {{#each topics}}
-            {{> catch_up_topic_card }}
+            {{> catch_up_topic_card this}}
         {{/each}}
     </div>
     {{/if}}

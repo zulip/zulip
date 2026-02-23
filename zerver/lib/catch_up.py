@@ -64,6 +64,10 @@ def get_last_active_time(user_profile: UserProfile) -> datetime:
     Note: UserPresence can be disabled (presence_enabled=False), so
     we also check UserActivityInterval for robustness.
     """
+    # TODO: Remove this override after testing.
+    # Force 24h lookback for development testing.
+    return timezone_now() - timedelta(hours=24)
+
     # Try presence data first.
     try:
         presence = UserPresence.objects.get(user_profile=user_profile)
@@ -342,10 +346,10 @@ def annotate_mention_flags(
             message_id__lte=max_message_id,
         )
         .filter(
-            Q(flags__and=UserMessage.flags.mentioned)
-            | Q(flags__and=UserMessage.flags.stream_wildcard_mentioned)
-            | Q(flags__and=UserMessage.flags.topic_wildcard_mentioned)
-            | Q(flags__and=UserMessage.flags.group_mentioned)
+            Q(flags__andnz=UserMessage.flags.mentioned.mask)
+            | Q(flags__andnz=UserMessage.flags.stream_wildcard_mentioned.mask)
+            | Q(flags__andnz=UserMessage.flags.topic_wildcard_mentioned.mask)
+            | Q(flags__andnz=UserMessage.flags.group_mentioned.mask)
         )
         .values_list("message_id", flat=True)
     )

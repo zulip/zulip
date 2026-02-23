@@ -224,9 +224,9 @@ def extract_key_messages(
         user_profile=user_profile,
         message_id__in=message_ids,
     ).filter(
-        Q(flags__and=UserMessage.flags.mentioned)
-        | Q(flags__and=UserMessage.flags.stream_wildcard_mentioned)
-        | Q(flags__and=UserMessage.flags.topic_wildcard_mentioned)
+        Q(flags__andnz=UserMessage.flags.mentioned.mask)
+        | Q(flags__andnz=UserMessage.flags.stream_wildcard_mentioned.mask)
+        | Q(flags__andnz=UserMessage.flags.topic_wildcard_mentioned.mask)
     )
 
     for um in user_messages:
