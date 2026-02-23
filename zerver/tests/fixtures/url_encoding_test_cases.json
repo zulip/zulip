@@ -14,11 +14,6 @@
     "input": "~",
     "expected_output": "~"
   },
-  {
-    "name": "asterisk",
-    "input": "*",
-    "expected_output": "*"
-  },
 
   {
     "name": "space",
@@ -69,6 +64,11 @@
     "name": "close_paren",
     "input": ")",
     "expected_output": ".29"
+  },
+  {
+    "name": "asterisk",
+    "input": "*",
+    "expected_output": ".2A"
   },
   {
     "name": "plus",
