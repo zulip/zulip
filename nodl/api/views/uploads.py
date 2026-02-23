@@ -6,8 +6,9 @@ authentication, not browser session cookies.
 """
 
 import logging
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -26,6 +27,7 @@ def require_jwt_auth(view_func: Callable) -> Callable:
     Expects that authentication middleware has already validated the JWT
     and set request.user_profile.
     """
+
     @wraps(view_func)
     def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         user = getattr(request, "user_profile", None)
@@ -35,6 +37,7 @@ def require_jwt_auth(view_func: Callable) -> Callable:
                 status=401,
             )
         return view_func(request, *args, **kwargs)
+
     return wrapper
 
 
@@ -97,7 +100,9 @@ def upload_file(request: HttpRequest) -> JsonResponse:
         user_profile.realm.string_id,
     )
 
-    return JsonResponse({
-        "url": url,
-        "filename": filename,
-    })
+    return JsonResponse(
+        {
+            "url": url,
+            "filename": filename,
+        }
+    )

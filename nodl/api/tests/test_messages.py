@@ -285,11 +285,13 @@ class TestSendMessage(TestCase):
 
         request = self.factory.post(
             "/api/v1/messages/send",
-            data=json.dumps({
-                "stream_id": 42,
-                "topic": "Test Topic",
-                "content": "Hello **world**!",
-            }),
+            data=json.dumps(
+                {
+                    "stream_id": 42,
+                    "topic": "Test Topic",
+                    "content": "Hello **world**!",
+                }
+            ),
             content_type="application/json",
         )
         request.user_profile = self.user
@@ -311,11 +313,13 @@ class TestSendMessage(TestCase):
 
         request = self.factory.post(
             "/api/v1/messages/send",
-            data=json.dumps({
-                "stream_id": 999,
-                "topic": "Test",
-                "content": "Hello",
-            }),
+            data=json.dumps(
+                {
+                    "stream_id": 999,
+                    "topic": "Test",
+                    "content": "Hello",
+                }
+            ),
             content_type="application/json",
         )
         request.user_profile = self.user
@@ -343,10 +347,12 @@ class TestSendMessage(TestCase):
         """Test validation error returns 400."""
         request = self.factory.post(
             "/api/v1/messages/send",
-            data=json.dumps({
-                "stream_id": 42,
-                # Missing required fields
-            }),
+            data=json.dumps(
+                {
+                    "stream_id": 42,
+                    # Missing required fields
+                }
+            ),
             content_type="application/json",
         )
         request.user_profile = self.user
@@ -379,11 +385,13 @@ class TestGetMessage(TestCase):
         message = MockMessage(id=12345)
         mock_access.return_value = message
         mock_reactions.return_value = [
-            MagicMock(model_dump=lambda: {
-                "emoji_name": "thumbs_up",
-                "emoji_code": "1f44d",
-                "user_ids": [1, 2],
-            })
+            MagicMock(
+                model_dump=lambda: {
+                    "emoji_name": "thumbs_up",
+                    "emoji_code": "1f44d",
+                    "user_ids": [1, 2],
+                }
+            )
         ]
         mock_flags.return_value = ["read"]
 
@@ -404,6 +412,7 @@ class TestGetMessage(TestCase):
     ) -> None:
         """Test nonexistent message returns 404."""
         from zerver.lib.exceptions import JsonableError
+
         mock_access.side_effect = JsonableError("Not found")
 
         request = self.factory.get("/api/v1/messages/999")
@@ -718,11 +727,13 @@ class TestMessagePersistence(TestCase):
 
         request = factory.post(
             "/api/v1/messages/send",
-            data=json.dumps({
-                "stream_id": 42,
-                "topic": "Test",
-                "content": "Test content",
-            }),
+            data=json.dumps(
+                {
+                    "stream_id": 42,
+                    "topic": "Test",
+                    "content": "Test content",
+                }
+            ),
             content_type="application/json",
         )
         request.user_profile = user
@@ -793,6 +804,7 @@ class TestSerializers(TestCase):
 
         # Invalid payload - empty content
         from pydantic import ValidationError
+
         with self.assertRaises(ValidationError):
             MessageCreatePayload(
                 stream_id=42,
@@ -810,5 +822,6 @@ class TestSerializers(TestCase):
 
         # Invalid payload - empty content
         from pydantic import ValidationError
+
         with self.assertRaises(ValidationError):
             MessageUpdatePayload(content="")  # min_length=1

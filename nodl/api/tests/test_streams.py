@@ -221,11 +221,13 @@ class TestCreateStream(TestCase):
 
         request = self.factory.post(
             "/api/v1/streams/create",
-            data=json.dumps({
-                "name": "new-stream",
-                "description": "A new stream",
-                "is_private": False,
-            }),
+            data=json.dumps(
+                {
+                    "name": "new-stream",
+                    "description": "A new stream",
+                    "is_private": False,
+                }
+            ),
             content_type="application/json",
         )
         request.user_profile = self.user
@@ -247,10 +249,12 @@ class TestCreateStream(TestCase):
 
         request = self.factory.post(
             "/api/v1/streams/create",
-            data=json.dumps({
-                "name": "existing-stream",
-                "description": "Duplicate",
-            }),
+            data=json.dumps(
+                {
+                    "name": "existing-stream",
+                    "description": "Duplicate",
+                }
+            ),
             content_type="application/json",
         )
         request.user_profile = self.user
@@ -660,6 +664,7 @@ class TestSerializers(TestCase):
 
         # Invalid payload - empty name
         from pydantic import ValidationError
+
         with self.assertRaises(ValidationError):
             StreamCreatePayload(name="")  # min_length=1
 

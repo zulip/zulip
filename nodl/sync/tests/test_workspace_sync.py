@@ -82,9 +82,7 @@ class TestWorkspaceSyncService(TestCase):
         self.assertTrue(result.success)
 
         # Verify extension record created
-        extension = NodlRealmExtension.objects.get(
-            nodl_workspace_id=uuid.UUID(workspace_id)
-        )
+        extension = NodlRealmExtension.objects.get(nodl_workspace_id=uuid.UUID(workspace_id))
         self.assertEqual(extension.sync_status, SyncStatus.SYNCED)
         self.assertIsNotNone(extension.last_synced_at)
 
@@ -172,9 +170,7 @@ class TestMemberSync(TestCase):
         self.assertEqual(mock_instance.sync_user.call_count, 2)
 
     @patch("nodl.sync.workspace_sync.UserSyncService")
-    def test_member_sync_continues_on_failure(
-        self, mock_user_sync_service: MagicMock
-    ) -> None:
+    def test_member_sync_continues_on_failure(self, mock_user_sync_service: MagicMock) -> None:
         """Test member sync continues even if one member fails."""
         mock_instance = MagicMock()
         # First member fails, second succeeds
@@ -190,7 +186,11 @@ class TestMemberSync(TestCase):
 
         members = [
             {"supabase_user_id": str(uuid.uuid4()), "email": "fail@example.com", "role": "editor"},
-            {"supabase_user_id": str(uuid.uuid4()), "email": "success@example.com", "role": "viewer"},
+            {
+                "supabase_user_id": str(uuid.uuid4()),
+                "email": "success@example.com",
+                "role": "viewer",
+            },
         ]
 
         # Should not raise exception
@@ -275,7 +275,9 @@ class TestWorkspaceSyncRequest(TestCase):
             nodl_workspace_id="workspace-uuid",
             name="Test Workspace",
             description="A test workspace",
-            members=[{"supabase_user_id": "user-uuid", "email": "test@example.com", "role": "editor"}],
+            members=[
+                {"supabase_user_id": "user-uuid", "email": "test@example.com", "role": "editor"}
+            ],
         )
 
         self.assertEqual(request.nodl_workspace_id, "workspace-uuid")

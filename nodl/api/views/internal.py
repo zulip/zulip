@@ -9,7 +9,7 @@ and doesn't apply to API-to-API calls with Authorization headers.
 import json
 import logging
 from functools import wraps
-from typing import Annotated, Optional
+from typing import Annotated
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -31,7 +31,7 @@ class UserSyncPayload(BaseModel):
     supabase_user_id: Annotated[str, Field(description="Supabase user UUID")]
     email: Annotated[str, Field(description="User email address")]
     full_name: Annotated[str, Field(description="User full name")]
-    avatar_url: Annotated[Optional[str], Field(default=None, description="User avatar URL")]
+    avatar_url: Annotated[str | None, Field(default=None, description="User avatar URL")]
     workspace_id: Annotated[str, Field(description="nodl workspace UUID")]
     role: Annotated[str, Field(description="User role: owner, admin, editor, viewer")]
 
@@ -41,8 +41,8 @@ class MemberPayload(BaseModel):
 
     supabase_user_id: Annotated[str, Field(description="Supabase user UUID")]
     email: Annotated[str, Field(description="User email address")]
-    full_name: Annotated[Optional[str], Field(default=None, description="User full name")]
-    avatar_url: Annotated[Optional[str], Field(default=None, description="User avatar URL")]
+    full_name: Annotated[str | None, Field(default=None, description="User full name")]
+    avatar_url: Annotated[str | None, Field(default=None, description="User avatar URL")]
     role: Annotated[str, Field(description="User role: owner, admin, editor, viewer")]
 
 
@@ -51,7 +51,7 @@ class WorkspaceSyncPayload(BaseModel):
 
     nodl_workspace_id: Annotated[str, Field(description="nodl workspace UUID")]
     name: Annotated[str, Field(description="Workspace name")]
-    description: Annotated[Optional[str], Field(default=None, description="Workspace description")]
+    description: Annotated[str | None, Field(default=None, description="Workspace description")]
     members: Annotated[list[MemberPayload], Field(default=[], description="Workspace members")]
 
 
@@ -62,6 +62,7 @@ def require_service_auth(view_func):
     request.is_service_request = True. This decorator just ensures
     the flag is set.
     """
+
     @wraps(view_func)
     def wrapper(request: HttpRequest, *args, **kwargs) -> HttpResponse:
         if not getattr(request, "is_service_request", False):
@@ -70,6 +71,7 @@ def require_service_auth(view_func):
                 status=401,
             )
         return view_func(request, *args, **kwargs)
+
     return wrapper
 
 
@@ -268,7 +270,11 @@ def deactivate_realm(request: HttpRequest) -> HttpResponse:
         nodl_workspace_id = body.get("nodl_workspace_id")
         if not nodl_workspace_id:
             return JsonResponse(
-                {"result": "error", "code": "VALIDATION_ERROR", "msg": "nodl_workspace_id required"},
+                {
+                    "result": "error",
+                    "code": "VALIDATION_ERROR",
+                    "msg": "nodl_workspace_id required",
+                },
                 status=400,
             )
     except json.JSONDecodeError:

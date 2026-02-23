@@ -1,19 +1,16 @@
 """Workspace synchronization service for nodl-to-Zulip realm sync."""
 
-from dataclasses import dataclass
-from typing import Optional
 import logging
 import uuid
+from dataclasses import dataclass
 
-from django.db import transaction
 from django.utils import timezone
 
+from nodl.extensions.models import NodlRealmExtension, SyncStatus
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.streams import ensure_stream
 from zerver.models import Realm
-
-from nodl.extensions.models import NodlRealmExtension, SyncStatus
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +21,7 @@ class WorkspaceSyncRequest:
 
     nodl_workspace_id: str
     name: str
-    description: Optional[str]
+    description: str | None
     members: list[dict]  # [{supabase_user_id, email, role}, ...]
 
 
@@ -33,8 +30,8 @@ class WorkspaceSyncResult:
     """Result of a workspace sync operation."""
 
     success: bool
-    zulip_realm_id: Optional[int]
-    error: Optional[str]
+    zulip_realm_id: int | None
+    error: str | None
 
 
 class WorkspaceSyncService:

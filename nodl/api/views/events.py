@@ -115,28 +115,32 @@ def register_queue(request: HttpRequest) -> HttpResponse:
 
     # Only fetch these event types for initial data (reduces queries dramatically)
     if "fetch_event_types" not in request.POST:
-        request.POST["fetch_event_types"] = json.dumps([
-            "message",
-            "subscription",
-            "stream",
-            "typing",
-            "presence",
-            "reaction",
-            "update_message",
-        ])
+        request.POST["fetch_event_types"] = json.dumps(
+            [
+                "message",
+                "subscription",
+                "stream",
+                "typing",
+                "presence",
+                "reaction",
+                "update_message",
+            ]
+        )
 
     # Only subscribe to these event types for real-time updates
     if "event_types" not in request.POST:
-        request.POST["event_types"] = json.dumps([
-            "message",
-            "subscription",
-            "stream",
-            "typing",
-            "presence",
-            "reaction",
-            "update_message",
-            "delete_message",
-        ])
+        request.POST["event_types"] = json.dumps(
+            [
+                "message",
+                "subscription",
+                "stream",
+                "typing",
+                "presence",
+                "reaction",
+                "update_message",
+                "delete_message",
+            ]
+        )
 
     # Don't fetch full subscriber lists (major performance hit)
     if "include_subscribers" not in request.POST:

@@ -10,7 +10,7 @@ import json
 import uuid
 from unittest.mock import MagicMock, patch
 
-from django.test import RequestFactory, TestCase, override_settings
+from django.test import RequestFactory, TestCase
 
 from nodl.api.views import require_service_auth, sync_user
 from nodl.sync.user_sync import UserSyncResult
@@ -25,6 +25,7 @@ class TestRequireServiceAuth(TestCase):
 
     def test_unauthenticated_request_returns_401(self) -> None:
         """Test requests without service auth return 401."""
+
         @require_service_auth
         def dummy_view(request):
             return {"status": "ok"}
@@ -40,9 +41,11 @@ class TestRequireServiceAuth(TestCase):
 
     def test_authenticated_request_passes_through(self) -> None:
         """Test requests with service auth pass through."""
+
         @require_service_auth
         def dummy_view(request):
             from django.http import JsonResponse
+
             return JsonResponse({"status": "ok"})
 
         request = self.factory.get("/test/")

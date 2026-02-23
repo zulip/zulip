@@ -3,12 +3,11 @@
 These tests verify the basic nodl package structure is correct.
 """
 
-import pytest
-
 
 def test_nodl_package_imports() -> None:
     """Test that nodl package can be imported."""
     import nodl
+
     assert nodl is not None
 
 
@@ -17,22 +16,22 @@ def test_nodl_apps_defined() -> None:
     from nodl.apps import NODL_APPS
 
     expected_apps = [
-        "nodl.auth",
+        "nodl.auth.apps.NodlAuthConfig",
         "nodl.sync",
         "nodl.extensions",
         "nodl.storage",
         "nodl.api",
     ]
-    assert NODL_APPS == expected_apps
+    assert expected_apps == NODL_APPS
 
 
 def test_nodl_subpackages_import() -> None:
     """Test that all nodl subpackages can be imported."""
+    import nodl.api
     import nodl.auth
-    import nodl.sync
     import nodl.extensions
     import nodl.storage
-    import nodl.api
+    import nodl.sync
 
     assert nodl.auth is not None
     assert nodl.sync is not None

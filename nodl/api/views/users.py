@@ -4,8 +4,9 @@ Implements REST API for chat users with JWT authentication.
 """
 
 import logging
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
@@ -39,6 +40,7 @@ class UsersRateLimitedObject(RateLimitedObject):
 
 def rate_limit(key_prefix: str, limit: int, window: int = RATE_LIMIT_WINDOW) -> Callable:
     """Decorator for rate limiting API endpoints."""
+
     def decorator(view_func: Callable) -> Callable:
         @wraps(view_func)
         def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -59,7 +61,9 @@ def rate_limit(key_prefix: str, limit: int, window: int = RATE_LIMIT_WINDOW) -> 
                 )
 
             return view_func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -69,6 +73,7 @@ def require_jwt_auth(view_func: Callable) -> Callable:
     Expects that authentication middleware has already validated the JWT
     and set request.user_profile.
     """
+
     @wraps(view_func)
     def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         user = getattr(request, "user_profile", None)
@@ -78,6 +83,7 @@ def require_jwt_auth(view_func: Callable) -> Callable:
                 status=401,
             )
         return view_func(request, *args, **kwargs)
+
     return wrapper
 
 
@@ -99,7 +105,7 @@ def _serialize_user(user: UserProfile) -> dict[str, Any]:
         "id": user.id,
         "email": user.delivery_email,
         "full_name": user.full_name,
-        "avatar_url": user.avatar_url() if hasattr(user, 'avatar_url') else None,
+        "avatar_url": user.avatar_url() if hasattr(user, "avatar_url") else None,
         "role": _map_role_to_string(user.role),
     }
 
@@ -130,10 +136,12 @@ def get_current_user(request: HttpRequest) -> HttpResponse:
     user: UserProfile = request.user_profile  # type: ignore[attr-defined]
 
     user_data = _serialize_user(user)
-    return JsonResponse({
-        "result": "success",
-        **user_data,
-    })
+    return JsonResponse(
+        {
+            "result": "success",
+            **user_data,
+        }
+    )
 
 
 @require_jwt_auth
@@ -186,16 +194,18 @@ def list_users(request: HttpRequest) -> HttpResponse:
     ).order_by("full_name")
 
     total = realm_users.count()
-    paginated_users = realm_users[offset:offset + limit]
+    paginated_users = realm_users[offset : offset + limit]
 
     users_data = [_serialize_user(u) for u in paginated_users]
 
-    return JsonResponse({
-        "result": "success",
-        "users": users_data,
-        "count": len(users_data),
-        "total": total,
-    })
+    return JsonResponse(
+        {
+            "result": "success",
+            "users": users_data,
+            "count": len(users_data),
+            "total": total,
+        }
+    )
 
 
 @require_jwt_auth
@@ -237,7 +247,9 @@ def get_user(request: HttpRequest, user_id: int) -> HttpResponse:
         )
 
     user_data = _serialize_user(target_user)
-    return JsonResponse({
-        "result": "success",
-        **user_data,
-    })
+    return JsonResponse(
+        {
+            "result": "success",
+            **user_data,
+        }
+    )

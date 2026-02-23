@@ -103,7 +103,9 @@ class SupabaseJWTMiddleware:
                 if user_profile:
                     request.user_profile = user_profile
                     request.user = user_profile  # Django's auth system expects this
-                    logger.info(f"[nodl-auth] JWT auth success for {email} (user_id={user_profile.id})")
+                    logger.info(
+                        f"[nodl-auth] JWT auth success for {email} (user_id={user_profile.id})"
+                    )
                 else:
                     # User not yet synced from Supabase - views will return 401
                     logger.warning(f"[nodl-auth] JWT valid but UserProfile not found for {email}")
@@ -150,8 +152,7 @@ class SupabaseJWTMiddleware:
         if path in self.EXEMPT_EXACT:
             return True
         return any(
-            path == prefix or path.startswith(prefix + "/")
-            for prefix in self.EXEMPT_PREFIXES
+            path == prefix or path.startswith(prefix + "/") for prefix in self.EXEMPT_PREFIXES
         )
 
     def _get_user_profile_cached(
