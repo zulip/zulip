@@ -1,5 +1,6 @@
+import time
+from dataclasses import dataclass
 from datetime import timedelta
-from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -25,9 +26,44 @@ from zerver.models import (
 )
 
 
-def user_attachments(user_profile: UserProfile) -> list[dict[str, Any]]:
+@dataclass
+class MessageInfo:
+    """For Representing the message in the response"""
+
+    id: int
+    date_sent: int
+
+
+@dataclass
+class AttachmentResponse:
+    """To Represent an attachment in the API response"""
+
+    id: int
+    name: str
+    path_id: str
+    size: int
+    create_time: int
+    messages: list[MessageInfo]
+
+
+def attachment_to_response(attachment: Attachment) -> AttachmentResponse:
+    """To convert an Attachment model to an AttachmentResponse dataclass"""
+    return AttachmentResponse(
+        id=attachment.id,
+        name=attachment.file_name,
+        path_id=attachment.path_id,
+        size=attachment.size,
+        create_time=int(time.mktime(attachment.create_time.timetuple())),
+        messages=[
+            MessageInfo(id=m.id, date_sent=int(time.mktime(m.date_sent.timetuple())))
+            for m in attachment.messages.all()
+        ],
+    )
+
+
+def user_attachments(user_profile: UserProfile) -> list[AttachmentResponse]:
     attachments = Attachment.objects.filter(owner=user_profile).prefetch_related("messages")
-    return [a.to_dict() for a in attachments]
+    return [attachment_to_response(a) for a in attachments]
 
 
 def access_attachment_by_id(
