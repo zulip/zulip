@@ -363,11 +363,16 @@
     & tr {
         background-color: var(--color-background-recent-view-row);
 
-        &:hover {
-            background-color: var(--color-background-recent-view-row-hover);
+        /* Avoid annoying, confusing hover-state when scrolling on
+           touch devices like iPad that treat a tap-and-hold/swipe
+           as a hover. */
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                background-color: var(--color-background-recent-view-row-hover);
 
-            .change_visibility_policy .recent-view-row-topic-menu {
-                opacity: 0.4;
+                .change_visibility_policy .recent-view-row-topic-menu {
+                    opacity: 0.4;
+                }
             }
         }
     }
@@ -375,10 +380,15 @@
     .unread_topic {
         background-color: var(--color-background-recent-view-unread-row);
 
-        &:hover {
-            background-color: var(
-                --color-background-recent-view-unread-row-hover
-            );
+        /* Avoid annoying, confusing hover-state when scrolling on
+           touch devices like iPad that treat a tap-and-hold/swipe
+           as a hover. */
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                background-color: var(
+                    --color-background-recent-view-unread-row-hover
+                );
+            }
         }
     }
 
