@@ -148,7 +148,10 @@ class SupabaseJWTMiddleware:
         """
         if path in self.EXEMPT_EXACT:
             return True
-        return any(path.startswith(prefix) for prefix in self.EXEMPT_PREFIXES)
+        return any(
+            path == prefix or path.startswith(prefix + "/")
+            for prefix in self.EXEMPT_PREFIXES
+        )
 
     def _get_user_profile_cached(
         self, email: str, workspace_id: str | None = None

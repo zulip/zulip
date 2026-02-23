@@ -298,6 +298,33 @@ class AuthBridgeConcurrencyTest(ZulipTestCase):
         count = UserProfile.objects.filter(delivery_email=email, realm=realm).count()
         self.assertEqual(count, 1)
 
+    def test_non_duplicate_integrity_error_propagates(self) -> None:
+        """Non-duplicate IntegrityError (e.g. FK violation) must propagate as 500,
+        not be silently swallowed by the race-condition handler."""
+        email = "fk-error@nodl.local"
+        token = make_jwt(email=email, sub="fk-error-uuid")
+
+        with mock.patch(
+            "zproject.nodl.actions.do_create_user",
+            side_effect=IntegrityError("violates foreign key constraint"),
+        ), mock.patch(
+            "zproject.nodl.actions.UserProfile.objects.get",
+            side_effect=[
+                UserProfile.DoesNotExist,  # initial lookup -> not found
+                UserProfile.DoesNotExist,  # fallback lookup -> also not found
+            ],
+        ):
+            result = self.client_post(
+                AUTH_BRIDGE_URL,
+                HTTP_AUTHORIZATION=f"Bearer {token}",
+            )
+
+        # The view catches the propagated IntegrityError and returns 500
+        self.assertEqual(result.status_code, 500)
+        data = result.json()
+        self.assertEqual(data["result"], "error")
+        self.assertEqual(data["code"], "INTERNAL_ERROR")
+
 
 @override_settings(**NODL_SETTINGS)
 class AuthBridgeResponseFormatTest(ZulipTestCase):
@@ -338,7 +365,7 @@ class AuthBridgeResponseFormatTest(ZulipTestCase):
 
 
 class MiddlewareExemptPathTest(unittest.TestCase):
-    """Test _is_exempt correctly distinguishes exact vs prefix paths."""
+    """Test middleware _is_exempt (not the auth bridge endpoint itself)."""
 
     def setUp(self) -> None:
         self.middleware = SupabaseJWTMiddleware(lambda r: None)
@@ -352,8 +379,17 @@ class MiddlewareExemptPathTest(unittest.TestCase):
     def test_user_uploads_subpath_is_exempt(self) -> None:
         self.assertTrue(self.middleware._is_exempt("/user_uploads/foo/bar"))
 
+    def test_user_uploads_exact_is_exempt(self) -> None:
+        self.assertTrue(self.middleware._is_exempt("/user_uploads"))
+
+    def test_user_uploads_boundary_unsafe_is_denied(self) -> None:
+        self.assertFalse(self.middleware._is_exempt("/user_uploads_evil"))
+
     def test_thumbnail_subpath_is_exempt(self) -> None:
         self.assertTrue(self.middleware._is_exempt("/thumbnail/300x200"))
+
+    def test_thumbnail_boundary_unsafe_is_denied(self) -> None:
+        self.assertFalse(self.middleware._is_exempt("/thumbnail_evil"))
 
     def test_health_exact_is_exempt(self) -> None:
         self.assertTrue(self.middleware._is_exempt("/health"))
