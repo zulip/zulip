@@ -80,8 +80,10 @@ export function render(opts: {$elem: JQuery; message: Message; widget_data: Widg
         return $elem;
     }
 
-    if (data_with_choices_with_idx.type === "choices") {
-        $outer_elem.html(make_choices(data_with_choices_with_idx).html());
+    function render(): void {
+        if (data.type === "choices") {
+            $outer_elem.empty().append(make_choices(data));
+        }
     }
     return;
 }
