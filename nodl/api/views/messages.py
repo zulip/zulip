@@ -8,8 +8,9 @@ Bearer token (JWT) authentication, not browser session cookies.
 import json
 import logging
 from collections import defaultdict
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -34,13 +35,13 @@ from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import access_message, get_recent_private_conversations, messages_for_ids
 from zerver.lib.muted_users import get_mute_object
-from zerver.lib.users import access_user_by_id_including_cross_realm
 from zerver.lib.rate_limiter import RateLimitedObject, RedisRateLimiterBackend
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.types import StreamMessageEditRequest
-from zerver.models.streams import get_stream_by_id_in_realm
+from zerver.lib.users import access_user_by_id_including_cross_realm
 from zerver.models import Message, Reaction, UserMessage, UserProfile
 from zerver.models.clients import get_client
+from zerver.models.streams import get_stream_by_id_in_realm
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,7 @@ class MessagesRateLimitedObject(RateLimitedObject):
 
 def rate_limit(key_prefix: str, limit: int, window: int = RATE_LIMIT_WINDOW) -> Callable:
     """Decorator for rate limiting API endpoints."""
+
     def decorator(view_func: Callable) -> Callable:
         @wraps(view_func)
         def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -95,7 +97,9 @@ def rate_limit(key_prefix: str, limit: int, window: int = RATE_LIMIT_WINDOW) -> 
                 )
 
             return view_func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -105,6 +109,7 @@ def require_jwt_auth(view_func: Callable) -> Callable:
     Expects that authentication middleware has already validated the JWT
     and set request.user_profile.
     """
+
     @wraps(view_func)
     def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         user = getattr(request, "user_profile", None)
@@ -114,6 +119,7 @@ def require_jwt_auth(view_func: Callable) -> Callable:
                 status=401,
             )
         return view_func(request, *args, **kwargs)
+
     return wrapper
 
 
@@ -164,18 +170,21 @@ def _build_dm_recipient_query(user: UserProfile, user_ids: list[int]):
     because all messages share the same recipient_id.
     """
     from django.db.models import Q
-    from zerver.models import DirectMessageGroup, Recipient
+
     from zerver.lib.recipient_users import recipient_for_user_profiles
+    from zerver.models import DirectMessageGroup, Recipient
 
     # Include current user in the lookup
     all_user_ids = sorted(set(user_ids + [user.id]))
 
     # Get recipient for this exact set of users
     try:
-        user_profiles = list(UserProfile.objects.filter(
-            id__in=all_user_ids,
-            realm=user.realm,
-        ))
+        user_profiles = list(
+            UserProfile.objects.filter(
+                id__in=all_user_ids,
+                realm=user.realm,
+            )
+        )
         if len(user_profiles) != len(all_user_ids):
             return None  # Some users not found
 
@@ -210,8 +219,8 @@ def _build_dm_recipient_query(user: UserProfile, user_ids: list[int]):
             return Message.objects.filter(
                 realm_id=user.realm_id,
             ).filter(
-                Q(sender_id=other_participant.id, recipient_id=user.recipient_id) |
-                Q(sender_id=user.id, recipient_id=other_participant.recipient_id)
+                Q(sender_id=other_participant.id, recipient_id=user.recipient_id)
+                | Q(sender_id=user.id, recipient_id=other_participant.recipient_id)
             )
         else:
             # Self DM (messaging yourself)
@@ -240,8 +249,8 @@ def _build_dm_recipient_query(user: UserProfile, user_ids: list[int]):
             return Message.objects.filter(
                 realm_id=user.realm_id,
             ).filter(
-                Q(sender_id=other_user.id, recipient_id=user.recipient_id) |
-                Q(sender_id=user.id, recipient_id=other_user.recipient_id)
+                Q(sender_id=other_user.id, recipient_id=user.recipient_id)
+                | Q(sender_id=user.id, recipient_id=other_user.recipient_id)
             )
         except (IndexError, UserProfile.DoesNotExist):
             return None
@@ -323,7 +332,11 @@ def list_messages(request: HttpRequest) -> HttpResponse:
 
         if not isinstance(narrow_terms, list) or len(narrow_terms) == 0:
             return JsonResponse(
-                {"result": "error", "code": "INVALID_PARAMS", "msg": "narrow must be a non-empty array"},
+                {
+                    "result": "error",
+                    "code": "INVALID_PARAMS",
+                    "msg": "narrow must be a non-empty array",
+                },
                 status=400,
             )
 
@@ -336,7 +349,11 @@ def list_messages(request: HttpRequest) -> HttpResponse:
             # DM with specific users
             if not isinstance(operand, list) or len(operand) == 0:
                 return JsonResponse(
-                    {"result": "error", "code": "INVALID_PARAMS", "msg": "dm operand must be a list of user IDs"},
+                    {
+                        "result": "error",
+                        "code": "INVALID_PARAMS",
+                        "msg": "dm operand must be a list of user IDs",
+                    },
                     status=400,
                 )
 
@@ -345,7 +362,11 @@ def list_messages(request: HttpRequest) -> HttpResponse:
                 user_ids = [int(uid) for uid in operand]
             except (ValueError, TypeError):
                 return JsonResponse(
-                    {"result": "error", "code": "INVALID_PARAMS", "msg": "dm operand must contain valid user IDs"},
+                    {
+                        "result": "error",
+                        "code": "INVALID_PARAMS",
+                        "msg": "dm operand must contain valid user IDs",
+                    },
                     status=400,
                 )
 
@@ -359,7 +380,11 @@ def list_messages(request: HttpRequest) -> HttpResponse:
             base_query = base_query.exclude(sender__is_bot=True)
         else:
             return JsonResponse(
-                {"result": "error", "code": "INVALID_PARAMS", "msg": f"Unsupported narrow operator: {operator}"},
+                {
+                    "result": "error",
+                    "code": "INVALID_PARAMS",
+                    "msg": f"Unsupported narrow operator: {operator}",
+                },
                 status=400,
             )
 
@@ -380,7 +405,11 @@ def list_messages(request: HttpRequest) -> HttpResponse:
             stream, _ = access_stream_by_id(user, stream_id)
         except Exception:
             return JsonResponse(
-                {"result": "error", "code": "NOT_FOUND", "msg": "Stream not found or access denied"},
+                {
+                    "result": "error",
+                    "code": "NOT_FOUND",
+                    "msg": "Stream not found or access denied",
+                },
                 status=404,
             )
 
@@ -394,7 +423,11 @@ def list_messages(request: HttpRequest) -> HttpResponse:
             base_query = base_query.filter(subject__iexact=topic)
     else:
         return JsonResponse(
-            {"result": "error", "code": "INVALID_PARAMS", "msg": "Either stream_id or narrow is required"},
+            {
+                "result": "error",
+                "code": "INVALID_PARAMS",
+                "msg": "Either stream_id or narrow is required",
+            },
             status=400,
         )
 
@@ -408,14 +441,12 @@ def list_messages(request: HttpRequest) -> HttpResponse:
     if anchor == "newest":
         # Get newest message IDs
         message_ids = list(
-            base_query.order_by("-id").values_list("id", flat=True)[:num_before + 1]
+            base_query.order_by("-id").values_list("id", flat=True)[: num_before + 1]
         )
         message_ids.reverse()  # Put in chronological order
     elif anchor == "oldest":
         # Get oldest message IDs
-        message_ids = list(
-            base_query.order_by("id").values_list("id", flat=True)[:num_after + 1]
-        )
+        message_ids = list(base_query.order_by("id").values_list("id", flat=True)[: num_after + 1])
     else:
         # Anchor is a message ID
         try:
@@ -429,7 +460,8 @@ def list_messages(request: HttpRequest) -> HttpResponse:
         # Get message IDs before anchor
         before_ids = list(
             base_query.filter(id__lt=anchor_message_id)
-            .order_by("-id").values_list("id", flat=True)[:num_before]
+            .order_by("-id")
+            .values_list("id", flat=True)[:num_before]
         )
         before_ids.reverse()
 
@@ -444,7 +476,8 @@ def list_messages(request: HttpRequest) -> HttpResponse:
         # Get message IDs after anchor
         after_ids = list(
             base_query.filter(id__gt=anchor_message_id)
-            .order_by("id").values_list("id", flat=True)[:num_after]
+            .order_by("id")
+            .values_list("id", flat=True)[:num_after]
         )
 
         message_ids = before_ids + anchor_ids + after_ids
@@ -490,13 +523,15 @@ def list_messages(request: HttpRequest) -> HttpResponse:
             found_oldest = len(before_ids) < num_before
             found_newest = len(after_ids) < num_after
 
-    return JsonResponse({
-        "result": "success",
-        "messages": message_data,
-        "found_anchor": found_anchor,
-        "found_oldest": found_oldest,
-        "found_newest": found_newest,
-    })
+    return JsonResponse(
+        {
+            "result": "success",
+            "messages": message_data,
+            "found_anchor": found_anchor,
+            "found_oldest": found_oldest,
+            "found_newest": found_newest,
+        }
+    )
 
 
 @csrf_exempt
@@ -557,21 +592,31 @@ def send_message(request: HttpRequest) -> HttpResponse:
     if payload.type == "direct":
         if not payload.to or len(payload.to) == 0:
             return JsonResponse(
-                {"result": "error", "code": "INVALID_PARAMS", "msg": "Missing 'to' recipients for direct message"},
+                {
+                    "result": "error",
+                    "code": "INVALID_PARAMS",
+                    "msg": "Missing 'to' recipients for direct message",
+                },
                 status=400,
             )
 
         try:
             # Get recipient user profiles
-            recipient_users = list(UserProfile.objects.filter(
-                id__in=payload.to,
-                realm=user.realm,
-                is_active=True,
-            ))
+            recipient_users = list(
+                UserProfile.objects.filter(
+                    id__in=payload.to,
+                    realm=user.realm,
+                    is_active=True,
+                )
+            )
 
             if len(recipient_users) != len(payload.to):
                 return JsonResponse(
-                    {"result": "error", "code": "NOT_FOUND", "msg": "One or more recipients not found"},
+                    {
+                        "result": "error",
+                        "code": "NOT_FOUND",
+                        "msg": "One or more recipients not found",
+                    },
                     status=404,
                 )
 
@@ -587,17 +632,22 @@ def send_message(request: HttpRequest) -> HttpResponse:
             )
 
             # Fetch the created message
-            message = Message.objects.select_related("sender", "recipient").get(id=result.message_id)
+            message = Message.objects.select_related("sender", "recipient").get(
+                id=result.message_id
+            )
 
             # Include sender in recipients for display_recipient
             all_users = recipient_users + [user] if user.id not in payload.to else recipient_users
             serializer = MessageSerializer.from_message(message, recipient_users=all_users)
 
-            return JsonResponse({
-                "result": "success",
-                "id": message.id,
-                "message": serializer.model_dump(),
-            }, status=201)
+            return JsonResponse(
+                {
+                    "result": "success",
+                    "id": message.id,
+                    "message": serializer.model_dump(),
+                },
+                status=201,
+            )
 
         except JsonableError as e:
             return JsonResponse(
@@ -614,7 +664,11 @@ def send_message(request: HttpRequest) -> HttpResponse:
     # Handle stream messages (default)
     if not payload.stream_id:
         return JsonResponse(
-            {"result": "error", "code": "INVALID_PARAMS", "msg": "stream_id is required for stream messages"},
+            {
+                "result": "error",
+                "code": "INVALID_PARAMS",
+                "msg": "stream_id is required for stream messages",
+            },
             status=400,
         )
 
@@ -647,11 +701,14 @@ def send_message(request: HttpRequest) -> HttpResponse:
         message = Message.objects.select_related("sender", "recipient").get(id=result.message_id)
         serializer = MessageSerializer.from_message(message)
 
-        return JsonResponse({
-            "result": "success",
-            "id": message.id,
-            "message": serializer.model_dump(),
-        }, status=201)
+        return JsonResponse(
+            {
+                "result": "success",
+                "id": message.id,
+                "message": serializer.model_dump(),
+            },
+            status=201,
+        )
 
     except JsonableError as e:
         return JsonResponse(
@@ -707,10 +764,12 @@ def get_message(request: HttpRequest, message_id: int) -> HttpResponse:
 
     serializer = MessageSerializer.from_message(message, reactions=reactions, flags=flags)
 
-    return JsonResponse({
-        "result": "success",
-        "message": serializer.model_dump(),
-    })
+    return JsonResponse(
+        {
+            "result": "success",
+            "message": serializer.model_dump(),
+        }
+    )
 
 
 @csrf_exempt
@@ -762,7 +821,11 @@ def edit_message(request: HttpRequest, message_id: int) -> HttpResponse:
             # Check if user is the message owner
             if message.sender_id != user.id:
                 return JsonResponse(
-                    {"result": "error", "code": "FORBIDDEN", "msg": "Only the message author can edit"},
+                    {
+                        "result": "error",
+                        "code": "FORBIDDEN",
+                        "msg": "Only the message author can edit",
+                    },
                     status=403,
                 )
 
@@ -832,10 +895,12 @@ def edit_message(request: HttpRequest, message_id: int) -> HttpResponse:
     flags = _get_message_flags(user, message_id)
     serializer = MessageSerializer.from_message(message, reactions=reactions, flags=flags)
 
-    return JsonResponse({
-        "result": "success",
-        "message": serializer.model_dump(),
-    })
+    return JsonResponse(
+        {
+            "result": "success",
+            "message": serializer.model_dump(),
+        }
+    )
 
 
 @csrf_exempt
@@ -875,17 +940,23 @@ def delete_message(request: HttpRequest, message_id: int) -> HttpResponse:
 
     if not is_owner and not is_admin:
         return JsonResponse(
-            {"result": "error", "code": "FORBIDDEN", "msg": "Only the author or an admin can delete this message"},
+            {
+                "result": "error",
+                "code": "FORBIDDEN",
+                "msg": "Only the author or an admin can delete this message",
+            },
             status=403,
         )
 
     # Delete the message
     try:
         do_delete_messages(user.realm, [message], acting_user=user)
-        return JsonResponse({
-            "result": "success",
-            "msg": "Message deleted",
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "Message deleted",
+            }
+        )
     except Exception as e:
         logger.exception("Failed to delete message")
         return JsonResponse(
@@ -911,7 +982,12 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
             {
                 "user_ids": [9],
                 "users": [
-                    {"id": 9, "full_name": "Alice", "email": "alice@example.com", "avatar_url": "/avatar/9"}
+                    {
+                        "id": 9,
+                        "full_name": "Alice",
+                        "email": "alice@example.com",
+                        "avatar_url": "/avatar/9",
+                    }
                 ],
                 "last_message": {
                     "id": 12345,
@@ -924,7 +1000,6 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
         ]
     }
     """
-    from zerver.models import Recipient
 
     if request.method != "GET":
         return JsonResponse(
@@ -946,10 +1021,12 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
                 continue
 
             # Get participant user info (excluding bots)
-            participant_users = list(UserProfile.objects.filter(
-                id__in=participant_ids,
-                is_active=True,
-            ).values("id", "full_name", "delivery_email", "avatar_source", "is_bot"))
+            participant_users = list(
+                UserProfile.objects.filter(
+                    id__in=participant_ids,
+                    is_active=True,
+                ).values("id", "full_name", "delivery_email", "avatar_source", "is_bot")
+            )
 
             # Filter out bot users from participants
             non_bot_users = [u for u in participant_users if not u.get("is_bot")]
@@ -969,9 +1046,9 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
             ]
 
             # Get last message using the max_message_id from recipient_map
-            last_message = Message.objects.select_related("sender").filter(
-                id=data["max_message_id"]
-            ).first()
+            last_message = (
+                Message.objects.select_related("sender").filter(id=data["max_message_id"]).first()
+            )
 
             last_message_data = None
             if last_message:
@@ -991,23 +1068,25 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
                 unread_count = UserMessage.objects.filter(
                     user_profile=user,
                     message__recipient_id=user.recipient_id,  # Messages sent TO me
-                    message__sender_id__in=participant_ids,   # From the other user(s)
+                    message__sender_id__in=participant_ids,  # From the other user(s)
                     flags__andz=UserMessage.flags.read.mask,  # Unread
                 ).count()
             else:
                 # Modern DIRECT_MESSAGE_GROUP model - Stream pattern works
                 unread_count = UserMessage.objects.filter(
                     user_profile=user,
-                    message__recipient_id=recipient_id,       # Shared group recipient
+                    message__recipient_id=recipient_id,  # Shared group recipient
                     flags__andz=UserMessage.flags.read.mask,  # Unread
                 ).count()
 
-            conversations.append({
-                "user_ids": participant_ids,
-                "users": users_data,
-                "last_message": last_message_data,
-                "unread_count": unread_count,
-            })
+            conversations.append(
+                {
+                    "user_ids": participant_ids,
+                    "users": users_data,
+                    "last_message": last_message_data,
+                    "unread_count": unread_count,
+                }
+            )
 
         # Sort by last message timestamp (most recent first)
         conversations.sort(
@@ -1015,10 +1094,12 @@ def list_dm_conversations(request: HttpRequest) -> HttpResponse:
             reverse=True,
         )
 
-        return JsonResponse({
-            "result": "success",
-            "conversations": conversations,
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "conversations": conversations,
+            }
+        )
 
     except Exception as e:
         logger.exception("Failed to list DM conversations")
@@ -1210,14 +1291,20 @@ def mark_messages_as_read(request: HttpRequest) -> HttpResponse:
             count, _ = do_update_message_flags(user, "add", "read", message_ids)
         else:
             return JsonResponse(
-                {"result": "error", "code": "INVALID_PARAMS", "msg": "Either stream_id or message_ids required"},
+                {
+                    "result": "error",
+                    "code": "INVALID_PARAMS",
+                    "msg": "Either stream_id or message_ids required",
+                },
                 status=400,
             )
 
-        return JsonResponse({
-            "result": "success",
-            "messages_marked": count,
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "messages_marked": count,
+            }
+        )
     except Stream.DoesNotExist:
         return JsonResponse(
             {"result": "error", "code": "NOT_FOUND", "msg": "Stream not found"},
@@ -1276,18 +1363,22 @@ def mute_dm_user(request: HttpRequest, user_id: int) -> HttpResponse:
     try:
         date_muted = timezone_now()
         do_mute_user(user, muted_user, date_muted)
-        return JsonResponse({
-            "result": "success",
-            "msg": "User muted",
-            "muted_user_id": user_id,
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "User muted",
+                "muted_user_id": user_id,
+            }
+        )
     except IntegrityError:
         # Already muted - idempotent success
-        return JsonResponse({
-            "result": "success",
-            "msg": "User already muted",
-            "muted_user_id": user_id,
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "User already muted",
+                "muted_user_id": user_id,
+            }
+        )
     except Exception as e:
         logger.exception("Failed to mute user")
         return JsonResponse(
@@ -1333,19 +1424,23 @@ def unmute_dm_user(request: HttpRequest, user_id: int) -> HttpResponse:
 
     if mute_object is None:
         # Already unmuted - idempotent success
-        return JsonResponse({
-            "result": "success",
-            "msg": "User not muted",
-            "muted_user_id": user_id,
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "User not muted",
+                "muted_user_id": user_id,
+            }
+        )
 
     try:
         do_unmute_user(mute_object)
-        return JsonResponse({
-            "result": "success",
-            "msg": "User unmuted",
-            "muted_user_id": user_id,
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "User unmuted",
+                "muted_user_id": user_id,
+            }
+        )
     except Exception as e:
         logger.exception("Failed to unmute user")
         return JsonResponse(
@@ -1399,13 +1494,17 @@ def get_unread_counts(request: HttpRequest) -> HttpResponse:
             # Total stream count
             unread_counts[str(stream_id)] = stream_count
 
-        return JsonResponse({
-            "result": "success",
-            "unread_counts": unread_counts,
-        })
-    except Exception as e:
+        return JsonResponse(
+            {
+                "result": "success",
+                "unread_counts": unread_counts,
+            }
+        )
+    except Exception:
         logger.exception("Failed to get unread counts")
-        return JsonResponse({
-            "result": "success",
-            "unread_counts": {},
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "unread_counts": {},
+            }
+        )

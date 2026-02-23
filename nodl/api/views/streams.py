@@ -7,8 +7,9 @@ Bearer token (JWT) authentication, not browser session cookies.
 
 import json
 import logging
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -69,6 +70,7 @@ class StreamsRateLimitedObject(RateLimitedObject):
 
 def rate_limit(key_prefix: str, limit: int, window: int = RATE_LIMIT_WINDOW) -> Callable:
     """Decorator for rate limiting API endpoints."""
+
     def decorator(view_func: Callable) -> Callable:
         @wraps(view_func)
         def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -89,7 +91,9 @@ def rate_limit(key_prefix: str, limit: int, window: int = RATE_LIMIT_WINDOW) -> 
                 )
 
             return view_func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -99,6 +103,7 @@ def require_jwt_auth(view_func: Callable) -> Callable:
     Expects that authentication middleware has already validated the JWT
     and set request.user_profile.
     """
+
     @wraps(view_func)
     def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         user = getattr(request, "user_profile", None)
@@ -108,6 +113,7 @@ def require_jwt_auth(view_func: Callable) -> Callable:
                 status=401,
             )
         return view_func(request, *args, **kwargs)
+
     return wrapper
 
 
@@ -118,6 +124,7 @@ def _get_unread_counts_for_streams(user: UserProfile, streams: list[Stream]) -> 
     This eliminates N+1 query problem when listing streams.
     """
     from django.db.models import Count
+
     from zerver.models import UserMessage
 
     if not streams:
@@ -132,11 +139,11 @@ def _get_unread_counts_for_streams(user: UserProfile, streams: list[Stream]) -> 
             message__recipient_id__in=recipient_ids,
             flags__andz=UserMessage.flags.read.mask,  # andz = "and zero" - flag NOT set
         )
-        .values('message__recipient_id')
-        .annotate(count=Count('id'))
+        .values("message__recipient_id")
+        .annotate(count=Count("id"))
     )
 
-    return {r['message__recipient_id']: r['count'] for r in unread_counts}
+    return {r["message__recipient_id"]: r["count"] for r in unread_counts}
 
 
 def _get_subscribers_for_stream(stream: Stream) -> list[int]:
@@ -206,7 +213,7 @@ def list_streams(request: HttpRequest) -> HttpResponse:
     realm_streams = [s for s in streams if s.realm_id == user.realm_id]
 
     # Apply pagination
-    paginated_streams = realm_streams[offset:offset + limit]
+    paginated_streams = realm_streams[offset : offset + limit]
 
     # Get all unread counts in a single query (fixes N+1 problem)
     unread_by_recipient = _get_unread_counts_for_streams(user, paginated_streams)
@@ -227,7 +234,9 @@ def list_streams(request: HttpRequest) -> HttpResponse:
     stream_data = []
     for stream in paginated_streams:
         unread_count = unread_by_recipient.get(stream.recipient_id, 0)
-        sub_prefs = sub_prefs_by_recipient.get(stream.recipient_id, {"is_muted": False, "pin_to_top": False})
+        sub_prefs = sub_prefs_by_recipient.get(
+            stream.recipient_id, {"is_muted": False, "pin_to_top": False}
+        )
         serializer = StreamListSerializer.from_stream_with_unread(
             stream,
             unread_count=unread_count,
@@ -236,12 +245,14 @@ def list_streams(request: HttpRequest) -> HttpResponse:
         )
         stream_data.append(serializer.model_dump())
 
-    return JsonResponse({
-        "result": "success",
-        "streams": stream_data,
-        "count": len(stream_data),
-        "total": len(realm_streams),
-    })
+    return JsonResponse(
+        {
+            "result": "success",
+            "streams": stream_data,
+            "count": len(stream_data),
+            "total": len(realm_streams),
+        }
+    )
 
 
 @csrf_exempt
@@ -291,9 +302,13 @@ def create_stream(request: HttpRequest) -> HttpResponse:
     # Check if stream name is available
     try:
         check_stream_name_available(user.realm, payload.name)
-    except Exception as e:
+    except Exception:
         return JsonResponse(
-            {"result": "error", "code": "STREAM_EXISTS", "msg": f"Stream '{payload.name}' already exists"},
+            {
+                "result": "error",
+                "code": "STREAM_EXISTS",
+                "msg": f"Stream '{payload.name}' already exists",
+            },
             status=400,
         )
 
@@ -317,10 +332,13 @@ def create_stream(request: HttpRequest) -> HttpResponse:
         )
 
         serializer = StreamSerializer.from_stream(stream, subscribers=[user.id])
-        return JsonResponse({
-            "result": "success",
-            "stream": serializer.model_dump(),
-        }, status=201)
+        return JsonResponse(
+            {
+                "result": "success",
+                "stream": serializer.model_dump(),
+            },
+            status=201,
+        )
     except Exception as e:
         logger.exception("Failed to create stream")
         return JsonResponse(
@@ -368,10 +386,12 @@ def get_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
     subscribers = _get_subscribers_for_stream(stream)
 
     serializer = StreamSerializer.from_stream(stream, subscribers=subscribers)
-    return JsonResponse({
-        "result": "success",
-        "stream": serializer.model_dump(),
-    })
+    return JsonResponse(
+        {
+            "result": "success",
+            "stream": serializer.model_dump(),
+        }
+    )
 
 
 @csrf_exempt
@@ -407,7 +427,11 @@ def update_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
         stream, _ = access_stream_for_delete_or_update_requiring_metadata_access(user, stream_id)
     except Exception:
         return JsonResponse(
-            {"result": "error", "code": "FORBIDDEN", "msg": "You don't have permission to update this stream"},
+            {
+                "result": "error",
+                "code": "FORBIDDEN",
+                "msg": "You don't have permission to update this stream",
+            },
             status=403,
         )
 
@@ -449,10 +473,12 @@ def update_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
         subscribers = _get_subscribers_for_stream(stream)
         serializer = StreamSerializer.from_stream(stream, subscribers=subscribers)
 
-        return JsonResponse({
-            "result": "success",
-            "stream": serializer.model_dump(),
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "stream": serializer.model_dump(),
+            }
+        )
     except Exception as e:
         logger.exception("Failed to update stream")
         return JsonResponse(
@@ -487,16 +513,22 @@ def archive_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
         stream, _ = access_stream_for_delete_or_update_requiring_metadata_access(user, stream_id)
     except Exception:
         return JsonResponse(
-            {"result": "error", "code": "FORBIDDEN", "msg": "You don't have permission to archive this stream"},
+            {
+                "result": "error",
+                "code": "FORBIDDEN",
+                "msg": "You don't have permission to archive this stream",
+            },
             status=403,
         )
 
     try:
         do_deactivate_stream(stream, acting_user=user)
-        return JsonResponse({
-            "result": "success",
-            "msg": "Stream archived",
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "Stream archived",
+            }
+        )
     except Exception as e:
         logger.exception("Failed to archive stream")
         return JsonResponse(
@@ -559,10 +591,12 @@ def get_stream_topics(request: HttpRequest, stream_id: int) -> HttpResponse:
         for topic in topic_history
     ]
 
-    return JsonResponse({
-        "result": "success",
-        "topics": topics,
-    })
+    return JsonResponse(
+        {
+            "result": "success",
+            "topics": topics,
+        }
+    )
 
 
 @csrf_exempt
@@ -610,15 +644,19 @@ def subscribe_to_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
         )
 
         if already_subscribed:
-            return JsonResponse({
-                "result": "success",
-                "msg": "Already subscribed to stream",
-            })
+            return JsonResponse(
+                {
+                    "result": "success",
+                    "msg": "Already subscribed to stream",
+                }
+            )
 
-        return JsonResponse({
-            "result": "success",
-            "msg": "Subscribed to stream",
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "Subscribed to stream",
+            }
+        )
     except Exception as e:
         logger.exception("Failed to subscribe to stream")
         return JsonResponse(
@@ -667,15 +705,19 @@ def unsubscribe_from_stream(request: HttpRequest, stream_id: int) -> HttpRespons
 
         # Check if was not subscribed
         if any(sub_info[0] == user and sub_info[1] == stream for sub_info in not_subscribed):
-            return JsonResponse({
-                "result": "success",
-                "msg": "Already not subscribed to stream",
-            })
+            return JsonResponse(
+                {
+                    "result": "success",
+                    "msg": "Already not subscribed to stream",
+                }
+            )
 
-        return JsonResponse({
-            "result": "success",
-            "msg": "Unsubscribed from stream",
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "Unsubscribed from stream",
+            }
+        )
     except Exception as e:
         logger.exception("Failed to unsubscribe from stream")
         return JsonResponse(
@@ -730,7 +772,11 @@ def mute_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
     sub = _get_user_subscription(user, stream)
     if sub is None:
         return JsonResponse(
-            {"result": "error", "code": "NOT_SUBSCRIBED", "msg": "You are not subscribed to this stream"},
+            {
+                "result": "error",
+                "code": "NOT_SUBSCRIBED",
+                "msg": "You are not subscribed to this stream",
+            },
             status=400,
         )
 
@@ -743,11 +789,13 @@ def mute_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
             True,
             acting_user=user,
         )
-        return JsonResponse({
-            "result": "success",
-            "msg": "Stream muted",
-            "is_muted": True,
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "Stream muted",
+                "is_muted": True,
+            }
+        )
     except Exception as e:
         logger.exception("Failed to mute stream")
         return JsonResponse(
@@ -790,7 +838,11 @@ def unmute_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
     sub = _get_user_subscription(user, stream)
     if sub is None:
         return JsonResponse(
-            {"result": "error", "code": "NOT_SUBSCRIBED", "msg": "You are not subscribed to this stream"},
+            {
+                "result": "error",
+                "code": "NOT_SUBSCRIBED",
+                "msg": "You are not subscribed to this stream",
+            },
             status=400,
         )
 
@@ -803,11 +855,13 @@ def unmute_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
             False,
             acting_user=user,
         )
-        return JsonResponse({
-            "result": "success",
-            "msg": "Stream unmuted",
-            "is_muted": False,
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "Stream unmuted",
+                "is_muted": False,
+            }
+        )
     except Exception as e:
         logger.exception("Failed to unmute stream")
         return JsonResponse(
@@ -850,7 +904,11 @@ def pin_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
     sub = _get_user_subscription(user, stream)
     if sub is None:
         return JsonResponse(
-            {"result": "error", "code": "NOT_SUBSCRIBED", "msg": "You are not subscribed to this stream"},
+            {
+                "result": "error",
+                "code": "NOT_SUBSCRIBED",
+                "msg": "You are not subscribed to this stream",
+            },
             status=400,
         )
 
@@ -863,11 +921,13 @@ def pin_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
             True,
             acting_user=user,
         )
-        return JsonResponse({
-            "result": "success",
-            "msg": "Stream pinned",
-            "pin_to_top": True,
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "Stream pinned",
+                "pin_to_top": True,
+            }
+        )
     except Exception as e:
         logger.exception("Failed to pin stream")
         return JsonResponse(
@@ -910,7 +970,11 @@ def unpin_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
     sub = _get_user_subscription(user, stream)
     if sub is None:
         return JsonResponse(
-            {"result": "error", "code": "NOT_SUBSCRIBED", "msg": "You are not subscribed to this stream"},
+            {
+                "result": "error",
+                "code": "NOT_SUBSCRIBED",
+                "msg": "You are not subscribed to this stream",
+            },
             status=400,
         )
 
@@ -923,11 +987,13 @@ def unpin_stream(request: HttpRequest, stream_id: int) -> HttpResponse:
             False,
             acting_user=user,
         )
-        return JsonResponse({
-            "result": "success",
-            "msg": "Stream unpinned",
-            "pin_to_top": False,
-        })
+        return JsonResponse(
+            {
+                "result": "success",
+                "msg": "Stream unpinned",
+                "pin_to_top": False,
+            }
+        )
     except Exception as e:
         logger.exception("Failed to unpin stream")
         return JsonResponse(

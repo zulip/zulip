@@ -11,11 +11,9 @@ Tests cover:
 """
 
 import time
-from typing import Any
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import jwt
-import pytest
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.test import override_settings
 

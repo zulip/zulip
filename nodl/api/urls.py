@@ -68,8 +68,16 @@ urlpatterns = [
     path("api/v1/streams/<int:stream_id>/update", update_stream, name="nodl_update_stream"),
     path("api/v1/streams/<int:stream_id>/archive", archive_stream, name="nodl_archive_stream"),
     path("api/v1/streams/<int:stream_id>/topics", get_stream_topics, name="nodl_get_stream_topics"),
-    path("api/v1/streams/<int:stream_id>/subscribe", subscribe_to_stream, name="nodl_subscribe_stream"),
-    path("api/v1/streams/<int:stream_id>/unsubscribe", unsubscribe_from_stream, name="nodl_unsubscribe_stream"),
+    path(
+        "api/v1/streams/<int:stream_id>/subscribe",
+        subscribe_to_stream,
+        name="nodl_subscribe_stream",
+    ),
+    path(
+        "api/v1/streams/<int:stream_id>/unsubscribe",
+        unsubscribe_from_stream,
+        name="nodl_unsubscribe_stream",
+    ),
     path("api/v1/streams/<int:stream_id>/mute", mute_stream, name="nodl_mute_stream"),
     path("api/v1/streams/<int:stream_id>/unmute", unmute_stream, name="nodl_unmute_stream"),
     path("api/v1/streams/<int:stream_id>/pin", pin_stream, name="nodl_pin_stream"),
@@ -82,7 +90,11 @@ urlpatterns = [
     path("api/v1/messages/<int:message_id>/delete", delete_message, name="nodl_delete_message"),
     # Reaction REST API endpoints - authenticated via JWT
     path("api/v1/messages/<int:message_id>/reactions", add_reaction, name="nodl_add_reaction"),
-    path("api/v1/messages/<int:message_id>/reactions/<str:emoji_name>", remove_reaction, name="nodl_remove_reaction"),
+    path(
+        "api/v1/messages/<int:message_id>/reactions/<str:emoji_name>",
+        remove_reaction,
+        name="nodl_remove_reaction",
+    ),
     # DM REST API endpoints - authenticated via JWT
     path("api/v1/dm/conversations", list_dm_conversations, name="nodl_list_dm_conversations"),
     path("api/v1/dm/<int:user_id>/mute", mute_dm_user, name="nodl_mute_dm_user"),

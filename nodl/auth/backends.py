@@ -10,9 +10,8 @@ from typing import Any
 
 from django.http import HttpRequest
 
-from zerver.models import UserProfile
-
 from nodl.extensions.models import NodlUserExtension
+from zerver.models import UserProfile
 
 
 class SupabaseAuthBackend:

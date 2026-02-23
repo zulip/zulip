@@ -1,19 +1,17 @@
 """User synchronization service for nodl-to-Zulip user sync."""
 
-from dataclasses import dataclass
-from typing import Optional
 import logging
 import uuid
+from dataclasses import dataclass
 
 from django.db import transaction
 from django.utils import timezone
 
+from nodl.extensions.models import NodlUserExtension, SyncStatus
 from zerver.actions.create_user import do_create_user
 from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import do_change_user_role
 from zerver.models import Realm, UserProfile
-
-from nodl.extensions.models import NodlUserExtension, SyncStatus
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +23,7 @@ class UserSyncRequest:
     supabase_user_id: str
     email: str
     full_name: str
-    avatar_url: Optional[str]
+    avatar_url: str | None
     workspace_id: str
     role: str  # 'owner', 'admin', 'editor', 'viewer'
 
@@ -35,8 +33,8 @@ class UserSyncResult:
     """Result of a user sync operation."""
 
     success: bool
-    zulip_user_id: Optional[int]
-    error: Optional[str]
+    zulip_user_id: int | None
+    error: str | None
 
 
 class UserSyncService:
@@ -79,7 +77,7 @@ class UserSyncService:
         # a linked user AND can't find an existing one to link
         # This prevents blocking updates when the extension was created
         # but never successfully linked (e.g., due to previous duplicate key errors)
-        if extension.sync_status == SyncStatus.FAILED:
+        if extension.sync_status == SyncStatus.FAILED:  # noqa: SIM102
             if extension.sync_attempts >= self.MAX_RETRY_ATTEMPTS:
                 # Before giving up, check if user exists and can be linked
                 realm = self._get_realm_for_workspace(request.workspace_id)
@@ -141,15 +139,16 @@ class UserSyncService:
                             # User already linked to different extension
                             # Delete the orphan extension (current one) and use existing
                             logger.info(
-                                "Zulip user %d already linked to extension %d (supabase_user_id=%s), "
-                                "deleting orphan extension %d (supabase_user_id=%s)",
+                                "Zulip user %d already linked to extension %d "
+                                "(supabase_user_id=%s), deleting orphan "
+                                "extension %d (supabase_user_id=%s)",
                                 existing_user.id,
                                 existing_extension.id,
                                 existing_extension.supabase_user_id,
                                 extension.id,
                                 supabase_uuid,
                             )
-                            # Delete the orphan extension first (releases supabase_user_id constraint)
+                            # Delete orphan extension (releases supabase_user_id constraint)
                             extension.delete()
                             # Use the existing extension going forward
                             extension = existing_extension
@@ -272,7 +271,7 @@ class UserSyncService:
 
         return user
 
-    def _get_realm_for_workspace(self, workspace_id: str) -> Optional[Realm]:
+    def _get_realm_for_workspace(self, workspace_id: str) -> Realm | None:
         """Get the Zulip realm for a nodl workspace.
 
         Uses the workspace_id as the realm's string_id (subdomain).

@@ -11,12 +11,11 @@ Tests cover:
 import uuid
 from unittest.mock import MagicMock, patch
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
-from zerver.models import Realm, UserProfile
-
-from nodl.extensions.models import NodlUserExtension, SyncStatus
+from nodl.extensions.models import SyncStatus
 from nodl.sync.user_sync import UserSyncRequest, UserSyncResult, UserSyncService
+from zerver.models import UserProfile
 
 
 class TestUserSyncService(TestCase):

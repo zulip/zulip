@@ -1,6 +1,6 @@
 """Serializers for stream-related API responses."""
 
-from typing import Annotated, Optional
+from typing import Annotated
 
 from pydantic import BaseModel, Field
 
@@ -27,14 +27,14 @@ class StreamSerializer(BaseModel):
     history_public_to_subscribers: Annotated[
         bool, Field(description="Whether history is visible to new subscribers")
     ]
-    first_message_id: Annotated[Optional[int], Field(description="ID of first message")]
+    first_message_id: Annotated[int | None, Field(description="ID of first message")]
     subscribers: Annotated[list[int], Field(default=[], description="List of subscriber user IDs")]
 
     @classmethod
     def from_stream(
         cls,
         stream: Stream,
-        subscribers: Optional[list[int]] = None,
+        subscribers: list[int] | None = None,
     ) -> "StreamSerializer":
         """Create serializer from Stream model."""
         return cls(
@@ -54,19 +54,21 @@ class StreamListSerializer(StreamSerializer):
     """Serializer for stream list with unread counts and user preferences."""
 
     unread_count: Annotated[int, Field(default=0, description="Number of unread messages")]
-    is_muted: Annotated[bool, Field(default=False, description="Whether the stream is muted for the user")]
-    pin_to_top: Annotated[bool, Field(default=False, description="Whether the stream is pinned to the top")]
-    topics: Annotated[
-        list[TopicSerializer], Field(default=[], description="Topics in the stream")
+    is_muted: Annotated[
+        bool, Field(default=False, description="Whether the stream is muted for the user")
     ]
+    pin_to_top: Annotated[
+        bool, Field(default=False, description="Whether the stream is pinned to the top")
+    ]
+    topics: Annotated[list[TopicSerializer], Field(default=[], description="Topics in the stream")]
 
     @classmethod
     def from_stream_with_unread(
         cls,
         stream: Stream,
         unread_count: int = 0,
-        subscribers: Optional[list[int]] = None,
-        topics: Optional[list[TopicSerializer]] = None,
+        subscribers: list[int] | None = None,
+        topics: list[TopicSerializer] | None = None,
         is_muted: bool = False,
         pin_to_top: bool = False,
     ) -> "StreamListSerializer":
@@ -92,22 +94,31 @@ class StreamCreatePayload(BaseModel):
     """Request payload for stream creation."""
 
     name: Annotated[str, Field(min_length=1, max_length=60, description="Stream name")]
-    description: Annotated[str, Field(default="", max_length=1024, description="Stream description")]
+    description: Annotated[
+        str, Field(default="", max_length=1024, description="Stream description")
+    ]
     is_private: Annotated[bool, Field(default=False, description="Whether the stream is private")]
     is_announcement_only: Annotated[
         bool, Field(default=False, description="Whether only admins can post")
     ]
     history_public_to_subscribers: Annotated[
-        Optional[bool], Field(default=None, description="Whether history is visible to new subscribers")
+        bool | None,
+        Field(default=None, description="Whether history is visible to new subscribers"),
     ]
 
 
 class StreamUpdatePayload(BaseModel):
     """Request payload for stream update."""
 
-    name: Annotated[Optional[str], Field(default=None, min_length=1, max_length=60, description="New stream name")]
-    description: Annotated[Optional[str], Field(default=None, max_length=1024, description="New stream description")]
-    is_private: Annotated[Optional[bool], Field(default=None, description="Whether the stream is private")]
+    name: Annotated[
+        str | None, Field(default=None, min_length=1, max_length=60, description="New stream name")
+    ]
+    description: Annotated[
+        str | None, Field(default=None, max_length=1024, description="New stream description")
+    ]
+    is_private: Annotated[
+        bool | None, Field(default=None, description="Whether the stream is private")
+    ]
     is_announcement_only: Annotated[
-        Optional[bool], Field(default=None, description="Whether only admins can post")
+        bool | None, Field(default=None, description="Whether only admins can post")
     ]

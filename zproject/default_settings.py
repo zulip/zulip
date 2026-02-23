@@ -781,6 +781,11 @@ NODL_SUPABASE_JWT_SECRET: str = ""
 # Supabase project URL, e.g. https://<project-ref>.supabase.co
 # Used for JWT issuer validation. Must be set in /etc/zulip/settings.py for production.
 NODL_SUPABASE_URL: str = ""
+# Supabase service_role key for Admin API access (server-side only).
+# SECURITY: This key grants full admin access. Never log or expose to clients.
+NODL_SUPABASE_SERVICE_ROLE_KEY: str = ""
+# Maximum number of phone hashes per contacts/match request (Story 4.1).
+NODL_CONTACTS_MATCH_LIMIT: int = 500
 
 # NODL MODIFICATION END
 ########################################################################

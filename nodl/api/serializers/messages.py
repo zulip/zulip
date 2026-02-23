@@ -1,7 +1,6 @@
 """Serializers for message-related API responses."""
 
-from datetime import datetime
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
 from pydantic import BaseModel, Field
 
@@ -33,28 +32,33 @@ class MessageSerializer(BaseModel):
     sender_id: Annotated[int, Field(description="Sender user ID")]
     sender_full_name: Annotated[str, Field(description="Sender's full name")]
     sender_email: Annotated[str, Field(description="Sender's email")]
-    sender_avatar_url: Annotated[Optional[str], Field(description="Sender's avatar URL")]
-    stream_id: Annotated[Optional[int], Field(description="Stream ID (if channel message)")]
+    sender_avatar_url: Annotated[str | None, Field(description="Sender's avatar URL")]
+    stream_id: Annotated[int | None, Field(description="Stream ID (if channel message)")]
     display_recipient: Annotated[
-        Optional[list[DMRecipient]],
-        Field(default=None, description="Recipients (for DMs)")
+        list[DMRecipient] | None, Field(default=None, description="Recipients (for DMs)")
     ]
     topic: Annotated[str, Field(description="Message topic")]
     content: Annotated[str, Field(description="Raw Markdown content")]
     rendered_content: Annotated[str, Field(description="HTML rendered content")]
     timestamp: Annotated[int, Field(description="Unix timestamp when sent")]
-    last_edit_timestamp: Annotated[Optional[int], Field(description="Unix timestamp of last edit")]
-    reactions: Annotated[list[ReactionSerializer], Field(default=[], description="Message reactions")]
-    is_me_message: Annotated[bool, Field(default=False, description="Whether this is a /me message")]
-    flags: Annotated[list[str], Field(default=[], description="Message flags (e.g., read, starred)")]
+    last_edit_timestamp: Annotated[int | None, Field(description="Unix timestamp of last edit")]
+    reactions: Annotated[
+        list[ReactionSerializer], Field(default=[], description="Message reactions")
+    ]
+    is_me_message: Annotated[
+        bool, Field(default=False, description="Whether this is a /me message")
+    ]
+    flags: Annotated[
+        list[str], Field(default=[], description="Message flags (e.g., read, starred)")
+    ]
 
     @classmethod
     def from_message(
         cls,
         message: Message,
-        reactions: Optional[list[ReactionSerializer]] = None,
-        flags: Optional[list[str]] = None,
-        recipient_users: Optional[list[Any]] = None,
+        reactions: list[ReactionSerializer] | None = None,
+        flags: list[str] | None = None,
+        recipient_users: list[Any] | None = None,
     ) -> "MessageSerializer":
         """Create serializer from Message model.
 
@@ -123,16 +127,17 @@ class MessageListSerializer(BaseModel):
     type: Annotated[str, Field(description="Message type: 'stream' or 'private'")]
     sender_id: Annotated[int, Field(description="Sender user ID")]
     sender_full_name: Annotated[str, Field(description="Sender's full name")]
-    stream_id: Annotated[Optional[int], Field(description="Stream ID")]
+    stream_id: Annotated[int | None, Field(description="Stream ID")]
     display_recipient: Annotated[
-        Optional[list[DMRecipient]],
-        Field(default=None, description="Recipients (for DMs)")
+        list[DMRecipient] | None, Field(default=None, description="Recipients (for DMs)")
     ]
     topic: Annotated[str, Field(description="Message topic")]
     content: Annotated[str, Field(description="Raw Markdown content")]
     rendered_content: Annotated[str, Field(description="HTML rendered content")]
     timestamp: Annotated[int, Field(description="Unix timestamp when sent")]
-    reactions: Annotated[list[ReactionSerializer], Field(default=[], description="Message reactions")]
+    reactions: Annotated[
+        list[ReactionSerializer], Field(default=[], description="Message reactions")
+    ]
 
     @classmethod
     def from_message(cls, message: Message) -> "MessageListSerializer":
@@ -237,29 +242,24 @@ class MessageCreatePayload(BaseModel):
         - content: Required
     """
 
-    type: Annotated[
-        str,
-        Field(default="stream", description="Message type: 'stream' or 'direct'")
-    ]
+    type: Annotated[str, Field(default="stream", description="Message type: 'stream' or 'direct'")]
     stream_id: Annotated[
-        Optional[int],
-        Field(default=None, description="Stream ID to post to (for stream messages)")
+        int | None, Field(default=None, description="Stream ID to post to (for stream messages)")
     ]
     topic: Annotated[
-        Optional[str],
-        Field(default=None, max_length=60, description="Message topic (for stream messages)")
+        str | None,
+        Field(default=None, max_length=60, description="Message topic (for stream messages)"),
     ]
     to: Annotated[
-        Optional[list[int]],
-        Field(default=None, description="Recipient user IDs (for direct messages)")
+        list[int] | None,
+        Field(default=None, description="Recipient user IDs (for direct messages)"),
     ]
-    content: Annotated[
-        str,
-        Field(min_length=1, max_length=10000, description="Message content")
-    ]
+    content: Annotated[str, Field(min_length=1, max_length=10000, description="Message content")]
 
 
 class MessageUpdatePayload(BaseModel):
     """Request payload for editing a message."""
 
-    content: Annotated[str, Field(min_length=1, max_length=10000, description="New message content")]
+    content: Annotated[
+        str, Field(min_length=1, max_length=10000, description="New message content")
+    ]
