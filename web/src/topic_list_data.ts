@@ -96,85 +96,142 @@ function show_all_topics(
     }
 }
 
+type TopicBaseInfo = {
+    contains_unread_mention: boolean;
+    is_active_topic: boolean;
+    is_followed: boolean;
+    is_muted: boolean;
+    num_unread: number;
+    position: number;
+    topic_name: string;
+};
+
 function choose_topics(
     stream_id: number,
     topic_names: string[],
     topic_choice_state: TopicChoiceState,
 ): void {
-    for (const topic_name of topic_names) {
+    const selected_topics: TopicBaseInfo[] = [];
+    const additional_followed_topics_with_unreads: TopicBaseInfo[] = [];
+    const additional_topics_with_unreads: TopicBaseInfo[] = [];
+
+    // Select most recent, unmuted MAX_TOPICS topics and the
+    // active topic. Build sets for additional followed and
+    // unmuted topics with unread messages. And update
+    // TopicChoiceState for topics with unread messages that
+    // are not selected for any of the above sets.
+    for (const [idx, topic_name] of topic_names.entries()) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = topic_choice_state.active_topic === topic_name.toLowerCase();
-        const is_topic_muted = user_topics.is_topic_muted(stream_id, topic_name);
+
+        // If we've already found the most recent MAX_TOPICS,
+        // then we only need to consider topics with unread
+        // messages and the active topic.
+        if (selected_topics.length >= MAX_TOPICS && !is_active_topic && num_unread === 0) {
+            continue;
+        }
+
+        const is_muted = user_topics.is_topic_muted(stream_id, topic_name);
         // Important: Topics are lower-case in this set.
         const contains_unread_mention = topic_choice_state.topics_with_unread_mentions.has(
             topic_name.toLowerCase(),
         );
 
-        function should_show_topic(topics_selected: number): boolean {
-            // This function exists just for readability, to
-            // avoid long chained conditionals to determine
-            // which topics to include.
-
-            // We always show the active topic.  Ideally, this
-            // logic would first check whether the active
-            // topic is in the set of those with unreads to
-            // avoid ending up with MAX_TOPICS_WITH_UNREAD + 1
-            // total topics if the active topic comes after
-            // the first several topics with unread messages.
-            if (is_active_topic) {
-                return true;
-            }
-
-            // We unconditionally skip showing muted topics
-            // when not zoomed, even if they have unread
-            // messages.
-            if (is_topic_muted) {
-                return false;
-            }
-
-            // We include the most recent unmuted MAX_TOPICS topics,
-            // even if there are no unread messages.
-            if (topics_selected < MAX_TOPICS) {
-                return true;
-            }
-
-            // We include older topics with unread messages up
-            // until MAX_TOPICS_WITH_UNREAD total topics have
-            // been included.
-            if (num_unread > 0 && topics_selected < MAX_TOPICS_WITH_UNREAD) {
-                return true;
-            }
-
-            // Otherwise, we don't show the topic in the
-            // unzoomed view.  We might display its unread
-            // count in "show all topics" if it is not muted.
-            return false;
-        }
-
-        const show_topic = should_show_topic(topic_choice_state.topics_selected);
-        if (!show_topic) {
-            if (!is_topic_muted) {
-                topic_choice_state.more_topics_unmuted_unreads += num_unread;
-                if (contains_unread_mention) {
-                    topic_choice_state.more_topics_have_unread_mention_messages = true;
-                }
-            } else {
-                topic_choice_state.more_topics_muted_unreads += num_unread;
-                if (contains_unread_mention) {
-                    topic_choice_state.more_topics_have_muted_unread_mention_messages = true;
-                }
+        // We don't show muted topics, unless it's the active topic,
+        // so we just update the TopicChoiceState here.
+        if (!is_active_topic && is_muted) {
+            topic_choice_state.more_topics_muted_unreads += num_unread;
+            if (contains_unread_mention) {
+                topic_choice_state.more_topics_have_muted_unread_mention_messages = true;
             }
             continue;
         }
+
+        const topic_base_info: TopicBaseInfo = {
+            contains_unread_mention,
+            is_active_topic,
+            is_followed: user_topics.is_topic_followed(stream_id, topic_name),
+            is_muted,
+            num_unread,
+            position: idx,
+            topic_name,
+        };
+
+        if (selected_topics.length < MAX_TOPICS) {
+            selected_topics.push(topic_base_info);
+            continue;
+        }
+
+        if (topic_base_info.num_unread > 0) {
+            if (
+                topic_base_info.is_followed &&
+                additional_followed_topics_with_unreads.length < MAX_TOPICS_WITH_UNREAD
+            ) {
+                additional_followed_topics_with_unreads.push(topic_base_info);
+                continue;
+            }
+
+            if (additional_topics_with_unreads.length < MAX_TOPICS_WITH_UNREAD) {
+                additional_topics_with_unreads.push(topic_base_info);
+                continue;
+            }
+
+            if (!topic_base_info.is_active_topic) {
+                topic_choice_state.more_topics_unmuted_unreads += topic_base_info.num_unread;
+                if (topic_base_info.contains_unread_mention) {
+                    topic_choice_state.more_topics_have_unread_mention_messages = true;
+                }
+                continue;
+            }
+        }
+
+        // We always show the active topic, even if it's older and
+        // has no unread messages.
+        if (topic_base_info.is_active_topic) {
+            selected_topics.push(topic_base_info);
+        }
+    }
+
+    // Select followed topics with unread messages up to MAX_TOPICS_WITH_UNREAD.
+    // Update TopicChoiceState for topics that are not selected.
+    for (const topic_base_info of additional_followed_topics_with_unreads) {
+        if (selected_topics.length < MAX_TOPICS_WITH_UNREAD) {
+            selected_topics.push(topic_base_info);
+        } else {
+            topic_choice_state.more_topics_unmuted_unreads += topic_base_info.num_unread;
+            if (topic_base_info.contains_unread_mention) {
+                topic_choice_state.more_topics_have_unread_mention_messages = true;
+            }
+        }
+    }
+
+    // Select additional topics with unread messages up to MAX_TOPICS_WITH_UNREAD.
+    // Update TopicChoiceState for topics that are not selected.
+    for (const topic_base_info of additional_topics_with_unreads) {
+        if (selected_topics.length < MAX_TOPICS_WITH_UNREAD) {
+            selected_topics.push(topic_base_info);
+        } else {
+            topic_choice_state.more_topics_unmuted_unreads += topic_base_info.num_unread;
+            if (topic_base_info.contains_unread_mention) {
+                topic_choice_state.more_topics_have_unread_mention_messages = true;
+            }
+        }
+    }
+
+    // Sort selected topics by original position in topic_names list
+    // and build TopicInfo items for topic list data.
+    for (const selected_topic of selected_topics.toSorted(
+        (a: TopicBaseInfo, b: TopicBaseInfo) => a.position - b.position,
+    )) {
         topic_choice_state.topics_selected += 1;
 
         const topic_info = build_topic_info_item(
             stream_id,
-            topic_name,
-            num_unread,
-            is_topic_muted,
-            is_active_topic,
-            contains_unread_mention,
+            selected_topic.topic_name,
+            selected_topic.num_unread,
+            selected_topic.is_muted,
+            selected_topic.is_active_topic,
+            selected_topic.contains_unread_mention,
         );
         topic_choice_state.items.push(topic_info);
     }
