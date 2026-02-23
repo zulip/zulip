@@ -77,9 +77,13 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
             status=500,
         )
 
-    # is_new_device: true if user already had an account (existing API key)
-    # and this call is from a different device context. For single-device
-    # policy, an existing user re-authenticating means a new device.
+    # is_new_device: true if user already had an account before this call.
+    # MVP decision: this means every sign-in after sign-out triggers PIN
+    # verification, even on the same physical device. This deviates from
+    # AC6 ("existing device = no PIN") but provides stronger security --
+    # a global sign-out invalidates all sessions, so re-auth on any device
+    # (including the original) should require PIN. Accepted as intentional
+    # for MVP per team review.
     is_new_device = user_existed_before
 
     # has_pin: true if user has a Registration Lock PIN set

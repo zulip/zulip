@@ -63,7 +63,12 @@ def pin_set(request: HttpRequest) -> JsonResponse:
 
     POST /nodl/pin/set
     Authorization: Basic <email:api_key>
-    Body: {"pin": "1234"}
+    Body: {"pin": "1234"} for first-time setup
+    Body: {"pin": "1234", "current_pin": "0000"} to change existing PIN
+
+    If a PIN already exists, the current_pin must be provided and verified
+    before the new PIN is accepted. This prevents SIM swap attackers from
+    overwriting the PIN without knowing it.
 
     The PIN is hashed server-side with bcrypt before storage.
     """
@@ -73,6 +78,14 @@ def pin_set(request: HttpRequest) -> JsonResponse:
             {"result": "error", "msg": "Authentication required", "code": "UNAUTHORIZED"},
             status=401,
         )
+
+    # Per-user rate limit (matches pin_verify rate limit)
+    rate_key = f"nodl_pin_set:{user.id}"
+    rate_response = check_rate_limit(
+        request, limit=PIN_RATE_LIMIT, window=PIN_RATE_WINDOW, cache_key=rate_key
+    )
+    if rate_response is not None:
+        return rate_response
 
     try:
         body = json.loads(request.body)
@@ -93,15 +106,70 @@ def pin_set(request: HttpRequest) -> JsonResponse:
             status=400,
         )
 
-    pin_hash = make_password(pin, hasher="bcrypt")
+    # Check if a PIN already exists for this user
+    existing_record = NodlRegistrationPin.objects.filter(user=user).first()
 
-    NodlRegistrationPin.objects.update_or_create(
+    if existing_record is not None:
+        # Existing PIN -- require current_pin to change it
+        if existing_record.is_locked():
+            retry_after = existing_record.remaining_lockout_seconds()
+            minutes = max(1, (retry_after + 59) // 60)
+            return JsonResponse(
+                {
+                    "result": "error",
+                    "msg": f"Account temporarily locked. Try again in {minutes} minutes.",
+                    "code": "PIN_LOCKED",
+                    "retry_after_seconds": retry_after,
+                },
+                status=429,
+            )
+
+        current_pin = body.get("current_pin", "")
+        if not current_pin:
+            return JsonResponse(
+                {
+                    "result": "error",
+                    "msg": "A PIN is already set. Provide current_pin to change it.",
+                    "code": "PIN_EXISTS",
+                },
+                status=409,
+            )
+
+        if not check_password(current_pin, existing_record.pin_hash):
+            existing_record.failed_attempts += 1
+            if existing_record.failed_attempts >= MAX_FAILED_ATTEMPTS:
+                existing_record.locked_until = timezone.now() + timedelta(
+                    minutes=LOCKOUT_DURATION_MINUTES
+                )
+            existing_record.save(
+                update_fields=["failed_attempts", "locked_until", "updated_at"]
+            )
+            remaining = max(0, MAX_FAILED_ATTEMPTS - existing_record.failed_attempts)
+            return JsonResponse(
+                {
+                    "result": "error",
+                    "msg": f"Incorrect current PIN. {remaining} attempts remaining.",
+                    "code": "PIN_INCORRECT",
+                },
+                status=403,
+            )
+
+        # Current PIN verified -- update to new PIN
+        existing_record.pin_hash = make_password(pin, hasher="bcrypt")
+        existing_record.failed_attempts = 0
+        existing_record.locked_until = None
+        existing_record.save(
+            update_fields=["pin_hash", "failed_attempts", "locked_until", "updated_at"]
+        )
+        return JsonResponse({"result": "success", "msg": ""})
+
+    # No existing PIN -- create new one
+    pin_hash = make_password(pin, hasher="bcrypt")
+    NodlRegistrationPin.objects.create(
         user=user,
-        defaults={
-            "pin_hash": pin_hash,
-            "failed_attempts": 0,
-            "locked_until": None,
-        },
+        pin_hash=pin_hash,
+        failed_attempts=0,
+        locked_until=None,
     )
 
     return JsonResponse({"result": "success", "msg": ""})
