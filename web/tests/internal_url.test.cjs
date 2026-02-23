@@ -2,16 +2,17 @@
 
 const assert = require("node:assert/strict");
 
+const url_encoding_test_cases = require("../../zerver/tests/fixtures/url_encoding_test_cases.json");
+
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const internal_url = zrequire("internal_url");
 
 run_test("test encodeHashComponent", () => {
-    const decoded = "https://www.zulipexample.com";
-    const encoded = "https.3A.2F.2Fwww.2Ezulipexample.2Ecom";
-    const result = internal_url.encodeHashComponent(decoded);
-    assert.equal(result, encoded);
+    for (const test of url_encoding_test_cases) {
+        assert.equal(internal_url.encodeHashComponent(test.input), test.expected_output);
+    }
 });
 
 run_test("test decodeHashComponent", () => {

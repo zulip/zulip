@@ -1,7 +1,12 @@
 type MaybeGetStreamName = (id: number) => string | undefined;
 
+// ' and ! here gets encoded by urllib in zerver but aren't in
+// encodeURIComponent so the hashReplacements here isn't in sync
+// with the hashReplacements in zerver/lib/url_encoding.py.
 const hashReplacements = new Map([
     ["%", "."],
+    ["!", ".21"],
+    ["'", ".27"],
     ["(", ".28"],
     [")", ".29"],
     [".", ".2E"],
@@ -12,7 +17,7 @@ const hashReplacements = new Map([
 // by replacing % with . (like MediaWiki).
 export function encodeHashComponent(str: string): string {
     return encodeURIComponent(str).replaceAll(
-        /[%().]/g,
+        /[%!'().]/g,
         (matched) => hashReplacements.get(matched)!,
     );
 }

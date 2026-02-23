@@ -1,0 +1,174 @@
+[
+  {
+    "name": "hyphen",
+    "input": "-",
+    "expected_output": "-"
+  },
+  {
+    "name": "underscore",
+    "input": "_",
+    "expected_output": "_"
+  },
+  {
+    "name": "tilde",
+    "input": "~",
+    "expected_output": "~"
+  },
+  {
+    "name": "asterisk",
+    "input": "*",
+    "expected_output": "*"
+  },
+
+  {
+    "name": "space",
+    "input": " ",
+    "expected_output": ".20"
+  },
+  {
+    "name": "exclamation",
+    "input": "!",
+    "expected_output": ".21"
+  },
+  {
+    "name": "double_quote",
+    "input": "\"",
+    "expected_output": ".22"
+  },
+  {
+    "name": "hash",
+    "input": "#",
+    "expected_output": ".23"
+  },
+  {
+    "name": "dollar",
+    "input": "$",
+    "expected_output": ".24"
+  },
+  {
+    "name": "percent",
+    "input": "%",
+    "expected_output": ".25"
+  },
+  {
+    "name": "ampersand",
+    "input": "&",
+    "expected_output": ".26"
+  },
+  {
+    "name": "single_quote",
+    "input": "'",
+    "expected_output": ".27"
+  },
+  {
+    "name": "open_paren",
+    "input": "(",
+    "expected_output": ".28"
+  },
+  {
+    "name": "close_paren",
+    "input": ")",
+    "expected_output": ".29"
+  },
+  {
+    "name": "plus",
+    "input": "+",
+    "expected_output": ".2B"
+  },
+  {
+    "name": "comma",
+    "input": ",",
+    "expected_output": ".2C"
+  },
+  {
+    "name": "period",
+    "input": ".",
+    "expected_output": ".2E"
+  },
+  {
+    "name": "slash",
+    "input": "/",
+    "expected_output": ".2F"
+  },
+  {
+    "name": "colon",
+    "input": ":",
+    "expected_output": ".3A"
+  },
+  {
+    "name": "semicolon",
+    "input": ";",
+    "expected_output": ".3B"
+  },
+  {
+    "name": "less_than",
+    "input": "<",
+    "expected_output": ".3C"
+  },
+  {
+    "name": "equals",
+    "input": "=",
+    "expected_output": ".3D"
+  },
+  {
+    "name": "greater_than",
+    "input": ">",
+    "expected_output": ".3E"
+  },
+  {
+    "name": "question",
+    "input": "?",
+    "expected_output": ".3F"
+  },
+  {
+    "name": "at",
+    "input": "@",
+    "expected_output": ".40"
+  },
+  {
+    "name": "open_bracket",
+    "input": "[",
+    "expected_output": ".5B"
+  },
+  {
+    "name": "backslash",
+    "input": "\\",
+    "expected_output": ".5C"
+  },
+  {
+    "name": "close_bracket",
+    "input": "]",
+    "expected_output": ".5D"
+  },
+  {
+    "name": "caret",
+    "input": "^",
+    "expected_output": ".5E"
+  },
+  {
+    "name": "backtick",
+    "input": "`",
+    "expected_output": ".60"
+  },
+  {
+    "name": "open_brace",
+    "input": "{",
+    "expected_output": ".7B"
+  },
+  {
+    "name": "pipe",
+    "input": "|",
+    "expected_output": ".7C"
+  },
+  {
+    "name": "close_brace",
+    "input": "}",
+    "expected_output": ".7D"
+  },
+
+  {
+    "name": "simple_url",
+    "input": "https://www.zulipexample.com",
+    "expected_output": "https.3A.2F.2Fwww.2Ezulipexample.2Ecom"
+  }
+]

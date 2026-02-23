@@ -181,7 +181,7 @@ run_test("get_topic_link_content_with_stream_name", () => {
         {
             label_text_markdown: "#Sweden > a!&#91;b&#93;(c) @ 💬",
             label_text_plain: "#Sweden > a![b](c) @ 💬",
-            url: "#narrow/channel/1-Sweden/topic/a!.5Bb.5D.28c.29/near/123",
+            url: "#narrow/channel/1-Sweden/topic/a.21.5Bb.5D.28c.29/near/123",
         },
     );
 });
