@@ -5,6 +5,47 @@ Zulip incoming webhook integrations. For step-by-step guidance, read the
 [incoming webhooks walkthrough](incoming-webhooks-walkthrough), before using
 this reference guide.
 
+## Custom HTTP headers
+
+Some third-party outgoing webhook APIs, such as GitHub's, don't encode
+all of the information about an event in the HTTP request body. Instead,
+they put key details like the event type in a separate HTTP header.
+Generally, this is clear in the third-party's API documentation that
+you will be referencing when creating fixtures.
+
+In order to test Zulip's handling of this data, you will need to record
+which HTTP headers are used with each fixture you capture. Since this is
+integration-dependent, Zulip offers a simple API for doing this, which is
+probably best explained by looking at `default_fixture_to_headers` and
+`get_event_header` from `zerver/lib/webhooks/common.py`, and then seeing
+how they are used in Zulip's GitHub integration code:
+`zerver/webhooks/github/view.py`.
+
+### Custom HTTP event-type headers
+
+Some third-party services set a custom HTTP header to indicate the event
+type that generates a particular payload. To extract such headers, we
+recommend using the `get_event_header` function in `zerver/lib/webhooks/common.py`,
+like so:
+
+```python
+event = get_event_header(request, header, integration_name)
+```
+
+`request` is the `HttpRequest` object passed to your main webhook
+function. `header` is the name of the custom header you'd like to extract,
+such as `X-Event-Key`. And `integration_name` is the name of the
+third-party service in question, such as `GitHub`.
+
+Because such headers are how some integrations indicate the event types
+of their outgoing webhook payloads, the absence of such a header usually
+indicates a configuration issue, where one either entered the URL for a
+different integration, or happens to be running an older version of the
+integration that doesn't set that header.
+
+If the requisite header is missing, this function sends a direct message
+to the owner of the webhook bot, notifying them of the missing header.
+
 ## Custom URL query parameters
 
 ### Registering webhooks requiring custom configuration

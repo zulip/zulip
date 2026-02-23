@@ -48,21 +48,11 @@ it requires only one fixture,
 }
 ```
 
-### Custom HTTP headers
-
-Some third-party outgoing webhook APIs, such as GitHub's, don't encode
-all of the information about an event in the HTTP request body. Instead,
-they put key details like the event type in a separate HTTP header.
-Generally, this is clear in the third-party's API documentation that
-you will be referencing when creating fixtures.
-
-In order to test Zulip's handling of this data, you will need to record
-which HTTP headers are used with each fixture you capture. Since this is
-integration-dependent, Zulip offers a simple API for doing this, which is
-probably best explained by looking at `default_fixture_to_headers` and
-`get_event_header` from `zerver/lib/webhooks/common.py`, and then seeing
-how they are used in Zulip's GitHub integration code:
-`zerver/webhooks/github/view.py`.
+For integrations that send the event type or other important information as
+part of the HTTP header, you will need to record the header value for each
+fixture. Refer to
+[the section on custom HTTP headers](incoming-webhooks-reference.md#custom-http-headers)
+in the reference guide for more details.
 
 ## Step 1: Initialize the python package
 
@@ -508,31 +498,6 @@ construct the webhook URL yourself. (In most cases, it is.)
 `assert_json_error` then checks if the result matches the expected error.
 If you had used `check_webhook`, it would have called
 `send_webhook_payload`, which checks the result with `assert_json_success`.
-
-### Custom HTTP event-type headers
-
-Some third-party services set a custom HTTP header to indicate the event
-type that generates a particular payload. To extract such headers, we
-recommend using the `get_event_header` function in `zerver/lib/webhooks/common.py`,
-like so:
-
-```python
-event = get_event_header(request, header, integration_name)
-```
-
-`request` is the `HttpRequest` object passed to your main webhook
-function. `header` is the name of the custom header you'd like to extract,
-such as `X-Event-Key`. And `integration_name` is the name of the
-third-party service in question, such as `GitHub`.
-
-Because such headers are how some integrations indicate the event types
-of their outgoing webhook payloads, the absence of such a header usually
-indicates a configuration issue, where one either entered the URL for a
-different integration, or happens to be running an older version of the
-integration that doesn't set that header.
-
-If the requisite header is missing, this function sends a direct message
-to the owner of the webhook bot, notifying them of the missing header.
 
 ### Handling unexpected webhook event types
 
