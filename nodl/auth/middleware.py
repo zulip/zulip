@@ -33,9 +33,14 @@ class SupabaseJWTMiddleware:
     - Exempts health check and internal API endpoints
     """
 
-    # Paths that bypass JWT authentication
-    EXEMPT_PATHS = (
+    # Paths that bypass JWT authentication — exact match
+    EXEMPT_EXACT = {
         "/health",
+        "/nodl/auth/bridge",  # Auth bridge handles its own Supabase JWT validation
+    }
+
+    # Paths that bypass JWT authentication — prefix match
+    EXEMPT_PREFIXES = (
         "/api/v1/internal/",
         "/api/v1/events/internal",  # Zulip internal Django→Tornado (uses SHARED_SECRET)
         "/user_uploads",  # Browser img/file requests don't include auth headers
@@ -141,7 +146,12 @@ class SupabaseJWTMiddleware:
         Returns:
             True if the path should bypass authentication.
         """
-        return any(path.startswith(exempt) for exempt in self.EXEMPT_PATHS)
+        if path in self.EXEMPT_EXACT:
+            return True
+        return any(
+            path == prefix or path.startswith(prefix + "/")
+            for prefix in self.EXEMPT_PREFIXES
+        )
 
     def _get_user_profile_cached(
         self, email: str, workspace_id: str | None = None
