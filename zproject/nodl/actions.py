@@ -78,14 +78,20 @@ def get_or_create_zulip_user(supabase_payload: dict, realm: Realm) -> UserProfil
         )
         return user_profile
     except IntegrityError as exc:
-        # Only handle duplicate-email constraint violations as race conditions.
-        # Re-raise any other IntegrityError (e.g. unexpected FK violations).
-        exc_msg = str(exc).lower()
-        if "delivery_email" not in exc_msg and "email" not in exc_msg:
-            raise
-        logger.info("Race condition on user creation for %s, fetching existing", email)
-        return UserProfile.objects.get(
-            delivery_email__iexact=email,
-            realm=realm,
-            is_active=True,
+        # Race condition: another request may have created the user concurrently.
+        # Try to fetch the existing user. If the lookup succeeds, this was a
+        # duplicate-email race and we return the existing user. If the lookup
+        # fails (DoesNotExist), the IntegrityError was something else entirely
+        # (e.g. FK violation), so we re-raise the original exception.
+        logger.info(
+            "IntegrityError on user creation for %s, attempting fallback lookup",
+            email,
         )
+        try:
+            return UserProfile.objects.get(
+                delivery_email__iexact=email,
+                realm=realm,
+                is_active=True,
+            )
+        except UserProfile.DoesNotExist:
+            raise exc from exc

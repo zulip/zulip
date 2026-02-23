@@ -35,8 +35,9 @@ def check_rate_limit(
     try:
         count = cache.incr(cache_key)
     except ValueError:
-        # Cache backend doesn't support incr or key vanished; fall back
-        count = 1
+        # Cache backend doesn't support incr or key vanished; read-then-increment
+        current = cache.get(cache_key, 0)
+        count = current + 1
         cache.set(cache_key, count, timeout=window)
 
     if count > limit:

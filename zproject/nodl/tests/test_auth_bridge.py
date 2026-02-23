@@ -1,10 +1,13 @@
 import time
+import unittest
 from unittest import mock
 
 import jwt
+from django.core.cache import cache
 from django.db import IntegrityError
 from django.test import override_settings
 
+from nodl.auth.middleware import SupabaseJWTMiddleware
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserProfile
 from zerver.models.realms import get_realm
@@ -332,3 +335,58 @@ class AuthBridgeResponseFormatTest(ZulipTestCase):
         self.assertEqual(data["result"], "error")
         self.assertIsInstance(data["msg"], str)
         self.assertIsInstance(data["code"], str)
+
+
+class MiddlewareExemptPathTest(unittest.TestCase):
+    """Test _is_exempt correctly distinguishes exact vs prefix paths."""
+
+    def setUp(self) -> None:
+        self.middleware = SupabaseJWTMiddleware(lambda r: None)
+
+    def test_auth_bridge_exact_match_is_exempt(self) -> None:
+        self.assertTrue(self.middleware._is_exempt("/nodl/auth/bridge"))
+
+    def test_auth_bridge_suffix_is_not_exempt(self) -> None:
+        self.assertFalse(self.middleware._is_exempt("/nodl/auth/bridgeevil"))
+
+    def test_user_uploads_subpath_is_exempt(self) -> None:
+        self.assertTrue(self.middleware._is_exempt("/user_uploads/foo/bar"))
+
+    def test_thumbnail_subpath_is_exempt(self) -> None:
+        self.assertTrue(self.middleware._is_exempt("/thumbnail/300x200"))
+
+    def test_health_exact_is_exempt(self) -> None:
+        self.assertTrue(self.middleware._is_exempt("/health"))
+
+    def test_unknown_path_is_not_exempt(self) -> None:
+        self.assertFalse(self.middleware._is_exempt("/api/v1/messages"))
+
+
+@override_settings(**NODL_SETTINGS)
+class AuthBridgeRateLimitFallbackTest(ZulipTestCase):
+    """Test rate limiting still works when cache.incr raises ValueError."""
+
+    def test_rate_limit_with_incr_fallback(self) -> None:
+        token = make_jwt(email="fallback-rl@nodl.local", sub="fallback-rl-uuid")
+        cache.clear()
+
+        with mock.patch.object(
+            cache, "incr", side_effect=ValueError("incr not supported")
+        ):
+            for i in range(10):
+                result = self.client_post(
+                    AUTH_BRIDGE_URL,
+                    HTTP_AUTHORIZATION=f"Bearer {token}",
+                    REMOTE_ADDR="192.0.2.200",
+                )
+                self.assertEqual(
+                    result.status_code, 200, f"Request {i+1} failed"
+                )
+
+            # 11th request should be rate limited even with fallback
+            result = self.client_post(
+                AUTH_BRIDGE_URL,
+                HTTP_AUTHORIZATION=f"Bearer {token}",
+                REMOTE_ADDR="192.0.2.200",
+            )
+            self.assertEqual(result.status_code, 429)
