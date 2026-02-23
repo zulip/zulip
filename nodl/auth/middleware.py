@@ -40,6 +40,7 @@ class SupabaseJWTMiddleware:
         "/api/v1/events/internal",  # Zulip internal Django→Tornado (uses SHARED_SECRET)
         "/user_uploads",  # Browser img/file requests don't include auth headers
         "/thumbnail",  # Thumbnail requests - Zulip's view handles permission checks
+        "/nodl/auth/bridge",  # Auth bridge handles its own Supabase JWT validation
     )
 
     def __init__(self, get_response: callable) -> None:

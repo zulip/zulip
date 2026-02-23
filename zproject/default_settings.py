@@ -774,5 +774,13 @@ SUPABASE_JWT_SECRET: str | None = get_secret("supabase_jwt_secret")
 # This should be set via the 'chat_service_key' secret in zulip-secrets.conf
 CHAT_SERVICE_KEY: str | None = get_secret("chat_service_key")
 
+# Auth bridge settings (Story 1.2)
+# NODL_SUPABASE_JWT_SECRET: defaults to SUPABASE_JWT_SECRET if not set separately.
+# Must be set in /etc/zulip/settings.py for production.
+NODL_SUPABASE_JWT_SECRET: str = ""
+# Supabase project URL, e.g. https://<project-ref>.supabase.co
+# Used for JWT issuer validation. Must be set in /etc/zulip/settings.py for production.
+NODL_SUPABASE_URL: str = ""
+
 # NODL MODIFICATION END
 ########################################################################
