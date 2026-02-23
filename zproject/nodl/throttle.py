@@ -19,14 +19,24 @@ def get_client_ip(request: HttpRequest) -> str:
 
 
 def check_rate_limit(
-    request: HttpRequest, limit: int = RATE_LIMIT, window: int = RATE_WINDOW
+    request: HttpRequest,
+    limit: int = RATE_LIMIT,
+    window: int = RATE_WINDOW,
+    cache_key: str | None = None,
 ) -> JsonResponse | None:
     """Check if the request should be rate limited.
 
+    Args:
+        request: The HTTP request.
+        limit: Maximum number of requests allowed in the window.
+        window: Time window in seconds.
+        cache_key: Optional custom cache key. If None, defaults to IP-based key.
+
     Returns None if the request is allowed, or a 429 JsonResponse if rate limited.
     """
-    ip = get_client_ip(request)
-    cache_key = f"nodl_auth_bridge:{ip}"
+    if cache_key is None:
+        ip = get_client_ip(request)
+        cache_key = f"nodl_auth_bridge:{ip}"
 
     # Atomic pattern: add initializes to 0 only if key doesn't exist (no-op otherwise),
     # then incr atomically bumps the counter. This eliminates the race window
