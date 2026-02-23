@@ -21,6 +21,7 @@ import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
+import type {DropdownWidget} from "./dropdown_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
@@ -412,6 +413,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         });
     }
 
+    let sender_dropdown_widget: DropdownWidget;
     function generate_email_modal_post_render(): void {
         function update_option_label(sender: User | CurrentUser | Bot): string {
             if (sender.user_id === people.EMAIL_GATEWAY_BOT.user_id) {
@@ -452,7 +454,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
             event.preventDefault();
         }
 
-        const sender_dropdown_widget = new dropdown_widget.DropdownWidget({
+        sender_dropdown_widget = new dropdown_widget.DropdownWidget({
             widget_name: "sender_channel_email_address",
             get_options,
             item_click_callback,
@@ -469,7 +471,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         dialog_widget.submit_api_request(
             channel.get,
             "/json/streams/" + sub.stream_id + "/email_address",
-            {},
+            {sender_id: sender_dropdown_widget.value()},
             {
                 success_continuation(response_data) {
                     const email = z.object({email: z.string()}).parse(response_data).email;
