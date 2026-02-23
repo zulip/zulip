@@ -9,23 +9,15 @@ this reference guide.
 
 Some third-party outgoing webhook APIs, such as GitHub's, don't encode
 all of the information about an event in the HTTP request body. Instead,
-they put key details like the event type in a separate HTTP header.
+they put key details like the **event type** that generates the particular
+payload in a separate HTTP header.
 Generally, this is clear in the third-party's API documentation that
 you will be referencing when creating fixtures.
 
-In order to test Zulip's handling of this data, you will need to record
-which HTTP headers are used with each fixture you capture. Since this is
-integration-dependent, Zulip offers a simple API for doing this, which is
-probably best explained by looking at `default_fixture_to_headers` and
-`get_event_header` from `zerver/lib/webhooks/common.py`, and then seeing
-how they are used in Zulip's GitHub integration code:
-`zerver/webhooks/github/view.py`.
+### Extracting event-type HTTP headers from payloads
 
-### Custom HTTP event-type headers
-
-Some third-party services set a custom HTTP header to indicate the event
-type that generates a particular payload. To extract such headers, we
-recommend using the `get_event_header` function in `zerver/lib/webhooks/common.py`,
+To get the HTTP header value from the payload, in your `view.py`, you can
+use the `get_event_header` function in `zerver/lib/webhooks/common.py`,
 like so:
 
 ```python
@@ -45,6 +37,43 @@ integration that doesn't set that header.
 
 If the requisite header is missing, this function sends a direct message
 to the owner of the webhook bot, notifying them of the missing header.
+
+### Recording event-type HTTP headers in fixtures
+
+In order to test Zulip's handling of this data, you will need to record
+which HTTP headers are used with each fixture you capture. Since this is
+integration-dependent, Zulip supports a simple format.
+
+Encode the value of the HTTP header in the first part of the fixture's
+filename, for example:
+
+```
+pull_request__opened.json
+```
+
+`pull_request` is the value of the header `X-Github-Event`, and `opened` is
+the subtype of the event type. They are separated by a double underscore, to
+allow using single underscores within each segment.
+
+### Extracting event-type HTTP headers from fixtures
+
+To get the HTTP header value from the fixture's filename in your `tests.py`,
+you can use the `default_fixture_to_headers` function in
+`zerver/webhooks/common.py`, like so:
+
+```python
+fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
+```
+
+`HTTP_X_GITHUB_EVENT` is the name of the custom header you'd like to extract.
+
+The default implementation `default_fixture_to_headers` uses the first part
+of the fixture's filename as the header value, separated by a double
+underscore (`__`). If you need to use a different method for encoding the
+header value(s), you can directly pass your function with the custom parsing
+logic to the `fixture_to_headers` function defined in
+`zerver/tests/test_webhooks_common.py`, instead of using
+`default_fixture_to_headers`.
 
 ## Custom URL query parameters
 
