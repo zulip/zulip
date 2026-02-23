@@ -1,4 +1,5 @@
 import re
+from dataclasses import asdict
 from typing import Any
 from unittest import mock
 
@@ -30,7 +31,7 @@ class AttachmentsTests(ZulipTestCase):
         result = self.client_get("/json/attachments")
         response_dict = self.assert_json_success(result)
         attachments = user_attachments(user_profile)
-        self.assertEqual(response_dict["attachments"], attachments)
+        self.assertEqual(response_dict["attachments"], [asdict(a) for a in attachments])
 
     def test_remove_attachment_exception(self) -> None:
         user_profile = self.example_user("cordelia")
@@ -86,7 +87,7 @@ class AttachmentsTests(ZulipTestCase):
         self.assert_json_error(result, "Invalid attachment")
         user_profile_to_remove = self.example_user("cordelia")
         attachments = user_attachments(user_profile_to_remove)
-        self.assertEqual(attachments, [self.attachment.to_dict()])
+        self.assertEqual([asdict(a) for a in attachments], [self.attachment.to_dict()])
 
     def test_list_unauthenticated(self) -> None:
         result = self.client_get("/json/attachments")
