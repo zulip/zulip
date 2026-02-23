@@ -239,3 +239,50 @@ needs to be constructed in an unusual way.
 
 For more, see the definition for the base class, `WebhookTestCase`
 in `zerver/lib/test_classes.py`, or just grep for examples.
+
+## Negative tests
+
+A negative test is one that should result in an error, such as incorrect
+data from the third-party's payload or headers. To correctly test these
+cases, you must explicitly code your test's execution (using other test
+helpers, as needed) rather than calling the usual `check_webhook` test
+helper function.
+
+Here is an example from the WordPress integration:
+
+```python
+def test_unknown_action_no_data(self) -> None:
+    # Mimic check_webhook() to manually execute a negative test.
+    # Otherwise its call to send_webhook_payload() would assert on the non-success
+    # we are testing. The value of result is the error message the webhook should
+    # return if no params are sent. The fixture for this test is an empty file.
+
+    # subscribe to the target channel
+    self.subscribe(self.test_user, self.channel_name)
+
+    # post to the webhook url
+    post_params = {'stream_name': self.channel_name,
+                   'content_type': 'application/x-www-form-urlencoded'}
+    result = self.client_post(self.url, 'unknown_action', **post_params)
+
+    # check that we got the expected error message
+    self.assert_json_error(result, "Unknown WordPress webhook action: WordPress action")
+```
+
+In a normal test, `check_webhook` would handle all the setup and then
+check that the incoming webhook's response matches the expected success
+result. If the webhook returns an error, the test fails. Instead, you can
+explicitly do the test setup it would have done, and check the error
+result yourself.
+
+Here, `subscribe` is a test helper that uses `test_user` and `channel_name`
+(attributes from the base class) to register the user to receive messages
+in the given channel. If the channel doesn't exist, it creates it.
+
+`client_post`, another helper function, performs the HTTP POST that calls
+the incoming webhook. As long as `self.url` is correct, you don't need to
+construct the webhook URL yourself. (In most cases, it is.)
+
+`assert_json_error` then checks if the result matches the expected error.
+If you had used `check_webhook`, it would have called
+`send_webhook_payload`, which checks the result with `assert_json_success`.
