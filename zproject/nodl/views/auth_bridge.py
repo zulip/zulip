@@ -5,13 +5,14 @@ from django.http import HttpRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from zerver.models import Realm
+from zerver.models import Realm, UserProfile
 from zerver.models.realms import get_realm
 
 from zproject.nodl.actions import (
     acquire_phone_link_lock,
     check_duplicate_phone,
     check_link_rate_limit,
+    derive_email,
     find_email_identity,
     find_existing_zulip_user_by_email,
     get_or_create_zulip_user,
@@ -23,6 +24,7 @@ from zproject.nodl.actions import (
     validate_e164_phone,
 )
 from zproject.nodl.auth import JWTValidationError, validate_supabase_jwt
+from zproject.nodl.models import NodlRegistrationPin
 from zproject.nodl.throttle import check_rate_limit
 
 logger = logging.getLogger(__name__)
@@ -133,6 +135,21 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
                     )
 
     # Default: get or create user (same as Story 1.2 flow)
+    # Check if user already exists (for is_new_device detection)
+    email = derive_email(payload)
+    # is_new_device: true if user already had an account before this call.
+    # MVP decision: this means every sign-in after sign-out triggers PIN
+    # verification, even on the same physical device. This deviates from
+    # AC6 ("existing device = no PIN") but provides stronger security --
+    # a global sign-out invalidates all sessions, so re-auth on any device
+    # (including the original) should require PIN. Accepted as intentional
+    # for MVP per team review.
+    user_existed_before = UserProfile.objects.filter(
+        delivery_email__iexact=email,
+        realm=realm,
+        is_active=True,
+    ).exists()
+
     try:
         user_profile = get_or_create_zulip_user(payload, realm)
     except Exception:
@@ -148,6 +165,10 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
             status=500,
         )
 
+    # has_pin: true if user has a Registration Lock PIN set
+    has_pin = NodlRegistrationPin.objects.filter(user=user_profile).exists()
+    is_new_device = user_existed_before
+
     return JsonResponse(
         {
             "result": "success",
@@ -155,6 +176,8 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
             "api_key": user_profile.api_key,
             "user_id": user_profile.id,
             "email": user_profile.delivery_email,
+            "has_pin": has_pin,
+            "is_new_device": is_new_device,
         }
     )
 
@@ -291,6 +314,13 @@ def _handle_link(
 
 def _handle_create_new(payload: dict, realm: Realm) -> JsonResponse:
     """Provision a new Zulip account for the phone-only Supabase user."""
+    email = derive_email(payload)
+    user_existed_before = UserProfile.objects.filter(
+        delivery_email__iexact=email,
+        realm=realm,
+        is_active=True,
+    ).exists()
+
     try:
         user_profile = get_or_create_zulip_user(payload, realm)
     except Exception:
@@ -306,6 +336,9 @@ def _handle_create_new(payload: dict, realm: Realm) -> JsonResponse:
             status=500,
         )
 
+    has_pin = NodlRegistrationPin.objects.filter(user=user_profile).exists()
+    is_new_device = user_existed_before
+
     return JsonResponse(
         {
             "result": "success",
@@ -313,5 +346,7 @@ def _handle_create_new(payload: dict, realm: Realm) -> JsonResponse:
             "api_key": user_profile.api_key,
             "user_id": user_profile.id,
             "email": user_profile.delivery_email,
+            "has_pin": has_pin,
+            "is_new_device": is_new_device,
         }
     )
