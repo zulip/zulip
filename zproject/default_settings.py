@@ -781,9 +781,6 @@ NODL_SUPABASE_JWT_SECRET: str = ""
 # Supabase project URL, e.g. https://<project-ref>.supabase.co
 # Used for JWT issuer validation. Must be set in /etc/zulip/settings.py for production.
 NODL_SUPABASE_URL: str = ""
-# Zulip realm string_id for the auth bridge. Default "zulip" works for standard
-# single-realm deployments. Override in /etc/zulip/settings.py for self-hosted.
-NODL_ZULIP_REALM_ID: str = "zulip"
 
 # NODL MODIFICATION END
 ########################################################################

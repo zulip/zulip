@@ -28,24 +28,23 @@ def check_rate_limit(
     ip = get_client_ip(request)
     cache_key = f"nodl_auth_bridge:{ip}"
 
-    # Atomic pattern: add initializes to 0 only if key doesn't exist (no-op otherwise),
-    # then incr atomically bumps the counter. This eliminates the race window
-    # between get and set that exists in the non-atomic get/compare/set pattern.
-    cache.add(cache_key, 0, timeout=window)
-    try:
-        count = cache.incr(cache_key)
-    except ValueError:
-        # Cache backend doesn't support incr or key vanished; read-then-increment
-        current = cache.get(cache_key, 0)
-        count = current + 1
-        cache.set(cache_key, count, timeout=window)
-
-    if count > limit:
+    count = cache.get(cache_key, 0)
+    if count >= limit:
         response = JsonResponse(
             {"result": "error", "msg": "Rate limit exceeded", "code": "RATE_LIMIT_HIT"},
             status=429,
         )
         response["Retry-After"] = str(window)
         return response
+
+    # Increment counter
+    if count == 0:
+        cache.set(cache_key, 1, timeout=window)
+    else:
+        # Use cache.incr for atomicity if available, with fallback
+        try:
+            cache.incr(cache_key)
+        except ValueError:
+            cache.set(cache_key, count + 1, timeout=window)
 
     return None
