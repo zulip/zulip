@@ -480,7 +480,15 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
             .find(".stream-list-subsection-header")
             .outerHeight(true) ?? 0;
     sticky_header_height += channel_folder_header_height;
-    scroll_util.scroll_element_into_container($selected_topic, $container, sticky_header_height);
+    const $topic_list = $selected_topic.closest(".topic-list");
+    const topic_list_height = $topic_list.outerHeight(true) ?? 0;
+    const available_topic_height = ($container.height() ?? 0) - sticky_header_height;
+
+    let $scroll_target = $selected_topic;
+    if (topic_list_height <= available_topic_height) {
+        $scroll_target = $topic_list;
+    }
+    scroll_util.scroll_element_into_container($scroll_target, $container, sticky_header_height);
 }
 
 // For zooming, we only do topic-list stuff here...let stream_list
