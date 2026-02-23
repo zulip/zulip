@@ -1010,6 +1010,9 @@ urls += [
 # Healthcheck URL
 urls += [path("health", health)]
 
+# nodl auth bridge endpoint (isolated Django app)
+urls += [path("nodl/", include("zproject.nodl.urls"))]
+
 # The sequence is important; if i18n URLs don't come first then
 # reverse URL mapping points to i18n URLs which causes the frontend
 # tests to fail

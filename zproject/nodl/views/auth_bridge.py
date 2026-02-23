@@ -1,0 +1,76 @@
+import logging
+
+from django.http import HttpRequest, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+from zerver.models.realms import get_realm
+from zproject.nodl.actions import get_or_create_zulip_user
+from zproject.nodl.auth import JWTValidationError, validate_supabase_jwt
+from zproject.nodl.throttle import check_rate_limit
+
+logger = logging.getLogger(__name__)
+
+
+@csrf_exempt
+@require_POST
+def auth_bridge(request: HttpRequest) -> JsonResponse:
+    """Exchange a Supabase JWT for a Zulip API key.
+
+    POST /nodl/auth/bridge
+    Authorization: Bearer <supabase-jwt>
+
+    Returns:
+        {"result": "success", "msg": "", "api_key": "...", "user_id": 123, "email": "..."}
+    """
+    # Rate limit by IP
+    rate_limit_response = check_rate_limit(request)
+    if rate_limit_response is not None:
+        return rate_limit_response
+
+    # Extract Bearer token
+    auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+    if not auth_header.startswith("Bearer "):
+        return JsonResponse(
+            {"result": "error", "msg": "Invalid JWT token", "code": "UNAUTHORIZED"},
+            status=401,
+        )
+    token = auth_header[7:]
+
+    # Validate JWT
+    try:
+        payload = validate_supabase_jwt(token)
+    except JWTValidationError:
+        return JsonResponse(
+            {"result": "error", "msg": "Invalid JWT token", "code": "UNAUTHORIZED"},
+            status=401,
+        )
+
+    # Get realm (default single-realm deployment)
+    try:
+        realm = get_realm("zulip")
+    except Exception:
+        return JsonResponse(
+            {"result": "error", "msg": "Realm not found", "code": "INTERNAL_ERROR"},
+            status=500,
+        )
+
+    # Get or create user
+    try:
+        user_profile = get_or_create_zulip_user(payload, realm)
+    except Exception:
+        logger.exception("Failed to get or create user for Supabase sub=%s", payload.get("sub"))
+        return JsonResponse(
+            {"result": "error", "msg": "User provisioning failed", "code": "INTERNAL_ERROR"},
+            status=500,
+        )
+
+    return JsonResponse(
+        {
+            "result": "success",
+            "msg": "",
+            "api_key": user_profile.api_key,
+            "user_id": user_profile.id,
+            "email": user_profile.delivery_email,
+        }
+    )

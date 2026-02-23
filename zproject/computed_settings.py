@@ -311,6 +311,7 @@ INSTALLED_APPS += EXTRA_INSTALLED_APPS
 # Reason: Register nodl custom extension apps
 # Date: 2024-11-27
 INSTALLED_APPS += NODL_APPS
+INSTALLED_APPS += ["zproject.nodl"]
 # NODL MODIFICATION END
 
 ZILENCER_ENABLED = "zilencer" in INSTALLED_APPS
