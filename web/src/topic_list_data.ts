@@ -44,10 +44,10 @@ function build_topic_info_item(
     topic_name: string,
     num_unread: number,
     is_topic_muted: boolean,
+    is_topic_followed: boolean,
     is_active_topic: boolean,
     contains_unread_mention: boolean,
 ): TopicInfo {
-    const is_topic_followed = user_topics.is_topic_followed(stream_id, topic_name);
     const is_topic_unmuted_or_followed = user_topics.is_topic_unmuted_or_followed(
         stream_id,
         topic_name,
@@ -80,6 +80,7 @@ function show_all_topics(
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = topic_choice_state.active_topic === topic_name.toLowerCase();
         const is_topic_muted = user_topics.is_topic_muted(stream_id, topic_name);
+        const is_topic_followed = user_topics.is_topic_followed(stream_id, topic_name);
         // Important: Topics are lower-case in this set.
         const contains_unread_mention = topic_choice_state.topics_with_unread_mentions.has(
             topic_name.toLowerCase(),
@@ -89,6 +90,7 @@ function show_all_topics(
             topic_name,
             num_unread,
             is_topic_muted,
+            is_topic_followed,
             is_active_topic,
             contains_unread_mention,
         );
@@ -230,6 +232,7 @@ function choose_topics(
             selected_topic.topic_name,
             selected_topic.num_unread,
             selected_topic.is_muted,
+            selected_topic.is_followed,
             selected_topic.is_active_topic,
             selected_topic.contains_unread_mention,
         );
