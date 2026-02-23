@@ -95,28 +95,31 @@ class PinSetTest(ZulipTestCase):
             content_type="application/json",
             HTTP_AUTHORIZATION=self.auth_header,
         )
-        self.client_post(
+        result = self.client_post(
             PIN_SET_URL,
-            {"pin": "9876"},
+            {"pin": "9876", "current_pin": "1234"},
             content_type="application/json",
             HTTP_AUTHORIZATION=self.auth_header,
         )
+        self.assert_json_success(result)
 
         pin_record = NodlRegistrationPin.objects.get(user=self.user)
         self.assertTrue(check_password("9876", pin_record.pin_hash))
         self.assertFalse(check_password("1234", pin_record.pin_hash))
 
     def test_set_pin_resets_failed_attempts(self) -> None:
+        from django.contrib.auth.hashers import make_password
+
         NodlRegistrationPin.objects.create(
             user=self.user,
-            pin_hash="old_hash",
+            pin_hash=make_password("4444", hasher="bcrypt"),
             failed_attempts=3,
-            locked_until=timezone.now() + timedelta(minutes=30),
+            locked_until=None,
         )
 
         result = self.client_post(
             PIN_SET_URL,
-            {"pin": "1234"},
+            {"pin": "1234", "current_pin": "4444"},
             content_type="application/json",
             HTTP_AUTHORIZATION=self.auth_header,
         )
@@ -172,6 +175,72 @@ class PinSetTest(ZulipTestCase):
 
         pin_record = NodlRegistrationPin.objects.get(user=self.user)
         self.assertTrue(check_password("123456", pin_record.pin_hash))
+
+    def test_set_pin_rejects_without_current_pin(self) -> None:
+        """Changing an existing PIN without current_pin returns 409 PIN_EXISTS."""
+        # Set initial PIN
+        self.client_post(
+            PIN_SET_URL,
+            {"pin": "1234"},
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.auth_header,
+        )
+        # Try to overwrite without current_pin
+        result = self.client_post(
+            PIN_SET_URL,
+            {"pin": "9876"},
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.auth_header,
+        )
+        self.assertEqual(result.status_code, 409)
+        data = result.json()
+        self.assertEqual(data["code"], "PIN_EXISTS")
+
+        # Verify original PIN is unchanged
+        pin_record = NodlRegistrationPin.objects.get(user=self.user)
+        self.assertTrue(check_password("1234", pin_record.pin_hash))
+
+    def test_set_pin_locks_after_wrong_current_pin(self) -> None:
+        """5 wrong current_pin attempts trigger lockout on pin_set."""
+        self.client_post(
+            PIN_SET_URL,
+            {"pin": "1234"},
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.auth_header,
+        )
+        for i in range(5):
+            result = self.client_post(
+                PIN_SET_URL,
+                {"pin": "9876", "current_pin": "0000"},
+                content_type="application/json",
+                HTTP_AUTHORIZATION=self.auth_header,
+            )
+
+        # Fifth attempt should show lockout or 403
+        pin_record = NodlRegistrationPin.objects.get(user=self.user)
+        self.assertEqual(pin_record.failed_attempts, 5)
+        self.assertIsNotNone(pin_record.locked_until)
+
+    def test_set_pin_rejects_when_locked(self) -> None:
+        """pin_set rejects requests when account is locked."""
+        from django.contrib.auth.hashers import make_password
+
+        NodlRegistrationPin.objects.create(
+            user=self.user,
+            pin_hash=make_password("1234", hasher="bcrypt"),
+            failed_attempts=5,
+            locked_until=timezone.now() + timedelta(minutes=30),
+        )
+        result = self.client_post(
+            PIN_SET_URL,
+            {"pin": "9876", "current_pin": "1234"},
+            content_type="application/json",
+            HTTP_AUTHORIZATION=self.auth_header,
+        )
+        self.assertEqual(result.status_code, 429)
+        data = result.json()
+        self.assertEqual(data["code"], "PIN_LOCKED")
+        self.assertIn("retry_after_seconds", data)
 
 
 class PinVerifyTest(ZulipTestCase):
