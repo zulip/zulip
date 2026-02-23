@@ -57,7 +57,7 @@ export function activate(opts: {
 
     function render(): void {
         if (data.type === "choices") {
-            $outer_elem.html(make_choices(data).html());
+            $outer_elem.empty().append(make_choices(data));
         }
     }
 
