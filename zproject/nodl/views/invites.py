@@ -1,0 +1,159 @@
+import json
+import logging
+from datetime import timedelta
+
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.utils import timezone
+
+from zerver.decorator import authenticated_rest_api_view
+from zerver.models import UserProfile
+from zproject.nodl.models import INVITE_EXPIRY_DAYS, NodlInvite
+from zproject.nodl.throttle import check_rate_limit
+
+logger = logging.getLogger(__name__)
+
+
+@authenticated_rest_api_view(skip_rate_limiting=True)
+def invites_list(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    """List all invites for the authenticated user.
+
+    GET /nodl/invites
+    Authorization: Basic base64(email:apiKey)
+    """
+    rate_resp = check_rate_limit(
+        request,
+        limit=20,
+        window=60,
+        cache_key=f"nodl_invites_list:{user_profile.id}",
+    )
+    if rate_resp is not None:
+        return rate_resp
+
+    invites = NodlInvite.objects.filter(inviter=user_profile).select_related("invited_user")
+    return JsonResponse(
+        {
+            "result": "success",
+            "msg": "",
+            "invites": [inv.to_api_dict() for inv in invites],
+        }
+    )
+
+
+@authenticated_rest_api_view(skip_rate_limiting=True)
+def invites_create(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    """Record a new invite.
+
+    POST /nodl/invites/create
+    Authorization: Basic base64(email:apiKey)
+    Body: {"phone_hash": "sha256hex", "phone_display": "***1234"}
+    """
+    rate_resp = check_rate_limit(
+        request,
+        limit=10,
+        window=60,
+        cache_key=f"nodl_invites_create:{user_profile.id}",
+    )
+    if rate_resp is not None:
+        return rate_resp
+
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse(
+            {"result": "error", "msg": "Invalid JSON", "code": "BAD_REQUEST"},
+            status=400,
+        )
+
+    phone_hash = body.get("phone_hash", "")
+    phone_display = body.get("phone_display", "")
+
+    if not phone_hash or len(phone_hash) != 64:
+        return JsonResponse(
+            {"result": "error", "msg": "Invalid phone_hash", "code": "BAD_REQUEST"},
+            status=400,
+        )
+
+    invite = NodlInvite.objects.create(
+        inviter=user_profile,
+        invited_phone_hash=phone_hash,
+        invited_phone_display=phone_display,
+        expires_at=timezone.now() + timedelta(days=INVITE_EXPIRY_DAYS),
+    )
+
+    return JsonResponse(
+        {
+            "result": "success",
+            "msg": "",
+            "invite": invite.to_api_dict(),
+        }
+    )
+
+
+@authenticated_rest_api_view(skip_rate_limiting=True)
+def invites_resend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    """Resend an expired invite (resets expiry).
+
+    POST /nodl/invites/resend
+    Authorization: Basic base64(email:apiKey)
+    Body: {"invite_id": 123}
+    """
+    rate_resp = check_rate_limit(
+        request,
+        limit=10,
+        window=60,
+        cache_key=f"nodl_invites_resend:{user_profile.id}",
+    )
+    if rate_resp is not None:
+        return rate_resp
+
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse(
+            {"result": "error", "msg": "Invalid JSON", "code": "BAD_REQUEST"},
+            status=400,
+        )
+
+    invite_id = body.get("invite_id")
+    if invite_id is None:
+        return JsonResponse(
+            {"result": "error", "msg": "invite_id required", "code": "BAD_REQUEST"},
+            status=400,
+        )
+
+    try:
+        invite = NodlInvite.objects.get(pk=invite_id, inviter=user_profile)
+    except NodlInvite.DoesNotExist:
+        return JsonResponse(
+            {"result": "error", "msg": "Invite not found", "code": "NOT_FOUND"},
+            status=404,
+        )
+
+    invite.expires_at = timezone.now() + timedelta(days=INVITE_EXPIRY_DAYS)
+    invite.save(update_fields=["expires_at", "updated_at"])
+
+    return JsonResponse(
+        {
+            "result": "success",
+            "msg": "",
+            "invite": invite.to_api_dict(),
+        }
+    )
+
+
+def mark_invite_registered(phone_hash: str, user_profile: UserProfile) -> None:
+    """Mark any pending invites for this phone hash as registered.
+
+    Called from auth_bridge when a new user is provisioned.
+    """
+    updated = NodlInvite.objects.filter(
+        invited_phone_hash=phone_hash,
+        invited_user__isnull=True,
+    ).update(invited_user=user_profile, updated_at=timezone.now())
+
+    if updated:
+        logger.info(
+            "Marked %d invite(s) as registered for user %d",
+            updated,
+            user_profile.id,
+        )

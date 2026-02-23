@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 
@@ -7,7 +8,6 @@ from django.views.decorators.http import require_POST
 
 from zerver.models import Realm, UserProfile
 from zerver.models.realms import get_realm
-
 from zproject.nodl.actions import (
     acquire_phone_link_lock,
     check_duplicate_phone,
@@ -26,6 +26,7 @@ from zproject.nodl.actions import (
 from zproject.nodl.auth import JWTValidationError, validate_supabase_jwt
 from zproject.nodl.models import NodlRegistrationPin
 from zproject.nodl.throttle import check_rate_limit
+from zproject.nodl.views.invites import mark_invite_registered
 
 logger = logging.getLogger(__name__)
 
@@ -109,9 +110,7 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
     # Account detection logic (Task 1)
     # Check for duplicate phone first
     if phone and check_duplicate_phone(supabase_user_id, phone):
-        return JsonResponse(
-            {"result": "success", "msg": "", "duplicate_phone": True}
-        )
+        return JsonResponse({"result": "success", "msg": "", "duplicate_phone": True})
 
     # Check if the phone user has an email identity in Supabase
     if supabase_user_id:
@@ -120,9 +119,7 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
             existing_email = find_email_identity(supabase_user)
             if existing_email:
                 # Check if a Zulip user exists with that email
-                existing_zulip_user = find_existing_zulip_user_by_email(
-                    existing_email, realm
-                )
+                existing_zulip_user = find_existing_zulip_user_by_email(existing_email, realm)
                 if existing_zulip_user is not None:
                     return JsonResponse(
                         {
@@ -153,9 +150,7 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
     try:
         user_profile = get_or_create_zulip_user(payload, realm)
     except Exception:
-        logger.exception(
-            "Failed to get or create user for Supabase sub=%s", payload.get("sub")
-        )
+        logger.exception("Failed to get or create user for Supabase sub=%s", payload.get("sub"))
         return JsonResponse(
             {
                 "result": "error",
@@ -164,6 +159,11 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
             },
             status=500,
         )
+
+    # Mark any pending invites for this phone as registered
+    if phone and not user_existed_before:
+        phone_hash = hashlib.sha256(phone.encode("utf-8")).hexdigest()
+        mark_invite_registered(phone_hash, user_profile)
 
     # has_pin: true if user has a Registration Lock PIN set
     has_pin = NodlRegistrationPin.objects.filter(user=user_profile).exists()
@@ -261,9 +261,7 @@ def _handle_link(
     # We need the Supabase user who owns the email identity.
     email_supabase_user = get_supabase_user_by_email(existing_email)
     if email_supabase_user is None:
-        logger.warning(
-            "Could not find Supabase user for email %s during link", existing_email
-        )
+        logger.warning("Could not find Supabase user for email %s during link", existing_email)
         return JsonResponse(
             {
                 "result": "error",
@@ -324,9 +322,7 @@ def _handle_create_new(payload: dict, realm: Realm) -> JsonResponse:
     try:
         user_profile = get_or_create_zulip_user(payload, realm)
     except Exception:
-        logger.exception(
-            "Failed to create new user for Supabase sub=%s", payload.get("sub")
-        )
+        logger.exception("Failed to create new user for Supabase sub=%s", payload.get("sub"))
         return JsonResponse(
             {
                 "result": "error",
