@@ -1,0 +1,8 @@
+{
+    "hostname": "www.example.com",
+    "severity": "Warning",
+    "status": "WARNING",
+    "item": "CPU load is high",
+    "trigger": "CPU load on www.example.com is above threshold",
+    "link": "https://zabbix.example.com/tr_events.php?triggerid=14033&eventid=10530"
+}
