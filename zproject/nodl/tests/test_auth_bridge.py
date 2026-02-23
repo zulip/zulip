@@ -210,6 +210,42 @@ class AuthBridgeInvalidJWTTest(ZulipTestCase):
 
 
 @override_settings(**NODL_SETTINGS)
+class AuthBridgePhoneValidationTest(ZulipTestCase):
+    """Test E.164 phone validation (H2 fix)."""
+
+    def test_invalid_phone_format_returns_400(self) -> None:
+        """Non-E.164 phone in JWT should be rejected."""
+        token = make_jwt(email="", phone="555-not-e164", sub="bad-phone-uuid")
+        result = self.client_post(
+            AUTH_BRIDGE_URL,
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(result.status_code, 400)
+        data = result.json()
+        self.assertEqual(data["result"], "error")
+        self.assertEqual(data["msg"], "Invalid phone number format")
+        self.assertEqual(data["code"], "BAD_REQUEST")
+
+    def test_valid_e164_phone_accepted(self) -> None:
+        """Valid E.164 phone should proceed normally."""
+        token = make_jwt(email="valid-phone@nodl.local", phone="+12025551234", sub="valid-phone-uuid")
+        result = self.client_post(
+            AUTH_BRIDGE_URL,
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(result.status_code, 200)
+
+    def test_empty_phone_accepted(self) -> None:
+        """Empty phone should not trigger validation."""
+        token = make_jwt(email="no-phone@nodl.local", phone="", sub="no-phone-uuid")
+        result = self.client_post(
+            AUTH_BRIDGE_URL,
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(result.status_code, 200)
+
+
+@override_settings(**NODL_SETTINGS)
 class AuthBridgeRateLimitTest(ZulipTestCase):
     """Test: rate limiting -> 429 after 10+ rapid requests (AC #5)"""
 
@@ -360,8 +396,8 @@ class AuthBridgeAccountDetectionTest(ZulipTestCase):
         realm = get_realm("zulip")
         return UserProfile.objects.get(delivery_email=email, realm=realm)
 
-    @mock.patch("zproject.nodl.actions.check_duplicate_phone")
-    @mock.patch("zproject.nodl.actions.get_supabase_user_by_id")
+    @mock.patch("zproject.nodl.views.auth_bridge.check_duplicate_phone")
+    @mock.patch("zproject.nodl.views.auth_bridge.get_supabase_user_by_id")
     def test_linking_available_when_email_identity_matches(
         self,
         mock_get_user: mock.MagicMock,
@@ -392,8 +428,8 @@ class AuthBridgeAccountDetectionTest(ZulipTestCase):
         # Should NOT contain api_key (linking not confirmed yet)
         self.assertNotIn("api_key", data)
 
-    @mock.patch("zproject.nodl.actions.check_duplicate_phone")
-    @mock.patch("zproject.nodl.actions.get_supabase_user_by_id")
+    @mock.patch("zproject.nodl.views.auth_bridge.check_duplicate_phone")
+    @mock.patch("zproject.nodl.views.auth_bridge.get_supabase_user_by_id")
     def test_no_linking_when_no_email_identity(
         self,
         mock_get_user: mock.MagicMock,
@@ -419,8 +455,8 @@ class AuthBridgeAccountDetectionTest(ZulipTestCase):
         self.assertIn("api_key", data)
         self.assertNotIn("linking_available", data)
 
-    @mock.patch("zproject.nodl.actions.check_duplicate_phone")
-    @mock.patch("zproject.nodl.actions.get_supabase_user_by_id")
+    @mock.patch("zproject.nodl.views.auth_bridge.check_duplicate_phone")
+    @mock.patch("zproject.nodl.views.auth_bridge.get_supabase_user_by_id")
     def test_no_linking_when_zulip_user_not_found(
         self,
         mock_get_user: mock.MagicMock,
@@ -504,19 +540,26 @@ class AuthBridgeLinkConfirmationTest(ZulipTestCase):
         return UserProfile.objects.get(delivery_email=email, realm=realm)
 
     @mock.patch("zproject.nodl.views.auth_bridge.link_phone_to_existing_user")
+    @mock.patch("zproject.nodl.views.auth_bridge.get_supabase_user_by_email")
     @mock.patch("zproject.nodl.views.auth_bridge.get_supabase_user_by_id")
     def test_link_action_link_returns_existing_user(
         self,
-        mock_get_user: mock.MagicMock,
+        mock_get_user_by_id: mock.MagicMock,
+        mock_get_user_by_email: mock.MagicMock,
         mock_link_phone: mock.MagicMock,
     ) -> None:
         """link_action='link' returns existing Zulip user's API key."""
         existing_user = self._create_existing_email_user("link-target@example.com")
-        mock_get_user.return_value = make_supabase_user(
+        mock_get_user_by_id.return_value = make_supabase_user(
             user_id="phone-linker-uuid",
             email="link-target@example.com",
             phone="+15551111111",
         )
+        # H1: get_supabase_user_by_email returns the email user's Supabase record
+        mock_get_user_by_email.return_value = {
+            "id": "email-owner-supabase-uuid",
+            "email": "link-target@example.com",
+        }
         mock_link_phone.return_value = True
 
         token = make_jwt(
@@ -534,7 +577,8 @@ class AuthBridgeLinkConfirmationTest(ZulipTestCase):
         self.assertEqual(data["api_key"], existing_user.api_key)
         self.assertEqual(data["user_id"], existing_user.id)
         self.assertEqual(data["email"], "link-target@example.com")
-        mock_link_phone.assert_called_once()
+        # H1: verify link_phone is called with the EMAIL user's Supabase ID
+        mock_link_phone.assert_called_once_with("email-owner-supabase-uuid", "+15551111111")
 
     @mock.patch("zproject.nodl.views.auth_bridge.get_supabase_user_by_id")
     def test_link_action_create_new_provisions_user(
@@ -594,6 +638,45 @@ class AuthBridgeLinkConfirmationTest(ZulipTestCase):
         data = result.json()
         self.assertEqual(data["result"], "error")
         mock_link_phone.assert_not_called()
+
+    @mock.patch("zproject.nodl.views.auth_bridge.release_phone_link_lock")
+    @mock.patch("zproject.nodl.views.auth_bridge.acquire_phone_link_lock")
+    @mock.patch("zproject.nodl.views.auth_bridge.link_phone_to_existing_user")
+    @mock.patch("zproject.nodl.views.auth_bridge.get_supabase_user_by_email")
+    @mock.patch("zproject.nodl.views.auth_bridge.get_supabase_user_by_id")
+    def test_link_conflict_when_lock_held(
+        self,
+        mock_get_user_by_id: mock.MagicMock,
+        mock_get_user_by_email: mock.MagicMock,
+        mock_link_phone: mock.MagicMock,
+        mock_acquire_lock: mock.MagicMock,
+        mock_release_lock: mock.MagicMock,
+    ) -> None:
+        """H3: when another link operation is in progress, return 409 CONFLICT."""
+        self._create_existing_email_user("lock-target@example.com")
+        mock_get_user_by_id.return_value = make_supabase_user(
+            user_id="lock-phone-uuid",
+            email="lock-target@example.com",
+            phone="+15551119999",
+        )
+        mock_get_user_by_email.return_value = {
+            "id": "lock-email-uuid",
+            "email": "lock-target@example.com",
+        }
+        mock_acquire_lock.return_value = False  # Lock already held
+
+        token = make_jwt(email="", phone="+15551119999", sub="lock-phone-uuid")
+        result = self.client_post(
+            AUTH_BRIDGE_URL,
+            json.dumps({"link_action": "link"}),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(result.status_code, 409)
+        data = result.json()
+        self.assertEqual(data["code"], "CONFLICT")
+        mock_link_phone.assert_not_called()
+        mock_release_lock.assert_not_called()
 
 
 @override_settings(**NODL_SETTINGS)

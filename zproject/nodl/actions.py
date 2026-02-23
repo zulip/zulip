@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Any
 
 import requests
@@ -14,6 +15,17 @@ logger = logging.getLogger(__name__)
 # Rate limit: max 5 link attempts per phone number per hour
 LINK_RATE_LIMIT = 5
 LINK_RATE_WINDOW = 3600  # seconds
+
+# E.164 phone number format: + followed by 1-15 digits, first digit non-zero
+E164_PATTERN = re.compile(r"^\+[1-9]\d{1,14}$")
+
+# Cache lock TTL for phone linking TOCTOU protection (seconds)
+PHONE_LINK_LOCK_TTL = 30
+
+
+def validate_e164_phone(phone: str) -> bool:
+    """Return True if *phone* matches the E.164 format."""
+    return bool(E164_PATTERN.match(phone))
 
 
 def mask_email(email: str) -> str:
@@ -62,6 +74,44 @@ def get_supabase_user_by_id(supabase_user_id: str) -> dict[str, Any] | None:
         return None
 
 
+def get_supabase_user_by_email(email: str) -> dict[str, Any] | None:
+    """Look up a Supabase user by email via the Admin list-users API.
+
+    Returns the first user whose email matches, or None.
+    """
+    supabase_url = getattr(settings, "NODL_SUPABASE_URL", "")
+    if not supabase_url:
+        logger.error("NODL_SUPABASE_URL is not configured")
+        return None
+
+    url = f"{supabase_url.rstrip('/')}/auth/v1/admin/users"
+    try:
+        resp = requests.get(
+            url,
+            headers=get_supabase_admin_headers(),
+            params={"email": email, "per_page": "5"},
+            timeout=10,
+        )
+        if resp.status_code != 200:
+            logger.warning(
+                "Supabase admin API returned %d looking up email %s",
+                resp.status_code,
+                email,
+            )
+            return None
+        data = resp.json()
+        users = data.get("users", data) if isinstance(data, dict) else data
+        if not isinstance(users, list):
+            return None
+        for user in users:
+            if isinstance(user, dict) and user.get("email", "").lower() == email.lower():
+                return user
+        return None
+    except requests.RequestException:
+        logger.exception("Failed to look up Supabase user by email %s", email)
+        return None
+
+
 def find_email_identity(supabase_user: dict[str, Any]) -> str | None:
     """Check if a Supabase user has an email identity and return the email."""
     identities = supabase_user.get("identities", [])
@@ -104,7 +154,7 @@ def check_duplicate_phone(supabase_user_id: str, phone: str) -> bool:
         resp = requests.get(
             url,
             headers=get_supabase_admin_headers(),
-            params={"phone": phone},
+            params={"phone": phone, "per_page": "5"},
             timeout=10,
         )
         if resp.status_code != 200:
@@ -139,6 +189,22 @@ def check_link_rate_limit(phone: str) -> bool:
         except ValueError:
             cache.set(cache_key, count + 1, timeout=LINK_RATE_WINDOW)
     return False
+
+
+def acquire_phone_link_lock(phone: str) -> bool:
+    """Acquire a cache-based lock for phone linking to prevent TOCTOU races.
+
+    Returns True if the lock was acquired, False if already held.
+    Uses cache.add() which is atomic -- only succeeds if the key does not exist.
+    """
+    cache_key = f"nodl_link_lock:{phone}"
+    return cache.add(cache_key, "1", timeout=PHONE_LINK_LOCK_TTL)
+
+
+def release_phone_link_lock(phone: str) -> None:
+    """Release the cache-based phone linking lock."""
+    cache_key = f"nodl_link_lock:{phone}"
+    cache.delete(cache_key)
 
 
 def link_phone_to_existing_user(existing_supabase_user_id: str, phone: str) -> bool:

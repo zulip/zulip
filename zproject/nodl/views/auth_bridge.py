@@ -9,14 +9,18 @@ from zerver.models import Realm
 from zerver.models.realms import get_realm
 
 from zproject.nodl.actions import (
+    acquire_phone_link_lock,
     check_duplicate_phone,
     check_link_rate_limit,
     find_email_identity,
     find_existing_zulip_user_by_email,
     get_or_create_zulip_user,
+    get_supabase_user_by_email,
     get_supabase_user_by_id,
     link_phone_to_existing_user,
     mask_email,
+    release_phone_link_lock,
+    validate_e164_phone,
 )
 from zproject.nodl.auth import JWTValidationError, validate_supabase_jwt
 from zproject.nodl.throttle import check_rate_limit
@@ -84,6 +88,17 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
 
     supabase_user_id = payload.get("sub", "")
     phone = payload.get("phone", "")
+
+    # Validate phone format if present (H2: E.164 validation)
+    if phone and not validate_e164_phone(phone):
+        return JsonResponse(
+            {
+                "result": "error",
+                "msg": "Invalid phone number format",
+                "code": "BAD_REQUEST",
+            },
+            status=400,
+        )
 
     # Handle link confirmation (Task 2)
     if link_action is not None:
@@ -209,7 +224,6 @@ def _handle_link(
 
     existing_zulip_user = find_existing_zulip_user_by_email(existing_email, realm)
     if existing_zulip_user is None:
-        # Zulip user was deleted but Supabase email exists -- treat as no-match
         return JsonResponse(
             {
                 "result": "error",
@@ -219,12 +233,41 @@ def _handle_link(
             status=400,
         )
 
-    # Get the existing Supabase user ID (the one with the email identity)
-    existing_supabase_id = supabase_user.get("id", supabase_user_id)
+    # H1 fix: Look up the *email* user's Supabase UUID (not the phone user's).
+    # The phone user's Supabase ID (supabase_user_id) is NOT the target for linking.
+    # We need the Supabase user who owns the email identity.
+    email_supabase_user = get_supabase_user_by_email(existing_email)
+    if email_supabase_user is None:
+        logger.warning(
+            "Could not find Supabase user for email %s during link", existing_email
+        )
+        return JsonResponse(
+            {
+                "result": "error",
+                "msg": "Failed to resolve target account",
+                "code": "INTERNAL_ERROR",
+            },
+            status=500,
+        )
+    existing_supabase_id = email_supabase_user["id"]
 
-    # Link phone to existing Supabase user
+    # H3 fix: Acquire cache lock to prevent TOCTOU race between duplicate-check
+    # and the actual link_phone_to_existing_user call.
     if phone:
-        success = link_phone_to_existing_user(existing_supabase_id, phone)
+        if not acquire_phone_link_lock(phone):
+            return JsonResponse(
+                {
+                    "result": "error",
+                    "msg": "Link operation in progress, please retry",
+                    "code": "CONFLICT",
+                },
+                status=409,
+            )
+        try:
+            success = link_phone_to_existing_user(existing_supabase_id, phone)
+        finally:
+            release_phone_link_lock(phone)
+
         if not success:
             return JsonResponse(
                 {
