@@ -28,7 +28,7 @@ from zerver.models import (
 
 @dataclass
 class MessageInfo:
-    """For Representing the message in the response"""
+    """Represent a message in the attachment response."""
 
     id: int
     date_sent: int
@@ -36,7 +36,7 @@ class MessageInfo:
 
 @dataclass
 class AttachmentResponse:
-    """To Represent an attachment in the API response"""
+    """Represent an attachment in the API response."""
 
     id: int
     name: str
@@ -47,7 +47,8 @@ class AttachmentResponse:
 
 
 def attachment_to_response(attachment: Attachment) -> AttachmentResponse:
-    """To convert an Attachment model to an AttachmentResponse dataclass"""
+    """Convert an Attachment model to an AttachmentResponse dataclass."""
+
     return AttachmentResponse(
         id=attachment.id,
         name=attachment.file_name,
