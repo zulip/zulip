@@ -6,6 +6,8 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+MAX_PAGES = 100
+
 
 def get_supabase_users_with_phones() -> list[dict[str, Any]]:
     """Fetch all Supabase users that have a phone number set.
@@ -14,7 +16,7 @@ def get_supabase_users_with_phones() -> list[dict[str, Any]]:
     Paginates through all results.
 
     Returns:
-        List of user dicts with keys: id, phone, user_metadata.
+        List of user dicts with keys: id, phone, email.
         Returns empty list on any API error.
     """
     supabase_url = getattr(settings, "NODL_SUPABASE_URL", "")
@@ -33,7 +35,7 @@ def get_supabase_users_with_phones() -> list[dict[str, Any]]:
     page = 1
 
     try:
-        while True:
+        while page <= MAX_PAGES:
             resp = requests.get(
                 f"{supabase_url.rstrip('/')}/auth/v1/admin/users",
                 headers=headers,
@@ -60,11 +62,17 @@ def get_supabase_users_with_phones() -> list[dict[str, Any]]:
                         {
                             "id": user.get("id", ""),
                             "phone": phone,
-                            "user_metadata": user.get("user_metadata", {}),
+                            "email": user.get("email", ""),
                         }
                     )
 
             page += 1
+
+        if page > MAX_PAGES:
+            logger.warning(
+                "Supabase user pagination reached MAX_PAGES (%d), results may be incomplete",
+                MAX_PAGES,
+            )
 
     except requests.RequestException:
         logger.exception("Failed to fetch Supabase users with phones")

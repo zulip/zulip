@@ -7,7 +7,6 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 
 from zerver.decorator import authenticated_rest_api_view
 from zerver.models import UserProfile
-
 from zproject.nodl.contacts import match_phone_hashes
 from zproject.nodl.throttle import check_rate_limit
 
@@ -27,12 +26,6 @@ def contacts_match(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
 
     Returns: {"result": "success", "msg": "", "matches": [...]}
     """
-    if request.method != "POST":
-        return JsonResponse(
-            {"result": "error", "msg": "Method not allowed", "code": "BAD_REQUEST"},
-            status=405,
-        )
-
     # Rate limit: 10 requests/minute per user
     rate_limit_response = check_rate_limit(
         request,
@@ -66,29 +59,21 @@ def contacts_match(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
             status=400,
         )
 
-    # Validate each entry is a string
-    for item in phone_hashes:
-        if not isinstance(item, str):
-            return JsonResponse(
-                {"result": "error", "msg": "Invalid request format", "code": "BAD_REQUEST"},
-                status=400,
-            )
-
     # Check max batch size
     max_hashes = getattr(settings, "NODL_CONTACTS_MATCH_LIMIT", 500)
     if len(phone_hashes) > max_hashes:
         return JsonResponse(
             {
                 "result": "error",
-                "msg": "Too many hashes. Maximum 500 per request.",
+                "msg": f"Too many hashes. Maximum {max_hashes} per request.",
                 "code": "BAD_REQUEST",
             },
             status=400,
         )
 
-    # Validate each hash is exactly 64 lowercase hex chars
-    for h in phone_hashes:
-        if not SHA256_HEX_PATTERN.match(h):
+    # Validate each entry is a string and a valid SHA-256 hex hash
+    for item in phone_hashes:
+        if not isinstance(item, str) or not SHA256_HEX_PATTERN.match(item):
             return JsonResponse(
                 {"result": "error", "msg": "Invalid request format", "code": "BAD_REQUEST"},
                 status=400,

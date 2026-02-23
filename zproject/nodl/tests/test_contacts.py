@@ -62,7 +62,7 @@ def make_supabase_users(users: list[dict]) -> list[dict]:
             {
                 "id": u.get("id", "sb-uuid"),
                 "phone": u["phone"],
-                "user_metadata": u.get("user_metadata", {}),
+                "email": u.get("email", ""),
             }
         )
     return result
@@ -95,9 +95,7 @@ class ContactsMatchSuccessTest(ZulipTestCase):
         cache.clear()
 
     @mock.patch("zproject.nodl.contacts.get_supabase_users_with_phones")
-    def test_valid_request_with_matching_hashes(
-        self, mock_get_users: mock.MagicMock
-    ) -> None:
+    def test_valid_request_with_matching_hashes(self, mock_get_users: mock.MagicMock) -> None:
         """AC #1: Submit hashes, get matched user_id + display_name."""
         # Create test users via auth bridge
         user_alice = _create_zulip_user_via_bridge(
@@ -185,9 +183,7 @@ class ContactsMatchMixedTest(ZulipTestCase):
         cache.clear()
 
     @mock.patch("zproject.nodl.contacts.get_supabase_users_with_phones")
-    def test_mixed_hashes_only_matches_returned(
-        self, mock_get_users: mock.MagicMock
-    ) -> None:
+    def test_mixed_hashes_only_matches_returned(self, mock_get_users: mock.MagicMock) -> None:
         user_alice = _create_zulip_user_via_bridge(
             self, "+15551111111@nodl.local", "+15551111111", "mixed-alice-uuid"
         )
@@ -429,9 +425,7 @@ class ContactsMatchDualRegistrationTest(ZulipTestCase):
         cache.clear()
 
     @mock.patch("zproject.nodl.contacts.get_supabase_users_with_phones")
-    def test_supabase_only_users_not_returned(
-        self, mock_get_users: mock.MagicMock
-    ) -> None:
+    def test_supabase_only_users_not_returned(self, mock_get_users: mock.MagicMock) -> None:
         """Users in Supabase but not in Zulip should not appear in results."""
         # Only create one user in Zulip
         user_alice = _create_zulip_user_via_bridge(
@@ -496,7 +490,7 @@ class ContactsMatchResponseFormatTest(ZulipTestCase):
 
     @mock.patch("zproject.nodl.contacts.get_supabase_users_with_phones")
     def test_match_entry_format(self, mock_get_users: mock.MagicMock) -> None:
-        user_alice = _create_zulip_user_via_bridge(
+        _create_zulip_user_via_bridge(
             self, "+15551111111@nodl.local", "+15551111111", "entry-alice-uuid"
         )
         mock_get_users.return_value = make_supabase_users(
@@ -534,9 +528,7 @@ class ContactsMatchRateLimitTest(ZulipTestCase):
         cache.clear()
 
     @mock.patch("zproject.nodl.contacts.get_supabase_users_with_phones")
-    def test_rate_limit_exceeded_returns_429(
-        self, mock_get_users: mock.MagicMock
-    ) -> None:
+    def test_rate_limit_exceeded_returns_429(self, mock_get_users: mock.MagicMock) -> None:
         mock_get_users.return_value = []
         user = _create_zulip_user_via_bridge(
             self, "ratelimit@nodl.local", "+15552222222", "ratelimit-uuid"

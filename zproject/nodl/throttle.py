@@ -47,14 +47,16 @@ def check_rate_limit(
         response["Retry-After"] = str(window)
         return response
 
-    # Increment counter
-    if count == 0:
-        cache.set(cache_key, 1, timeout=window)
+    # Increment counter atomically
+    if cache.add(cache_key, 1, timeout=window):
+        # Key didn't exist, add() set it to 1 atomically
+        pass
     else:
-        # Use cache.incr for atomicity if available, with fallback
+        # Key already exists, increment
         try:
             cache.incr(cache_key)
         except ValueError:
-            cache.set(cache_key, count + 1, timeout=window)
+            # Key expired between add() and incr(), re-initialize
+            cache.set(cache_key, 1, timeout=window)
 
     return None
