@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.http import HttpRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -46,9 +47,10 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
             status=401,
         )
 
-    # Get realm (default single-realm deployment)
+    # Get realm (configurable for self-hosted deployments)
+    realm_id = getattr(settings, "NODL_ZULIP_REALM_ID", "zulip")
     try:
-        realm = get_realm("zulip")
+        realm = get_realm(realm_id)
     except Exception:
         return JsonResponse(
             {"result": "error", "msg": "Realm not found", "code": "INTERNAL_ERROR"},

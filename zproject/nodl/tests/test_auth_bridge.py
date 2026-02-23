@@ -1,6 +1,8 @@
 import time
+from unittest import mock
 
 import jwt
+from django.db import IntegrityError
 from django.test import override_settings
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -167,6 +169,27 @@ class AuthBridgeInvalidJWTTest(ZulipTestCase):
         self.assertEqual(data["result"], "error")
         self.assertEqual(data["code"], "UNAUTHORIZED")
 
+    def test_missing_exp_claim_returns_401(self) -> None:
+        """Tokens without exp claim must be rejected (Finding 3)."""
+        now = int(time.time())
+        payload = {
+            "sub": "no-exp-uuid",
+            "email": "noexp@nodl.local",
+            "aud": "authenticated",
+            "iss": f"{TEST_SUPABASE_URL}/auth/v1",
+            "iat": now,
+        }
+        # Encode without exp
+        token = jwt.encode(payload, TEST_JWT_SECRET, algorithm="HS256")
+        result = self.client_post(
+            AUTH_BRIDGE_URL,
+            HTTP_AUTHORIZATION=f"Bearer {token}",
+        )
+        self.assertEqual(result.status_code, 401)
+        data = result.json()
+        self.assertEqual(data["result"], "error")
+        self.assertEqual(data["code"], "UNAUTHORIZED")
+
     def test_get_method_not_allowed(self) -> None:
         result = self.client_get(AUTH_BRIDGE_URL)
         self.assertEqual(result.status_code, 405)
@@ -216,29 +239,59 @@ class AuthBridgeRateLimitTest(ZulipTestCase):
 class AuthBridgeConcurrencyTest(ZulipTestCase):
     """Test: concurrent requests for same user don't create duplicates (AC #1, #2)"""
 
-    def test_concurrent_requests_no_duplicates(self) -> None:
+    def test_integrity_error_fallback_returns_existing_user(self) -> None:
+        """Simulate race condition: do_create_user raises IntegrityError,
+        fallback lookup returns existing user."""
         email = "concurrent-bridge@nodl.local"
         token = make_jwt(email=email, sub="concurrent-uuid")
-        realm = get_realm("zulip")
 
-        # Simulate race condition: mock get to raise DoesNotExist, then create succeeds once
-        # and fails with IntegrityError the second time
+        # First request creates the user normally
         result1 = self.client_post(
             AUTH_BRIDGE_URL,
             HTTP_AUTHORIZATION=f"Bearer {token}",
         )
         self.assertEqual(result1.status_code, 200)
-
-        result2 = self.client_post(
-            AUTH_BRIDGE_URL,
-            HTTP_AUTHORIZATION=f"Bearer {token}",
-        )
-        self.assertEqual(result2.status_code, 200)
-
         data1 = self.assert_json_success(result1)
-        data2 = self.assert_json_success(result2)
-        self.assertEqual(data1["user_id"], data2["user_id"])
 
+        # Second request: mock do_create_user to raise IntegrityError
+        # simulating a race where two requests pass the .get() check simultaneously
+        with mock.patch(
+            "zproject.nodl.actions.do_create_user",
+            side_effect=IntegrityError(
+                "duplicate key value violates unique constraint on delivery_email"
+            ),
+        ):
+            # Also mock the initial .get() to raise DoesNotExist so we enter the create path
+            original_get = UserProfile.objects.get
+
+            def mock_get_first_call(*args: object, **kwargs: object) -> UserProfile:
+                """First call raises DoesNotExist, triggering create path."""
+                if "delivery_email__iexact" in kwargs:
+                    # First lookup (before create) raises DoesNotExist
+                    mock_get_first_call._called += 1  # type: ignore[attr-defined]
+                    if mock_get_first_call._called == 1:  # type: ignore[attr-defined]
+                        raise UserProfile.DoesNotExist
+                return original_get(*args, **kwargs)
+
+            mock_get_first_call._called = 0  # type: ignore[attr-defined]
+
+            with mock.patch.object(
+                UserProfile.objects, "get", side_effect=mock_get_first_call
+            ):
+                result2 = self.client_post(
+                    AUTH_BRIDGE_URL,
+                    HTTP_AUTHORIZATION=f"Bearer {token}",
+                )
+
+        self.assertEqual(result2.status_code, 200)
+        data2 = self.assert_json_success(result2)
+
+        # Both requests return the same user
+        self.assertEqual(data1["user_id"], data2["user_id"])
+        self.assertEqual(data1["email"], data2["email"])
+
+        # Only one user exists in the database
+        realm = get_realm("zulip")
         count = UserProfile.objects.filter(delivery_email=email, realm=realm).count()
         self.assertEqual(count, 1)
 

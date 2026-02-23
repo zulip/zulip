@@ -77,10 +77,15 @@ def get_or_create_zulip_user(supabase_payload: dict, realm: Realm) -> UserProfil
             supabase_payload.get("sub", "unknown"),
         )
         return user_profile
-    except IntegrityError:
-        # Race condition: another request created the user concurrently
+    except IntegrityError as exc:
+        # Only handle duplicate-email constraint violations as race conditions.
+        # Re-raise any other IntegrityError (e.g. unexpected FK violations).
+        exc_msg = str(exc).lower()
+        if "delivery_email" not in exc_msg and "email" not in exc_msg:
+            raise
         logger.info("Race condition on user creation for %s, fetching existing", email)
         return UserProfile.objects.get(
             delivery_email__iexact=email,
             realm=realm,
+            is_active=True,
         )

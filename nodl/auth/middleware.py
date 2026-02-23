@@ -142,7 +142,9 @@ class SupabaseJWTMiddleware:
         Returns:
             True if the path should bypass authentication.
         """
-        return any(path.startswith(exempt) for exempt in self.EXEMPT_PATHS)
+        return path in self.EXEMPT_PATHS or any(
+            path.startswith(exempt) for exempt in self.EXEMPT_PATHS if exempt.endswith("/")
+        )
 
     def _get_user_profile_cached(
         self, email: str, workspace_id: str | None = None

@@ -34,25 +34,21 @@ def validate_supabase_jwt(token: str) -> dict:
         raise JWTValidationError("Server configuration error")
 
     supabase_url = getattr(settings, "NODL_SUPABASE_URL", "")
+    if not supabase_url:
+        logger.error("NODL_SUPABASE_URL is not configured")
+        raise JWTValidationError("Server configuration error")
+
+    issuer = f"{supabase_url.rstrip('/')}/auth/v1"
 
     try:
-        decode_options = {}
-        if supabase_url:
-            issuer = f"{supabase_url.rstrip('/')}/auth/v1"
-        else:
-            # Skip issuer validation if NODL_SUPABASE_URL not set
-            decode_options["verify_iss"] = False
-            issuer = None
-
-        kwargs: dict = {
-            "algorithms": ["HS256"],
-            "audience": "authenticated",
-            "options": decode_options,
-        }
-        if issuer:
-            kwargs["issuer"] = issuer
-
-        payload = jwt.decode(token, secret, **kwargs)
+        payload = jwt.decode(
+            token,
+            secret,
+            algorithms=["HS256"],
+            audience="authenticated",
+            issuer=issuer,
+            options={"require": ["sub", "aud", "exp", "iss"]},
+        )
 
     except jwt.ExpiredSignatureError as e:
         raise JWTValidationError("Token has expired") from e
@@ -62,9 +58,5 @@ def validate_supabase_jwt(token: str) -> dict:
         raise JWTValidationError("Invalid issuer claim") from e
     except jwt.InvalidTokenError as e:
         raise JWTValidationError(f"Invalid JWT token: {e}") from e
-
-    # Validate required claims
-    if "sub" not in payload:
-        raise JWTValidationError("Missing 'sub' claim")
 
     return payload
