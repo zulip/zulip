@@ -205,7 +205,7 @@ prod = [
   "pynacl",
 
   # Character set detection for text/plain
-  "chardet>=5.1.0",
+  "chardet<6", # https://github.com/psf/requests/issues/7219
 
   # Better compression than zlib
   "zstd",
