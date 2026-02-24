@@ -112,6 +112,32 @@ def get_supabase_user_by_email(email: str) -> dict[str, Any] | None:
         return None
 
 
+def get_user_workspace_ids(supabase_user_id: str) -> list[str]:
+    """Query workspace_members via Supabase REST API to find user's workspaces."""
+    supabase_url = getattr(settings, "NODL_SUPABASE_URL", "")
+    if not supabase_url:
+        return []
+    url = f"{supabase_url.rstrip('/')}/rest/v1/workspace_members"
+    try:
+        resp = requests.get(
+            url,
+            headers=get_supabase_admin_headers(),
+            params={"user_id": f"eq.{supabase_user_id}", "select": "workspace_id"},
+            timeout=5,
+        )
+        if resp.status_code == 200:
+            return [row["workspace_id"] for row in resp.json()]
+        logger.warning(
+            "Supabase REST API returned %d querying workspace_members for user %s",
+            resp.status_code,
+            supabase_user_id,
+        )
+        return []
+    except requests.RequestException:
+        logger.exception("Failed to query workspace_members for user %s", supabase_user_id)
+        return []
+
+
 def find_email_identity(supabase_user: dict[str, Any]) -> str | None:
     """Check if a Supabase user has an email identity and return the email."""
     identities = supabase_user.get("identities", [])

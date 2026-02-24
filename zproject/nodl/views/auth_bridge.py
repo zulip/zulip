@@ -18,6 +18,7 @@ from zproject.nodl.actions import (
     get_or_create_zulip_user,
     get_supabase_user_by_email,
     get_supabase_user_by_id,
+    get_user_workspace_ids,
     link_phone_to_existing_user,
     mask_email,
     release_phone_link_lock,
@@ -88,15 +89,29 @@ def _auth_bridge_inner(request: HttpRequest) -> JsonResponse:
             status=401,
         )
 
+    supabase_user_id = payload.get("sub", "")
     logger.info("NODL_DEBUG: JWT validated, sub=%s phone=%s", payload.get("sub"), payload.get("phone"))
 
-    # Get realm (single-realm deployment — find the active workspace realm)
-    realm = (
-        Realm.objects.exclude(string_id="zulipinternal")
-        .exclude(deactivated=True)
-        .order_by("id")
-        .first()
-    )
+    # Find realm based on user's workspace membership
+    realm = None
+    workspace_ids = get_user_workspace_ids(supabase_user_id)
+    for ws_id in workspace_ids:
+        realm_string_id = ws_id[:20].lower()
+        try:
+            realm = get_realm(realm_string_id)
+            logger.info("NODL_DEBUG: realm found via workspace %s, id=%d string_id=%r", ws_id, realm.id, realm.string_id)
+            break
+        except Realm.DoesNotExist:
+            continue
+
+    # Fallback: first active non-internal realm
+    if realm is None:
+        realm = (
+            Realm.objects.exclude(string_id="zulipinternal")
+            .exclude(deactivated=True)
+            .order_by("id")
+            .first()
+        )
 
     if realm is None:
         logger.error("NODL_DEBUG: No active non-internal realm found")
@@ -105,7 +120,8 @@ def _auth_bridge_inner(request: HttpRequest) -> JsonResponse:
             status=500,
         )
 
-    logger.info("NODL_DEBUG: realm found, id=%d string_id=%r", realm.id, realm.string_id)
+    if not workspace_ids:
+        logger.info("NODL_DEBUG: no workspace membership found, using fallback realm id=%d string_id=%r", realm.id, realm.string_id)
 
     # Parse optional link_action from request body
     link_action = None
@@ -115,8 +131,6 @@ def _auth_bridge_inner(request: HttpRequest) -> JsonResponse:
             link_action = body.get("link_action")
         except (json.JSONDecodeError, ValueError):
             pass
-
-    supabase_user_id = payload.get("sub", "")
     phone = payload.get("phone", "")
 
     # Normalize phone: Supabase may store without '+' prefix
