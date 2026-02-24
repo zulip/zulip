@@ -90,17 +90,24 @@ def _auth_bridge_inner(request: HttpRequest) -> JsonResponse:
 
     logger.info("NODL_DEBUG: JWT validated, sub=%s phone=%s", payload.get("sub"), payload.get("phone"))
 
-    # Get realm (default single-realm deployment)
-    try:
-        realm = get_realm("zulip")
-    except Exception:
-        logger.exception("NODL_DEBUG: get_realm('zulip') failed")
+    # Get realm (single-realm deployment)
+    # Production uses string_id="" (default), dev uses "zulip"
+    realm = None
+    for string_id in ("", "zulip"):
+        try:
+            realm = get_realm(string_id)
+            break
+        except Realm.DoesNotExist:
+            continue
+
+    if realm is None:
+        logger.error("NODL_DEBUG: No realm found (tried '' and 'zulip')")
         return JsonResponse(
             {"result": "error", "msg": "Realm not found", "code": "INTERNAL_ERROR"},
             status=500,
         )
 
-    logger.info("NODL_DEBUG: realm found, id=%d", realm.id)
+    logger.info("NODL_DEBUG: realm found, id=%d string_id=%r", realm.id, realm.string_id)
 
     # Parse optional link_action from request body
     link_action = None
