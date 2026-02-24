@@ -37,6 +37,7 @@ class SupabaseJWTMiddleware:
     EXEMPT_EXACT = {
         "/health",
         "/nodl/auth/bridge",  # Auth bridge handles its own Supabase JWT validation
+        "/api/v1/server_settings",  # Public endpoint — clients need it before auth
     }
 
     # Paths that bypass JWT authentication — prefix match
