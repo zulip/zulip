@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -44,6 +45,36 @@ let password_quality:
     | undefined; // Loaded asynchronously
 let user_avatar_widget_created = false;
 let user_timezone_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
+
+function setup_copy_api_key_button(): void {
+    const clipboard = new ClipboardJS(".copy_api_key_button", {
+        text(): string {
+            return document.querySelector<HTMLElement>("#api_key_value")?.textContent?.trim() ?? "";
+        },
+    });
+
+    clipboard.on("success", (e) => {
+        e.clearSelection();
+
+        const $btn = $(".copy_api_key_button");
+        const $wrapper = $(".copy_api_key_button_wrapper");
+        const $tooltip = $(".copy_api_key_tooltip");
+
+        // Restart animation cleanly if clicked again before reset
+        $btn.removeClass("copied");
+        void $btn[0]!.offsetWidth; // force reflow
+        $btn.addClass("copied");
+
+        $tooltip.text($t({defaultMessage: "Copied!"}));
+        $wrapper.addClass("show-tooltip");
+
+        setTimeout(() => {
+            $btn.removeClass("copied");
+            $tooltip.text($t({defaultMessage: "Copy API key"}));
+            $wrapper.removeClass("show-tooltip");
+        }, 2000);
+    });
+}
 
 export function update_email(new_email: string): void {
     const $email_input = $("#email_field_container");
@@ -462,6 +493,7 @@ export function set_up(): void {
     $("#api_key_button").on("click", (e) => {
         $("body").append($(render_settings_api_key_modal()));
         setup_api_key_modal();
+        setup_copy_api_key_button();
         $("#api_key_status").hide();
         modals.open("api_key_modal", {
             autoremove: true,

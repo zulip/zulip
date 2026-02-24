@@ -17,7 +17,7 @@
                         <div class="settings-password-div">
                             <label for="get_api_key_password" class="modal-field-label">{{t "Your password" }}</label>
                             <div class="password-input-row">
-                                <input type="password" autocomplete="off" name="password" id="get_api_key_password" class=" modal_password_input" value="" />
+                                <input type="password" autocomplete="off" name="password" id="get_api_key_password" class="modal_password_input" value="" />
                                 <i class="fa fa-eye-slash password_visibility_toggle tippy-zulip-tooltip" role="button"></i>
                             </div>
                         </div>
@@ -29,7 +29,25 @@
                     </div>
                 </div>
                 <div id="show_api_key">
-                    <p><b class="highlighted-element"><span id="api_key_value"></span></b></p>
+                    <p class="api_key_value_row">
+                        <b class="highlighted-element"><span id="api_key_value"></span></b>
+                        <span class="copy_api_key_button_wrapper">
+                            <button
+                              type="button"
+                              class="copy_api_key_button"
+                              aria-label="{{t 'Copy API key' }}"
+                              >
+                                <svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <svg class="check-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </button>
+                            <span class="copy_api_key_tooltip">{{t "Copy API key" }}</span>
+                        </span>
+                    </p>
                     <div id="user_api_key_error" class="text-error"></div>
                 </div>
             </main>
