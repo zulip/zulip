@@ -90,18 +90,16 @@ def _auth_bridge_inner(request: HttpRequest) -> JsonResponse:
 
     logger.info("NODL_DEBUG: JWT validated, sub=%s phone=%s", payload.get("sub"), payload.get("phone"))
 
-    # Get realm (single-realm deployment)
-    # Production uses string_id="" (default), dev uses "zulip"
-    realm = None
-    for string_id in ("", "zulip"):
-        try:
-            realm = get_realm(string_id)
-            break
-        except Realm.DoesNotExist:
-            continue
+    # Get realm (single-realm deployment — find the active workspace realm)
+    realm = (
+        Realm.objects.exclude(string_id="zulipinternal")
+        .exclude(deactivated=True)
+        .order_by("id")
+        .first()
+    )
 
     if realm is None:
-        logger.error("NODL_DEBUG: No realm found (tried '' and 'zulip')")
+        logger.error("NODL_DEBUG: No active non-internal realm found")
         return JsonResponse(
             {"result": "error", "msg": "Realm not found", "code": "INTERNAL_ERROR"},
             status=500,
