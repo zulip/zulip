@@ -175,6 +175,12 @@ type ChannelFolderContext = {
     order: number;
 };
 
+type FolderStreamRowsContext = {
+    stream_key: string;
+    stream_row: StreamContext;
+    topic_rows: TopicContext[];
+};
+
 const channel_folder_context_properties: (keyof ChannelFolderContext)[] = [
     "header_id",
     "is_header_visible",
@@ -723,10 +729,10 @@ function format_topic(
 }
 
 function insert_stream(stream_key: string): void {
-    const channel_folder_id = streams_dict.get(stream_key)!.folder_id;
+    const stream_row = streams_dict.get(stream_key)!;
+    const channel_folder_id = stream_row.folder_id;
     const sorted_stream_keys = get_sorted_stream_keys(channel_folder_id);
     const stream_index = sorted_stream_keys.indexOf(stream_key);
-    const stream_row = streams_dict.get(stream_key);
     const stream_topics_data = topics_dict.get(stream_key)!;
     const rendered_stream = render_inbox_stream_container({
         stream_key,
@@ -833,6 +839,25 @@ function get_sorted_stream_topic_dict(): Map<string, Map<string, TopicContext>> 
     }
 
     return sorted_topic_dict;
+}
+
+function get_folder_stream_rows(folder_id: number): FolderStreamRowsContext[] {
+    const stream_rows: FolderStreamRowsContext[] = [];
+    for (const stream_key of get_sorted_stream_keys(folder_id)) {
+        const stream_row = streams_dict.get(stream_key);
+        if (stream_row?.folder_id !== folder_id) {
+            continue;
+        }
+
+        const stream_topics_data = topics_dict.get(stream_key)!;
+        stream_rows.push({
+            stream_key,
+            stream_row,
+            topic_rows: [...stream_topics_data.values()],
+        });
+    }
+
+    return stream_rows;
 }
 
 function get_sorted_row_dict<T extends DirectMessageContext | TopicContext>(
@@ -1269,15 +1294,17 @@ export function complete_rerender(coming_from_other_views = false): void {
         } else {
             channel_view_topic_widget = undefined;
             const {has_visible_unreads, ...additional_context} = reset_data();
+            const folders_with_stream_rows = [...channel_folders_dict.values()].map((folder) => ({
+                ...folder,
+                stream_rows: get_folder_stream_rows(folder.id),
+            }));
             $("#inbox-pane").html(
                 render_inbox_view({
                     normal_view: true,
                     search_val: search_keyword,
                     INBOX_SEARCH_ID,
                     dms_dict,
-                    topics_dict,
-                    streams_dict,
-                    channel_folders_dict,
+                    folders_with_stream_rows,
                     show_channel_folder_toggle: channel_folders.user_has_folders(),
                     ...additional_context,
                 }),
@@ -1986,8 +2013,7 @@ function bulk_insert_channel_folders(channel_folders: Set<number>): void {
         if (channel_folders.has(folder_id)) {
             const $folder_row_html = render_inbox_folder_with_channels({
                 ...folder_context,
-                topics_dict,
-                streams_dict,
+                stream_rows: get_folder_stream_rows(folder_id),
             });
             if (index === 0) {
                 const $dm_container = $("#inbox-direct-messages-container");
