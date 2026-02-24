@@ -96,6 +96,9 @@ export function scroll_finished(): void {
         // are waiting on user input to do so. So, we only mark messages
         // as read if we are updating selection on this scroll.
         //
+        // For /near/ views, check whether we should resume marking
+        // messages as read before processing visibility.
+        message_lists.current.maybe_resume_reading_for_near_view();
         // When the window scrolls, it may cause some messages to
         // enter the screen and become read.  Calling
         // unread_ops.process_visible will update necessary
