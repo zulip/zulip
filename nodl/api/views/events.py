@@ -113,19 +113,10 @@ def register_queue(request: HttpRequest) -> HttpResponse:
     if "client_capabilities" in body and "client_capabilities" not in request.POST:
         request.POST["client_capabilities"] = json.dumps(body["client_capabilities"])
 
-    # Only fetch these event types for initial data (reduces queries dramatically)
-    if "fetch_event_types" not in request.POST:
-        request.POST["fetch_event_types"] = json.dumps(
-            [
-                "message",
-                "subscription",
-                "stream",
-                "typing",
-                "presence",
-                "reaction",
-                "update_message",
-            ]
-        )
+    # NOTE: We intentionally do NOT inject fetch_event_types here.
+    # The Flutter Zulip client expects the full /api/v1/register response
+    # (realm_users, cross_realm_bots, custom_profile_fields, etc.).
+    # Restricting fetch_event_types causes null fields that crash the parser.
 
     # Only subscribe to these event types for real-time updates
     if "event_types" not in request.POST:
