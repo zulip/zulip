@@ -97,6 +97,12 @@ mock_esm("../src/popovers", {
 mock_esm("../src/saved_snippets_ui", {
     setup_saved_snippets_dropdown_widget_if_needed: noop,
 });
+mock_esm("../src/dropdown_widget", {
+    DropdownWidget: function DropdownWidget() {
+        this.current_value = undefined;
+        this.setup = noop;
+    },
+});
 
 const people = zrequire("people");
 
@@ -148,6 +154,7 @@ function test(label, f) {
 
         people.init();
         compose_state.set_message_type(undefined);
+        compose_recipient.initialize();
         f(helpers);
     });
 }
