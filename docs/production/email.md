@@ -13,8 +13,14 @@ email addresses and send notifications.
    email (SMTP) settings". This includes the hostname and typically
    the port to reach your SMTP provider, and the username to log in to
    it. If your SMTP server does not require authentication, leave
-   `EMAIL_HOST_USER` empty. You'll also want to fill out the noreply
-   email section.
+   `EMAIL_HOST_USER` empty.
+
+   You'll also want to fill out the noreply email section, taking into
+   account the inline documentation for the proper values for those
+   settings, e.g., `NOREPLY_EMAIL_ADDRESS` and `TOKENIZED_NOREPLY_EMAIL_ADDRESS`.
+   Note that you can also configure `INSTALLATION_NAME` to customize the
+   email sender display name for notification emails from your Zulip
+   server.
 
 1. Put the password for the SMTP user account in
    `/etc/zulip/zulip-secrets.conf` by setting `email_password`. For
