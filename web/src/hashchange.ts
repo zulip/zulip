@@ -208,6 +208,20 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
                 return false;
             }
 
+            // Auto-redirect from channels/N to channel/N-name when a single ID was provided.
+            // parse_narrow already downgrades the operator, here we just redirect to the canonical URL.
+            const original_hash = window.location.hash;
+            const canonical_hash = hash_util.search_terms_to_hash(terms);
+            const should_redirect_channel_hash =
+                (original_hash.includes("/channels/") &&
+                    terms.some((term) => term.operator === "channel")) ||
+                (original_hash.includes("/channel/") &&
+                    terms.some((term) => term.operator === "channels"));
+            if (original_hash !== canonical_hash && should_redirect_channel_hash) {
+                window.location.replace(canonical_hash);
+                return false;
+            }
+
             // Show inbox style topics list for #topics narrow.
             if (hash[0] === "#topics" && terms.length === 1) {
                 const channel_id_string = hash[2];

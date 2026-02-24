@@ -45,7 +45,21 @@ export function encode_operand(term: NarrowCanonicalTerm): string {
             slug = people.user_ids_to_slug([term.operand]);
             break;
         case "channel":
-            return encode_stream_id(Number.parseInt(term.operand, 10));
+            if (term.operand.includes(",")) {
+                return term.operand;
+            }
+            {
+                const stream_id = Number.parseInt(term.operand, 10);
+                if (Number.isNaN(stream_id)) {
+                    return internal_url.encodeHashComponent(term.operand);
+                }
+                return encode_stream_id(stream_id);
+            }
+        case "channels":
+            if (term.operand.includes(",")) {
+                return term.operand;
+            }
+            break;
     }
 
     return slug ?? internal_url.encodeHashComponent(String(term.operand));
@@ -93,11 +107,24 @@ export function decode_operand(
         }
         return util.the(user_ids);
     }
-
+    const raw_operand = operand;
     operand = internal_url.decodeHashComponent(operand);
 
     if (operator === "channel") {
         return stream_data.slug_to_stream_id(operand)?.toString() ?? "";
+    }
+
+    if (operator === "channels" && raw_operand.includes(",")) {
+        const ids = operand.split(",").map((id_str) => {
+            const trimmed = id_str.trim();
+            const stream_id = stream_data.slug_to_stream_id(trimmed);
+            return stream_id?.toString() ?? trimmed;
+        });
+        return ids.join(",");
+    }
+
+    if (operator === "channels" && operand !== "public" && operand !== "web-public") {
+        return stream_data.slug_to_stream_id(operand)?.toString() ?? operand;
     }
 
     return operand;
@@ -128,6 +155,26 @@ export function by_stream_topic_url(stream_id: number, topic: string): string {
     return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
 }
 
+function with_operator(
+    term: NarrowCanonicalTerm,
+    operator: NarrowCanonicalOperator,
+): NarrowCanonicalTerm {
+    if (operator === term.operator) {
+        return term;
+    }
+    if (
+        (term.operator === "channel" || term.operator === "channels") &&
+        (operator === "channel" || operator === "channels")
+    ) {
+        return {
+            operator,
+            operand: term.operand,
+            negated: term.negated,
+        };
+    }
+    return term;
+}
+
 // Encodes a term list into the
 // corresponding hash: the # component
 // of the narrow URL
@@ -140,13 +187,24 @@ export function search_terms_to_hash(terms?: NarrowCanonicalTerm[]): string {
         hash = "#narrow";
 
         for (const term of terms) {
+            let operator: NarrowCanonicalOperator = term.operator;
+            if (
+                operator === "channels" &&
+                typeof term.operand === "string" &&
+                term.operand !== "public" &&
+                term.operand !== "web-public" &&
+                /^\d+$/.test(term.operand)
+            ) {
+                operator = "channel";
+            }
             const sign = term.negated ? "-" : "";
+            const canonical_term = with_operator(term, operator);
             hash +=
                 "/" +
                 sign +
-                internal_url.encodeHashComponent(term.operator) +
+                internal_url.encodeHashComponent(operator) +
                 "/" +
-                encode_operand(term);
+                encode_operand(canonical_term);
         }
     }
 
@@ -232,10 +290,24 @@ export function parse_narrow(hash: string[]): NarrowCanonicalTerm[] | undefined 
             return undefined;
         }
 
-        const canonical_operator = filter_util.canonicalize_operator(
+        let canonical_operator = filter_util.canonicalize_operator(
             narrow_operator_schema.parse(operator),
         );
-        const operand = decode_operand(canonical_operator, raw_operand);
+        if (canonical_operator === "channel" && raw_operand.includes(",")) {
+            return undefined;
+        }
+
+        let operand = decode_operand(canonical_operator, raw_operand);
+        if (
+            canonical_operator === "channels" &&
+            typeof operand === "string" &&
+            operand !== "public" &&
+            operand !== "web-public" &&
+            /^\d+$/.test(operand)
+        ) {
+            canonical_operator = "channel";
+            operand = decode_operand(canonical_operator, raw_operand);
+        }
         terms.push({
             negated,
             operator: canonical_operator,
