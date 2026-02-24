@@ -719,8 +719,8 @@ def send_message(request: HttpRequest) -> HttpResponse:
             return JsonResponse(
                 {
                     "result": "success",
+                    "msg": "",
                     "id": message.id,
-                    "message": serializer.model_dump(),
                 },
                 status=200,
             )
@@ -780,8 +780,8 @@ def send_message(request: HttpRequest) -> HttpResponse:
         return JsonResponse(
             {
                 "result": "success",
+                "msg": "",
                 "id": message.id,
-                "message": serializer.model_dump(),
             },
             status=200,
         )
