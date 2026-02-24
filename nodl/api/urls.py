@@ -7,6 +7,7 @@ from nodl.api.views.events import (
     events_view,
     register_queue,
     send_typing,
+    update_presence,
 )
 from nodl.api.views.messages import (
     add_reaction,
@@ -15,8 +16,8 @@ from nodl.api.views.messages import (
     get_message,
     get_unread_counts,
     list_dm_conversations,
-    list_messages,
     mark_messages_as_read,
+    messages_dispatch,
     mute_dm_user,
     remove_reaction,
     send_message,
@@ -57,6 +58,8 @@ urlpatterns = [
     path("api/v1/internal/realms/sync", sync_realm, name="nodl_sync_realm"),
     path("api/v1/internal/realms/deactivate", deactivate_realm, name="nodl_deactivate_realm"),
     # User REST API endpoints - authenticated via JWT
+    # Presence endpoint - authenticated via JWT
+    path("api/v1/users/me/presence", update_presence, name="nodl_presence"),
     # IMPORTANT: /users/me MUST come BEFORE /users to match correctly
     path("api/v1/users/me", get_current_user, name="nodl_current_user"),
     path("api/v1/users", list_users, name="nodl_list_users"),
@@ -83,7 +86,7 @@ urlpatterns = [
     path("api/v1/streams/<int:stream_id>/pin", pin_stream, name="nodl_pin_stream"),
     path("api/v1/streams/<int:stream_id>/unpin", unpin_stream, name="nodl_unpin_stream"),
     # Message REST API endpoints - authenticated via JWT
-    path("api/v1/messages", list_messages, name="nodl_list_messages"),
+    path("api/v1/messages", messages_dispatch, name="nodl_messages"),
     path("api/v1/messages/send", send_message, name="nodl_send_message"),
     path("api/v1/messages/<int:message_id>", get_message, name="nodl_get_message"),
     path("api/v1/messages/<int:message_id>/edit", edit_message, name="nodl_edit_message"),

@@ -205,8 +205,17 @@ def send_typing(request: HttpRequest) -> HttpResponse:
 
     _setup_client(request)
 
-    # Parse parameters from JSON body
+    # Parse parameters from JSON body or form-encoded data (Flutter client)
     body = _get_json_body(request)
+    if not body:
+        body = {k: v for k, v in request.POST.items()}
+        # Parse JSON-encoded values in form data (e.g., "to" is a JSON array)
+        for key in ("to", "stream_id"):
+            if key in body and isinstance(body[key], str):
+                try:
+                    body[key] = json.loads(body[key])
+                except (json.JSONDecodeError, ValueError):
+                    pass
     op = body.get("op")  # 'start' or 'stop'
     msg_type = body.get("type", "stream")  # 'stream' or 'direct'
     stream_id = body.get("stream_id")
@@ -289,3 +298,41 @@ def send_typing(request: HttpRequest) -> HttpResponse:
                 {"result": "error", "msg": str(e)},
                 status=400,
             )
+
+
+@csrf_exempt
+def update_presence(request: HttpRequest) -> HttpResponse:
+    """POST /api/v1/users/me/presence - Update user presence status.
+
+    Proxies to Zulip's update_active_status_backend with JWT auth.
+    """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "msg": "Method not allowed"},
+            status=405,
+        )
+
+    error_response, user_profile = _require_user_profile(request)
+    if error_response:
+        return error_response
+
+    _setup_client(request)
+
+    # Ensure form data is available for Zulip's view
+    body = _get_json_body(request)
+    if body:
+        request.POST = request.POST.copy()
+        for key in ("status", "new_user_input"):
+            if key in body and key not in request.POST:
+                request.POST[key] = str(body[key])
+
+    from zerver.views.presence import update_active_status_backend
+
+    try:
+        return update_active_status_backend(request, user_profile)
+    except Exception as e:
+        logger.warning(f"[nodl-presence] Error updating presence: {e}")
+        return JsonResponse(
+            {"result": "error", "msg": str(e)},
+            status=400,
+        )

@@ -258,6 +258,20 @@ def _build_dm_recipient_query(user: UserProfile, user_ids: list[int]):
         return None
 
 
+@csrf_exempt
+def messages_dispatch(request: HttpRequest) -> HttpResponse:
+    """Dispatch /api/v1/messages by HTTP method: GET → list, POST → send."""
+    if request.method == "GET":
+        return list_messages(request)
+    elif request.method == "POST":
+        return send_message(request)
+    else:
+        return JsonResponse(
+            {"result": "error", "msg": "Method not allowed"},
+            status=405,
+        )
+
+
 @require_jwt_auth
 @rate_limit(key_prefix="messages_read", limit=MESSAGES_READ_LIMIT)
 def list_messages(request: HttpRequest) -> HttpResponse:
@@ -618,13 +632,19 @@ def send_message(request: HttpRequest) -> HttpResponse:
     user: UserProfile = request.user_profile  # type: ignore[attr-defined]
 
     try:
-        body = json.loads(request.body)
+        # Try JSON first, fall back to form-encoded data (Flutter Zulip client)
+        try:
+            body = json.loads(request.body)
+        except (json.JSONDecodeError, ValueError):
+            body = {k: v for k, v in request.POST.items()}
+            # Parse JSON-encoded values in form data
+            for key in ("to", "stream_id"):
+                if key in body and isinstance(body[key], str):
+                    try:
+                        body[key] = json.loads(body[key])
+                    except (json.JSONDecodeError, ValueError):
+                        pass
         payload = MessageCreatePayload(**body)
-    except json.JSONDecodeError:
-        return JsonResponse(
-            {"result": "error", "code": "INVALID_JSON", "msg": "Invalid JSON body"},
-            status=400,
-        )
     except ValidationError as e:
         return JsonResponse(
             {"result": "error", "code": "VALIDATION_ERROR", "msg": str(e)},
