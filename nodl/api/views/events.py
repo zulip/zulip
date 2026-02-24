@@ -162,7 +162,22 @@ def register_queue(request: HttpRequest) -> HttpResponse:
     logger.info(f"[nodl-events] Registering event queue for user {user_profile.id}")
 
     # events_register_backend expects (request, maybe_user_profile)
-    return events_register_backend(request, user_profile)
+    try:
+        return events_register_backend(request, user_profile)
+    except Exception as e:
+        logger.error(
+            "[nodl-events] Event queue registration failed: %s: %s",
+            type(e).__name__,
+            e,
+            exc_info=True,
+        )
+        return JsonResponse(
+            {
+                "result": "error",
+                "msg": f"Event queue registration failed: {type(e).__name__}: {e}",
+            },
+            status=500,
+        )
 
 
 @csrf_exempt
