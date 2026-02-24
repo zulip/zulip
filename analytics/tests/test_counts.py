@@ -1,5 +1,6 @@
 from collections.abc import Iterator
 from contextlib import AbstractContextManager, ExitStack, contextmanager
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from unittest import mock
@@ -90,6 +91,14 @@ from zilencer.models import (
 from zilencer.views import get_last_id_from_server
 
 
+@dataclass
+class CreateUserPassKwargs:
+    """Additional keyword arguments for create_user function"""
+
+    bot_type: int | None = None
+    bot_owner: UserProfile | None = None
+
+
 class AnalyticsTestCase(ZulipTestCase):
     MINUTE = timedelta(seconds=60)
     HOUR = MINUTE * 60
@@ -128,10 +137,10 @@ class AnalyticsTestCase(ZulipTestCase):
             kwargs[key] = kwargs.get(key, value)
         kwargs["delivery_email"] = kwargs["email"]
         with time_machine.travel(kwargs["date_joined"], tick=False):
-            pass_kwargs: dict[str, Any] = {}
+            pass_kwargs = CreateUserPassKwargs()
             if kwargs["is_bot"]:
-                pass_kwargs["bot_type"] = UserProfile.DEFAULT_BOT
-                pass_kwargs["bot_owner"] = None
+                pass_kwargs.bot_type = UserProfile.DEFAULT_BOT
+                pass_kwargs.bot_owner = None
             user = create_user(
                 kwargs["email"],
                 "password",
@@ -139,7 +148,8 @@ class AnalyticsTestCase(ZulipTestCase):
                 active=kwargs["is_active"],
                 full_name=kwargs["full_name"],
                 role=UserProfile.ROLE_REALM_ADMINISTRATOR,
-                **pass_kwargs,
+                bot_type=pass_kwargs.bot_type,
+                bot_owner=pass_kwargs.bot_owner,
             )
             if not skip_auditlog:
                 RealmAuditLog.objects.create(
