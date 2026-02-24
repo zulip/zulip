@@ -113,28 +113,37 @@ def get_supabase_user_by_email(email: str) -> dict[str, Any] | None:
 
 
 def get_user_workspace_ids(supabase_user_id: str) -> list[str]:
-    """Query workspace_members via Supabase REST API to find user's workspaces."""
+    """Query workspace IDs via Supabase RPC function (SECURITY DEFINER).
+
+    Uses the RPC endpoint to call get_user_workspace_ids() which bypasses RLS,
+    allowing this to work with the anon key (auth.uid() would be NULL for
+    server-to-server calls, so direct table queries return no rows).
+    """
     supabase_url = getattr(settings, "NODL_SUPABASE_URL", "")
     if not supabase_url:
         return []
-    url = f"{supabase_url.rstrip('/')}/rest/v1/workspace_members"
+    url = f"{supabase_url.rstrip('/')}/rest/v1/rpc/get_user_workspace_ids"
     try:
-        resp = requests.get(
+        resp = requests.post(
             url,
             headers=get_supabase_admin_headers(),
-            params={"user_id": f"eq.{supabase_user_id}", "select": "workspace_id"},
+            json={"uid": supabase_user_id},
             timeout=5,
         )
         if resp.status_code == 200:
-            return [row["workspace_id"] for row in resp.json()]
+            # RETURNS SETOF uuid → flat array of UUID strings
+            data = resp.json()
+            if isinstance(data, list):
+                return [str(ws_id) for ws_id in data]
+            return []
         logger.warning(
-            "Supabase REST API returned %d querying workspace_members for user %s",
+            "Supabase RPC get_user_workspace_ids returned %d for user %s",
             resp.status_code,
             supabase_user_id,
         )
         return []
     except requests.RequestException:
-        logger.exception("Failed to query workspace_members for user %s", supabase_user_id)
+        logger.exception("Failed to query workspace_ids for user %s", supabase_user_id)
         return []
 
 
