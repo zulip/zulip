@@ -334,6 +334,39 @@ test("get_list_info unreads", ({override}) => {
         );
     }
 
+    // If there are no unread messages in the channel,
+    // we show the most recent 6 topics (MAX_TOPICS).
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 6);
+    assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, false);
+    assert.equal(list_info.num_possible_topics, 16);
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        ["topic 0", "topic 1", "topic 2", "topic 3", "topic 4", "topic 5"],
+    );
+
+    // If the most recent topics in the channel are
+    // all muted, then we show no topics.
+    override(user_topics, "is_topic_muted", (stream_id, topic_name) => {
+        assert.equal(stream_id, general.stream_id);
+        return ["topic 0", "topic 1", "topic 2", "topic 3", "topic 4", "topic 5"].includes(
+            topic_name,
+        );
+    });
+
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 0);
+    assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, false);
+    assert.equal(list_info.num_possible_topics, 16);
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        [],
+    );
+
+    override(user_topics, "is_topic_muted", () => false);
+
     /*
         We have 16 topics, but we only show up
         to 10 topics, depending on how many have
