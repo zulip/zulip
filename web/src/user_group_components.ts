@@ -34,6 +34,9 @@ export function set_right_panel_title(group: UserGroup): void {
             ),
         }),
     );
+    $("#groups_overlay .user-group-info-title-text").text(group_name);
+    $("#groups_overlay .user-group-info-title").addClass("showing-info-title");
+    $("#groups_overlay .user-group-help-icon").hide();
     if (group.deactivated) {
         $("#groups_overlay .deactivated-user-group-icon-right").show();
     } else {
@@ -46,9 +49,10 @@ export const show_user_group_settings_pane = {
         $("#groups_overlay .settings, #user-group-creation").hide();
         reset_active_group_id();
         $("#groups_overlay .nothing-selected").show();
-        $("#groups_overlay .user-group-info-title").text(
+        $("#groups_overlay .user-group-info-title-text").text(
             $t_html({defaultMessage: "User group settings"}),
         );
+        $("#groups_overlay .user-group-help-icon").show();
         $("#groups_overlay .deactivated-user-group-icon-right").hide();
         resize.resize_settings_overlay($("#groups_overlay_container"));
     },
@@ -62,14 +66,16 @@ export const show_user_group_settings_pane = {
     create_user_group(container_name = "configure_user_group_settings", group_name?: string) {
         $(".user_group_creation").hide();
         if (container_name === "configure_user_group_settings") {
-            $("#groups_overlay .user-group-info-title").text(
+            $("#groups_overlay .user-group-info-title-text").text(
                 $t_html({defaultMessage: "Configure new group settings"}),
             );
         } else {
-            $("#groups_overlay .user-group-info-title").text(
+            $("#groups_overlay .user-group-info-title-text").text(
                 $t_html({defaultMessage: "Add members to {group_name}"}, {group_name}),
             );
+            $("#groups_overlay .user-group-info-title").addClass("showing-info-title");
         }
+        $("#groups_overlay .user-group-help-icon").hide();
         update_footer_buttons(container_name);
         $(`.${CSS.escape(container_name)}`).show();
         $("#groups_overlay .nothing-selected, #groups_overlay .settings").hide();

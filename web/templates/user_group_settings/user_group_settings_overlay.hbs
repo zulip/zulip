@@ -43,12 +43,14 @@
                 <div class="right">
                     <div class="two-pane-settings-subheader">
                         <div class="display-type">
-                            <div id="user_group_settings_title" class="user-group-info-title">{{t 'User group settings' }}</div>
+                            <div id="user_group_settings_title" class="user-group-info-title">
+                                <span class="user-group-info-title-text">{{t 'User group settings' }}</span>
+                                <a href="/help/user-groups" target="_blank" class="user-group-help-icon" title="{{t 'User groups help'}}"><i class="fa fa-question-circle-o" aria-hidden="true"></i></a>
+                            </div>
                         </div>
                     </div>
                     <div class="two-pane-settings-body">
                         <div class="nothing-selected">
-                            <div class="group-info-banner banner-wrapper"></div>
                             <div class="create-group-button-container">
                                 {{> ../settings/upgrade_tip_widget . }}
                                 <button type="button" class="create_user_group_button animated-purple-button">{{t 'Create user group' }}</button>
