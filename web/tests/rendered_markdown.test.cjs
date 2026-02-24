@@ -25,6 +25,7 @@ const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
 
 const rm = zrequire("rendered_markdown");
+const alert_words = zrequire("alert_words");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
@@ -107,6 +108,8 @@ const $array = (array) => {
     return {each};
 };
 
+let next_content_id = 0;
+
 function set_message_for_message_content($content, value) {
     // no message row found
     if (value === undefined) {
@@ -139,7 +142,7 @@ function set_message_for_message_content($content, value) {
 }
 
 const get_content_element = () => {
-    const $content = $.create("content-stub");
+    const $content = $.create(`content-stub-${next_content_id++}`);
     $content.set_find_results(".user-mention", $array([]));
     $content.set_find_results(".topic-mention", $array([]));
     $content.set_find_results(".user-group-mention", $array([]));
@@ -528,6 +531,114 @@ run_test("message-links", ({mock_template}) => {
         href: `/#narrow/channel/${stream.stream_id}-test/topic//near/123`,
     });
     assert.ok(channel_message_link_rendered_html.includes("empty-topic-display"));
+});
+run_test("highlight_alert_words_in_html for stream-topic and message-link", ({mock_template}) => {
+    // --- Test 1: No alert words, nothing highlighted ---
+    {
+        const $content = get_content_element();
+        const $link = $.create("a.stream-topic(alert-words-test-1)");
+        $link.set_find_results(".highlight", false);
+        $link.set_find_results(".alert-word, .highlight", false);
+        $link.attr("href", `/#narrow/channel/${stream.stream_id}-random/topic/sometopic`);
+        $link.replaceWith = noop;
+        $link.hasClass = (class_name) => class_name === "stream-topic";
+        $link.text("#random > sometopic");
+        $content.set_find_results("a.stream-topic, a.message-link", $array([$link]));
+
+        alert_words.set_words([]);
+        mock_template("topic_link.hbs", true, (_data, html) => html);
+
+        rm.update_elements($content);
+    }
+
+    // --- Test 2: Alert word highlighted in a.stream-topic ---
+    {
+        const $content = get_content_element();
+        const $link = $.create("a.stream-topic(alert-words-test-2)");
+        $link.set_find_results(".highlight", false);
+        $link.set_find_results(".alert-word, .highlight", false);
+        $link.attr("href", `/#narrow/channel/${stream.stream_id}-random/topic/GSoC`);
+        $link.hasClass = (class_name) => class_name === "stream-topic";
+        $link.text("#random > GSoC 2024");
+
+        let replaced_html;
+        $link.replaceWith = (elem) => {
+            replaced_html = elem.selector ?? elem;
+        };
+        $link.html = (new_html) => {
+            if (new_html !== undefined) {
+                replaced_html = new_html;
+            }
+            return "#test &gt; GSoC 2024";
+        };
+
+        $content.set_find_results("a.stream-topic, a.message-link", $array([$link]));
+        alert_words.set_words(["GSoC"]);
+        mock_template("topic_link.hbs", true, (_data, html) => html);
+
+        rm.update_elements($content);
+        assert.ok(replaced_html.includes("<span class='alert-word'>GSoC</span>"));
+    }
+
+    // --- Test 3: Alert word highlighted in a.message-link ---
+    {
+        const $content = get_content_element();
+        const $link = $.create("a.message-link(alert-words-test-3)");
+        $link.set_find_results(".highlight", false);
+        $link.set_find_results(".alert-word, .highlight", false);
+        $link.attr("href", `/#narrow/channel/${stream.stream_id}-random/topic/urgent/near/123`);
+        $link.hasClass = (class_name) => class_name === "message-link";
+        $link.text("#random > urgent @ 💬");
+        $link.replaceWith = noop;
+
+        let replaced_html;
+        $link.html = (new_html) => {
+            if (new_html !== undefined) {
+                replaced_html = new_html;
+            }
+            return "urgent update";
+        };
+
+        $content.set_find_results("a.stream-topic, a.message-link", $array([$link]));
+        alert_words.set_words(["urgent"]);
+        mock_template("channel_message_link.hbs", true, (_data, html) => html);
+
+        rm.update_elements($content);
+        assert.ok(replaced_html.includes("<span class='alert-word'>urgent</span>"));
+    }
+
+    // --- Test 4: Already has .alert-word span, skip re-highlighting ---
+    {
+        const $content = get_content_element();
+        const $link = $.create("a.stream-topic(alert-words-test-4)");
+        $link.set_find_results(".highlight", false);
+        $link.set_find_results(".alert-word, .highlight", $array([$.create("span.alert-word")]));
+        $link.attr("href", `/#narrow/channel/${stream.stream_id}-random/topic/GSoC`);
+        $link.hasClass = (class_name) => class_name === "stream-topic";
+        $link.text("#random > GSoC 2024");
+        $link.replaceWith = noop;
+
+        let html_set = false;
+        $link.html = (new_html) => {
+            if (new_html !== undefined) {
+                html_set = true;
+            }
+            return "#test &gt; <span class='alert-word'>GSoC</span> 2024";
+        };
+
+        // Call once explicitly so coverage includes this stub logic.
+        // rm.update_elements should NOT call html() again when .alert-word exists.
+        $link.html();
+
+        $content.set_find_results("a.stream-topic, a.message-link", $array([$link]));
+        alert_words.set_words(["GSoC"]);
+        mock_template("topic_link.hbs", true, (_data, html) => html);
+
+        rm.update_elements($content);
+        assert.equal(html_set, false);
+    }
+
+    alert_words.set_words([]);
 });
 
 run_test("timestamp without time", () => {

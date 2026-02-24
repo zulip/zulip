@@ -194,6 +194,53 @@ run_test("munging", () => {
     );
 });
 
+run_test("highlight_alert_words_in_html", () => {
+    // 1️⃣ Early return when no alert words
+    alert_words.initialize({alert_words: []});
+    assert.equal(
+        alert_words.highlight_alert_words_in_html("#test &gt; some topic"),
+        "#test &gt; some topic",
+    );
+
+    // 2️⃣ Normal highlighting
+    alert_words.set_words(["GSoC", "urgent"]);
+    assert.equal(
+        alert_words.highlight_alert_words_in_html("#test &gt; GSoC testing topic"),
+        "#test &gt; <span class='alert-word'>GSoC</span> testing topic",
+    );
+    assert.equal(
+        alert_words.highlight_alert_words_in_html("urgent link"),
+        "<span class='alert-word'>urgent</span> link",
+    );
+
+    // 3️⃣ Cover in_tag branch (word inside HTML tag attribute)
+    alert_words.set_words(["urgent"]);
+    assert.equal(
+        alert_words.highlight_alert_words_in_html("<a title='urgent'>link</a>"),
+        "<a title='urgent'>link</a>",
+    );
+
+    // 4️⃣ Cover punctuation boundary branch
+    assert.equal(
+        alert_words.highlight_alert_words_in_html("(urgent)"),
+        "(<span class='alert-word'>urgent</span>)",
+    );
+
+    // 5️⃣ Cover special-character escaping (e.g. &)
+    alert_words.set_words(["FD&C"]);
+    assert.equal(
+        alert_words.highlight_alert_words_in_html("FD&C rules"),
+        "<span class='alert-word'>FD&C</span> rules",
+    );
+
+    // 6️⃣ Explicit early return again (guarantee coverage)
+    alert_words.initialize({alert_words: []});
+    assert.equal(
+        alert_words.highlight_alert_words_in_html("urgent"),
+        "urgent",
+    );
+});
+
 run_test("basic get/set operations", () => {
     alert_words.initialize({alert_words: []});
     assert.ok(!alert_words.has_alert_word("breakfast"));

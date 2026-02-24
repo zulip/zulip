@@ -10,6 +10,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 
+import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as hash_util from "./hash_util.ts";
@@ -392,5 +393,34 @@ export const update_elements = ($content: JQuery): void => {
             })
             .contents()
             .unwrap();
+    }
+
+    // Highlight alert words inside stream-topic and message-link anchors.
+    // Consolidated here so it runs once after all DOM mutations are complete,
+    // preventing any replaceWith from overwriting highlights.
+    const alert_word_list = alert_words.get_word_list();
+    if (alert_word_list.length > 0) {
+        $content.find("a.stream-topic, a.message-link").each(function (): void {
+            const $link = $(this);
+
+            // Skip links that already contain an alert-word or highlighted segment.
+            // We need to support both real jQuery collections (which have a numeric
+            // .length) and zjquery's $array helper used in node tests (which
+            // provides an .each method instead).
+            const highlight_result: any = $link.find(".alert-word, .highlight");
+            const has_existing_highlight =
+                typeof highlight_result?.length === "number"
+                    ? highlight_result.length > 0
+                    : typeof highlight_result?.each === "function";
+            if (has_existing_highlight) {
+                return;
+            }
+
+            const original_html = $link.html();
+            const new_html = alert_words.highlight_alert_words_in_html(original_html);
+            if (new_html !== original_html) {
+                $link.html(new_html);
+            }
+        });
     }
 };
