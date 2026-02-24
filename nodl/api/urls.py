@@ -22,6 +22,8 @@ from nodl.api.views.messages import (
     remove_reaction,
     send_message,
     unmute_dm_user,
+    update_flags,
+    update_flags_narrow,
 )
 from nodl.api.views.streams import (
     archive_stream,
@@ -85,6 +87,9 @@ urlpatterns = [
     path("api/v1/streams/<int:stream_id>/unmute", unmute_stream, name="nodl_unmute_stream"),
     path("api/v1/streams/<int:stream_id>/pin", pin_stream, name="nodl_pin_stream"),
     path("api/v1/streams/<int:stream_id>/unpin", unpin_stream, name="nodl_unpin_stream"),
+    # Message flags endpoints - authenticated via JWT (MUST come before /messages)
+    path("api/v1/messages/flags/narrow", update_flags_narrow, name="nodl_update_flags_narrow"),
+    path("api/v1/messages/flags", update_flags, name="nodl_update_flags"),
     # Message REST API endpoints - authenticated via JWT
     path("api/v1/messages", messages_dispatch, name="nodl_messages"),
     path("api/v1/messages/send", send_message, name="nodl_send_message"),

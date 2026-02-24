@@ -25,6 +25,7 @@ from nodl.api.serializers.messages import (
 )
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import do_update_message
+from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.message_send import check_send_message
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.reactions import check_add_reaction, do_remove_reaction
@@ -1582,4 +1583,133 @@ def get_unread_counts(request: HttpRequest) -> HttpResponse:
                 "result": "success",
                 "unread_counts": {},
             }
+        )
+
+
+@csrf_exempt
+@require_jwt_auth
+def update_flags(request: HttpRequest) -> HttpResponse:
+    """POST /api/v1/messages/flags - Update message flags (read, starred, etc.).
+
+    Proxies to Zulip's do_update_message_flags with JWT auth.
+    The Flutter client calls this heavily for mark-as-read.
+    """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "msg": "Method not allowed"},
+            status=405,
+        )
+
+    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+
+    # Parse JSON body or form-encoded data
+    try:
+        body = json.loads(request.body) if request.body else {}
+    except (json.JSONDecodeError, ValueError):
+        body = {k: v for k, v in request.POST.items()}
+
+    op = body.get("op", "")
+    flag = body.get("flag", "")
+    messages = body.get("messages", [])
+
+    # Validate
+    if op not in ("add", "remove"):
+        return JsonResponse(
+            {"result": "error", "msg": "Missing or invalid 'op' parameter"},
+            status=400,
+        )
+    if not flag:
+        return JsonResponse(
+            {"result": "error", "msg": "Missing 'flag' parameter"},
+            status=400,
+        )
+
+    # Parse messages list from JSON string if form-encoded
+    if isinstance(messages, str):
+        try:
+            messages = json.loads(messages)
+        except (json.JSONDecodeError, ValueError):
+            return JsonResponse(
+                {"result": "error", "msg": "Invalid 'messages' parameter"},
+                status=400,
+            )
+
+    if not isinstance(messages, list):
+        return JsonResponse(
+            {"result": "error", "msg": "'messages' must be a list of message IDs"},
+            status=400,
+        )
+
+    try:
+        message_ids = [int(m) for m in messages]
+    except (ValueError, TypeError):
+        return JsonResponse(
+            {"result": "error", "msg": "'messages' must contain valid IDs"},
+            status=400,
+        )
+
+    try:
+        count, ignored = do_update_message_flags(user, op, flag, message_ids)
+    except Exception as e:
+        logger.warning("[nodl-flags] Error updating flags: %s", e)
+        return JsonResponse(
+            {"result": "error", "msg": str(e)},
+            status=400,
+        )
+
+    return JsonResponse(
+        {
+            "result": "success",
+            "msg": "",
+            "messages": message_ids,
+            "ignored_because_not_subscribed_channels": ignored,
+        }
+    )
+
+
+@csrf_exempt
+@require_jwt_auth
+def update_flags_narrow(request: HttpRequest) -> HttpResponse:
+    """POST /api/v1/messages/flags/narrow - Update flags for messages matching a narrow.
+
+    Proxies to Zulip's update_message_flags_for_narrow with JWT auth.
+    Injects body params into request.POST so the @typed_endpoint decorator can parse them.
+    """
+    if request.method != "POST":
+        return JsonResponse(
+            {"result": "error", "msg": "Method not allowed"},
+            status=405,
+        )
+
+    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
+
+    # Ensure RequestNotes has a client set (required by Zulip views)
+    from zerver.lib.request import RequestNotes
+
+    notes = RequestNotes.get_notes(request)
+    if notes.client is None:
+        notes.client = get_client("nodl-web")
+
+    # Parse JSON body and inject into request.POST for @typed_endpoint
+    try:
+        body = json.loads(request.body) if request.body else {}
+    except (json.JSONDecodeError, ValueError):
+        body = {}
+
+    if body:
+        request.POST = request.POST.copy()
+        for key in ("anchor", "flag", "include_anchor", "narrow", "num_after", "num_before", "op"):
+            if key in body and key not in request.POST:
+                val = body[key]
+                request.POST[key] = json.dumps(val) if isinstance(val, (list, dict, bool)) else str(val)
+
+    from zerver.views.message_flags import update_message_flags_for_narrow
+
+    try:
+        return update_message_flags_for_narrow(request, user)
+    except Exception as e:
+        logger.warning("[nodl-flags-narrow] Error updating flags: %s", e)
+        return JsonResponse(
+            {"result": "error", "msg": str(e)},
+            status=400,
         )
