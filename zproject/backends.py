@@ -19,7 +19,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 from email.headerregistry import Address
-from typing import Any, TypedDict, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast
 
 import magic
 import orjson
@@ -67,6 +67,7 @@ from social_core.exceptions import (
 from social_core.pipeline.partial import partial
 from social_core.storage import UserProtocol
 from social_core.strategy import HttpResponseProtocol
+from social_django.strategy import DjangoStrategy
 from social_django.utils import load_backend, load_strategy
 from typing_extensions import override
 from zxcvbn import zxcvbn
@@ -118,6 +119,9 @@ from zerver.models.users import (
     remote_user_to_email,
 )
 from zproject.settings_types import OIDCIdPConfigDict
+
+if TYPE_CHECKING:
+    from django.http.request import _ImmutableQueryDict
 
 redis_client = get_redis_client()
 
@@ -2096,6 +2100,8 @@ def social_associate_user_helper(
 
     Returns a UserProfile object for successful authentication, and None otherwise.
     """
+    assert isinstance(backend.strategy, DjangoStrategy)
+
     subdomain = backend.strategy.session_get("subdomain")
     try:
         realm = get_realm(subdomain)
@@ -2468,7 +2474,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     standard_relay_params = [*settings.SOCIAL_AUTH_FIELDS_STORED_IN_SESSION, "next"]
 
     @override
-    def auth_complete(  # type: ignore[override]  # https://github.com/python-social-auth/social-core/pull/1494
+    def auth_complete(
         self, *args: Any, **kwargs: Any
     ) -> UserProtocol | HttpResponseProtocol | None:
         """This is a small wrapper around the core `auth_complete` method of
@@ -2807,9 +2813,11 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
         return user_details
 
     @override
-    def auth_complete(  # type: ignore[override]  # https://github.com/python-social-auth/social-core/pull/1494
+    def auth_complete(
         self, *args: Any, **kwargs: Any
     ) -> UserProtocol | HttpResponseProtocol | None:
+        assert isinstance(self.strategy, DjangoStrategy)
+
         if not self.is_native_flow():
             # The default implementation in python-social-auth is the browser flow.
             return super().auth_complete(*args, **kwargs)
@@ -3151,6 +3159,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             return {}
 
     def choose_subdomain(self, relayed_params: dict[str, Any]) -> str | None:
+        assert isinstance(self.strategy, DjangoStrategy)
+
         subdomain = relayed_params.get("subdomain")
         if subdomain is not None:
             return subdomain
@@ -3286,7 +3296,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         )  # https://github.com/python-social-auth/social-core/pull/1511
 
     @override
-    def auth_complete(  # type: ignore[override]  # https://github.com/python-social-auth/social-core/pull/1494
+    def auth_complete(
         self, *args: Any, **kwargs: Any
     ) -> UserProtocol | HttpResponseProtocol | None:
         """
@@ -3304,6 +3314,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
         Additionally, this handles incoming LogoutRequests for IdP-initiated logout.
         """
+        assert isinstance(self.strategy, DjangoStrategy)
 
         encoded_saml_request = self.strategy.request_data().get("SAMLRequest")
         encoded_saml_response = self.strategy.request_data().get("SAMLResponse")
@@ -3392,7 +3403,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             # so we need to replace this param.
             post_params = self.strategy.request.POST.copy()
             post_params["RelayState"] = orjson.dumps({"idp": idp_name}).decode()
-            self.strategy.request.POST = post_params
+            self.strategy.request.POST = cast("_ImmutableQueryDict", post_params)
 
             # Call the auth_complete method of SocialAuthMixIn
             result = super().auth_complete(*args, **kwargs)
@@ -3641,6 +3652,8 @@ class SAMLSPInitiatedLogout:
         Validates the LogoutResponse and logs out the user if successful,
         finishing the SP-initiated logout flow.
         """
+        assert isinstance(logout_response.backend.strategy, DjangoStrategy)
+
         idp = logout_response.backend.get_idp(idp_name)
         auth = logout_response.backend._create_saml_auth(idp)
         auth.process_slo(keep_local_session=True)
