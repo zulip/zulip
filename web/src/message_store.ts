@@ -203,6 +203,12 @@ export type Message = (
     // Used for edited messages to show their last edit time.
     local_edit_timestamp?: number;
 
+    // Used for poll widget edits to show an edited notice.
+    poll_edited?: boolean;
+
+    // Used for poll widget edits to show a last edited time.
+    poll_edit_timestamp?: number;
+
     // Used in message_notifications to track if a notification has already
     // been sent for this message.
     notification_sent?: boolean;

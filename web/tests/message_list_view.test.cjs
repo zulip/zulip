@@ -70,6 +70,12 @@ test("msg_edited_and_moved_vars", () => {
         const messages = [
             // no edit or moved timestamps
             {msg: {}},
+            // poll updated: EDITED
+            {
+                msg: {
+                    poll_edited: true,
+                },
+            },
             // edit timestamp: EDITED
             {
                 msg: {
@@ -108,18 +114,22 @@ test("msg_edited_and_moved_vars", () => {
         assert.equal(result[0].edited, false);
         assert.equal(result[0].moved, false);
         assert.equal(result[0].modified, false);
-        // edit timestamp: EDITED
+        // poll updated: EDITED
         assert.equal(result[1].edited, true);
         assert.equal(result[1].moved, false);
         assert.equal(result[1].modified, true);
-        // moved timestamp: MOVED
-        assert.equal(result[2].edited, false);
-        assert.equal(result[2].moved, true);
+        // edit timestamp: EDITED
+        assert.equal(result[2].edited, true);
+        assert.equal(result[2].moved, false);
         assert.equal(result[2].modified, true);
-        // both edit and moved timestamp: EDITED
-        assert.equal(result[3].edited, true);
+        // moved timestamp: MOVED
+        assert.equal(result[3].edited, false);
         assert.equal(result[3].moved, true);
         assert.equal(result[3].modified, true);
+        // both edit and moved timestamp: EDITED
+        assert.equal(result[4].edited, true);
+        assert.equal(result[4].moved, true);
+        assert.equal(result[4].modified, true);
     })();
 });
 
