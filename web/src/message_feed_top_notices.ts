@@ -1,5 +1,4 @@
 import $ from "jquery";
-import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as hash_util from "./hash_util.ts";
@@ -7,7 +6,6 @@ import type {MessageList} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
-import * as people from "./people.ts";
 
 function show_history_limit_notice(): void {
     $(".top-messages-logo").hide();
@@ -51,17 +49,7 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         // conditions, but there's a very legitimate use case
         // for moderation of searching for all messages sent
         // by a potential spammer user.
-        if (
-            filter &&
-            !filter.is_in_home() &&
-            !filter.contains_only_private_messages() &&
-            !filter.includes_full_stream_history() &&
-            !filter.is_personal_filter() &&
-            !(
-                _.isEqual(filter.sorted_term_types(), ["sender", "has-reaction"]) &&
-                filter.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
-            )
-        ) {
+        if (filter?.may_have_incomplete_message_history()) {
             show_end_of_results_notice();
         }
     }
