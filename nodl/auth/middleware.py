@@ -76,10 +76,18 @@ class SupabaseJWTMiddleware:
             auth_header = request.headers.get("Authorization", "")
             if auth_header.startswith("Basic "):
                 try:
-                    from zerver.decorator import get_basic_credentials, validate_api_key
+                    import base64
 
-                    email, api_key = get_basic_credentials(request)
-                    user_profile = validate_api_key(request, email, api_key)
+                    from zerver.models.users import get_user_profile_by_api_key
+
+                    credentials = auth_header[6:]
+                    decoded = base64.b64decode(credentials).decode()
+                    email, api_key = decoded.split(":", 1)
+                    user_profile = get_user_profile_by_api_key(api_key.strip())
+                    if email.strip().lower() != user_profile.delivery_email.lower():
+                        raise ValueError("Email mismatch")
+                    if not user_profile.is_active or user_profile.realm.deactivated:
+                        raise ValueError("Inactive user or realm")
                     request.user_profile = user_profile
                     request.user = user_profile
                     # Skip CSRF for API key auth (matches @authenticated_rest_api_view)
