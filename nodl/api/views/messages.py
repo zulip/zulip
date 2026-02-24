@@ -711,7 +711,7 @@ def send_message(request: HttpRequest) -> HttpResponse:
                     "id": message.id,
                     "message": serializer.model_dump(),
                 },
-                status=201,
+                status=200,
             )
 
         except JsonableError as e:
@@ -772,7 +772,7 @@ def send_message(request: HttpRequest) -> HttpResponse:
                 "id": message.id,
                 "message": serializer.model_dump(),
             },
-            status=201,
+            status=200,
         )
 
     except JsonableError as e:
