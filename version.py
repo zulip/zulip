@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 468
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (370, 1)  # bumped 2026-02-24 to patch jdenticon
+PROVISION_VERSION = (370, 2)  # bumped 2026-02-24 to upgrade Node.js
