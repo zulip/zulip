@@ -149,33 +149,37 @@
 </div>
 
 {{#if is_stream_edit}}
-    <div id="channel-inherited-permissions" class="settings-subsection-parent">
-        <div class="channel-inherited-permissions-title-container subsection-header">
-            <h4 class="stream_setting_subsection_title">{{t "Inherited from organization settings"}}</h4>
-        </div>
-
-        {{#if (eq ../stream_inherited_permissions.length 0)}}
-            <p class="no-inherited-permissions-text">
-                {{t "No organization-level permissions affect this channel."}}
-            </p>
-        {{else}}
-            <div class="inherited-permissions-list">
-                {{#each ../stream_inherited_permissions}}
-                    <div class="inherited-permission-item">
-                        <div class="inherited-permission-label">
-                            <span class="inherited-permission-icon">
-                                <i class="fa fa-lock" aria-hidden="true"></i>
-                            </span>
-                            <strong>{{label}}:</strong>
-                        </div>
-                        <div class="inherited-permission-groups">
-                            {{#each group_names}}
-                                <span class="inherited-group-pill">{{this}}</span>
-                            {{/each}}
-                        </div>
-                    </div>
-                {{/each}}
+    {{#if stream_inherited_permissions}}
+        <div id="channel-inherited-permissions" class="settings-subsection-parent">
+            <div class="channel-inherited-permissions-title-container subsection-header">
+                <h4 class="stream_setting_subsection_title">
+                    {{t "Inherited from organization settings"}}
+                </h4>
             </div>
-        {{/if}}
-    </div>
+
+            {{#if (eq stream_inherited_permissions.length 0)}}
+                <p class="no-inherited-permissions-text">
+                    {{t "No organization-level permissions affect this channel."}}
+                </p>
+            {{else}}
+                <div class="inherited-permissions-list">
+                    {{#each stream_inherited_permissions}}
+                        <div class="inherited-permission-item">
+                            <div class="inherited-permission-label">
+                                <span class="inherited-permission-icon">
+                                    <i class="fa fa-lock" aria-hidden="true"></i>
+                                </span>
+                                <strong>{{label}}:</strong>
+                            </div>
+                            <div class="inherited-permission-groups">
+                                {{#each group_names}}
+                                    <span class="inherited-group-pill">{{this}}</span>
+                                {{/each}}
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+            {{/if}}
+        </div>
+    {{/if}}
 {{/if}}
