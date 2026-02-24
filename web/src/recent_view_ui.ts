@@ -1908,11 +1908,6 @@ export function initialize({
             assert(topic !== undefined);
             on_mark_topic_as_read(stream_id, topic);
         }
-        // If `unread` filter is selected, the focused topic row gets removed
-        // and we automatically move one row down.
-        if (!filters.has("unread")) {
-            change_focused_element($elt, "down_arrow");
-        }
     });
 
     $("body").on("keydown", ".recent-view-body-row", (e) => {
@@ -1926,6 +1921,12 @@ export function initialize({
                     break;
                 case COLUMNS.read:
                     $(e.currentTarget).find(".on_hover_topic_read").trigger("click");
+                    // If `unread` filter is selected, the focused topic row gets removed
+                    // and we automatically move one row down.
+                    if (!filters.has("unread")) {
+                        assert(e.currentTarget instanceof HTMLElement);
+                        change_focused_element($(e.currentTarget), "down_arrow");
+                    }
                     break;
                 case COLUMNS.mute:
                     $(e.currentTarget)
