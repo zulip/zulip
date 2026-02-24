@@ -1,8 +1,11 @@
 {{#each all_tasks}}
-    <li>
+    <li class="todo-task-row" draggable="true" data-key="{{ key }}">
         <label class="checkbox">
+            <span class="todo-drag-handle" draggable="true" data-key="{{ key }}" aria-label="{{t 'Reorder task'}}">
+                <i class="zulip-icon zulip-icon-grip-vertical" aria-hidden="true"></i>
+            </span>
             <span class="todo-checkbox">
-                <input type="checkbox" class="task" data-key="{{ key }}" {{#if completed}}checked{{/if}}/>
+                <input type="checkbox" class="task" data-key="{{ key }}" {{#if completed}}checked{{/if}} />
                 <span class="custom-checkbox"></span>
             </span>
             <span class="todo-task">

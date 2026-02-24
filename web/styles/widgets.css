@@ -56,6 +56,19 @@
         position: static;
         min-height: 0;
 
+        .todo-drag-handle {
+            color: hsl(0deg 0% 75%);
+            cursor: grab;
+            display: inline-flex;
+            align-items: center;
+            user-select: none;
+            align-self: center;
+
+            &:active {
+                cursor: grabbing;
+            }
+        }
+
         & input[type="checkbox"] {
             ~ .custom-checkbox {
                 display: inline-block;
