@@ -1538,6 +1538,19 @@ run_test("emails_strings_to_user_ids_array", () => {
     assert.equal(user_ids, undefined);
 });
 
+run_test("emails_string_to_user_ids", () => {
+    initialize();
+    people.add_active_user(steven);
+    people.add_active_user(maria);
+
+    let user_ids = people.emails_string_to_user_ids(`${steven.email}, ${maria.email}`);
+    assert.deepEqual(user_ids, [steven.user_id, maria.user_id]);
+
+    blueslip.expect("warn", "Unknown emails");
+    user_ids = people.emails_string_to_user_ids("dummyuser@example.com");
+    assert.deepEqual(user_ids, []);
+});
+
 run_test("get_visible_email", () => {
     initialize();
     people.add_active_user(steven);

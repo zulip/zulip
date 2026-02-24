@@ -82,15 +82,17 @@ export function modals_handle_events(event_key: string, context: Context): void 
     if (event_key === "down_arrow" || event_key === "vim_down") {
         if (has_focus) {
             if (!had_focus) {
-                scroll_to_element(row_with_focus(context), context);
+                // `initialize_focus` already selected the first row for this keypress.
+                // Avoid an extra one-time jump so the first Down press feels the
+                // same as subsequent presses.
+                return;
+            }
+            const $focused_row = row_with_focus(context);
+            const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
+            if (should_scroll_within_row($focused_row, $items_list, 1)) {
+                scroll_list_by_arrow(context, 1);
             } else {
-                const $focused_row = row_with_focus(context);
-                const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
-                if (should_scroll_within_row($focused_row, $items_list, 1)) {
-                    scroll_list_by_arrow(context, 1);
-                } else {
-                    scroll_to_element(row_after_focus(context), context);
-                }
+                scroll_to_element(row_after_focus(context), context);
             }
         } else {
             scroll_list_by_arrow(context, 1);

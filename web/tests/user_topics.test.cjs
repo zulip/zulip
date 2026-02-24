@@ -8,6 +8,7 @@ const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
+const timerender = zrequire("timerender");
 const user_topics = zrequire("user_topics");
 const stream_data = zrequire("stream_data");
 const {initialize_user_settings} = zrequire("user_settings");
@@ -223,7 +224,7 @@ test("get_mutes", () => {
     assert.deepEqual(all_muted_topics, [
         {
             date_updated: 1577836700000,
-            date_updated_str: "Dec 31, 2019",
+            date_updated_str: timerender.render_now(new Date(1577836700000)).time_str,
             stream: devel.name,
             stream_id: devel.stream_id,
             topic: "java",
@@ -269,7 +270,7 @@ test("get_unmutes", () => {
     assert.deepEqual(all_unmuted_topics, [
         {
             date_updated: 1577836700000,
-            date_updated_str: "Dec 31, 2019",
+            date_updated_str: timerender.render_now(new Date(1577836700000)).time_str,
             stream: devel.name,
             stream_id: devel.stream_id,
             topic: "java",
@@ -315,7 +316,7 @@ test("get_follows", () => {
     assert.deepEqual(all_followed_topics, [
         {
             date_updated: 1577836700000,
-            date_updated_str: "Dec 31, 2019",
+            date_updated_str: timerender.render_now(new Date(1577836700000)).time_str,
             stream: devel.name,
             stream_id: devel.stream_id,
             topic: "java",
