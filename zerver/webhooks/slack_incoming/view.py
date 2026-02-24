@@ -9,7 +9,6 @@ from django.utils.translation import gettext as _
 from typing_extensions import ParamSpec
 
 from zerver.data_import.slack_message_conversion import (
-    LossyConversionError,
     convert_slack_formatting,
     render_attachment,
     render_block,
@@ -83,15 +82,34 @@ def api_slack_incoming_webhook(
     if user_specified_topic is None:
         user_specified_topic = "(no topic)"
 
+    # We probably won't find many user/channel mentions in these payloads, if at
+    # all, since a major use case for this integration is to act as a bridge from
+    # third-party apps. So, these mention processor functions probably don't really
+    # matter much.
+    def channel_mention_processor(slack_channel_id: str) -> str | None:  # nocoverage
+        return f"#**Slack channel {slack_channel_id}**"
+
+    def user_mention_processor(slack_user_id: str) -> tuple[str, int] | None:  # nocoverage
+        return (f"@**Slack user {slack_user_id}**", 1)
+
     pieces: list[str] = []
     if payload.get("blocks"):
-        try:
-            pieces += map(render_block, payload["blocks"])
-        except LossyConversionError:  # nocoverage
-            pieces.append(payload.get("text", "").tame(check_string))
+        for block in payload["blocks"]:
+            result = render_block(
+                block,
+                channel_mention_processor,
+                user_mention_processor,
+            )
+            pieces.append(result.content)
 
     if payload.get("attachments"):
-        pieces += map(render_attachment, payload["attachments"])
+        for attachment in payload["attachments"]:
+            result = render_attachment(
+                attachment,
+                channel_mention_processor,
+                user_mention_processor,
+            )
+            pieces.append(result.content)
 
     body = "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
@@ -99,9 +117,8 @@ def api_slack_incoming_webhook(
         if payload.get("icon_emoji"):
             body = payload["icon_emoji"].tame(check_string) + " "
         body += payload["text"].tame(check_string)
-        body = body.strip()
+        body, __ = convert_slack_formatting(replace_links(body.strip()))
 
     if body != "":
-        body, __ = convert_slack_formatting(replace_links(body).strip())
         check_send_webhook_message(request, user_profile, user_specified_topic, body)
     return json_success(request, data={"ok": True})

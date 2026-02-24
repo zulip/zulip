@@ -55,6 +55,7 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
+    get_zulip_mention_for_slack_user,
     process_slack_block_and_attachment,
 )
 from zerver.lib.emoji import codepoint_to_name
@@ -1173,6 +1174,24 @@ def create_topic_name_for_message(
         return f"{thread_ts_str} No channel message"
 
 
+def channel_mention_processor(
+    slack_channel_id_to_name: dict[str, str], slack_channel_id: str
+) -> str | None:
+    if slack_channel_id in slack_channel_id_to_name:
+        return f"#**{slack_channel_id_to_name[slack_channel_id]}**"
+    return None
+
+
+def user_mention_processor(
+    users: list[ZerverFieldsT],
+    slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
+    slack_user_id: str,
+) -> tuple[str, int] | None:
+    if mention := get_zulip_mention_for_slack_user(slack_user_id, None, users):
+        return (mention, slack_user_id_to_zulip_user_id[slack_user_id])
+    return None
+
+
 def channel_message_to_zerver_message(
     realm_id: int,
     users: list[ZerverFieldsT],
@@ -1198,6 +1217,10 @@ def channel_message_to_zerver_message(
 
     total_user_messages = 0
     total_skipped_user_messages = 0
+    slack_channel_id_to_name = {v[0]: k for k, v in added_channels.items()}
+    channel_processor = partial(channel_mention_processor, slack_channel_id_to_name)
+    user_processor = partial(user_mention_processor, users, slack_user_id_to_zulip_user_id)
+
     for message in all_messages:
         if is_message_skipped_during_conversion(message):
             continue
@@ -1206,18 +1229,28 @@ def channel_message_to_zerver_message(
         assert slack_user_id
         subtype = message.get("subtype", False)
 
-        raw_content = process_slack_block_and_attachment(
-            (to_wild_value("message", json.dumps(message))),
-        )
-
         try:
-            content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
-                raw_content, users, added_channels, slack_user_id_to_zulip_user_id
-            )
-        except Exception:
-            print("Slack message unexpectedly missing text representation:")
+            if message["text"] and not message.get("blocks"):
+                # TODO: Don't support converting using convert_to_zulip_markdown, some
+                # tests with false fixture still use this code path.
+
+                content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
+                    message["text"], users, added_channels, slack_user_id_to_zulip_user_id
+                )
+            else:
+                result = process_slack_block_and_attachment(
+                    to_wild_value("message", json.dumps(message)),
+                    channel_processor,
+                    user_processor,
+                )
+                content = result.content
+                mentioned_user_ids = result.mentioned_user_ids
+                has_link = result.has_link
+        except Exception as e:
+            print(f"Failed to process message: {e}")
             print(orjson.dumps(message, option=orjson.OPT_INDENT_2).decode())
             continue
+
         rendered_content = None
 
         channel_name: str | None = None
