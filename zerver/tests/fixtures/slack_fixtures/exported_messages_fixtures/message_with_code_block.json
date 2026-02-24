@@ -1,0 +1,38 @@
+{
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1772029642.852459",
+    "text": "```# I'm a code block!\n\ndef convert_slack_formatting(text: str) -&gt; str:\n    return text```",
+    "team": "T06NRA6HM3P",
+    "user_team": "T06NRA6HM3P",
+    "source_team": "T06NRA6HM3P",
+    "user_profile": {
+        "avatar_hash": "112be04f818e",
+        "image_72": "https://avatars.slack-edge.com/2024-03-10/6773346635957_112be04f818e7bd093d5_72.png",
+        "first_name": "Peter",
+        "real_name": "Peter",
+        "display_name": "",
+        "team": "T06NRA6HM3P",
+        "name": "pieterceka123",
+        "is_restricted": false,
+        "is_ultra_restricted": false
+    },
+    "blocks": [
+        {
+            "type": "rich_text",
+            "block_id": "Nath4",
+            "elements": [
+                {
+                    "type": "rich_text_preformatted",
+                    "elements": [
+                        {
+                            "type": "text",
+                            "text": "# I'm a code block!\n\ndef convert_slack_formatting(text: str) -> str:\n    return text"
+                        }
+                    ],
+                    "border": 0
+                }
+            ]
+        }
+    ]
+}
