@@ -378,6 +378,45 @@ def list_messages(request: HttpRequest) -> HttpResponse:
                 )
             # Filter out bot messages from DMs (e.g., Zulip's "Welcome Bot")
             base_query = base_query.exclude(sender__is_bot=True)
+
+        elif operator in ("channel", "stream"):
+            # Channel/stream narrow - operand is the stream ID (int)
+            if not isinstance(operand, int):
+                try:
+                    operand = int(operand)
+                except (ValueError, TypeError):
+                    return JsonResponse(
+                        {
+                            "result": "error",
+                            "code": "INVALID_PARAMS",
+                            "msg": "channel operand must be a valid stream ID",
+                        },
+                        status=400,
+                    )
+
+            try:
+                stream, _ = access_stream_by_id(user, operand)
+            except Exception:
+                return JsonResponse(
+                    {
+                        "result": "error",
+                        "code": "NOT_FOUND",
+                        "msg": "Stream not found or access denied",
+                    },
+                    status=404,
+                )
+
+            base_query = Message.objects.filter(
+                realm_id=user.realm_id,
+                recipient_id=stream.recipient_id,
+            )
+
+            # Check for topic narrow term in remaining narrow terms
+            for t in narrow_terms[1:]:
+                if t.get("operator") == "topic" and t.get("operand"):
+                    base_query = base_query.filter(subject__iexact=t["operand"])
+                    break
+
         else:
             return JsonResponse(
                 {
