@@ -5,6 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from pydantic import Json, StringConstraints
+from pydantic_partials.sentinels import Missing, MissingType
 
 from zerver.actions.presence import update_user_presence
 from zerver.actions.user_status import do_update_user_status
@@ -92,11 +93,17 @@ def update_user_status_backend(
     status_text: Annotated[
         str | None, StringConstraints(strip_whitespace=True, max_length=60)
     ] = None,
+    scheduled_end_time: Json[int | None] | MissingType = Missing,
 ) -> HttpResponse:
     if status_text is not None:
         status_text = status_text.strip()
 
-    if (away is None) and (status_text is None) and (emoji_name is None):
+    if (
+        (away is None)
+        and (status_text is None)
+        and (emoji_name is None)
+        and isinstance(scheduled_end_time, MissingType)
+    ):
         raise JsonableError(_("Client did not pass any new values."))
 
     if emoji_name == "":
@@ -123,6 +130,30 @@ def update_user_status_backend(
             _("Client must pass emoji_name if they pass either emoji_code or reaction_type.")
         )
 
+    current_status = get_user_status(user_profile)
+    old_status_text = current_status.get("status_text", "")
+    old_emoji_name = current_status.get("emoji_name", "")
+
+    if not isinstance(scheduled_end_time, MissingType):
+        if scheduled_end_time is not None and scheduled_end_time <= datetime_to_timestamp(
+            timezone_now()
+        ):
+            # Clear out the status in case status is set with an already
+            # expired time.
+            status_text = ""
+            emoji_name = ""
+            scheduled_end_time = None
+
+        if scheduled_end_time is not None:
+            proposed_status_text = status_text if status_text is not None else old_status_text
+            proposed_emoji_name = emoji_name if emoji_name is not None else old_emoji_name
+            if proposed_status_text == "" and proposed_emoji_name == "":
+                raise JsonableError(_("Client must set status if they pass scheduled_end_time."))
+
+        if scheduled_end_time == current_status.get("scheduled_end_time"):
+            # Set value as Missing if scheduled_end_time is same as before.
+            scheduled_end_time = Missing
+
     # If we're asking to set an emoji (not clear it ("") or not adjust
     # it (None)), we need to verify the emoji is valid.
     if emoji_name not in ["", None]:
@@ -130,6 +161,12 @@ def update_user_status_backend(
         assert emoji_code is not None
         assert emoji_type is not None
         check_emoji_request(user_profile.realm, emoji_name, emoji_code, emoji_type)
+
+    if status_text is not None and status_text == old_status_text:
+        status_text = None
+
+    if emoji_name is not None and emoji_name == old_emoji_name:
+        emoji_name = None
 
     client = RequestNotes.get_notes(request).client
     assert client is not None
@@ -141,6 +178,7 @@ def update_user_status_backend(
         emoji_name=emoji_name,
         emoji_code=emoji_code,
         reaction_type=emoji_type,
+        scheduled_end_time=scheduled_end_time,
     )
 
     return json_success(request)

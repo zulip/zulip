@@ -1343,6 +1343,7 @@ exports.fixtures = {
         type: "user_status",
         user_id: test_user.user_id,
         status_text: "out to lunch",
+        scheduled_end_time: 1706625128,
     },
 
     user_topic: {

@@ -1600,6 +1600,7 @@ run_test("user_status", ({override}) => {
     {
         const stub = make_stub();
         override(activity_ui, "redraw_user", stub.f);
+        override(current_user, "user_id", event.user_id);
         override(compose_pm_pill, "get_user_ids", () => [event.user_id]);
         dispatch(event);
         assert.equal(stub.num_calls, 1);

@@ -3,7 +3,7 @@ import * as z from "zod/mini";
 import * as channel from "./channel.ts";
 import * as emoji from "./emoji.ts";
 import type {EmojiRenderingDetails} from "./emoji.ts";
-import type {StateData} from "./state_data.ts";
+import {type StateData, current_user} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
 import {user_status_schema} from "./user_status_types.ts";
 
@@ -21,16 +21,35 @@ const user_status_event_schema = z.intersection(
     user_status_schema,
 );
 
+export type TimeKey =
+    | "never"
+    | "in_thirty_minutes"
+    | "in_one_hour"
+    | "today_five_pm"
+    | "tomorrow"
+    | "custom";
+
 export type UserStatusEvent = z.infer<typeof user_status_event_schema>;
 
 const user_info = new Map<number, string>();
 const user_status_emoji_info = new Map<number, UserStatusEmojiInfo>();
+
+let scheduled_end_time: number | null = null;
+
+export function set_scheduled_end_time(scheduled_time: number | null): void {
+    scheduled_end_time = scheduled_time;
+}
+
+export function get_scheduled_end_time(): number | null {
+    return scheduled_end_time;
+}
 
 export function server_update_status(opts: {
     status_text: string;
     emoji_name: string;
     emoji_code: string;
     reaction_type?: string;
+    scheduled_end_time: number | null;
     success?: () => void;
 }): void {
     void channel.post({
@@ -40,6 +59,7 @@ export function server_update_status(opts: {
             emoji_name: opts.emoji_name,
             emoji_code: opts.emoji_code,
             reaction_type: opts.reaction_type,
+            scheduled_end_time: JSON.stringify(opts.scheduled_end_time),
         },
         success() {
             if (opts.success) {
@@ -114,6 +134,10 @@ export function initialize(params: StateData["user_status"]): void {
 
         if (dct.status_text) {
             user_info.set(user_id, dct.status_text);
+        }
+
+        if (user_id === current_user.user_id && dct.scheduled_end_time !== undefined) {
+            set_scheduled_end_time(dct.scheduled_end_time);
         }
 
         if (dct.emoji_name) {

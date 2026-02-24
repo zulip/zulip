@@ -314,6 +314,7 @@ def update_status(client: Client) -> None:
         "emoji_name": "car",
         "emoji_code": "1f697",
         "reaction_type": "unicode_emoji",
+        "scheduled_end_time": 1706625127,
     }
     result = client.call_endpoint(url="/users/me/status", method="POST", request=request)
     # {code_example|end}

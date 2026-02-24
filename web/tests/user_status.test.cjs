@@ -11,6 +11,10 @@ const user_status = zrequire("user_status");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji");
 const {initialize_user_settings} = zrequire("user_settings");
+const {set_current_user} = zrequire("state_data");
+
+const current_user = {};
+set_current_user(current_user);
 
 initialize_user_settings({user_settings: {}});
 
