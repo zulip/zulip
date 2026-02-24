@@ -12,7 +12,7 @@
 
             <div class="left-sidebar-controls">
                 {{#if can_post_messages}}
-                <div class="channel-new-topic-button tippy-zulip-tooltip hidden-for-spectators auto-hide-left-sidebar-overlay" data-tippy-content="{{#if (or is_empty_topic_only_channel cannot_create_topics_in_channel)}}{{t 'New message'}}{{else}}{{t 'New topic'}}{{/if}}" data-stream-id="{{id}}">
+                <div class="channel-new-topic-button hidden-for-spectators auto-hide-left-sidebar-overlay" data-tippy-content="{{#if (or is_empty_topic_only_channel cannot_create_topics_in_channel)}}{{t 'New message'}}{{else}}{{t 'Start a new topic'}}{{/if}}" data-stream-id="{{id}}">
                     <i class="channel-new-topic-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
                 </div>
                 {{/if}}
