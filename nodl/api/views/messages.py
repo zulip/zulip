@@ -19,7 +19,6 @@ from pydantic import ValidationError
 
 from nodl.api.serializers.messages import (
     MessageCreatePayload,
-    MessageListSerializer,
     MessageSerializer,
     MessageUpdatePayload,
     ReactionSerializer,
@@ -554,8 +553,8 @@ def list_messages(request: HttpRequest) -> HttpResponse:
             user_profile=user,
             realm=user.realm,
         )
-        # Serialize messages from cached dicts
-        message_data = [MessageListSerializer.from_dict(msg).model_dump() for msg in message_dicts]
+        # Pass through raw Zulip message dicts — Flutter expects exact Zulip format
+        message_data = message_dicts
     else:
         message_data = []
 
@@ -566,8 +565,8 @@ def list_messages(request: HttpRequest) -> HttpResponse:
 
     if message_ids:
         # If we got fewer messages than requested, we've hit a boundary
-        if anchor == "newest":
-            # For newest anchor, we're at the newest if we got messages
+        if anchor in ("newest", "first_unread"):
+            # For newest/first_unread anchor, we're at the newest if we got messages
             found_newest = True
             # We're at oldest if we got fewer than requested
             found_oldest = len(message_ids) < num_before + 1
@@ -582,13 +581,24 @@ def list_messages(request: HttpRequest) -> HttpResponse:
             found_oldest = len(before_ids) < num_before
             found_newest = len(after_ids) < num_after
 
+    # Compute anchor value for response (Zulip returns the resolved anchor as int)
+    if anchor in ("newest", "first_unread"):
+        anchor_value = message_ids[-1] if message_ids else 0
+    elif anchor == "oldest":
+        anchor_value = message_ids[0] if message_ids else 0
+    else:
+        anchor_value = anchor_message_id or 0
+
     return JsonResponse(
         {
             "result": "success",
+            "msg": "",
             "messages": message_data,
+            "anchor": anchor_value,
             "found_anchor": found_anchor,
             "found_oldest": found_oldest,
             "found_newest": found_newest,
+            "history_limited": False,
         }
     )
 
