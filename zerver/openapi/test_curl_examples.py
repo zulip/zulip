@@ -98,7 +98,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
 
             for curl_command_text in commands:
                 curl_command_text = curl_command_text.replace(
-                    "BOT_EMAIL_ADDRESS:BOT_API_KEY", AUTHENTICATION_LINE[0]
+                    "EMAIL_ADDRESS:API_KEY", AUTHENTICATION_LINE[0]
                 )
 
                 print("Testing {} ...".format(curl_command_text.split("\n")[0]))
