@@ -29,7 +29,7 @@ export type TodoWidgetExtraData = z.infer<typeof todo_widget_extra_data_schema>;
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
-        type: z.enum(["new_task", "new_task_list_title", "strike"]),
+        type: z.enum(["new_task", "new_task_list_title", "strike", "widget_data", "edit_task"]),
     }),
     z.record(z.string(), z.unknown()),
 );
@@ -45,6 +45,13 @@ const new_task_inbound_data_schema = z.object({
     desc: z.string(),
     completed: z.boolean(),
 });
+
+type EditTaskOutboundData = {
+    type: "edit_task";
+    key: string;
+    task: string;
+    desc: string;
+};
 
 type NewTaskOutboundData = z.output<typeof new_task_inbound_data_schema>;
 
@@ -71,10 +78,20 @@ type Task = {
     completed: boolean;
 };
 
+type WidgetDataOutboundData = {
+    type: "widget_data";
+    extra_data: {
+        task_list_title: string;
+        tasks: TodoTask[];
+    };
+};
+
 export type TodoWidgetOutboundData =
     | NewTaskTitleOutboundData
     | NewTaskOutboundData
-    | TaskStrikeOutboundData;
+    | TaskStrikeOutboundData
+    | EditTaskOutboundData
+    | WidgetDataOutboundData;
 
 export class TaskData {
     message_sender_id: number;
@@ -178,6 +195,57 @@ export class TaskData {
                 // I may have added a task from another device.
                 if (sender_id === this.me && this.my_idx <= idx) {
                     this.my_idx = idx + 1;
+                }
+            },
+        },
+
+        edit_task: {
+            outbound: (
+                key: string,
+                task: string,
+                desc: string,
+            ): EditTaskOutboundData | undefined => {
+                // Only the author can edit tasks
+                const event = {
+                    type: "edit_task" as const,
+                    key,
+                    task,
+                    desc,
+                };
+                if (this.is_my_task_list) {
+                    return event;
+                }
+                return undefined;
+            },
+
+            inbound: (sender_id: number, raw_data: unknown): void => {
+                // Only the message author can edit tasks.
+                const edit_task_inbound_data = z.object({
+                    type: z.literal("edit_task"),
+                    key: z.string(),
+                    task: z.string(),
+                    desc: z.string(),
+                });
+                const parsed = edit_task_inbound_data.safeParse(raw_data);
+
+                if (!parsed.success) {
+                    this.report_error_function("todo widget: bad type for inbound edit task data", {
+                        error: parsed.error,
+                    });
+                    return;
+                }
+                const data = parsed.data;
+                if (sender_id !== this.message_sender_id) {
+                    this.report_error_function(`user ${sender_id} is not allowed to edit tasks`);
+                    return;
+                }
+
+                const item = this.task_map.get(data.key);
+                if (item !== undefined) {
+                    item.task = data.task;
+                    item.desc = data.desc;
+                } else {
+                    blueslip.warn("unknown key for editing task: " + data.key);
                 }
             },
         },
@@ -305,9 +373,43 @@ export class TaskData {
         if (!parsed.success) {
             return;
         }
-
         const {data} = parsed;
         const type = data.type;
+
+        if (type === "widget_data") {
+            const d = data["extra_data"];
+            if (!d) {
+                return;
+            }
+
+            const parsed_extra_data = todo_widget_extra_data_schema.safeParse(d);
+            if (!parsed_extra_data.success) {
+                this.report_error_function("todo widget: bad type for widget_data extra_data", {
+                    error: parsed_extra_data.error,
+                });
+                return;
+            }
+
+            const extra_data = parsed_extra_data.data;
+
+            this.task_map.clear();
+            this.my_idx = 1;
+
+            for (const [i, t] of (extra_data.tasks ?? []).entries()) {
+                this.handle.new_task.inbound("canned", {
+                    key: i,
+                    task: t.task,
+                    desc: t.desc,
+                    completed: false,
+                });
+            }
+
+            if (extra_data.task_list_title) {
+                this.set_task_list_title(extra_data.task_list_title);
+            }
+
+            return;
+        }
         if (this.handle[type]) {
             this.handle[type].inbound(sender_id, data);
         } else {
@@ -508,10 +610,65 @@ export function activate({
     }
 
     function render_results(): void {
-        const widget_data = task_data.get_widget_data();
+        const widget_data = {...task_data.get_widget_data(), is_my_task_list};
         const html = render_widgets_todo_widget_tasks(widget_data);
         $elem.find("ul.todo-widget").html(html);
         $elem.find(".widget-error").text("");
+
+        $elem.find(".todo-edit-task").on("click", (e) => {
+            e.stopPropagation();
+
+            const $btn = $(e.currentTarget);
+            const key = $btn.attr("data-key");
+            if (!key) {
+                return;
+            }
+
+            const item = task_data.task_map.get(key);
+            if (!item) {
+                return;
+            }
+
+            const $taskSpan = $elem.find(`.todo-task[data-key="${key}"]`);
+
+            const $taskInput = $(
+                `<input class="todo-edit-task-input" type="text" value="${_.escape(item.task)}" />`,
+            );
+            const $descInput = $(
+                `<input class="todo-edit-desc-input" type="text" value="${_.escape(item.desc)}" />`,
+            );
+
+            $taskSpan.empty().append($taskInput, $descInput);
+            $taskInput.trigger("focus");
+
+            $taskInput.add($descInput).on("keydown", (ev) => {
+                if (ev.key !== "Enter") {
+                    return;
+                }
+
+                ev.preventDefault();
+                ev.stopPropagation();
+
+                const newTask = $taskInput.val()?.toString().trim() ?? "";
+                const newDesc = $descInput.val()?.toString().trim() ?? "";
+
+                if (newTask === "") {
+                    return;
+                }
+
+                item.task = newTask;
+                item.desc = newDesc;
+
+                if (is_my_task_list) {
+                    const data = task_data.handle.edit_task.outbound(key, newTask, newDesc);
+                    if (data) {
+                        callback(data);
+                    }
+                }
+
+                render_results();
+            });
+        });
 
         $elem.find("input.task").on("click", (e) => {
             e.stopPropagation();
