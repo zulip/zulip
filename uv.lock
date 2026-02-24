@@ -5188,19 +5188,8 @@ wheels = [
 [[package]]
 name = "talon-core"
 version = "1.6.0"
-source = { url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed.zip", subdirectory = "talon-core" }
+source = { git = "https://github.com/zulip/talon.git?subdirectory=talon-core&rev=e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed#e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed" }
 dependencies = [
-    { name = "cssselect" },
-    { name = "html5lib" },
-    { name = "joblib" },
-    { name = "lxml" },
-    { name = "regex" },
-    { name = "six" },
-]
-sdist = { hash = "sha256:f4400383e96e5ad186fa38f6c0617819dab348a5ca39c421f6e2ef7b85b369b4" }
-
-[package.metadata]
-requires-dist = [
     { name = "cssselect" },
     { name = "html5lib" },
     { name = "joblib" },
@@ -6287,19 +6276,15 @@ wheels = [
 [[package]]
 name = "zulint"
 version = "1.0.0"
-source = { url = "https://github.com/zulip/zulint/archive/0b2858f59c72dbe561052878bb2e458d563e6641.zip" }
+source = { git = "https://github.com/zulip/zulint.git#0b2858f59c72dbe561052878bb2e458d563e6641" }
 dependencies = [
     { name = "typing-extensions" },
 ]
-sdist = { hash = "sha256:80a9701eb517b0cd45531eca422c5075eecf310f70045bb38deaace0e2b0f4f3" }
-
-[package.metadata]
-requires-dist = [{ name = "typing-extensions" }]
 
 [[package]]
 name = "zulip"
 version = "0.9.1"
-source = { url = "https://github.com/zulip/python-zulip-api/archive/1ae6dbeab6a0792e35ae1b5c54471076939f1883.zip", subdirectory = "zulip" }
+source = { git = "https://github.com/zulip/python-zulip-api.git?subdirectory=zulip#1ae6dbeab6a0792e35ae1b5c54471076939f1883" }
 dependencies = [
     { name = "backports-datetime-fromisoformat", marker = "python_full_version < '3.11'" },
     { name = "click" },
@@ -6307,40 +6292,16 @@ dependencies = [
     { name = "requests" },
     { name = "typing-extensions" },
 ]
-sdist = { hash = "sha256:4d65316aa631dbf1bfad211e66b11d1b5ebbe1a480105e62e77d0b4ae0f2e00f" }
-
-[package.metadata]
-requires-dist = [
-    { name = "backports-datetime-fromisoformat", marker = "python_full_version < '3.11'" },
-    { name = "click" },
-    { name = "distro" },
-    { name = "requests", extras = ["security"], specifier = ">=0.12.1" },
-    { name = "typing-extensions", specifier = ">=4.5.0" },
-]
 
 [[package]]
 name = "zulip-bots"
 version = "0.9.1"
-source = { url = "https://github.com/zulip/python-zulip-api/archive/1ae6dbeab6a0792e35ae1b5c54471076939f1883.zip", subdirectory = "zulip_bots" }
+source = { git = "https://github.com/zulip/python-zulip-api.git?subdirectory=zulip_bots#1ae6dbeab6a0792e35ae1b5c54471076939f1883" }
 dependencies = [
-    { name = "beautifulsoup4" },
     { name = "html2text" },
     { name = "importlib-metadata" },
-    { name = "lxml" },
     { name = "pip" },
     { name = "typing-extensions" },
-    { name = "zulip" },
-]
-sdist = { hash = "sha256:4d65316aa631dbf1bfad211e66b11d1b5ebbe1a480105e62e77d0b4ae0f2e00f" }
-
-[package.metadata]
-requires-dist = [
-    { name = "beautifulsoup4" },
-    { name = "html2text" },
-    { name = "importlib-metadata", specifier = ">=3.6" },
-    { name = "lxml" },
-    { name = "pip" },
-    { name = "typing-extensions", specifier = ">=4.5.0" },
     { name = "zulip" },
 ]
 
@@ -6694,7 +6655,7 @@ dev = [
     { name = "sqlalchemy", specifier = "==1.4.*" },
     { name = "sqlalchemy", extras = ["mypy"] },
     { name = "stripe" },
-    { name = "talon-core", url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed.zip", subdirectory = "talon-core" },
+    { name = "talon-core", git = "https://github.com/zulip/talon.git?subdirectory=talon-core&rev=e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed" },
     { name = "tblib" },
     { name = "time-machine" },
     { name = "tlds" },
@@ -6726,9 +6687,9 @@ dev = [
     { name = "uwsgi" },
     { name = "virtualenv-clone" },
     { name = "zstd" },
-    { name = "zulint", url = "https://github.com/zulip/zulint/archive/0b2858f59c72dbe561052878bb2e458d563e6641.zip" },
-    { name = "zulip", url = "https://github.com/zulip/python-zulip-api/archive/1ae6dbeab6a0792e35ae1b5c54471076939f1883.zip", subdirectory = "zulip" },
-    { name = "zulip-bots", url = "https://github.com/zulip/python-zulip-api/archive/1ae6dbeab6a0792e35ae1b5c54471076939f1883.zip", subdirectory = "zulip_bots" },
+    { name = "zulint", git = "https://github.com/zulip/zulint.git" },
+    { name = "zulip", git = "https://github.com/zulip/python-zulip-api.git?subdirectory=zulip" },
+    { name = "zulip-bots", git = "https://github.com/zulip/python-zulip-api.git?subdirectory=zulip_bots" },
     { name = "zxcvbn" },
 ]
 docs = [
@@ -6811,7 +6772,7 @@ prod = [
     { name = "social-auth-core", extras = ["azuread", "saml"] },
     { name = "sqlalchemy", specifier = "==1.4.*" },
     { name = "stripe" },
-    { name = "talon-core", url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed.zip", subdirectory = "talon-core" },
+    { name = "talon-core", git = "https://github.com/zulip/talon.git?subdirectory=talon-core&rev=e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed" },
     { name = "tlds" },
     { name = "tornado" },
     { name = "typing-extensions" },
@@ -6819,8 +6780,8 @@ prod = [
     { name = "uwsgi" },
     { name = "virtualenv-clone" },
     { name = "zstd" },
-    { name = "zulip", url = "https://github.com/zulip/python-zulip-api/archive/1ae6dbeab6a0792e35ae1b5c54471076939f1883.zip", subdirectory = "zulip" },
-    { name = "zulip-bots", url = "https://github.com/zulip/python-zulip-api/archive/1ae6dbeab6a0792e35ae1b5c54471076939f1883.zip", subdirectory = "zulip_bots" },
+    { name = "zulip", git = "https://github.com/zulip/python-zulip-api.git?subdirectory=zulip" },
+    { name = "zulip-bots", git = "https://github.com/zulip/python-zulip-api.git?subdirectory=zulip_bots" },
     { name = "zxcvbn" },
 ]
 release-tools = [

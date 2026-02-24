@@ -346,7 +346,7 @@ no-binary-package = [
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239
 # and fix invalid escape sequences: https://github.com/mailgun/talon/pull/245
-talon-core = { url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed.zip", subdirectory = "talon-core" }
+talon-core = { git = "https://github.com/zulip/talon.git", subdirectory = "talon-core", rev = "e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed" }
 
 # We integrate with these tightly, including fetching content not included in
 # the official PyPI release tarballs, such as logos, assets and documentation
@@ -354,11 +354,11 @@ talon-core = { url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8e
 # version from Git rather than a PyPI release. Keeping everything in one
 # repository simplifies the process of implementing and documenting new bots for
 # new contributors.
-zulip = { url = "https://github.com/zulip/python-zulip-api/archive/1ae6dbeab6a0792e35ae1b5c54471076939f1883.zip", subdirectory = "zulip" }
-zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/1ae6dbeab6a0792e35ae1b5c54471076939f1883.zip", subdirectory = "zulip_bots" }
+zulip = { git = "https://github.com/zulip/python-zulip-api.git", subdirectory = "zulip" }
+zulip-bots = { git = "https://github.com/zulip/python-zulip-api.git", subdirectory = "zulip_bots" }
 
 # zulip's linting framework - zulint
-zulint = { url = "https://github.com/zulip/zulint/archive/0b2858f59c72dbe561052878bb2e458d563e6641.zip" }
+zulint = { git = "https://github.com/zulip/zulint.git" }
 
 [tool.black]
 line-length = 100
