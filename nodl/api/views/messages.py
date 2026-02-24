@@ -344,102 +344,106 @@ def list_messages(request: HttpRequest) -> HttpResponse:
                 status=400,
             )
 
-        if not isinstance(narrow_terms, list) or len(narrow_terms) == 0:
+        if not isinstance(narrow_terms, list):
             return JsonResponse(
                 {
                     "result": "error",
                     "code": "INVALID_PARAMS",
-                    "msg": "narrow must be a non-empty array",
+                    "msg": "narrow must be an array",
                 },
                 status=400,
             )
 
-        # Parse the narrow operator
-        term = narrow_terms[0]
-        operator = term.get("operator", "")
-        operand = term.get("operand")
+        # Empty narrow = all messages in user's realm
+        if len(narrow_terms) == 0:
+            base_query = Message.objects.filter(realm_id=user.realm_id)
+        else:
+            # Parse the narrow operator
+            term = narrow_terms[0]
+            operator = term.get("operator", "")
+            operand = term.get("operand")
 
-        if operator == "dm":
-            # DM with specific users
-            if not isinstance(operand, list) or len(operand) == 0:
-                return JsonResponse(
-                    {
-                        "result": "error",
-                        "code": "INVALID_PARAMS",
-                        "msg": "dm operand must be a list of user IDs",
-                    },
-                    status=400,
-                )
+            if operator == "dm":
+                # DM with specific users
+                if not isinstance(operand, list) or len(operand) == 0:
+                    return JsonResponse(
+                        {
+                            "result": "error",
+                            "code": "INVALID_PARAMS",
+                            "msg": "dm operand must be a list of user IDs",
+                        },
+                        status=400,
+                    )
 
-            # Validate operand contains integers
-            try:
-                user_ids = [int(uid) for uid in operand]
-            except (ValueError, TypeError):
-                return JsonResponse(
-                    {
-                        "result": "error",
-                        "code": "INVALID_PARAMS",
-                        "msg": "dm operand must contain valid user IDs",
-                    },
-                    status=400,
-                )
-
-            base_query = _build_dm_recipient_query(user, user_ids)
-            if base_query is None:
-                return JsonResponse(
-                    {"result": "error", "code": "NOT_FOUND", "msg": "DM conversation not found"},
-                    status=404,
-                )
-            # Filter out bot messages from DMs (e.g., Zulip's "Welcome Bot")
-            base_query = base_query.exclude(sender__is_bot=True)
-
-        elif operator in ("channel", "stream"):
-            # Channel/stream narrow - operand is the stream ID (int)
-            if not isinstance(operand, int):
+                # Validate operand contains integers
                 try:
-                    operand = int(operand)
+                    user_ids = [int(uid) for uid in operand]
                 except (ValueError, TypeError):
                     return JsonResponse(
                         {
                             "result": "error",
                             "code": "INVALID_PARAMS",
-                            "msg": "channel operand must be a valid stream ID",
+                            "msg": "dm operand must contain valid user IDs",
                         },
                         status=400,
                     )
 
-            try:
-                stream, _ = access_stream_by_id(user, operand)
-            except Exception:
+                base_query = _build_dm_recipient_query(user, user_ids)
+                if base_query is None:
+                    return JsonResponse(
+                        {"result": "error", "code": "NOT_FOUND", "msg": "DM conversation not found"},
+                        status=404,
+                    )
+                # Filter out bot messages from DMs (e.g., Zulip's "Welcome Bot")
+                base_query = base_query.exclude(sender__is_bot=True)
+
+            elif operator in ("channel", "stream"):
+                # Channel/stream narrow - operand is the stream ID (int)
+                if not isinstance(operand, int):
+                    try:
+                        operand = int(operand)
+                    except (ValueError, TypeError):
+                        return JsonResponse(
+                            {
+                                "result": "error",
+                                "code": "INVALID_PARAMS",
+                                "msg": "channel operand must be a valid stream ID",
+                            },
+                            status=400,
+                        )
+
+                try:
+                    stream, _ = access_stream_by_id(user, operand)
+                except Exception:
+                    return JsonResponse(
+                        {
+                            "result": "error",
+                            "code": "NOT_FOUND",
+                            "msg": "Stream not found or access denied",
+                        },
+                        status=404,
+                    )
+
+                base_query = Message.objects.filter(
+                    realm_id=user.realm_id,
+                    recipient_id=stream.recipient_id,
+                )
+
+                # Check for topic narrow term in remaining narrow terms
+                for t in narrow_terms[1:]:
+                    if t.get("operator") == "topic" and t.get("operand"):
+                        base_query = base_query.filter(subject__iexact=t["operand"])
+                        break
+
+            else:
                 return JsonResponse(
                     {
                         "result": "error",
-                        "code": "NOT_FOUND",
-                        "msg": "Stream not found or access denied",
+                        "code": "INVALID_PARAMS",
+                        "msg": f"Unsupported narrow operator: {operator}",
                     },
-                    status=404,
+                    status=400,
                 )
-
-            base_query = Message.objects.filter(
-                realm_id=user.realm_id,
-                recipient_id=stream.recipient_id,
-            )
-
-            # Check for topic narrow term in remaining narrow terms
-            for t in narrow_terms[1:]:
-                if t.get("operator") == "topic" and t.get("operand"):
-                    base_query = base_query.filter(subject__iexact=t["operand"])
-                    break
-
-        else:
-            return JsonResponse(
-                {
-                    "result": "error",
-                    "code": "INVALID_PARAMS",
-                    "msg": f"Unsupported narrow operator: {operator}",
-                },
-                status=400,
-            )
 
     elif stream_id_str:
         # Legacy stream-based query
@@ -475,14 +479,8 @@ def list_messages(request: HttpRequest) -> HttpResponse:
         if topic:
             base_query = base_query.filter(subject__iexact=topic)
     else:
-        return JsonResponse(
-            {
-                "result": "error",
-                "code": "INVALID_PARAMS",
-                "msg": "Either stream_id or narrow is required",
-            },
-            status=400,
-        )
+        # No narrow and no stream_id — return all messages in user's realm
+        base_query = Message.objects.filter(realm_id=user.realm_id)
 
     # Apply anchor-based pagination to get message IDs
     anchor_message_id = None
