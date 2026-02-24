@@ -16,14 +16,14 @@ import * as user_topics from "./user_topics.ts";
 // - A muted channel.
 // - A muted topic.
 function should_ignore_reaction(
-    message: message_store.Message,
+    message: message_store.ImmutableMessage,
     reaction_sender_id?: number,
 ): boolean {
-    if (message.type === "stream") {
-        if (user_topics.is_topic_muted(message.stream_id, message.topic)) {
+    if (message.get_type() === "stream") {
+        if (user_topics.is_topic_muted(message.get_stream_id(), message.get_topic_name())) {
             return true;
         }
-        if (stream_data.is_muted(message.stream_id)) {
+        if (stream_data.is_muted(message.get_stream_id())) {
             return true;
         }
     }
@@ -47,7 +47,7 @@ export function update_frequently_used_emojis_list(): void {
 */
 export function update_emoji_frequency_on_add_reaction_event(event: reactions.ReactionEvent): void {
     const message_id = event.message_id;
-    const message = message_store.get(message_id);
+    const message = message_store.maybe_get_immutable_message(message_id);
     if (message === undefined) {
         return;
     }
@@ -55,7 +55,9 @@ export function update_emoji_frequency_on_add_reaction_event(event: reactions.Re
         return;
     }
     const emoji_id = reactions.get_local_reaction_id(event);
-    const clean_reaction_object = message.clean_reactions.get(emoji_id);
+    const clean_reaction_object = message_store
+        .maybe_get_clean_reactions(message_id)!
+        .get(emoji_id);
 
     assert(clean_reaction_object !== undefined);
     const emoji_code = clean_reaction_object.emoji_code;
@@ -77,7 +79,7 @@ export function update_emoji_frequency_on_remove_reaction_event(
     event: reactions.ReactionEvent,
 ): void {
     const message_id = event.message_id;
-    const message = message_store.get(message_id);
+    const message = message_store.maybe_get_immutable_message(message_id);
     if (message === undefined) {
         return;
     }
@@ -99,7 +101,7 @@ export function update_emoji_frequency_on_remove_reaction_event(
 
 export function update_emoji_frequency_on_messages_deletion(message_ids: number[]): void {
     for (const message_id of message_ids) {
-        const message = message_store.get(message_id);
+        const message = message_store.maybe_get_immutable_message(message_id);
         // It's normal to receive events about the deletion of
         // messages that this client doesn't have locally cached. No
         // action is required, since only messages that are locally
@@ -111,7 +113,8 @@ export function update_emoji_frequency_on_messages_deletion(message_ids: number[
             continue;
         }
         assert(message !== undefined);
-        const message_reactions = [...message.clean_reactions.values()];
+        const clean_reactions = message_store.maybe_get_clean_reactions(message_id);
+        const message_reactions = [...clean_reactions!.values()];
         const emoji_ids = message_reactions.map((reaction) => reaction.local_id);
 
         emoji_frequency_data.remove_message_reactions({

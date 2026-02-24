@@ -1404,7 +1404,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "message_actions":
             return message_actions_popover.toggle_message_actions_menu(msg);
         case "star_message":
-            starred_messages_ui.toggle_starred_and_update_server(msg);
+            starred_messages_ui.toggle_starred_and_update_server(msg.id);
             return true;
         case "toggle_conversation_view":
             if (narrow_state.narrowed_by_topic_reply()) {

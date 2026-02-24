@@ -1,4 +1,5 @@
 import _ from "lodash";
+import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
@@ -229,6 +230,99 @@ export type Message = (
           }
     );
 
+export function maybe_get_clean_reactions(
+    message_id: number,
+): Map<string, MessageCleanReaction> | undefined {
+    const message = get(message_id);
+    if (!message) {
+        return undefined;
+    }
+    return message.clean_reactions;
+}
+
+export class ImmutableMessage {
+    private message: Message;
+    constructor(message: Message) {
+        this.message = message;
+    }
+
+    get_type(): string {
+        return this.message.type;
+    }
+
+    get_stream_id(): number {
+        assert(this.message.type === "stream");
+        return this.message.stream_id;
+    }
+
+    get_topic_name(): string {
+        assert(this.message.type === "stream");
+        return this.message.topic;
+    }
+
+    get_reply_to(): string {
+        return this.message.reply_to;
+    }
+
+    to_user_ids(): string {
+        assert(this.message.type === "private");
+        return this.message.to_user_ids;
+    }
+
+    is_stream(): boolean {
+        return this.message.is_stream;
+    }
+
+    is_private(): boolean {
+        return this.message.is_private;
+    }
+
+    get_sender_email(): string {
+        return this.message.sender_email;
+    }
+
+    get_sender_id(): number {
+        return this.message.sender_id;
+    }
+
+    get_sender_full_name(): string {
+        return this.message.sender_full_name;
+    }
+
+    get_id(): number {
+        return this.message.id;
+    }
+
+    is_stream_wildcard_mentioned(): boolean {
+        return this.message.stream_wildcard_mentioned;
+    }
+
+    did_mention_me_directly(): boolean {
+        return this.message.mentioned_me_directly;
+    }
+
+    is_topic_wildcard_mentioned(): boolean {
+        return this.message.topic_wildcard_mentioned;
+    }
+
+    get_timestamp(): number {
+        return this.message.timestamp;
+    }
+
+    get_display_reply_to(): string {
+        assert(this.message.type === "private");
+        return this.message.display_reply_to;
+    }
+}
+
+export function maybe_get_immutable_message(message_id: number): ImmutableMessage | undefined {
+    const message = stored_messages.get(message_id)?.message;
+    if (message) {
+        return new ImmutableMessage(message);
+    }
+    return undefined;
+}
+
 export function update_message_cache(message_data: ProcessedMessage): void {
     // You should only call this from message_helper (or in tests).
     stored_messages.set(message_data.message.id, message_data);
@@ -251,6 +345,32 @@ export function clear_for_testing(): void {
 // here before returning the Message.
 export function get(message_id: number): Message | undefined {
     return stored_messages.get(message_id)?.message;
+}
+
+export function does_message_pass_predicate(
+    msg_id: number,
+    predicate: (message: Message) => boolean,
+): boolean {
+    const message = get(msg_id);
+
+    if (message === undefined) {
+        return false;
+    }
+
+    return predicate(message);
+}
+
+// Required by callers like the ones in filter.ts that we are sure won't be
+// mutating the message struct.
+export function get_message_for_performant_code(message_id: number): Message | undefined {
+    return stored_messages.get(message_id)?.message;
+}
+
+export function add_messages_for_tests(messages: ProcessedMessage[]): void {
+    stored_messages.clear();
+    for (const message of messages) {
+        stored_messages.set(message.message.id, message);
+    }
 }
 
 export function get_pm_emails(

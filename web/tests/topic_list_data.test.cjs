@@ -8,14 +8,16 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-mock_esm("../src/message_store", {
-    get() {
-        return {
+const message_store = zrequire("message_store");
+message_store.add_messages_for_tests([
+    {
+        message: {
             stream_id: 556,
             topic: "general",
-        };
+        },
     },
-});
+]);
+
 const user_topics = mock_esm("../src/user_topics", {
     is_topic_muted() {
         return false;

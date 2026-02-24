@@ -34,23 +34,23 @@ export function initialize(): void {
     // to narrow to the message being sent.
     electron_bridge.set_send_notification_reply_message_supported?.(true);
     electron_bridge.on_event("send_notification_reply_message", (message_id, reply) => {
-        const message = message_store.get(message_id);
+        const message = message_store.maybe_get_immutable_message(message_id);
         assert(message !== undefined);
         const data = {
-            type: message.type,
+            type: message.get_type(),
             content: reply,
-            ...(message.type === "private"
+            ...(message.get_type() === "private"
                 ? {
-                      to: message.reply_to,
+                      to: message.get_reply_to(),
                   }
                 : {
-                      to: stream_data.get_stream_name_from_id(message.stream_id),
-                      topic: message.topic,
+                      to: stream_data.get_stream_name_from_id(message.get_stream_id()),
+                      topic: message.get_topic_name(),
                   }),
         };
 
         const success = (): void => {
-            if (message.type === "stream") {
+            if (message.get_type() === "stream") {
                 message_view.narrow_by_topic(message_id, {trigger: "desktop_notification_reply"});
             } else {
                 message_view.narrow_by_recipient(message_id, {
