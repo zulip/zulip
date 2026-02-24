@@ -988,6 +988,8 @@ function navigate_to_anchor_message(opts: {
         assert(message_lists.current !== undefined);
         const msg_list = new message_list.MessageList({data});
         msg_list.reading_prevented = message_lists.current.reading_prevented;
+        msg_list.near_view_reading_gate_pending =
+            message_lists.current.near_view_reading_gate_pending;
         return msg_list;
     }
 
@@ -1369,6 +1371,10 @@ export function render_message_list_with_selected_message(opts: {
         message_lists.current.view.set_message_offset(select_offset);
     }
     message_lists.current.view.update_sticky_recipient_headers();
+    // For /near/ views, check whether reading can be resumed before
+    // processing visibility, so that messages are correctly marked
+    // as read on the initial render if appropriate.
+    message_lists.current.maybe_resume_reading_for_near_view();
     unread_ops.process_visible();
     narrow_history.save_narrow_state_and_flush();
 }
