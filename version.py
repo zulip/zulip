@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 468
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (369, 2)  # bumped 2026-02-09 to add jdenticon
+PROVISION_VERSION = (369, 3)  # bumped 2026-02-23 to upgrade uv
