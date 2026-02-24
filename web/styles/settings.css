@@ -2501,6 +2501,6 @@ label.preferences-radio-choice-label {
 
 .no-inherited-permissions-text {
     margin: 10px 0;
-    color: hsl(0deg 0% 50%);
+    color: var(--color-text-settings-field-hint);
     font-style: italic;
 }

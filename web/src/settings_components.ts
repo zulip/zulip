@@ -1,4 +1,5 @@
 import $ from "jquery";
+import type {SafeString} from "handlebars";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
@@ -2052,7 +2053,7 @@ export function get_group_inherited_realm_permissions(group: UserGroup): {
     subsection_heading: string;
     inherited_permissions: {
         setting_name: string;
-        label: string;
+        label: string | SafeString;
     }[];
 }[] {
     // Get permissions that the group inherits from organization-level settings
@@ -2082,9 +2083,7 @@ export function get_group_inherited_realm_permissions(group: UserGroup): {
                 if (is_inherited) {
                     inherited_permission_objects.push({
                         setting_name,
-                        label: settings_config.all_group_setting_labels.realm[
-                            setting_name
-                        ].toString(),
+                        label: settings_config.all_group_setting_labels.realm[setting_name],
                     });
                 }
             }
@@ -2100,7 +2099,7 @@ export function get_group_inherited_realm_permissions(group: UserGroup): {
 
 export function get_stream_inherited_realm_permissions(): {
     setting_name: string;
-    label: string;
+    label: string | SafeString;
     group_names: string[];
 }[] {
     // Get organization-level permissions that affect channels.
@@ -2112,9 +2111,7 @@ export function get_stream_inherited_realm_permissions(): {
     const channel_relevant_settings = settings_config.realm_group_permission_settings
         .filter(
             ({subsection_key}) =>
-                subsection_key === "org-stream-permissions" ||
-                subsection_key === "org-moving-msgs" ||
-                subsection_key === "org-moderation-settings",
+                subsection_key === "org-stream-permissions" || subsection_key === "org-moving-msgs",
         )
         .flatMap(({settings}) => settings);
 
@@ -2124,21 +2121,37 @@ export function get_stream_inherited_realm_permissions(): {
         );
         const group_names: string[] = [];
 
-        // Get the names of groups that have this permission
+        // Get the names of groups and users that have this permission
         if (typeof setting_value === "number") {
             const group = user_groups.get_user_group_from_id(setting_value);
             group_names.push(user_groups.get_display_group_name(group.name));
         } else if (typeof setting_value === "object" && "direct_subgroups" in setting_value) {
-            for (const subgroup_id of setting_value.direct_subgroups) {
-                const group = user_groups.get_user_group_from_id(subgroup_id);
-                group_names.push(user_groups.get_display_group_name(group.name));
+            // Handle empty anonymous group ("Nobody" case)
+            if (
+                setting_value.direct_subgroups.length === 0 &&
+                setting_value.direct_members.length === 0
+            ) {
+                group_names.push($t({defaultMessage: "Nobody"}));
+            } else {
+                // Add subgroups
+                for (const subgroup_id of setting_value.direct_subgroups) {
+                    const group = user_groups.get_user_group_from_id(subgroup_id);
+                    group_names.push(user_groups.get_display_group_name(group.name));
+                }
+                // Add direct members (individual users)
+                for (const user_id of setting_value.direct_members) {
+                    const user = people.maybe_get_user_by_id(user_id);
+                    if (user) {
+                        group_names.push(user.full_name);
+                    }
+                }
             }
         }
 
         if (group_names.length > 0) {
             stream_inherited_permissions.push({
                 setting_name,
-                label: settings_config.all_group_setting_labels.realm[setting_name].toString(),
+                label: settings_config.all_group_setting_labels.realm[setting_name],
                 group_names,
             });
         }
