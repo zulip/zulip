@@ -68,7 +68,13 @@ def get_realm_from_request(request: HttpRequest) -> Realm | None:
         try:
             request_notes.realm = get_realm(subdomain)
         except Realm.DoesNotExist:
-            request_notes.realm = None
+            # Fall back to first active workspace realm (single-realm deployment)
+            request_notes.realm = (
+                Realm.objects.exclude(string_id="zulipinternal")
+                .exclude(deactivated=True)
+                .order_by("id")
+                .first()
+            )
         request_notes.has_fetched_realm = True
     return request_notes.realm
 
