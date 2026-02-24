@@ -1387,12 +1387,27 @@ def update_first_visible_message_id(realm: Realm) -> None:
         try:
             first_visible_message_id = (
                 # Uses index: zerver_message_realm_id
-                Message.objects.filter(realm=realm)
+                Message.objects.filter(realm=realm, id__gte=realm.first_visible_message_id)
                 .values("id")
                 .order_by("-id")[realm.message_visibility_limit - 1]["id"]
             )
         except IndexError:
-            first_visible_message_id = 0
+            # There are not enough messages after the old
+            # first_visible_message_id to satisfy the
+            # message_visibility_limit.  This means that there has
+            # been a net loss of messages, or message_visibility_limit
+            # has gone up.  Redo the query without the `id__gte`
+            # limit.
+            try:
+                first_visible_message_id = (
+                    # Uses index: zerver_message_realm_id
+                    Message.objects.filter(realm=realm)
+                    .values("id")
+                    .order_by("-id")[realm.message_visibility_limit - 1]["id"]
+                )
+            except IndexError:
+                # The message_visibility_limit does include all of the messages in the realm; set to 0.
+                first_visible_message_id = 0
         realm.first_visible_message_id = first_visible_message_id
     realm.save(update_fields=["first_visible_message_id"])
 
