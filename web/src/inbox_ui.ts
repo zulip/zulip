@@ -726,9 +726,12 @@ function insert_stream(stream_key: string): void {
     const channel_folder_id = streams_dict.get(stream_key)!.folder_id;
     const sorted_stream_keys = get_sorted_stream_keys(channel_folder_id);
     const stream_index = sorted_stream_keys.indexOf(stream_key);
+    const stream_row = streams_dict.get(stream_key);
+    const stream_topics_data = topics_dict.get(stream_key)!;
     const rendered_stream = render_inbox_stream_container({
-        topics_dict: new Map([[stream_key, topics_dict.get(stream_key)]]),
-        streams_dict,
+        stream_key,
+        stream_row,
+        topic_rows: [...stream_topics_data.values()],
     });
     const $channel_folder_header = $(`#${get_channel_folder_header_id(channel_folder_id)}`);
     if (stream_index === 0) {
