@@ -1,0 +1,59 @@
+{
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1772029790.709499",
+    "text": "&gt; Hello there, I am a rich text section block!\n&gt; *Hello there, I am a rich text section block!*\n&gt; ~_*`Hello there, I am a rich text section block!`*_~",
+    "team": "T06NRA6HM3P",
+    "user_team": "T06NRA6HM3P",
+    "source_team": "T06NRA6HM3P",
+    "user_profile": {
+        "avatar_hash": "112be04f818e",
+        "image_72": "https://avatars.slack-edge.com/2024-03-10/6773346635957_112be04f818e7bd093d5_72.png",
+        "first_name": "Peter",
+        "real_name": "Peter",
+        "display_name": "",
+        "team": "T06NRA6HM3P",
+        "name": "pieterceka123",
+        "is_restricted": false,
+        "is_ultra_restricted": false
+    },
+    "blocks": [
+        {
+            "type": "rich_text",
+            "block_id": "Ko0Dj",
+            "elements": [
+                {
+                    "type": "rich_text_quote",
+                    "elements": [
+                        {
+                            "type": "text",
+                            "text": "Hello there, I am a rich text section block!\n"
+                        },
+                        {
+                            "type": "text",
+                            "text": "Hello there, I am a rich text section block!",
+                            "style": {
+                                "bold": true
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "\n"
+                        },
+                        {
+                            "type": "text",
+                            "text": "Hello there, I am a rich text section block!",
+                            "style": {
+                                "bold": true,
+                                "italic": true,
+                                "strike": true,
+                                "code": true,
+                                "underline": true
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

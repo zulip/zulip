@@ -181,7 +181,7 @@ class SlackWebhookTests(WebhookTestCase):
 
     @mock_slack_api_calls
     def test_message_with_bullet_points(self) -> None:
-        message_body = "• list three\n• list two"
+        message_body = "- list three\n- list two"
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_bullet_points",
@@ -192,7 +192,9 @@ class SlackWebhookTests(WebhookTestCase):
 
     @mock_slack_api_calls
     def test_message_with_channel_and_user_mentions(self) -> None:
-        message_body = "@**John Doe** **#general** message with both channel and user mentions"
+        message_body = (
+            "@**John Doe** **#Slack general** message with both channel and user mentions"
+        )
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_channel_and_user_mentions",
@@ -203,7 +205,7 @@ class SlackWebhookTests(WebhookTestCase):
 
     @mock_slack_api_calls
     def test_message_with_channel_mentions(self) -> None:
-        message_body = "**#zulip-mirror** **#general** message with channel mentions"
+        message_body = "**#Slack general** **#Slack general** message with channel mentions"
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_channel_mentions",
@@ -250,7 +252,13 @@ class SlackWebhookTests(WebhookTestCase):
 
     @mock_slack_api_calls
     def test_message_with_ordered_list(self) -> None:
-        message_body = "1. point one\n2. point two\n3. mix both\n4. pour water\n5. etc"
+        message_body = """
+1. point one
+1. point two
+1. mix both
+1. pour water
+1. etc
+""".strip()
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_ordered_list",
@@ -325,7 +333,18 @@ To Do""".strip()
 
     @mock_slack_api_calls
     def test_message_with_code_block(self) -> None:
-        message_body = """```def is_bot_message(payload: WildValue) -&gt; bool:\n    app_api_id = payload.get(\"api_app_id\").tame(check_none_or(check_string))\n    bot_app_id = (\n        payload.get(\"event\", {})\n        .get(\"bot_profile\", {})\n        .get(\"app_id\")\n        .tame(check_none_or(check_string))\n    )\n    return bot_app_id is not None and app_api_id == bot_app_id```"""
+        message_body = """
+```text
+def is_bot_message(payload: WildValue) -> bool:
+    app_api_id = payload.get("api_app_id").tame(check_none_or(check_string))
+    bot_app_id = (
+        payload.get("event", {})
+        .get("bot_profile", {})
+        .get("app_id")
+        .tame(check_none_or(check_string))
+    )
+    return bot_app_id is not None and app_api_id == bot_app_id
+```""".strip()
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_code_block",
@@ -347,7 +366,7 @@ To Do""".strip()
 
     @mock_slack_api_calls
     def test_message_with_complex_formatted_mentions(self) -> None:
-        message_body = "@**John Doe** **#general** ~~***@**all*****~~"
+        message_body = "@**John Doe** **#Slack general** @**all**"
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_complex_formatted_mentions",
@@ -358,7 +377,11 @@ To Do""".strip()
 
     @mock_slack_api_calls
     def test_message_with_quote_block(self) -> None:
-        message_body = "&gt; This is a quote"
+        message_body = """
+```quote
+This is a quote
+```
+""".strip()
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
         self.check_webhook(
             "message_with_quote_block",

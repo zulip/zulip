@@ -1,4 +1,3 @@
-import re
 from typing import Annotated, Any, TypeAlias
 
 from django.http import HttpRequest
@@ -8,9 +7,7 @@ from django.utils.translation import gettext as _
 from zerver.actions.message_send import send_rate_limited_pm_notification_to_bot_owner
 from zerver.data_import.slack import check_slack_token_access, get_slack_api_data
 from zerver.data_import.slack_message_conversion import (
-    SLACK_USERMENTION_REGEX,
     convert_slack_formatting,
-    convert_slack_workspace_mentions,
     process_slack_block_and_attachment,
     replace_links,
 )
@@ -66,42 +63,6 @@ def get_slack_sender_name(user_id: str, token: str) -> str:
         user=user_id,
     )
     return slack_user_data["real_name"]
-
-
-def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:
-    tokens = text.split(" ")
-    for iterator in range(len(tokens)):
-        slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, tokens[iterator], re.VERBOSE)
-        slack_channelmention_match = re.search(
-            SLACK_CHANNELMENTION_REGEX, tokens[iterator], re.MULTILINE
-        )
-        if slack_usermention_match:
-            # Convert Slack user mentions to a mention-like syntax since there
-            # is no way to map Slack and Zulip users.
-            slack_id = slack_usermention_match.group(2)
-            user_name = get_slack_sender_name(user_id=slack_id, token=app_token)
-            tokens[iterator] = "@**" + user_name + "**"
-        elif slack_channelmention_match:
-            # Convert Slack channel mentions to a mention-like syntax so that
-            # a mention isn't triggered for a Zulip channel with the same name.
-            channel_info: list[str] = slack_channelmention_match.group(0).split("|")
-            channel_name = channel_info[1]
-            tokens[iterator] = (
-                f"**#{channel_name}**" if channel_name else "**#[private Slack channel]**"
-            )
-    text = " ".join(tokens)
-    return text
-
-
-# This is a modified version of `convert_to_zulip_markdown` in
-# `slack_message_conversion.py`, which cannot be used directly
-# due to differences in the Slack import data and Slack webhook
-# payloads.
-def convert_to_zulip_markdown(text: str, slack_app_token: str) -> str:
-    text, _ = convert_slack_formatting(text)
-    text = convert_slack_workspace_mentions(text)
-    text = convert_slack_user_and_channel_mentions(text, slack_app_token)
-    return text
 
 
 def convert_raw_file_data(file_dict: WildValue) -> SlackFileListT:
@@ -263,8 +224,23 @@ def api_slack_webhook(
 
     raw_files = event_dict.get("files")
     files = convert_raw_file_data(raw_files) if raw_files else []
-    raw_text = process_slack_block_and_attachment(event_dict)
-    text = convert_to_zulip_markdown(raw_text, slack_app_token)
+
+    def channel_mention_processor(slack_channel_id: str) -> str:  # nocoverage
+        channel_name = get_slack_channel_name(channel_id=slack_channel_id, token=slack_app_token)
+        return f"**#{channel_name}**"
+
+    def user_mention_processor(slack_user_id: str) -> tuple[str, int]:  # nocoverage
+        user_name = get_slack_sender_name(user_id=slack_user_id, token=slack_app_token)
+        # The number 1 is just an arbitrary number, it's supposed to be the user ID, but
+        # that's not relevant here.
+        return ("@**" + user_name + "**", 1)
+
+    result = process_slack_block_and_attachment(
+        event_dict,
+        channel_mention_processor,
+        user_mention_processor,
+    )
+
     user_id = event_dict.get("user").tame(check_none_or(check_string))
     if user_id is None:
         # This is likely a Slack integration bot message. The sender of these
@@ -272,7 +248,7 @@ def api_slack_webhook(
         sender = event_dict["username"].tame(check_string)
     else:
         sender = get_slack_sender_name(user_id, slack_app_token)
-    content = get_message_body(text, sender, files)
+    content = get_message_body(result.content, sender, files)
 
     # channels_map_to_topics=0 is ported to use PresetUrlOption.CHANNEL_MAPPING
     # (map_to_channels).
