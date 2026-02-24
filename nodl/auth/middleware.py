@@ -72,10 +72,21 @@ class SupabaseJWTMiddleware:
 
         token = self._extract_token(request)
         if not token:
-            # Allow requests with HTTP Basic auth (Zulip API key) to pass through
-            # to Zulip's native authentication middleware
+            # Validate HTTP Basic auth (Zulip API key) and set user_profile
             auth_header = request.headers.get("Authorization", "")
             if auth_header.startswith("Basic "):
+                try:
+                    from zerver.decorator import get_basic_credentials, validate_api_key
+
+                    email, api_key = get_basic_credentials(request)
+                    user_profile = validate_api_key(request, email, api_key)
+                    request.user_profile = user_profile
+                    request.user = user_profile
+                    # Skip CSRF for API key auth (matches @authenticated_rest_api_view)
+                    request._dont_enforce_csrf_checks = True
+                except Exception:
+                    logger.warning("[nodl-auth] Basic auth failed for %s", request.path)
+                    return self._error_response("Invalid API key")
                 return self.get_response(request)
             logger.warning(f"[nodl-auth] No token in request to {request.path}")
             return self._error_response("Token required")
