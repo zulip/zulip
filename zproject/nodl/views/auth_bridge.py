@@ -114,6 +114,10 @@ def _auth_bridge_inner(request: HttpRequest) -> JsonResponse:
     supabase_user_id = payload.get("sub", "")
     phone = payload.get("phone", "")
 
+    # Normalize phone: Supabase may store without '+' prefix
+    if phone and not phone.startswith("+"):
+        phone = f"+{phone}"
+
     # Validate phone format if present (H2: E.164 validation)
     if phone and not validate_e164_phone(phone):
         logger.warning("NODL_DEBUG: phone failed E164 validation: %s", phone)
