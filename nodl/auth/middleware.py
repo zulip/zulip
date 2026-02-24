@@ -72,6 +72,11 @@ class SupabaseJWTMiddleware:
 
         token = self._extract_token(request)
         if not token:
+            # Allow requests with HTTP Basic auth (Zulip API key) to pass through
+            # to Zulip's native authentication middleware
+            auth_header = request.headers.get("Authorization", "")
+            if auth_header.startswith("Basic "):
+                return self.get_response(request)
             logger.warning(f"[nodl-auth] No token in request to {request.path}")
             return self._error_response("Token required")
 
