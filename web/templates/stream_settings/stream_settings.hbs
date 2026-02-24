@@ -139,11 +139,12 @@
                 {{> stream_settings_tip
                   can_change_stream_permissions_requiring_metadata_access=sub.can_change_stream_permissions_requiring_metadata_access }}
             </div>
-            {{> channel_permissions .
-              prefix="id_"
-              is_stream_edit=true
-              history_public_to_subscribers=sub.history_public_to_subscribers
-              }}
+            {{> channel_permissions
+                stream_inherited_permissions=stream_inherited_permissions
+                prefix="id_"
+                is_stream_edit=true
+                history_public_to_subscribers=sub.history_public_to_subscribers
+            }}
         </div>
     </div>
 </div>

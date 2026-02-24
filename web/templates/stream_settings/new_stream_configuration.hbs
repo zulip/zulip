@@ -29,8 +29,9 @@
         </div>
     </div>
     <div class="advanced-configurations-collapase-view hide">
-        {{> channel_permissions .
-          is_stream_edit=false
-          }}
+        {{> channel_permissions
+            stream_inherited_permissions=stream_inherited_permissions
+            is_stream_edit=false
+        }}
     </div>
 </div>
