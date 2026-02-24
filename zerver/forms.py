@@ -223,6 +223,9 @@ class RegistrationForm(HowFoundZulipFormMixin, RealmDetailsForm):
 
     def clean_password(self) -> str:
         password = self.cleaned_data["password"]
+        if not password and not self.fields["password"].required:
+            # Password is optional when external auth is available
+            return password
         if self.fields["password"].required and not check_password_strength(password):
             # The frontend code tries to stop the user from submitting the form with a weak password,
             # but if the user bypasses that protection, this error code path will run.

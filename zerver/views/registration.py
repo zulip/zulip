@@ -653,6 +653,9 @@ def registration_helper(
 
     if not (password_auth_enabled(realm) and password_required):
         form["password"].field.required = False
+    elif len(get_external_method_dicts(realm)) > 0:
+        # If external auth methods are available, password is optional
+        form["password"].field.required = False
 
     if form.is_valid():
         if password_auth_enabled(realm) and form["password"].field.required:
@@ -663,7 +666,9 @@ def registration_helper(
             # signing up with SSO and no password is required), set
             # the password field to `None` (Which causes Django to
             # create an unusable password).
-            password = None
+            password = form.cleaned_data.get("password")
+            if not password:
+                password = None
 
         if realm_creation:
             string_id = form.cleaned_data["realm_subdomain"]
@@ -912,6 +917,7 @@ def registration_helper(
         "password_required": password_auth_enabled(realm) and password_required,
         "require_ldap_password": require_ldap_password,
         "password_auth_enabled": password_auth_enabled(realm),
+        "external_authentication_methods": get_external_method_dicts(realm),
         "default_stream_groups": [] if realm is None else get_default_stream_groups(realm),
         "accounts": get_accounts_for_email(email),
         "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
