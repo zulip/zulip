@@ -1504,6 +1504,7 @@ export function add_group_to_table(group: UserGroup): void {
         show_group_settings(group);
         user_group_create.reset_name();
     }
+    update_filter_widget_visibility();
 }
 
 export function sync_group_permission_setting(property: string, group: UserGroup): void {
@@ -1915,10 +1916,32 @@ function setup_dropdown_filters_widget(): void {
 }
 
 function update_filter_widget_visibility(): void {
-    if (user_groups.realm_has_deactivated_user_groups()) {
-        $("#user-group-edit-filter-options").show();
+    const active_tab_key = group_list_toggler.value();
+
+    if (active_tab_key === "roles") {
+        return;
+    }
+
+    const total_groups = user_groups.get_realm_user_groups().length;
+    const $filterDropdown = $("#user-group-edit-filter-options");
+    const $searchBox = $("#group_filter");
+
+    if (total_groups === 0) {
+        $searchBox.hide();
     } else {
-        $("#user-group-edit-filter-options").hide();
+        $searchBox.show();
+    }
+
+    if (total_groups === 0) {
+        $filterDropdown.hide();
+        update_displayed_groups(FILTERS.ACTIVE_GROUPS);
+        if (filters_dropdown_widget) {
+            filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
+        }
+    } else if (user_groups.realm_has_deactivated_user_groups()) {
+        $filterDropdown.show();
+    } else {
+        $filterDropdown.hide();
         update_displayed_groups(FILTERS.ACTIVE_GROUPS);
         if (filters_dropdown_widget) {
             filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
