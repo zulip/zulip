@@ -483,6 +483,25 @@ class NarrowBuilder:
         cond = column("recipient_id", Integer) == recipient_id
         return query.where(maybe_negate(cond))
 
+    @staticmethod
+    def parse_channels_id_operand(operand: str) -> list[int]:
+        channel_id_strings = [s.strip() for s in operand.split(",")]
+        if len(channel_id_strings) < 2:
+            raise BadNarrowOperatorError("channels requires at least 2 channel IDs")
+        if any(channel_id_string == "" for channel_id_string in channel_id_strings):
+            raise BadNarrowOperatorError("channels contains invalid channel IDs")
+
+        channel_ids: list[int] = []
+        for channel_id_string in channel_id_strings:
+            if not channel_id_string.isdigit():
+                raise BadNarrowOperatorError("channels contains invalid channel IDs")
+            channel_ids.append(int(channel_id_string))
+
+        if len(set(channel_ids)) != len(channel_ids):
+            raise BadNarrowOperatorError("channels contains duplicate channel IDs")
+
+        return channel_ids
+
     def by_channels(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         self.check_not_both_channel_and_dm_narrow(maybe_negate, is_channel_narrow=True)
 
@@ -490,13 +509,30 @@ class NarrowBuilder:
             # Get all both subscribed and non-subscribed public channels
             # but exclude any private subscribed channels.
             recipient_queryset = get_public_streams_queryset(self.realm)
+            recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
+            cond = column("recipient_id", Integer).in_(recipient_ids)
+            return query.where(maybe_negate(cond))
         elif operand == "web-public":
             recipient_queryset = get_web_public_streams_queryset(self.realm)
-        else:
-            raise BadNarrowOperatorError("unknown channels operand " + operand)
+            recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
+            cond = column("recipient_id", Integer).in_(recipient_ids)
+            return query.where(maybe_negate(cond))
 
-        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
-        cond = column("recipient_id", Integer).in_(recipient_ids)
+        channel_ids = self.parse_channels_id_operand(operand)
+
+        channel_recipient_ids: list[int] = []
+        for channel_id in channel_ids:
+            try:
+                channel = get_stream_by_narrow_operand_access_unchecked(channel_id, self.realm)
+            except Stream.DoesNotExist:
+                raise BadNarrowOperatorError("unknown channel " + str(channel_id))
+            if self.is_web_public_query and not channel.is_web_public:
+                raise BadNarrowOperatorError("unknown web-public channel " + str(channel_id))
+            recipient_id = channel.recipient_id
+            assert recipient_id is not None
+            channel_recipient_ids.append(recipient_id)
+
+        cond = column("recipient_id", Integer).in_(channel_recipient_ids)
         return query.where(maybe_negate(cond))
 
     def by_topic(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
@@ -848,6 +884,16 @@ def ok_to_include_history(
                 and user_profile.can_access_public_streams()
             ):
                 include_history = True
+            elif term.operator in channels_operators and not term.negated and "," in term.operand:
+                try:
+                    channel_ids = NarrowBuilder.parse_channels_id_operand(term.operand)
+                except BadNarrowOperatorError:
+                    include_history = False
+                    continue
+                include_history = all(
+                    can_access_stream_history_by_id(user_profile, channel_id)
+                    for channel_id in channel_ids
+                )
         # Disable historical messages if the user is narrowing on anything
         # that's a property on the UserMessage table.  There cannot be
         # historical messages in these cases anyway.
@@ -1129,6 +1175,8 @@ def add_narrow_conditions(
     if narrow is None:
         return (query, is_search, False)
 
+    validate_channel_category_narrow(narrow)
+
     # Build the query for the narrow
     builder = NarrowBuilder(user_profile, inner_msg_id_col, realm, is_web_public_query)
     search_operands = []
@@ -1172,6 +1220,31 @@ def add_narrow_conditions(
         query = builder.add_term(query, search_term)
 
     return (query, is_search, builder.is_dm_narrow)
+
+
+def validate_channel_category_narrow(narrow: list[NarrowParameter]) -> None:
+    # Enforce that channel category operators are not mixed in one narrow.
+    # The allowed positive categories are:
+    # - single channel (`channel`)
+    # - multiple channels (`channels` with comma-separated IDs)
+    # - `channels:public`
+    # - `channels:web-public`
+    positive_single_channel_terms = 0
+    positive_channels_terms = 0
+    for term in narrow:
+        if term.negated:
+            continue
+        if term.operator in channel_operators:
+            positive_single_channel_terms += 1
+        elif term.operator in channels_operators:
+            positive_channels_terms += 1
+
+    if positive_single_channel_terms > 0 and positive_channels_terms > 0:
+        raise BadNarrowOperatorError("channel and channels operators cannot be combined")
+    if positive_single_channel_terms > 1:
+        raise BadNarrowOperatorError("only one channel operator is allowed")
+    if positive_channels_terms > 1:
+        raise BadNarrowOperatorError("only one channels operator is allowed")
 
 
 def find_first_unread_anchor(
@@ -1512,6 +1585,9 @@ def fetch_messages(
     num_after: int,
     client_requested_message_ids: list[int] | None = None,
 ) -> FetchedMessages:
+    if narrow is not None:
+        validate_channel_category_narrow(narrow)
+
     if access_narrow(user_profile, narrow, is_web_public_query, realm) is False:
         # If user is requesting messages from a narrow they don't have
         # access to, do an early return.

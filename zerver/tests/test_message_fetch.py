@@ -37,6 +37,7 @@ from zerver.lib.narrow import (
     BadNarrowOperatorError,
     NarrowBuilder,
     NarrowParameter,
+    access_narrow,
     add_narrow_conditions,
     exclude_muting_conditions,
     find_first_unread_anchor,
@@ -150,6 +151,55 @@ class NarrowBuilderTest(ZulipTestCase):
     ) -> None:  # NEGATED
         term = NarrowParameter(operator="channels", operand="invalid_operands")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_channels_operator_and_multi_channel_ids(self) -> None:
+        scotland = get_stream("Scotland", self.realm)
+        verona = get_stream("Verona", self.realm)
+        term = NarrowParameter(operator="channels", operand=f"{scotland.id},{verona.id}")
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+
+    def test_add_term_using_channels_operator_and_single_channel_id_should_raise_error(
+        self,
+    ) -> None:
+        scotland = get_stream("Scotland", self.realm)
+        term = NarrowParameter(operator="channels", operand=str(scotland.id))
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_channels_operator_and_malformed_ids_should_raise_error(self) -> None:
+        malformed_operands = [
+            "1,foo",
+            "1,,2",
+            " 1 , , 2 ",
+        ]
+        for operand in malformed_operands:
+            term = NarrowParameter(operator="channels", operand=operand)
+            self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_channels_operator_and_duplicate_ids_should_raise_error(self) -> None:
+        scotland = get_stream("Scotland", self.realm)
+        term = NarrowParameter(operator="channels", operand=f"{scotland.id},{scotland.id}")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_channels_operator_and_unknown_id_should_raise_error(self) -> None:
+        scotland = get_stream("Scotland", self.realm)
+        unknown_channel_id = 999999
+        term = NarrowParameter(operator="channels", operand=f"{scotland.id},{unknown_channel_id}")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_channels_operator_in_web_public_query(self) -> None:
+        web_public_channel = self.make_stream("web_public_for_channels", is_web_public=True)
+        private_channel = self.make_stream("non_web_public_for_channels")
+        web_public_builder = NarrowBuilder(
+            user_profile=None,
+            msg_id_column=column("id", Integer),
+            realm=self.realm,
+            is_web_public_query=True,
+        )
+        term = NarrowParameter(
+            operator="channels",
+            operand=f"{web_public_channel.id},{private_channel.id}",
+        )
+        self.assertRaises(BadNarrowOperatorError, web_public_builder.add_term, self.raw_query, term)
 
     def test_add_term_using_channels_operator_and_public_operand(self) -> None:
         term = NarrowParameter(operator="channels", operand="public")
@@ -1333,6 +1383,27 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertTrue(ok_to_include_history(narrow, user_profile, False))
 
+        public_channel_1 = get_stream("public_channel", user_profile.realm)
+        public_channel_2 = self.make_stream(
+            "public_channel_multi_history", realm=user_profile.realm
+        )
+        narrow = [
+            NarrowParameter(
+                operator="channels",
+                operand=f"{public_channel_1.id},{public_channel_2.id}",
+            ),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, user_profile, False))
+
+        private_channel_no_history = get_stream("private_channel", user_profile.realm)
+        narrow = [
+            NarrowParameter(
+                operator="channels",
+                operand=f"{public_channel_1.id},{private_channel_no_history.id}",
+            ),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+
         narrow = [
             NarrowParameter(operator="channel", operand="public_channel"),
             NarrowParameter(operator="topic", operand="whatever"),
@@ -2224,7 +2295,7 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.client_get("/json/messages", dict(non_web_public_channel_get_params))
         self.check_unauthenticated_response(result)
 
-        # Verify that same request would work with channels:web-public added.
+        # Mixing channels:web-public with a specific channel is invalid.
         rome_web_public_get_params: dict[str, int | str | bool] = {
             **get_params,
             "narrow": orjson.dumps(
@@ -2236,9 +2307,13 @@ class GetOldMessagesTest(ZulipTestCase):
             ).decode(),
         }
         result = self.client_get("/json/messages", dict(rome_web_public_get_params))
-        self.assert_json_success(result)
+        self.assert_json_error(
+            result,
+            "Invalid narrow operator: channel and channels operators cannot be combined",
+            status_code=400,
+        )
 
-        # Cannot access non-web-public channel even with channels:web-public narrow.
+        # Non-web-public channel in mixed channel-category narrow is also invalid.
         scotland_web_public_get_params: dict[str, int | str | bool] = {
             **get_params,
             "narrow": orjson.dumps(
@@ -2251,7 +2326,9 @@ class GetOldMessagesTest(ZulipTestCase):
         }
         result = self.client_get("/json/messages", dict(scotland_web_public_get_params))
         self.assert_json_error(
-            result, "Invalid narrow operator: unknown web-public channel Scotland", status_code=400
+            result,
+            "Invalid narrow operator: channel and channels operators cannot be combined",
+            status_code=400,
         )
 
     def test_get_message_ids(self) -> None:
@@ -2409,7 +2486,7 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertEqual(msg["sender_email"], sender.email)
             self.assertEqual(msg["avatar_url"], avatar_url(sender))
 
-    def test_unauthenticated_narrow_to_web_public_channels(self) -> None:
+    def test_unauthenticated_invalid_mixed_web_public_narrow(self) -> None:
         self.setup_web_public_test()
 
         post_params: dict[str, int | str | bool] = {
@@ -2424,7 +2501,11 @@ class GetOldMessagesTest(ZulipTestCase):
             ).decode(),
         }
         result = self.client_get("/json/messages", dict(post_params))
-        self.verify_web_public_query_result_success(result, 1)
+        self.assert_json_error(
+            result,
+            "Invalid narrow operator: channel and channels operators cannot be combined",
+            status_code=400,
+        )
 
     def test_get_messages_with_web_public(self) -> None:
         """
@@ -3064,8 +3145,8 @@ class GetOldMessagesTest(ZulipTestCase):
         for msg in results["messages"]:
             self.assertIn(msg["id"], msg_ids)
 
-        # Test `with` operator effective with spectator access when
-        # spectator has access to message.
+        # Test `with` operator mixed with channels:web-public is rejected due
+        # channel-category exclusivity.
         self.logout()
         self.setup_web_public_test(5)
         channel = get_stream("web-public-channel", realm)
@@ -3089,11 +3170,14 @@ class GetOldMessagesTest(ZulipTestCase):
         }
 
         result = self.client_get("/json/messages", dict(post_params))
-        self.verify_web_public_query_result_success(result, 5)
+        self.assert_json_error(
+            result,
+            "Invalid narrow operator: channel and channels operators cannot be combined",
+            status_code=400,
+        )
 
-        # Test `with` operator ineffective when spectator does not have
-        # access to message, by trying to access the same set of messages
-        # but when the spectator access is not allowed.
+        # If spectator access is disabled, request should still be rejected
+        # as unauthenticated.
         do_set_realm_property(hamlet.realm, "enable_spectator_access", False, acting_user=hamlet)
 
         result = self.client_get("/json/messages", dict(post_params))
@@ -4094,8 +4178,8 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_invalid_narrow_operand_in_dict(self) -> None:
         self.login("hamlet")
 
-        # str or int is required for "id", "sender", "channel", "dm-including" and "group-pm-with"
-        # operators
+        # str or int is required for "id", "sender", "channel", "dm-including" and
+        # "group-pm-with" operators.
         invalid_operands: list[InvalidParam] = [
             InvalidParam(value=["1"], expected_error="operand is not a string or integer"),
             InvalidParam(value=["2"], expected_error="operand is not a string or integer"),
@@ -4139,6 +4223,53 @@ class GetOldMessagesTest(ZulipTestCase):
         # Disallow empty search terms
         invalid_operands = [InvalidParam(value="", expected_error="operand cannot be blank.")]
         self.exercise_bad_narrow_operand_using_dict_api("search", invalid_operands)
+
+    def test_channel_category_mixing_in_narrow(self) -> None:
+        self.login("hamlet")
+
+        narrow = [
+            dict(operator="channel", operand="Scotland"),
+            dict(operator="channels", operand="public"),
+        ]
+        params = dict(anchor=0, num_before=0, num_after=0, narrow=orjson.dumps(narrow).decode())
+        result = self.client_get("/json/messages", params)
+        self.assert_json_error_contains(
+            result, "Invalid narrow operator: channel and channels operators cannot be combined"
+        )
+
+        narrow = [
+            dict(operator="channels", operand="public"),
+            dict(operator="channels", operand="web-public"),
+        ]
+        params = dict(anchor=0, num_before=0, num_after=0, narrow=orjson.dumps(narrow).decode())
+        result = self.client_get("/json/messages", params)
+        self.assert_json_error_contains(
+            result, "Invalid narrow operator: only one channels operator is allowed"
+        )
+
+        narrow = [
+            dict(operator="channel", operand="Scotland"),
+            dict(operator="channel", operand="Verona"),
+        ]
+        params = dict(anchor=0, num_before=0, num_after=0, narrow=orjson.dumps(narrow).decode())
+        result = self.client_get("/json/messages", params)
+        self.assert_json_error_contains(
+            result, "Invalid narrow operator: only one channel operator is allowed"
+        )
+
+    def test_invalid_channels_id_operands(self) -> None:
+        self.login("hamlet")
+        malformed_operands = [
+            ("1,foo", "Invalid narrow operator: channels contains invalid channel IDs"),
+            ("1,,2", "Invalid narrow operator: channels contains invalid channel IDs"),
+            ("1,1", "Invalid narrow operator: channels contains duplicate channel IDs"),
+        ]
+
+        for operand, expected_error in malformed_operands:
+            narrow = [dict(operator="channels", operand=operand)]
+            params = dict(anchor=0, num_before=0, num_after=0, narrow=orjson.dumps(narrow).decode())
+            result = self.client_get("/json/messages", params)
+            self.assert_json_error_contains(result, expected_error)
 
     # The exercise_bad_narrow_operand helper method uses legacy tuple format to
     # test bad narrow, this method uses the current dict API format
@@ -5534,29 +5665,43 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
         )
         self.assertGreater(len(result["messages"]), 0)
 
-    def test_multiple_channel_terms_early_return(self) -> None:
-        """Test that multiple channel terms trigger early return with no messages."""
+    def test_multiple_channel_terms_invalid(self) -> None:
+        """Test that multiple positive channel terms are rejected."""
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
 
-        # Multiple channel terms with AND logic will never match any messages,
-        # so we should get an early return with no messages.
-        with mock.patch(
-            "zerver.lib.narrow.get_base_query_for_search",
-        ) as mocked_get_base_query_for_search:
-            narrow = [
-                {"operator": "channel", "operand": "Verona"},
-                {"operator": "channel", "operand": "Scotland"},
-            ]
-            result = self.get_and_check_messages(
-                dict(
-                    narrow=orjson.dumps(narrow).decode(),
-                    anchor=LARGER_THAN_MAX_MESSAGE_ID,
-                ),
-                expected_status=200,
-            )
-            mocked_get_base_query_for_search.assert_not_called()
-            self.assert_length(result["messages"], 0)
+        narrow = [
+            {"operator": "channel", "operand": "Verona"},
+            {"operator": "channel", "operand": "Scotland"},
+        ]
+        result = self.client_get(
+            "/json/messages",
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=LARGER_THAN_MAX_MESSAGE_ID,
+                num_before=0,
+                num_after=0,
+            ),
+        )
+        self.assert_json_error_contains(
+            result, "Invalid narrow operator: only one channel operator is allowed"
+        )
+
+    def test_access_narrow_multiple_channel_terms_returns_false(self) -> None:
+        hamlet = self.example_user("hamlet")
+        narrow = [
+            NarrowParameter(operator="channel", operand="Verona"),
+            NarrowParameter(operator="channel", operand="Scotland"),
+        ]
+        self.assertIs(
+            access_narrow(
+                maybe_user_profile=hamlet,
+                narrow=narrow,
+                is_web_public_query=False,
+                realm=hamlet.realm,
+            ),
+            False,
+        )
 
     def test_deactivated_channel_access_narrow(self) -> None:
         """Test that access_narrow works with deactivated channels."""
