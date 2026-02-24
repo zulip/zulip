@@ -3658,7 +3658,7 @@ class UserSignUpTest(ZulipTestCase):
         """
         realm = get_realm("zulip")
         email = self.nonreg_email("alice")
-        
+
         # Create an invitation for the user
         admin = self.example_user("iago")
         with self.captureOnCommitCallbacks(execute=True):
@@ -3669,18 +3669,17 @@ class UserSignUpTest(ZulipTestCase):
                 invite_expires_in_minutes=None,
                 include_realm_default_subscriptions=True,
             )
-        
+
         # Get the confirmation URL from the invitation email
-        from django.core.mail import outbox
         confirmation_url = self.get_confirmation_url_from_outbox(email)
-        
+
         # Visit the confirmation page
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
-        
+
         # Extract the confirmation key
         confirmation_key = confirmation_url.split("/")[-1]
-        
+
         # Submit registration form without password (simulating external auth flow)
         result = self.submit_reg_form_for_user(
             email,
@@ -3688,16 +3687,16 @@ class UserSignUpTest(ZulipTestCase):
             full_name="Alice User",
             key=confirmation_key,
         )
-        
+
         # Should successfully create account and redirect
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], f"{realm.url}/")
-        
+
         # Verify user was created
         user_profile = get_user_by_delivery_email(email, realm)
         self.assertIsNotNone(user_profile)
         self.assertEqual(user_profile.full_name, "Alice User")
-        
+
         # Verify user has no usable password (since they signed up with external auth)
         self.assertFalse(user_profile.has_usable_password())
 
@@ -3716,7 +3715,7 @@ class UserSignUpTest(ZulipTestCase):
         realm = get_realm("zulip")
         email = self.nonreg_email("bob")
         password = "securepassword123"
-        
+
         # Create an invitation for the user
         admin = self.example_user("iago")
         with self.captureOnCommitCallbacks(execute=True):
@@ -3727,18 +3726,17 @@ class UserSignUpTest(ZulipTestCase):
                 invite_expires_in_minutes=None,
                 include_realm_default_subscriptions=True,
             )
-        
+
         # Get the confirmation URL from the invitation email
-        from django.core.mail import outbox
         confirmation_url = self.get_confirmation_url_from_outbox(email)
-        
+
         # Visit the confirmation page
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
-        
+
         # Extract the confirmation key
         confirmation_key = confirmation_url.split("/")[-1]
-        
+
         # Submit registration form WITH password
         result = self.submit_reg_form_for_user(
             email,
@@ -3746,16 +3744,16 @@ class UserSignUpTest(ZulipTestCase):
             full_name="Bob User",
             key=confirmation_key,
         )
-        
+
         # Should successfully create account and redirect
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], f"{realm.url}/")
-        
+
         # Verify user was created
         user_profile = get_user_by_delivery_email(email, realm)
         self.assertIsNotNone(user_profile)
         self.assertEqual(user_profile.full_name, "Bob User")
-        
+
         # Verify user has a usable password
         self.assertTrue(user_profile.has_usable_password())
         self.assertTrue(user_profile.check_password(password))
