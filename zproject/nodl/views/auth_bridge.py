@@ -48,6 +48,22 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
                            "existing_email_masked": "m***@example.com", "existing_user_id": 123}
         Duplicate phone: {"result": "success", "msg": "", "duplicate_phone": true}
     """
+    try:
+        return _auth_bridge_inner(request)
+    except Exception:
+        logger.exception("NODL_DEBUG: Unhandled exception in auth_bridge")
+        return JsonResponse(
+            {
+                "result": "error",
+                "msg": "Internal server error",
+                "code": "INTERNAL_ERROR",
+            },
+            status=500,
+        )
+
+
+def _auth_bridge_inner(request: HttpRequest) -> JsonResponse:
+    """Inner auth bridge logic, wrapped by auth_bridge() for error handling."""
     # Rate limit by IP
     rate_limit_response = check_rate_limit(request)
     if rate_limit_response is not None:
@@ -65,20 +81,26 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
     # Validate JWT
     try:
         payload = validate_supabase_jwt(token)
-    except JWTValidationError:
+    except JWTValidationError as e:
+        logger.warning("NODL_DEBUG: JWT validation failed: %s", e.message)
         return JsonResponse(
             {"result": "error", "msg": "Invalid JWT token", "code": "UNAUTHORIZED"},
             status=401,
         )
 
+    logger.info("NODL_DEBUG: JWT validated, sub=%s phone=%s", payload.get("sub"), payload.get("phone"))
+
     # Get realm (default single-realm deployment)
     try:
         realm = get_realm("zulip")
     except Exception:
+        logger.exception("NODL_DEBUG: get_realm('zulip') failed")
         return JsonResponse(
             {"result": "error", "msg": "Realm not found", "code": "INTERNAL_ERROR"},
             status=500,
         )
+
+    logger.info("NODL_DEBUG: realm found, id=%d", realm.id)
 
     # Parse optional link_action from request body
     link_action = None
@@ -94,6 +116,7 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
 
     # Validate phone format if present (H2: E.164 validation)
     if phone and not validate_e164_phone(phone):
+        logger.warning("NODL_DEBUG: phone failed E164 validation: %s", phone)
         return JsonResponse(
             {
                 "result": "error",
@@ -109,10 +132,12 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
 
     # Account detection logic (Task 1)
     # Check for duplicate phone first
+    logger.info("NODL_DEBUG: checking duplicate phone, phone=%s", phone)
     if phone and check_duplicate_phone(supabase_user_id, phone):
         return JsonResponse({"result": "success", "msg": "", "duplicate_phone": True})
 
     # Check if the phone user has an email identity in Supabase
+    logger.info("NODL_DEBUG: checking supabase user, id=%s", supabase_user_id)
     if supabase_user_id:
         supabase_user = get_supabase_user_by_id(supabase_user_id)
         if supabase_user is not None:
@@ -134,6 +159,7 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
     # Default: get or create user (same as Story 1.2 flow)
     # Check if user already exists (for is_new_device detection)
     email = derive_email(payload)
+    logger.info("NODL_DEBUG: derived email=%s", email)
     # is_new_device: true if user already had an account before this call.
     # MVP decision: this means every sign-in after sign-out triggers PIN
     # verification, even on the same physical device. This deviates from
@@ -147,6 +173,7 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
         is_active=True,
     ).exists()
 
+    logger.info("NODL_DEBUG: user_existed_before=%s, calling get_or_create_zulip_user", user_existed_before)
     try:
         user_profile = get_or_create_zulip_user(payload, realm)
     except Exception:
@@ -160,6 +187,8 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
             status=500,
         )
 
+    logger.info("NODL_DEBUG: user_profile id=%d email=%s", user_profile.id, user_profile.delivery_email)
+
     # Mark any pending invites for this phone as registered
     if phone and not user_existed_before:
         phone_hash = hashlib.sha256(phone.encode("utf-8")).hexdigest()
@@ -169,6 +198,7 @@ def auth_bridge(request: HttpRequest) -> JsonResponse:
     has_pin = NodlRegistrationPin.objects.filter(user=user_profile).exists()
     is_new_device = user_existed_before
 
+    logger.info("NODL_DEBUG: success, returning api_key for user %d", user_profile.id)
     return JsonResponse(
         {
             "result": "success",
