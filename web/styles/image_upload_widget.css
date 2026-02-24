@@ -10,6 +10,7 @@
 
     .image-block {
         background-size: contain;
+        max-height: 100%;
     }
 
     .image-hover-background {
