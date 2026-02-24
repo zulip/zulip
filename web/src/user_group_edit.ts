@@ -1072,6 +1072,11 @@ export function show_settings_for(group: UserGroup): void {
         settings_components.get_group_assigned_stream_permissions(group);
     const group_assigned_user_group_permissions =
         settings_components.get_group_assigned_user_group_permissions(group);
+    const group_inherited_realm_permissions =
+        settings_components.get_group_inherited_realm_permissions(group);
+    const group_has_no_inherited_realm_permissions = group_inherited_realm_permissions.every(
+        (subsection_obj) => subsection_obj.inherited_permissions.length === 0,
+    );
 
     let date_created_string = null;
     if (group.date_created) {
@@ -1095,6 +1100,8 @@ export function show_settings_for(group: UserGroup): void {
         group_has_no_realm_permissions,
         group_assigned_stream_permissions,
         group_assigned_user_group_permissions,
+        group_inherited_realm_permissions,
+        group_has_no_inherited_realm_permissions,
         group_has_no_permissions:
             group_has_no_realm_permissions &&
             group_assigned_stream_permissions.length === 0 &&

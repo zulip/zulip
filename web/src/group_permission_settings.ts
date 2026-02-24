@@ -284,6 +284,38 @@ export function get_assigned_permission_object(
     return undefined;
 }
 
+export function is_permission_inherited(
+    setting_value: GroupSettingValue,
+    group_id: number,
+): boolean {
+    // Returns true if the group has the permission through inheritance
+    // (subgroup membership) rather than direct assignment.
+
+    if (typeof setting_value === "number") {
+        // If the setting is a simple group ID, the permission is inherited
+        // if the group is a subgroup but not the group itself.
+        if (setting_value === group_id) {
+            return false; // Directly assigned
+        }
+        return user_groups.is_subgroup_of_target_group(setting_value, group_id);
+    }
+
+    // Setting is set to an anonymous group.
+    const direct_subgroup_ids = setting_value.direct_subgroups;
+    if (direct_subgroup_ids.includes(group_id)) {
+        return false; // Directly assigned as one of the direct subgroups
+    }
+
+    // Check if inherited through subgroup membership
+    for (const direct_subgroup_id of direct_subgroup_ids) {
+        if (user_groups.is_subgroup_of_target_group(direct_subgroup_id, group_id)) {
+            return true; // Inherited
+        }
+    }
+
+    return false; // Group doesn't have the permission at all
+}
+
 export function check_group_permission_settings_data(): void {
     const all_realm_group_settings = z
         .array(realm_group_setting_name_schema)

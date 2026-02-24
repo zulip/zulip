@@ -1302,3 +1302,75 @@ run_test("get_all_realm_user_groups", ({override}) => {
         expected_groups_list,
     );
 });
+
+run_test("is_permission_inherited", () => {
+    // Test the is_permission_inherited function which determines if a group
+    // has a permission through inheritance rather than direct assignment.
+
+    const params = {
+        realm_user_groups: [
+            get_test_subgroup(10), // Parent group
+            get_test_subgroup(20), // Child group (subgroup of 10)
+            get_test_subgroup(30), // Grandchild group (subgroup of 20)
+            get_test_subgroup(40), // Unrelated group
+        ],
+    };
+    user_groups.initialize(params);
+
+    // Make group 20 a subgroup of group 10
+    user_groups.add_subgroups(10, [20]);
+    // Make group 30 a subgroup of group 20
+    user_groups.add_subgroups(20, [30]);
+
+    // Test case 1: Direct assignment (single group ID)
+    // Group 10 is directly assigned the permission
+    let setting_value = 10;
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 10));
+    // Group 20 inherits from group 10
+    assert.ok(group_permission_settings.is_permission_inherited(setting_value, 20));
+    // Group 30 inherits from group 10 through group 20
+    assert.ok(group_permission_settings.is_permission_inherited(setting_value, 30));
+    // Group 40 has no relation to group 10
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 40));
+
+    // Test case 2: Anonymous group with direct subgroups
+    // Group 10 and 40 are directly in the permission setting
+    setting_value = {
+        direct_subgroups: [10, 40],
+        direct_members: [],
+    };
+    // Groups 10 and 40 are directly assigned
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 10));
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 40));
+    // Group 20 inherits from group 10
+    assert.ok(group_permission_settings.is_permission_inherited(setting_value, 20));
+    // Group 30 inherits from group 10 through group 20
+    assert.ok(group_permission_settings.is_permission_inherited(setting_value, 30));
+
+    // Test case 3: Anonymous group with direct members and subgroups
+    setting_value = {
+        direct_subgroups: [10],
+        direct_members: [1, 2, 3],
+    };
+    // Group 10 is directly assigned
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 10));
+    // Groups 20 and 30 inherit from group 10
+    assert.ok(group_permission_settings.is_permission_inherited(setting_value, 20));
+    assert.ok(group_permission_settings.is_permission_inherited(setting_value, 30));
+
+    // Test case 4: Group has no permission at all
+    setting_value = 40;
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 10));
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 20));
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 30));
+
+    // Test case 5: Empty anonymous group
+    setting_value = {
+        direct_subgroups: [],
+        direct_members: [],
+    };
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 10));
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 20));
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 30));
+    assert.ok(!group_permission_settings.is_permission_inherited(setting_value, 40));
+});

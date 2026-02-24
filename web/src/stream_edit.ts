@@ -471,6 +471,7 @@ export function show_settings_for(node: HTMLElement): void {
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
+        stream_inherited_permissions: settings_components.get_stream_inherited_realm_permissions(),
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 

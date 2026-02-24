@@ -2047,6 +2047,106 @@ export function get_group_assigned_user_group_permissions(group: UserGroup): {
     return group_assigned_user_group_permissions;
 }
 
+export function get_group_inherited_realm_permissions(group: UserGroup): {
+    subsection_key: string;
+    subsection_heading: string;
+    inherited_permissions: {
+        setting_name: string;
+        label: string;
+    }[];
+}[] {
+    // Get permissions that the group inherits from organization-level settings
+    // (i.e., permissions where the group has access through subgroup membership
+    // rather than direct assignment).
+    const group_inherited_realm_permissions = [];
+    for (const {
+        subsection_heading,
+        subsection_key,
+        settings,
+    } of settings_config.realm_group_permission_settings) {
+        const inherited_permission_objects = [];
+        for (const setting_name of settings) {
+            const setting_value = realm[z.keyof(realm_schema).parse("realm_" + setting_name)];
+            // Check if the group has this permission
+            if (
+                user_groups.group_has_permission(
+                    group_setting_value_schema.parse(setting_value),
+                    group.id,
+                )
+            ) {
+                // Check if it's inherited (not directly assigned)
+                const is_inherited = group_permission_settings.is_permission_inherited(
+                    group_setting_value_schema.parse(setting_value),
+                    group.id,
+                );
+                if (is_inherited) {
+                    inherited_permission_objects.push({
+                        setting_name,
+                        label: settings_config.all_group_setting_labels.realm[
+                            setting_name
+                        ].toString(),
+                    });
+                }
+            }
+        }
+        group_inherited_realm_permissions.push({
+            subsection_heading,
+            subsection_key,
+            inherited_permissions: inherited_permission_objects,
+        });
+    }
+    return group_inherited_realm_permissions;
+}
+
+export function get_stream_inherited_realm_permissions(): {
+    setting_name: string;
+    label: string;
+    group_names: string[];
+}[] {
+    // Get organization-level permissions that affect channels.
+    // These are permissions like "who can move messages between channels"
+    // that apply organization-wide and affect what can be done in channels.
+    const stream_inherited_permissions = [];
+
+    // Permissions that are relevant to channels
+    const channel_relevant_settings = settings_config.realm_group_permission_settings
+        .filter(
+            ({subsection_key}) =>
+                subsection_key === "org-stream-permissions" ||
+                subsection_key === "org-moving-msgs" ||
+                subsection_key === "org-moderation-settings",
+        )
+        .flatMap(({settings}) => settings);
+
+    for (const setting_name of channel_relevant_settings) {
+        const setting_value = group_setting_value_schema.parse(
+            realm[z.keyof(realm_schema).parse("realm_" + setting_name)],
+        );
+        const group_names: string[] = [];
+
+        // Get the names of groups that have this permission
+        if (typeof setting_value === "number") {
+            const group = user_groups.get_user_group_from_id(setting_value);
+            group_names.push(user_groups.get_display_group_name(group.name));
+        } else if (typeof setting_value === "object" && "direct_subgroups" in setting_value) {
+            for (const subgroup_id of setting_value.direct_subgroups) {
+                const group = user_groups.get_user_group_from_id(subgroup_id);
+                group_names.push(user_groups.get_display_group_name(group.name));
+            }
+        }
+
+        if (group_names.length > 0) {
+            stream_inherited_permissions.push({
+                setting_name,
+                label: settings_config.all_group_setting_labels.realm[setting_name].toString(),
+                group_names,
+            });
+        }
+    }
+
+    return stream_inherited_permissions;
+}
+
 export function set_channel_folder_dropdown_value(sub: StreamSubscription): void {
     if (sub.folder_id === null) {
         set_dropdown_list_widget_setting_value("folder_id", settings_config.no_folder_selected);

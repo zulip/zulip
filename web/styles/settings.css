@@ -2443,3 +2443,64 @@ label.preferences-radio-choice-label {
         }
     }
 }
+
+/* Inherited permissions styling */
+.inherited-realm-permissions,
+.inherited-permissions-subsection {
+    margin-top: 15px;
+}
+
+.inherited-permissions-subsection h4 {
+    margin: 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.inherited-permissions-list {
+    margin-top: 10px;
+}
+
+.inherited-permission-item {
+    padding: 8px 12px;
+    margin: 8px 0;
+    background-color: hsl(0deg 0% 0% / 3%);
+    border-radius: 4px;
+    border-left: 3px solid hsl(203deg 75% 60%);
+}
+
+.dark-theme .inherited-permission-item {
+    background-color: hsl(0deg 0% 100% / 5%);
+}
+
+.inherited-permission-icon {
+    margin-right: 6px;
+    color: hsl(203deg 75% 60%);
+}
+
+.inherited-permission-label {
+    font-weight: 500;
+}
+
+.inherited-permission-groups {
+    margin-top: 4px;
+    margin-left: 20px;
+}
+
+.inherited-group-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 2px 4px;
+    background-color: hsl(0deg 0% 0% / 7%);
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.dark-theme .inherited-group-pill {
+    background-color: hsl(0deg 0% 100% / 10%);
+}
+
+.no-inherited-permissions-text {
+    margin: 10px 0;
+    color: hsl(0deg 0% 50%);
+    font-style: italic;
+}
