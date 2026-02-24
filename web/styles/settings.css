@@ -2361,6 +2361,15 @@ label.preferences-radio-choice-label {
     }
 }
 
+/* Use `input.settings_*:disabled` to match the legacy `input[type=...]`
+   specificity and override its background rule in zulip.css. */
+input.settings_url_input:disabled,
+input.settings_text_input:disabled {
+    cursor: not-allowed;
+    background-color: var(--background-color-readonly-modal-input);
+    opacity: var(--opacity-readonly-modal-input);
+}
+
 .empty-required-field {
     border: 1px solid hsl(3deg 57% 33%);
     border-radius: 5px;
