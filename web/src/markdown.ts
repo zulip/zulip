@@ -10,6 +10,7 @@ import marked from "../third/marked/lib/marked.cjs";
 import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
 
 import * as fenced_code from "./fenced_code.ts";
+import type {MarkdownProcessor} from "./markdown_processor.ts";
 import * as util from "./util.ts";
 
 // This contains zulip's frontend Markdown implementation; see
@@ -19,6 +20,9 @@ import * as util from "./util.ts";
 // modified from the original implementation.
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
+
+// When set, parse() will use the unified processor instead of marked.js.
+let unified_processor: MarkdownProcessor | undefined;
 
 // If we see preview-related syntax in our content, we will need the
 // backend to render it.
@@ -80,6 +84,9 @@ export type MarkdownHelpers = {
 
     // linkifiers
     get_linkifier_map: GetLinkifierMap;
+
+    // realm
+    realm_url: string;
 };
 
 export function translate_emoticons_to_names({
@@ -159,6 +166,14 @@ function contains_topic_wildcard_mention(content: string): boolean {
     return content.includes("@**topic**");
 }
 
+function contains_human_readable_timestamp(content: string): boolean {
+    // Human-readable date formats like <time:Jun 5th 2017, 10:30PM> can
+    // be parsed by Python's dateutil but not by JavaScript's Date. Gate
+    // these for backend rendering. Unix timestamps (<time:12345>) are
+    // fine for local echo since JS handles them.
+    return /<time:(?!\d+>)[^<>]+>/.test(content);
+}
+
 function content_contains_backend_only_syntax(
     content: string,
     get_linkifier_map: GetLinkifierMap,
@@ -169,7 +184,8 @@ function content_contains_backend_only_syntax(
     return (
         contains_preview_link(content) ||
         contains_problematic_linkifier(content, get_linkifier_map) ||
-        contains_topic_wildcard_mention(content)
+        contains_topic_wildcard_mention(content) ||
+        contains_human_readable_timestamp(content)
     );
 }
 
@@ -482,13 +498,13 @@ export function is_status_message(raw_content: string): boolean {
     return raw_content.startsWith("/me ");
 }
 
-function make_emoji_span(codepoint: string, title: string, alt_text: string): string {
+export function make_emoji_span(codepoint: string, title: string, alt_text: string): string {
     return `<span aria-label="${_.escape(title)}" class="emoji emoji-${_.escape(
         codepoint,
     )}" role="img" title="${_.escape(title)}">${_.escape(alt_text)}</span>`;
 }
 
-function handleUnicodeEmoji(
+export function handleUnicodeEmoji(
     unicode_emoji: string,
     get_emoji_name: (codepoint: string) => string | undefined,
 ): string {
@@ -518,7 +534,7 @@ function handleUnicodeEmoji(
     return unicode_emoji;
 }
 
-function handleEmoji({
+export function handleEmoji({
     emoji_name,
     get_realm_emoji_url,
     get_emoji_codepoint,
@@ -571,7 +587,7 @@ function handleLinkifier({
     return url_template.expand(template_context);
 }
 
-function handleTimestamp(time_string: string): string {
+export function handleTimestamp(time_string: string): string {
     let timeobject;
     const time = Number(time_string);
 
@@ -599,7 +615,7 @@ function handleTimestamp(time_string: string): string {
     return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
 }
 
-function handleStream({
+export function handleStream({
     stream_name,
     get_stream_by_name,
     stream_hash,
@@ -623,7 +639,7 @@ function handleStream({
     )}" href="/${_.escape(href)}">#${_.escape(stream.name)}</a>`;
 }
 
-function handleStreamTopic({
+export function handleStreamTopic({
     stream_name,
     topic,
     get_stream_by_name,
@@ -653,7 +669,7 @@ function handleStreamTopic({
     });
 }
 
-function handleStreamTopicMessage({
+export function handleStreamTopicMessage({
     stream_name,
     topic,
     message_id,
@@ -684,7 +700,7 @@ function handleStreamTopicMessage({
     });
 }
 
-function handleTex(tex: string, fullmatch: string): string {
+export function handleTex(tex: string, fullmatch: string): string {
     try {
         return katex.renderToString(tex);
     } catch (error) {
@@ -697,6 +713,10 @@ function handleTex(tex: string, fullmatch: string): string {
     }
 }
 
+export function set_unified_processor(processor: MarkdownProcessor | undefined): void {
+    unified_processor = processor;
+}
+
 export function parse({
     raw_content,
     helper_config,
@@ -707,6 +727,10 @@ export function parse({
     content: string;
     flags: string[];
 } {
+    if (unified_processor !== undefined) {
+        return unified_processor.process(raw_content, helper_config);
+    }
+
     function get_linkifier_regexes(): RegExp[] {
         return [...helper_config.get_linkifier_map().keys()];
     }

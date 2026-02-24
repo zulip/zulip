@@ -15,13 +15,21 @@ at `zerver/lib/markdown/` is based on
 [Python-Markdown](https://pypi.python.org/pypi/Markdown) and is used to
 authoritatively render messages to HTML (and implements
 slow/expensive/complex features like querying the Twitter API to
-render tweets nicely). The frontend implementation is in JavaScript,
-based on [marked.js](https://github.com/chjj/marked)
+render tweets nicely). The frontend implementation is in JavaScript
 (`web/src/echo.ts`), and is used to preview and locally echo
 messages the moment the sender hits Enter, without waiting for round
 trip from the server. Those frontend renderings are only shown to the
 sender of a message, and they are (ideally) identical to the backend
 rendering.
+
+The frontend Markdown processor is based on the
+[micromark/mdast](https://github.com/micromark/micromark) ecosystem
+(`web/src/markdown_unified.ts` and related modules); see
+[unified processor](#unified-processor) for its architecture. The
+legacy frontend processor, based on a heavily forked
+[marked.js](https://github.com/chjj/marked)
+(`web/third/marked/lib/marked.cjs`), is being replaced; it may still
+be present in the codebase during the transition.
 
 The JavaScript Markdown implementation has a function,
 `markdown.contains_backend_only_syntax`, that is used to check whether a message
@@ -39,7 +47,7 @@ message is sent). As a result, we try to make sure that
 ## Testing
 
 The Python-Markdown implementation is tested by
-`zerver/tests/test_markdown.py`, and the marked.js implementation and
+`zerver/tests/test_markdown.py`, and the frontend implementations and
 `markdown.contains_backend_only_syntax` are tested by
 `web/tests/markdown.test.cjs`.
 
@@ -56,10 +64,12 @@ this file:
   `true` in the fixtures; this will automatically verify that
   `markdown.contains_backend_only_syntax` rejects the syntax, ensuring
   it will be rendered only by the backend processor.
-- When the two processors disagree, we set `marked_expected_output` in
-  the fixtures; this will ensure that the syntax stays that way. If
-  the differences are important (i.e. not just whitespace), we should
-  also open an issue on GitHub to track the problem.
+- When the frontend processor disagrees with the backend, we set
+  `marked_expected_output` or `unified_expected_output` in the
+  fixtures; this records the frontend processor's actual output for
+  that case. To regenerate `unified_expected_output` after processor
+  changes, run
+  `./tools/test-js-with-node generate_unified_expected_output`.
 - For mobile push notifications, we need a text version of the
   rendered content, since the APNS and GCM push notification systems
   don't support richer markup. Mostly, this involves stripping HTML,
@@ -101,11 +111,15 @@ When changing Zulip's Markdown syntax, you need to update several
 places:
 
 - The backend Markdown processor (`zerver/lib/markdown/__init__.py`).
-- The frontend Markdown processor (`web/src/markdown.ts` and sometimes
-  `web/third/marked/lib/marked.cjs`), or `markdown.contains_backend_only_syntax` if
-  your changes won't be supported in the frontend processor.
+- The frontend Markdown processor (`web/src/markdown_unified.ts` and
+  related modules; see [unified processor](#unified-processor)), or
+  `markdown.contains_backend_only_syntax` if your changes won't be
+  supported in the frontend processor.
 - If desired, the typeahead logic in `web/src/composebox_typeahead.ts`.
-- The test suite, probably via adding entries to `zerver/tests/fixtures/markdown_test_cases.json`.
+- The test suite, probably via adding entries to
+  `zerver/tests/fixtures/markdown_test_cases.json`. After adding
+  tests, regenerate unified expected output with
+  `./tools/test-js-with-node generate_unified_expected_output`.
 - The in-app Markdown documentation (`markdown_help_rows` in `web/src/info_overlay.ts`).
 - The list of changes to Markdown at the end of this document.
 
@@ -157,6 +171,75 @@ or rendering custom profile fields), one needs to just pass in a
 organization profile code for this). But for messages, we need to
 pass in attributes like `sent_by_bot` and `translate_emoticons` that
 indicate details about how the user sending the message is configured.
+
+## Unified processor
+
+The frontend Markdown processor (`web/src/markdown_unified.ts`) uses
+the [micromark](https://github.com/micromark/micromark) /
+[mdast](https://github.com/syntax-tree/mdast) ecosystem for
+CommonMark + GFM parsing. Zulip-specific extensions (mentions,
+channel links, emoji, math, timestamps, spoilers, linkifiers) are
+implemented as AST transforms that run between parsing and HTML
+serialization, rather than by modifying the parser itself.
+
+### Key files
+
+- `web/src/markdown_unified.ts` -- Pipeline orchestration and the
+  `parse_to_mdast()` function (used recursively for spoiler bodies).
+- `web/src/markdown_zulip_transforms.ts` -- AST transforms that
+  detect Zulip-specific patterns in the mdast tree and replace them
+  with custom node types (e.g., `zulipUserMention`,
+  `zulipStreamLink`, `zulipEmoji`).
+- `web/src/markdown_hast_handlers.ts` -- Converts custom mdast node
+  types to HTML. Reuses HTML-generating functions from
+  `web/src/markdown.ts` (e.g., `handleTimestamp`, `handleTex`,
+  `wrap_code`).
+- `web/src/markdown_fenced_blocks.ts` -- Preprocessor that converts
+  `~~~quote` blocks to `>` blockquote syntax before micromark
+  parsing; other fenced blocks pass through for micromark.
+
+### Security model
+
+The unified processor's XSS defense has three layers:
+
+1. **HTML parsing is disabled at the micromark level.** User-authored
+   HTML tags (`<script>`, `<b>`, etc.) become text nodes and are
+   auto-escaped by `toHtml`.
+2. **All user-controlled values in hast handlers are escaped with
+   `_.escape()`.** The custom hast handlers emit `raw()` nodes
+   containing pre-built HTML strings; every piece of user data in
+   those strings is escaped.
+3. **`allowDangerousHtml` is safe** because the only raw HTML comes
+   from our handlers (layer 2), never from user input (layer 1).
+
+When adding or modifying hast handlers, always use `_.escape()` on
+any user-controlled value inserted into raw HTML.
+
+### Design notes
+
+**Mentions and channel links** like `@**name**` and `#**channel**`
+are not custom micromark syntax. Micromark parses `@**name**` as a
+text node `@` followed by a `<strong>` sibling containing `name`.
+The `transform_sibling_patterns` helper in
+`markdown_zulip_transforms.ts` detects this pattern and merges the
+two nodes into a custom Zulip node. This avoids writing custom
+micromark tokenizer extensions but depends on micromark's exact AST
+output.
+
+**Inline math** (`$$...$$`) is preprocessed before micromark parsing:
+math spans are replaced with alphanumeric placeholders so that
+content inside math isn't parsed as Markdown. After parsing,
+placeholders in text nodes are restored to `zulipInlineMath` nodes.
+Placeholders inside `inlineCode` nodes are restored to the original
+`$$...$$` text (so code spans show literal content). Any future
+preprocessing steps should check for similar placeholder leaks into
+code spans or other literal-content contexts.
+
+**Transform ordering matters.** The order of AST transforms in the
+pipeline is significant; for example, timestamps and math must run
+before emoji (because the unicode emoji regex matches digits and
+would split text nodes), and links must run before mentions. See the
+comments in `markdown_unified.ts` for details.
 
 ## Zulip's Markdown philosophy
 
