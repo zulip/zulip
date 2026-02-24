@@ -777,13 +777,13 @@ CHAT_SERVICE_KEY: str | None = get_secret("chat_service_key")
 # Auth bridge settings (Story 1.2)
 # NODL_SUPABASE_JWT_SECRET: defaults to SUPABASE_JWT_SECRET if not set separately.
 # Must be set in /etc/zulip/settings.py for production.
-NODL_SUPABASE_JWT_SECRET: str = ""
+NODL_SUPABASE_JWT_SECRET: str = os.environ.get("NODL_SUPABASE_JWT_SECRET", "")
 # Supabase project URL, e.g. https://<project-ref>.supabase.co
 # Used for JWT issuer validation. Must be set in /etc/zulip/settings.py for production.
-NODL_SUPABASE_URL: str = ""
+NODL_SUPABASE_URL: str = os.environ.get("NODL_SUPABASE_URL", "")
 # Supabase service_role key for Admin API access (server-side only).
 # SECURITY: This key grants full admin access. Never log or expose to clients.
-NODL_SUPABASE_SERVICE_ROLE_KEY: str = ""
+NODL_SUPABASE_SERVICE_ROLE_KEY: str = os.environ.get("NODL_SUPABASE_SERVICE_ROLE_KEY", "")
 # Maximum number of phone hashes per contacts/match request (Story 4.1).
 NODL_CONTACTS_MATCH_LIMIT: int = 500
 
