@@ -1,5 +1,6 @@
-import $ from "jquery";
 import type {SafeString} from "handlebars";
+
+import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
