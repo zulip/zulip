@@ -486,6 +486,12 @@ def list_messages(request: HttpRequest) -> HttpResponse:
     elif anchor == "oldest":
         # Get oldest message IDs
         message_ids = list(base_query.order_by("id").values_list("id", flat=True)[: num_after + 1])
+    elif anchor == "first_unread":
+        # MVP: treat as newest — full unread tracking not implemented yet
+        message_ids = list(
+            base_query.order_by("-id").values_list("id", flat=True)[: num_before + 1]
+        )
+        message_ids.reverse()
     else:
         # Anchor is a message ID
         try:
