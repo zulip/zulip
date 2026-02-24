@@ -1724,6 +1724,20 @@ export class Filter {
         );
     }
 
+    may_have_incomplete_message_history(): boolean {
+        // Whether the filter may not include all messages.
+        return (
+            !this.is_in_home() &&
+            !this.contains_only_private_messages() &&
+            !this.includes_full_stream_history() &&
+            !this.is_personal_filter() &&
+            !(
+                _.isEqual(this.sorted_term_types(), ["sender", "has-reaction"]) &&
+                this.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
+            )
+        );
+    }
+
     contains_only_private_messages(): boolean {
         return (
             (this.has_operator("is") && this.terms_with_operator("is")[0]!.operand === "dm") ||
