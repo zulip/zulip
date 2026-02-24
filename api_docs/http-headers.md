@@ -2,16 +2,36 @@
 
 This page documents the HTTP headers used by the Zulip API.
 
+!!! tip ""
+
+    Full details of the HTTP requests are given in the `curl` example
+    on each endpoint's documentation page. You can access curl's
+    documentation at [`man curl`](https://curl.se/docs/manpage.html).
+
+## The `Authorization` header
+
 Most important is that API clients authenticate to the server using
 HTTP Basic authentication. If you're using the official [Python or
 JavaScript bindings](/api/installation-instructions), this is taken
 care of when you configure said bindings.
 
-Otherwise, see the `curl` example on each endpoint's documentation
-page, which details the request format.
+Otherwise, to authenticate an API request:
 
-Documented below are additional HTTP headers and header conventions
-generally used by Zulip:
+- Use HTTP `Basic` authentication, which is described [here][mdn-auth-headers].
+  This means sending an HTTP header named `Authorization`, with your
+  credentials [in a certain format][mdn-basic-auth].
+
+- For `Basic` authentication credentials in the Zulip API, a "username"
+  takes the form of an email address, and a "password" takes the form of
+  an API key. In the `curl` example for each endpoint, this is shown as:
+  `-u BOT_EMAIL_ADDRESS:BOT_API_KEY`.
+
+- A bot's credentials can be obtained through the web and desktop apps'
+  [bot management UI](/help/manage-a-bot) or by [downloading the bot's
+  zuliprc file](/api/configuring-python-bindings#download-a-zuliprc-file).
+
+- See [fetch an API key (production)](/api/fetch-api-key) for the
+  password-based authentication flow for getting a user's credentials.
 
 ## The `User-Agent` header
 
@@ -79,3 +99,5 @@ limit.
 
 [rate-limiting-rules]: https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html#rate-limiting
 [integrations-channel]: https://chat.zulip.org/#narrow/channel/127-integrations/
+[mdn-auth-headers]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Authorization
+[mdn-basic-auth]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Authorization#basic_authentication_2

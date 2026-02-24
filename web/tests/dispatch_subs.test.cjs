@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -36,11 +38,11 @@ set_realm(realm);
 
 people.add_active_user(test_user);
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     full_name: "Me Myself",
     user_id: 101,
-};
+});
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
@@ -59,10 +61,12 @@ test("add", ({override}) => {
     const sub = event.subscriptions[0];
     const stream_id = sub.stream_id;
 
-    stream_data.add_sub_for_tests({
-        stream_id,
-        name: sub.name,
-    });
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id,
+            name: sub.name,
+        }),
+    );
 
     const subscription_stub = make_stub();
     override(stream_events, "mark_subscribed", subscription_stub.f);
@@ -77,10 +81,12 @@ test("peer add/remove", ({override}) => {
     let event = event_fixtures.subscription__peer_add;
 
     const devel_stream_id = event.stream_ids[0];
-    stream_data.add_sub_for_tests({
-        name: "devel",
-        stream_id: devel_stream_id,
-    });
+    stream_data.add_sub_for_tests(
+        make_stream({
+            name: "devel",
+            stream_id: devel_stream_id,
+        }),
+    );
 
     const stream_stub = make_stub();
     override(stream_events, "process_subscriber_update", stream_stub.f);
@@ -102,10 +108,10 @@ test("remove", ({override}) => {
     const event_sub = event.subscriptions[0];
     const stream_id = event_sub.stream_id;
 
-    const sub = {
+    const sub = make_stream({
         stream_id,
         name: event_sub.name,
-    };
+    });
 
     stream_data.add_sub_for_tests(sub);
 
@@ -196,24 +202,26 @@ test("stream create", ({override}) => {
     assert.deepEqual(sub_store.get(102).name, "test");
 });
 
-test("stream delete (normal)", ({override}) => {
+test("stream delete (normal)", ({override, override_rewire}) => {
     const event = event_fixtures.stream__delete;
 
-    const devel_sub = {
+    const devel_sub = make_stream({
         stream_id: event.stream_ids[0],
         name: "devel",
         is_archived: false,
         subscribed: false,
-    };
+    });
 
-    const test_sub = {
+    const test_sub = make_stream({
         stream_id: event.stream_ids[1],
         name: "test",
         is_archived: false,
-    };
+    });
 
     stream_data.add_sub_for_tests(test_sub);
     stream_data.add_sub_for_tests(devel_sub);
+
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
 
     stream_data.subscribe_myself(devel_sub);
 
@@ -235,24 +243,25 @@ test("stream delete (normal)", ({override}) => {
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 });
 
-test("stream delete (special streams)", ({override}) => {
+test("stream delete (special streams)", ({override, override_rewire}) => {
     const event = event_fixtures.stream__delete;
 
-    const devel_sub = {
+    const devel_sub = make_stream({
         stream_id: event.stream_ids[0],
         name: "devel",
         is_archived: false,
-    };
+    });
 
-    const test_sub = {
+    const test_sub = make_stream({
         stream_id: event.stream_ids[1],
         name: "test",
         is_archived: false,
-    };
+    });
 
     stream_data.add_sub_for_tests(devel_sub);
     stream_data.add_sub_for_tests(test_sub);
 
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_data.subscribe_myself(devel_sub);
 
     const removed_stream_ids = [];
@@ -291,17 +300,17 @@ test("stream delete (stream is selected in compose)", ({override}) => {
 
     const event = event_fixtures.stream__delete;
 
-    const devel_sub = {
+    const devel_sub = make_stream({
         stream_id: event.stream_ids[0],
         name: "devel",
         is_archived: false,
-    };
+    });
 
-    const test_sub = {
+    const test_sub = make_stream({
         stream_id: event.stream_ids[1],
         name: "test",
         is_archived: false,
-    };
+    });
 
     stream_data.add_sub_for_tests(devel_sub);
     stream_data.add_sub_for_tests(test_sub);

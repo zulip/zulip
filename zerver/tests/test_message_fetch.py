@@ -17,8 +17,9 @@ from analytics.models import RealmCount
 from zerver.actions.message_edit import build_message_edit_request, do_update_message
 from zerver.actions.reactions import check_add_reaction
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.uploads import do_claim_attachments
-from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.display_recipient import get_display_recipient
@@ -2453,6 +2454,9 @@ class GetOldMessagesTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
 
+        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
         do_change_user_setting(
             hamlet,
             "email_address_visibility",
@@ -4632,7 +4636,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # Narrow conditions should be respected when passing `anchor_date`.
         scotland_channel_message_id = self.send_stream_message(sender, "Scotland")
         Message.objects.filter(id=scotland_channel_message_id).update(date_sent=base_time)
-        with self.assert_database_query_count(14):
+        with self.assert_database_query_count(16):
             result = self.get_and_check_messages(
                 {
                     **get_and_check_messages_options,
@@ -5489,6 +5493,91 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
         self.assertEqual(result["messages"][1]["sender_id"], othello.id)
         # Incoming DMs show the recipient_id that outgoing DMs would.
         self.assertEqual(result["messages"][1]["recipient_id"], othello.recipient_id)
+
+    def test_early_return_for_no_access_private_channel(self) -> None:
+        """Test that we do an early return when trying to access messages
+        in a private stream the user doesn't have access to.
+        """
+        hamlet = self.example_user("hamlet")
+        self.make_stream("private_stream", invite_only=True)
+        self.login_user(hamlet)
+
+        # Check that we do an early return.
+        with mock.patch(
+            "zerver.lib.narrow.get_base_query_for_search",
+        ) as mocked_get_base_query_for_search:
+            narrow = [["stream", "private_stream"]]
+            result = self.get_and_check_messages(
+                dict(
+                    narrow=orjson.dumps(narrow).decode(),
+                    anchor=LARGER_THAN_MAX_MESSAGE_ID,
+                ),
+                expected_status=200,
+            )
+            mocked_get_base_query_for_search.assert_not_called()
+            self.assert_length(result["messages"], 0)
+
+    def test_negated_channel_does_not_early_return(self) -> None:
+        """Test that negated channel terms don't trigger early return in access_narrow."""
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        # Negated channel terms should not trigger the early return optimization.
+        # The query should proceed normally and apply the negation filter.
+        narrow = [{"operator": "channel", "operand": "Verona", "negated": True}]
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=LARGER_THAN_MAX_MESSAGE_ID,
+            ),
+            expected_status=200,
+        )
+        self.assertGreater(len(result["messages"]), 0)
+
+    def test_multiple_channel_terms_early_return(self) -> None:
+        """Test that multiple channel terms trigger early return with no messages."""
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        # Multiple channel terms with AND logic will never match any messages,
+        # so we should get an early return with no messages.
+        with mock.patch(
+            "zerver.lib.narrow.get_base_query_for_search",
+        ) as mocked_get_base_query_for_search:
+            narrow = [
+                {"operator": "channel", "operand": "Verona"},
+                {"operator": "channel", "operand": "Scotland"},
+            ]
+            result = self.get_and_check_messages(
+                dict(
+                    narrow=orjson.dumps(narrow).decode(),
+                    anchor=LARGER_THAN_MAX_MESSAGE_ID,
+                ),
+                expected_status=200,
+            )
+            mocked_get_base_query_for_search.assert_not_called()
+            self.assert_length(result["messages"], 0)
+
+    def test_deactivated_channel_access_narrow(self) -> None:
+        """Test that access_narrow works with deactivated channels."""
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        self.send_stream_message(hamlet, "Verona", topic_name="test", content="test message")
+
+        realm = hamlet.realm
+        stream = get_stream("Verona", realm)
+        do_deactivate_stream(stream, acting_user=hamlet)
+
+        narrow = [{"operator": "channel", "operand": "Verona"}]
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=LARGER_THAN_MAX_MESSAGE_ID,
+            ),
+            expected_status=200,
+        )
+        self.assertGreater(len(result["messages"]), 0)
 
 
 class MessageHasKeywordsTest(ZulipTestCase):

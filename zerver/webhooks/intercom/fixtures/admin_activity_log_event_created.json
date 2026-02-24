@@ -1,0 +1,32 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "admin_activity_log_event",
+            "id": "f98f9a55-e125-4d4d-ad60-7cfc5f553cfc",
+            "performed_by": {
+                "type": "admin",
+                "id": "1234567",
+                "email": "admin@example.com",
+                "ip": "192.0.2.1"
+            },
+            "metadata": {
+                "enabled": false
+            },
+            "created_at": 1768016203,
+            "activity_type": "ai_inbox_translation_setting_change",
+            "activity_description": "John Doe disabled the AI inbox translation settings."
+        }
+    },
+    "links": {},
+    "id": "notif_6a8c959f-3b5b-46f8-b8a6-9a7a5e6f2bec",
+    "topic": "admin.activity_log_event.created",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768016203,
+    "created_at": 1768016203,
+    "self": null
+}

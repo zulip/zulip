@@ -44,6 +44,7 @@ from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
+    access_stream_common,
     can_access_stream_history_by_id,
     can_access_stream_history_by_name,
     get_public_streams_queryset,
@@ -1511,6 +1512,20 @@ def fetch_messages(
     num_after: int,
     client_requested_message_ids: list[int] | None = None,
 ) -> FetchedMessages:
+    if access_narrow(user_profile, narrow, is_web_public_query, realm) is False:
+        # If user is requesting messages from a narrow they don't have
+        # access to, do an early return.
+        return FetchedMessages(
+            rows=[],
+            found_anchor=False,
+            found_oldest=True,
+            found_newest=True,
+            history_limited=False,
+            anchor=LARGER_THAN_MAX_MESSAGE_ID,
+            include_history=False,
+            is_search=False,
+        )
+
     include_history = ok_to_include_history(narrow, user_profile, is_web_public_query)
     if include_history:
         # The initial query in this case doesn't use `zerver_usermessage`,
@@ -1664,3 +1679,66 @@ def fetch_messages(
         include_history=include_history,
         is_search=is_search,
     )
+
+
+def access_narrow(
+    maybe_user_profile: UserProfile | None,
+    narrow: list[NarrowParameter] | None,
+    is_web_public_query: bool,
+    realm: Realm,
+) -> bool | None:
+    """
+    We do an early return if the user doesn't have access to the
+    channel present in the narrow.
+
+    @returns None if we can't determine access here.
+    """
+
+    if (is_web_public_query is True) or (maybe_user_profile is None):
+        # Not handled here since we already have channel access
+        # checks later which will return with status code.
+        return None
+
+    # We only expect one channel term.
+    channel_requested_by_user: str | int | None = None
+    if narrow is not None:
+        for term in narrow:
+            if term.operator in channel_operators:
+                if term.negated:
+                    # We don't handle negated channel terms here.
+                    return None
+                if channel_requested_by_user is not None:
+                    # If there are multiple channel terms, there will
+                    # be no messages since we apply `AND` on them.
+                    return False
+                channel_requested_by_user = term.operand
+
+    if channel_requested_by_user is None:
+        return None
+
+    # Import here to avoid circular imports
+    from zerver.models.streams import get_realm_stream, get_stream_by_id_in_realm
+
+    # Check if channel exists.
+    try:
+        if isinstance(channel_requested_by_user, str):
+            channel = get_realm_stream(channel_requested_by_user, realm.id)
+        else:
+            channel = get_stream_by_id_in_realm(channel_requested_by_user, realm)
+    except Stream.DoesNotExist:
+        # We don't want to duplicate validation error messages here, so
+        # just return `None`.
+        return None
+
+    try:
+        access_stream_common(
+            maybe_user_profile,
+            channel,
+            error="",
+            require_active_channel=False,
+            require_content_access=True,
+        )
+        return True
+    except JsonableError:
+        # User doesn't have access to this existing stream
+        return False

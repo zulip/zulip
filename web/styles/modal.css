@@ -200,6 +200,7 @@
     /* We need the backup value for billing related html files where
        this variable is not defined. */
     font-size: var(--base-font-size-px, 14px);
+    font-family: inherit;
     padding: 8px 16px;
     background-color: hsl(0deg 0% 90%);
     border-radius: 4px;
@@ -368,6 +369,25 @@
         margin-bottom: var(--user-profile-modal-body-margin-bottom);
     }
 
+    &.prevent-user-modal-content-scrolling {
+        .modal__content {
+            flex-grow: 1;
+
+            .simplebar-content {
+                height: 100%;
+                box-sizing: border-box;
+            }
+        }
+
+        .tab-data {
+            height: calc(100% - var(--user-profile-modal-body-margin-bottom));
+        }
+
+        .tabcontent {
+            height: 100%;
+        }
+    }
+
     .group-tab-element-header,
     .stream-tab-element-header {
         margin: 0;
@@ -379,10 +399,6 @@
 
     #user-profile-groups-tab,
     #user-profile-streams-tab {
-        height: calc(
-            var(--user-profile-modal-body-height) -
-                var(--user-profile-modal-body-margin-bottom)
-        );
         display: grid;
         grid-template:
             "alert" auto
@@ -802,6 +818,7 @@
     cursor: pointer;
     background-color: hsl(0deg 0% 100%);
     max-width: 100%;
+    font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;
@@ -857,6 +874,7 @@
         100% - 2 * var(--input-horizontal-padding) - 2 *
             var(--input-border-width)
     );
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -1081,6 +1099,12 @@
             }
         }
     }
+
+    #integration-url-config-options-container {
+        /* Same bottom margin as that of input-group,
+           to maintain consistent gap between fields. */
+        margin-bottom: 1.25em; /* 20px at 16px/em */
+    }
 }
 
 .slack-topics-dropdown-dropdown-list-container {
@@ -1157,6 +1181,7 @@
             border-radius: 8px;
             border: 1px solid hsl(0deg 0% 100%);
             transition: transform 0.25s ease-out;
+            font-family: inherit;
 
             &:hover {
                 transform: scale(1.05);

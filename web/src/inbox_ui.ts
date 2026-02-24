@@ -15,6 +15,7 @@ import render_users_with_status_icons from "../templates/users_with_status_icons
 import * as animate from "./animate.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as channel_folders from "./channel_folders.ts";
+import * as compose_actions from "./compose_actions.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -255,7 +256,7 @@ const RIGHT_NAVIGATION_KEYS = ["right_arrow", "vim_right"];
 let is_waiting_for_revive_current_focus = true;
 // Used to store the last scroll position of the inbox before
 // it is hidden to avoid scroll jumping when it is shown again.
-let last_scroll_offset: number | undefined;
+let last_scroll_offset = 0;
 
 function get_row_from_conversation_key(key: string): JQuery {
     return $(`#${CSS.escape(CONVERSATION_ID_PREFIX + key)}`);
@@ -420,7 +421,10 @@ export function hide(): void {
 }
 
 function get_topic_key(stream_id: number, topic: string): string {
-    return stream_id + ":" + topic;
+    // Topic names are case-preserving for display, but case insensitive
+    // otherwise. We convert the topic key to lowercase to ensure that
+    // topic keys with different casing are not treated differently.
+    return stream_id + ":" + topic.toLowerCase();
 }
 
 function get_stream_key(stream_id: number): string {
@@ -1281,16 +1285,15 @@ export function complete_rerender(coming_from_other_views = false): void {
         }
 
         if (coming_from_other_views) {
-            if (last_scroll_offset !== undefined) {
-                // It is important to restore the scroll position as soon
-                // as the rendering is complete to avoid scroll jumping.
-                window.scrollTo(0, last_scroll_offset);
-            } else {
-                // If the focus is not on the inbox rows, the inbox view scrolls
-                // down when moving from other views to the inbox view. To avoid
-                // this, we scroll to top before restoring focus via revive_current_focus.
-                window.scrollTo(0, 0);
-            }
+            // Scrolling to last offset here
+            // is important to restore the scroll position as soon
+            // as the rendering is complete to avoid scroll jumping.
+            //
+            // This also avoids the bug where
+            // if the focus is not on the inbox rows, the inbox view scrolls
+            // down when moving from other views to the inbox view. To avoid
+            // this, we scroll to top before restoring focus via revive_current_focus.
+            window.scrollTo(0, last_scroll_offset);
         }
 
         revive_current_focus();
@@ -2000,6 +2003,10 @@ function bulk_insert_channel_folders(channel_folders: Set<number>): void {
 }
 
 export function update(): void {
+    requestAnimationFrame(update_internal);
+}
+
+export function update_internal(): void {
     // Since inbox shows a vast amount of sorted data,
     // doing surgical updates for everything is hard.
     // So, we focus on updating commonly changed data
@@ -2201,7 +2208,7 @@ export function update(): void {
     // the update was triggered by user. This can mean `row_focus` can
     // be out of bounds, so we need to fix that.
     if (update_triggered_by_user) {
-        setTimeout(revive_current_focus, 0);
+        revive_current_focus();
         update_triggered_by_user = false;
     } else {
         if (row_focus >= get_all_rows().length) {
@@ -2511,7 +2518,7 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         complete_rerender();
     });
 
-    $(document).on("compose_canceled.zulip", () => {
+    compose_actions.register_compose_cancel_hook(() => {
         if (inbox_util.is_visible()) {
             revive_current_focus();
         }

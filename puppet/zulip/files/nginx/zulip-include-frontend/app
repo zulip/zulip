@@ -23,10 +23,7 @@ location /static/ {
     # These files are hashed and thus immutable; cache them aggressively.
     # Django adds 12 hex digits; Webpack adds 20.
     location ~ '\.[0-9a-f]{12}\.|[./][0-9a-f]{20}\.' {
-        include /etc/nginx/zulip-include/headers;
-        add_header Access-Control-Allow-Origin *;
-        add_header Timing-Allow-Origin *;
-        add_header Cache-Control "public, max-age=31536000, immutable";
+        include /etc/nginx/zulip-include/immutable_headers;
     }
 }
 
@@ -55,14 +52,9 @@ location /help {
 
     # These files are hashed and thus immutable; cache them aggressively.
     # https://github.com/Pagefind/pagefind/issues/747#issuecomment-2510564644
-    location ~ ^/help/(pagefind/.*\.(?:pf_fragment|pf_index|pf_meta))$ {
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
-
-    # These files are hashed and thus immutable; cache them aggressively.
     # https://github.com/withastro/docs/blob/53603ad048e8aedbca1aed77bac8eb00dcada79d/src/content/docs/en/guides/integrations-guide/node.mdx?plain=1#L304
-    location /help/_astro/ {
-        add_header Cache-Control "public, max-age=31536000, immutable";
+    location ~ ^/help/(pagefind/.*\.(?:pf_fragment|pf_index|pf_meta)|_astro/.*)$ {
+        include /etc/nginx/zulip-include/immutable_headers;
     }
 }
 

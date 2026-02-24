@@ -9,6 +9,7 @@ from firebase_admin import exceptions as firebase_exceptions
 from firebase_admin import messaging as firebase_messaging
 from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
 
+from zerver.lib.devices import b64decode_token_id_base64, b64encode_token_id_int
 from zerver.lib.push_notifications import (
     APNsPushRequest,
     FCMPushRequest,
@@ -26,17 +27,18 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SentPushNotificationResult:
     successfully_sent_count: int
-    delete_device_ids: list[int]
+    delete_token_ids_base64: list[str]
 
 
 def send_e2ee_push_notification_apple(
     apns_requests: list[NotificationRequest],
     apns_remote_push_devices: list[RemotePushDevice],
+    log_context: str,
 ) -> SentPushNotificationResult:
     import aioapns
 
     successfully_sent_count = 0
-    delete_device_ids: list[int] = []
+    delete_token_ids_base64: list[str] = []
     apns_context = get_apns_context()
 
     if apns_context is None:
@@ -46,7 +48,7 @@ def send_e2ee_push_notification_apple(
         )
         return SentPushNotificationResult(
             successfully_sent_count=successfully_sent_count,
-            delete_device_ids=delete_device_ids,
+            delete_token_ids_base64=delete_token_ids_base64,
         )
 
     async def send_all_notifications() -> Iterable[
@@ -61,7 +63,7 @@ def send_e2ee_push_notification_apple(
     results = apns_context.loop.run_until_complete(send_all_notifications())
 
     for remote_push_device, result in results:
-        log_context = f"to (push_account_id={remote_push_device.push_account_id}, device={remote_push_device.token})"
+        log_context = log_context % remote_push_device.token
         result_info = get_info_from_apns_result(
             result,
             remote_push_device,
@@ -70,29 +72,30 @@ def send_e2ee_push_notification_apple(
 
         if result_info.successfully_sent:
             successfully_sent_count += 1
-        elif result_info.delete_device_id is not None:
+        elif result_info.delete_token_id_base64 is not None:
             remote_push_device.expired_time = timezone_now()
             remote_push_device.save(update_fields=["expired_time"])
-            delete_device_ids.append(result_info.delete_device_id)
+            delete_token_ids_base64.append(result_info.delete_token_id_base64)
 
     return SentPushNotificationResult(
         successfully_sent_count=successfully_sent_count,
-        delete_device_ids=delete_device_ids,
+        delete_token_ids_base64=delete_token_ids_base64,
     )
 
 
 def send_e2ee_push_notification_android(
     fcm_requests: list[firebase_messaging.Message],
     fcm_remote_push_devices: list[RemotePushDevice],
+    log_context: str,
 ) -> SentPushNotificationResult:
     successfully_sent_count = 0
-    delete_device_ids: list[int] = []
+    delete_token_ids_base64: list[str] = []
 
     if fcm_app is None:
         logger.error("FCM: Dropping push notifications since ANDROID_FCM_CREDENTIALS_PATH is unset")
         return SentPushNotificationResult(
             successfully_sent_count=successfully_sent_count,
-            delete_device_ids=delete_device_ids,
+            delete_token_ids_base64=delete_token_ids_base64,
         )
 
     try:
@@ -101,7 +104,7 @@ def send_e2ee_push_notification_android(
         logger.warning("Error while pushing to FCM", exc_info=True)
         return SentPushNotificationResult(
             successfully_sent_count=successfully_sent_count,
-            delete_device_ids=delete_device_ids,
+            delete_token_ids_base64=delete_token_ids_base64,
         )
 
     for idx, response in enumerate(batch_response.responses):
@@ -111,35 +114,30 @@ def send_e2ee_push_notification_android(
 
         remote_push_device = fcm_remote_push_devices[idx]
         token = remote_push_device.token
-        push_account_id = remote_push_device.push_account_id
+        log_context = log_context % token
+
         if response.success:
             successfully_sent_count += 1
-            logger.info(
-                "FCM: Sent message with ID: %s to (push_account_id=%s, device=%s)",
-                response.message_id,
-                push_account_id,
-                token,
-            )
+            logger.info("FCM: Sent message with ID: %s %s", response.message_id, log_context)
         else:
             error = response.exception
             if isinstance(error, FCMUnregisteredError):
                 remote_push_device.expired_time = timezone_now()
                 remote_push_device.save(update_fields=["expired_time"])
-                delete_device_ids.append(remote_push_device.device_id)
+                delete_token_ids_base64.append(b64encode_token_id_int(remote_push_device.token_id))
 
                 logger.info("FCM: Removing %s due to %s", token, error.code)
             else:
                 logger.warning(
-                    "FCM: Delivery failed for (push_account_id=%s, device=%s): %s:%s",
-                    push_account_id,
-                    token,
+                    "FCM: Delivery failed %s: %s:%s",
+                    log_context,
                     error.__class__,
                     error,
                 )
 
     return SentPushNotificationResult(
         successfully_sent_count=successfully_sent_count,
-        delete_device_ids=delete_device_ids,
+        delete_token_ids_base64=delete_token_ids_base64,
     )
 
 
@@ -153,21 +151,32 @@ def send_e2ee_push_notifications(
 
     import aioapns
 
-    device_ids = {push_request.device_id for push_request in push_requests}
+    token_ids_base64 = set()
+    token_ids_int = set()
+    for push_request in push_requests:
+        token_ids_base64.add(push_request.token_id)
+        token_ids_int.add(b64decode_token_id_base64(push_request.token_id))
+
     remote_push_devices = RemotePushDevice.objects.filter(
-        device_id__in=device_ids, expired_time__isnull=True, realm=realm, remote_realm=remote_realm
+        token_id__in=token_ids_int,
+        realm=realm,
+        remote_realm=remote_realm,
+        expired_time__isnull=True,
     )
-    device_id_to_remote_push_device = {
-        remote_push_device.device_id: remote_push_device
+    token_id_base64_to_remote_push_device = {
+        b64encode_token_id_int(remote_push_device.token_id): remote_push_device
         for remote_push_device in remote_push_devices
     }
-    unexpired_remote_push_device_ids = set(device_id_to_remote_push_device.keys())
+    unexpired_token_ids_base64 = set(token_id_base64_to_remote_push_device.keys())
 
-    # Device IDs which should be deleted on server.
-    # Either the device ID is invalid or the token
+    # Token IDs which should be deleted on server.
+    # Either the token ID is invalid or the token
     # associated has been marked invalid/expired by APNs/FCM.
-    delete_device_ids = list(
-        filter(lambda device_id: device_id not in unexpired_remote_push_device_ids, device_ids)
+    delete_token_ids_base64 = list(
+        filter(
+            lambda token_id_base64: token_id_base64 not in unexpired_token_ids_base64,
+            token_ids_base64,
+        )
     )
 
     apns_requests = []
@@ -177,11 +186,11 @@ def send_e2ee_push_notifications(
     fcm_remote_push_devices: list[RemotePushDevice] = []
 
     for push_request in push_requests:
-        device_id = push_request.device_id
-        if device_id not in unexpired_remote_push_device_ids:
+        token_id_base64 = push_request.token_id
+        if token_id_base64 not in unexpired_token_ids_base64:
             continue
 
-        remote_push_device = device_id_to_remote_push_device[device_id]
+        remote_push_device = token_id_base64_to_remote_push_device[token_id_base64]
         if remote_push_device.token_kind == RemotePushDevice.TokenKind.APNS:
             assert isinstance(push_request, APNsPushRequest)
             apns_requests.append(
@@ -197,8 +206,8 @@ def send_e2ee_push_notifications(
         else:
             assert isinstance(push_request, FCMPushRequest)
             fcm_payload = dict(
-                # FCM only allows string values, so we stringify push_account_id.
-                push_account_id=str(push_request.payload.push_account_id),
+                # FCM only allows string values, so we stringify push_key_id.
+                push_key_id=str(push_request.payload.push_key_id),
                 encrypted_data=push_request.payload.encrypted_data,
             )
             fcm_requests.append(
@@ -210,26 +219,34 @@ def send_e2ee_push_notifications(
             )
             fcm_remote_push_devices.append(remote_push_device)
 
+    if realm is not None:
+        log_context = f"to (realm={realm.uuid}, device=%s)"
+    else:
+        assert remote_realm is not None
+        log_context = f"to (remote_realm={remote_realm.uuid}, device=%s)"
+
     apple_successfully_sent_count = 0
     if len(apns_requests) > 0:
         sent_push_notification_result = send_e2ee_push_notification_apple(
             apns_requests,
             apns_remote_push_devices,
+            log_context,
         )
         apple_successfully_sent_count = sent_push_notification_result.successfully_sent_count
-        delete_device_ids.extend(sent_push_notification_result.delete_device_ids)
+        delete_token_ids_base64.extend(sent_push_notification_result.delete_token_ids_base64)
 
     android_successfully_sent_count = 0
     if len(fcm_requests) > 0:
         sent_push_notification_result = send_e2ee_push_notification_android(
             fcm_requests,
             fcm_remote_push_devices,
+            log_context,
         )
         android_successfully_sent_count = sent_push_notification_result.successfully_sent_count
-        delete_device_ids.extend(sent_push_notification_result.delete_device_ids)
+        delete_token_ids_base64.extend(sent_push_notification_result.delete_token_ids_base64)
 
     return {
         "apple_successfully_sent_count": apple_successfully_sent_count,
         "android_successfully_sent_count": android_successfully_sent_count,
-        "delete_device_ids": delete_device_ids,
+        "delete_token_ids": delete_token_ids_base64,
     }

@@ -6,7 +6,7 @@
     align-items: center;
     line-height: 1.25;
     font-size: var(--base-font-size-px);
-    font-family: "Source Sans 3 VF", sans-serif;
+    font-family: inherit;
     font-weight: 500;
     letter-spacing: 0.02ch;
     padding: 0.25em 0.625em;

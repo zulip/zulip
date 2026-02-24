@@ -363,7 +363,7 @@ def get_members(client: Client) -> None:
             assert member.get("profile_data", None) is None
         else:
             assert member.get("profile_data", None) is not None
-        assert member["avatar_url"] is None
+        assert member["avatar_url"] is not None
 
 
 @openapi_test_function("/users/{email}:get")
@@ -1708,19 +1708,33 @@ def remove_fcm_token(client: Client) -> None:
 
 @openapi_test_function("/mobile_push/register:post")
 def register_push_device(client: Client) -> None:
+    result = client.call_endpoint(url="/register_client_device", method="POST")
+    device_id = result["device_id"]
     # {code_example|start}
-    # Register a push device.
+    # Register a device for push notifications.
     request = {
+        "device_id": device_id,
         "token_kind": "fcm",
-        "push_account_id": 2408,
         "push_key": "MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt",
+        "push_key_id": 2408,
         "bouncer_public_key": "bouncer-public-key",
         "encrypted_push_registration": "encrypted-push-registration-data",
+        "token_id": "hGsEWGmyyfI=",
     }
     result = client.call_endpoint(url="/mobile_push/register", method="POST", request=request)
     # {code_example|end}
     assert_success_response(result)
     validate_against_openapi_schema(result, "/mobile_push/register", "post", "200")
+
+
+@openapi_test_function("/register_client_device:post")
+def register_device(client: Client) -> None:
+    # {code_example|start}
+    # Register a logged-in device.
+    result = client.call_endpoint(url="/register_client_device", method="POST")
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/register_client_device", "post", "200")
 
 
 @openapi_test_function("/typing:post")
@@ -2051,6 +2065,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     add_fcm_token(client)
     remove_fcm_token(client)
     register_push_device(client)
+    register_device(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:

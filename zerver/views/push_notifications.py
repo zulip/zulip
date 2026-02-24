@@ -2,15 +2,21 @@ from typing import Annotated
 
 import orjson
 from django.conf import settings
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from pydantic import Json
 
-from zerver.actions.push_notifications import do_register_push_device
+from zerver.actions.push_notifications import (
+    do_register_push_device,
+    do_rotate_push_key,
+    do_rotate_token,
+)
 from zerver.decorator import human_users_only, zulip_login_required
 from zerver.lib import redis_utils
+from zerver.lib.devices import b64decode_token_id_base64, check_device_id
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
@@ -40,9 +46,14 @@ from zerver.lib.remote_server import (
     send_to_push_bouncer,
 )
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import ApnsAppId, typed_endpoint, typed_endpoint_without_parameters
-from zerver.lib.typed_endpoint_validators import check_string_in_validator
-from zerver.models import PushDevice, PushDeviceToken, UserProfile
+from zerver.lib.typed_endpoint import (
+    ApiParamConfig,
+    ApnsAppId,
+    typed_endpoint,
+    typed_endpoint_without_parameters,
+)
+from zerver.lib.typed_endpoint_validators import check_string_in_validator, uint32_validator
+from zerver.models import Device, PushDeviceToken, UserProfile
 from zerver.views.errors import config_error
 
 redis_client = redis_utils.get_redis_client()
@@ -116,18 +127,17 @@ def send_test_push_notification_api(
 @human_users_only
 @typed_endpoint
 def send_e2ee_test_push_notification_api(
-    request: HttpRequest, user_profile: UserProfile, *, push_account_id: Json[int] | None = None
+    request: HttpRequest, user_profile: UserProfile, *, device_id: Json[int] | None = None
 ) -> HttpResponse:
-    # We skip push devices with `bouncer_device_id` set to `null` as they are
+    # We skip devices with `push_token_id` set to `null` as they are
     # not yet registered with the bouncer to send mobile push notifications.
-    if push_account_id is not None:
-        # Uses unique index created for 'unique_push_device_user_push_account_id' constraint.
-        push_devices = PushDevice.objects.filter(
-            user=user_profile, push_account_id=push_account_id, bouncer_device_id__isnull=False
+    if device_id is not None:
+        push_devices = Device.objects.filter(
+            id=device_id, user=user_profile, push_token_id__isnull=False
         )
     else:
-        # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
-        push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
+        # Uses 'zerver_device_user_push_token_id_idx' index.
+        push_devices = Device.objects.filter(user=user_profile, push_token_id__isnull=False)
 
     if len(push_devices) == 0:
         raise NoActivePushDeviceError
@@ -296,49 +306,120 @@ def register_push_device(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    token_kind: Annotated[str, check_string_in_validator(PushDevice.TokenKind.values)],
-    push_account_id: Json[int],
+    # `device_id` to configure for push notifications.
+    device_id: Json[int],
+    token_kind: Annotated[
+        str | None, check_string_in_validator(Device.PushTokenKind.values)
+    ] = None,
     # Key that the client is requesting be used for encrypting
     # push notifications for delivery to it.
     # Consists of a 1-byte prefix identifying the symmetric
     # cryptosystem in use, followed by the secret key.
-    push_key: str,
+    push_key: str | None = None,
+    # ID which client uses to reference `push_key`.
+    push_key_id: Annotated[Json[int] | None, uint32_validator()] = None,
     # Key that the client claims was used to encrypt
     # `encrypted_push_registration`.
-    bouncer_public_key: str,
+    bouncer_public_key: str | None = None,
     # Registration data encrypted by mobile client for bouncer.
-    encrypted_push_registration: str,
+    encrypted_push_registration: str | None = None,
+    # ID which client uses to reference token provided by FCM/APNs.
+    token_id_base64: Annotated[str | None, ApiParamConfig("token_id")] = None,
 ) -> HttpResponse:
     if not (settings.ZILENCER_ENABLED or uses_notification_bouncer()):
         raise PushServiceNotConfiguredError
 
-    push_key_bytes = check_push_key(push_key)
+    device = check_device_id(device_id, user_profile.id)
 
-    # Idempotency
-    already_registered = PushDevice.objects.filter(
-        user=user_profile, push_account_id=push_account_id, error_code__isnull=True
-    ).exists()
-    if already_registered:
+    push_key_fields_present = push_key is not None and push_key_id is not None
+    token_fields_present = (
+        bouncer_public_key is not None
+        and encrypted_push_registration is not None
+        and token_id_base64 is not None
+        and token_kind is not None
+    )
+
+    if not (push_key_fields_present or token_fields_present):
+        raise JsonableError(
+            _(
+                "Missing parameters: must provide either all push key fields, all token fields, or both."
+            )
+        )
+
+    if push_key_fields_present and not token_fields_present:
+        if device.push_key_id is None:
+            raise JsonableError(_("No push registration exists to rotate key for."))
+
+        assert push_key is not None and push_key_id is not None
+        push_key_bytes = check_push_key(push_key)
+        do_rotate_push_key(user_profile, device, push_key_bytes, push_key_id)
         return json_success(request)
 
-    do_register_push_device(user_profile, push_account_id, token_kind, push_key_bytes)
+    # A registration request already in progress, don't enqueue another one
+    # to bouncer to avoid bugs due to race.
+    if device.push_registration_error_code is None and device.pending_push_token_id is not None:
+        raise JsonableError(_("A registration for the device already in progress."))
 
-    # We use a queue worker to make the request to the bouncer
-    # to complete the registration, so that any transient failures
-    # can be managed between the two servers, without the mobile
-    # device and its often-irregular network access in the picture.
-    queue_item: RegisterPushDeviceToBouncerQueueItem = {
-        "user_profile_id": user_profile.id,
-        "bouncer_public_key": bouncer_public_key,
-        "encrypted_push_registration": encrypted_push_registration,
-        "push_account_id": push_account_id,
-    }
-    queue_event_on_commit(
-        "missedmessage_mobile_notifications",
-        {
-            "type": "register_push_device_to_bouncer",
-            "payload": queue_item,
-        },
-    )
+    with transaction.atomic(durable=True):
+        assert token_id_base64 is not None
+        assert token_kind is not None
+        assert bouncer_public_key is not None
+        assert encrypted_push_registration is not None
+
+        token_id_int = b64decode_token_id_base64(token_id_base64)
+        if token_fields_present and not push_key_fields_present:
+            if device.push_key_id is None:
+                raise JsonableError(_("No push registration exists to rotate token for."))
+
+            if device.push_registration_error_code is None and device.push_token_id == token_id_int:
+                return json_success(request)
+
+            do_rotate_token(user_profile, device, token_id_int, token_id_base64)
+
+        # All fields present
+        if push_key_fields_present and token_fields_present:
+            assert push_key is not None
+            assert push_key_id is not None
+            push_key_bytes = check_push_key(push_key)
+
+            # Idempotent
+            if (
+                device.push_registration_error_code is None
+                and device.push_key_id == push_key_id
+                and device.push_key is not None
+                and bytes(device.push_key) == push_key_bytes
+                and device.push_token_id == token_id_int
+                and device.push_token_kind == token_kind
+            ):
+                return json_success(request)
+
+            do_register_push_device(
+                user_profile,
+                device,
+                token_kind=token_kind,
+                push_key_bytes=push_key_bytes,
+                push_key_id=push_key_id,
+                token_id_int=token_id_int,
+                token_id_base64=token_id_base64,
+            )
+
+        # We use a queue worker to make the request to the bouncer
+        # to complete the registration, so that any transient failures
+        # can be managed between the two servers, without the mobile
+        # device and its often-irregular network access in the picture.
+        queue_item: RegisterPushDeviceToBouncerQueueItem = {
+            "user_profile_id": user_profile.id,
+            "device_id": device_id,
+            "bouncer_public_key": bouncer_public_key,
+            "encrypted_push_registration": encrypted_push_registration,
+            "token_id_base64": token_id_base64,
+        }
+        queue_event_on_commit(
+            "missedmessage_mobile_notifications",
+            {
+                "type": "register_push_device_to_bouncer",
+                "payload": queue_item,
+            },
+        )
 
     return json_success(request)

@@ -1,5 +1,7 @@
 "use strict";
 
+const {Role} = require("./example_user.cjs");
+
 //  These events are not guaranteed to be perfectly
 //  representative of what the server sends.  We
 //  have a tool called check-schemas that tries
@@ -655,7 +657,7 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
-            role: 400,
+            role: Role.MEMBER,
             is_bot: false,
             is_guest: false,
             profile_data: {},
@@ -675,7 +677,7 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
-            role: 400,
+            role: Role.MEMBER,
             is_bot: true,
             is_guest: false,
             profile_data: {},

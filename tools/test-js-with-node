@@ -323,7 +323,6 @@ EXEMPT_FILES = make_set(
         "web/src/zform.ts",
         "web/src/zulip_test.ts",
         # Test library code isn't always fully used.
-        "web/tests/lib/example_user.cjs",
         "web/tests/lib/mdiff.cjs",
         "web/tests/lib/real_jquery.cjs",
         "web/tests/lib/zjquery_element.cjs",

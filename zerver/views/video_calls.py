@@ -33,6 +33,7 @@ from zerver.lib.cache import (
     zoom_server_access_token_cache_key,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.message import truncate_content
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.partial import partial
 from zerver.lib.pysa import mark_sanitized
@@ -59,11 +60,83 @@ class InvalidVideoCallProviderTokenError(JsonableError):
         )
 
 
+class CreateVideoCallFailedError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Failed to create {provider_name} call").format(provider_name=provider_name)
+        )
+
+
 class UnknownZoomUserError(JsonableError):
     code = ErrorCode.UNKNOWN_ZOOM_USER
 
     def __init__(self) -> None:
         super().__init__(_("Unknown Zoom user email"))
+
+
+class ConstructorGroupsService:
+    def __init__(self) -> None:
+        if not self._is_configured():
+            raise CreateVideoCallFailedError("Constructor Groups")
+
+        self.access_key = settings.CONSTRUCTOR_GROUPS_ACCESS_KEY
+        self.secret_key = settings.CONSTRUCTOR_GROUPS_SECRET_KEY
+        self.base_url = (
+            settings.CONSTRUCTOR_GROUPS_URL.rstrip("/") if settings.CONSTRUCTOR_GROUPS_URL else ""
+        )
+
+    @staticmethod
+    def _is_configured() -> bool:
+        return (
+            settings.CONSTRUCTOR_GROUPS_URL is not None
+            and settings.CONSTRUCTOR_GROUPS_ACCESS_KEY is not None
+            and settings.CONSTRUCTOR_GROUPS_SECRET_KEY is not None
+        )
+
+    def _make_authenticated_request(
+        self, method: str, endpoint: str, data: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """Make authenticated request to Constructor Groups XAPI"""
+        url = f"{self.base_url}{endpoint}"
+
+        # Construct authentication token: ACCESS_KEY|SHA256(ACCESS_KEY|SECRET_KEY)
+        combined_string = f"{self.access_key}|{self.secret_key}"
+        hash_hex = hashlib.sha256(combined_string.encode("utf-8")).hexdigest()
+        auth_token = f"{self.access_key}|{hash_hex}"
+
+        headers = {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            session = VideoCallSession()
+            if method.upper() == "POST":
+                response = session.post(url, headers=headers, json=data or {})
+            else:
+                raise ValueError(f"Unsupported HTTP method: {method}")
+
+            response.raise_for_status()
+            return response.json()
+        except requests.HTTPError as e:
+            logging.exception(
+                "Constructor Groups API request failed with status %s", e.response.status_code
+            )
+            raise CreateVideoCallFailedError("Constructor Groups")
+        except Exception:
+            logging.exception("Constructor Groups API request failed")
+            raise CreateVideoCallFailedError("Constructor Groups")
+
+    def get_or_create_default_room(
+        self, creator_email: str, name: str, fallback_name: str
+    ) -> dict[str, Any]:
+        data = {
+            "creator_email": creator_email,
+            "name": name,
+            "fallback_name": fallback_name,
+        }
+
+        return self._make_authenticated_request("POST", "/room/default", data)
 
 
 class OAuthVideoCallProvider(ABC):
@@ -182,9 +255,7 @@ class OAuthVideoCallProvider(ABC):
             self.update_token(user, None)
             raise InvalidVideoCallProviderTokenError(self.provider_name)
         elif not response.ok:
-            raise JsonableError(
-                _("Failed to create {provider_name} call").format(provider_name=self.provider_name)
-            )
+            raise CreateVideoCallFailedError(self.provider_name)
 
         return self.get_meeting_details(request, response)
 
@@ -305,7 +376,7 @@ def get_zoom_server_to_server_call(
                 response_dict.get("message", str(response_dict)),
             )
             flush_zoom_server_access_token_cache(account_id)
-        raise JsonableError(_("Failed to create Zoom call"))
+        raise CreateVideoCallFailedError("Zoom")
     return response.json()["join_url"]
 
 
@@ -422,15 +493,24 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
             + checksum
         )
         response.raise_for_status()
-    except requests.RequestException:
-        raise JsonableError(_("Error connecting to the BigBlueButton server."))
+    except requests.RequestException as e:
+        if e.response is not None:
+            reason = f"HTTP {response.status_code}: {response.text:.200}"
+        else:
+            reason = str(e)
+        raise JsonableError(
+            _("Error connecting to the BigBlueButton server: {reason}").format(reason=reason)
+        )
 
     payload = ElementTree.fromstring(response.text)
     if assert_is_not_none(payload.find("messageKey")).text == "checksumError":
         raise JsonableError(_("Error authenticating to the BigBlueButton server."))
 
-    if assert_is_not_none(payload.find("returncode")).text != "SUCCESS":
-        raise JsonableError(_("BigBlueButton server returned an unexpected error."))
+    status = assert_is_not_none(payload.find("returncode")).text
+    if status != "SUCCESS":
+        raise JsonableError(
+            _("BigBlueButton server returned an unexpected error: {status}").format(status=status)
+        )
 
     join_params = urlencode(
         {
@@ -461,3 +541,81 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
         settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
     )
     return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))
+
+
+@typed_endpoint_without_parameters
+def make_constructor_groups_video_call(
+    request: HttpRequest,
+    user_profile: UserProfile,
+) -> HttpResponse:
+    service = ConstructorGroupsService()
+
+    room_data = service.get_or_create_default_room(
+        creator_email=user_profile.delivery_email,
+        name=f"{user_profile.full_name}'s Zulip room",
+        fallback_name=f"{user_profile.full_name}'s Zulip room ({user_profile.realm_id}-{user_profile.id})",
+    )
+
+    room_url = room_data.get("url", "")
+    if not room_url:
+        logging.error("Constructor Groups API returned room without URL: %s", room_data)
+        raise CreateVideoCallFailedError("Constructor Groups")
+
+    return json_success(request, {"url": room_url})
+
+
+# Nextcloud Talk API limits room names to 255 characters.
+MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH = 255
+
+
+@typed_endpoint
+def create_nextcloud_talk_url(
+    request: HttpRequest, user: UserProfile, *, room_name: str
+) -> HttpResponse:
+    if (
+        settings.NEXTCLOUD_SERVER is None
+        or settings.NEXTCLOUD_TALK_USERNAME is None
+        or settings.NEXTCLOUD_TALK_PASSWORD is None
+    ):
+        raise JsonableError(_("Nextcloud Talk is not configured"))
+
+    room_name = truncate_content(room_name, MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH, "...")
+    # https://nextcloud-talk.readthedocs.io/en/stable/conversation/#creating-a-new-conversation
+    api_url = urljoin(settings.NEXTCLOUD_SERVER, "/ocs/v2.php/apps/spreed/api/v4/room")
+
+    payload = {
+        # Create a PUBLIC conversation (roomType=3) which allows guest access
+        # https://nextcloud-talk.readthedocs.io/en/latest/constants/#conversation-types
+        "roomType": 3,
+        "roomName": room_name,
+    }
+    username = str(settings.NEXTCLOUD_TALK_USERNAME)
+    password = str(settings.NEXTCLOUD_TALK_PASSWORD)
+    credentials = f"{username}:{password}".encode()
+    encoded_credentials = b64encode(credentials).decode("ascii")
+
+    headers = {
+        "OCS-APIRequest": "true",
+        "Accept": "application/json",
+        "Authorization": f"Basic {encoded_credentials}",
+    }
+
+    try:
+        response = VideoCallSession().post(api_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        if e.response is not None:
+            reason = f"HTTP {response.status_code}: {response.text:.200}"
+        else:
+            reason = str(e)
+        raise JsonableError(
+            _("Error connecting to the Nextcloud Talk server: {reason}").format(reason=reason)
+        )
+    try:
+        data = response.json()
+        token = data["ocs"]["data"]["token"]
+    except (KeyError, ValueError):
+        raise CreateVideoCallFailedError("Nextcloud Talk")
+
+    call_url = urljoin(settings.NEXTCLOUD_SERVER, f"/index.php/call/{token}")
+    return json_success(request, data={"url": call_url})

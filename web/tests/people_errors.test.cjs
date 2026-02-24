@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -13,12 +14,12 @@ const settings_data = mock_esm("../src/settings_data");
 
 const people = zrequire("people");
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
     timezone: "America/Los_Angeles",
-};
+});
 
 people.init();
 people.add_active_user(me);
@@ -49,11 +50,11 @@ run_test("blueslip", () => {
     people.get_user_id(unknown_email);
 
     blueslip.expect("warn", "No user_id provided");
-    const person = {
+    const person = make_user({
         email: "person@example.com",
         user_id: undefined,
         full_name: "Person Person",
-    };
+    });
     people.add_active_user(person);
 
     blueslip.expect("error", "No user_id found for email");
@@ -76,17 +77,17 @@ run_test("blueslip", () => {
     people.all_user_ids_in_pm(message);
     assert.equal(people.pm_perma_link(message), undefined);
 
-    const charles = {
+    const charles = make_user({
         email: "charles@example.com",
         user_id: 451,
         full_name: "Charles Dickens",
         avatar_url: "charles.com/foo.png",
-    };
-    const maria = {
+    });
+    const maria = make_user({
         email: "athens@example.com",
         user_id: 452,
         full_name: "Maria Athens",
-    };
+    });
     people.add_active_user(charles);
     people.add_active_user(maria);
 

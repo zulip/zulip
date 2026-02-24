@@ -38,6 +38,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
 )
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
+from zerver.lib.devices import b64decode_token_id_base64, b64encode_token_id_int
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingRemoteRealmError
@@ -65,8 +66,8 @@ from zerver.lib.users import check_can_access_user
 from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
+    Device,
     Message,
-    PushDevice,
     PushDeviceToken,
     Realm,
     Recipient,
@@ -77,6 +78,7 @@ from zerver.models import (
 from zerver.models.realms import get_fake_email_domain
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_id
+from zerver.tornado.django_api import send_event_on_commit
 
 if TYPE_CHECKING:
     import aioapns
@@ -241,7 +243,7 @@ def dedupe_device_tokens(
 @dataclass
 class APNsResultInfo:
     successfully_sent: bool
-    delete_device_id: int | None = None
+    delete_token_id_base64: str | None = None
     delete_device_token: str | None = None
 
 
@@ -266,7 +268,7 @@ def get_info_from_apns_result(
             "APNs: Removing invalid/expired token %s (%s)", device.token, result.description
         )
         if settings.ZILENCER_ENABLED and isinstance(device, RemotePushDevice):
-            result_info.delete_device_id = device.device_id
+            result_info.delete_token_id_base64 = b64encode_token_id_int(device.token_id)
         else:
             result_info.delete_device_token = device.token
     else:
@@ -1415,7 +1417,7 @@ class RealmPushStatusDict(TypedDict):
 class SendNotificationResponseData(TypedDict):
     android_successfully_sent_count: int
     apple_successfully_sent_count: int
-    delete_device_ids: list[int]
+    delete_token_ids: list[str]
 
 
 class SendNotificationRemoteResponseData(SendNotificationResponseData):
@@ -1434,13 +1436,13 @@ class PushRequestBasePayload:
     # FCM expects in this type must always be strings. Non-string
     # fields must be converted into strings in the FCM code path
     # within send_e2ee_push_notifications.
-    push_account_id: int
+    push_key_id: int
     encrypted_data: str
 
 
 @dataclass
 class FCMPushRequest:
-    device_id: int
+    token_id: str
     fcm_priority: FCMPriority
     payload: PushRequestBasePayload
 
@@ -1460,7 +1462,7 @@ class APNsPayload(PushRequestBasePayload):
 
 @dataclass
 class APNsPushRequest:
-    device_id: int
+    token_id: str
     http_headers: APNsHTTPHeaders
     payload: APNsPayload
 
@@ -1496,7 +1498,7 @@ def get_encrypted_data(payload_data_to_encrypt: dict[str, Any], push_key_bytes: 
 def send_push_notifications(
     user_profile: UserProfile,
     payload_data_to_encrypt: dict[str, Any],
-    push_devices: QuerySet[PushDevice],
+    push_devices: QuerySet[Device],
 ) -> None:
     assert len(push_devices) != 0
 
@@ -1512,30 +1514,32 @@ def send_push_notifications(
     # Prepare payload to send.
     push_requests: list[FCMPushRequest | APNsPushRequest] = []
     for push_device in push_devices:
-        assert push_device.bouncer_device_id is not None  # for mypy
+        assert push_device.push_key is not None  # for mypy
+        assert push_device.push_key_id is not None  # for mypy
+        assert push_device.push_token_id is not None  # for mypy
         encrypted_data = get_encrypted_data(payload_data_to_encrypt, bytes(push_device.push_key))
-        if push_device.token_kind == PushDevice.TokenKind.APNS:
+        if push_device.push_token_kind == Device.PushTokenKind.APNS:
             apns_http_headers = APNsHTTPHeaders(
                 apns_priority=apns_priority,
                 apns_push_type=apns_push_type,
             )
             apns_payload = APNsPayload(
-                push_account_id=push_device.push_account_id,
+                push_key_id=push_device.push_key_id,
                 encrypted_data=encrypted_data,
             )
             apns_push_request = APNsPushRequest(
-                device_id=push_device.bouncer_device_id,
+                token_id=b64encode_token_id_int(push_device.push_token_id),
                 http_headers=apns_http_headers,
                 payload=apns_payload,
             )
             push_requests.append(apns_push_request)
         else:
             fcm_payload = PushRequestBasePayload(
-                push_account_id=push_device.push_account_id,
+                push_key_id=push_device.push_key_id,
                 encrypted_data=encrypted_data,
             )
             fcm_push_request = FCMPushRequest(
-                device_id=push_device.bouncer_device_id,
+                token_id=b64encode_token_id_int(push_device.push_token_id),
                 fcm_priority=fcm_priority,
                 payload=fcm_payload,
             )
@@ -1579,20 +1583,32 @@ def send_push_notifications(
         return
 
     # Handle success response data
-    delete_device_ids = response_data["delete_device_ids"]
+    delete_token_ids_base64 = response_data["delete_token_ids"]
+    delete_token_ids_int = [
+        b64decode_token_id_base64(token_id_base64) for token_id_base64 in delete_token_ids_base64
+    ]
     apple_successfully_sent_count = response_data["apple_successfully_sent_count"]
     android_successfully_sent_count = response_data["android_successfully_sent_count"]
 
-    if len(delete_device_ids) > 0:
+    if len(delete_token_ids_base64) > 0:
         logger.info(
-            "Deleting PushDevice rows with the following device IDs based on response from bouncer: %s",
-            sorted(delete_device_ids),
+            "Clearing `push_token_id` for Device rows with the following token IDs based on response from bouncer: %s",
+            sorted(delete_token_ids_base64),
         )
-        # Filtering on `user_profile` is not necessary here, we do it to take
-        # advantage of 'zerver_pushdevice_user_bouncer_device_id_idx' index.
-        PushDevice.objects.filter(
-            user=user_profile, bouncer_device_id__in=delete_device_ids
-        ).delete()
+        # Uses 'zerver_device_user_push_token_id_idx' index.
+        with transaction.atomic(durable=True):
+            push_devices = Device.objects.select_for_update().filter(
+                user=user_profile, push_token_id__in=delete_token_ids_int
+            )
+            for push_device in push_devices:
+                event = dict(
+                    type="device",
+                    op="update",
+                    device_id=push_device.id,
+                    push_token_id=None,
+                )
+                send_event_on_commit(user_profile.realm, event, [user_profile.id])
+            push_devices.update(push_token_id=None)
 
     do_increment_logging_stat(
         user_profile.realm,
@@ -1628,7 +1644,7 @@ def send_push_notifications(
         if can_push:
             record_push_notifications_recently_working()
 
-    if is_test_notification and len(push_requests) == len(delete_device_ids):
+    if is_test_notification and len(push_requests) == len(delete_token_ids_base64):
         # While sending test push notification, the bouncer reported
         # that there's no active registered push device. Inform the
         # same to the client.
@@ -1667,8 +1683,8 @@ def prepare_payload_and_send_push_notifications(
         )
 
     # Send E2EE push notifications.
-    # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
-    push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
+    # Uses 'zerver_device_user_push_token_id_idx' index.
+    push_devices = Device.objects.filter(user=user_profile, push_token_id__isnull=False)
     if push_devices:
         payload_to_encrypt = get_payload_to_encrypt()
         send_push_notifications(user_profile, payload_to_encrypt, push_devices)
@@ -1941,7 +1957,7 @@ def send_test_push_notification(user_profile: UserProfile, devices: list[PushDev
 
 
 def send_e2ee_test_push_notification(
-    user_profile: UserProfile, push_devices: QuerySet[PushDevice]
+    user_profile: UserProfile, push_devices: QuerySet[Device]
 ) -> None:
     payload_data_to_encrypt = get_base_payload(user_profile, for_legacy_clients=False)
     payload_data_to_encrypt["type"] = "test"
@@ -2019,19 +2035,6 @@ class HostnameAlreadyInUseBouncerError(JsonableError):
 class PushDeviceInfoDict(TypedDict):
     status: Literal["active", "pending", "failed"]
     error_code: str | None
-
-
-def get_push_devices(user_profile: UserProfile) -> dict[str, PushDeviceInfoDict]:
-    # We intentionally don't try to save a database query
-    # if `push_notifications_configured()` is False, in order to avoid
-    # risk of clients deleting their Account records if the server
-    # has its mobile notifications configuration temporarily disabled.
-    rows = PushDevice.objects.filter(user=user_profile)
-
-    return {
-        str(row.push_account_id): {"status": row.status, "error_code": row.error_code}
-        for row in rows
-    }
 
 
 class NoActivePushDeviceError(JsonableError):

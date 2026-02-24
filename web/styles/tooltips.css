@@ -101,6 +101,16 @@
         top: 0.5px;
     }
 
+    .view-channel-tooltip {
+        /* This is needed so that the hotkey hints do not
+        move to a new line after "View #{channel_name}". */
+        display: inline-flex;
+
+        .view-channel-text {
+            word-break: break-all;
+        }
+    }
+
     /* If the reference of the tooltip is went offscreen while scrolling,
        the tooltip will be visible until the scrolling stops. Popper adds
        `data-reference-hidden` attribute to those tooltips whole reference is

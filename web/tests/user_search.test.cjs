@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {set_global, mock_esm, zrequire} = require("./lib/namespace.cjs");
@@ -50,27 +51,27 @@ const stream_data = zrequire("stream_data");
 const realm = make_realm();
 set_realm(realm);
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     user_id: 999,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 1,
     full_name: "Alice Smith",
-};
-const fred = {
+});
+const fred = make_user({
     email: "fred@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
-};
-const jill = {
+});
+const jill = make_user({
     email: "jill@zulip.com",
     user_id: 3,
     full_name: "Jill Hill",
-};
+});
 
 const all_user_ids = [alice.user_id, fred.user_id, jill.user_id, me.user_id];
 const ordered_user_ids = [me.user_id, alice.user_id, fred.user_id, jill.user_id];

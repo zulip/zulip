@@ -292,9 +292,9 @@
         </div>
     </div>
 
-    <div class="feature-end">
+    <div class="feature-end education-feature-end">
         <div class="feature-pricing" id="feature-pricing">
-            <h1 class="center"> Zulip Cloud for Education plans </h1>
+            <h1 class="for-education-plans-heading"> Zulip Cloud for Education plans </h1>
             <div class="for-education-pricing-model">
                 <div class="padded-content">
                     <div class="pricing-container">
@@ -377,7 +377,7 @@
                     </div>
                 </div>
             </div>
-            <p class="price-asterisk">
+            <p class="price-asterisk hero-fine-print">
                 <a href="/help/zulip-cloud-billing#education-pricing">Learn
                 more</a> about education pricing, or contact <a
                 href="mailto:sales@zulip.com">sales@zulip.com</a> with any
@@ -385,7 +385,7 @@
             </p>
         </div>
 
-        <p>
+        <p class="hero-fine-print">
             Learn about using Zulip
             for <a href="/for/events/">conferences</a> and
             <a href="/for/research/">research communities</a>.  If you have any
@@ -396,10 +396,10 @@
             community at chat.zulip.org</a> to ask for help or suggest
             improvements!
         </p>
+
+        {% include "corporate/compare-education.html" %}
+
     </div>
-
-    {% include "corporate/compare-education.html" %}
-
 </div>
 
 {% endblock %}

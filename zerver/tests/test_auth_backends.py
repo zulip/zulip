@@ -8318,16 +8318,22 @@ class TestMaybeSendToRegistration(ZulipTestCase):
             def is_valid(self) -> bool:
                 return True
 
+        redirect_to = "/#narrow/channel/7-test-here"
         with mock.patch("zerver.views.auth.HomepageForm", return_value=Form()):
             self.assertEqual(PreregistrationUser.objects.all().count(), 0)
             result = maybe_send_to_registration(
-                request, self.example_email("hamlet"), is_signup=True
+                request,
+                self.example_email("hamlet"),
+                is_signup=True,
+                redirect_to=redirect_to,
             )
             self.assertEqual(result.status_code, 302)
             confirmation = Confirmation.objects.all().first()
             assert confirmation is not None
             confirmation_key = confirmation.confirmation_key
             self.assertIn("do_confirm/" + confirmation_key, result["Location"])
+            parsed = urlsplit(result["Location"])
+            self.assertEqual(parse_qs(parsed.query).get("next"), [redirect_to])
             self.assertEqual(PreregistrationUser.objects.all().count(), 1)
 
         response = self.client_get(result["Location"])

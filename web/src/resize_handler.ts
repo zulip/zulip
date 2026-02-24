@@ -28,7 +28,8 @@ export function handler(): void {
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
     compose_ui.maybe_show_scrolling_formatting_buttons("#message-formatting-controls-container");
     compose_ui.maybe_show_scrolling_formatting_buttons(".message-edit-feature-group");
-    resize.update_recent_view();
+    const rerender_view_if_needed = true;
+    resize.update_recent_view(rerender_view_if_needed);
     scroll_bar.handle_overlay_scrollbars();
 
     // Re-compute and display/remove 'Show more' buttons to messages

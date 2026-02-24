@@ -113,6 +113,16 @@ export function show(opts: {
     narrow_title.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
     compose_recipient.handle_middle_pane_transition();
+
+    // Call before complete_rerender to ensure
+    // that any size changes are taken into account.
+    if (opts.is_recent_view) {
+        resize.set_recent_view_participants_rerender(() => {
+            opts.complete_rerender(false);
+        });
+        resize.update_recent_view();
+    }
+
     opts.complete_rerender(true);
     compose_actions.on_show_navigation_view();
     popup_banners.close_found_missing_unreads_banner();
@@ -120,11 +130,6 @@ export function show(opts: {
     // This has to happen after resetting the current narrow filter, so
     // that the buddy list is rendered with the correct narrow state.
     activity_ui.build_user_sidebar();
-
-    // Misc.
-    if (opts.is_recent_view) {
-        resize.update_recent_view();
-    }
 }
 
 export function hide(opts: {$view: JQuery; set_visible: (value: boolean) => void}): void {
@@ -154,6 +159,16 @@ export function hide(opts: {$view: JQuery; set_visible: (value: boolean) => void
 export function is_in_focus(): boolean {
     let can_current_view_steal_focus = true;
     const focused_element = document.activeElement;
+
+    // If current view has focus we don't need to check anything else.
+    if (
+        focused_element instanceof HTMLElement &&
+        (focused_element.closest("#recent_view") !== null ||
+            focused_element.closest("#inbox-view") !== null)
+    ) {
+        return true;
+    }
+
     if (
         focused_element instanceof HTMLElement &&
         // Pill input elements.

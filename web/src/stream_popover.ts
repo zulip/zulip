@@ -832,6 +832,12 @@ export async function build_move_topic_to_stream_popover(
         }
 
         assert(new_topic_name !== undefined);
+
+        // Don't show this warning in case only rename.
+        if (new_topic_name.trim().toLowerCase() === args.topic_name.trim().toLowerCase()) {
+            return false;
+        }
+
         let stream_id: number;
         if (stream_widget_value === undefined) {
             // Set stream_id to current_stream_id since the user is not

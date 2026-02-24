@@ -204,7 +204,7 @@ export function get_display_text_for_realm_message_retention_setting(): string {
 
 function get_stream_id(target: HTMLElement): number {
     const $row = $(target).closest(
-        ".stream-row, .stream_settings_header, .subscription_settings, .save-button",
+        ".stream-row, .stream-title-buttons, .subscription_settings, .save-button",
     );
     return Number.parseInt($row.attr("data-stream-id")!, 10);
 }
@@ -486,7 +486,6 @@ export function show_settings_for(node: HTMLElement): void {
 
     $edit_container.addClass("show");
 
-    stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
     set_up_channel_privacy_dropdown_widget(undefined, sub);
@@ -611,6 +610,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         });
     }
 
+    let sender_dropdown_widget: DropdownWidget;
     function generate_email_modal_post_render(): void {
         function update_option_label(sender: User | CurrentUser | Bot): string {
             if (sender.user_id === people.EMAIL_GATEWAY_BOT.user_id) {
@@ -651,7 +651,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
             event.preventDefault();
         }
 
-        const sender_dropdown_widget = new dropdown_widget.DropdownWidget({
+        sender_dropdown_widget = new dropdown_widget.DropdownWidget({
             widget_name: "sender_channel_email_address",
             get_options,
             item_click_callback,
@@ -668,7 +668,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         dialog_widget.submit_api_request(
             channel.get,
             "/json/streams/" + sub.stream_id + "/email_address",
-            {},
+            {sender_id: sender_dropdown_widget.value()},
             {
                 success_continuation(response_data) {
                     const email = z.object({email: z.string()}).parse(response_data).email;

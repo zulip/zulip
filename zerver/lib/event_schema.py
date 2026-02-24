@@ -30,6 +30,8 @@ from zerver.lib.event_types import (
     EventDefaultStreamGroups,
     EventDefaultStreams,
     EventDeleteMessage,
+    EventDeviceAdd,
+    EventDeviceUpdate,
     EventDirectMessage,
     EventDraftsAdd,
     EventDraftsRemove,
@@ -46,7 +48,6 @@ from zerver.lib.event_types import (
     EventNavigationViewRemove,
     EventNavigationViewUpdate,
     EventOnboardingSteps,
-    EventPushDevice,
     EventReactionAdd,
     EventReactionRemove,
     EventRealmBotAdd,
@@ -119,6 +120,7 @@ from zerver.lib.event_types import (
     PersonRole,
     PersonTimezone,
     PlanTypeData,
+    RealmDescriptionData,
     RealmTopicsPolicyData,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
@@ -174,6 +176,8 @@ check_channel_folder_reorder = make_checker(EventChannelFolderReorder)
 check_custom_profile_fields = make_checker(EventCustomProfileFields)
 check_default_stream_groups = make_checker(EventDefaultStreamGroups)
 check_default_streams = make_checker(EventDefaultStreams)
+check_device_add = make_checker(EventDeviceAdd)
+check_device_update = make_checker(EventDeviceUpdate)
 check_direct_message = make_checker(EventDirectMessage)
 check_draft_add = make_checker(EventDraftsAdd)
 check_draft_remove = make_checker(EventDraftsRemove)
@@ -186,7 +190,6 @@ check_navigation_view_add = make_checker(EventNavigationViewAdd)
 check_navigation_view_remove = make_checker(EventNavigationViewRemove)
 check_navigation_view_update = make_checker(EventNavigationViewUpdate)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
-check_push_device = make_checker(EventPushDevice)
 check_reaction_add = make_checker(EventReactionAdd)
 check_reaction_remove = make_checker(EventReactionRemove)
 check_realm_bot_delete = make_checker(EventRealmBotDelete)
@@ -455,6 +458,10 @@ def check_realm_update(
     the value people actually matches the type from
     Realm.property_types that we have configured
     for the property.
+
+    For certain properties, there are extra fields.
+    For example, when property is "description", there's also
+    "rendered_description".
     """
     _check_realm_update(var_name, event)
 
@@ -523,6 +530,8 @@ def check_realm_update_dict(
             sub_type = PlanTypeData
         elif "topics_policy" in event["data"]:
             sub_type = RealmTopicsPolicyData
+        elif "description" in event["data"]:
+            sub_type = RealmDescriptionData
         else:
             raise AssertionError("unhandled fields in data")
 

@@ -8,6 +8,8 @@ const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -55,7 +57,7 @@ mock_esm("../src/settings_data", {
 });
 
 const compose_ui = zrequire("compose_ui");
-const compose_banner = zrequire("compose_banner");
+zrequire("compose_banner");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_recipient = zrequire("compose_recipient");
 const compose_state = zrequire("compose_state");
@@ -81,39 +83,37 @@ function reset_jquery() {
     $.clear_all_elements();
 }
 
-const new_user = {
+const new_user = make_user({
     email: "new_user@example.com",
     user_id: 101,
     full_name: "New User",
     date_joined: new Date(),
-};
+});
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
     date_joined: new Date(),
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 31,
     full_name: "Alice",
-    is_bot: false,
-};
+});
 
-const bob = {
+const bob = make_user({
     email: "bob@example.com",
     user_id: 32,
     full_name: "Bob",
-};
+});
 
-const bot = {
+const bot = make_bot({
     email: "bot@example.com",
     user_id: 33,
     full_name: "Bot",
-    is_bot: true,
-};
+});
 
 people.add_active_user(new_user);
 people.add_active_user(me);
@@ -123,13 +123,13 @@ people.add_active_user(alice);
 people.add_active_user(bob);
 people.add_active_user(bot);
 
-const social = {
+const social = make_stream({
     stream_id: 101,
     name: "social",
     subscribed: true,
     can_send_message_group: 2,
     topics_policy: "inherit",
-};
+});
 stream_data.add_sub_for_tests(social);
 
 const nobody = make_user_group({
@@ -162,16 +162,8 @@ function initialize_handlers({override}) {
     compose_setup.initialize();
 }
 
-function disable_document_triggers(override) {
-    override(document, "to_$", () => $("document-stub"));
-}
-
 function disable_window_triggers(override) {
     override(window, "to_$", () => $("window-stub"));
-}
-
-function on_compose_finished_trigger_do(f) {
-    $(document).on("compose_finished.zulip", f);
 }
 
 function simulate_draft_ui_interactions() {
@@ -271,7 +263,6 @@ test_ui("send_message_success", ({override, override_rewire}) => {
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
     MockDate.set(new Date(fake_now * 1000));
-    override_rewire(drafts, "sync_count", noop);
 
     const fake_compose_box = new FakeComposeBox();
 
@@ -434,10 +425,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
 test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
-    override_rewire(compose_banner, "clear_message_sent_banners", noop);
     window.addEventListener = noop;
-
-    disable_document_triggers(override);
 
     let show_button_spinner_called = false;
 
@@ -485,11 +473,8 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
 
 test_ui("finish", ({override, override_rewire}) => {
     mock_banners();
-    disable_document_triggers(override);
 
     const fake_compose_box = new FakeComposeBox();
-
-    override_rewire(compose_banner, "clear_message_sent_banners", noop);
 
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
@@ -534,12 +519,6 @@ test_ui("finish", ({override, override_rewire}) => {
         override(realm, "realm_direct_message_permission_group", everyone.id);
         override(realm, "realm_direct_message_initiator_group", everyone.id);
 
-        let compose_finished_event_checked = false;
-
-        on_compose_finished_trigger_do(() => {
-            compose_finished_event_checked = true;
-        });
-
         let send_message_called = false;
         override_rewire(compose, "send_message", () => {
             send_message_called = true;
@@ -549,7 +528,6 @@ test_ui("finish", ({override, override_rewire}) => {
 
         fake_compose_box.assert_preview_mode_is_off();
         assert.ok(send_message_called);
-        assert.ok(compose_finished_event_checked);
     })();
 });
 

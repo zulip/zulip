@@ -4,7 +4,7 @@
             <header class="modal__header">
                 <div class="modal__header-content">
                     <h1 class="modal__title" id="api_key_modal_label">
-                        {{t "Show API key" }}
+                        {{t "Your API key" }}
                     </h1>
                 </div>
                 {{> ../components/icon_button icon="close" intent="neutral" custom_classes="modal__close" aria-label=(t 'Close modal') data-micromodal-close=true }}
@@ -29,7 +29,6 @@
                     </div>
                 </div>
                 <div id="show_api_key">
-                    <p>{{t "Your API key:" }}</p>
                     <p><b class="highlighted-element"><span id="api_key_value"></span></b></p>
                     <div id="user_api_key_error" class="text-error"></div>
                 </div>

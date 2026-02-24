@@ -1,4 +1,5 @@
 import itertools
+import json
 import logging
 import os
 import re
@@ -9,10 +10,9 @@ from collections import defaultdict
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from email.errors import HeaderDefect
 from email.headerregistry import Address
 from typing import Any, TypeAlias
-from urllib.parse import SplitResult, urlsplit
+from urllib.parse import urlsplit
 
 import orjson
 import requests
@@ -21,6 +21,7 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.import_util import (
+    ImportedBotEmail,
     UploadFileRequest,
     UploadRecordData,
     ZerverFieldsT,
@@ -40,6 +41,7 @@ from zerver.data_import.import_util import (
     download_and_export_upload_file,
     get_attachment_path_and_content,
     get_data_file,
+    get_domain_name_for_import,
     long_term_idle_helper,
     make_subscriber_map,
     process_avatars,
@@ -62,6 +64,7 @@ from zerver.lib.parallel import run_parallel_queue
 from zerver.lib.partial import partial
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
+from zerver.lib.validator import to_wild_value
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -111,50 +114,20 @@ for emoji_dict in emoji_data:
 
 
 class SlackBotEmail:
-    duplicate_email_count: dict[str, int] = {}
-    # Mapping of `bot_id` to final email assigned to the bot.
-    assigned_email: dict[str, str] = {}
-
     @classmethod
     def get_email(cls, user_profile: ZerverFieldsT, domain_name: str) -> str:
         slack_bot_id = user_profile["bot_id"]
-        if slack_bot_id in cls.assigned_email:
-            return cls.assigned_email[slack_bot_id]
 
-        if "real_name_normalized" in user_profile:
-            slack_bot_name = user_profile["real_name_normalized"]
-        elif "first_name" in user_profile:
-            slack_bot_name = user_profile["first_name"]
-        else:
-            raise AssertionError("Could not identify bot type")
+        def bot_name_getter(_user_profile: ZerverFieldsT) -> str:
+            if "real_name_normalized" in _user_profile:
+                slack_bot_name = _user_profile["real_name_normalized"]
+            elif "first_name" in _user_profile:
+                slack_bot_name = _user_profile["first_name"]
+            else:
+                raise AssertionError("Could not identify bot type")
+            return slack_bot_name
 
-        email = Address(
-            username=slack_bot_name.replace("Bot", "").replace(" ", "").lower() + "-bot",
-            domain=domain_name,
-        ).addr_spec
-        # The address formed above may not be a valid email format - e.g. containing
-        # non-ASCII characters in the local part, if the slack_bot_name contains them.
-        # Only Address(addr_spec=...) triggers the necessary validation.
-        # Thus we call it here, and if issues are detected, we fall back to forming the
-        # email address in a safer way - using the bot id string.
-        try:
-            Address(addr_spec=email)
-        except HeaderDefect:
-            email = Address(
-                username=slack_bot_id + "-bot",
-                domain=domain_name,
-            ).addr_spec
-
-        if email in cls.duplicate_email_count:
-            cls.duplicate_email_count[email] += 1
-            address = Address(addr_spec=email)
-            email_username = address.username + "-" + str(cls.duplicate_email_count[email])
-            email = Address(username=email_username, domain=address.domain).addr_spec
-        else:
-            cls.duplicate_email_count[email] = 1
-
-        cls.assigned_email[slack_bot_id] = email
-        return email
+        return ImportedBotEmail.get_email(user_profile, domain_name, slack_bot_id, bot_name_getter)
 
 
 def rm_tree(path: str) -> None:
@@ -500,7 +473,7 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
 
 def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str | None]:
     avatar_url: str | None = None
-    avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+    avatar_source = UserProfile.DEFAULT_AVATAR_SOURCE
     if user["profile"].get("avatar_hash"):
         # Process avatar image for a typical Slack user.
         team_id = user["team_id"]
@@ -519,7 +492,7 @@ def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str 
                 "Unsupported avatar type (%s) for user -> %s\n", content_type, user.get("name")
             )
             avatar_url = None
-            avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+            avatar_source = UserProfile.DEFAULT_AVATAR_SOURCE
     else:
         logging.info("Failed to process avatar for user -> %s\n", user.get("name"))
     return avatar_source, avatar_url
@@ -1113,18 +1086,13 @@ def channel_message_to_zerver_message(
         ]:
             continue
 
-        formatted_block = process_slack_block_and_attachment(message)
-
-        # Leave it as is if formatted_block is an empty string, it's likely
-        # one of the unhandled_types.
-        if formatted_block != "":
-            # For most cases, the value of message["text"] will be just an
-            # empty string.
-            message["text"] = formatted_block
+        raw_content = process_slack_block_and_attachment(
+            (to_wild_value("message", json.dumps(message))),
+        )
 
         try:
             content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
-                message["text"], users, added_channels, slack_user_id_to_zulip_user_id
+                raw_content, users, added_channels, slack_user_id_to_zulip_user_id
             )
         except Exception:
             print("Slack message unexpectedly missing text representation:")
@@ -1751,7 +1719,7 @@ def do_convert_directory(
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
     realm_id = 0
-    domain_name = SplitResult("", settings.EXTERNAL_HOST, "", "", "").hostname
+    domain_name = get_domain_name_for_import()
     assert isinstance(domain_name, str)
 
     (

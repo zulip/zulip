@@ -202,6 +202,14 @@ VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
 BIG_BLUE_BUTTON_SECRET = "123"
 BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 
+CONSTRUCTOR_GROUPS_URL = "https://example.constructor.app/api/groups/xapi"
+CONSTRUCTOR_GROUPS_ACCESS_KEY = "test-access-key"
+CONSTRUCTOR_GROUPS_SECRET_KEY = "test-secret-key"
+
+NEXTCLOUD_SERVER = "https://nextcloud.example.com"
+NEXTCLOUD_TALK_USERNAME = "username"
+NEXTCLOUD_TALK_PASSWORD = "password"
+
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
@@ -275,6 +283,7 @@ RATE_LIMITING_RULES: dict[str, list[tuple[int, int]]] = {
     "email_change_by_user": [],
     "password_reset_form_by_email": [],
     "sends_email_by_remote_server": [],
+    "transfer_remote_server_registration_endpoint_by_ip": [],
 }
 
 CLOUD_FREE_TRIAL_DAYS: int | None = None

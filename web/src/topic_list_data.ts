@@ -9,8 +9,8 @@ import * as unread from "./unread.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
-const max_topics = 8;
-const max_topics_with_unread = 12;
+const MAX_TOPICS = 6;
+const MAX_TOPICS_WITH_UNREAD = 10;
 
 export type TopicInfo = {
     stream_id: number;
@@ -69,7 +69,7 @@ function choose_topics(
                 // We always show the active topic.  Ideally, this
                 // logic would first check whether the active
                 // topic is in the set of those with unreads to
-                // avoid ending up with max_topics_with_unread + 1
+                // avoid ending up with MAX_TOPICS_WITH_UNREAD + 1
                 // total topics if the active topic comes after
                 // the first several topics with unread messages.
                 if (is_active_topic) {
@@ -83,16 +83,16 @@ function choose_topics(
                     return false;
                 }
 
-                // We include the most recent max_topics topics,
+                // We include the most recent MAX_TOPICS topics,
                 // even if there are no unread messages.
-                if (idx < max_topics && topics_selected < max_topics) {
+                if (idx < MAX_TOPICS && topics_selected < MAX_TOPICS) {
                     return true;
                 }
 
                 // We include older topics with unread messages up
-                // until max_topics_with_unread total topics have
+                // until MAX_TOPICS_WITH_UNREAD total topics have
                 // been included.
-                if (num_unread > 0 && topics_selected < max_topics_with_unread) {
+                if (num_unread > 0 && topics_selected < MAX_TOPICS_WITH_UNREAD) {
                     return true;
                 }
 

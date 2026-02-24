@@ -314,6 +314,27 @@ test("test_stream_has_resolved_topics", () => {
     );
 });
 
+test("update_topic_name_case", () => {
+    const stream_id = 90;
+
+    // No history for this stream_id, should return without error.
+    stream_topic_history.update_topic_name_case(stream_id, "old topic", "new topic");
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 900,
+        topic_name: "known topic",
+    });
+
+    // Topic key is missing, should return without changing data.
+    stream_topic_history.update_topic_name_case(stream_id, "missing topic", "whatever");
+    assert.deepEqual(stream_topic_history.get_recent_topic_names(stream_id), ["known topic"]);
+
+    // Topic key is present, should update pretty name.
+    stream_topic_history.update_topic_name_case(stream_id, "known topic", "Known Topic");
+    assert.deepEqual(stream_topic_history.get_recent_topic_names(stream_id), ["Known Topic"]);
+});
+
 test("server_history_end_to_end", () => {
     stream_topic_history.reset();
 

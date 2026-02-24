@@ -17,7 +17,7 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
     do_send_user_invite_email,
 )
-from zerver.decorator import require_member_or_admin
+from zerver.decorator import require_human_non_guest_user
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
@@ -131,7 +131,7 @@ def access_user_groups_for_invite(
     return user_groups
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def invite_users_backend(
     request: HttpRequest,
@@ -214,13 +214,13 @@ def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
     } - {""}
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     all_users = do_get_invites_controlled_by_user(user_profile)
     return json_success(request, data={"invites": all_users})
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def revoke_user_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
@@ -230,7 +230,7 @@ def revoke_user_invite(
     return json_success(request)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def revoke_multiuse_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
@@ -240,7 +240,7 @@ def revoke_multiuse_invite(
     return json_success(request)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def resend_user_invite_email(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
@@ -250,7 +250,7 @@ def resend_user_invite_email(
     return json_success(request)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def generate_multiuse_invite_backend(
     request: HttpRequest,

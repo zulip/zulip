@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -25,22 +27,22 @@ const user_settings = {};
 initialize_user_settings({user_settings});
 
 // Not muted streams
-const general = {
+const general = make_stream({
     subscribed: true,
     name: "general",
     stream_id: 10,
     is_muted: false,
     wildcard_mentions_notify: null,
-};
+});
 
 // Muted streams
-const muted = {
+const muted = make_stream({
     subscribed: true,
     name: "muted",
     stream_id: 20,
     is_muted: true,
     wildcard_mentions_notify: null,
-};
+});
 
 stream_data.add_sub_for_tests(general);
 stream_data.add_sub_for_tests(muted);
@@ -380,21 +382,21 @@ test("basic_notifications", () => {
 
     desktop_notifications.set_notification_api(StubNotification);
 
-    const jesse = {
+    const jesse = make_user({
         email: "jesse@example.com",
         full_name: "Jesse Pinkman",
         user_id: 1,
-    };
-    const gus = {
+    });
+    const gus = make_user({
         email: "gus@example.com",
         full_name: "Gus Fring",
         user_id: 2,
-    };
-    const walter = {
+    });
+    const walter = make_user({
         email: "walter@example.com",
         full_name: "Walter White",
         user_id: 3,
-    };
+    });
     people.add_active_user(jesse);
     people.add_active_user(gus);
     people.add_active_user(walter);

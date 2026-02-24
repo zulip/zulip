@@ -71,12 +71,9 @@ const ListWidget = mock_esm("../src/list_widget", {
         // Just for coverage, the mechanisms
         // are tested in list_widget.test.cjs
         if (mapped_topic_values.length >= 2) {
-            opts.sort_fields.stream_sort(mapped_topic_values[0], mapped_topic_values[1]);
-            opts.sort_fields.stream_sort(mapped_topic_values[1], mapped_topic_values[0]);
-            opts.sort_fields.stream_sort(mapped_topic_values[0], mapped_topic_values[0]);
-            opts.sort_fields.topic_sort(mapped_topic_values[0], mapped_topic_values[1]);
-            opts.sort_fields.topic_sort(mapped_topic_values[1], mapped_topic_values[0]);
-            opts.sort_fields.topic_sort(mapped_topic_values[0], mapped_topic_values[0]);
+            opts.sort_fields.conversation_sort(mapped_topic_values[0], mapped_topic_values[1]);
+            opts.sort_fields.conversation_sort(mapped_topic_values[1], mapped_topic_values[0]);
+            opts.sort_fields.conversation_sort(mapped_topic_values[0], mapped_topic_values[0]);
         }
         return ListWidget;
     },
@@ -199,6 +196,7 @@ mock_esm("../src/unread", {
 });
 mock_esm("../src/resize", {
     update_recent_view: noop,
+    set_recent_view_participants_rerender: noop,
 });
 mock_esm("../src/popup_banners", {
     close_found_missing_unreads_banner: noop,

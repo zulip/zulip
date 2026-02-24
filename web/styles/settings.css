@@ -361,6 +361,7 @@ h3,
     border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
     background-color: hsl(0deg 0% 100%);
+    font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;
@@ -380,6 +381,7 @@ select.settings_select {
     background-repeat: no-repeat;
     background-position: 98%;
     background-size: 1em;
+    font-family: inherit;
 }
 
 #admin-active-users-list,
@@ -401,6 +403,13 @@ select.settings_select {
 
 .config-download-text {
     margin-top: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.bot-list-error {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .user_role,
@@ -438,7 +447,8 @@ select.settings_select {
     width: fit-content;
 }
 
-#bot-edit-form {
+#bot-edit-form,
+#api-key-modal {
     .api-key-details-container,
     .zuliprc-container {
         display: flex;
@@ -450,9 +460,19 @@ select.settings_select {
             align-items: center;
         }
     }
+
+    .modal_text_input {
+        margin-bottom: 0;
+    }
 }
 
 #zuliprc-section {
+    /* Normally all input-group elements have bottom margin of 1.25em.
+    But here the buttons have bottom padding of 0.375em and thus there is
+    already some extra space between this and the section below it, so we
+    reduce the bottom margin by 0.375em. */
+    margin-bottom: 0.875em;
+
     .modal-field-label {
         margin-bottom: 0;
     }
@@ -1619,6 +1639,7 @@ label.preferences-radio-choice-label {
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -1897,7 +1918,7 @@ label.preferences-radio-choice-label {
 
     font-size: 1em;
     line-height: var(--base-line-height-unitless);
-    font-family: "Source Sans 3 VF", sans-serif;
+    font-family: inherit;
 
     &:focus {
         border-color: var(--focus-border-color-textarea);
@@ -2255,6 +2276,7 @@ label.preferences-radio-choice-label {
             border: none;
             outline: none;
             display: grid;
+            font-size: inherit;
 
             &:hover {
                 color: var(--color-text-clear-search-button-hover);
@@ -2328,6 +2350,7 @@ label.preferences-radio-choice-label {
         var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
             var(--input-border-width)
     );
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);

@@ -1,3 +1,6 @@
+import base64
+import hashlib
+import json
 import logging
 from collections import Counter
 from datetime import datetime, timedelta, timezone
@@ -42,6 +45,7 @@ from analytics.lib.counts import (
 from corporate.models.customers import get_customer_by_remote_realm
 from corporate.models.plans import CustomerPlan, get_current_plan_by_customer
 from zerver.decorator import require_post
+from zerver.lib.devices import b64decode_token_id_base64
 from zerver.lib.email_validation import validate_is_not_disposable
 from zerver.lib.exceptions import (
     ErrorCode,
@@ -69,7 +73,7 @@ from zerver.lib.push_notifications import (
     validate_token,
 )
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.rate_limiter import rate_limit_endpoint_absolute
+from zerver.lib.rate_limiter import rate_limit_endpoint_absolute, rate_limit_request_by_ip
 from zerver.lib.remote_server import (
     InstallationCountDataForAnalytics,
     RealmAuditLogDataForAnalytics,
@@ -81,6 +85,7 @@ from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.typed_endpoint import (
+    ApiParamConfig,
     ApnsAppId,
     JsonBodyPayload,
     RequiredStringConstraint,
@@ -178,6 +183,9 @@ def validate_hostname_or_raise_error(hostname: str) -> None:
 @require_post
 @typed_endpoint
 def transfer_remote_server_registration(request: HttpRequest, *, hostname: str) -> HttpResponse:
+    # We need to rate limit this endpoint to prevent hostname enumeration.
+    rate_limit_request_by_ip(request, domain="transfer_remote_server_registration_endpoint_by_ip")
+
     validate_hostname_or_raise_error(hostname)
 
     if not RemoteZulipServer.objects.filter(hostname=hostname, deactivated=False).exists():
@@ -392,19 +400,20 @@ def verify_registration_transfer_challenge_ack_endpoint(
     session = RegistrationTransferVerificationSession()
     url = urljoin(f"https://{hostname}", f"/api/v1/zulip-services/verify/{access_token}/")
 
-    exception_and_error_message: tuple[Exception, str] | None = None
+    exception_and_error_message: tuple[Exception | None, str] | None = None
     try:
         response = session.get(url)
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        if check_transfer_challenge_response_secret_not_prepared(e.response):
+
+        if check_transfer_challenge_response_secret_not_prepared(response):
             logger.info("verify_registration_transfer:host:%s|secret_not_prepared", hostname)
             raise JsonableError(_("The host reported it has no verification secret."))
 
-        error_message = _("Error response received from the host: {status_code}").format(
-            status_code=response.status_code
-        )
-        exception_and_error_message = (e, error_message)
+        if response.status_code != 200:
+            error_message = _(
+                "Unexpected status code received from the host: {status_code}"
+            ).format(status_code=response.status_code)
+            exception_and_error_message = (None, error_message)
+
     except requests.exceptions.SSLError as e:
         error_message = "SSL error occurred while communicating with the host."
         exception_and_error_message = (e, error_message)
@@ -418,13 +427,18 @@ def verify_registration_transfer_challenge_ack_endpoint(
         error_message = "An error occurred while communicating with the host."
         exception_and_error_message = (e, error_message)
 
+    try:
+        if exception_and_error_message is None:
+            verification_secret = response.json()["verification_secret"]
+    except (json.JSONDecodeError, KeyError) as e:
+        error_message = "An error occurred while parsing the response from the host."
+        exception_and_error_message = (e, error_message)
+
     if exception_and_error_message is not None:
         exception, error_message = exception_and_error_message
         logger.info("verify_registration_transfer:host:%s|exception:%s", hostname, exception)
         raise JsonableError(error_message)
 
-    data = response.json()
-    verification_secret = data["verification_secret"]
     validate_registration_transfer_verification_secret(verification_secret, hostname)
 
     logger.info("verify_registration_transfer:host:%s|success", hostname)
@@ -580,11 +594,11 @@ class PushRegistration(BaseModel):
 def do_register_remote_push_device(
     bouncer_public_key: str,
     encrypted_push_registration: str,
-    push_account_id: int,
+    token_id_base64: str,
     *,
     realm: Realm | None = None,
     remote_realm: RemoteRealm | None = None,
-) -> int:
+) -> None:
     assert (realm is None) ^ (remote_realm is None)
 
     if bouncer_public_key not in settings.PUSH_REGISTRATION_ENCRYPTION_KEYS:
@@ -607,30 +621,37 @@ def do_register_remote_push_device(
     except PydanticValidationError:
         raise InvalidEncryptedPushRegistrationError
 
+    hash_bytes = hashlib.sha256(push_registration.token.encode()).digest()
+    expected_token_id_base64 = base64.b64encode(hash_bytes[0:8]).decode()
+    if token_id_base64 != expected_token_id_base64:
+        raise InvalidEncryptedPushRegistrationError
+
     if (
         datetime_to_timestamp(timezone_now()) - push_registration.timestamp
         > PUSH_REGISTRATION_LIVENESS_TIMEOUT
     ):
         raise RequestExpiredError
 
-    # If already registered, return the device_id.
+    # If already registered, return.
     # The query uses the unique index created by the
-    # 'unique_remote_push_device_push_account_id_token' constraint.
-    remote_push_device = RemotePushDevice.objects.filter(
-        token=push_registration.token, push_account_id=push_account_id
-    ).first()
-    if remote_push_device:
-        return remote_push_device.device_id
+    # 'unique_remote_push_device_token_id_realm_remote_realm' constraint.
+    token_id_int = b64decode_token_id_base64(token_id_base64)
+    remote_push_device_exists = RemotePushDevice.objects.filter(
+        token_id=token_id_int,
+        realm=realm,
+        remote_realm=remote_realm,
+    ).exists()
+    if remote_push_device_exists:
+        return
 
-    remote_push_device = RemotePushDevice.objects.create(
+    RemotePushDevice.objects.create(
         realm=realm,
         remote_realm=remote_realm,
         token=push_registration.token,
         token_kind=push_registration.token_kind,
-        push_account_id=push_account_id,
+        token_id=token_id_int,
         ios_app_id=push_registration.ios_app_id,
     )
-    return remote_push_device.device_id
 
 
 @typed_endpoint
@@ -639,7 +660,7 @@ def register_remote_push_device_for_e2ee_push_notification(
     server: RemoteZulipServer,
     *,
     realm_uuid: str,
-    push_account_id: Json[int],
+    token_id_base64: Annotated[str, ApiParamConfig("token_id")],
     encrypted_push_registration: str,
     bouncer_public_key: str,
 ) -> HttpResponse:
@@ -650,14 +671,13 @@ def register_remote_push_device_for_e2ee_push_notification(
         remote_realm.last_request_datetime = timezone_now()
         remote_realm.save(update_fields=["last_request_datetime"])
 
-    device_id = do_register_remote_push_device(
+    do_register_remote_push_device(
         bouncer_public_key,
         encrypted_push_registration,
-        push_account_id,
+        token_id_base64,
         remote_realm=remote_realm,
     )
-
-    return json_success(request, {"device_id": device_id})
+    return json_success(request)
 
 
 @typed_endpoint

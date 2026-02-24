@@ -2638,6 +2638,7 @@ class RealmImportExportTest(ExportFile):
                 [
                     "WARNING:root:Dropped restricted authentication method: AzureAD",
                     "WARNING:root:Dropped restricted authentication method: SAML",
+                    "WARNING:root:Dropped restricted authentication method: OpenID Connect",
                 ],
             )
 

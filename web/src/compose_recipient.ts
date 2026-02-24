@@ -22,6 +22,8 @@ import * as narrow_state from "./narrow_state.ts";
 import {realm} from "./state_data.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
@@ -277,9 +279,7 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     event.stopPropagation();
 }
 
-function get_options_for_recipient_widget(): Option[] {
-    const options: Option[] = stream_data.get_options_for_dropdown_widget();
-
+function add_direct_messages_option(options: Option[]): Option[] {
     const direct_messages_option = {
         is_direct_message: true,
         unique_id: compose_state.DIRECT_MESSAGE_ID,
@@ -292,7 +292,12 @@ function get_options_for_recipient_widget(): Option[] {
     } else {
         options.push(direct_messages_option);
     }
+
     return options;
+}
+
+function get_options_for_recipient_widget(): Option[] {
+    return add_direct_messages_option(stream_data.get_options_for_dropdown_widget());
 }
 
 export function toggle_compose_recipient_dropdown(): void {
@@ -360,6 +365,36 @@ export function initialize(): void {
                 return "#stream_message_recipient_topic";
             }
             return "#private_message_recipient";
+        },
+        sort_list_by_filter_value(items: Option[], filter_value: string): Option[] {
+            const non_stream_items = [];
+            const stream_items_by_stream_id = new Map<
+                number,
+                Option & {stream: StreamSubscription}
+            >();
+            for (const item of items) {
+                if (item.stream === undefined) {
+                    non_stream_items.push(item);
+                } else {
+                    stream_items_by_stream_id.set(item.stream.stream_id, {
+                        ...item,
+                        // Needed for typescript to recognize stream is defined
+                        stream: item.stream,
+                    });
+                }
+            }
+            const stream_items = [...stream_items_by_stream_id.values()].map((item) => item.stream);
+            const sorted_streams = typeahead_helper.sort_streams(stream_items, filter_value);
+            const sorted_stream_items = sorted_streams.map(
+                (stream) => stream_items_by_stream_id.get(stream.stream_id)!,
+            );
+
+            if (non_stream_items.length > 0) {
+                assert(non_stream_items.length === 1);
+                assert(util.the(non_stream_items).is_direct_message === true);
+                return add_direct_messages_option(sorted_stream_items);
+            }
+            return sorted_stream_items;
         },
     });
     compose_select_recipient_dropdown_widget.setup();

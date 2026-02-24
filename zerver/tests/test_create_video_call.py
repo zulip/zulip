@@ -1,6 +1,7 @@
 from unittest import mock
 
 import orjson
+import requests
 import responses
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect
@@ -503,14 +504,31 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
         responses.add(
             responses.GET,
             "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
-            "",
             status=500,
+            body="Something went wrong",
         )
         response = self.client_get(
             "/calls/bigbluebutton/join",
             {"bigbluebutton": self.signed_bbb_a_object},
         )
-        self.assert_json_error(response, "Error connecting to the BigBlueButton server.")
+        self.assert_json_error(
+            response, "Error connecting to the BigBlueButton server: HTTP 500: Something went wrong"
+        )
+
+    @responses.activate
+    def test_join_bigbluebutton_connection_refused(self) -> None:
+        responses.add(
+            responses.GET,
+            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
+            body=requests.exceptions.ConnectionError("Connection refused"),
+        )
+        response = self.client_get(
+            "/calls/bigbluebutton/join",
+            {"bigbluebutton": self.signed_bbb_a_object},
+        )
+        self.assert_json_error(
+            response, "Error connecting to the BigBlueButton server: Connection refused"
+        )
 
     @responses.activate
     def test_join_bigbluebutton_redirect_error_by_server(self) -> None:
@@ -524,7 +542,9 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
             "/calls/bigbluebutton/join",
             {"bigbluebutton": self.signed_bbb_a_object},
         )
-        self.assert_json_error(response, "BigBlueButton server returned an unexpected error.")
+        self.assert_json_error(
+            response, "BigBlueButton server returned an unexpected error: FAILURE"
+        )
 
     def test_join_bigbluebutton_redirect_not_configured(self) -> None:
         with self.settings(BIG_BLUE_BUTTON_SECRET=None, BIG_BLUE_BUTTON_URL=None):
@@ -533,3 +553,302 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 {"bigbluebutton": self.signed_bbb_a_object},
             )
             self.assert_json_error(response, "BigBlueButton is not configured.")
+
+
+class ConstructorGroupsVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user_profile = self.example_user("hamlet")
+        self.login_user(self.user_profile)
+
+        self.base_api_url = "https://example.constructor.app/api/groups/xapi"
+
+        self.test_room_guid = "a13b8686-d383-4763-b3b7-d2d4dd7f34ec"
+        self.test_room_name = "King Hamlet's Zulip room"
+        self.test_room_url = f"https://example.constructor.app/groups/room/{self.test_room_name}"
+
+        self.mock_valid_room = {
+            "room_guid": self.test_room_guid,
+            "name": self.test_room_name,
+            "url": self.test_room_url,
+        }
+
+        self.mock_room_missing_url = {
+            "room_guid": self.test_room_guid,
+            "name": self.test_room_name,
+        }
+
+    def test_missing_constructor_groups_settings(self) -> None:
+        for setting_name in [
+            "CONSTRUCTOR_GROUPS_URL",
+            "CONSTRUCTOR_GROUPS_ACCESS_KEY",
+            "CONSTRUCTOR_GROUPS_SECRET_KEY",
+        ]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_post("/json/calls/constructorgroups/create")
+                self.assert_json_error(response, "Failed to create Constructor Groups call")
+
+    @responses.activate
+    def test_get_existing_room(self) -> None:
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room/default",
+            json=self.mock_valid_room,
+            status=200,
+        )
+
+        response = self.client_post("/json/calls/constructorgroups/create")
+
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(response_dict["url"], self.test_room_url)
+        self.assert_length(responses.calls, 1)
+
+    @responses.activate
+    def test_create_new_room(self) -> None:
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room/default",
+            json=self.mock_valid_room,
+            status=201,
+        )
+
+        response = self.client_post("/json/calls/constructorgroups/create")
+
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(response_dict["url"], self.test_room_url)
+        self.assert_length(responses.calls, 1)
+
+    @responses.activate
+    def test_missing_url_in_response(self) -> None:
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room/default",
+            json=self.mock_room_missing_url,
+            status=200,
+        )
+
+        with self.assertLogs(level="ERROR") as logs:
+            response = self.client_post("/json/calls/constructorgroups/create")
+
+        self.assert_json_error(response, "Failed to create Constructor Groups call")
+        self.assertIn("Constructor Groups API returned room without URL", logs.output[0])
+
+    @responses.activate
+    def test_http_request_error_handling(self) -> None:
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room/default",
+            status=500,
+        )
+
+        with self.assertLogs(level="ERROR") as error_log:
+            response = self.client_post("/json/calls/constructorgroups/create")
+            self.assertIn("Constructor Groups API request failed", error_log.output[0])
+        self.assert_json_error(response, "Failed to create Constructor Groups call")
+
+    @responses.activate
+    def test_api_response_json_error(self) -> None:
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room/default",
+            body="invalid json",
+            status=200,
+        )
+
+        with self.assertLogs(level="ERROR") as error_log:
+            response = self.client_post("/json/calls/constructorgroups/create")
+            self.assertIn("Constructor Groups API request failed", error_log.output[0])
+        self.assert_json_error(response, "Failed to create Constructor Groups call")
+
+    @responses.activate
+    def test_request_contains_correct_data(self) -> None:
+        responses.add(
+            responses.POST,
+            f"{self.base_api_url}/room/default",
+            json=self.mock_valid_room,
+            status=200,
+        )
+
+        response = self.client_post("/json/calls/constructorgroups/create")
+        self.assert_json_success(response)
+
+        # Verify request body
+        assert responses.calls[0].request.body is not None
+        request_body = orjson.loads(responses.calls[0].request.body)
+        self.assertEqual(request_body["creator_email"], self.user_profile.delivery_email)
+        self.assertEqual(request_body["name"], f"{self.user_profile.full_name}'s Zulip room")
+        self.assertEqual(
+            request_body["fallback_name"],
+            f"{self.user_profile.full_name}'s Zulip room ({self.user_profile.realm_id}-{self.user_profile.id})",
+        )
+
+    def test_unsupported_http_method(self) -> None:
+        from zerver.lib.exceptions import JsonableError
+        from zerver.views.video_calls import ConstructorGroupsService
+
+        service = ConstructorGroupsService()
+
+        with self.assertLogs(level="ERROR") as error_log:
+            with self.assertRaises(JsonableError) as cm:
+                service._make_authenticated_request("GET", "/room/default")
+            self.assertEqual(str(cm.exception.msg), "Failed to create Constructor Groups call")
+            self.assertIn("Constructor Groups API request failed", error_log.output[0])
+
+
+class NextcloudVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+        self.nextcloud_api_url = "https://nextcloud.example.com/ocs/v2.php/apps/spreed/api/v4/room"
+
+    @responses.activate
+    def test_create_nextcloud_talk_video_call_success(self) -> None:
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            json={
+                "ocs": {
+                    "meta": {"status": "ok", "statuscode": 200, "message": "OK"},
+                    "data": {
+                        "token": "abc123token",
+                        "name": "Test Meeting",
+                        "displayName": "Test Meeting",
+                        "type": 3,
+                    },
+                }
+            },
+            status=200,
+        )
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create", {"room_name": "#Test > team check-in"}
+        )
+        self.assertEqual(responses.calls[0].request.url, self.nextcloud_api_url)
+
+        self.assertEqual(
+            responses.calls[0].request.headers["OCS-APIRequest"],
+            "true",
+        )
+        self.assertEqual(
+            responses.calls[0].request.headers["Accept"],
+            "application/json",
+        )
+        self.assertIn("Authorization", responses.calls[0].request.headers)
+        self.assertTrue(responses.calls[0].request.headers["Authorization"].startswith("Basic "))
+
+        assert responses.calls[0].request.body is not None
+        self.assertEqual(
+            orjson.loads(responses.calls[0].request.body),
+            {
+                "roomType": 3,
+                "roomName": "#Test > team check-in",
+            },
+        )
+
+        json = self.assert_json_success(response)
+        self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
+
+    def test_create_nextcloud_talk_not_configured(self) -> None:
+        for setting_name in [
+            "NEXTCLOUD_SERVER",
+            "NEXTCLOUD_TALK_USERNAME",
+            "NEXTCLOUD_TALK_PASSWORD",
+        ]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_post(
+                    "/json/calls/nextcloud_talk/create",
+                    {"room_name": "#Test > team check-in"},
+                )
+                self.assert_json_error(response, "Nextcloud Talk is not configured")
+
+    @responses.activate
+    def test_create_nextcloud_talk_server_error(self) -> None:
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            status=400,
+            body="Invalid request",
+        )
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create", {"room_name": "#Test > team check-in"}
+        )
+
+        self.assert_json_error(
+            response, "Error connecting to the Nextcloud Talk server: HTTP 400: Invalid request"
+        )
+
+    @responses.activate
+    def test_create_nextcloud_talk_connection_error(self) -> None:
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            body=requests.RequestException("Connection failed"),
+        )
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create", {"room_name": "#Test > team check-in"}
+        )
+
+        self.assert_json_error(
+            response, "Error connecting to the Nextcloud Talk server: Connection failed"
+        )
+
+    @responses.activate
+    def test_create_nextcloud_talk_invalid_response(self) -> None:
+        # Missing 'token' field
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            json={
+                "ocs": {
+                    "meta": {"status": "ok"},
+                    "data": {},
+                }
+            },
+            status=200,
+        )
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create",
+            {"room_name": "#Test > team check-in"},
+        )
+        self.assert_json_error(response, "Failed to create Nextcloud Talk call")
+
+    @responses.activate
+    def test_create_nextcloud_talk_truncates_long_room_name(self) -> None:
+        responses.add(
+            responses.POST,
+            self.nextcloud_api_url,
+            json={
+                "ocs": {
+                    "meta": {"status": "ok", "statuscode": 200, "message": "OK"},
+                    "data": {
+                        "token": "abc123token",
+                        "name": "Truncated Conversation",
+                        "displayName": "Truncated Meeting",
+                        "type": 3,
+                    },
+                }
+            },
+            status=200,
+        )
+
+        long_room_name = "A" * 300
+
+        response = self.client_post(
+            "/json/calls/nextcloud_talk/create", {"room_name": long_room_name}
+        )
+
+        from zerver.views.video_calls import MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH
+
+        assert responses.calls[0].request.body is not None
+        request_body = orjson.loads(responses.calls[0].request.body)
+        self.assert_length(request_body["roomName"], MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH)
+        self.assertTrue(request_body["roomName"].endswith("..."))
+
+        json = self.assert_json_success(response)
+        self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")

@@ -116,6 +116,7 @@
 * [Get all alert words](/api/get-alert-words)
 * [Add alert words](/api/add-alert-words)
 * [Remove alert words](/api/remove-alert-words)
+* [Get a bot's API key](/api/get-bot-api-key)
 
 #### Invitations
 
@@ -159,6 +160,7 @@
 
 * [Fetch an API key (production)](/api/fetch-api-key)
 * [Fetch an API key (development only)](/api/dev-fetch-api-key)
+* [Register a logged-in device](/api/register-client-device)
 * [Send an E2EE test notification to mobile device(s)](/api/e2ee-test-notify)
 * [Register E2EE push device](/api/register-push-device)
 * [Register E2EE push device to bouncer](/api/register-remote-push-device)
@@ -169,4 +171,6 @@
 * [Add an FCM registration token](/api/add-fcm-token)
 * [Remove an FCM registration token](/api/remove-fcm-token)
 * [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
+* [Create Constructor Groups video call](/api/create-constructor-groups-video-call)
+* [Create Nextcloud Talk video call](/api/create-nextcloud-talk-video-call)
 * [Outgoing webhook payloads](/api/outgoing-webhook-payload)

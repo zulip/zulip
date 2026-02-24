@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -14,29 +15,29 @@ const {set_current_user} = zrequire("state_data");
 const current_user = {};
 set_current_user(current_user);
 
-const alice = {
-    user_id: 1,
+const alice = make_user({
     email: "alice@example.com",
+    user_id: 1,
     full_name: "Alice",
-};
+});
 
-const isaac = {
-    user_id: 2,
+const isaac = make_user({
     email: "isaac@example.com",
+    user_id: 2,
     full_name: "Isaac",
-};
+});
 
-const alex = {
-    user_id: 3,
+const alex = make_user({
     email: "alex@example.com",
+    user_id: 3,
     full_name: "Alex",
-};
+});
 
-const me = {
-    user_id: 15,
+const me = make_user({
     email: "me@example.com",
+    user_id: 15,
     full_name: "Me",
-};
+});
 
 people.add_active_user(alice);
 people.add_active_user(isaac);

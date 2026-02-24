@@ -33,12 +33,16 @@ from zerver.lib.webhooks.git import (
 from zerver.models import UserProfile
 
 TOPIC_WITH_DESIGN_INFO_TEMPLATE = "{repo} / {type} {design_name}"
-DESIGN_COMMENT_MESSAGE_TEMPLATE = "{user_name} {action}{design_part}:\n{content_message}"
-DESIGN_PART_TEMPLATE = " on design [{design_name}]({design_url})"
+DESIGN_COMMENT_MESSAGE_TEMPLATE = (
+    "{user_name} {action} on design [{design_name}]({design_url}):\n{content_message}"
+)
+DESIGN_COMMENT_MESSAGE_TEMPLATE_WITHOUT_REFERENCE = "{user_name} {action}:\n{content_message}"
 
 FEATURE_FLAG_MESSAGE_TEMPLATE = "{user} {action} the feature flag [{name}]({url})."
 
 ACCESS_TOKEN_EXPIRY_MESSAGE_TEMPLATE = "The access token [{name}]({url}) will expire on {date}."
+
+EMOJI_MESSAGE_TEMPLATE = "{user_name} {action} the emoji :{emoji_text}:{suffix}."
 
 
 def fixture_to_headers(fixture_name: str) -> dict[str, str]:
@@ -290,18 +294,18 @@ def get_commented_design_event_body(payload: WildValue, include_title: bool) -> 
     comment_url, design_url, design_name = parse_design_comment(comment, repository_url)
     action = f"[commented]({comment_url})"
     content_message = CONTENT_MESSAGE_TEMPLATE.format(message=comment["note"].tame(check_string))
-
-    design_part = (
-        DESIGN_PART_TEMPLATE.format(design_name=design_name, design_url=design_url)
+    message_template = (
+        DESIGN_COMMENT_MESSAGE_TEMPLATE
         if include_title
-        else ""
+        else DESIGN_COMMENT_MESSAGE_TEMPLATE_WITHOUT_REFERENCE
     )
 
-    return DESIGN_COMMENT_MESSAGE_TEMPLATE.format(
+    return message_template.format(
         user_name=get_issue_user_name(payload),
         action=action,
+        design_name=design_name,
+        design_url=design_url,
         content_message=content_message,
-        design_part=design_part,
     )
 
 
@@ -484,6 +488,88 @@ def get_deployment_event_body(payload: WildValue, include_title: bool) -> str:
     return deployment_event_body_map[deployment_status]
 
 
+def get_emoji_event_transformed_type(payload: WildValue, type: str) -> str:
+    if type == "MergeRequest":
+        return "MR"
+    elif type == "Note":
+        event_type = payload["note"]["noteable_type"].tame(check_string)
+        return get_emoji_event_transformed_type(payload, event_type)
+    elif type == "DesignManagement::Design":
+        return "design"
+    return type.lower()
+
+
+def get_emoji_event_subtype_message(type: str) -> str:
+    return "a comment" if type == "Note" else ""
+
+
+def get_emoji_event_url_id(payload: WildValue, type: str) -> tuple[str, str]:
+    if type == "design":
+        comment_url, _, design_name = parse_design_comment(
+            payload["note"], payload["project"]["web_url"].tame(check_string)
+        )
+        return comment_url, design_name
+
+    url = payload["object_attributes"]["awarded_on_url"].tame(check_string)
+
+    # Extract the last numeric ID in the URL path before any '#' fragment.
+    # Example:
+    # https://gitlab.com/abc/def/issues/123 → "123"
+    # https://gitlab.com/abc/def/-/merge_requests/456#note_789 → "456"
+    clean_url = url.split("#")[0]
+    match = re.search(r"/(\d+)(?:/)?$", clean_url)
+    assert match is not None
+    return url, match.group(1)
+
+
+def get_emoji_event_topic_title(
+    payload: WildValue, awardable_type: str, type: str, use_merge_request_title: bool
+) -> str:
+    """
+    The payload format depends on the event target type (MR / issue / snippet).
+    Get topic from the corresponding payload section's title.
+    """
+    event_type = ""
+    if type == "MR":
+        event_type = "merge_request" if use_merge_request_title else ""
+    elif type == "issue":
+        event_type = "issue" if awardable_type == "Note" else "work_item"
+    elif type == "snippet":
+        event_type = "project_snippet"
+
+    if event_type:
+        return payload[event_type]["title"].tame(check_string)
+
+    return ""
+
+
+def get_emoji_event_number_sign(type: str) -> str:
+    return "" if type == "design" else "#"
+
+
+def get_emoji_event_body(action: str, payload: WildValue, include_title: bool) -> str:
+    transformed_action = {"award": "added", "revoke": "removed"}.get(action, "reacted")
+    preposition = {"award": "to", "revoke": "from"}.get(action, "to")
+    emoji = payload["object_attributes"]
+    awardable_type = emoji["awardable_type"].tame(check_string)
+    transformed_type = get_emoji_event_transformed_type(payload, awardable_type)
+    url, id = get_emoji_event_url_id(payload, transformed_type)
+    subtype = get_emoji_event_subtype_message(awardable_type)
+    number_sign = get_emoji_event_number_sign(transformed_type)
+    suffix = ""
+
+    if include_title or awardable_type == "Note":
+        target = "" if awardable_type == "Note" else f"{transformed_type} {number_sign}{id}"
+        suffix = f" {preposition} [{subtype}{target}]({url})"
+
+    return EMOJI_MESSAGE_TEMPLATE.format(
+        user_name=get_issue_user_name(payload),
+        action=transformed_action,
+        emoji_text=emoji["name"].tame(check_string),
+        suffix=suffix,
+    )
+
+
 def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
         return payload["project"]["name"].tame(check_string)
@@ -528,6 +614,8 @@ def skip_previews(event: str) -> bool:
         # doesn't work.
         "Note Hook DesignManagement::Design",
         "Confidential Note Hook DesignManagement::Design",
+        "Emoji Hook award",
+        "Emoji Hook revoke",
     ]
 
 
@@ -574,6 +662,8 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Feature Flag Hook": get_feature_flag_event_body,
     "Resource Access Token Hook": get_resource_access_token_expiry_event_body,
     "Deployment Hook": get_deployment_event_body,
+    "Emoji Hook award": partial(get_emoji_event_body, "award"),
+    "Emoji Hook revoke": partial(get_emoji_event_body, "revoke"),
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
@@ -700,6 +790,24 @@ def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_t
             get_repo_name(payload),
             payload["environment"].tame(check_string),
         )
+
+    elif event.startswith("Emoji Hook"):
+        awardable_type = payload["object_attributes"]["awardable_type"].tame(check_string)
+        transformed_type = get_emoji_event_transformed_type(payload, awardable_type)
+        id = get_emoji_event_url_id(payload, transformed_type)[1]
+        if transformed_type == "design":
+            return TOPIC_WITH_DESIGN_INFO_TEMPLATE.format(
+                repo=get_repo_name(payload), type="design", design_name=id
+            )
+
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type=transformed_type,
+            id=id,
+            title=get_emoji_event_topic_title(
+                payload, awardable_type, transformed_type, use_merge_request_title
+            ),
+        )
     return get_repo_name(payload)
 
 
@@ -723,6 +831,9 @@ def get_event(request: HttpRequest, payload: WildValue, branches: str | None) ->
         branch = get_branch_name(payload)
         if not is_branch_name_notifiable(branch, branches):
             return None
+    elif event == "Emoji Hook":
+        action = payload["event_type"].tame(check_string)
+        event = f"{event} {action}"
 
     if event in EVENT_FUNCTION_MAPPER:
         return event

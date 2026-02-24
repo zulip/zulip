@@ -2,6 +2,7 @@ import hashlib
 import hmac
 
 from django.conf import settings
+from django.utils.crypto import constant_time_compare
 
 
 def generate_camo_url(url: str) -> str:
@@ -24,4 +25,4 @@ def get_camo_url(url: str) -> str:
 def is_camo_url_valid(digest: str, url: str) -> bool:
     camo_url = generate_camo_url(url)
     camo_url_digest = camo_url.split("/")[0]
-    return camo_url_digest == digest
+    return constant_time_compare(camo_url_digest, digest)

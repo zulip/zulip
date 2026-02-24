@@ -9,7 +9,7 @@
             {{> help_link_widget link="/help/configure-email-visibility" }}
         </label>
         <select id="demo_owner_email_address_visibility" name="demo_owner_email_address_visibility" class="modal_select bootstrap-focus-style">
-            {{#each email_address_visibility_values}}
+            {{#each (object_values email_address_visibility_values)}}
                 <option value="{{this.code}}">{{this.description}}</option>
             {{/each}}
         </select>

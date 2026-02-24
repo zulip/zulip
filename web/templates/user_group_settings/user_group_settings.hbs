@@ -1,20 +1,5 @@
-<div class="group_settings_header" data-group-id="{{group.id}}">
+<div class="group_settings_header">
     <div class="tab-container"></div>
-    <div class="button-group">
-        <div class="join_leave_button_wrapper inline-block">
-            {{#if is_direct_member}}
-            {{> ../components/action_button label=(t "Leave group") custom_classes="join_leave_button" type="button"
-              variant="subtle" intent="neutral" }}
-            {{else}}
-            {{> ../components/action_button label=(t "Join group") custom_classes="join_leave_button" type="button"
-              variant="subtle" intent="brand" }}
-            {{/if}}
-        </div>
-        {{> ../components/icon_button icon="user-group-x" intent="danger" custom_classes="deactivate-group-button deactivate tippy-zulip-delayed-tooltip"
-          data-tippy-content=(t 'Deactivate group') }}
-        {{> ../components/icon_button icon="user-group-plus" intent="success" custom_classes="reactivate-group-button reactivate tippy-zulip-delayed-tooltip"
-          data-tippy-content=(t 'Reactivate group') }}
-    </div>
 </div>
 <div class="user_group_settings_wrapper" data-group-id="{{group.id}}">
     <div class="inner-box">
@@ -24,13 +9,15 @@
             <div class="group-banner"></div>
             <div class="group-header">
                 <div class="group-name-wrapper">
-                    <span class="group-name" data-tippy-content="{{group.name}}">{{group.name}}</span>
+                    <span class="group-name" data-tippy-content="{{group_name}}">{{group_name}}</span>
                 </div>
                 <div class="group_change_property_info alert-notification"></div>
-                <div class="button-group">
-                    {{> ../components/icon_button icon="user-group-edit" intent="neutral" custom_classes="tippy-zulip-delayed-tooltip"
-                      data-tippy-content=(t 'Change group info') id="open_group_info_modal" }}
-                </div>
+                {{#unless group.is_system_group}}
+                    <div class="button-group">
+                        {{> ../components/icon_button icon="user-group-edit" intent="neutral" custom_classes="tippy-zulip-delayed-tooltip"
+                          data-tippy-content=(t 'Change group info') id="open_group_info_modal" }}
+                    </div>
+                {{/unless}}
             </div>
             <div class="group-description-wrapper">
                 <span class="group-description">
@@ -42,18 +29,19 @@
                 {{> ../creator_details .
                   group_id=group.id }}
             </div>
+            {{#unless group.is_system_group}}
+                <div class="group-permissions settings-subsection-parent" id="group_permission_settings">
+                    <div class="subsection-header">
+                        <h3 class="user_group_setting_subsection_title">
+                            {{t "Group permissions" }}
+                            {{> ../help_link_widget link="/help/manage-user-groups#configure-group-permissions"}}
+                        </h3>
+                        {{> ../settings/settings_save_discard_widget section_name="group-permissions" show_save_discard_buttons=true }}
+                    </div>
 
-            <div class="group-permissions settings-subsection-parent" id="group_permission_settings">
-                <div class="subsection-header">
-                    <h3 class="user_group_setting_subsection_title">
-                        {{t "Group permissions" }}
-                        {{> ../help_link_widget link="/help/manage-user-groups#configure-group-permissions"}}
-                    </h3>
-                    {{> ../settings/settings_save_discard_widget section_name="group-permissions" show_save_discard_buttons=true }}
+                    {{> group_permissions prefix="id_" group_setting_labels=all_group_setting_labels.group}}
                 </div>
-
-                {{> group_permissions prefix="id_" group_setting_labels=all_group_setting_labels.group}}
-            </div>
+            {{/unless}}
         </div>
 
         <div class="group_member_settings group_setting_section" data-group-section="members">
@@ -65,7 +53,11 @@
         <div class="group_setting_section" data-group-section="permissions">
             <div class="group-assigned-permissions">
                 <span class="no-permissions-for-group-text {{#unless group_has_no_permissions}}hide{{/unless}}">
-                    {{t 'This group has no assigned permissions.'}}
+                    {{#if group.is_system_group}}
+                        {{t 'This role has no assigned permissions.'}}
+                    {{else}}
+                        {{t 'This group has no assigned permissions.'}}
+                    {{/if}}
                 </span>
                 {{> group_permission_settings .}}
             </div>
