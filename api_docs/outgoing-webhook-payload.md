@@ -73,6 +73,11 @@ message into the Slack-compatible webhook format.
             <td>The content of the message (in Markdown)</td>
         </tr>
         <tr>
+            <td><code>command</code></td>
+            <td>The bot mention transformed into a slash command (e.g., <code>/botname</code>).
+            This field is only present if the message starts with a bot mention.</td>
+        </tr>
+        <tr>
             <td><code>trigger_word</code></td>
             <td>Trigger method</td>
         </tr>
@@ -95,7 +100,8 @@ The above data is posted as list of tuples (not JSON), here's an example:
  ('timestamp', 1532078950),
  ('user_id', 'U21'),
  ('user_name', 'Full Name'),
- ('text', '@**test**'),
+ ('text', 'What is the weather?'),
+ ('command', '/test'),
  ('trigger_word', 'mention'),
  ('service_id', 27)]
 ```
