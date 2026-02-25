@@ -1331,3 +1331,42 @@ def check_group_membership_management_permissions_with_admins_only(
             ):
                 return False
     return True
+
+
+def validate_group_membership_management_setting(
+    user_group: NamedUserGroup,
+    setting_name: str,
+    setting_value: int | UserGroupMembersData,
+    realm: Realm,
+    system_groups_name_dict: dict[str, NamedUserGroup],
+) -> None:
+    system_groups_with_admin_only_permissions = {
+        system_groups_name_dict[SystemGroups.NOBODY].id,
+        system_groups_name_dict[SystemGroups.OWNERS].id,
+        system_groups_name_dict[SystemGroups.ADMINISTRATORS].id,
+    }
+
+    # If setting is being set to one of the nobody, owners or admins system groups then
+    # we do not check further. Otherwise, we check if the group being updated is
+    # used for workplace_users_group.
+    if (
+        isinstance(setting_value, int)
+        and setting_value in system_groups_with_admin_only_permissions
+    ):
+        return
+
+    # The group being updated is the same as workplace_users_group.
+    if realm.workplace_users_group_id == user_group.id:
+        raise JsonableError(
+            _(
+                "'{setting_name}' must be restricted to organization administrators for groups used in 'workplace_users_group'."
+            ).format(setting_name=setting_name)
+        )
+
+    # The group being updated is one of the subgroups of workplace_users_group.
+    if user_group.id in get_subgroup_ids(realm.workplace_users_group):
+        raise JsonableError(
+            _(
+                "'{setting_name}' must be restricted to organization administrators for groups used in 'workplace_users_group'."
+            ).format(setting_name=setting_name)
+        )
