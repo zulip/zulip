@@ -28,6 +28,7 @@ import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
+import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
 export const response_schema = z.object({
@@ -443,12 +444,14 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 // Bad request: We probably specified a narrow operator
                 // for a nonexistent stream or something.  We shouldn't
                 // retry or display a connection error.
-                //
-                // FIXME: This logic unconditionally ignores the actual JSON
-                // error in the xhr status. While we have empty narrow messages
-                // for many common errors, and those have nicer HTML formatting,
-                // we certainly don't for every possible 400 error.
                 message_feed_loading.hide_indicators();
+
+                const server_error_message_html = channel.xhr_error_message("", xhr);
+                if (server_error_message_html !== "") {
+                    narrow_banner.hide_empty_narrow_message();
+                    ui_report.generic_embed_error(server_error_message_html);
+                    return;
+                }
 
                 if (
                     message_lists.current !== undefined &&
