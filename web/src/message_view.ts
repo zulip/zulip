@@ -856,7 +856,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         );
         if (
             id_info.first_unread_msg_id_pending_server_verification &&
-            filter.is_conversation_view()
+            filter.is_conversation_view() &&
+            !filter.is_conversation_view_with_near()
         ) {
             const params = message_fetch.get_parameters_for_message_fetch_api({
                 anchor: "first_unread",
@@ -907,9 +908,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                             },
                         ];
                         assert(msg_list.data.filter.is_conversation_view());
-                        // Using both /with/ and /near/ operators in a single view doesn't
-                        // make sense, and checks like is_conversation_view_with_near do not
-                        // handle that combination correctly.
+                        // We remove /with/ because using both /with/ and /near/
+                        // operators in a single view doesn't make sense.
                         terms = terms.filter((term) => term.operator !== "with");
                         // We are not navigating user to a different place but want to
                         // keep user at the same place but avoid marking messages as read.
