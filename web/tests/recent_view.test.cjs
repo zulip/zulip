@@ -414,8 +414,9 @@ function generate_topic_data(topic_info_array) {
 
     for (const [stream_id, topic, unread_count, visibility_policy] of topic_info_array) {
         data.push({
-            other_senders_count: 0,
-            other_sender_names_html: "",
+            has_hidden_senders: false,
+            hidden_sender_names_html: "",
+            peeking_sender: undefined,
             invite_only: false,
             is_web_public: true,
             is_private: false,

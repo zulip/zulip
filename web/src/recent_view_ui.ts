@@ -59,7 +59,8 @@ let topics_widget: ListWidget<ConversationData, Row> | undefined;
 let filters_dropdown_widget: dropdown_widget.DropdownWidget;
 export let is_backfill_in_progress = false;
 // Sets the number of avatars to display.
-// Rest of the avatars, if present, are displayed as {+x}
+// When there are more participants than this limit, the rightmost
+// avatar is shown with a fading effect to indicate additional senders.
 let max_avatars = 4;
 const MAX_EXTRA_SENDERS = 10;
 
@@ -556,28 +557,34 @@ export function get_pm_tooltip_data(user_ids_string: string): buddy_data.TitleDa
 
 type AvatarsContext = {
     senders: people.SenderInfo[];
-    other_sender_names_html: string;
-    other_senders_count: number;
+    peeking_sender: people.SenderInfo | undefined;
+    has_hidden_senders: boolean;
+    hidden_sender_names_html: string;
 };
 
 function get_avatars_context(all_senders: number[]): AvatarsContext {
-    // Show the all avatars rather than `max_avatars` + 1.
-    const max_space_for_avatars = max_avatars + 1;
-    if (all_senders.length <= max_space_for_avatars) {
+    if (max_avatars === 0 || all_senders.length <= max_avatars) {
         return {
-            senders: people.sender_info_for_recent_view_row(all_senders),
-            other_sender_names_html: "",
-            other_senders_count: 0,
+            senders: people.sender_info_for_recent_view_row(max_avatars === 0 ? [] : all_senders),
+            peeking_sender: undefined,
+            has_hidden_senders: false,
+            hidden_sender_names_html: "",
         };
     }
     const senders = all_senders.slice(-max_avatars);
     const extra_sender_ids = all_senders.slice(0, -max_avatars);
+    // The peeking sender is the next avatar that didn't fit, shown
+    // partially behind the rightmost visible avatar.
+    const peeking_sender_id = extra_sender_ids.at(-1)!;
+    const [peeking_sender] = people.sender_info_for_recent_view_row([peeking_sender_id]);
     const displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
-    const other_senders_count = Math.max(0, all_senders.length - max_avatars);
-    // Collect extra sender fullname for tooltip
-    const displayed_other_names = people.get_display_full_names(
-        displayed_other_senders.toReversed(),
-    );
+    // Collect names for tooltip: the rightmost (oldest shown) sender's
+    // name plus the names of senders whose avatars didn't fit.
+    const rightmost_sender_id = senders[0]!;
+    const displayed_other_names = people.get_display_full_names([
+        rightmost_sender_id,
+        ...displayed_other_senders.toReversed(),
+    ]);
     if (extra_sender_ids.length > MAX_EXTRA_SENDERS) {
         // We display only 10 extra senders in tooltips,
         // and just display remaining number of senders.
@@ -597,8 +604,11 @@ function get_avatars_context(all_senders: number[]): AvatarsContext {
 
     return {
         senders: people.sender_info_for_recent_view_row(senders),
-        other_sender_names_html: displayed_other_names.map((name) => _.escape(name)).join("<br />"),
-        other_senders_count,
+        peeking_sender,
+        has_hidden_senders: true,
+        hidden_sender_names_html: displayed_other_names
+            .map((name) => _.escape(name))
+            .join("<br />"),
     };
 }
 
@@ -608,8 +618,9 @@ type ConversationContext = {
     unread_count: number;
     last_msg_time: string;
     senders: people.SenderInfo[];
-    other_senders_count: number;
-    other_sender_names_html: string;
+    peeking_sender: people.SenderInfo | undefined;
+    has_hidden_senders: boolean;
+    hidden_sender_names_html: string;
     last_msg_url: string;
     is_spectator: boolean;
 } & (

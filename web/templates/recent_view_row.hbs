@@ -49,13 +49,23 @@
         </div>
     </td>
     <td class='recent_topic_users'>
-        <ul class="recent_view_participants">
-            {{#unless (eq other_senders_count 0)}}
-            <li class="recent_view_participant_item tippy-zulip-tooltip" data-tooltip-template-id="recent_view_participant_overflow_tooltip:{{conversation_key}}">
-                <span class="recent_view_participant_overflow">+{{other_senders_count}}</span>
-            </li>
-            <template id="recent_view_participant_overflow_tooltip:{{conversation_key}}">{{{other_sender_names_html}}}</template>
-            {{/unless}}
+        <ul class="recent_view_participants {{#if has_hidden_senders}}recent_view_participants_fadeout{{/if}}">
+            {{#if has_hidden_senders}}
+            <template id="recent_view_participant_overflow_tooltip:{{conversation_key}}">{{{hidden_sender_names_html}}}</template>
+            {{/if}}
+            {{!-- Peeking avatar before senders loop so row-reverse
+            places it at the right edge, inside the container fade. --}}
+            {{#if peeking_sender}}
+                {{#if peeking_sender.is_muted}}
+                <li class="recent_view_participant_item recent_view_participant_peeking tippy-zulip-tooltip" data-tooltip-template-id="recent_view_participant_overflow_tooltip:{{conversation_key}}" data-user-id="{{peeking_sender.user_id}}">
+                    <span><i class="fa fa-user recent_view_participant_overflow"></i></span>
+                </li>
+                {{else}}
+                <li class="recent_view_participant_item recent_view_participant_peeking tippy-zulip-tooltip" data-tooltip-template-id="recent_view_participant_overflow_tooltip:{{conversation_key}}" data-user-id="{{peeking_sender.user_id}}">
+                    <img src="{{peeking_sender.avatar_url_small}}" class="recent_view_participant_avatar" />
+                </li>
+                {{/if}}
+            {{/if}}
             {{#each senders}}
                 {{#if this.is_muted}}
                 <li class="recent_view_participant_item participant_profile tippy-zulip-tooltip" data-tippy-content="{{t 'Muted user'}}" data-user-id="{{this.user_id}}">

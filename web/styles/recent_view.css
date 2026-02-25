@@ -360,6 +360,35 @@
         line-height: 1.5;
     }
 
+    .recent_view_participants_fadeout {
+        /* Fade the right edge of the container to hint that
+           there are more senders beyond what's shown. With
+           row-reverse layout, the right edge holds the peeking
+           avatar and oldest displayed senders. */
+        mask-image: linear-gradient(
+            to right,
+            hsl(0deg 0% 0%) 70%,
+            transparent 100%
+        );
+    }
+
+    .recent_view_participant_peeking {
+        /* Show the left ~50% of the next avatar that didn't fit,
+           clipped and spaced normally. The container's fadeout mask
+           naturally ghosts it, so it reads as "more people" rather
+           than spotlighting a specific person. */
+        width: calc(0.75 * var(--recent-view-participant-item-width));
+        overflow: hidden;
+
+        /* Keep the image at full avatar size so it gets cropped
+           rather than squished into the narrow container. */
+        & .recent_view_participant_avatar,
+        & .recent_view_participant_overflow {
+            width: var(--recent-view-participant-item-width);
+            min-width: var(--recent-view-participant-item-width);
+        }
+    }
+
     & tr {
         background-color: var(--color-background-recent-view-row);
 
