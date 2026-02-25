@@ -1113,6 +1113,11 @@
 
     /* Recent view */
     --recent-view-max-avatars: 4;
+    --recent-view-participant-item-width: 1.6em; /* 24px at 15px / 1em */
+    --recent-view-participant-item-padding-x: 0.1em; /* 1.5px at 15px / 1em */
+    --recent-view-participants-padding-x-start: 0.267em; /* 4px at 15px / 1em */
+    /* Net extra width for the peeking avatar (50% visible). */
+    --recent-view-participant-peeking-width: 1.4em; /* 75% of avatar + padding */
     --color-border-recent-view-row: light-dark(
         hsl(0deg 0% 87%),
         hsl(0deg 0% 0% / 20%)

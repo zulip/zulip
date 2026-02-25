@@ -197,6 +197,7 @@ mock_esm("../src/unread", {
 mock_esm("../src/resize", {
     update_recent_view: noop,
     set_recent_view_participants_rerender: noop,
+    set_recent_view_participants_column_class_update: noop,
 });
 mock_esm("../src/popup_banners", {
     close_found_missing_unreads_banner: noop,
