@@ -17,7 +17,6 @@ from zerver.decorator import (
     process_as_post,
     process_client,
     public_json_view,
-    validate_account_and_subdomain,
 )
 from zerver.lib.exceptions import MissingAuthenticationError, UnauthorizedError
 from zerver.lib.request import RequestNotes
@@ -222,7 +221,6 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
         def _jwt_wrapper(req: HttpRequest, /, *a: object, **kw: object) -> HttpResponse:
             if not hasattr(req, "user_profile"):
                 raise UnauthorizedError
-            validate_account_and_subdomain(req, req.user_profile)
             process_client(req, req.user_profile)
             return _orig_fn(req, req.user_profile, *a, **kw)
 
