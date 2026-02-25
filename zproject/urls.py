@@ -1051,6 +1051,14 @@ urls += healthcheck_urls
 realm_host_i18n_urls = i18n_urls
 realm_host_urls = urls
 
+# Remove URL groups that are served by their own reserved subdomain.
+reserved_subdomain_urls: list[URLPattern | URLResolver] = []
+if settings.SOCIAL_AUTH_SUBDOMAIN is not None:
+    reserved_subdomain_urls += social_auth_urls
+if settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN is not None:
+    reserved_subdomain_urls += self_hosting_management_urls + self_hosting_registration_urls
+root_host_urls = [url for url in urls if url not in reserved_subdomain_urls]
+
 # The sequence is important; if i18n URLs don't come first then
 # reverse URL mapping points to i18n URLs which causes the frontend
 # tests to fail

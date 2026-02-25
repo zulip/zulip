@@ -1,3 +1,5 @@
-from .urls import urlpatterns as base_urlpatterns
+from django.conf.urls.i18n import i18n_patterns
 
-urlpatterns = list(base_urlpatterns)
+from .urls import i18n_urls, root_host_urls
+
+urlpatterns = i18n_patterns(*i18n_urls) + root_host_urls
