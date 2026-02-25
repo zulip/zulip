@@ -951,12 +951,6 @@ def fetch_initial_state_data(
     if want("device"):
         state["devices"] = {} if user_profile is None else get_devices(user_profile)
 
-    if user_profile is None:
-        # To ensure we have the correct user state set.
-        assert state["is_admin"] is False
-        assert state["is_owner"] is False
-        assert state["is_guest"] is True
-
     return state
 
 
