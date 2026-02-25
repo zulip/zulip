@@ -48,8 +48,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
         extensions=[markdown_extension.makeExtension(api_url=realm.url + "/api")]
     )
 
-    # We run our curl tests in alphabetical order (except that we
-    # delay the deactivate-user test to the very end), since we depend
+    # We run our curl tests in alphabetical order since we depend
     # on "add" tests coming before "remove" tests in some cases.  We
     # should try to either avoid ordering dependencies or make them
     # very explicit.
@@ -90,8 +89,6 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
             # example, and then run that to test it.
 
             # Set AUTHENTICATION_LINE to default_authentication_line.
-            # Set this every iteration, because deactivate_own_user
-            # will override this for its test.
             AUTHENTICATION_LINE[0] = default_authentication_line
 
             curl_command_html = md_engine.convert(line.strip())
