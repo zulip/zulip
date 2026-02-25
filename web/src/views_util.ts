@@ -160,11 +160,17 @@ export function is_in_focus(): boolean {
     let can_current_view_steal_focus = true;
     const focused_element = document.activeElement;
 
-    // If current view has focus we don't need to check anything else.
+    // If current view has focus and there's not a visibility or
+    // vdots popover with focus, we don't need to check anything else.
     if (
         focused_element instanceof HTMLElement &&
         (focused_element.closest("#recent_view") !== null ||
-            focused_element.closest("#inbox-view") !== null)
+            focused_element.closest("#inbox-view") !== null) &&
+        !(
+            focused_element.classList.contains("visibility-policy-indicator") ||
+            focused_element.classList.contains("inbox-action-button") ||
+            focused_element.classList.contains("recent_topic_actions")
+        )
     ) {
         return true;
     }
