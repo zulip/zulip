@@ -35,6 +35,6 @@
         <span class="unread_count {{#if (eq num_unread 0)}}hide{{/if}}">{{#unless (eq num_unread 0)}}{{num_unread}}{{/unless}}</span>
     </div>
     {{#unless user_list_style.WITH_AVATAR}}
-    <span class="sidebar-menu-icon user-list-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+    <span class="sidebar-menu-icon user-list-sidebar-menu-icon" tabindex="-1"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
     {{/unless}}
 </li>

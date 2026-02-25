@@ -35,6 +35,11 @@ import * as util from "./util.ts";
 
 const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
 
+// This is a function to satisfy eslint unicorn/no-array-callback-reference.
+// Selector for all sidebar buttons reachable via Tab from the search input.
+const left_sidebar_tabbable_buttons = (): string =>
+    ".channel-new-topic-button, .add-stream-icon-container, .show-all-direct-messages, .compose-new-direct-message, .sidebar-menu-icon";
+
 export let left_sidebar_cursor: ListCursor<JQuery>;
 
 function save_sidebar_toggle_status(): void {
@@ -654,6 +659,11 @@ export function focus_pm_search_filter(): void {
 export function set_event_handlers(): void {
     const $search_input = $(".left-sidebar-search-input").expectOne();
 
+    // Set during Enter key processing to prevent the focusout
+    // handler from clearing the cursor while the link click
+    // briefly moves focus away from the search input.
+    let navigating_from_sidebar = false;
+
     function keydown_enter_key(): void {
         const $row = left_sidebar_cursor.get_key();
 
@@ -678,6 +688,9 @@ export function set_event_handlers(): void {
         // Clear search input so that there is no confusion
         // about which search input is active.
         $search_input.val("");
+        // Prevent the focusout handler from clearing the cursor
+        // while the link click briefly steals focus.
+        navigating_from_sidebar = true;
         const $nearest_link = $row.find("a").first();
         if ($nearest_link.length > 0) {
             // If the row has a link, we click it.
@@ -690,7 +703,29 @@ export function set_event_handlers(): void {
         // Don't trigger `input` which confuses the search input
         // for zoomed in topic search.
         actually_update_left_sidebar_for_search();
-        $search_input.trigger("blur");
+        // Keep the cursor on the selected row so the user can
+        // continue keyboard-navigating without re-entering the
+        // sidebar. We defer the re-focus so it happens after the
+        // hashchange handler processes the navigation.
+        const $saved_row = $row;
+        setTimeout(() => {
+            navigating_from_sidebar = false;
+            left_sidebar_cursor.set_is_highlight_visible(true);
+            // Topic and DM rows get recreated during navigation,
+            // so the saved reference may be detached. Fall back to
+            // finding the newly-active row in the DOM.
+            if (document.contains($saved_row[0]!)) {
+                left_sidebar_cursor.go_to($saved_row);
+            } else {
+                const $active = $(
+                    ".active-sub-filter, .active-filter, .top-left-active-filter",
+                ).first();
+                if ($active.length > 0) {
+                    left_sidebar_cursor.go_to($active);
+                }
+            }
+            $search_input.trigger("focus");
+        }, 0);
     }
 
     keydown_util.handle({
@@ -708,14 +743,166 @@ export function set_event_handlers(): void {
                 left_sidebar_cursor.next();
                 return true;
             },
+            Tab() {
+                const $row = left_sidebar_cursor.get_key();
+                if ($row === undefined) {
+                    return false;
+                }
+                // Find the first row (starting from the current one)
+                // that has a tabbable button, and focus it.
+                let $cur = $row;
+                let prev_key = left_sidebar_cursor.get_key();
+                while (true) {
+                    const $button = $cur.find(left_sidebar_tabbable_buttons()).first();
+                    if ($button.length > 0) {
+                        left_sidebar_cursor.go_to($cur);
+                        $button.trigger("focus");
+                        return true;
+                    }
+                    left_sidebar_cursor.next();
+                    const next_key = left_sidebar_cursor.get_key();
+                    if (next_key === undefined || next_key === prev_key) {
+                        // Wrapped around or reached end; give up.
+                        left_sidebar_cursor.go_to($row);
+                        return true;
+                    }
+                    $cur = next_key;
+                    prev_key = next_key;
+                }
+                // unreachable
+            },
         },
     });
 
     $search_input.on("click", focus_left_sidebar_filter);
-    $search_input.on("focusout", () => {
+    $search_input.on("focusout", (e) => {
+        // Don't clear highlight when Tab moves focus to a sidebar button.
+        if (
+            e.relatedTarget instanceof HTMLElement &&
+            $(e.relatedTarget).closest(left_sidebar_tabbable_buttons()).length > 0
+        ) {
+            return;
+        }
+        // Don't clear highlight during Enter key processing; the
+        // link click briefly steals focus before we restore it.
+        if (navigating_from_sidebar) {
+            return;
+        }
         left_sidebar_cursor.clear();
     });
     $search_input.on("input", update_left_sidebar_for_search);
+
+    $("#left-sidebar").on("keydown", left_sidebar_tabbable_buttons(), (e) => {
+        // When a popover is open, let the hotkey system handle
+        // arrow keys and Escape so they navigate the popover.
+        if (popovers.any_active() && e.key !== "Enter" && e.key !== "Tab") {
+            return;
+        }
+        switch (e.key) {
+            case "Enter": {
+                const $target = $(e.currentTarget);
+                $target.trigger("click");
+                // jQuery trigger doesn't follow <a> hrefs, so
+                // navigate manually for link elements.
+                if ($target.is("a")) {
+                    window.location.href = $target.attr("href")!;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                break;
+            }
+            case "Escape":
+                $search_input.trigger("focus");
+                e.preventDefault();
+                e.stopPropagation();
+                break;
+            case "Tab": {
+                e.preventDefault();
+                e.stopPropagation();
+                const $row = left_sidebar_cursor.get_key();
+                if ($row !== undefined) {
+                    const $buttons = $row.find(left_sidebar_tabbable_buttons());
+                    const idx = $buttons.index($(e.currentTarget));
+                    if (!e.shiftKey && idx < $buttons.length - 1) {
+                        // Tab forward to next button on same row.
+                        $buttons.eq(idx + 1).trigger("focus");
+                        break;
+                    }
+                    if (e.shiftKey && idx > 0) {
+                        // Shift+Tab backward to previous button on same row.
+                        $buttons.eq(idx - 1).trigger("focus");
+                        break;
+                    }
+                }
+                // First button + Shift+Tab, or last button + Tab.
+                if (!e.shiftKey) {
+                    left_sidebar_cursor.next();
+                }
+                $search_input.trigger("focus");
+                break;
+            }
+            case "ArrowDown": {
+                e.preventDefault();
+                e.stopPropagation();
+                // Skip rows without any tabbable buttons.
+                let prev_key = left_sidebar_cursor.get_key();
+                while (true) {
+                    left_sidebar_cursor.next();
+                    const cur_key = left_sidebar_cursor.get_key();
+                    if (cur_key === undefined || cur_key === prev_key) {
+                        break;
+                    }
+                    const $button = cur_key.find(left_sidebar_tabbable_buttons()).first();
+                    if ($button.length > 0) {
+                        $button.trigger("focus");
+                        break;
+                    }
+                    prev_key = cur_key;
+                }
+                break;
+            }
+            case "ArrowUp": {
+                e.preventDefault();
+                e.stopPropagation();
+                // Skip rows without any tabbable buttons.
+                let prev_key = left_sidebar_cursor.get_key();
+                let found = false;
+                while (true) {
+                    left_sidebar_cursor.prev();
+                    const cur_key = left_sidebar_cursor.get_key();
+                    if (cur_key === undefined || cur_key === prev_key) {
+                        break;
+                    }
+                    const $button = cur_key.find(left_sidebar_tabbable_buttons()).first();
+                    if ($button.length > 0) {
+                        $button.trigger("focus");
+                        found = true;
+                        break;
+                    }
+                    prev_key = cur_key;
+                }
+                if (!found) {
+                    $search_input.trigger("focus");
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    });
+
+    $("#left-sidebar").on("focusout", left_sidebar_tabbable_buttons(), (e) => {
+        // Don't clear if focus moves to the search input or another
+        // tabbable sidebar button.
+        if (
+            e.relatedTarget instanceof HTMLElement &&
+            ($(e.relatedTarget).closest(".left-sidebar-search-input").length > 0 ||
+                $(e.relatedTarget).closest(left_sidebar_tabbable_buttons()).length > 0)
+        ) {
+            return;
+        }
+        left_sidebar_cursor.clear();
+    });
 }
 
 export function initiate_search(): void {
