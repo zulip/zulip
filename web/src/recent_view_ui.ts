@@ -1415,14 +1415,27 @@ function get_list_data_for_widget(): ConversationData[] {
     return [...recent_view_data.get_conversations().values()];
 }
 
+export function update_participants_column_class(): void {
+    if (!page_params.is_node_test) {
+        max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
+    }
+    $("#recent_view")
+        .removeClass("recent-view-participants-hidden recent-view-participants-3")
+        .addClass(
+            max_avatars === 0
+                ? "recent-view-participants-hidden"
+                : max_avatars === 3
+                  ? "recent-view-participants-3"
+                  : "",
+        );
+}
+
 export function complete_rerender(coming_from_other_views = false): void {
     if (!recent_view_util.is_visible()) {
         return;
     }
 
-    if (!page_params.is_node_test) {
-        max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
-    }
+    update_participants_column_class();
 
     // Show topics list
     const mapped_topic_values = get_list_data_for_widget();
@@ -1535,6 +1548,7 @@ export function show(): void {
         is_visible: recent_view_util.is_visible,
         set_visible: recent_view_util.set_visible,
         complete_rerender,
+        update_participants_column_class,
     });
     last_scroll_offset = undefined;
 

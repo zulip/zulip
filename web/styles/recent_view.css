@@ -45,10 +45,6 @@
         box-sizing: border-box;
         vertical-align: middle;
         padding: 0.1875em 0.5em; /* 3px 8px at 16px/1em */
-
-        @media (width < $md_min) {
-            padding: 0.375em 0.5em; /* 6px 8px at 16px/1em */
-        }
     }
 
     .recent_view_focusable {
@@ -318,10 +314,10 @@
         vertical-align: middle;
         list-style-type: none;
         margin: auto; /* Centers vertically / horizontally in flex container. */
-        /* 24px at 16px/1em */
-        height: 1.5em;
-        /* 4px at 16px/1em */
-        padding: 0.25em 4px;
+        /* 24px at 15px/1em */
+        height: 1.6em;
+        /* 4px at 15px/1em */
+        padding: 0.267em 0;
         border-radius: 6px;
         overflow: hidden;
 
@@ -341,14 +337,23 @@
     }
 
     .recent_view_participant_item {
-        /* 24px at 16px/1em */
-        height: 1.5em;
+        /* 24px at 15px/1em */
+        height: 1.6em;
         margin: 0;
-        padding: 0 1.5px;
+        padding: 0 var(--recent-view-participant-item-padding-x);
         position: relative;
-        /* 24px at 16px/1em */
-        min-width: 1.5em;
+        width: var(--recent-view-participant-item-width);
         cursor: pointer;
+
+        /* Can't use last-child due to tippy element being appended */
+        &:last-of-type {
+            /* Remove right padding of last item to align with header text. */
+            padding-left: 0;
+        }
+
+        &:first-of-type {
+            padding-right: 0;
+        }
 
         .fa-user {
             opacity: 0.7;
@@ -360,8 +365,8 @@
         border: 0;
         /* Keep the rounded corners from ballooning
            to a circle at smaller font sizes.
-           6px at 16px/1em */
-        border-radius: 0.375em;
+           6px at 15px/1em */
+        border-radius: 0.4em;
         color: var(--color-recent-view-participant-overflow-text);
         display: block;
         height: 100%;
@@ -490,7 +495,45 @@
 
     .recent_topic_users,
     .recent-view-participants-header {
-        width: 20%;
+        /* Use same font size for header and row to ease calculations */
+        font-size: 0.9375em; /* 15px at 16px/1em */
+        padding-right: 0;
+        padding-left: var(--recent-view-participants-padding-x-start);
+        width: calc(
+            var(--recent-view-participants-padding-x-start) +
+                (var(--recent-view-max-avatars) + 1) *
+                (
+                    var(--recent-view-participant-item-width) + 2 *
+                        var(--recent-view-participant-item-padding-x)
+                ) -
+                /* First item start padding is --recent-view-participants-padding-x-start.
+                   Last item doesn't have end padding. */
+                2 * var(--recent-view-participant-item-padding-x)
+        );
+    }
+
+    &.recent-view-participants-hidden {
+        td {
+            padding: 0.375em 0.5em; /* 6px 8px at 16px/1em */
+        }
+
+        .recent_topic_users,
+        .recent-view-participants-header {
+            display: none;
+        }
+
+        /* Increase space for time column. */
+        .recent_topic_timestamp,
+        .recent-view-last-msg-time-header {
+            width: 25%;
+        }
+    }
+
+    .recent-view-participants-header .recent-view-header-wrapper {
+        display: block;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
 
     .recent_topic_timestamp,
@@ -569,14 +612,12 @@
     }
 
     @media (width < $md_min) {
-        /* Hide participants and last message time
-            on smaller screens. This ensures user always
-            has a nice UI experience. */
-        .recent_topic_users,
-        .recent_topic_timestamp,
-        thead .participants_header,
-        thead .last_msg_time_header {
-            display: none;
+        /* Hide last message time on smaller screens. */
+        &.recent-view-participants-hidden {
+            .recent_topic_timestamp,
+            thead .last_msg_time_header {
+                display: none;
+            }
         }
 
         .recent_topic_actions {

@@ -90,6 +90,7 @@ export function show(opts: {
     is_visible: () => boolean;
     set_visible: (value: boolean) => void;
     complete_rerender: (coming_from_other_views?: boolean) => void;
+    update_participants_column_class?: () => void;
     is_recent_view?: boolean;
 }): void {
     if (opts.is_visible()) {
@@ -119,6 +120,9 @@ export function show(opts: {
     if (opts.is_recent_view) {
         resize.set_recent_view_participants_rerender(() => {
             opts.complete_rerender(false);
+        });
+        resize.set_recent_view_participants_column_class_update(() => {
+            opts.update_participants_column_class?.();
         });
         resize.update_recent_view();
     }
