@@ -653,6 +653,12 @@ def send_message(request: HttpRequest) -> HttpResponse:
                         body[key] = json.loads(body[key])
                     except (json.JSONDecodeError, ValueError):
                         pass
+        # Extract Zulip client fields not in MessageCreatePayload
+        local_id = body.pop("local_id", None)
+        queue_id = body.pop("queue_id", None)
+        read_by_sender = body.pop("read_by_sender", None)
+        if isinstance(read_by_sender, str):
+            read_by_sender = read_by_sender.lower() in ("true", "1")
         payload = MessageCreatePayload(**body)
     except ValidationError as e:
         return JsonResponse(
@@ -703,6 +709,9 @@ def send_message(request: HttpRequest) -> HttpResponse:
                 topic_name="",  # DMs don't have topics
                 message_content=payload.content,
                 realm=user.realm,
+                local_id=local_id,
+                sender_queue_id=queue_id,
+                read_by_sender=read_by_sender if read_by_sender is not None else True,
             )
 
             # Fetch the created message
@@ -768,6 +777,9 @@ def send_message(request: HttpRequest) -> HttpResponse:
             topic_name=topic,
             message_content=payload.content,
             realm=user.realm,
+            local_id=local_id,
+            sender_queue_id=queue_id,
+            read_by_sender=read_by_sender if read_by_sender is not None else True,
         )
 
         # Fetch the created message to return full details
