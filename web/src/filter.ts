@@ -1820,8 +1820,10 @@ export class Filter {
     is_conversation_view(): boolean {
         const term_types = this.sorted_term_types();
         if (
+            _.isEqual(term_types, ["channel", "topic", "near"]) ||
             _.isEqual(term_types, ["channel", "topic", "with"]) ||
             _.isEqual(term_types, ["channel", "topic"]) ||
+            _.isEqual(term_types, ["dm", "near"]) ||
             _.isEqual(term_types, ["dm", "with"]) ||
             _.isEqual(term_types, ["dm"])
         ) {
