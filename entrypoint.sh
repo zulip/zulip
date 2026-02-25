@@ -67,6 +67,37 @@ echo "=== Running database migrations ==="
 cd /app
 su zulip -c '/app/.venv/bin/python manage.py migrate --noinput'
 
+# Wait for RabbitMQ to be reachable (up to 30 seconds)
+echo "=== Checking RabbitMQ connectivity ==="
+RABBITMQ_HOST_CHECK="${RABBITMQ_HOST:-127.0.0.1}"
+RABBITMQ_PORT_CHECK="${RABBITMQ_PORT:-5672}"
+MAX_RETRIES=15
+RETRY_COUNT=0
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if /app/.venv/bin/python -c "
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.settimeout(2)
+try:
+    s.connect(('$RABBITMQ_HOST_CHECK', $RABBITMQ_PORT_CHECK))
+    s.close()
+    exit(0)
+except:
+    exit(1)
+" 2>/dev/null; then
+        echo "RabbitMQ is reachable at ${RABBITMQ_HOST_CHECK}:${RABBITMQ_PORT_CHECK}"
+        break
+    fi
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    echo "Waiting for RabbitMQ at ${RABBITMQ_HOST_CHECK}:${RABBITMQ_PORT_CHECK}... (attempt ${RETRY_COUNT}/${MAX_RETRIES})"
+    sleep 2
+done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "WARNING: RabbitMQ not reachable after ${MAX_RETRIES} attempts. Tornado event queues will fail."
+    echo "Check RABBITMQ_HOST environment variable and RabbitMQ service status."
+fi
+
 echo "=== Starting supervisord ==="
 
 # Start supervisord

@@ -74,6 +74,19 @@ COPY --from=builder /app/.venv /app/.venv
 # Copy application code
 COPY . .
 
+# Generate emoji_api.json (lightweight — uses only Python, no node_modules)
+# The full build_emoji script needs node_modules, but emoji_api.json only needs
+# EMOJI_NAME_MAPS which is pure Python data.
+RUN cd /app && /app/.venv/bin/python -c "\
+import sys, os, json; \
+sys.path.insert(0, '.'); \
+from tools.setup.emoji.emoji_names import EMOJI_NAME_MAPS; \
+from tools.setup.emoji.emoji_setup_utils import generate_codepoint_to_names_map; \
+data = {'code_to_names': generate_codepoint_to_names_map(EMOJI_NAME_MAPS)}; \
+os.makedirs('static/generated/emoji', exist_ok=True); \
+open('static/generated/emoji/emoji_api.json', 'w').write(json.dumps(data, separators=(',', ':'))); \
+print(f'Generated emoji_api.json ({os.path.getsize(\"static/generated/emoji/emoji_api.json\")} bytes)')"
+
 # Set ownership to zulip user
 RUN chown -R zulip:zulip /app
 
