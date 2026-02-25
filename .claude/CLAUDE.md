@@ -115,6 +115,11 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
   commented code using clever tricks. Comments should explain "why" when
   the reason isn't obvious, not narrate "what" the code does.
 - Comments should have a line to themself except for CSS px math.
+- **Review CSS for redundant rules.** After writing CSS, review the
+  full set of rules affecting the same elements. Look for rules that
+  are immediately overridden by a more specific selector, duplicated
+  selector lists, or cases where scoping (e.g., `:not()`) would
+  eliminate the need for an override.
 
 See: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
 
