@@ -363,6 +363,14 @@
     & tr {
         background-color: var(--color-background-recent-view-row);
 
+        &:not(.unread_topic) {
+            .recent-view-channel-name,
+            .recent-view-dm-name,
+            .recent-view-conversation-link {
+                color: var(--color-recent-view-read-conversation-link);
+            }
+        }
+
         /* Avoid annoying, confusing hover-state when scrolling on
            touch devices like iPad that treat a tap-and-hold/swipe
            as a hover. */
