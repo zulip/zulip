@@ -17,7 +17,7 @@ from zerver.decorator import (
     process_as_post,
     public_json_view,
 )
-from zerver.lib.exceptions import MissingAuthenticationError
+from zerver.lib.exceptions import MissingAuthenticationError, UnauthorizedError
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_method_not_allowed
 from zerver.lib.sessions import narrow_request_user
@@ -173,7 +173,24 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
         # rate limiting, because there are good reasons clients
         # might need to (e.g.) request a large number of uploaded
         # files or avatars in quick succession.
-        target_function = authenticated_rest_api_view(skip_rate_limiting=True)(target_function)
+        if "allow_anonymous_user_web" in view_flags:
+            # For endpoints that allow anonymous access (e.g. file serving),
+            # try authenticated first but fall through to anonymous on failure.
+            # This handles clients that send invalid auth headers (e.g. wrong
+            # scheme or expired tokens) — they can still access files as
+            # anonymous/spectator users since file URLs contain crypto tokens.
+            auth_target = authenticated_rest_api_view(skip_rate_limiting=True)(target_function)
+            try:
+                if request.method in ["DELETE", "PATCH", "PUT"]:
+                    auth_target = process_as_post(auth_target)
+                return auth_target(request, **kwargs)
+            except UnauthorizedError:
+                # Auth failed — strip the bad header and fall through to
+                # anonymous access below.
+                request.META.pop("HTTP_AUTHORIZATION", None)
+                target_function = csrf_protect(public_json_view(target_function))
+        else:
+            target_function = authenticated_rest_api_view(skip_rate_limiting=True)(target_function)
     elif "override_api_url_scheme" in view_flags and request.GET.get("api_key") is not None:
         # This request uses legacy API authentication.  We
         # unfortunately need that in the React Native mobile apps,
