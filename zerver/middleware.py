@@ -43,7 +43,7 @@ from zerver.lib.response import (
     json_unauthorized,
 )
 from zerver.lib.server_initialization import server_initialized
-from zerver.lib.subdomains import get_subdomain
+from zerver.lib.subdomains import get_subdomain, is_canonical_realm_host, is_reserved_subdomain
 from zerver.lib.typed_endpoint import INTENTIONALLY_UNDOCUMENTED, ApiParamConfig, typed_endpoint
 from zerver.lib.user_agent import parse_user_agent
 from zerver.models import Realm
@@ -555,6 +555,10 @@ class FlushDisplayRecipientCache(MiddlewareMixin):
         return response
 
 
+def should_skip_realm_lookup(path: str) -> bool:
+    return path.startswith(("/static/", "/api/", "/json/")) or path == "/health"
+
+
 class HostDomainMiddleware(MiddlewareMixin):
     def process_request(self, request: HttpRequest) -> HttpResponse | None:
         # Match against ALLOWED_HOSTS, which is rather permissive;
@@ -568,14 +572,11 @@ class HostDomainMiddleware(MiddlewareMixin):
         #
         # API authentication will end up checking for an invalid
         # realm, and throw a JSON-format error if appropriate.
-        if request.path.startswith(("/static/", "/api/", "/json/")) or request.path == "/health":
+        if should_skip_realm_lookup(request.path):
             return None
 
         subdomain = get_subdomain(request)
-        if subdomain in [
-            settings.SOCIAL_AUTH_SUBDOMAIN,
-            settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN,
-        ]:
+        if is_reserved_subdomain(subdomain):
             # Realms are not supposed to exist on these subdomains.
             return None
 
@@ -597,13 +598,10 @@ class HostDomainMiddleware(MiddlewareMixin):
         set_tag("realm", request_notes.realm.string_id)
 
         # Check that we're not using the non-canonical form of a REALM_HOSTS subdomain
-        if subdomain in settings.REALM_HOSTS:
-            host = request.get_host().lower()
-            formal_host = request_notes.realm.host
-            if host != formal_host and not host.startswith(formal_host + ":"):
-                return HttpResponseRedirect(
-                    urljoin(request_notes.realm.url, request.get_full_path())
-                )
+        if subdomain in settings.REALM_HOSTS and not is_canonical_realm_host(
+            request.get_host(), request_notes.realm
+        ):
+            return HttpResponseRedirect(urljoin(request_notes.realm.url, request.get_full_path()))
         return None
 
 
