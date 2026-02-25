@@ -1,4 +1,5 @@
 import os
+from typing import cast
 
 from django.conf import settings
 from django.conf.urls import include
@@ -619,12 +620,56 @@ v1_api_and_json_patterns = [
 #
 # If you're adding a new page to the website (as opposed to a new
 # endpoint for use by code), you should add it here.
-i18n_urls = [
+i18n_realm_creation_urls = [
+    # Realm creation
+    path("json/antispam_challenge", get_challenge),
+    path("new/", create_realm),
+    path("new/demo/", create_demo_organization),
+    path("new/<confirmation_key>", create_realm, name="create_realm"),
+    # Realm reactivation
+    path("reactivate/", realm_reactivation, name="realm_reactivation"),
+    path("reactivate/<confirmation_key>", realm_reactivation_get, name="realm_reactivation_get"),
+]
+
+i18n_integrations_documentation_urls = [
+    # Integrations documentation
+    path(
+        "integrations/",
+        integrations_catalog,
+        {"category_slug": "all"},
+        name="integrations_home",
+    ),
+    path(
+        "integrations/category/<str:category_slug>",
+        integrations_catalog,
+        name="integrations_category",
+    ),
+    *INTEGRATION_CATEGORY_REDIRECT_PATHS,
+    path(
+        "integrations/doc/<str:integration_name>",
+        RedirectView.as_view(pattern_name="integration_doc", permanent=True, query_string=True),
+    ),
+    path(
+        "integrations/doc/<str:integration_name>/",
+        RedirectView.as_view(pattern_name="integration_doc", permanent=True, query_string=True),
+    ),
+    path(
+        "integrations/<str:integration_name>",
+        integrations_doc,
+        name="integration_doc",
+    ),
+]
+
+i18n_landing_urls = [
     path("", home, name="home"),
     # We have a desktop-specific landing page in case we change our /
     # to not log in in the future. We don't want to require a new
     # desktop app build for everyone in that case
     path("desktop_home/", desktop_home),
+    path("register/", accounts_home, name="register"),
+]
+
+i18n_auth_urls = [
     # Backwards-compatibility (legacy) Google auth URL for the mobile
     # apps; see https://github.com/zulip/zulip/issues/13081 for
     # background.  We can remove this once older versions of the
@@ -647,6 +692,15 @@ i18n_urls = [
     path("accounts/login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
     path("accounts/login/", LoginView.as_view(template_name="zerver/login.html"), name="login"),
     path("accounts/logout/", logout_view),
+]
+
+i18n_login_urls = [
+    path("login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
+]
+
+i18n_urls = [
+    *i18n_landing_urls,
+    *i18n_auth_urls,
     path("accounts/password/reset/", password_reset, name="password_reset"),
     path(
         "accounts/password/reset/done/",
@@ -730,7 +784,7 @@ i18n_urls = [
     path("reactivate/<confirmation_key>", realm_reactivation_get, name="realm_reactivation_get"),
     # Login/registration
     path("register/", accounts_home, name="register"),
-    path("login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
+    *i18n_login_urls,
     path("join/<confirmation_key>/", accounts_home_from_multiuse_invite, name="join"),
     # Used to generate a Zoom video call URL
     path("calls/zoom/register", register_zoom_user),
@@ -770,10 +824,11 @@ i18n_urls = [
 urls: list[URLPattern | URLResolver] = list(i18n_urls)
 
 # Include the dual-use patterns twice
-urls += [
+dual_use_api_urls = [
     path("api/v1/", include(v1_api_and_json_patterns)),
     path("json/", include(v1_api_and_json_patterns)),
 ]
+urls += dual_use_api_urls
 
 # user_uploads -> zerver.views.upload.serve_file_backend
 #
@@ -861,12 +916,13 @@ urls += [
 ]
 
 # Mobile-specific authentication URLs
-urls += [
+mobile_compatibility_urls = [
     # Used as a global check by all mobile clients, which currently send
     # requests to https://zulip.com/compatibility almost immediately after
     # starting up.
     path("compatibility", check_global_compatibility),
 ]
+urls += mobile_compatibility_urls
 
 v1_api_mobile_patterns = [
     # This json format view used by the mobile apps lists which
@@ -889,11 +945,16 @@ v1_api_mobile_patterns = [
 
 # Include URL configuration files for site-specified extra installed
 # Django apps
+extra_installed_app_urls: list[URLPattern | URLResolver] = []
 for app_name in settings.EXTRA_INSTALLED_APPS:
     app_dir = os.path.join(settings.DEPLOY_ROOT, app_name)
     if os.path.exists(os.path.join(app_dir, "urls.py")):
-        urls += [path("", include(f"{app_name}.urls"))]
-        i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
+        extra_installed_app_urls += [path("", include(f"{app_name}.urls"))]
+        i18n_urls += cast(
+            "list[URLPattern]",
+            import_string(f"{app_name}.urls.i18n_urlpatterns"),
+        )
+urls += extra_installed_app_urls
 
 # Used internally for communication between command-line, tusd, Django,
 # and Tornado processes
@@ -906,8 +967,11 @@ urls += [
 
 # Python Social Auth
 
-urls += [path("", include("social_django.urls", namespace="social"))]
-urls += [path("saml/metadata.xml", saml_sp_metadata)]
+social_auth_urls: list[URLPattern | URLResolver] = [
+    path("", include("social_django.urls", namespace="social")),
+    path("saml/metadata.xml", saml_sp_metadata),
+]
+urls += social_auth_urls
 
 
 # SCIM2
@@ -967,7 +1031,7 @@ urls += [
     path("doc-permalinks/<str:doc_id>", doc_permalinks_view),
 ]
 
-urls += [
+self_hosting_management_urls: list[URLPattern | URLResolver] = [
     path(
         "self-hosted-billing/",
         self_hosting_auth_redirect_endpoint,
@@ -982,13 +1046,15 @@ urls += [
         GET=self_hosting_auth_json_endpoint,
     ),
 ]
+urls += self_hosting_management_urls
 
-urls += [
+self_hosting_registration_urls: list[URLPattern | URLResolver] = [
     path(
         "api/v1/zulip-services/verify/<str:access_token>/",
         self_hosting_registration_transfer_challenge_verify,
     ),
 ]
+urls += self_hosting_registration_urls
 
 if not settings.CORPORATE_ENABLED:  # nocoverage
     # This conditional behavior cannot be tested directly, since
@@ -1007,12 +1073,12 @@ if settings.DEVELOPMENT:
     i18n_urls += dev_urls.i18n_urls
     v1_api_mobile_patterns += dev_urls.v1_api_mobile_patterns
 
-urls += [
-    path("api/v1/", include(v1_api_mobile_patterns)),
-]
+v1_api_mobile_urls = [path("api/v1/", include(v1_api_mobile_patterns))]
+urls += v1_api_mobile_urls
 
 # Healthcheck URL
-urls += [path("health", health)]
+healthcheck_urls = [path("health", health)]
+urls += healthcheck_urls
 
 # The sequence is important; if i18n URLs don't come first then
 # reverse URL mapping points to i18n URLs which causes the frontend
