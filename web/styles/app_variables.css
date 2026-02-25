@@ -1122,20 +1122,28 @@
         hsl(0deg 0% 0% / 10%)
     );
     --color-background-recent-view-row: light-dark(
-        hsl(0deg 0% 96%),
-        hsl(0deg 0% 14%)
+        color-mix(in oklch, hsl(254deg 99% 68%) 6%, hsl(0deg 0% 100%)),
+        color-mix(in oklch, hsl(246deg 96% 79%) 14%, hsl(0deg 0% 11%))
     );
     --color-background-recent-view-row-hover: light-dark(
-        hsl(222deg 70% 12% / 7%),
-        hsl(220deg 18% 95% / 7%)
+        color-mix(
+            in srgb,
+            hsl(0deg 0% 0%) 5%,
+            color-mix(in oklch, hsl(254deg 99% 68%) 6%, hsl(0deg 0% 100%))
+        ),
+        color-mix(
+            in srgb,
+            hsl(0deg 0% 100%) 5%,
+            color-mix(in oklch, hsl(246deg 96% 79%) 14%, hsl(0deg 0% 11%))
+        )
     );
     --color-background-recent-view-unread-row: light-dark(
         hsl(0deg 0% 100%),
-        color-mix(in srgb, hsl(0deg 0% 100%) 8%, hsl(0deg 0% 11%))
+        hsl(0deg 0% 13.5%)
     );
     --color-background-recent-view-unread-row-hover: light-dark(
-        hsl(220deg 5% 12% / 3%),
-        color-mix(in srgb, hsl(0deg 0% 100%) 11%, hsl(0deg 0% 11%))
+        color-mix(in srgb, hsl(0deg 0% 0%) 5%, hsl(0deg 0% 100%)),
+        color-mix(in srgb, hsl(0deg 0% 100%) 5%, hsl(0deg 0% 13.5%))
     );
     --color-recent-view-link: light-dark(
         hsl(0deg 0% 15%),
