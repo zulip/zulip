@@ -2402,12 +2402,9 @@
     );
 
     /* Shared button CSS variables */
-    --color-outline-button-focus: light-dark(
-        hsl(0deg 0% 0%),
-        hsl(0deg 0% 100%)
-    );
     --outline-width-button-focus: 1.5px;
     --outline-offset-button-focus: 0;
+    --outline-offset-action-button-focus: 1px;
     /* Actions buttons */
     --color-inner-shadow-action-button: light-dark(
         color-mix(in oklch, hsl(0deg 0% 0%) 20%, transparent),

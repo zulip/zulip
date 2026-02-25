@@ -45,14 +45,14 @@
     &:focus-visible {
         /* Override common button outline style set in zulip.css and dark_theme.css */
         outline: var(--outline-width-button-focus) solid
-            var(--color-outline-button-focus) !important;
-        outline-offset: var(--outline-offset-button-focus);
+            var(--color-outline-focus) !important;
+        outline-offset: var(--outline-offset-action-button-focus);
         clip-path: inset(
             calc(
                     -1 *
                         (
                             var(--outline-width-button-focus) +
-                                var(--outline-offset-button-focus)
+                                var(--outline-offset-action-button-focus)
                         )
                 )
                 round 4px
@@ -450,7 +450,7 @@
     &:focus-visible {
         /* Override common button outline style set in zulip.css and dark_theme.css */
         outline: var(--outline-width-button-focus) solid
-            var(--color-outline-button-focus) !important;
+            var(--color-outline-focus) !important;
         outline-offset: var(--outline-offset-button-focus);
         clip-path: inset(
             calc(
