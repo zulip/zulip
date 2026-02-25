@@ -4,11 +4,8 @@ class zulip::wal_g {
   $wal_g_version = $zulip::common::versions['wal-g']['version']
   $bin = "/srv/zulip-wal-g-${wal_g_version}"
 
-  if ($zulip::common::goarch == 'aarch64') {
-    $package = "wal-g-pg-ubuntu-20.04-${zulip::common::goarch}"
-  } else {
-    $package = "wal-g-pg-ubuntu-22.04-${zulip::common::goarch}"
-  }
+  $package = "wal-g-pg-22.04-${zulip::common::goarch}"
+
   # This tarball contains only a single file, which is extracted as $bin
   zulip::external_dep { 'wal-g':
     version        => $wal_g_version,
