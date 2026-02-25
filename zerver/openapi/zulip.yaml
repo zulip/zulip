@@ -5670,7 +5670,7 @@ paths:
                                         This organization's configured custom message for Welcome Bot
                                         to send to new user accounts, in Zulip Markdown format.
 
-                                        Maximum length is 8000 characters.
+                                        Maximum length is 8000 Unicode code points.
 
                                         **Changes**: New in Zulip 11.0 (feature level 416).
                                     zulip_update_announcements_stream_id:
@@ -10332,7 +10332,7 @@ paths:
                     A short description with additional context about why the current user
                     is reporting the target message for moderation.
 
-                    Clients should limit this string to a maximum length of 1000 characters.
+                    Clients should limit this string to 1000 Unicode code points.
 
                     If the `report_type` parameter is `"other"`, this parameter is required,
                     and its value cannot be an empty string.
@@ -10805,7 +10805,7 @@ paths:
                     The text content of the status message. Sending the empty string
                     will clear the user's status.
 
-                    **Note**: The limit on the size of the message is 60 characters.
+                    **Note**: The limit on the size of the message is 60 Unicode code points.
                   example: on vacation
                 emoji_name:
                   type: string
@@ -11808,7 +11808,7 @@ paths:
                     The text content of the status message. Sending the empty string
                     will clear the user's status.
 
-                    **Note**: The limit on the size of the message is 60 characters.
+                    **Note**: The limit on the size of the message is 60 Unicode code points.
                   example: on vacation
                 away:
                   deprecated: true
@@ -16122,7 +16122,7 @@ paths:
                     Welcome Bot to new users that join the organization via this
                     invitation.
 
-                    Maximum length is 8000 characters.
+                    Maximum length is 8000 Unicode code points.
 
                     Only organization administrators can use this feature; for other
                     users, the value is always `null`.
@@ -16331,7 +16331,7 @@ paths:
                     Welcome Bot to new users that join the organization via this
                     invitation.
 
-                    Maximum length is 8000 characters.
+                    Maximum length is 8000 Unicode code points.
 
                     Only organization administrators can use this feature; for other
                     users, the value is always `null`.
@@ -16567,7 +16567,7 @@ paths:
                     Custom message text, in Zulip Markdown format, to be used for
                     this test message.
 
-                    Maximum length is 8000 characters.
+                    Maximum length is 8000 Unicode code points.
                   type: string
                   maxLength: 8000
                   example: "Welcome to Zulip! We're excited to have you on board."
@@ -17106,7 +17106,7 @@ paths:
                       max_reminder_note_length:
                         type: integer
                         description: |
-                          The maximum allowed length for a reminder note.
+                          The maximum allowed length for a reminder note, in Unicode code points.
 
                           **Changes**: New in Zulip 11.0 (feature level 415).
                       max_stream_name_length:
