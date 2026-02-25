@@ -311,6 +311,10 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                             defaultMessage: "You have no messages in muted topics and channels.",
                         }),
                     };
+                case "alerted":
+                    return {
+                        title_html: NO_SEARCH_RESULTS_TITLE_HTML,
+                    };
             }
             // fallthrough to default case if no match is found
             break;
