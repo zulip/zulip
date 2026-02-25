@@ -28,9 +28,7 @@ from zerver.actions.message_edit import do_update_message
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.message_send import check_send_message
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
-from zerver.actions.reactions import check_add_reaction, do_remove_reaction
-from zerver.lib.emoji import get_emoji_data
-from zerver.lib.exceptions import JsonableError, ReactionDoesNotExistError, ReactionExistsError
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import access_message, get_recent_private_conversations, messages_for_ids
@@ -1049,112 +1047,6 @@ def delete_message(request: HttpRequest, message_id: int) -> HttpResponse:
             {"result": "error", "code": "DELETE_FAILED", "msg": str(e)},
             status=500,
         )
-
-
-@csrf_exempt
-@require_jwt_auth
-@rate_limit(key_prefix="reactions_write", limit=MESSAGES_WRITE_LIMIT)
-def add_reaction_view(request: HttpRequest, message_id: int) -> HttpResponse:
-    """Add a reaction to a message.
-
-    POST /api/v1/messages/{id}/reactions
-    Body: { "emoji_name": "thumbs_up", "emoji_code": "1f44d" (optional) }
-    """
-    if request.method != "POST":
-        return JsonResponse(
-            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "POST required"},
-            status=405,
-        )
-
-    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
-
-    try:
-        body = json.loads(request.body) if request.body else {}
-    except (json.JSONDecodeError, ValueError):
-        body = {k: v for k, v in request.POST.items()}
-
-    emoji_name = body.get("emoji_name")
-    if not emoji_name:
-        return JsonResponse(
-            {"result": "error", "code": "MISSING_PARAM", "msg": "emoji_name is required"},
-            status=400,
-        )
-
-    emoji_code = body.get("emoji_code") or None
-    reaction_type = body.get("reaction_type") or None
-
-    try:
-        with transaction.atomic():
-            check_add_reaction(user, message_id, emoji_name, emoji_code, reaction_type)
-    except ReactionExistsError:
-        return JsonResponse(
-            {"result": "error", "code": "REACTION_ALREADY_EXISTS", "msg": "Reaction already exists"},
-            status=400,
-        )
-    except JsonableError as e:
-        return JsonResponse(
-            {"result": "error", "code": "BAD_REQUEST", "msg": str(e)},
-            status=400,
-        )
-
-    return JsonResponse({"result": "success"})
-
-
-@csrf_exempt
-@require_jwt_auth
-@rate_limit(key_prefix="reactions_write", limit=MESSAGES_WRITE_LIMIT)
-def remove_reaction_view(request: HttpRequest, message_id: int) -> HttpResponse:
-    """Remove a reaction from a message.
-
-    POST /api/v1/messages/{id}/reactions/remove
-    Body: { "emoji_name": "thumbs_up", "emoji_code": "1f44d" }
-    """
-    if request.method != "POST":
-        return JsonResponse(
-            {"result": "error", "code": "METHOD_NOT_ALLOWED", "msg": "POST required"},
-            status=405,
-        )
-
-    user: UserProfile = request.user_profile  # type: ignore[attr-defined]
-
-    try:
-        body = json.loads(request.body) if request.body else {}
-    except (json.JSONDecodeError, ValueError):
-        body = {k: v for k, v in request.POST.items()}
-
-    emoji_name = body.get("emoji_name")
-    emoji_code = body.get("emoji_code") or None
-    reaction_type = body.get("reaction_type", "unicode_emoji")
-
-    if not emoji_name and not emoji_code:
-        return JsonResponse(
-            {"result": "error", "code": "MISSING_PARAM", "msg": "emoji_name or emoji_code required"},
-            status=400,
-        )
-
-    try:
-        with transaction.atomic():
-            message = access_message(user, message_id, lock_message=True, is_modifying_message=True)
-            if emoji_code is None:
-                emoji_data = get_emoji_data(message.realm_id, emoji_name)
-                emoji_code = emoji_data.emoji_code
-            if not Reaction.objects.filter(
-                user_profile=user, message=message, emoji_code=emoji_code, reaction_type=reaction_type
-            ).exists():
-                raise ReactionDoesNotExistError
-            do_remove_reaction(user, message, emoji_code, reaction_type)
-    except ReactionDoesNotExistError:
-        return JsonResponse(
-            {"result": "error", "code": "REACTION_DOES_NOT_EXIST", "msg": "Reaction does not exist"},
-            status=400,
-        )
-    except JsonableError as e:
-        return JsonResponse(
-            {"result": "error", "code": "BAD_REQUEST", "msg": str(e)},
-            status=400,
-        )
-
-    return JsonResponse({"result": "success"})
 
 
 @require_jwt_auth

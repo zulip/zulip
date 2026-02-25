@@ -10,7 +10,6 @@ from nodl.api.views.events import (
     update_presence,
 )
 from nodl.api.views.messages import (
-    add_reaction_view,
     delete_message,
     edit_message,
     get_message,
@@ -19,7 +18,6 @@ from nodl.api.views.messages import (
     mark_messages_as_read,
     messages_dispatch,
     mute_dm_user,
-    remove_reaction_view,
     send_message,
     unmute_dm_user,
     update_flags,
@@ -96,9 +94,9 @@ urlpatterns = [
     path("api/v1/messages/<int:message_id>", get_message, name="nodl_get_message"),
     path("api/v1/messages/<int:message_id>/edit", edit_message, name="nodl_edit_message"),
     path("api/v1/messages/<int:message_id>/delete", delete_message, name="nodl_delete_message"),
-    # Reaction endpoints - authenticated via JWT (intercepts before Zulip's native route)
-    path("api/v1/messages/<int:message_id>/reactions/remove", remove_reaction_view, name="nodl_remove_reaction"),
-    path("api/v1/messages/<int:message_id>/reactions", add_reaction_view, name="nodl_add_reaction"),
+    # Reactions: Handled by Zulip's native rest_dispatch (POST/DELETE on same URL).
+    # Zulip's @typed_endpoint handles both JSON and form-encoded bodies.
+    # The SupabaseJWTMiddleware provides dual auth (JWT + Basic Auth) for these.
     # DM REST API endpoints - authenticated via JWT
     path("api/v1/dm/conversations", list_dm_conversations, name="nodl_list_dm_conversations"),
     path("api/v1/dm/<int:user_id>/mute", mute_dm_user, name="nodl_mute_dm_user"),
