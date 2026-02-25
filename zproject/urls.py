@@ -774,14 +774,7 @@ i18n_urls = [
     path("accounts/find/", find_account, name="find_account"),
     # Go to organization subdomain
     path("accounts/go/", realm_redirect, name="realm_redirect"),
-    # Realm creation
-    path("json/antispam_challenge", get_challenge),
-    path("new/", create_realm),
-    path("new/demo/", create_demo_organization),
-    path("new/<confirmation_key>", create_realm, name="create_realm"),
-    # Realm reactivation
-    path("reactivate/", realm_reactivation, name="realm_reactivation"),
-    path("reactivate/<confirmation_key>", realm_reactivation_get, name="realm_reactivation_get"),
+    *i18n_realm_creation_urls,
     # Login/registration
     path("register/", accounts_home, name="register"),
     *i18n_login_urls,
@@ -792,32 +785,7 @@ i18n_urls = [
     path("calls/zoom/deauthorize", deauthorize_zoom_user),
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
-    # Integrations documentation
-    path(
-        "integrations/",
-        integrations_catalog,
-        {"category_slug": "all"},
-        name="integrations_home",
-    ),
-    path(
-        "integrations/category/<str:category_slug>",
-        integrations_catalog,
-        name="integrations_category",
-    ),
-    *INTEGRATION_CATEGORY_REDIRECT_PATHS,
-    path(
-        "integrations/doc/<str:integration_name>",
-        RedirectView.as_view(pattern_name="integration_doc", permanent=True, query_string=True),
-    ),
-    path(
-        "integrations/doc/<str:integration_name>/",
-        RedirectView.as_view(pattern_name="integration_doc", permanent=True, query_string=True),
-    ),
-    path(
-        "integrations/<str:integration_name>",
-        integrations_doc,
-        name="integration_doc",
-    ),
+    *i18n_integrations_documentation_urls,
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -1079,6 +1047,9 @@ urls += v1_api_mobile_urls
 # Healthcheck URL
 healthcheck_urls = [path("health", health)]
 urls += healthcheck_urls
+
+realm_host_i18n_urls = i18n_urls
+realm_host_urls = urls
 
 # The sequence is important; if i18n URLs don't come first then
 # reverse URL mapping points to i18n URLs which causes the frontend
