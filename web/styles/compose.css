@@ -1238,9 +1238,12 @@ textarea.new_message_textarea {
        for clicking into its open state. */
     cursor: pointer;
     display: none;
+    /* Maintain righthand space to match open compose. */
+    padding-right: 7px;
 }
 
 #skinned-recipient-row {
+    grid-area: skinned-recipient-row;
     padding-top: 0.25em; /* 4px at 16px/1em, eyeballed for better centering. */
     display: grid;
     /* The fit-content() syntax here is really slick, and probably
@@ -1319,9 +1322,11 @@ textarea.new_message_textarea {
 }
 
 #skinned-messagebox {
-    height: calc(
-        var(--base-line-height-unitless) * var(--base-font-size-px) * 1.25
-    );
+    grid-area: skinned-messagebox;
+    box-sizing: border-box;
+    /* Match the skinned messagebox height to the height
+       of the Send button. */
+    height: var(--compose-formatting-buttons-row-height);
     padding: 5px;
     border-radius: 4px;
     border: 1px solid var(--color-skinned-compose-messagebox-border);
@@ -1332,6 +1337,31 @@ textarea.new_message_textarea {
     transition: var(--compose-recipient-row-transition);
     transition-delay: var(--compose-recipient-row-transition-delay);
     transition-property: border-color;
+}
+
+#skinned-send-area {
+    grid-area: skinned-send-area;
+    display: flex;
+    /* Maintain lefthand space to match open compose,
+       which establishes this value on
+       #message-send-controls-container. */
+    margin-left: 6px;
+
+    @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+        margin-left: 0;
+    }
+}
+
+#skinned-send-button {
+    flex: 0 0 auto !important;
+    align-self: end;
+    border-radius: 4px;
+    border: 0;
+    margin-bottom: 0;
+    color: var(--color-compose-send-button-icon-color);
+    background-color: var(--color-compose-send-button-background);
+    /* Always display as if disabled */
+    opacity: 0.5;
 }
 
 .composing-to-conversation-narrow #compose-content:hover {
@@ -1346,7 +1376,15 @@ textarea.new_message_textarea {
     }
 
     #skinned-closed-compose-box {
-        display: block;
+        display: grid;
+        /* This roughly approximates the grid on .messagebox */
+        grid-template: auto auto / minmax(0, 1fr) var(
+                --compose-send-controls-width
+            );
+        grid-template-areas:
+            "skinned-recipient-row .                "
+            "skinned-messagebox    skinned-send-area";
+        gap: 0 4px;
     }
 }
 
@@ -1522,6 +1560,7 @@ textarea.new_message_textarea {
     }
 }
 
+#skinned-send-button,
 #compose-send-button {
     width: 74px;
     height: var(--compose-formatting-buttons-row-height);
@@ -1553,6 +1592,7 @@ textarea.new_message_textarea {
 }
 
 @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+    #skinned-send-button,
     #compose-send-button {
         /* Drop to a square button,
         and don't flex any wider. */
