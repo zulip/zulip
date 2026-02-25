@@ -15,7 +15,9 @@ from zerver.decorator import (
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
     process_as_post,
+    process_client,
     public_json_view,
+    validate_account_and_subdomain,
 )
 from zerver.lib.exceptions import MissingAuthenticationError, UnauthorizedError
 from zerver.lib.request import RequestNotes
@@ -204,6 +206,27 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
         if "override_api_url_scheme" in view_flags:
             auth_kwargs["skip_rate_limiting"] = True
         target_function = csrf_protect(authenticated_json_view(target_function, **auth_kwargs))
+
+    # NODL: JWT-authenticated by SupabaseJWTMiddleware — skip Zulip's Basic Auth.
+    # The middleware validated the JWT and set request.user_profile + request.supabase_user_id.
+    # We inject user_profile as the second positional arg, matching authenticated_rest_api_view.
+    elif (
+        request.path.startswith("/api")
+        and "Authorization" in request.headers
+        and hasattr(request, "supabase_user_id")
+    ):
+        _orig_fn = target_function
+
+        @csrf_exempt
+        @wraps(_orig_fn)
+        def _jwt_wrapper(req: HttpRequest, /, *a: object, **kw: object) -> HttpResponse:
+            if not hasattr(req, "user_profile"):
+                raise UnauthorizedError
+            validate_account_and_subdomain(req, req.user_profile)
+            process_client(req, req.user_profile)
+            return _orig_fn(req, req.user_profile, *a, **kw)
+
+        target_function = _jwt_wrapper
 
     # most clients (mobile, bots, etc) use HTTP basic auth and REST calls, where instead of
     # username:password, we use email:apiKey

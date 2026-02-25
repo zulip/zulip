@@ -95,8 +95,8 @@ urlpatterns = [
     path("api/v1/messages/<int:message_id>/edit", edit_message, name="nodl_edit_message"),
     path("api/v1/messages/<int:message_id>/delete", delete_message, name="nodl_delete_message"),
     # Reactions: Handled by Zulip's native rest_dispatch (POST/DELETE on same URL).
-    # Zulip's @typed_endpoint handles both JSON and form-encoded bodies.
-    # The SupabaseJWTMiddleware provides dual auth (JWT + Basic Auth) for these.
+    # JWT auth supported via the _jwt_wrapper branch in rest_dispatch (zerver/lib/rest.py).
+    # Frontend sends emoji params as query params (request.GET), not JSON body.
     # DM REST API endpoints - authenticated via JWT
     path("api/v1/dm/conversations", list_dm_conversations, name="nodl_list_dm_conversations"),
     path("api/v1/dm/<int:user_id>/mute", mute_dm_user, name="nodl_mute_dm_user"),
