@@ -91,8 +91,8 @@ class zulip::common {
     'wal-g' => {
       'version' => '3.0.8',
       'sha256'  => {
-        'amd64'   => 'f30544c5ce93cf83b87578e3c4a2e9c0e0ffc3d160ef89ecddaf75f397d98deb',  # The ubuntu-22.04 version
-        'aarch64' => '794d1a81f0c27825a1603bd39c0f2cf5dd8bed7cc36b598ca05d8d963c3d5fcf',  # The ubuntu-22.04 version
+        'amd64'   => 'b0df1b484035eb5f131db7bbd303d1a460391848fdcce34ba1e0a564cca493e9',  # wal-g-pg-22.04-amd64.tar.gz
+        'aarch64' => '048b5033c34c1487dc1fccc0572db030e323230984ccc093e80e4e4081c797d1',  # wal-g-pg-22.04-aarch64.tar.gz
       },
     },
 
