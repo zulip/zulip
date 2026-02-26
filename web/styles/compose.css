@@ -1332,6 +1332,9 @@ textarea.new_message_textarea {
     border: 1px solid var(--color-skinned-compose-messagebox-border);
     background: var(--color-compose-message-content-background);
     color: var(--color-text-placeholder);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     /* TODO: More sensible variable names here. */
     transition: var(--compose-recipient-row-transition);

@@ -355,6 +355,7 @@ export function update_skinned_or_closed_compose_recipient_display(
     // we don't have a stream/topic or DM recipients.
     if ($("#compose").hasClass("composing-to-conversation-narrow") && user_can_post) {
         update_recipient_row_on_skinned_compose(recipient_information);
+        compose_actions.update_skinned_compose_box_draft_preview();
     } else {
         // If a user cannot post, then we want to fall back to displaying
         // the legacy closed compose box
