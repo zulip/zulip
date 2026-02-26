@@ -424,4 +424,28 @@ def do_update_message_flags(
                 increment=min(1, count),
             )
 
+            # NODL: Notify DM message senders for real-time read receipts.
+            # Only for 1:1 and group DMs (not streams) to limit event volume.
+            dm_sender_ids = set(
+                Message.objects.filter(
+                    id__in=messages,
+                    recipient__type__in=[
+                        Recipient.PERSONAL,
+                        Recipient.DIRECT_MESSAGE_GROUP,
+                    ],
+                )
+                .exclude(sender_id=user_profile.id)
+                .values_list("sender_id", flat=True)
+            )
+            if dm_sender_ids:
+                read_receipt_event = {
+                    "type": "read_receipt",
+                    "op": "add",
+                    "reader_id": user_profile.id,
+                    "message_ids": messages,
+                }
+                send_event_on_commit(
+                    user_profile.realm, read_receipt_event, list(dm_sender_ids)
+                )
+
     return (count, ignored_because_not_subscribed_channels)
