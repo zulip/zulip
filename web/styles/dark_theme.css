@@ -125,6 +125,11 @@
         filter: invert(1);
     }
 
+    #recent-view-content-table {
+        border-width: 0.1875em; /* 3px at 16px/1em */
+        border-bottom-width: 1px;
+    }
+
     .drafts-container .header-body .delete-drafts-group > *:focus {
         background-color: hsl(228deg 11% 17%);
     }
