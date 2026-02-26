@@ -3286,6 +3286,164 @@ class RealmAPITest(ZulipTestCase):
         realm.refresh_from_db()
         self.assertEqual(realm.workplace_users_group_id, hamletcharacters_group.id)
 
+    def test_changing_can_manage_all_groups(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        self.login("desdemona")
+
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm
+        )
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm
+        )
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm
+        )
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm_for_sharding=realm
+        )
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
+
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", moderators_group, acting_user=None
+        )
+
+        # Since workplace_users_group is set to a system group, can_manage_all_groups
+        # can be set to any value.
+        params = {"can_manage_all_groups": orjson.dumps({"new": moderators_group.id}).decode()}
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(realm.can_manage_all_groups_id, moderators_group.id)
+
+        params = {
+            "can_manage_all_groups": orjson.dumps(
+                {
+                    "new": {
+                        "direct_subgroups": [hamletcharacters_group.id],
+                        "direct_members": [othello.id],
+                    }
+                }
+            ).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(list(realm.can_manage_all_groups.direct_members.all()), [othello])
+        self.assertEqual(
+            list(realm.can_manage_all_groups.direct_subgroups.all()), [hamletcharacters_group]
+        )
+
+        # Since workplace_users_group is set to an anonymous group without any
+        # user defined subgroups, can_manage_all_groups can be set to any value.
+        anonymous_group = self.create_or_update_anonymous_group_for_setting(
+            [self.example_user("polonius")], [members_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", anonymous_group, acting_user=None
+        )
+
+        params = {
+            "can_manage_all_groups": orjson.dumps({"new": hamletcharacters_group.id}).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(realm.can_manage_all_groups_id, hamletcharacters_group.id)
+
+        params = {
+            "can_manage_all_groups": orjson.dumps(
+                {"new": {"direct_subgroups": [admins_group.id], "direct_members": [hamlet.id]}}
+            ).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(list(realm.can_manage_all_groups.direct_members.all()), [hamlet])
+        self.assertEqual(list(realm.can_manage_all_groups.direct_subgroups.all()), [admins_group])
+
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", owners_group, acting_user=None
+        )
+
+        # Since workplace_users_group is set to a user defined group, can_manage_all_groups can
+        # only be set to nobody, owners, or administrators system group.
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", hamletcharacters_group, acting_user=None
+        )
+
+        params = {"can_manage_all_groups": orjson.dumps({"new": moderators_group.id}).decode()}
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "'can_manage_all_groups' must be restricted to organization administrators when 'workplace_users_group' includes user-defined groups.",
+        )
+
+        params = {
+            "can_manage_all_groups": orjson.dumps(
+                {"new": {"direct_subgroups": [admins_group.id], "direct_members": [hamlet.id]}}
+            ).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "'can_manage_all_groups' must be restricted to organization administrators when 'workplace_users_group' includes user-defined groups.",
+        )
+
+        params = {"can_manage_all_groups": orjson.dumps({"new": admins_group.id}).decode()}
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(realm.can_manage_all_groups_id, admins_group.id)
+
+        # Since workplace_users_group is set to an anonymous group with a user
+        # defined group as subgroup, can_manage_all_groups can only be set to
+        # nobody, owners, or administrators system group.
+        anonymous_group = self.create_or_update_anonymous_group_for_setting(
+            [], [hamletcharacters_group, admins_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", anonymous_group, acting_user=None
+        )
+
+        params = {
+            "can_manage_all_groups": orjson.dumps({"new": hamletcharacters_group.id}).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "'can_manage_all_groups' must be restricted to organization administrators when 'workplace_users_group' includes user-defined groups.",
+        )
+
+        params = {
+            "can_manage_all_groups": orjson.dumps(
+                {
+                    "new": {
+                        "direct_subgroups": [admins_group.id, moderators_group.id],
+                        "direct_members": [],
+                    }
+                }
+            ).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "'can_manage_all_groups' must be restricted to organization administrators when 'workplace_users_group' includes user-defined groups.",
+        )
+
+        params = {"can_manage_all_groups": orjson.dumps({"new": owners_group.id}).decode()}
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(realm.can_manage_all_groups_id, owners_group.id)
+
 
 class ScrubRealmTest(ZulipTestCase):
     def test_do_delete_all_realm_attachments(self) -> None:

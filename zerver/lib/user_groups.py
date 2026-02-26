@@ -1370,3 +1370,40 @@ def validate_group_membership_management_setting(
                 "'{setting_name}' must be restricted to organization administrators for groups used in 'workplace_users_group'."
             ).format(setting_name=setting_name)
         )
+
+
+def validate_can_manage_all_groups(
+    can_manage_all_groups: int | UserGroupMembersData, realm: Realm
+) -> None:
+    system_groups_name_dict = get_role_based_system_groups_dict(realm)
+    system_groups_with_admin_only_permissions = {
+        system_groups_name_dict[SystemGroups.NOBODY].id,
+        system_groups_name_dict[SystemGroups.OWNERS].id,
+        system_groups_name_dict[SystemGroups.ADMINISTRATORS].id,
+    }
+
+    # If setting is being set to one of the nobody, owners or admins
+    # system groups then we do not check further. Otherwise, we check
+    # if any non-system group is being used for workplace_users_group.
+    if (
+        isinstance(can_manage_all_groups, int)
+        and can_manage_all_groups in system_groups_with_admin_only_permissions
+    ):
+        return
+
+    workplace_users_group = realm.workplace_users_group
+    error_message = _(
+        "'can_manage_all_groups' must be restricted to organization administrators when 'workplace_users_group' includes user-defined groups."
+    )
+    if hasattr(workplace_users_group, "named_user_group"):
+        if realm.workplace_users_group.named_user_group.is_system_group:
+            return
+
+        raise JsonableError(error_message)
+
+    # Since we cannot update subgroups of a system group, it is enough to check
+    # if any non-system group is a direct subgroup of workplace_users_group.
+    subgroups_of_workplace_users_group = workplace_users_group.direct_subgroups.all()
+    for subgroup in subgroups_of_workplace_users_group:
+        if not subgroup.is_system_group:
+            raise JsonableError(error_message)
