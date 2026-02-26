@@ -1158,11 +1158,11 @@
     );
     --color-recent-view-link-unread: light-dark(
         hsl(0deg 0% 5%),
-        hsl(0deg 0% 100% / 90%)
+        hsl(0deg 0% 100% / 83%)
     );
     --color-recent-view-link: light-dark(
-        hsl(0deg 0% 15%),
-        hsl(0deg 0% 100% / 65%)
+        hsl(0deg 0% 20%),
+        hsl(0deg 0% 100% / 75%)
     );
     --color-background-recent-filters-button-focus: light-dark(
         hsl(0deg 0% 80%),
