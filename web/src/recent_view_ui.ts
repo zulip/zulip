@@ -1262,6 +1262,42 @@ function sort_comparator(a: string, b: string): number {
     return -1;
 }
 
+function channel_sort(a: Row, b: Row): number {
+    if (a.type === b.type) {
+        const a_msg = message_store.get(a.last_msg_id);
+        assert(a_msg !== undefined);
+        const b_msg = message_store.get(b.last_msg_id);
+        assert(b_msg !== undefined);
+
+        if (a_msg.type === "stream") {
+            assert(b_msg.type === "stream");
+            const channel_cmp = sort_comparator(
+                stream_data.get_stream_name_from_id(a_msg.stream_id),
+                stream_data.get_stream_name_from_id(b_msg.stream_id),
+            );
+            if (channel_cmp !== 0) {
+                return channel_cmp;
+            }
+        } else {
+            assert(a_msg.type === "private");
+            assert(b_msg.type === "private");
+            const dm_cmp = sort_comparator(a_msg.display_reply_to, b_msg.display_reply_to);
+            if (dm_cmp !== 0) {
+                return dm_cmp;
+            }
+        }
+        // Secondary sort: always most recent first, regardless of channel
+        // sort direction. list_widget negates the entire return value when
+        // in reverse mode, so we compensate here so that recency always
+        // sorts most-recent-first within a channel.
+        const is_descend = $(".recent-view-channel-sort-header").hasClass("descend");
+        const recency = b.last_msg_id - a.last_msg_id;
+        return is_descend ? -recency : recency;
+    }
+    // if type is not same sort between "private" and "stream"
+    return sort_comparator(a.type, b.type);
+}
+
 function conversation_sort(a: Row, b: Row): number {
     if (a.type === b.type) {
         const a_msg = message_store.get(a.last_msg_id);
@@ -1481,6 +1517,7 @@ export function complete_rerender(coming_from_other_views = false): void {
             },
         },
         sort_fields: {
+            channel_sort,
             conversation_sort,
             unread_sort,
             ...list_widget.generic_sort_functions("numeric", ["last_msg_id"]),
