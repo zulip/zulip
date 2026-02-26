@@ -331,7 +331,6 @@ function format_user_group_list_item_html(group: UserGroup, user: User): string 
     return render_user_group_list_item({
         group_id: group.id,
         name: user_groups.get_display_group_name(group.name),
-        group_edit_url: hash_util.group_edit_url(group, "general"),
         is_guest: current_user.is_guest,
         is_direct_member,
         subgroups_name: subgroups_name.join(", "),
@@ -1672,14 +1671,6 @@ export function initialize(): void {
         hide_user_profile();
         browser_history.go_to_location("#settings/profile");
     });
-
-    $("body").on(
-        "click",
-        "#user-profile-modal .user-profile-channel-row, .user-profile-group-row",
-        () => {
-            hide_user_profile();
-        },
-    );
 
     bot_helper.initialize_bot_click_handlers();
 
