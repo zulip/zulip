@@ -493,6 +493,9 @@
         /* Override to match td.recent_topic_name's 10px padding-left,
            converting to 15px/1em units used by thead th. */
         padding-left: 0.6667em; /* 10px at 15px/1em */
+        /* th no longer has data-sort; the individual sort spans handle
+           cursor and hover. */
+        cursor: default;
 
         .recent-view-header-wrapper {
             /* Match the row grid so "Channel" and "Conversation" sort
@@ -508,6 +511,38 @@
                 )
                 auto 1fr;
             align-items: center;
+        }
+
+        .recent-view-channel-sort-header,
+        .recent-view-conversation-sort-header {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            /* Negative margin compensates the padding so the pill hover
+               highlight doesn't push adjacent elements out of alignment. */
+            padding: 0.133em 0.267em; /* 2px 4px at 15px/1em */
+            margin: -0.133em -0.267em;
+            border-radius: 3px;
+            transition: background-color 100ms ease-in-out;
+
+            &:hover {
+                background-color: var(
+                    --color-background-recent-view-table-thead-sort-header
+                );
+
+                .table-sortable-arrow {
+                    opacity: 0.7;
+                }
+            }
+
+            &.active .table-sortable-arrow {
+                opacity: 1;
+            }
+
+            &.descend .table-sortable-arrow {
+                transform: rotate(0deg);
+            }
         }
     }
 

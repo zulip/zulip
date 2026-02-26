@@ -498,7 +498,7 @@ export function create<Key, Item = Key>(
                     "click.list_widget_sort",
                     "[data-sort]",
                     function (this: HTMLElement) {
-                        handle_sort($(this), widget);
+                        handle_sort($(this), widget, opts.$parent_container);
                     },
                 );
             }
@@ -659,7 +659,11 @@ export function create<Key, Item = Key>(
     return widget;
 }
 
-export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>): void {
+export function handle_sort<Key, Item>(
+    $th: JQuery,
+    list: ListWidget<Key, Item>,
+    $parent_container?: JQuery,
+): void {
     /*
         one would specify sort parameters like this:
             - name => sort alphabetic.
@@ -686,7 +690,13 @@ export function handle_sort<Key, Item>($th: JQuery, list: ListWidget<Key, Item>)
             $th.removeClass("descend");
         }
     } else {
-        $th.siblings(".active").removeClass("active");
+        if ($parent_container) {
+            // Remove `active` class for other elements with `[data-sort]`.
+            // This helps support HTML structures where the sorting `<th>` elements are not siblings.
+            $parent_container.find("[data-sort].active").not($th).removeClass("active");
+        } else {
+            $th.siblings(".active").removeClass("active");
+        }
         $th.addClass("active");
     }
 
