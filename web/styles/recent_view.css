@@ -485,7 +485,29 @@
             font-size: 1em; /* 15px at 15px/1em */
             align-self: center;
             color: hsl(0deg 0% 60%);
-            padding: 0 0.33em; /* 5px at 15px/1em */
+            padding: 0 0.125em; /* 2px at 16px/1em */
+        }
+    }
+
+    .recent-view-topic-header {
+        /* Override to match td.recent_topic_name's 10px padding-left,
+           converting to 15px/1em units used by thead th. */
+        padding-left: 0.6667em; /* 10px at 15px/1em */
+
+        .recent-view-header-wrapper {
+            /* Match the row grid so "Channel" and "Conversation" sort
+               spans align with channel and topic text in rows. Sort
+               arrows are inside the spans, so 3 columns suffice. */
+            display: grid;
+            grid-template-columns:
+                min(
+                    calc(
+                        var(--longest-subscribed-channel-name-width) + 1em + 8px
+                    ),
+                    33.3%
+                )
+                auto 1fr;
+            align-items: center;
         }
     }
 
