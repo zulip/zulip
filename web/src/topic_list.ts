@@ -473,20 +473,27 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
         const topic_header_height =
             $("#streams_list.zoom-in #topics_header").outerHeight(true) ?? 0;
         sticky_header_height += stream_header_height + topic_header_height;
+    } else {
+        const channel_folder_header_height =
+            $selected_topic
+                .closest(".stream-list-section-container")
+                .find(".stream-list-subsection-header")
+                .outerHeight(true) ?? 0;
+        sticky_header_height += channel_folder_header_height;
     }
-    const channel_folder_header_height =
-        $selected_topic
-            .closest(".stream-list-section-container")
-            .find(".stream-list-subsection-header")
-            .outerHeight(true) ?? 0;
-    sticky_header_height += channel_folder_header_height;
-    const $topic_list = $selected_topic.closest(".topic-list");
-    const topic_list_height = $topic_list.outerHeight(true) ?? 0;
+    const direct_message_header_height =
+        $("#direct-messages-section-header").outerHeight(true) ?? 0;
+    const direct_message_divider_height =
+        $(".direct-message-section-bottom-divider-container").outerHeight(true) ?? 0;
+    sticky_header_height += direct_message_header_height + direct_message_divider_height;
+
+    const $channel_section = $selected_topic.closest(".stream-expanded");
+    const channel_section_height = $channel_section.outerHeight(true) ?? 0;
     const available_topic_height = ($container.height() ?? 0) - sticky_header_height;
 
     let $scroll_target = $selected_topic;
-    if (topic_list_height <= available_topic_height) {
-        $scroll_target = $topic_list;
+    if (channel_section_height <= available_topic_height) {
+        $scroll_target = $channel_section;
     }
     scroll_util.scroll_element_into_container($scroll_target, $container, sticky_header_height);
 }
