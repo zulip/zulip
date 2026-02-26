@@ -1,6 +1,6 @@
 <li class="group-list-item" role="presentation" data-group-id="{{group_id}}">
-    <a class="modal-group-list-row hidden-remove-button-row" href="{{group_edit_url}}">
-        <span class="modal-group-list-row-content">
+    <div class="modal-group-list-row hidden-remove-button-row">
+        <span class="view_user_group modal-group-list-row-content" data-user-group-id="{{group_id}}" tabindex="0">
             <span class="user-group-name">
                 {{name}}
             </span>
@@ -16,5 +16,5 @@
                 {{/if}}
             </div>
         {{/if}}
-    </a>
+    </div>
 </li>
