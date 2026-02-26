@@ -519,13 +519,12 @@
     .modal-channel-list-row {
         display: flex;
         justify-content: space-between;
-        padding: 0.3125em 0.625em;
+        padding: 0 0.625em;
         align-items: center;
         text-decoration: none;
         border-bottom: none;
         border-radius: 4px;
         color: var(--color-dropdown-item);
-        cursor: pointer;
 
         .modal-group-list-row-content,
         .modal-channel-list-row-content {
@@ -538,17 +537,11 @@
             align-items: center;
         }
 
-        .filter-icon i {
-            padding-right: 3px;
-        }
-
-        &:hover {
-            background-color: var(--color-user-profile-list-item-hover);
-        }
-
-        &:focus-visible {
-            outline: 1px solid var(--color-outline-user-profile-list-item);
-            outline-offset: -2px;
+        /* Reset pill styling so stream names look like plain text,
+           while still matching the .pill[data-stream-id] selector
+           for the stream card popover. */
+        .pill {
+            all: unset;
         }
 
         .user-group-name,
@@ -556,7 +549,16 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding-right: 2px;
+            border-radius: 4px;
+            /* Vertical padding replaces the row-level padding so
+               the clickable area covers the full row height. */
+            padding: 0.3125em 3px;
+            cursor: pointer;
+
+            &:focus-visible {
+                outline: 1px solid var(--color-user-profile-list-item-hover);
+                outline-offset: -2px;
+            }
         }
     }
 

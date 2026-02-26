@@ -309,7 +309,6 @@ function format_user_stream_list_item_html(stream: StreamSubscription, user: Use
         show_unsubscribe_button,
         show_private_stream_unsub_tooltip,
         show_last_user_in_private_stream_unsub_tooltip,
-        stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
     });
 }
 
@@ -332,7 +331,6 @@ function format_user_group_list_item_html(group: UserGroup, user: User): string 
     return render_user_group_list_item({
         group_id: group.id,
         name: user_groups.get_display_group_name(group.name),
-        group_edit_url: hash_util.group_edit_url(group, "general"),
         is_guest: current_user.is_guest,
         is_direct_member,
         subgroups_name: subgroups_name.join(", "),
@@ -1673,6 +1671,19 @@ export function initialize(): void {
         hide_user_profile();
         browser_history.go_to_location("#settings/profile");
     });
+
+    $("body").on(
+        "keydown",
+        ".user-stream-list .pill, .user-group-list .view_user_group",
+        function (this: HTMLElement, e) {
+            if (e.key !== "Enter") {
+                return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).trigger("click");
+        },
+    );
 
     bot_helper.initialize_bot_click_handlers();
 
