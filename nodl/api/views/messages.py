@@ -657,6 +657,10 @@ def send_message(request: HttpRequest) -> HttpResponse:
         read_by_sender = body.pop("read_by_sender", None)
         if isinstance(read_by_sender, str):
             read_by_sender = read_by_sender.lower() in ("true", "1")
+        # Zulip API compat: mobile sends 'to' as stream_id (int) for stream messages
+        msg_type = body.get("type", "stream")
+        if msg_type == "stream" and "to" in body and isinstance(body["to"], int):
+            body.setdefault("stream_id", body.pop("to"))
         payload = MessageCreatePayload(**body)
     except ValidationError as e:
         return JsonResponse(
