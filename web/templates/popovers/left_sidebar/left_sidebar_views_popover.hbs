@@ -29,5 +29,16 @@
             </a>
         </li>
         {{/unless}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="popover-menu-link toggle_auto_collapse_views" tabindex="0">
+                {{#if auto_collapse_views}}
+                <i class="popover-menu-icon zulip-icon zulip-icon-expand" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Always keep views section expanded" }}</span>
+                {{else}}
+                <i class="popover-menu-icon zulip-icon zulip-icon-collapse" aria-hidden="true"></i>
+                <span class="popover-menu-label">{{t "Collapse views section when scrolled down" }}</span>
+                {{/if}}
+            </a>
+        </li>
     </ul>
 </div>
