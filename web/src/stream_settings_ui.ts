@@ -1191,8 +1191,8 @@ export function change_state(
     folder_id?: number,
 ): void {
     assert(toggler !== undefined);
-    // if in #channels/new form.
-    if (section === "new") {
+    // "new" is a right panel state for creating a new channel.
+    if (right_side_tab === "new" || section === "new") {
         do_open_create_stream(folder_id);
         show_right_section();
         return;
