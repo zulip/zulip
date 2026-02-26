@@ -16,7 +16,6 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, DropdownWidgetOptions} from "./dropdown_widget.ts";
-import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
@@ -200,7 +199,6 @@ function format_channel_item_html(stream: StreamSubscription): string {
         stream_color: stream.color,
         invite_only: stream.invite_only,
         is_web_public: stream.is_web_public,
-        stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
         can_manage_folder: settings_data.can_user_manage_folder(),
     });
 }
@@ -494,5 +492,16 @@ export function handle_editing_channel_folder(folder_id: number): void {
                 render_add_channel_folder_widget();
             }
         },
+    });
+}
+
+export function initialize(): void {
+    $("body").on("keydown", ".folder-stream-list .pill", function (this: HTMLElement, e) {
+        if (e.key !== "Enter") {
+            return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).trigger("click");
     });
 }

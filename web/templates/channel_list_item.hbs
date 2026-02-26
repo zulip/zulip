@@ -1,6 +1,6 @@
 <li class="stream-list-item" role="presentation" data-stream-id="{{stream_id}}">
-    <a class="modal-channel-list-row hidden-remove-button-row" href="{{stream_edit_url}}">
-        <span class="modal-channel-list-row-content">
+    <div class="modal-channel-list-row hidden-remove-button-row">
+        <span class="pill modal-channel-list-row-content" data-stream-id="{{stream_id}}" tabindex="0">
             <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
                 {{> stream_privacy . }}
             </span>
@@ -20,5 +20,5 @@
                 {{> components/icon_button  icon="close" custom_classes="hidden-remove-button remove-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Remove channel") data-tippy-content=(t "Remove channel") }}
             {{/if}}
         </div>
-    </a>
+    </div>
 </li>
