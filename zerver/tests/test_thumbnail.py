@@ -1004,3 +1004,59 @@ class TestThumbnailRetrieval(ZulipTestCase):
             ),
             "100x75.webp",
         )
+
+
+class ThumbnailStatusEndpointTest(ZulipTestCase):
+    def test_thumbnail_status_with_ready_thumbnails(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        with self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=True)):
+            with self.captureOnCommitCallbacks(execute=True):
+                with get_test_image_file("animated_unequal_img.gif") as image_file:
+                    json_response = self.assert_json_success(
+                        self.client_post("/json/user_uploads", {"file": image_file})
+                    )
+                path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+
+            result = self.client_get(f"/json/thumbnail/status/{path_id}")
+            self.assert_json_success(result)
+            self.assertEqual(result.json()["has_thumbnail"], True)
+
+    def test_thumbnail_status_without_ready_thumbnails(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        with self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=True)):
+            # Don't execute callbacks, so thumbnails aren't generated
+            with get_test_image_file("animated_unequal_img.gif") as image_file:
+                json_response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": image_file})
+                )
+            path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+
+        result = self.client_get(f"/json/thumbnail/status/{path_id}")
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["has_thumbnail"], False)
+
+    def test_thumbnail_status_for_non_image_file(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        fp = StringIO("zulip text file!")
+        fp.name = "zulip.txt"
+
+        json_response = self.assert_json_success(
+            self.client_post("/json/user_uploads", {"file": fp})
+        )
+        path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+
+        result = self.client_get(f"/json/thumbnail/status/{path_id}")
+        self.assert_json_error(result, "Invalid attachment")
+
+    def test_thumbnail_status_nonexistent_file(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        result = self.client_get("/json/thumbnail/status/2/nonexistent/fake.gif")
+        self.assert_json_error(result, "Invalid attachment")
