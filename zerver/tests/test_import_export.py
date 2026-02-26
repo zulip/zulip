@@ -1676,6 +1676,16 @@ class RealmImportExportTest(ExportFile):
         new_realm_emoji.author = hamlet
         new_realm_emoji.save()
 
+        RealmExport.objects.create(
+            realm=original_realm,
+            type=RealmExport.EXPORT_PUBLIC,
+            status=RealmExport.SUCCEEDED,
+            date_requested=timezone_now(),
+            date_succeeded=timezone_now(),
+            acting_user=hamlet,
+            export_path="/some/server/path/export.tar.gz",
+        )
+
         RealmAuditLog.objects.create(
             realm=original_realm,
             event_type=AuditLogEventType.REALM_EXPORTED,
@@ -1926,6 +1936,13 @@ class RealmImportExportTest(ExportFile):
 
         imported_prospero_user = get_user_by_delivery_email(prospero_email, imported_realm)
         self.assertIsNotNone(imported_prospero_user.recipient)
+
+        # Ensure RealmExport.export_path is excluded from the export and thus None after importing.
+        exported_realm_exports = read_json("realm.json")["zerver_realmexport"]
+        self.assert_length(exported_realm_exports, 1)
+        self.assertNotIn("export_path", exported_realm_exports[0])
+        imported_realm_export = RealmExport.objects.get(realm=imported_realm)
+        self.assertIsNone(imported_realm_export.export_path)
 
     def test_import_message_edit_history(self) -> None:
         realm = get_realm("zulip")
@@ -2328,6 +2345,13 @@ class RealmImportExportTest(ExportFile):
             return {
                 (rec.user.delivery_email, rec.external_auth_method_name, rec.external_auth_id)
                 for rec in ExternalAuthID.objects.filter(realm=r)
+            }
+
+        @getter
+        def get_realm_exports(r: Realm) -> set[tuple[datetime, int, int]]:
+            return {
+                (rec.date_requested, rec.type, rec.status)
+                for rec in RealmExport.objects.filter(realm=r)
             }
 
         return getters

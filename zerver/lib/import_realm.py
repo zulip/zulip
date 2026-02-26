@@ -92,6 +92,7 @@ from zerver.models import (
     RealmAuthenticationMethod,
     RealmDomain,
     RealmEmoji,
+    RealmExport,
     RealmFilter,
     RealmPlayground,
     RealmUserDefault,
@@ -189,6 +190,7 @@ ID_MAP: dict[str, dict[int, int]] = {
     "navigationview": {},
     "submessage": {},
     "externalauthid": {},
+    "realmexport": {},
 }
 
 id_map_to_list: dict[str, dict[int, list[int]]] = {
@@ -1905,6 +1907,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         re_map_foreign_keys(data, "zerver_externalauthid", "realm", related_table="realm")
         update_model_ids(ExternalAuthID, data, "externalauthid")
         bulk_import_model(data, ExternalAuthID)
+
+    if "zerver_realmexport" in data:
+        fix_datetime_fields(data, "zerver_realmexport")
+        re_map_foreign_keys(data, "zerver_realmexport", "acting_user", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_realmexport", "realm", related_table="realm")
+        update_model_ids(RealmExport, data, "realmexport")
+        bulk_import_model(data, RealmExport)
 
     # Do attachments AFTER message data is loaded.
     logging.info("Importing attachment data from %s", attachments_file)

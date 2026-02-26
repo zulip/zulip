@@ -961,6 +961,7 @@ def get_realm_config() -> Config:
         model=RealmExport,
         normal_parent=realm_config,
         include_rows="realm_id__in",
+        exclude=["export_path"],
     )
 
     Config(
