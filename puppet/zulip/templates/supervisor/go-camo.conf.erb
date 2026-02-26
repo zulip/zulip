@@ -6,4 +6,9 @@ autostart=true
 autorestart=true
 user=zulip
 redirect_stderr=true
+<% if @supervisor_output == 'syslog' -%>
+stdout_syslog=true
+stdout_logfile=NONE
+<% else -%>
 stdout_logfile=/var/log/zulip/camo.log
+<% end -%>

@@ -219,6 +219,23 @@ with more than 24GB of RAM.
 Number of days of access logs to keep, for both nginx and the application.
 Defaults to 14 days.
 
+#### `supervisor_output`
+
+Controls where supervisor-managed Zulip processes send their output.
+Defaults to `file`, which writes logs to `/var/log/zulip/`.
+
+Set to `syslog` to redirect all supervisor-managed process output
+to syslog via supervisor's `stdout_syslog` directive. This is useful
+for deployments that forward logs to a centralized logging server
+via rsyslog or similar.
+
+:::{note}
+This only affects supervisor-managed output (process stdout/stderr).
+Application-level logs written by Django's logging framework
+(e.g., `errors.log`, `server.log`) are not affected by this
+setting and will continue to be written to `/var/log/zulip/`.
+:::
+
 #### `katex_server`
 
 Set to a false value to disable the separate service for [rendering math with
