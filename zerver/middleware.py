@@ -43,7 +43,7 @@ from zerver.lib.response import (
     json_unauthorized,
 )
 from zerver.lib.server_initialization import server_initialized
-from zerver.lib.subdomains import get_subdomain, is_canonical_realm_host, is_reserved_subdomain
+from zerver.lib.subdomains import get_subdomain, is_canonical_realm_host
 from zerver.lib.typed_endpoint import INTENTIONALLY_UNDOCUMENTED, ApiParamConfig, typed_endpoint
 from zerver.lib.user_agent import parse_user_agent
 from zerver.models import Realm
@@ -559,6 +559,14 @@ def should_skip_realm_lookup(path: str) -> bool:
     return path.startswith(("/static/", "/api/", "/json/")) or path == "/health"
 
 
+def should_skip_realm_lookup_for_reserved_subdomain(request: HttpRequest) -> bool:
+    # django-hosts has already selected the host-specific URLConf for reserved subdomains.
+    return getattr(request, "urlconf", None) in (
+        "zproject.auth_subdomain_urls",
+        "zproject.self_hosting_management_subdomain_urls",
+    )
+
+
 class HostDomainMiddleware(MiddlewareMixin):
     def process_request(self, request: HttpRequest) -> HttpResponse | None:
         # Match against ALLOWED_HOSTS, which is rather permissive;
@@ -575,10 +583,11 @@ class HostDomainMiddleware(MiddlewareMixin):
         if should_skip_realm_lookup(request.path):
             return None
 
-        subdomain = get_subdomain(request)
-        if is_reserved_subdomain(subdomain):
+        if should_skip_realm_lookup_for_reserved_subdomain(request):
             # Realms are not supposed to exist on these subdomains.
             return None
+
+        subdomain = get_subdomain(request)
 
         request_notes = RequestNotes.get_notes(request)
         try:

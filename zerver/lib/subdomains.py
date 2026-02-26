@@ -49,14 +49,6 @@ def is_subdomain_root_or_alias(request: HttpRequest) -> bool:
     return get_subdomain(request) == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
 
 
-def is_reserved_subdomain(subdomain: str) -> bool:
-    return subdomain in {
-        s
-        for s in [settings.SOCIAL_AUTH_SUBDOMAIN, settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN]
-        if s is not None
-    }
-
-
 def is_canonical_realm_host(request_host: str, realm: Realm) -> bool:
     host = request_host.lower()
     formal_host = realm.host
