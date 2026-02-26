@@ -92,6 +92,10 @@ class SupabaseJWTMiddleware:
                     request.user = user_profile
                     # Skip CSRF for API key auth (matches @authenticated_rest_api_view)
                     request._dont_enforce_csrf_checks = True
+                    # Set supabase_user_id so rest_dispatch routes through the JWT
+                    # wrapper path (which skips subdomain validation) instead of
+                    # re-authenticating via authenticated_rest_api_view.
+                    request.supabase_user_id = f"api_key:{user_profile.id}"
                 except Exception:
                     logger.warning("[nodl-auth] Basic auth failed for %s", request.path)
                     return self._error_response("Invalid API key")
