@@ -1372,6 +1372,12 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.web_left_sidebar_unreads_count_summary, false);
 
+    event = event_fixtures.user_settings__web_left_sidebar_auto_collapse_views;
+    override(stream_list, "update_auto_collapse_views", noop);
+    override(user_settings, "web_left_sidebar_auto_collapse_views", true);
+    dispatch(event);
+    assert_same(user_settings.web_left_sidebar_auto_collapse_views, false);
+
     event = event_fixtures.user_settings__receives_typing_notifications;
     override(user_settings, "receives_typing_notifications", false);
     dispatch(event);

@@ -961,6 +961,7 @@ export function dispatch_normal_event(event) {
                 "web_stream_unreads_count_display_policy",
                 "web_suggest_update_timezone",
                 "web_left_sidebar_unreads_count_summary",
+                "web_left_sidebar_auto_collapse_views",
                 "web_left_sidebar_show_channel_folders",
                 "web_inbox_show_channel_folders",
             ];
@@ -1047,6 +1048,9 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "web_left_sidebar_unreads_count_summary") {
                 stream_list.update_unread_counts_visibility();
+            }
+            if (event.property === "web_left_sidebar_auto_collapse_views") {
+                stream_list.update_auto_collapse_views();
             }
             if (event.property === "web_left_sidebar_show_channel_folders") {
                 stream_list.update_collapsed_state_on_show_channel_folders_change();

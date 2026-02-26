@@ -81,6 +81,7 @@ export const user_settings_schema = z.object({
     web_inbox_show_channel_folders: z.boolean(),
     web_left_sidebar_show_channel_folders: z.boolean(),
     web_left_sidebar_unreads_count_summary: z.boolean(),
+    web_left_sidebar_auto_collapse_views: z.boolean(),
     web_line_height_percent: z.number(),
     web_mark_read_on_scroll_policy: z.number(),
     web_navigate_to_sent_message: z.boolean(),

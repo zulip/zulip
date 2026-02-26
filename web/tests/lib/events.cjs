@@ -1256,6 +1256,13 @@ exports.fixtures = {
         value: false,
     },
 
+    user_settings__web_left_sidebar_auto_collapse_views: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_auto_collapse_views",
+        value: false,
+    },
+
     user_settings__web_left_sidebar_show_channel_folders: {
         type: "user_settings",
         op: "update",

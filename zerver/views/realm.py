@@ -801,6 +801,7 @@ def update_realm_user_settings_defaults(
     web_inbox_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
+    web_left_sidebar_auto_collapse_views: Json[bool] | None = None,
     web_line_height_percent: Json[int] | None = None,
     web_mark_read_on_scroll_policy: Json[
         Annotated[
