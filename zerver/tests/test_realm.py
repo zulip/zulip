@@ -44,7 +44,11 @@ from zerver.actions.realm_settings import (
     do_set_realm_user_default_setting,
 )
 from zerver.actions.streams import do_deactivate_stream, merge_streams
-from zerver.actions.user_groups import check_add_user_group
+from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
+    check_add_user_group,
+    do_change_user_group_permission_setting,
+)
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.cache import cache_delete, realm_rendered_description_cache_key
 from zerver.lib.markdown import version as markdown_version
@@ -2731,7 +2735,25 @@ class RealmAPITest(ZulipTestCase):
                     self.do_test_realm_update_api(prop)
 
         hamlet = self.example_user("hamlet")
-        check_add_user_group(get_realm("zulip"), "leadership", [hamlet], acting_user=hamlet)
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=hamlet.realm, is_system_group=True
+        )
+        # Set membership management permissions to make sure that this group
+        # can be used for workplace_users_group setting. There is a separate
+        # test for testing validation.
+        group_settings_map = {
+            "can_leave_group": nobody_group,
+            "can_manage_group": nobody_group,
+            "can_add_members_group": nobody_group,
+        }
+        check_add_user_group(
+            get_realm("zulip"),
+            "leadership",
+            [hamlet],
+            "",
+            group_settings_map,
+            acting_user=hamlet,
+        )
         for prop in Realm.REALM_PERMISSION_GROUP_SETTINGS:
             with self.subTest(property=prop):
                 self.do_test_realm_permission_group_setting_update_api(prop)
@@ -3053,6 +3075,216 @@ class RealmAPITest(ZulipTestCase):
         req = {"can_access_all_users_group": orjson.dumps({"new": members_group.id}).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Available on Zulip Cloud Plus. Upgrade to access.")
+
+    def test_changing_workplace_users_group(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        self.login("iago")
+
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm
+        )
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm
+        )
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm
+        )
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm_for_sharding=realm
+        )
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm
+        )
+
+        # Set can_add_members_group, can_manage_group and can_leave_group
+        # to nobody so that it does not interfere in checks for membership
+        # managing permissions below.
+        group_settings_map = {
+            "can_leave_group": nobody_group,
+            "can_manage_group": nobody_group,
+            "can_add_members_group": nobody_group,
+        }
+        test_group = check_add_user_group(
+            realm, "test", [othello], "", group_settings_map, acting_user=iago
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_leave_group", nobody_group, acting_user=None
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_add_members_group", nobody_group, acting_user=None
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_manage_group", nobody_group, acting_user=None
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", moderators_group, acting_user=None
+        )
+
+        # System groups can always be used for this setting since their
+        # memberships can only be changed when a user's role changes which
+        # can only be done by admins.
+        params = {"workplace_users_group": orjson.dumps({"new": moderators_group.id}).decode()}
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(realm.workplace_users_group_id, moderators_group.id)
+
+        params = {
+            "workplace_users_group": orjson.dumps(
+                {"new": {"direct_subgroups": [members_group.id], "direct_members": [hamlet.id]}}
+            ).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(list(realm.workplace_users_group.direct_subgroups.all()), [members_group])
+        self.assertEqual(list(realm.workplace_users_group.direct_members.all()), [hamlet])
+
+        # can_manage_all_groups is set to moderators group, so any non-system group
+        # cannot be used for "workplace_users_group".
+        self.assertEqual(realm.can_manage_all_groups_id, moderators_group.id)
+        params = {
+            "workplace_users_group": orjson.dumps({"new": hamletcharacters_group.id}).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "'workplace_users_group' must be a group whose membership can only be managed by organization administrators.",
+        )
+
+        # can_manage_all_groups is set to an anonymous group with only admins as members,
+        # even then any non-system group cannot be used for "workplace_users_group", as
+        # management permissions for a group must be set to one of nobody, owners or
+        # admins system groups.
+        anonymous_group = self.create_or_update_anonymous_group_for_setting([iago], [owners_group])
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", anonymous_group, acting_user=None
+        )
+        params = {
+            "workplace_users_group": orjson.dumps({"new": hamletcharacters_group.id}).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "'workplace_users_group' must be a group whose membership can only be managed by organization administrators.",
+        )
+
+        # can_manage_group for hamletcharacters group is set to moderators system group,
+        # so it cannot be used for "workplace_users_group".
+        do_change_realm_permission_group_setting(
+            realm, "can_manage_all_groups", admins_group, acting_user=None
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_manage_group", moderators_group, acting_user=None
+        )
+        params = {
+            "workplace_users_group": orjson.dumps({"new": hamletcharacters_group.id}).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "'workplace_users_group' must be a group whose membership can only be managed by organization administrators.",
+        )
+
+        # can_add_members_group for hamletcharacters group is set to an anonymous group,
+        # so it cannot be used for "workplace_users_group".
+        anonymous_group = self.create_or_update_anonymous_group_for_setting(
+            [hamlet], [admins_group]
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_manage_group", admins_group, acting_user=None
+        )
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_add_members_group", anonymous_group, acting_user=None
+        )
+        params = {
+            "workplace_users_group": orjson.dumps({"new": hamletcharacters_group.id}).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "'workplace_users_group' must be a group whose membership can only be managed by organization administrators.",
+        )
+
+        # can_join_group for hamletcharacters group is set to an anonymous
+        # group with only admins as members, even then it cannot be used
+        # for "workplace_users_group".
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_add_members_group", owners_group, acting_user=None
+        )
+        anonymous_group = self.create_or_update_anonymous_group_for_setting([iago], [owners_group])
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_join_group", anonymous_group, acting_user=None
+        )
+        params = {
+            "workplace_users_group": orjson.dumps({"new": hamletcharacters_group.id}).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "'workplace_users_group' must be a group whose membership can only be managed by organization administrators.",
+        )
+
+        # can_leave_group for one of the subgroups of hamletcharacters
+        # group is set to members system group so it cannot be used for
+        # "workplace_users_group".
+        do_change_user_group_permission_setting(
+            hamletcharacters_group, "can_join_group", admins_group, acting_user=None
+        )
+        add_subgroups_to_user_group(hamletcharacters_group, [test_group], acting_user=None)
+        do_change_user_group_permission_setting(
+            test_group, "can_leave_group", members_group, acting_user=None
+        )
+        params = {
+            "workplace_users_group": orjson.dumps({"new": hamletcharacters_group.id}).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "'workplace_users_group' must be a group whose membership can only be managed by organization administrators.",
+        )
+
+        # can_leave_group for one of the subgroups of hamletcharacters
+        # group is set to members system group so it cannot be used
+        # as subgroup in an anonymous group for "workplace_users_group".
+        params = {
+            "workplace_users_group": orjson.dumps(
+                {
+                    "new": {
+                        "direct_subgroups": [hamletcharacters_group.id],
+                        "direct_members": [hamlet.id],
+                    }
+                }
+            ).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "'workplace_users_group' must be a group whose membership can only be managed by organization administrators.",
+        )
+
+        # All the permissions related to member management (realm level can_manage_all_groups
+        # and group level can_add_members_group, can_join_group, can_leave_group and
+        # can_remove_members_group) for hamletcharacters group and its subgroups are set
+        # to one of nobody, owners or admins system groups, so hamletcharacters group
+        # can be used for "workplace_users_group" setting.
+        do_change_user_group_permission_setting(
+            test_group, "can_leave_group", nobody_group, acting_user=None
+        )
+
+        params = {
+            "workplace_users_group": orjson.dumps({"new": hamletcharacters_group.id}).decode()
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(realm.workplace_users_group_id, hamletcharacters_group.id)
 
 
 class ScrubRealmTest(ZulipTestCase):

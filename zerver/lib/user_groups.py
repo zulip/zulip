@@ -1307,3 +1307,27 @@ def check_any_user_has_permission_by_role(
             return True
 
     return False
+
+
+def check_group_membership_management_permissions_with_admins_only(
+    groups_to_check_permissions: list[NamedUserGroup],
+    realm: Realm,
+    system_groups_name_dict: dict[str, NamedUserGroup],
+) -> bool:
+    system_groups_with_admin_only_permissions = {
+        system_groups_name_dict[SystemGroups.NOBODY].id,
+        system_groups_name_dict[SystemGroups.OWNERS].id,
+        system_groups_name_dict[SystemGroups.ADMINISTRATORS].id,
+    }
+
+    if realm.can_manage_all_groups_id not in system_groups_with_admin_only_permissions:
+        return False
+
+    for group in groups_to_check_permissions:
+        for setting_name in NamedUserGroup.MEMBERSHIP_MANAGEMENT_SETTINGS:
+            if (
+                getattr(group, setting_name + "_id")
+                not in system_groups_with_admin_only_permissions
+            ):
+                return False
+    return True
