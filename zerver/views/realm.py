@@ -53,6 +53,7 @@ from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
     get_system_user_group_by_name,
     parse_group_setting_value,
+    validate_can_manage_all_groups,
     validate_group_setting_value_change,
 )
 from zerver.lib.validator import check_capped_url, check_string
@@ -444,6 +445,9 @@ def update_realm(
 
                 if setting_name == "workplace_users_group":
                     validate_workplace_users_group(new_setting_value, realm)
+
+                if setting_name == "can_manage_all_groups":
+                    validate_can_manage_all_groups(new_setting_value, realm)
 
                 do_change_realm_permission_group_setting(
                     realm,
