@@ -338,12 +338,14 @@ export function initialize_left_sidebar(): void {
     const primary_condensed_views =
         left_sidebar_navigation_area.get_built_in_primary_condensed_views();
     const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+    const auto_collapse_views = user_settings.web_left_sidebar_auto_collapse_views;
 
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
         is_spectator: page_params.is_spectator,
         primary_condensed_views,
         expanded_views,
+        auto_collapse_views,
         LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
         LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE: pm_list.LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE,
     });
