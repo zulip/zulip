@@ -1,8 +1,22 @@
 {{#with stream}}
 <tr class="default_stream_row hidden-remove-button-row" data-stream-id="{{stream_id}}">
     <td>
-        {{#if invite_only}}<i class="fa fa-lock" aria-hidden="true"></i>{{/if}}
-        <span class="default_stream_name">{{name}}</span>
+        <span class="pill-container display_only_pill">
+            <span class="pill" data-stream-id="{{stream_id}}" tabindex="0">
+                <span class="pill-label">
+                    <span class="pill-value">
+                        {{~#if invite_only~}}
+                        <i class="zulip-icon zulip-icon-lock channel-privacy-type-icon" aria-hidden="true"></i>
+                        {{~else if is_web_public~}}
+                        <i class="zulip-icon zulip-icon-globe channel-privacy-type-icon" aria-hidden="true"></i>
+                        {{~else~}}
+                        <i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i>
+                        {{~/if~}}
+                        {{name}}
+                    </span>
+                </span>
+            </span>
+        </span>
     </td>
     {{#if ../can_modify}}
     <td class="actions">
