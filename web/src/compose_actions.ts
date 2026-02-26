@@ -328,6 +328,20 @@ function hide_compose_box_and_maybe_display_missing_permissions_toast(trigger: s
     compose_fade.start_compose("stream");
 }
 
+export function update_skinned_compose_box_draft_preview(): void {
+    // If we have a draft, we'll display its first line in the
+    // skinned compose box's message area. This should also be
+    // called on the cancel() method so that the skinned textarea
+    // updates when the compose box goes to its closed state.
+    const narrow_drafts = drafts.get_last_restorable_draft_based_on_compose_state();
+    if (narrow_drafts?.content) {
+        $("#skinned-messagebox").text(narrow_drafts.content);
+    } else {
+        // Restore the default message
+        $("#skinned-messagebox").text($t({defaultMessage: "Write a message..."}));
+    }
+}
+
 export let start = (raw_opts: ComposeActionsStartOpts): void => {
     if (page_params.is_spectator) {
         spectators.login_to_access();
@@ -533,6 +547,7 @@ export let cancel = (): void => {
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
     message_viewport.bottom_of_feed.reset();
+    update_skinned_compose_box_draft_preview();
     reload.maybe_reset_pending_reload_timeout("compose_end");
 };
 
