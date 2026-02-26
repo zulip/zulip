@@ -1135,7 +1135,7 @@
     --color-background-recent-view-row: var(--color-background);
     --color-background-recent-view-row-hover: light-dark(
         hsl(222deg 70% 12% / 7%),
-        hsl(220deg 18% 95% / 7%)
+        hsl(222deg 0% 14%)
     );
     --color-background-recent-view-unread-row: light-dark(
         hsl(0deg 0% 100%),
