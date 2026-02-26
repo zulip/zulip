@@ -51,6 +51,7 @@ import "../../styles/user_circles.css";
 import "../../styles/left_sidebar.css";
 import "../../styles/right_sidebar.css";
 import "../../styles/lightbox.css";
+import "../../styles/box_resize.css";
 import "../../styles/popovers.css";
 import "../../styles/recent_view.css";
 import "../../styles/typing_notifications.css";

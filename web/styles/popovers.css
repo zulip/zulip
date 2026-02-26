@@ -492,11 +492,22 @@ ul.popover-group-menu-member-list {
 }
 
 .gif-grid-in-popover {
-    width: 90vw;
-    /* 6px `.gif-scroll-container` horizontal margin + 6px is the extra gutter space
-       + 4px padding between gif columns. Our max-width is calculated based on this so the
-       max width of the GIFs becomes 250px */
-    max-width: 516px;
+    min-width: var(--min-gif-picker-grid-width-desktop);
+    width: var(--min-gif-picker-grid-width-desktop);
+
+    min-height: var(--min-gif-picker-grid-height-desktop);
+    height: var(--min-gif-picker-grid-height-desktop);
+
+    /* We avoid enabling resizing for overlays seen on mobile displays.
+    $md_min is the breakpoint used by popover_menus to display the popover
+    as an overlay on setting show_as_overlay_on_mobile.
+    We use it here to set static dimensions for the GIF grid when it is displayed
+    as an overlay */
+    @media (width < $md_min) {
+        min-width: var(--min-gif-picker-grid-width-mobile);
+        min-height: var(--min-gif-picker-grid-height-mobile);
+    }
+
     border: 0;
     padding: 0;
 
@@ -506,7 +517,13 @@ ul.popover-group-menu-member-list {
 
     .gif-picker-content {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+        @media (width < $md_min) {
+            /* Reduce the minimum width per GIF to possibly show
+            a two column grid on mobile widths; */
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
         grid-auto-rows: auto;
         gap: 6px;
 
@@ -534,12 +551,20 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .gif-scrolling-container {
-        overflow: hidden auto;
-        height: var(--gif-scroll-container-height);
-        max-height: 500px;
-        margin: 2px 3px;
-        padding: 5px 0;
+    .popover-inner {
+        /* To have the same height as the immediate parent .gif-grid-in-popover */
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+
+        .gif-scrolling-container {
+            /* Fill the space that remains after the GIF filter input */
+            flex: 1 1 auto;
+            overflow-y: auto;
+            max-height: 100%;
+            margin: 2px 3px;
+            padding: 5px 0;
+        }
     }
 
     .popover-footer {
