@@ -283,6 +283,16 @@ function is_table_focused(): boolean {
     return $current_focus_elem === "table";
 }
 
+function row_has_mute_column(row: number, $topic_rows: JQuery): boolean {
+    const type = get_row_type(row);
+    if (type === "private") {
+        return false;
+    }
+
+    const $topic_row = $topic_rows.eq(row);
+    return !$topic_row.hasClass("recent-view-archived-channel-row");
+}
+
 function get_row_type(row: number): string {
     // Return "private" or "stream"
     // We use CSS method for finding row type until topics_widget gets initialized.
@@ -332,13 +342,14 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
         col = COLUMNS.topic;
         col_focus = COLUMNS.topic;
     }
+
+    const $topic_row = $topic_rows.eq(row);
     const type = get_row_type(row);
-    if (col === COLUMNS.mute && type === "private") {
+    if (col === COLUMNS.mute && !row_has_mute_column(row, $topic_rows)) {
         col = unread ? COLUMNS.read : COLUMNS.topic;
         col_focus = col;
     }
 
-    const $topic_row = $topic_rows.eq(row);
     // We need to allow table to render first before setting focus.
     setTimeout(
         () => $topic_row.find(".recent_view_focusable").addBack().eq(col).trigger("focus"),
