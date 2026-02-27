@@ -1216,7 +1216,7 @@
         hsl(0deg 0% 100% / 80%)
     );
     --color-compose-send-control-button: light-dark(
-        hsl(240deg 30% 50% / 80%),
+        hsl(240deg 30% 50% / 95%),
         hsl(240deg 30% 70%)
     );
     --color-compose-send-control-button-background: transparent;
@@ -1271,7 +1271,7 @@
         var(--color-compose-collapsed-reply-button-area-border)
     );
     --color-compose-embedded-button-text-color: light-dark(
-        hsl(231deg 20% 55%),
+        hsl(231deg 20% 46%),
         hsl(231deg 30% 65%)
     );
     --color-compose-embedded-button-text-color-hover: light-dark(
