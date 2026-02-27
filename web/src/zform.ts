@@ -17,7 +17,7 @@ export function activate(opts: {any_data: AnyWidgetData; message: Message}): {
     widget_data: WidgetData;
 } {
     assert(opts.any_data.widget_type === "zform");
-    if (opts.any_data.extra_data === null) {
+    if (!opts.any_data.extra_data) {
         blueslip.error("invalid zform extra data");
         const widget_data = {
             widget_type: opts.any_data.widget_type,
@@ -56,14 +56,13 @@ export function render(opts: {$elem: JQuery; message: Message; widget_data: Widg
     assert(opts.widget_data.widget_type === "zform");
     const $outer_elem = opts.$elem;
     const data = opts.widget_data.data;
-    if (!data || data.type !== "choices") {
+    if (data?.type !== "choices") {
         return;
     }
 
     function make_choices(data: ZFormExtraData): JQuery {
         const html = render_widgets_zform_choices(data);
         const $elem = $(html);
-
 
         $elem.find("button").on("click", (e) => {
             e.stopPropagation();
