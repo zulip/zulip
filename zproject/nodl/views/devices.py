@@ -36,6 +36,12 @@ def register_voip_token(request: HttpRequest, user_profile: UserProfile) -> Http
             status=400,
         )
 
+    if not isinstance(body, dict):
+        return JsonResponse(
+            {"result": "error", "msg": "Request body must be a JSON object", "code": "BAD_REQUEST"},
+            status=400,
+        )
+
     platform = body.get("platform")
     device_id = body.get("device_id")
     voip_token = body.get("voip_token")
@@ -116,6 +122,12 @@ def unregister_voip_token(request: HttpRequest, user_profile: UserProfile) -> Ht
     except (json.JSONDecodeError, ValueError):
         return JsonResponse(
             {"result": "error", "msg": "Invalid JSON", "code": "BAD_REQUEST"},
+            status=400,
+        )
+
+    if not isinstance(body, dict):
+        return JsonResponse(
+            {"result": "error", "msg": "Request body must be a JSON object", "code": "BAD_REQUEST"},
             status=400,
         )
 

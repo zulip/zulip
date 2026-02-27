@@ -17,28 +17,38 @@ APNS_USE_SANDBOX = os.environ.get("APNS_USE_SANDBOX", "true").lower() == "true"
 # ---------- FCM config (Android data message) ----------
 # firebase-admin initializes from GOOGLE_APPLICATION_CREDENTIALS env var
 # or from explicit credentials. We initialize lazily on first use.
-_firebase_app_initialized = False
+_firebase_init_lock = threading.Lock()
 
 
 def _ensure_firebase_initialized() -> bool:
-    """Lazily initialize the Firebase Admin SDK. Returns True if initialized."""
-    global _firebase_app_initialized
-    if _firebase_app_initialized:
-        return True
-
-    google_creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "")
-    if not google_creds_path:
-        logger.warning("GOOGLE_APPLICATION_CREDENTIALS not set — FCM push disabled")
-        return False
-
+    """Lazily initialize the Firebase Admin SDK (thread-safe). Returns True if initialized."""
+    # Fast path: check if already initialized without acquiring lock
     try:
-        cred = credentials.Certificate(google_creds_path)
-        firebase_admin.initialize_app(cred)
-        _firebase_app_initialized = True
+        firebase_admin.get_app()
         return True
-    except Exception as e:
-        logger.error("Firebase Admin SDK initialization failed: %s", e)
-        return False
+    except ValueError:
+        pass
+
+    with _firebase_init_lock:
+        # Double-check after acquiring lock
+        try:
+            firebase_admin.get_app()
+            return True
+        except ValueError:
+            pass
+
+        google_creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "")
+        if not google_creds_path:
+            logger.warning("GOOGLE_APPLICATION_CREDENTIALS not set — FCM push disabled")
+            return False
+
+        try:
+            cred = credentials.Certificate(google_creds_path)
+            firebase_admin.initialize_app(cred)
+            return True
+        except Exception as e:
+            logger.error("Firebase Admin SDK initialization failed: %s", e)
+            return False
 
 
 def send_voip_push_ios(
@@ -63,8 +73,11 @@ def send_voip_push_ios(
         from aioapns import APNs, NotificationRequest
         from asgiref.sync import async_to_sync
 
+        with open(APNS_AUTH_KEY_PATH) as f:
+            apns_key_content = f.read()
+
         client = APNs(
-            key=APNS_AUTH_KEY_PATH,
+            key=apns_key_content,
             key_id=APNS_KEY_ID,
             team_id=APNS_TEAM_ID,
             topic=f"{APNS_BUNDLE_ID}.voip",
