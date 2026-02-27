@@ -8,7 +8,7 @@ from typing import Any
 from django.db import transaction
 from typing_extensions import override
 
-from zerver.actions.message_edit import do_update_embedded_data
+from zerver.actions.message_edit import do_update_embedded_data, get_hidden_preview_urls
 from zerver.actions.message_send import render_incoming_message
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.url_preview import preview as url_preview
@@ -56,6 +56,10 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
             # Fetch the realm whose settings we're using for rendering
             realm = Realm.objects.get(id=event["message_realm_id"])
+
+            # Mark hidden preview URLs so the renderer skips them.
+            for url in get_hidden_preview_urls(message):
+                url_embed_data[url] = None
 
             # If rendering fails, the called code will raise a JsonableError.
             mention_data = MentionData(

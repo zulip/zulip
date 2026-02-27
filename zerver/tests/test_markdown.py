@@ -1264,6 +1264,27 @@ class MarkdownEmbedsTest(ZulipTestCase):
             f"""<p><a href="https://www.youtube.com/watch?v=0c46YHS3RY8">https://www.youtube.com/watch?v=0c46YHS3RY8</a><br>\n<a href="https://www.youtube.com/watch?v=lXFO2ULktEI">https://www.youtube.com/watch?v=lXFO2ULktEI</a></p>\n<div class="youtube-video message_inline_image"><a data-id="0c46YHS3RY8" href="https://www.youtube.com/watch?v=0c46YHS3RY8"><img src="{get_camo_url("https://i.ytimg.com/vi/0c46YHS3RY8/mqdefault.jpg")}"></a></div><div class="youtube-video message_inline_image"><a data-id="lXFO2ULktEI" href="https://www.youtube.com/watch?v=lXFO2ULktEI"><img src="{get_camo_url("https://i.ytimg.com/vi/lXFO2ULktEI/mqdefault.jpg")}"></a></div>""",
         )
 
+    def test_hidden_preview_urls_suppresses_youtube(self) -> None:
+        url = "https://www.youtube.com/watch?v=hx1mjT73xYE"
+        msg = f"Check out: {url}"
+
+        # Without suppression, YouTube thumbnail is generated.
+        rendered_normal = markdown_convert(
+            content=msg,
+            message_realm=get_realm("zulip"),
+        ).rendered_content
+        self.assertIn("youtube-video", rendered_normal)
+
+        # With url_embed_data[url] = None, all previews are suppressed.
+        rendered_hidden = markdown_convert(
+            content=msg,
+            message_realm=get_realm("zulip"),
+            url_embed_data={url: None},
+        ).rendered_content
+        self.assertNotIn("youtube-video", rendered_hidden)
+        self.assertNotIn("message_inline_image", rendered_hidden)
+        self.assertIn(url, rendered_hidden)
+
 
 class MarkdownEmojiTest(ZulipTestCase):
     def test_content_has_emoji(self) -> None:
