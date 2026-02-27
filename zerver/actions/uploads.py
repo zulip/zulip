@@ -92,14 +92,20 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     )
 
     with delete_message_attachments(delete_from=(ImageAttachment, Attachment)) as delete_one:
-        for path_id in old_unclaimed_attachments.values_list("path_id", flat=True).iterator():
+        for path_id in (
+            old_unclaimed_attachments.values_list("path_id", flat=True)
+            .select_for_update(of=("self",))
+            .iterator()
+        ):
             delete_one(path_id)
     with delete_message_attachments(
         delete_from=(ImageAttachment, ArchivedAttachment)
     ) as delete_one:
-        for path_id in old_unclaimed_archived_attachments.values_list(
-            "path_id", flat=True
-        ).iterator():
+        for path_id in (
+            old_unclaimed_archived_attachments.values_list("path_id", flat=True)
+            .select_for_update(of=("self",))
+            .iterator()
+        ):
             delete_one(path_id)
 
 
