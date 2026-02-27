@@ -679,12 +679,23 @@ class CallViewsTest(ZulipTestCase):
         self.assertIn("integer", result.json()["msg"])
 
     def test_initiate_callee_id_float_type(self) -> None:
-        """callee_id as float is cast to int."""
+        """callee_id as float is rejected with 400."""
         result = self.client_post(
             "/nodl/calls/initiate",
             json.dumps({"callee_id": 3.14}),
             content_type="application/json",
             **self._auth_headers(self.caller),
         )
-        # Should not be a 500 — either 400 (not found) or 200 depending on user existence
-        self.assertNotEqual(result.status_code, 500)
+        self.assertEqual(result.status_code, 400)
+        self.assertIn("integer", result.json()["msg"])
+
+    def test_initiate_callee_id_bool_type(self) -> None:
+        """callee_id as bool is rejected with 400."""
+        result = self.client_post(
+            "/nodl/calls/initiate",
+            json.dumps({"callee_id": True}),
+            content_type="application/json",
+            **self._auth_headers(self.caller),
+        )
+        self.assertEqual(result.status_code, 400)
+        self.assertIn("integer", result.json()["msg"])

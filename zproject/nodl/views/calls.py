@@ -55,6 +55,13 @@ def initiate_call(request: HttpRequest, user_profile: UserProfile) -> HttpRespon
             status=400,
         )
 
+    # Strict type check: reject bool (subclass of int) and float; allow int and str only
+    if isinstance(raw_callee_id, bool) or not isinstance(raw_callee_id, (int, str)):
+        return JsonResponse(
+            {"result": "error", "msg": "callee_id must be an integer", "code": "BAD_REQUEST"},
+            status=400,
+        )
+
     try:
         callee_id = int(raw_callee_id)
     except (ValueError, TypeError):
@@ -94,7 +101,7 @@ def initiate_call(request: HttpRequest, user_profile: UserProfile) -> HttpRespon
 
     try:
         token = generate_token(caller_identity, room_name)
-    except ValueError as e:
+    except Exception as e:
         logger.error("LiveKit token generation failed: %s", e)
         return JsonResponse(
             {"result": "error", "msg": "Call service unavailable", "code": "SERVICE_ERROR"},
@@ -176,7 +183,7 @@ def accept_call(
         callee_identity = str(user_profile.id)
         try:
             token = generate_token(callee_identity, call.room_name)
-        except ValueError as e:
+        except Exception as e:
             logger.error("LiveKit token generation failed: %s", e)
             return JsonResponse(
                 {"result": "error", "msg": "Call service unavailable", "code": "SERVICE_ERROR"},
