@@ -1,11 +1,13 @@
 import json
 import logging
 import re
+from functools import wraps
+from typing import Any
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
-from zerver.decorator import authenticated_rest_api_view
 from zerver.models import UserProfile
 from zproject.nodl.contacts import match_phone_hashes
 from zproject.nodl.throttle import check_rate_limit
@@ -16,7 +18,22 @@ logger = logging.getLogger(__name__)
 SHA256_HEX_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+def _require_jwt_auth(view_func):
+    """Require JWT authentication via middleware (request.user_profile)."""
+    @csrf_exempt
+    @wraps(view_func)
+    def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        user = getattr(request, "user_profile", None)
+        if user is None or not getattr(user, "is_authenticated", False):
+            return JsonResponse(
+                {"result": "error", "code": "UNAUTHORIZED", "msg": "Authentication required"},
+                status=401,
+            )
+        return view_func(request, user, *args, **kwargs)
+    return wrapper
+
+
+@_require_jwt_auth
 def contacts_match(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     """Match submitted phone hashes against registered nodl users.
 

@@ -2,11 +2,13 @@ import json
 import logging
 import re
 from datetime import timedelta
+from functools import wraps
+from typing import Any
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
-from zerver.decorator import authenticated_rest_api_view
 from zerver.models import UserProfile
 from zproject.nodl.models import INVITE_EXPIRY_DAYS, NodlInvite
 from zproject.nodl.throttle import check_rate_limit
@@ -14,7 +16,22 @@ from zproject.nodl.throttle import check_rate_limit
 logger = logging.getLogger(__name__)
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+def _require_jwt_auth(view_func):
+    """Require JWT authentication via middleware (request.user_profile)."""
+    @csrf_exempt
+    @wraps(view_func)
+    def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        user = getattr(request, "user_profile", None)
+        if user is None or not getattr(user, "is_authenticated", False):
+            return JsonResponse(
+                {"result": "error", "code": "UNAUTHORIZED", "msg": "Authentication required"},
+                status=401,
+            )
+        return view_func(request, user, *args, **kwargs)
+    return wrapper
+
+
+@_require_jwt_auth
 def invites_list(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     """List all invites for the authenticated user.
 
@@ -50,7 +67,7 @@ def invites_list(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
     )
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+@_require_jwt_auth
 def invites_create(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     """Record a new invite.
 
@@ -132,7 +149,7 @@ def invites_create(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
     )
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+@_require_jwt_auth
 def invites_resend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     """Resend an expired invite (resets expiry).
 

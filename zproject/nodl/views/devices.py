@@ -1,9 +1,11 @@
 import json
 import logging
+from functools import wraps
+from typing import Any
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
-from zerver.decorator import authenticated_rest_api_view
 from zerver.models import UserProfile
 from zproject.nodl.models import DeviceVoipToken
 
@@ -12,7 +14,22 @@ logger = logging.getLogger(__name__)
 VALID_PLATFORMS = {"ios", "android"}
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+def _require_jwt_auth(view_func):
+    """Require JWT authentication via middleware (request.user_profile)."""
+    @csrf_exempt
+    @wraps(view_func)
+    def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        user = getattr(request, "user_profile", None)
+        if user is None or not getattr(user, "is_authenticated", False):
+            return JsonResponse(
+                {"result": "error", "code": "UNAUTHORIZED", "msg": "Authentication required"},
+                status=401,
+            )
+        return view_func(request, user, *args, **kwargs)
+    return wrapper
+
+
+@_require_jwt_auth
 def register_voip_token(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     """Register or update a VoIP/FCM push token for a device.
 
@@ -101,7 +118,7 @@ def register_voip_token(request: HttpRequest, user_profile: UserProfile) -> Http
     )
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+@_require_jwt_auth
 def unregister_voip_token(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     """Unregister (soft-delete) a VoIP/FCM push token.
 

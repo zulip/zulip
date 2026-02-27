@@ -1,13 +1,15 @@
 import json
 import logging
 import uuid
+from functools import wraps
+from typing import Any
 
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
-from zerver.decorator import authenticated_rest_api_view
 from zerver.models import UserProfile
 from zproject.nodl.models import CallRecord
 from zproject.nodl.serializers.call_serializers import (
@@ -26,7 +28,22 @@ from zproject.nodl.services.livekit_service import (
 logger = logging.getLogger(__name__)
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+def _require_jwt_auth(view_func):
+    """Require JWT authentication via middleware (request.user_profile)."""
+    @csrf_exempt
+    @wraps(view_func)
+    def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        user = getattr(request, "user_profile", None)
+        if user is None or not getattr(user, "is_authenticated", False):
+            return JsonResponse(
+                {"result": "error", "code": "UNAUTHORIZED", "msg": "Authentication required"},
+                status=401,
+            )
+        return view_func(request, user, *args, **kwargs)
+    return wrapper
+
+
+@_require_jwt_auth
 def initiate_call(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     """Initiate a call to another user.
 
@@ -137,7 +154,7 @@ def initiate_call(request: HttpRequest, user_profile: UserProfile) -> HttpRespon
     )
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+@_require_jwt_auth
 def accept_call(
     request: HttpRequest, user_profile: UserProfile, call_id: str
 ) -> HttpResponse:
@@ -214,7 +231,7 @@ def accept_call(
     )
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+@_require_jwt_auth
 def decline_call(
     request: HttpRequest, user_profile: UserProfile, call_id: str
 ) -> HttpResponse:
@@ -279,7 +296,7 @@ def decline_call(
     return JsonResponse({"result": "success", "msg": ""})
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+@_require_jwt_auth
 def cancel_call(
     request: HttpRequest, user_profile: UserProfile, call_id: str
 ) -> HttpResponse:
@@ -344,7 +361,7 @@ def cancel_call(
     return JsonResponse({"result": "success", "msg": ""})
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+@_require_jwt_auth
 def end_call(
     request: HttpRequest, user_profile: UserProfile, call_id: str
 ) -> HttpResponse:
@@ -419,7 +436,7 @@ def end_call(
     return JsonResponse({"result": "success", "msg": ""})
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+@_require_jwt_auth
 def call_history(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     """Get paginated call history for the authenticated user.
 
@@ -461,7 +478,7 @@ def call_history(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
     )
 
 
-@authenticated_rest_api_view(skip_rate_limiting=True)
+@_require_jwt_auth
 def call_detail(
     request: HttpRequest, user_profile: UserProfile, call_id: str
 ) -> HttpResponse:
