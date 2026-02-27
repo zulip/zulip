@@ -47,6 +47,16 @@
         padding: 0.1875em 0.5em; /* 3px 8px at 16px/1em */
     }
 
+    /* Suppress focus rings when focus was set programmatically
+       (e.g., on page load or sidebar click). The class is removed
+       on the first keyboard navigation, restoring :focus outlines.
+       See focus_outline_util.ts. */
+    &.no-visible-focus-outlines .recent_view_focusable {
+        &:focus {
+            outline: 0;
+        }
+    }
+
     .recent_view_focusable {
         & > .zulip-icon {
             outline: 0;
