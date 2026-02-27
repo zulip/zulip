@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from livekit.api import TokenVerifier, WebhookReceiver
 
-from zerver.actions.message_send import internal_send_private_message
+from zerver.actions.message_send import internal_send_group_direct_message
 from zerver.models import UserProfile
 from zerver.models.users import get_system_bot
 from zproject.nodl.models import CallRecord
@@ -32,13 +32,18 @@ def insert_call_event_message(caller: UserProfile, callee: UserProfile, message_
     """Insert a system DM message about a call event into the caller-callee conversation.
 
     Uses Zulip's Notification Bot as the sender. The message appears in the
-    DM thread between caller and callee, persists, and syncs across devices.
+    DM thread between caller and callee (not in individual bot DMs),
+    persists, and syncs across devices.
     """
     try:
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, caller.realm_id)
-        # Send to both participants so it appears in their DM
-        internal_send_private_message(notification_bot, caller, message_text)
-        internal_send_private_message(notification_bot, callee, message_text)
+        # Send into the caller↔callee DM thread via group direct message
+        internal_send_group_direct_message(
+            caller.realm,
+            notification_bot,
+            message_text,
+            recipient_users=[caller, callee],
+        )
     except Exception as e:
         logger.error("Failed to insert call event message: %s", e)
 
@@ -78,7 +83,11 @@ def livekit_webhook(request: HttpRequest) -> HttpResponse:
     try:
         event = receiver.receive(body, auth_header)
     except Exception as e:
-        logger.warning("LiveKit webhook auth failed: %s", e)
+        error_msg = str(e)
+        if "hash mismatch" in error_msg or "sha256" in error_msg:
+            logger.warning("LiveKit webhook auth failed: %s", e)
+        else:
+            logger.error("LiveKit webhook unexpected error: %s", e)
         return JsonResponse(
             {"result": "error", "msg": "Invalid webhook signature"},
             status=401,
@@ -132,13 +141,13 @@ def _handle_room_finished(room_name: str) -> None:
         call.end_reason = "timeout"
         call.save(update_fields=["status", "ended_at", "end_reason"])
 
-    # Insert DM message outside transaction
+    # Insert DM message outside transaction (best-effort)
     try:
         caller = UserProfile.objects.get(id=call.caller_id)
         callee = UserProfile.objects.get(id=call.callee_id)
         insert_call_event_message(caller, callee, "Missed voice call")
-    except UserProfile.DoesNotExist:
-        logger.error("room_finished: caller/callee not found for call %s", call.id)
+    except Exception as e:
+        logger.error("room_finished: failed to insert DM for call %s: %s", call.id, e)
 
 
 def _handle_participant_joined(room_name: str, event: object) -> None:

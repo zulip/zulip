@@ -269,12 +269,12 @@ def decline_call(
         call.end_reason = "callee_declined"
         call.save(update_fields=["status", "ended_at", "end_reason"])
 
-    # Insert DM event message (outside transaction)
+    # Insert DM event message (best-effort — never break the success response)
     try:
         caller = UserProfile.objects.get(id=call.caller_id)
         insert_call_event_message(caller, user_profile, "Voice call declined")
-    except UserProfile.DoesNotExist:
-        logger.error("decline_call: caller not found for call %s", call.id)
+    except Exception as e:
+        logger.error("decline_call: failed to insert DM for call %s: %s", call.id, e)
 
     return JsonResponse({"result": "success", "msg": ""})
 
@@ -334,12 +334,12 @@ def cancel_call(
         call.end_reason = "caller_cancelled"
         call.save(update_fields=["status", "ended_at", "end_reason"])
 
-    # Insert DM event message (outside transaction)
+    # Insert DM event message (best-effort — never break the success response)
     try:
         callee = UserProfile.objects.get(id=call.callee_id)
         insert_call_event_message(user_profile, callee, "Voice call cancelled")
-    except UserProfile.DoesNotExist:
-        logger.error("cancel_call: callee not found for call %s", call.id)
+    except Exception as e:
+        logger.error("cancel_call: failed to insert DM for call %s: %s", call.id, e)
 
     return JsonResponse({"result": "success", "msg": ""})
 

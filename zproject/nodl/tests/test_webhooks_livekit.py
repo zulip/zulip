@@ -29,9 +29,9 @@ class InsertCallEventMessageTest(TestCase):
         self.caller = users[0]
         self.callee = users[1]
 
-    @patch("zproject.nodl.views.webhooks_livekit.internal_send_private_message")
+    @patch("zproject.nodl.views.webhooks_livekit.internal_send_group_direct_message")
     @patch("zproject.nodl.views.webhooks_livekit.get_system_bot")
-    def test_sends_dm_to_both_participants(
+    def test_sends_dm_into_caller_callee_thread(
         self, mock_get_bot: MagicMock, mock_send: MagicMock
     ) -> None:
         mock_bot = MagicMock()
@@ -39,11 +39,14 @@ class InsertCallEventMessageTest(TestCase):
 
         insert_call_event_message(self.caller, self.callee, "Missed voice call")
 
-        self.assertEqual(mock_send.call_count, 2)
-        mock_send.assert_any_call(mock_bot, self.caller, "Missed voice call")
-        mock_send.assert_any_call(mock_bot, self.callee, "Missed voice call")
+        mock_send.assert_called_once_with(
+            self.caller.realm,
+            mock_bot,
+            "Missed voice call",
+            recipient_users=[self.caller, self.callee],
+        )
 
-    @patch("zproject.nodl.views.webhooks_livekit.internal_send_private_message")
+    @patch("zproject.nodl.views.webhooks_livekit.internal_send_group_direct_message")
     @patch("zproject.nodl.views.webhooks_livekit.get_system_bot")
     def test_exception_does_not_raise(
         self, mock_get_bot: MagicMock, mock_send: MagicMock
