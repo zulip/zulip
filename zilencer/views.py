@@ -402,7 +402,7 @@ def verify_registration_transfer_challenge_ack_endpoint(
 
     exception_and_error_message: tuple[Exception | None, str] | None = None
     try:
-        response = session.get(url)
+        response = session.get(url, allow_redirects=False)
 
         if check_transfer_challenge_response_secret_not_prepared(response):
             logger.info("verify_registration_transfer:host:%s|secret_not_prepared", hostname)
