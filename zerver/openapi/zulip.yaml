@@ -11325,6 +11325,47 @@ paths:
 
                       An example JSON error response when the current user is the only
                       organization owner in the organization:
+  /users/me/api_key/regenerate:
+    post:
+      operationId: regenerate-api-key
+      summary: Regenerate your API key
+      tags: ["users"]
+      description: |
+        !!! warn ""
+
+             **Note**: Users should treat their Zulip API key as
+             [carefully as they would their password](/help/protect-your-account).
+
+        Generate a new API key for the user making the request.
+
+        Changing a user's API key will immediately log them out of Zulip
+        on devices registered for [mobile push notifications][mobile-push].
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      api_key:
+                        type: string
+                        description: The new API key for the user.
+                    required:
+                      - api_key
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "api_key": "a1b2c3d4e5f6g7h8i9j0",
+                      }
   /users/me/alert_words:
     get:
       operationId: get-alert-words
@@ -13184,6 +13225,36 @@ paths:
                         description: |
                           The ID of the newly registered device.
                     example: {"msg": "", "device_id": 2, "result": "success"}
+  /remove_client_device:
+    post:
+      operationId: remove-client-device
+      summary: Remove a registered device
+      tags: ["mobile"]
+      description: |
+        Mobile devices use this endpoint to remove their device record
+        registered using [`POST /register_client_device`](/api/register-client-device)
+        when the user logs out.
+
+        This endpoint is currently not useful for clients other than mobile.
+
+        **Changes**: New in Zulip 12.0 (feature level 470).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                device_id:
+                  description: |
+                    The ID of the device to remove.
+                  type: integer
+                  example: 2
+              required:
+                - device_id
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /user_topics:
     post:
       operationId: update-user-topic

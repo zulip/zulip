@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {all_visibility_policies} = require("../src/user_topics.ts");
 
+const {make_stream} = require("./lib/example_stream.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -14,30 +15,30 @@ const {initialize_user_settings} = zrequire("user_settings");
 
 initialize_user_settings({user_settings: {}});
 
-const design = {
+const design = make_stream({
     stream_id: 100,
     name: "design",
-};
+});
 
-const devel = {
+const devel = make_stream({
     stream_id: 101,
     name: "devel",
-};
+});
 
-const office = {
+const office = make_stream({
     stream_id: 102,
     name: "office",
-};
+});
 
-const social = {
+const social = make_stream({
     stream_id: 103,
     name: "social",
-};
+});
 
-const unknown = {
+const unknown = make_stream({
     stream_id: 999,
     name: "whatever",
-};
+});
 
 stream_data.add_sub_for_tests(design);
 stream_data.add_sub_for_tests(devel);

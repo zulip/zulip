@@ -159,16 +159,6 @@ export function hide(opts: {$view: JQuery; set_visible: (value: boolean) => void
 export function is_in_focus(): boolean {
     let can_current_view_steal_focus = true;
     const focused_element = document.activeElement;
-
-    // If current view has focus we don't need to check anything else.
-    if (
-        focused_element instanceof HTMLElement &&
-        (focused_element.closest("#recent_view") !== null ||
-            focused_element.closest("#inbox-view") !== null)
-    ) {
-        return true;
-    }
-
     if (
         focused_element instanceof HTMLElement &&
         // Pill input elements.

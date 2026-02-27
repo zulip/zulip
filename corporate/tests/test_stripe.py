@@ -5488,16 +5488,16 @@ class RequiresBillingAccessTest(StripeTestCase):
                 self.assert_json_error_contains(result, error_message)
 
         check_users_cant_access(
-            [guest],
-            "Must be an organization member",
+            [guest, member],
+            "Insufficient permission",
             "/json/billing/upgrade",
             "POST",
             {},
         )
 
         check_users_cant_access(
-            [guest],
-            "Must be an organization member",
+            [guest, member],
+            "Insufficient permission",
             "/json/billing/sponsorship",
             "POST",
             {},
@@ -5520,16 +5520,16 @@ class RequiresBillingAccessTest(StripeTestCase):
         )
 
         check_users_cant_access(
-            [guest],
-            "Must be an organization member",
+            [guest, member],
+            "Insufficient permission",
             "/json/upgrade/session/start_card_update_session",
             "POST",
             {},
         )
 
         check_users_cant_access(
-            [guest],
-            "Must be an organization member",
+            [guest, member],
+            "Insufficient permission",
             "/json/billing/event/status",
             "GET",
             {},
@@ -5566,6 +5566,45 @@ class RequiresBillingAccessTest(StripeTestCase):
         self.login_user(self.example_user("cordelia"))
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You do not have permission to view this page."], response)
+
+    def test_start_card_update_stripe_session_requires_billing_access(self) -> None:
+        # Verify that only users with billing access can update card.
+        guest = self.example_user("polonius")
+        member = self.example_user("othello")
+        realm_owner = self.example_user("desdemona")
+        realm_owner.role = UserProfile.ROLE_REALM_OWNER
+        realm_owner.save(update_fields=["role"])
+
+        # Guest users should not have access
+        self.login_user(guest)
+        response = self.client_post(
+            "/json/billing/session/start_card_update_session",
+            {},
+            content_type="application/json",
+        )
+        self.assert_json_error_contains(response, "Insufficient permission")
+
+        # Regular members should not have access
+        self.login_user(member)
+        response = self.client_post(
+            "/json/billing/session/start_card_update_session",
+            {},
+            content_type="application/json",
+        )
+        self.assert_json_error_contains(response, "Insufficient permission")
+
+        # Realm owner should have access (they have billing access)
+        self.login_user(realm_owner)
+        with patch(
+            "corporate.lib.stripe.RealmBillingSession.create_card_update_session",
+            return_value={"stripe_session_id": "cs_test_session_id"},
+        ):
+            response = self.client_post(
+                "/json/billing/session/start_card_update_session",
+                {},
+                content_type="application/json",
+            )
+            self.assert_json_success(response)
 
 
 class BillingHelpersTest(ZulipTestCase):

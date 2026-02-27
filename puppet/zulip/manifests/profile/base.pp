@@ -37,6 +37,8 @@ class zulip::profile::base {
         'apt-transport-https',
         # Needed for the cron jobs installed by Puppet
         'cron',
+        # Applies log rotation config installed by Puppet
+        'logrotate',
       ]
     }
     'RedHat': {

@@ -53,7 +53,7 @@ from zerver.actions.default_streams import (
     do_remove_streams_from_default_stream_group,
     lookup_default_stream_groups,
 )
-from zerver.actions.devices import do_register_device
+from zerver.actions.devices import do_register_device, do_remove_device
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_invite_users,
@@ -177,6 +177,7 @@ from zerver.lib.event_schema import (
     check_default_streams,
     check_delete_message,
     check_device_add,
+    check_device_remove,
     check_device_update,
     check_direct_message,
     check_draft_add,
@@ -4286,6 +4287,12 @@ class NormalActionsTest(BaseAction):
         with self.verify_action() as events:
             do_register_device(self.user_profile)
         check_device_add("events[0]", events[0])
+
+    def test_remove_device(self) -> None:
+        device = Device.objects.create(user=self.user_profile)
+        with self.verify_action() as events:
+            do_remove_device(self.user_profile, device.id)
+        check_device_remove("events[0]", events[0])
 
     def test_register_push_device(self) -> None:
         self.login_user(self.user_profile)

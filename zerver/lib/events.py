@@ -2016,6 +2016,8 @@ def apply_event(
                 "push_token_last_updated_timestamp": None,
                 "push_registration_error_code": None,
             }
+        elif event["op"] == "remove":
+            del state["devices"][str(event["device_id"])]
         elif event["op"] == "update":
             if "push_key_id" in event:
                 state["devices"][str(event["device_id"])]["push_key_id"] = event["push_key_id"]

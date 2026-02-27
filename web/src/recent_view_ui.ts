@@ -493,7 +493,7 @@ export function process_messages(
     rows_order_changed = true,
     msg_list_data?: MessageListData,
 ): void {
-    // Always synced with messages in all_messages_data.
+    // Always synced with messages in recent_view_messages_data.
 
     let conversation_data_updated = false;
     const updated_rows = new Set<string>();

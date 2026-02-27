@@ -14,3 +14,17 @@ class TestDeviceRegistration(ZulipTestCase):
 
         device = Device.objects.get(id=data["device_id"])
         self.assertEqual(device.user_id, user.id)
+
+    def test_remove_device(self) -> None:
+        user = self.example_user("hamlet")
+
+        self.assertEqual(Device.objects.count(), 0)
+
+        result = self.api_post(user, "/api/v1/register_client_device")
+        data = self.assert_json_success(result)
+        device = Device.objects.get(id=data["device_id"])
+
+        result = self.api_post(user, "/api/v1/remove_client_device", {"device_id": device.id})
+        self.assert_json_success(result)
+
+        self.assertEqual(Device.objects.count(), 0)

@@ -14,7 +14,6 @@ import * as activity from "./activity.ts";
 import * as activity_ui from "./activity_ui.ts";
 import * as add_stream_options_popover from "./add_stream_options_popover.ts";
 import * as alert_words from "./alert_words.ts";
-import {all_messages_data} from "./all_messages_data.ts";
 import * as audible_notifications from "./audible_notifications.ts";
 import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
@@ -106,6 +105,7 @@ import * as pygments_data from "./pygments_data.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload_setup from "./reload_setup.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
@@ -550,7 +550,7 @@ export async function initialize_everything(state_data) {
         maybe_load_older_messages(first_unread_message_id) {
             recent_view_ui.set_backfill_in_progress(true);
             message_fetch.maybe_load_older_messages({
-                msg_list_data: all_messages_data,
+                msg_list_data: recent_view_messages_data,
                 recent_view: true,
                 // To have a hard anchor on our target of first unread message id,
                 // we pass it from here, otherwise it might get updated and lead to confusion.

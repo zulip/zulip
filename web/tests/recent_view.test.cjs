@@ -220,7 +220,7 @@ dropdown_widget.DropdownWidget = function DropdownWidget() {
     this.render = noop;
 };
 
-const {all_messages_data} = zrequire("all_messages_data");
+const {recent_view_messages_data} = zrequire("recent_view_messages_data");
 const {buddy_list} = zrequire("buddy_list");
 const activity_ui = zrequire("activity_ui");
 const people = zrequire("people");
@@ -1069,7 +1069,7 @@ test("test_delete_messages", ({override}) => {
 
     // messages[0] was removed.
     let reduced_msgs = messages.slice(1);
-    override(all_messages_data, "all_messages_after_mute_filtering", () => reduced_msgs);
+    override(recent_view_messages_data, "all_messages_after_mute_filtering", () => reduced_msgs);
 
     let all_topics = rt_data.get_conversations();
     assert.equal(
@@ -1100,7 +1100,7 @@ test("test_delete_messages", ({override}) => {
 });
 
 test("test_topic_edit", ({override}) => {
-    override(all_messages_data, "all_messages_after_mute_filtering", () => messages);
+    override(recent_view_messages_data, "all_messages_after_mute_filtering", () => messages);
     recent_view_util.set_visible(false);
 
     // NOTE: This test should always run in the end as it modified the messages data.

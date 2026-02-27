@@ -429,3 +429,21 @@ def get_temporary_url_for_uploaded_file() -> dict[str, object]:
         realm_id = upload_path_parts[1]
         filename = upload_path_parts[2]
     return {"realm_id_str": realm_id, "filename": filename}
+
+
+@openapi_param_value_generator(["/users/me/api_key/regenerate:post"])
+def regenerate_api_key_test_user() -> dict[str, object]:
+    test_user_email = "regenerate-api-key-test@zulip.com"
+    test_user = do_create_user(
+        test_user_email,
+        "secret",
+        get_realm("zulip"),
+        "Mr. Regenerate",
+        role=200,
+        acting_user=None,
+    )
+    realm = get_realm("zulip")
+    test_user_api_key = get_user(test_user_email, realm).api_key
+    # Change authentication line to allow test_client to regenerate its own key.
+    AUTHENTICATION_LINE[0] = f"{test_user.email}:{test_user_api_key}"
+    return {}

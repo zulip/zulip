@@ -1610,6 +1610,14 @@ class RealmImportExportTest(ExportFile):
         # Verify strange invariant for UserStatus/RealmEmoji.
         self.assertEqual(user_status.emoji_code, str(realm_emoji.id))
 
+        # data to test import of external auth IDs
+        ExternalAuthID.objects.create(
+            user=hamlet,
+            realm=original_realm,
+            external_auth_method_name="saml:idp_name",
+            external_auth_id="hamlet-saml-id",
+        )
+
         # data to test import of botstoragedata and botconfigdata
         bot_profile = do_create_user(
             email="bot-1@zulip.com",
@@ -1667,6 +1675,16 @@ class RealmImportExportTest(ExportFile):
         self.assertGreaterEqual(original_realm_emoji_count, 2)
         new_realm_emoji.author = hamlet
         new_realm_emoji.save()
+
+        RealmExport.objects.create(
+            realm=original_realm,
+            type=RealmExport.EXPORT_PUBLIC,
+            status=RealmExport.SUCCEEDED,
+            date_requested=timezone_now(),
+            date_succeeded=timezone_now(),
+            acting_user=hamlet,
+            export_path="/some/server/path/export.tar.gz",
+        )
 
         RealmAuditLog.objects.create(
             realm=original_realm,
@@ -1918,6 +1936,13 @@ class RealmImportExportTest(ExportFile):
 
         imported_prospero_user = get_user_by_delivery_email(prospero_email, imported_realm)
         self.assertIsNotNone(imported_prospero_user.recipient)
+
+        # Ensure RealmExport.export_path is excluded from the export and thus None after importing.
+        exported_realm_exports = read_json("realm.json")["zerver_realmexport"]
+        self.assert_length(exported_realm_exports, 1)
+        self.assertNotIn("export_path", exported_realm_exports[0])
+        imported_realm_export = RealmExport.objects.get(realm=imported_realm)
+        self.assertIsNone(imported_realm_export.export_path)
 
     def test_import_message_edit_history(self) -> None:
         realm = get_realm("zulip")
@@ -2314,6 +2339,20 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_channel_folders(r: Realm) -> set[str]:
             return set(ChannelFolder.objects.filter(realm=r).values_list("name", flat=True))
+
+        @getter
+        def get_external_auth_ids(r: Realm) -> set[tuple[str, str, str]]:
+            return {
+                (rec.user.delivery_email, rec.external_auth_method_name, rec.external_auth_id)
+                for rec in ExternalAuthID.objects.filter(realm=r)
+            }
+
+        @getter
+        def get_realm_exports(r: Realm) -> set[tuple[datetime, int, int]]:
+            return {
+                (rec.date_requested, rec.type, rec.status)
+                for rec in RealmExport.objects.filter(realm=r)
+            }
 
         return getters
 

@@ -20,6 +20,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
+from urllib3.util import Retry
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
@@ -27,6 +28,7 @@ from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.message import normalize_body_for_import
 from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.parallel import run_parallel
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
@@ -702,6 +704,15 @@ def process_avatars(
     return avatar_list + avatar_original_list
 
 
+# Retry on 429 (rate-limited) and common server errors that are
+# typically transient for file-hosting services like Slack's CDN.
+_data_import_session = OutgoingSession(
+    role="data_import",
+    timeout=60,
+    max_retries=Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504]),
+)
+
+
 def request_file_stream(
     url: str,
     params: dict[str, Any] | None = None,
@@ -711,7 +722,7 @@ def request_file_stream(
     if "stream" not in kwargs:
         kwargs.update(stream=True)
 
-    response = requests.get(
+    response = _data_import_session.get(
         url,
         params=params,
         headers=headers,
@@ -765,7 +776,7 @@ def get_emojis(
     Raises `BadImageError` when the content-type is not guessable, or
     not in both `THUMBNAIL_ACCEPT_IMAGE_TYPES` and `INLINE_MIME_TYPES`.
     """
-    response = requests.get(emoji_url, stream=True)
+    response = _data_import_session.get(emoji_url, stream=True)
     content_type_raw = response.headers.get("Content-Type")
     if content_type_raw is None:
         logging.warning(

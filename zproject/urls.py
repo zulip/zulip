@@ -61,7 +61,7 @@ from zerver.views.custom_profile_fields import (
     update_realm_custom_profile_field,
     update_user_custom_profile_data,
 )
-from zerver.views.devices import register_device
+from zerver.views.devices import register_device, remove_device
 from zerver.views.digest import digest_page
 from zerver.views.documentation import MarkdownDirectoryView, integrations_catalog, integrations_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
@@ -612,6 +612,7 @@ v1_api_and_json_patterns = [
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
     rest_path("export/realm/consents", GET=get_users_export_consents),
     rest_path("register_client_device", POST=register_device),
+    rest_path("remove_client_device", POST=remove_device),
 ]
 
 # These views serve pages (HTML). As such, their internationalization

@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 470**
+
+* [`POST /remove_client_device`](/api/remove-client-device):
+  Added a new endpoint to remove a registered device.
+
 **Feature level 469**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),

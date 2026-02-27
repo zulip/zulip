@@ -3596,11 +3596,8 @@ class BillingSession(ABC):
             except Session.DoesNotExist:
                 raise JsonableError(_("Session not found"))
 
-            if (
-                session.type == Session.CARD_UPDATE_FROM_BILLING_PAGE
-                and not self.has_billing_access()
-            ):
-                raise JsonableError(_("Insufficient permission"))
+            if session.type == Session.CARD_UPDATE_FROM_BILLING_PAGE:
+                assert self.has_billing_access()
             return {"session": session.to_dict()}
 
         stripe_invoice_id = event_status_request.stripe_invoice_id

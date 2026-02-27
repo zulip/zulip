@@ -183,7 +183,11 @@ Fixes #123.
 Since `git rebase -i` requires an interactive editor, use
 `GIT_SEQUENCE_EDITOR` to supply the todo list via a script:
 
-1. **Squashing fixups into existing commits:** Create fixup commits with
+1. **Updating the HEAD commit:** If the commit you need to modify is
+   already at HEAD, just use `git commit --amend` directly. The
+   fixup+rebase workflow below is only needed for non-HEAD commits.
+
+2. **Squashing fixups into existing commits:** Create fixup commits with
    `git commit --fixup=<target-hash>`, then write a shell script that
    outputs the desired todo (with `pick` and `fixup` lines in order)
    and run:
@@ -195,7 +199,7 @@ Since `git rebase -i` requires an interactive editor, use
    Note: `--autosquash` alone without `-i` does **not** reorder or
    squash anything.
 
-2. **Rewording commit messages:** In the todo script, use `exec` lines:
+3. **Rewording commit messages:** In the todo script, use `exec` lines:
    ```
    pick <hash> Original message
    exec GIT_EDITOR=/path/to/new-msg-script.sh git commit --amend

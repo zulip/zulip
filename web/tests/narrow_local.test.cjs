@@ -10,7 +10,7 @@ mock_esm("../src/people.ts", {
     maybe_get_user_by_id: noop,
 });
 
-const all_messages_data = zrequire("../src/all_messages_data");
+const recent_view_messages_data = zrequire("../src/recent_view_messages_data");
 
 const {MessageListData} = zrequire("../src/message_list_data");
 const narrow_state = zrequire("narrow_state");
@@ -45,7 +45,7 @@ function verify_fixture(fixture, override_rewire) {
         final_select_id: undefined,
     };
 
-    override_rewire(all_messages_data, "all_messages_data", {
+    override_rewire(recent_view_messages_data, "recent_view_messages_data", {
         fetch_status: {
             has_found_newest: () => fixture.has_found_newest,
         },
@@ -69,7 +69,7 @@ function verify_fixture(fixture, override_rewire) {
     message_view.maybe_add_local_messages({
         id_info,
         msg_data,
-        superset_data: all_messages_data.all_messages_data,
+        superset_data: recent_view_messages_data.recent_view_messages_data,
     });
 
     assert.deepEqual(id_info, fixture.expected_id_info);
@@ -384,11 +384,11 @@ test_fixture("search, stream, not in all_messages", {
     expected_msg_ids: [],
 });
 
-test_fixture("stream/topic not in all_messages", {
+test_fixture("stream/topic not in recent_view_messages_data", {
     // This is a bit of a corner case, but you could have a scenario
     // where you've gone way back in a topic (perhaps something that
     // has been muted a long time) and find an unread message that isn't
-    // actually in all_messages_data.
+    // actually in recent_view_messages_data.
     filter_terms: [
         {operator: "stream", operand: "one"},
         {operator: "topic", operand: "whatever"},

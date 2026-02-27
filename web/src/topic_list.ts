@@ -7,12 +7,12 @@ import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 import render_topic_list_new_topic from "../templates/topic_list_new_topic.hbs";
 
-import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -203,18 +203,18 @@ export function is_full_topic_history_available(
 
     function all_topics_in_cache(sub: StreamSubscription): boolean {
         // Checks whether this browser's cache of contiguous messages
-        // (used to locally render narrows) in all_messages_data has all
-        // messages from a given stream. Because all_messages_data is a range,
+        // (used to locally render narrows) in recent_view_messages_data has all
+        // messages from a given stream. Because recent_view_messages_data is a range,
         // we just need to compare it to the range of history on the stream.
 
         // If the cache isn't initialized, it's a clear false.
-        if (all_messages_data === undefined || all_messages_data.empty()) {
+        if (recent_view_messages_data === undefined || recent_view_messages_data.empty()) {
             return false;
         }
 
         // If the cache doesn't have the latest messages, we can't be sure
         // we have all topics.
-        if (!all_messages_data.fetch_status.has_found_newest()) {
+        if (!recent_view_messages_data.fetch_status.has_found_newest()) {
             return false;
         }
 
@@ -225,7 +225,7 @@ export function is_full_topic_history_available(
             return true;
         }
 
-        const first_cached_message = all_messages_data.first_including_muted();
+        const first_cached_message = recent_view_messages_data.first_including_muted();
         if (sub.first_message_id < first_cached_message!.id) {
             // Missing the oldest topics in this stream in our cache.
             return false;

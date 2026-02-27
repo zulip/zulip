@@ -296,6 +296,12 @@ class EventDeviceAdd(BaseEvent):
     device_id: int
 
 
+class EventDeviceRemove(BaseEvent):
+    type: Literal["device"]
+    op: Literal["remove"]
+    device_id: int
+
+
 class EventDeviceUpdate(BaseEvent):
     type: Literal["device"]
     op: Literal["update"]

@@ -1217,10 +1217,16 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             message_view.stream_cycle_forward();
             return true;
         case "n_key":
-            message_view.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
+            message_view.narrow_to_next_topic({
+                trigger: "next_topic_unread_hotkey",
+                only_followed_topics: false,
+            });
             return true;
         case "narrow_to_next_unread_followed_topic":
-            message_view.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: true});
+            message_view.narrow_to_next_topic({
+                trigger: "next_topic_unread_hotkey",
+                only_followed_topics: true,
+            });
             return true;
         case "p_key":
             message_view.narrow_to_next_pm_string({trigger: "hotkey"});

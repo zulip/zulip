@@ -24,7 +24,7 @@ Otherwise, to authenticate an API request:
 - For `Basic` authentication credentials in the Zulip API, a "username"
   takes the form of an email address, and a "password" takes the form of
   an API key. In the `curl` example for each endpoint, this is shown as:
-  `-u BOT_EMAIL_ADDRESS:BOT_API_KEY`.
+  `-u EMAIL_ADDRESS:API_KEY`.
 
 - A bot's credentials can be obtained through the web and desktop apps'
   [bot management UI](/help/manage-a-bot) or by [downloading the bot's
