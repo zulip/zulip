@@ -350,6 +350,8 @@ lazy-object-proxy==1.12.0
     # via openapi-spec-validator
 line-profiler==5.0.0
 litellm==1.80.5
+livekit-api==1.0.2
+    # via nodl voice calling (LiveKit integration)
 lxml==6.0.2
     # via
     #   parsel
