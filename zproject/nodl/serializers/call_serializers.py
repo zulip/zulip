@@ -1,8 +1,22 @@
 from typing import Any
 
 
-def serialize_call_record(call: Any) -> dict:
-    """Serialize a CallRecord to a dict with snake_case JSON fields."""
+def serialize_call_record(call: Any, requesting_user_id: int | None = None) -> dict:
+    """Serialize a CallRecord to a dict with snake_case JSON fields.
+
+    When requesting_user_id is provided, derives remote_name, remote_avatar_url,
+    and is_incoming from the caller/callee relationship.
+    """
+    is_incoming = requesting_user_id is not None and call.callee_id == requesting_user_id
+    if is_incoming:
+        remote = getattr(call, "caller", None)
+        remote_id = call.caller_id
+    else:
+        remote = getattr(call, "callee", None)
+        remote_id = call.callee_id
+
+    remote_name = remote.full_name if remote else f"User {remote_id}"
+
     return {
         "call_id": str(call.id),
         "room_name": call.room_name,
@@ -14,6 +28,9 @@ def serialize_call_record(call: Any) -> dict:
         "ended_at": call.ended_at.isoformat() if call.ended_at else None,
         "duration_seconds": call.duration_seconds,
         "end_reason": call.end_reason,
+        "remote_name": remote_name,
+        "remote_avatar_url": None,
+        "is_incoming": is_incoming,
     }
 
 

@@ -466,6 +466,7 @@ def call_history(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
         CallRecord.objects.filter(
             Q(caller=user_profile) | Q(callee=user_profile)
         )
+        .select_related("caller", "callee")
         .order_by("-initiated_at")[offset : offset + limit]
     )
 
@@ -473,7 +474,10 @@ def call_history(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
         {
             "result": "success",
             "msg": "",
-            "calls": [serialize_call_record(c) for c in calls],
+            "calls": [
+                serialize_call_record(c, requesting_user_id=user_profile.id)
+                for c in calls
+            ],
         }
     )
 
@@ -503,7 +507,7 @@ def call_detail(
         )
 
     try:
-        call = CallRecord.objects.get(
+        call = CallRecord.objects.select_related("caller", "callee").get(
             id=call_uuid,
         )
     except CallRecord.DoesNotExist:
@@ -523,6 +527,6 @@ def call_detail(
         {
             "result": "success",
             "msg": "",
-            "call": serialize_call_record(call),
+            "call": serialize_call_record(call, requesting_user_id=user_profile.id),
         }
     )
