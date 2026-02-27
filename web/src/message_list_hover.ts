@@ -23,7 +23,7 @@ export function message_unhover(): void {
         clearTimeout(move_timeout);
         move_timeout = undefined;
     }
-    $current_message_hover.removeClass("can-edit-content can-move-message");
+    $current_message_hover.removeClass("can-edit-content can-move-message content-edit-enabled");
     $current_message_hover = undefined;
 }
 
@@ -70,6 +70,11 @@ function change_edit_content_button($message_row: JQuery, message: Message): voi
     } else if (!is_content_editable && !can_move_message) {
         $edit_content.removeClass("can-edit-content can-move-message");
     }
+
+    // Set a row-level class so CSS can gate other edit-dependent UI
+    // (e.g. the hide-preview button on link previews) that lives
+    // outside the .edit_content controls container.
+    $message_row.toggleClass("content-edit-enabled", is_content_editable);
 
     if (edit_timeout === undefined) {
         const remaining_edit_time = message_edit.remaining_content_edit_time(message) * 1000;

@@ -11,13 +11,17 @@ import render_scroll_to_time_popover from "../templates/popovers/scroll_to_time_
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
+import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
+import * as dialog_widget from "./dialog_widget.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as flatpickr from "./flatpickr.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
+import {$t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -40,6 +44,7 @@ import * as starred_messages_ui from "./starred_messages_ui.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
 import * as topic_list from "./topic_list.ts";
+import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
@@ -148,6 +153,11 @@ export function initialize(): void {
         // feature of stopPropagation once clicked.
         // See https://github.com/zenorocha/clipboard.js/pull/475
         if ($target.is(".copy_codeblock") || $target.parents(".copy_codeblock").length > 0) {
+            return true;
+        }
+
+        // Hide link preview button
+        if ($target.closest(".hide-preview-button").length > 0) {
             return true;
         }
 
@@ -291,6 +301,53 @@ export function initialize(): void {
         message_lists.current.view.hide_revealed_message(message_id);
         e.preventDefault();
         e.stopPropagation();
+    });
+
+    // Hide a specific link preview embed from a message.
+    $("#main_div").on("click", ".hide-preview-button", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $button = $(this);
+        const preview_url = $button.attr("data-preview-url");
+        assert(preview_url !== undefined);
+
+        const message_id = rows.id($button.closest(".message_row"));
+        const message = message_store.get(message_id);
+        assert(message !== undefined);
+
+        if (!message_edit.is_content_editable(message)) {
+            return;
+        }
+
+        function do_hide_preview(): void {
+            void channel.patch({
+                url: "/json/messages/" + message_id,
+                data: {hide_preview_url: preview_url},
+                success() {
+                    dialog_widget.hide_dialog_spinner();
+                    dialog_widget.close();
+                },
+                error(xhr) {
+                    dialog_widget.hide_dialog_spinner();
+                    ui_report.error(
+                        $t_html({defaultMessage: "Error hiding link preview"}),
+                        xhr,
+                        $("#dialog_error"),
+                    );
+                },
+            });
+        }
+
+        confirm_dialog.launch({
+            modal_title_html: $t_html({defaultMessage: "Remove link preview?"}),
+            modal_content_html: $t_html({
+                defaultMessage: "This will remove it for everyone.",
+            }),
+            is_compact: true,
+            on_click: do_hide_preview,
+            loading_spinner: true,
+        });
     });
 
     $("#main_div").on("click", "a.stream", function (this: HTMLAnchorElement, e) {
