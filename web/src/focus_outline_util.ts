@@ -22,10 +22,7 @@ const NAVIGATION_KEYS = new Set([
  * removed (i.e. this is the first navigation keypress), so callers
  * can decide whether to skip the normal navigation action.
  */
-export function maybe_show_focus_outlines(
-    $container: JQuery,
-    input_key: string,
-): boolean {
+export function maybe_show_focus_outlines($container: JQuery, input_key: string): boolean {
     if ($container.hasClass("no-visible-focus-outlines") && NAVIGATION_KEYS.has(input_key)) {
         $container.removeClass("no-visible-focus-outlines");
         return true;

@@ -19,6 +19,7 @@ import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as focus_outline_util from "./focus_outline_util.ts";
 import * as folder_dropdown_widget from "./folder_dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -1794,6 +1795,19 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     // returning true will cause the caller to do
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
+
+    const is_first_navigation = focus_outline_util.maybe_show_focus_outlines(
+        $("#recent_view"),
+        input_key,
+    );
+
+    if (is_first_navigation && is_table_focused()) {
+        // First navigation keypress after page load / view switch:
+        // just reveal the focus ring on the current row without
+        // moving to a different row.
+        set_table_focus(row_focus, col_focus, true);
+        return true;
+    }
 
     if (input_key === "tab" || input_key === "shift_tab") {
         // Tabbing should be handled by browser but to keep the focus element same
