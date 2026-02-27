@@ -323,7 +323,10 @@ export function quote_message(opts: {
                 message.id,
             );
             const channel_name = sub_store.maybe_get_stream_name(message.stream_id)!;
-            const text = topic_link_util.get_stream_topic_link_syntax(channel_name, message.topic);
+            const topic_link_syntax = topic_link_util.get_stream_topic_link_syntax(
+                channel_name,
+                message.topic,
+            );
             // Final message looks like:
             //     @_**Iago|5** [said](link to message) in [#channel > topic](link to topic):
             //     ```quote
@@ -332,13 +335,15 @@ export function quote_message(opts: {
             // Keep syntax in sync with channel message reminder format in zerver/lib/reminders.py
             content = $t(
                 {
-                    defaultMessage:
-                        "{username} [said]({link_to_message}) in {channel_link_syntax}:",
+                    defaultMessage: "{username} [said]({link_to_message}) in {topic_link_syntax}:",
                 },
                 {
                     username: sender_mention,
                     link_to_message: hash_util.by_conversation_and_time_url(message),
-                    channel_link_syntax: topic_link_util.as_markdown_link_syntax(text, link),
+                    topic_link_syntax: topic_link_util.as_markdown_link_syntax(
+                        topic_link_syntax,
+                        link,
+                    ),
                 },
             );
         } else {
