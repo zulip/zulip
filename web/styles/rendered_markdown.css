@@ -790,7 +790,8 @@
         grid-template-columns:
             [thumbnail-start] var(--length-message-preview-embeds)
             [thumbnail-end fader-start data-container-start] minmax(0, 1fr)
-            [data-container-end fader-end];
+            [data-container-end fader-end dismiss-start] auto
+            [dismiss-end];
         grid-template-rows:
             [border-start thumbnail-start data-container-start] calc(
                 var(--length-message-preview-embeds) - 10%
@@ -854,6 +855,98 @@
         .data-container {
             grid-area: data-container;
         }
+
+        /* Own column, so the X never overlaps the title/description. */
+        .hide-preview-container {
+            position: static;
+            grid-column: dismiss-start / dismiss-end;
+            grid-row: border-start / border-end;
+            align-self: start;
+            margin-inline-start: 0.5em;
+        }
+    }
+
+    .message_embed,
+    .message-media-preview-image,
+    .message-media-preview-video {
+        position: relative;
+    }
+
+    /* Revealed on hover, only for messages the viewer can edit. */
+    .message_row:has(.edit_content.can-edit-content) & {
+        .message_embed:hover .hide-preview-container,
+        .message-media-preview-image:hover .hide-preview-container,
+        .message-media-preview-video:hover .hide-preview-container {
+            visibility: visible;
+        }
+
+        /* Dim the preview when hovering the remove button. */
+        .message_embed:has(.hide-preview-button:hover) .hide-preview-overlay,
+        .message-media-preview-image:has(.hide-preview-button:hover)
+            .hide-preview-overlay,
+        .message-media-preview-video:has(.hide-preview-button:hover)
+            .hide-preview-overlay {
+            visibility: visible;
+        }
+    }
+
+    .hide-preview-container {
+        position: absolute;
+        top: 0.25em;
+        inset-inline-end: 0.25em;
+        visibility: hidden;
+        /* Keep above the dim overlay (z-index: 1). */
+        z-index: 2;
+    }
+
+    .hide-preview-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Reset the native button chrome. */
+        appearance: none;
+        border: none;
+        background: none;
+        font-size: 0.85em;
+        padding: 0.25em;
+        cursor: pointer;
+        color: light-dark(hsl(0deg 0% 20%), hsl(0deg 0% 95%));
+        opacity: 0.9;
+        transition: opacity 0.2s ease;
+
+        /* Hovering the X dims the preview behind it, so flip the icon to
+           white to stay legible over the dim (both themes). */
+        &:hover {
+            opacity: 1;
+            color: hsl(0deg 0% 100%);
+        }
+    }
+
+    .hide-preview-overlay {
+        position: absolute;
+        inset: 0;
+        background: hsl(0deg 0% 0% / 40%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        visibility: hidden;
+        z-index: 1;
+        border-radius: inherit;
+        /* Clip the "Remove link preview" label so it can't spill out of a
+           small preview. */
+        overflow: hidden;
+    }
+
+    .hide-preview-overlay-text {
+        color: hsl(0deg 0% 100%);
+        font-size: 1em;
+        text-align: center;
+        padding: 0 0.625em;
+        text-shadow:
+            0 0 4px hsl(0deg 0% 0% / 80%),
+            0 1px 2px hsl(0deg 0% 0% / 100%);
+        font-weight: 500;
     }
 
     & a:not(.icon-button) {
