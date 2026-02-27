@@ -289,7 +289,7 @@ function get_row_type(row: number): string {
     if (!topics_widget) {
         const $topic_rows = $("#recent-view-content-tbody tr");
         const $topic_row = $topic_rows.eq(row);
-        const is_private = $topic_row.attr("data-private");
+        const is_private = $topic_row.hasClass("private_conversation_row");
         if (is_private) {
             return "private";
         }
