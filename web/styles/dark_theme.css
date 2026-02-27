@@ -128,6 +128,10 @@
     #recent-view-content-table {
         border-width: 0.1875em; /* 3px at 16px/1em */
         border-bottom-width: 1px;
+
+        .unread_topic a {
+            font-weight: 400;
+        }
     }
 
     .drafts-container .header-body .delete-drafts-group > *:focus {
