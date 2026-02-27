@@ -829,6 +829,89 @@
         }
     }
 
+    /* Hide-preview dismiss button for link previews. */
+    .message_embed,
+    .message-media-preview-image,
+    .message-media-preview-video {
+        position: relative;
+    }
+
+    /* Revealed on hover only when .content-edit-enabled is set on
+       .message_row (tracks edit-window timer). */
+    .content-edit-enabled & {
+        .message_embed:hover .hide-preview-container,
+        .message-media-preview-image:hover .hide-preview-container,
+        .message-media-preview-video:hover .hide-preview-container {
+            visibility: visible;
+        }
+
+        /* Dim the preview when hovering the remove button. */
+        .message_embed:has(.hide-preview-button:hover) .hide-preview-overlay,
+        .message-media-preview-image:has(.hide-preview-button:hover)
+            .hide-preview-overlay,
+        .message-media-preview-video:has(.hide-preview-button:hover)
+            .hide-preview-overlay {
+            display: flex;
+        }
+    }
+
+    .hide-preview-container {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        visibility: hidden;
+        /* Keep above the dim overlay (z-index: 1). */
+        z-index: 2;
+    }
+
+    .hide-preview-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        color: var(--color-text-default);
+        opacity: 0.6;
+        transition:
+            opacity 0.2s ease,
+            color 0.2s ease;
+
+        &:hover {
+            opacity: 1;
+            /* Overlay is always present when hovered; white works in both themes. */
+            color: hsl(0deg 0% 100%);
+
+            .zulip-icon {
+                color: hsl(0deg 0% 100%);
+            }
+        }
+    }
+
+    .hide-preview-overlay {
+        position: absolute;
+        inset: 0;
+        background: hsl(0deg 0% 0% / 40%);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 1;
+        border-radius: inherit;
+    }
+
+    .hide-preview-overlay-text {
+        color: hsl(0deg 0% 100%);
+        font-size: 1rem;
+        text-align: center;
+        padding: 0 10px;
+        text-shadow:
+            0 0 4px hsl(0deg 0% 0% / 80%),
+            0 1px 2px hsl(0deg 0% 0% / 100%);
+        font-weight: 500;
+    }
+
     & a:not(.icon-button) {
         color: var(--color-markdown-link);
         text-decoration: none;
