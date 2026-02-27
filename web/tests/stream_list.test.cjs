@@ -730,3 +730,44 @@ test_ui("create_initial_sidebar_rows", ({override, override_rewire, mock_templat
     assert.equal(html_dict.get(1000), "<div>stub-html-devel");
     assert.equal(html_dict.get(5000), "<div>stub-html-Denmark");
 });
+
+test_ui("narrowing show_more_topics rebuilds after clear_topics", ({override_rewire}) => {
+    const calls = [];
+    let active_stream = carSub.stream_id;
+    topic_list.close = () => {
+        calls.push("close");
+        active_stream = undefined;
+    };
+    topic_list.rebuild_left_sidebar = (_$stream_li, stream_id) => {
+        calls.push(`rebuild:${stream_id}`);
+        active_stream = stream_id;
+    };
+    topic_list.setup_topic_search_typeahead = noop;
+    topic_list.active_stream_id = () => active_stream;
+    topic_list.zoom_out = noop;
+    override_rewire(stream_list, "scroll_stream_into_view", noop);
+    override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
+    override_rewire(stream_list, "update_dom_with_unread_counts", noop);
+    override_rewire(stream_list, "get_section_id_for_stream_li", () => "normal");
+    override_rewire(stream_list, "maybe_hide_topic_bracket", noop);
+    override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
+    override_rewire(stream_list, "set_sections_states", noop);
+    $(".filter-topics").remove = noop;
+    $.create("#stream_filters li.narrow-filter", {children: []});
+    initialize_stream_data();
+    stream_list.build_stream_list(true);
+    calls.length = 0;
+
+    topic_list.zoom_in = (stream_id) => {
+        calls.push(`zoom:${stream_id}`);
+    };
+
+    const filter = new Filter([{operator: "channel", operand: develSub.stream_id.toString()}]);
+    stream_list.handle_narrow_activated(filter, false, true);
+    assert.deepEqual(calls, [
+        "close",
+        `rebuild:${develSub.stream_id}`,
+        `rebuild:${develSub.stream_id}`,
+        `zoom:${develSub.stream_id}`,
+    ]);
+});

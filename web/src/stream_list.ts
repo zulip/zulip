@@ -68,14 +68,20 @@ export function is_zoomed_in(): boolean {
     return zoomed_in;
 }
 
-function zoom_in(): void {
-    zoomed_in = true;
-    const stream_id = topic_list.active_stream_id();
+function zoom_in(stream_id?: number, $stream_li?: JQuery): void {
+    stream_id ??= topic_list.active_stream_id();
     assert(stream_id !== undefined);
 
+    $stream_li ??= get_stream_li(stream_id);
+    assert($stream_li !== undefined);
+
+    zoomed_in = true;
     popovers.hide_all();
     pm_list.close();
-    topic_list.zoom_in();
+    // topic_list.zoom_in requires an active widget for this stream, but
+    // sidebar rerenders can clear topic widgets before we reach this path.
+    topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    topic_list.zoom_in(stream_id);
     zoom_in_topics(stream_id);
 }
 
@@ -1179,7 +1185,9 @@ export function handle_narrow_activated(
     const $stream_li = update_stream_sidebar_for_narrow(filter);
     if ($stream_li && !change_hash) {
         if (!is_zoomed_in() && show_more_topics) {
-            zoom_in();
+            const info = get_sidebar_stream_topic_info(filter);
+            assert(info.stream_id !== undefined);
+            zoom_in(info.stream_id, $stream_li);
         } else if (is_zoomed_in() && !show_more_topics) {
             zoom_out();
         }
@@ -1215,7 +1223,9 @@ export function initialize({
     set_event_handlers({show_channel_feed});
 
     $("#stream_filters").on("click", ".show-more-topics", (e) => {
-        zoom_in();
+        const $stream_li = $(e.target).parents("li.narrow-filter");
+        const stream_id = stream_id_for_elt($stream_li);
+        zoom_in(stream_id, $stream_li);
         // We define the focus behavior for the topic list search box
         // outside of the `zoom_in` method, since we want the focus
         // to only happen when the user clicks on the "SHOW ALL TOPICS"

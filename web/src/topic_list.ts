@@ -493,23 +493,17 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
 
 // For zooming, we only do topic-list stuff here...let stream_list
 // handle hiding/showing the non-narrowed streams
-export function zoom_in(): void {
+export function zoom_in(stream_id: number): void {
     zoomed = true;
     previous_search_term = "";
     pre_search_scroll_position = 0;
     ui_util.disable_left_sidebar_search();
 
-    const stream_id = active_stream_id();
-    if (stream_id === undefined) {
-        blueslip.error("Cannot find widget for topic history zooming.");
-        return;
-    }
-
     const active_widget = active_widgets.get(stream_id);
     assert(active_widget !== undefined);
 
     function on_success(): void {
-        if (!active_widgets.has(stream_id!)) {
+        if (!active_widgets.has(stream_id)) {
             blueslip.warn("User re-narrowed before topic history was returned.");
             return;
         }
