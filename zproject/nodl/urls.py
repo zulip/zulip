@@ -14,6 +14,7 @@ from zproject.nodl.views.contacts import contacts_match
 from zproject.nodl.views.devices import register_voip_token, unregister_voip_token
 from zproject.nodl.views.invites import invites_create, invites_list, invites_resend
 from zproject.nodl.views.registration_pin import pin_set, pin_verify
+from zproject.nodl.views.webhooks_livekit import livekit_webhook
 
 urlpatterns = [
     path("auth/bridge", auth_bridge, name="nodl_auth_bridge"),
@@ -35,4 +36,6 @@ urlpatterns = [
     # Call history & detail
     path("calls/history", call_history, name="nodl_calls_history"),
     path("calls/<str:call_id>", call_detail, name="nodl_calls_detail"),
+    # Webhooks (no Zulip API key auth — uses LiveKit JWT validation)
+    path("webhooks/livekit", livekit_webhook, name="nodl_livekit_webhook"),
 ]

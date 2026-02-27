@@ -16,6 +16,7 @@ from zproject.nodl.serializers.call_serializers import (
     serialize_call_record,
 )
 from zproject.nodl.services.call_push_service import dispatch_call_push_async
+from zproject.nodl.views.webhooks_livekit import insert_call_event_message
 from zproject.nodl.services.livekit_service import (
     LIVEKIT_URL,
     create_room_sync,
@@ -268,6 +269,13 @@ def decline_call(
         call.end_reason = "callee_declined"
         call.save(update_fields=["status", "ended_at", "end_reason"])
 
+    # Insert DM event message (outside transaction)
+    try:
+        caller = UserProfile.objects.get(id=call.caller_id)
+        insert_call_event_message(caller, user_profile, "Voice call declined")
+    except UserProfile.DoesNotExist:
+        logger.error("decline_call: caller not found for call %s", call.id)
+
     return JsonResponse({"result": "success", "msg": ""})
 
 
@@ -325,6 +333,13 @@ def cancel_call(
         call.ended_at = timezone.now()
         call.end_reason = "caller_cancelled"
         call.save(update_fields=["status", "ended_at", "end_reason"])
+
+    # Insert DM event message (outside transaction)
+    try:
+        callee = UserProfile.objects.get(id=call.callee_id)
+        insert_call_event_message(user_profile, callee, "Voice call cancelled")
+    except UserProfile.DoesNotExist:
+        logger.error("cancel_call: callee not found for call %s", call.id)
 
     return JsonResponse({"result": "success", "msg": ""})
 
