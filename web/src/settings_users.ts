@@ -20,7 +20,7 @@ import * as presence from "./presence.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
 import * as setting_invites from "./settings_invites.ts";
-import {current_user} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_profile from "./user_profile.ts";
@@ -30,8 +30,6 @@ import * as util from "./util.ts";
 export const active_user_list_dropdown_widget_name = "active_user_list_select_user_role";
 export const deactivated_user_list_dropdown_widget_name = "deactivated_user_list_select_user_role";
 
-let should_redraw_active_users_list = false;
-let should_redraw_deactivated_users_list = false;
 let presence_data_fetched = false;
 let active_users_role_dropdown: dropdown_widget.DropdownWidget | undefined;
 let deactivated_users_role_dropdown: dropdown_widget.DropdownWidget | undefined;
@@ -118,8 +116,6 @@ export function update_view_on_deactivate(user_id: number, is_bot: boolean): voi
     $row.addClass("deactivated_user");
 
     if (!is_bot) {
-        should_redraw_active_users_list = true;
-        should_redraw_deactivated_users_list = true;
         if (active_users_role_dropdown) {
             active_users_role_dropdown.render(active_section.filters.role_code);
         }
@@ -153,8 +149,6 @@ export function update_view_on_reactivate(user_id: number, is_bot: boolean): voi
     $row.addClass("active-user");
 
     if (!is_bot) {
-        should_redraw_active_users_list = true;
-        should_redraw_deactivated_users_list = true;
         if (active_users_role_dropdown) {
             active_users_role_dropdown.render(active_section.filters.role_code);
         }
@@ -200,6 +194,7 @@ function role_selected_handler(
     event.stopPropagation();
 
     const role_code = Number($(event.currentTarget).attr("data-unique-id"));
+
     if (widget.widget_name === active_section.dropdown_widget_name) {
         add_value_to_filters(active_section, "role_code", role_code);
     } else if (widget.widget_name === deactivated_section.dropdown_widget_name) {
@@ -215,7 +210,16 @@ function count_users_by_role(user_ids: number[]): Record<number, number> {
 
     for (const user_id of user_ids) {
         const user = people.get_by_user_id(user_id);
-        const role_code = user.role;
+        let role_code = user.role;
+
+        if (
+            user.role === settings_config.user_role_values.member.code &&
+            realm.realm_waiting_period_threshold > 0
+        ) {
+            role_code = people.check_member_is_new(user_id)
+                ? settings_config.user_role_values_with_provisional_member.provisional_member.code
+                : settings_config.user_role_values_with_provisional_member.full_member.code;
+        }
 
         role_counts[role_code] = (role_counts[role_code] ?? 0) + 1;
     }
@@ -225,16 +229,21 @@ function count_users_by_role(user_ids: number[]): Record<number, number> {
 
 function get_roles_with_counts(user_ids: number[]): dropdown_widget.Option[] {
     const role_counts = count_users_by_role(user_ids);
+
+    const user_role_values =
+        realm.realm_waiting_period_threshold > 0
+            ? settings_config.user_role_values_with_provisional_member
+            : settings_config.user_role_values;
+
     return [
         {
             unique_id: 0,
             name: $t({defaultMessage: "All roles ({count})"}, {count: user_ids.length}),
         },
-        ...Object.values(settings_config.user_role_values)
+        ...Object.values(user_role_values)
             .map((user_role_value) => ({
                 unique_id: user_role_value.code,
                 name: $t(
-                    // This translation is a noop except for RTL languages
                     {defaultMessage: "{description} ({count})"},
                     {
                         description: user_role_value.description,
@@ -277,6 +286,10 @@ function create_role_filter_dropdown(
 function initialize_user_sections(active_user_ids: number[], deactivated_user_ids: number[]): void {
     active_section.create_table(active_user_ids);
     deactivated_section.create_table(deactivated_user_ids);
+    if (realm.realm_waiting_period_threshold > 0) {
+        active_section.filters.role_code = 0;
+        deactivated_section.filters.role_code = 0;
+    }
     active_users_role_dropdown = create_role_filter_dropdown(
         $("#admin-user-list"),
         active_section,
@@ -486,21 +499,23 @@ export function update_user_data(
 }
 
 export function redraw_deactivated_users_list(): void {
-    if (!should_redraw_deactivated_users_list || !deactivated_section.list_widget) {
+    if (!deactivated_section.list_widget) {
         return;
     }
+
     const deactivated_user_ids = people.get_non_active_human_ids();
     deactivated_section.list_widget.replace_list_data(deactivated_user_ids);
-    should_redraw_deactivated_users_list = false;
+    deactivated_section.list_widget.hard_redraw();
 }
 
 export function redraw_active_users_list(): void {
-    if (!should_redraw_active_users_list || !active_section.list_widget) {
+    if (!active_section.list_widget) {
         return;
     }
+
     const active_user_ids = people.get_realm_active_human_user_ids();
     active_section.list_widget.replace_list_data(active_user_ids);
-    should_redraw_active_users_list = false;
+    active_section.list_widget.hard_redraw();
 }
 
 function start_data_load(): void {

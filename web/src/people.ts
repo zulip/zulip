@@ -438,7 +438,23 @@ export function get_user_time(user_id: number): string | undefined {
 
 export function get_user_type(user_id: number): string | undefined {
     const user_profile = get_by_user_id(user_id);
+    if (
+        user_profile.role === settings_config.user_role_values.member.code &&
+        realm.realm_waiting_period_threshold > 0
+    ) {
+        return check_member_is_new(user_id)
+            ? settings_config.user_role_values_with_provisional_member.provisional_member
+                  .description
+            : settings_config.user_role_values_with_provisional_member.full_member.description;
+    }
     return settings_config.user_role_map.get(user_profile.role);
+}
+export function check_member_is_new(user_id: number): boolean {
+    const user_profile = get_by_user_id(user_id);
+    const waiting_period_time =
+        Date.now() - realm.realm_waiting_period_threshold * 24 * 60 * 60 * 1000;
+
+    return new Date(user_profile.date_joined).getTime() > waiting_period_time;
 }
 
 export function emails_strings_to_user_ids_string(emails_string: string): string | undefined {
@@ -1797,6 +1813,17 @@ export function matches_user_settings_search(person: User, value: string): boole
 }
 
 function matches_user_settings_role(person: User, role_code: number): boolean {
+    if (
+        person.role === settings_config.user_role_values.member.code &&
+        realm.realm_waiting_period_threshold > 0
+    ) {
+        const user_role_code = check_member_is_new(person.user_id)
+            ? settings_config.user_role_values_with_provisional_member.provisional_member.code
+            : settings_config.user_role_values_with_provisional_member.full_member.code;
+        if (role_code === 0 || role_code === user_role_code) {
+            return true;
+        }
+    }
     if (role_code === 0 || role_code === person.role) {
         return true;
     }
