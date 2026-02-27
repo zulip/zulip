@@ -1077,6 +1077,22 @@ export function initialize(): void {
         },
     });
 
+    tippy.delegate("body", {
+        target: ".two-tier-billing-disabled",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const content = $t(
+                {defaultMessage: "Contact {sales_email} to enable"},
+                {sales_email: "sales@zulip.com"},
+            );
+            instance.setContent(content);
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
     // Show expand / collapse tooltip in inbox view on hover over inbox header.
     let collapse_or_expand_tooltip: tippy.Instance | undefined;
     let collapse_or_expand_timeout: ReturnType<typeof setTimeout> | undefined;

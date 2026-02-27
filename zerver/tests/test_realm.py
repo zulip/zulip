@@ -19,6 +19,8 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from confirmation.models import Confirmation, create_confirmation_link
+from corporate.models.customers import Customer
+from corporate.models.plans import CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import (
@@ -2413,6 +2415,9 @@ class RealmAPITest(ZulipTestCase):
     def do_test_realm_permission_group_setting_update_api(self, setting_name: str) -> None:
         realm = get_realm("zulip")
 
+        if setting_name == "workplace_users_group":
+            do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+
         all_system_user_groups = NamedUserGroup.objects.filter(
             realm_for_sharding=realm,
             is_system_group=True,
@@ -2531,6 +2536,9 @@ class RealmAPITest(ZulipTestCase):
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
+
+        if setting_name == "workplace_users_group":
+            do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
         result = self.client_patch(
             "/json/realm", {setting_name: orjson.dumps({"new": moderators_group.id}).decode()}
@@ -3083,6 +3091,8 @@ class RealmAPITest(ZulipTestCase):
         iago = self.example_user("iago")
         self.login("iago")
 
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+
         members_group = NamedUserGroup.objects.get(
             name=SystemGroups.MEMBERS, realm_for_sharding=realm
         )
@@ -3285,6 +3295,95 @@ class RealmAPITest(ZulipTestCase):
         self.assert_json_success(result)
         realm.refresh_from_db()
         self.assertEqual(realm.workplace_users_group_id, hamletcharacters_group.id)
+
+    def test_updating_workplace_users_group_based_on_realm_plan(self) -> None:
+        realm = get_realm("zulip")
+        self.login("desdemona")
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm
+        )
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm
+        )
+
+        # Self hosted organizations cannot enable discounted billing for
+        # non-workplace users.
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
+        params = {
+            "workplace_users_group": orjson.dumps({"new": moderators_group.id}).decode(),
+        }
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result, "Organization is not eligible for discounted pricing for non workplace users."
+        )
+
+        # Organizations with 100% sponsorship cannot enable discounted billing for
+        # non-workplace users.
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None)
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result, "Organization is not eligible for discounted pricing for non workplace users."
+        )
+
+        # Organizations on free plan can enable discounted billing for
+        # non-workplace users.
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(realm.workplace_users_group_id, moderators_group.id)
+
+        params = {
+            "workplace_users_group": orjson.dumps({"new": members_group.id}).decode(),
+        }
+
+        # Organizations with a fixed-price plan cannot enable discounted
+        # billing for non-workplace users.
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_id")
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            status=CustomerPlan.ACTIVE,
+            fixed_price=1000,
+        )
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result, "Organization is not eligible for discounted pricing for non workplace users."
+        )
+
+        # Organizations with a discounted price cannot enable discounted billing for
+        # non-workplace users.
+        plan.fixed_price = None
+        plan.price_per_license = 8000
+        plan.save(update_fields=["fixed_price", "price_per_license"])
+        customer.monthly_discounted_price = 7000
+        customer.save(update_fields=["monthly_discounted_price"])
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "Discounted pricing for workplace users cannot be enabled with current discounted plan.",
+        )
+
+        customer.monthly_discounted_price = 0
+        customer.annual_discounted_price = 70000
+        customer.save(update_fields=["monthly_discounted_price", "annual_discounted_price"])
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_error(
+            result,
+            "Discounted pricing for workplace users cannot be enabled with current discounted plan.",
+        )
+
+        # Organizations on paid plans with no discount and no fixed price
+        # can enable discounted billing for non-workplace users.
+        customer.annual_discounted_price = 0
+        customer.save(update_fields=["annual_discounted_price"])
+        result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(realm.workplace_users_group_id, members_group.id)
 
     def test_changing_can_manage_all_groups(self) -> None:
         realm = get_realm("zulip")

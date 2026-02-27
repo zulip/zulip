@@ -23,6 +23,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
+import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as pygments_data from "./pygments_data.ts";
 import * as realm_icon from "./realm_icon.ts";
@@ -465,6 +466,27 @@ function set_welcome_message_custom_text_visibility(): void {
 }
 
 export let set_two_tier_billing_settings_visibility = (): void => {
+    if (!page_params.non_workplace_pricing_eligible) {
+        return;
+    }
+
+    if (page_params.is_cloud_realm_with_discounted_plan) {
+        $("input#id_realm_enable_two_tier_billing").prop("checked", false).prop("disabled", true);
+        $("input#id_realm_enable_two_tier_billing")
+            .closest(".input-group")
+            .addClass("control-label-disabled");
+        settings_components.change_element_block_display_property(
+            "id_realm_workplace_users_group",
+            false,
+        );
+        if (current_user.is_owner) {
+            $("input#id_realm_enable_two_tier_billing")
+                .closest(".input-group")
+                .addClass("two-tier-billing-disabled");
+        }
+        return;
+    }
+
     const two_tier_billing_enabled = settings_data.two_tier_billing_enabled();
     $("input#id_realm_enable_two_tier_billing").prop("checked", two_tier_billing_enabled);
     settings_components.change_element_block_display_property(
@@ -1586,6 +1608,13 @@ export let initialize_group_setting_widgets = (): void => {
     );
     for (const [setting_name, setting_config] of realm_group_permission_settings) {
         if (setting_config.require_system_group) {
+            continue;
+        }
+
+        if (
+            setting_name === "workplace_users_group" &&
+            !page_params.non_workplace_pricing_eligible
+        ) {
             continue;
         }
 

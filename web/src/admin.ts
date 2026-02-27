@@ -315,6 +315,7 @@ export function build_page(): void {
             ),
         default_avatar_source_values: settings_config.default_avatar_source_values,
         realm_enable_two_tier_billing: settings_data.two_tier_billing_enabled(),
+        show_two_tier_billing_settings: page_params.non_workplace_pricing_eligible,
     };
 
     const rendered_admin_tab = render_admin_tab(options);

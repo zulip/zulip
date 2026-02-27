@@ -7,6 +7,7 @@
                 {{> settings_save_discard_widget section_name="onboarding" show_save_discard_buttons=true }}
             </div>
             <div class="organization-settings-parent">
+                {{#if show_two_tier_billing_settings}}
                 {{> settings_checkbox
                   setting_name="realm_enable_two_tier_billing"
                   prefix="id_"
@@ -17,6 +18,7 @@
                 {{> group_setting_value_pill_input
                   setting_name="realm_workplace_users_group"
                   label=group_setting_labels.workplace_users_group}}
+                {{/if}}
 
                 {{#if is_plan_self_hosted}}
                     {{> group_setting_value_pill_input
