@@ -801,6 +801,62 @@
         }
     }
 
+    /* Hide-preview dismiss button for link previews. */
+    .message_embed,
+    .message-media-preview-image,
+    .message-media-preview-video {
+        position: relative;
+    }
+
+    /* Revealed on hover only when .content-edit-enabled is set on
+       .message_row (tracks edit-window timer). */
+    .content-edit-enabled & {
+        .message_embed:hover .hide-preview-container,
+        .message-media-preview-image:hover .hide-preview-container,
+        .message-media-preview-video:hover .hide-preview-container {
+            visibility: visible;
+        }
+
+        /* Highlight the preview block when hovering the remove button
+           to make clear which preview will be removed. */
+        .message_embed:has(.hide-preview-button:hover) {
+            filter: brightness(0.9);
+        }
+
+        .message-media-preview-image:has(.hide-preview-button:hover),
+        .message-media-preview-video:has(.hide-preview-button:hover) {
+            filter: brightness(0.8);
+        }
+    }
+
+    .hide-preview-container {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        visibility: hidden;
+        z-index: 1;
+    }
+
+    .hide-preview-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        color: var(--color-text-default);
+        opacity: 0.6;
+        transition:
+            opacity 0.2s ease,
+            color 0.2s ease;
+
+        &:hover {
+            opacity: 1;
+            color: var(--color-text-item-hover);
+        }
+    }
+
     & a:not(.icon-button) {
         color: var(--color-markdown-link);
         text-decoration: none;
