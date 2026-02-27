@@ -8,7 +8,7 @@ from zerver.actions.realm_domains import (
     do_change_realm_domain,
     do_remove_realm_domain,
 )
-from zerver.decorator import require_realm_owner
+from zerver.decorator import require_realm_admin
 from zerver.lib.domains import validate_domain
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
@@ -22,7 +22,7 @@ def list_realm_domains(request: HttpRequest, user_profile: UserProfile) -> HttpR
     return json_success(request, data={"domains": domains})
 
 
-@require_realm_owner
+@require_realm_admin
 @typed_endpoint
 def create_realm_domain(
     request: HttpRequest,
@@ -46,7 +46,7 @@ def create_realm_domain(
     return json_success(request, data={"new_domain": [realm_domain.id, realm_domain.domain]})
 
 
-@require_realm_owner
+@require_realm_admin
 @typed_endpoint
 def patch_realm_domain(
     request: HttpRequest,
@@ -63,7 +63,7 @@ def patch_realm_domain(
     return json_success(request)
 
 
-@require_realm_owner
+@require_realm_admin
 @typed_endpoint
 def delete_realm_domain(
     request: HttpRequest, user_profile: UserProfile, *, domain: PathOnly[str]

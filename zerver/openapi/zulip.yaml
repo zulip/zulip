@@ -15516,6 +15516,153 @@ paths:
                     description: |
                       An example JSON error response when attempting to deactivate the only
                       organization owner in an organization:
+  /realm/domains:
+    get:
+      operationId: get-realm-domains
+      summary: Get allowed domains
+      tags:
+        - server_and_organizations
+      description: |
+        Get all domains that are allowed for email address
+        verification in the organization.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - type: object
+                    additionalProperties: false
+                    properties:
+                      result:
+                        type: string
+                      msg:
+                        type: string
+                      domains:
+                        type: array
+                        description: List of allowed domains.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            domain:
+                              type: string
+                              description: The domain name.
+                            allow_subdomains:
+                              type: boolean
+                              description: Whether subdomains are allowed.
+                          required:
+                            - domain
+                            - allow_subdomains
+                    required:
+                      - result
+                      - msg
+                      - domains
+              examples:
+                success:
+                  value:
+                    result: success
+                    msg: ""
+                    domains:
+                      - domain: zulip.com
+                        allow_subdomains: true
+                      - domain: example.com
+                        allow_subdomains: false
+
+    post:
+      operationId: create-realm-domain
+      summary: Add an allowed domain
+      tags:
+        - server_and_organizations
+      description: |
+        Add a new domain to the list of allowed domains
+        for the organization.
+
+        **This endpoint requires organization owner permissions.**
+      x-requires-realm-owner: true
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                domain:
+                  type: string
+                  description: The domain name to allow.
+                  example: example.com
+                allow_subdomains:
+                  type: boolean
+                  description: Whether subdomains should also be allowed.
+                  example: true
+              required:
+                - domain
+                - allow_subdomains
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
+  /realm/domains/{domain}:
+    patch:
+      operationId: update-realm-domain
+      summary: Update an allowed domain
+      tags:
+        - server_and_organizations
+      description: |
+        Update an existing allowed domain.
+
+        **This endpoint requires organization owner permissions.**
+      x-requires-realm-owner: true
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          description: The domain name to update.
+          schema:
+            type: string
+          example: zulip.com
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                allow_subdomains:
+                  type: boolean
+                  description: Whether subdomains should be allowed.
+                  example: false
+              required:
+                - allow_subdomains
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
+    delete:
+      operationId: delete-realm-domain
+      summary: Remove an allowed domain
+      tags:
+        - server_and_organizations
+      description: |
+        Remove a domain from the list of allowed domains.
+
+        **This endpoint requires organization owner permissions.**
+      x-requires-realm-owner: true
+      parameters:
+        - name: domain
+          in: path
+          required: true
+          description: The domain name to remove.
+          schema:
+            type: string
+          example: example.com
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /realm/linkifiers:
     get:
       operationId: get-linkifiers
@@ -23882,7 +24029,7 @@ paths:
             The target message's ID.
           schema:
             type: integer
-          example: 47
+          example: 58
           required: true
       requestBody:
         required: true

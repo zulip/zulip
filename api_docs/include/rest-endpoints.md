@@ -132,6 +132,10 @@
 
 * [Get server settings](/api/get-server-settings)
 * [Get linkifiers](/api/get-linkifiers)
+* [Get allowed domains](/api/get-realm-domains)
+* [Add an allowed domain](/api/create-realm-domain)
+* [Update an allowed domain](/api/update-realm-domain)
+* [Remove an allowed domain](/api/delete-realm-domain)
 * [Add a linkifier](/api/add-linkifier)
 * [Update a linkifier](/api/update-linkifier)
 * [Remove a linkifier](/api/remove-linkifier)
