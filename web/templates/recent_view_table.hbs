@@ -22,12 +22,11 @@
                                 {{t 'Conversation' }}
                                 <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
                             </span>
-                        </div>
-                    </th>
-                    <th data-sort="unread_sort" data-tippy-content="{{t 'Sort by unread message count' }}" class="recent-view-unread-header unread_sort tippy-zulip-delayed-tooltip hidden-for-spectators">
-                        <div class="recent-view-header-wrapper">
-                            <i class="zulip-icon zulip-icon-unread"></i>
-                            <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                            <span class="recent-view-unread-sort-header hidden-for-spectators tippy-zulip-delayed-tooltip" data-sort="unread_sort" data-tippy-content="{{t 'Sort by unread message count' }}">
+                                {{!-- Arrow is intentionally kept before unread icon to better align with unread count --}}
+                                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                                <i class="zulip-icon zulip-icon-unread"></i>
+                            </span>
                         </div>
                     </th>
                     <th class='recent-view-participants-header participants_header'>

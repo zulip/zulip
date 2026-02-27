@@ -491,9 +491,9 @@
     }
 
     .recent-view-topic-header {
-        /* Override to match td.recent_topic_name's 10px padding-left,
-           converting to 15px/1em units used by thead th. */
-        padding-left: 0.6667em; /* 10px at 15px/1em */
+        /* Match horizontal padding with non header rows */
+        /* NOTE that headers use 15px font-size. */
+        padding: 0.25em 0.533em; /* 8px at 16px/1em */
         /* th no longer has data-sort; the individual sort spans handle
            cursor and hover. */
         cursor: default;
@@ -501,21 +501,25 @@
         .recent-view-header-wrapper {
             /* Match the row grid so "Channel" and "Conversation" sort
                spans align with channel and topic text in rows. Sort
-               arrows are inside the spans, so 3 columns suffice. */
+               arrows are inside the spans, so 3 columns suffice.
+               1.0667em = 16px at 15px/1em, matching the 1em (16px
+               at 16px/1em) privacy icon width in data rows. */
             display: grid;
             grid-template-columns:
                 min(
                     calc(
-                        var(--longest-subscribed-channel-name-width) + 1em + 8px
+                        var(--longest-subscribed-channel-name-width) +
+                            1.0667em + 8px
                     ),
                     33.3%
                 )
-                auto 1fr;
+                auto 1fr auto;
             align-items: center;
         }
 
         .recent-view-channel-sort-header,
-        .recent-view-conversation-sort-header {
+        .recent-view-conversation-sort-header,
+        .recent-view-unread-sort-header {
             display: flex;
             align-items: center;
             gap: 4px;
@@ -545,10 +549,17 @@
                 transform: rotate(0deg);
             }
         }
-    }
 
-    .recent-view-unread-header {
-        width: 7%;
+        .recent-view-conversation-sort-header {
+            /* Prevent hover pill highlight from extending into
+               the adjacent unread sort column. */
+            margin-right: 0.333em; /* 5px at 15px/1em */
+        }
+
+        .recent-view-unread-sort-header {
+            margin-right: -0.1667em; /* 2.5px at 15px/1em */
+            justify-self: end;
+        }
     }
 
     .recent_topic_users,
@@ -600,8 +611,6 @@
     }
 
     .recent_topic_name {
-        padding-left: 0.625em; /* 10px at 16px/1em */
-
         .recent-view-conversation-with-unread-wrapper {
             display: grid;
             grid-template-areas:
@@ -681,10 +690,6 @@
         .recent_topic_actions {
             margin-right: 5px;
             font-size: 1.0714em; /* 15px at 14px / em */
-        }
-
-        .recent-view-unread-header {
-            width: 15%;
         }
     }
 
@@ -804,10 +809,6 @@
     align-items: center;
     margin-left: auto;
     flex-direction: row;
-}
-
-.unread_sort .recent-view-header-wrapper {
-    justify-content: flex-end;
 }
 
 .recent-view-body-row {
