@@ -1,14 +1,15 @@
 import base64
 import json
 import uuid
-from unittest.mock import patch
+from unittest.mock import ANY, MagicMock, patch
 
+from django.db import IntegrityError
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserProfile
-from zproject.nodl.models import CallRecord
+from zproject.nodl.models import CallRecord, DeviceVoipToken
 
 
 class CallRecordModelTest(TestCase):
@@ -70,6 +71,76 @@ class CallRecordModelTest(TestCase):
         self.assertEqual(calls[1].id, call1.id)
 
 
+class DeviceVoipTokenModelTest(TestCase):
+    """Tests for the DeviceVoipToken model (AC:2)."""
+
+    def setUp(self) -> None:
+        self.user = UserProfile.objects.filter(is_active=True).first()
+        assert self.user is not None
+
+    def test_create_token(self) -> None:
+        token = DeviceVoipToken.objects.create(
+            user=self.user,
+            platform="ios",
+            voip_token="test-voip-token-abc",
+            device_id="device-001",
+        )
+        self.assertIsNotNone(token.id)
+        self.assertIsInstance(token.id, uuid.UUID)
+        self.assertEqual(token.platform, "ios")
+        self.assertEqual(token.voip_token, "test-voip-token-abc")
+        self.assertIsNone(token.fcm_token)
+        self.assertTrue(token.is_active)
+        self.assertIsNotNone(token.created_at)
+        self.assertIsNotNone(token.updated_at)
+
+    def test_create_android_token(self) -> None:
+        token = DeviceVoipToken.objects.create(
+            user=self.user,
+            platform="android",
+            fcm_token="test-fcm-token-xyz",
+            device_id="device-002",
+        )
+        self.assertEqual(token.platform, "android")
+        self.assertEqual(token.fcm_token, "test-fcm-token-xyz")
+        self.assertIsNone(token.voip_token)
+
+    def test_unique_user_device_constraint(self) -> None:
+        DeviceVoipToken.objects.create(
+            user=self.user,
+            platform="ios",
+            voip_token="token-1",
+            device_id="device-unique",
+        )
+        with self.assertRaises(IntegrityError):
+            DeviceVoipToken.objects.create(
+                user=self.user,
+                platform="ios",
+                voip_token="token-2",
+                device_id="device-unique",  # same device_id
+            )
+
+    def test_is_active_default_true(self) -> None:
+        token = DeviceVoipToken.objects.create(
+            user=self.user,
+            platform="ios",
+            device_id="device-active-test",
+        )
+        self.assertTrue(token.is_active)
+
+    def test_soft_delete(self) -> None:
+        token = DeviceVoipToken.objects.create(
+            user=self.user,
+            platform="android",
+            fcm_token="token-soft",
+            device_id="device-soft",
+        )
+        token.is_active = False
+        token.save(update_fields=["is_active"])
+        token.refresh_from_db()
+        self.assertFalse(token.is_active)
+
+
 MOCK_LIVEKIT_ENV = {
     "LIVEKIT_URL": "wss://test.livekit.cloud",
     "LIVEKIT_API_KEY": "test-api-key",
@@ -121,7 +192,10 @@ class CallViewsTest(ZulipTestCase):
         "zproject.nodl.services.livekit_service.LIVEKIT_API_SECRET",
         MOCK_LIVEKIT_ENV["LIVEKIT_API_SECRET"],
     )
-    def test_happy_path_initiate_accept_end(self) -> None:
+    @patch("zproject.nodl.views.calls.create_room_sync")
+    def test_happy_path_initiate_accept_end(self, mock_create_room: MagicMock) -> None:
+        mock_create_room.return_value = {"name": "call-mock", "sid": "RM_test"}
+
         # Initiate
         result = self.client_post(
             "/nodl/calls/initiate",
@@ -136,6 +210,9 @@ class CallViewsTest(ZulipTestCase):
         self.assertIn("room_name", data)
         self.assertIn("livekit_url", data)
         self.assertIn("token", data)
+
+        # Verify create_room_sync was called with correct args
+        mock_create_room.assert_called_once_with(ANY, max_participants=2, empty_timeout=35)
 
         call_id = data["call_id"]
 
@@ -589,3 +666,25 @@ class CallViewsTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 400)
         self.assertIn("callee_id", result.json()["msg"])
+
+    def test_initiate_callee_id_string_type(self) -> None:
+        """Fix #3: callee_id as non-integer string returns 400, not 500."""
+        result = self.client_post(
+            "/nodl/calls/initiate",
+            json.dumps({"callee_id": "abc"}),
+            content_type="application/json",
+            **self._auth_headers(self.caller),
+        )
+        self.assertEqual(result.status_code, 400)
+        self.assertIn("integer", result.json()["msg"])
+
+    def test_initiate_callee_id_float_type(self) -> None:
+        """callee_id as float is cast to int."""
+        result = self.client_post(
+            "/nodl/calls/initiate",
+            json.dumps({"callee_id": 3.14}),
+            content_type="application/json",
+            **self._auth_headers(self.caller),
+        )
+        # Should not be a 500 — either 400 (not found) or 200 depending on user existence
+        self.assertNotEqual(result.status_code, 500)

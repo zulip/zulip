@@ -17,6 +17,7 @@ from zproject.nodl.serializers.call_serializers import (
 )
 from zproject.nodl.services.livekit_service import (
     LIVEKIT_URL,
+    create_room_sync,
     generate_token,
 )
 
@@ -47,10 +48,18 @@ def initiate_call(request: HttpRequest, user_profile: UserProfile) -> HttpRespon
             status=400,
         )
 
-    callee_id = body.get("callee_id")
-    if callee_id is None:
+    raw_callee_id = body.get("callee_id")
+    if raw_callee_id is None:
         return JsonResponse(
             {"result": "error", "msg": "callee_id is required", "code": "BAD_REQUEST"},
+            status=400,
+        )
+
+    try:
+        callee_id = int(raw_callee_id)
+    except (ValueError, TypeError):
+        return JsonResponse(
+            {"result": "error", "msg": "callee_id must be an integer", "code": "BAD_REQUEST"},
             status=400,
         )
 
@@ -70,9 +79,18 @@ def initiate_call(request: HttpRequest, user_profile: UserProfile) -> HttpRespon
             status=400,
         )
 
-    # Create room name and call record
+    # Create room name, provision LiveKit room, generate token
     room_name = f"call-{uuid.uuid4()}"
     caller_identity = str(user_profile.id)
+
+    try:
+        create_room_sync(room_name, max_participants=2, empty_timeout=35)
+    except Exception as e:
+        logger.error("LiveKit room creation failed: %s", e)
+        return JsonResponse(
+            {"result": "error", "msg": "Call service unavailable", "code": "SERVICE_ERROR"},
+            status=503,
+        )
 
     try:
         token = generate_token(caller_identity, room_name)
@@ -153,19 +171,21 @@ def accept_call(
                 status=409,
             )
 
+        # Generate token BEFORE persisting state change — if this fails,
+        # the transaction rolls back and call stays in "ringing" state.
+        callee_identity = str(user_profile.id)
+        try:
+            token = generate_token(callee_identity, call.room_name)
+        except ValueError as e:
+            logger.error("LiveKit token generation failed: %s", e)
+            return JsonResponse(
+                {"result": "error", "msg": "Call service unavailable", "code": "SERVICE_ERROR"},
+                status=503,
+            )
+
         call.status = "connected"
         call.answered_at = timezone.now()
         call.save(update_fields=["status", "answered_at"])
-
-    callee_identity = str(user_profile.id)
-    try:
-        token = generate_token(callee_identity, call.room_name)
-    except ValueError as e:
-        logger.error("LiveKit token generation failed: %s", e)
-        return JsonResponse(
-            {"result": "error", "msg": "Call service unavailable", "code": "SERVICE_ERROR"},
-            status=503,
-        )
 
     return JsonResponse(
         {
