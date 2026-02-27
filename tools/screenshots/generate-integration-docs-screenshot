@@ -43,6 +43,7 @@ from zerver.lib.integrations import (
     FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS,
     INCOMING_WEBHOOK_INTEGRATIONS,
     INTEGRATIONS,
+    BotIntegration,
     FixturelessScreenshotConfig,
     IncomingWebhookIntegration,
     Integration,
@@ -70,7 +71,10 @@ def create_integration_bot(integration: Integration, bot_name: str | None = None
     )
     bot_email = f"{email_prefix}-bot@example.com"
     if bot_name is None:
-        bot_name = f"{integration.display_name} Bot"
+        if isinstance(integration, BotIntegration):
+            bot_name = integration.display_name
+        else:
+            bot_name = f"{integration.display_name} Bot"
     try:
         bot = UserProfile.objects.get(email=bot_email)
     except UserProfile.DoesNotExist:
