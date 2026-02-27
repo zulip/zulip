@@ -21,6 +21,7 @@ import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {Filter} from "./filter";
+import * as focus_outline_util from "./focus_outline_util.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as inbox_util from "./inbox_util.ts";
@@ -1852,11 +1853,11 @@ function page_down_navigation(): void {
 }
 
 export function change_focused_element(input_key: string): boolean {
-    const is_first_user_keypress = $("#inbox-view").hasClass("no-visible-focus-outlines");
-    if (is_first_user_keypress) {
-        // Start showing visible focus outlines.
-        $("#inbox-view").removeClass("no-visible-focus-outlines");
-    }
+    const is_first_user_keypress = focus_outline_util.maybe_show_focus_outlines(
+        $("#inbox-view"),
+        input_key,
+    );
+
     if (is_first_user_keypress && !is_navigated_to_search()) {
         // User has barely scrolled the page.
         if (window.scrollY < 30) {
