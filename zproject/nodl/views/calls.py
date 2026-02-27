@@ -15,6 +15,7 @@ from zproject.nodl.serializers.call_serializers import (
     serialize_call_initiate_response,
     serialize_call_record,
 )
+from zproject.nodl.services.call_push_service import dispatch_call_push_async
 from zproject.nodl.services.livekit_service import (
     LIVEKIT_URL,
     create_room_sync,
@@ -32,7 +33,7 @@ def initiate_call(request: HttpRequest, user_profile: UserProfile) -> HttpRespon
     Body: {"callee_id": <int>}
 
     Creates a LiveKit room, generates caller token, inserts call_record(status=ringing).
-    Push dispatch to callee is a placeholder for Story 11.3.
+    Dispatches push notifications to callee's devices (fire-and-forget).
     """
     if request.method != "POST":
         return JsonResponse(
@@ -115,7 +116,16 @@ def initiate_call(request: HttpRequest, user_profile: UserProfile) -> HttpRespon
         status="ringing",
     )
 
-    # TODO: Push dispatch to callee (Story 11.3)
+    # Fire-and-forget push dispatch to callee's devices (Story 11.3)
+    caller_name = user_profile.full_name or user_profile.delivery_email
+    caller_avatar_url = ""
+    dispatch_call_push_async(
+        callee_id=callee.id,
+        call_id=str(call.id),
+        room_name=room_name,
+        caller_name=caller_name,
+        caller_avatar_url=caller_avatar_url,
+    )
 
     return JsonResponse(
         {

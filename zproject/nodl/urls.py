@@ -11,6 +11,7 @@ from zproject.nodl.views.calls import (
     initiate_call,
 )
 from zproject.nodl.views.contacts import contacts_match
+from zproject.nodl.views.devices import register_voip_token, unregister_voip_token
 from zproject.nodl.views.invites import invites_create, invites_list, invites_resend
 from zproject.nodl.views.registration_pin import pin_set, pin_verify
 
@@ -28,6 +29,9 @@ urlpatterns = [
     path("calls/<str:call_id>/decline", decline_call, name="nodl_calls_decline"),
     path("calls/<str:call_id>/cancel", cancel_call, name="nodl_calls_cancel"),
     path("calls/<str:call_id>/end", end_call, name="nodl_calls_end"),
+    # Device VoIP token management
+    path("devices/voip-token", register_voip_token, name="nodl_register_voip_token"),
+    path("devices/voip-token/unregister", unregister_voip_token, name="nodl_unregister_voip_token"),
     # Call history & detail
     path("calls/history", call_history, name="nodl_calls_history"),
     path("calls/<str:call_id>", call_detail, name="nodl_calls_detail"),
