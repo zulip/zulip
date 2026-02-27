@@ -326,6 +326,7 @@ export function quote_message(opts: {
             const topic_link_syntax = topic_link_util.get_stream_topic_link_syntax(
                 channel_name,
                 message.topic,
+                true,
             );
             // Final message looks like:
             //     @_**Iago|5** [said](link to message) in [#channel > topic](link to topic):
