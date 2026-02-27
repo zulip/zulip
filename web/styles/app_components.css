@@ -26,14 +26,14 @@
 kbd {
     display: inline-block;
     border: 1px solid var(--color-kbd-border);
-    border-radius: 4px;
+    border-radius: 6px;
     font-weight: 600;
     text-align: center;
     white-space: nowrap;
     background-color: var(--color-kbd-background);
     color: var(--color-kbd-text);
     margin: 0.25em 0.1em;
-    padding: 0.2em 0.4em;
+    padding: 0.3em 0.6em;
     text-shadow: 0 1px 0 hsl(0deg 0% 100%);
     /* Prevent selection */
     user-select: none;
