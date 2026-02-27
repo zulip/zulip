@@ -67,11 +67,6 @@ p {
         font-size: 1.5em;
     }
 
-    &:not(.pie-chart) .number-stat {
-        position: relative;
-        top: -30px;
-    }
-
     .button-container {
         position: relative;
         z-index: 1;
@@ -89,14 +84,6 @@ p {
 
 .rangeselector text {
     font-weight: 400;
-}
-
-.pie-chart {
-    .number-stat {
-        float: left;
-        font-size: 0.8em;
-        font-weight: 400;
-    }
 }
 
 .buttons button {
@@ -173,18 +160,20 @@ p {
     display: none;
 }
 
+#users_hover_info,
+#read_hover_info,
+#hoverinfo,
 #pie_messages_sent_by_type_total {
     float: right;
+    font-size: 0.8em;
+    font-weight: 400;
 }
 
 #users_hover_info,
 #read_hover_info,
 #hoverinfo {
     display: none;
-    font-size: 0.8em;
-    font-weight: 400;
     position: relative;
-    float: right;
     height: 0;
     top: -25px;
 }
