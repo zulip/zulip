@@ -55,15 +55,14 @@ export function activate(opts: {any_data: AnyWidgetData; message: Message}): {
 export function render(opts: {$elem: JQuery; message: Message; widget_data: WidgetData}): void {
     assert(opts.widget_data.widget_type === "zform");
     const $outer_elem = opts.$elem;
-    const data_with_choices_with_idx = opts.widget_data.data;
-    if (!data_with_choices_with_idx) {
+    const data = opts.widget_data.data;
+    if (!data || data.type !== "choices") {
         return;
     }
 
     function make_choices(data: ZFormExtraData): JQuery {
-        const html = render_widgets_zform_choices(data_with_choices_with_idx);
-        const $elem = $("<div>");
-        $elem.html(html);
+        const html = render_widgets_zform_choices(data);
+        const $elem = $(html);
 
 
         $elem.find("button").on("click", (e) => {
