@@ -160,13 +160,14 @@
         }
     }
 
-    .user-circle {
-        grid-area: starting-anchor-element;
-        place-self: center center;
-        /* Tighten the line-height to match the icon's size... */
-        line-height: 1;
-        /* ...which is approximately 8px at 15px/1em in Vlad's design. */
-        font-size: 0.5333em;
+    .user_sidebar_entry:not(.with_avatar) .selectable_sidebar_block::before {
+    content: "";
+    grid-area: starting-anchor-element;
+    place-self: center center;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: currentColor;
     }
 
     .user_sidebar_entry.with_avatar {
