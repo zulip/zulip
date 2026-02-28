@@ -736,6 +736,14 @@
     --input-vertical-padding: 4px;
     --input-border-width: 1px;
 
+    /* Message date divider variables */
+    --date-divider-text-padding: 12px;
+    --date-divider-line-gap: 4px;
+    --date-divider-right-edge-offset: 2px;
+    --date-divider-line-inset: calc(
+        var(--date-divider-text-padding) - var(--date-divider-line-gap)
+    );
+
     /* Colors used across the app */
     --color-date: light-dark(hsl(0deg 0% 15% / 75%), hsl(0deg 0% 100% / 75%));
     --color-background-private-message-header: light-dark(
