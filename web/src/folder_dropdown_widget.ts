@@ -80,6 +80,17 @@ export function create_folder_filter_dropdown_widget(
     return widget;
 }
 
+export function get_tooltip_text_for_folder_filter(folder_filter_value: number): string {
+    const folder_filters = FOLDER_FILTERS;
+    if (folder_filter_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        return $t({defaultMessage: "Filter by folder"});
+    } else if (folder_filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION) {
+        return $t({defaultMessage: "Viewing uncategorized channels"});
+    }
+    const folder = channel_folders.get_channel_folder_by_id(folder_filter_value);
+    return $t({defaultMessage: "Viewing channels in {folder_name}"}, {folder_name: folder.name});
+}
+
 export function update_tooltip_for_folder_filter(
     reference_element_id: string,
     folder_filter_value: number,
@@ -87,27 +98,12 @@ export function update_tooltip_for_folder_filter(
     // Destroy the previous tooltip instance.
     $<tippy.PopperElement>(`#${reference_element_id}`)[0]?._tippy?.destroy();
 
-    const folder_filters = FOLDER_FILTERS;
-
-    let content;
-    if (folder_filter_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
-        content = $t({defaultMessage: "Filter by folder"});
-    } else if (folder_filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION) {
-        content = $t({defaultMessage: "Viewing uncategorized channels"});
-    } else {
-        const folder = channel_folders.get_channel_folder_by_id(folder_filter_value);
-        content = $t(
-            {defaultMessage: "Viewing channels in {folder_name}"},
-            {folder_name: folder.name},
-        );
-    }
-
     tippy.default(util.the($(`#${reference_element_id}`)), {
         animation: false,
         hideOnClick: false,
         placement: "bottom",
         appendTo: () => document.body,
         delay: LONG_HOVER_DELAY,
-        content,
+        content: get_tooltip_text_for_folder_filter(folder_filter_value),
     });
 }
