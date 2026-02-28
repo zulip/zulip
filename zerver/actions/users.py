@@ -840,10 +840,17 @@ def do_update_outgoing_webhook_service(
 
 
 @transaction.atomic(durable=True)
-def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, str]) -> None:
+def do_update_bot_config_data(
+    bot_profile: UserProfile, service_name: str, config_data: dict[str, str]
+) -> None:
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
     updated_config_data = get_bot_config(bot_profile)
+
+    updated_service: dict[str, str | int] = BotServicesEmbedded(
+        service_name=service_name,
+        config_data=updated_config_data,
+    ).model_dump()
     send_event_on_commit(
         bot_profile.realm,
         dict(
@@ -851,7 +858,7 @@ def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, s
             op="update",
             bot=dict(
                 user_id=bot_profile.id,
-                services=[dict(config_data=updated_config_data)],
+                services=[updated_service],
             ),
         ),
         bot_owner_user_ids(bot_profile),
