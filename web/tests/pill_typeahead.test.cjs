@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -65,29 +67,29 @@ function user_item(user) {
     return {type: "user", user};
 }
 
-const jill = {
+const jill = make_user({
     email: "jill@zulip.com",
     user_id: 10,
     full_name: "Jill Hill",
-};
+});
 const jill_item = user_item(jill);
-const mark = {
+const mark = make_user({
     email: "mark@zulip.com",
     user_id: 20,
     full_name: "Marky Mark",
-};
+});
 const mark_item = user_item(mark);
-const fred = {
+const fred = make_user({
     email: "fred@zulip.com",
     user_id: 30,
     full_name: "Fred Flintstone",
-};
+});
 const fred_item = user_item(fred);
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 40,
     full_name: "me",
-};
+});
 const me_item = user_item(me);
 
 const persons = [jill, mark, fred, me];
@@ -103,19 +105,19 @@ function user_group_item(user_group) {
     };
 }
 
-const admins = {
+const admins = make_user_group({
     name: "Admins",
     description: "foo",
     id: 1,
     members: new Set([jill.user_id, mark.user_id, me.user_id]),
-};
+});
 const admins_item = user_group_item(admins);
-const testers = {
+const testers = make_user_group({
     name: "Testers",
     description: "bar",
     id: 2,
     members: new Set([mark.user_id, fred.user_id, me.user_id]),
-};
+});
 const testers_item = user_group_item(testers);
 
 const groups = [admins, testers];
@@ -131,18 +133,18 @@ function stream_item(stream) {
     };
 }
 
-const denmark = {
+const denmark = make_stream({
     stream_id: 1,
     name: "Denmark",
     subscribed: true,
-};
+});
 const denmark_item = stream_item(denmark);
 
-const sweden = {
+const sweden = make_stream({
     stream_id: 2,
     name: "Sweden",
     subscribed: false,
-};
+});
 const sweden_item = stream_item(sweden);
 
 const subs = [denmark, sweden];

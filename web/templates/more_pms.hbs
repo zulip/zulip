@@ -1,6 +1,6 @@
-<li id="show-more-direct-messages" class="dm-list-item dm-box bottom_left_row {{#unless more_conversations_unread_count}}zero-dm-unreads{{/unless}}">
+<li id="show-more-direct-messages" class="dm-list-item dm-box bottom_left_row {{#if (eq more_conversations_unread_count 0)}}zero-dm-unreads{{/if}}">
     <a class="dm-name trigger-click-on-enter" tabindex="0">{{t "more conversations" }}</a>
-    <span class="unread_count {{#unless more_conversations_unread_count}}zero_count{{/unless}}">
+    <span class="unread_count {{#if (eq more_conversations_unread_count 0)}}zero_count{{/if}}">
         {{more_conversations_unread_count}}
     </span>
 </li>

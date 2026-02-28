@@ -9,7 +9,7 @@ import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as hash_parser from "./hash_parser.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -167,7 +167,7 @@ function delete_choice_row(e: JQuery.ClickEvent): void {
 }
 
 function show_add_default_streams_modal(): void {
-    const html_body = render_add_default_streams();
+    const modal_content_html = render_add_default_streams();
 
     function add_default_streams(e: JQuery.ClickEvent): void {
         e.preventDefault();
@@ -214,9 +214,9 @@ function show_add_default_streams_modal(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Add default channels"}),
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Add"}),
+        modal_title_html: $t_html({defaultMessage: "Add default channels"}),
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Add"}),
         help_link: "/help/set-default-channels-for-new-users",
         id: "add-default-stream-modal",
         loading_spinner: true,

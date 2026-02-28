@@ -235,6 +235,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         folder_id(value) {
             stream_settings_ui.update_channel_folder(sub, value);
             channel_folders_ui.update_channel_folder_channels_list(stream_id, value);
+            recent_view_ui.complete_rerender();
         },
     };
 
@@ -250,13 +251,13 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
 
 function show_first_stream_created_modal(stream: StreamSubscription): void {
     dialog_widget.launch({
-        html_heading: $t({defaultMessage: "Channel created!"}),
-        html_body: render_first_stream_created_modal({stream}),
+        modal_title_html: $t({defaultMessage: "Channel created!"}),
+        modal_content_html: render_first_stream_created_modal({stream}),
         id: "first_stream_created_modal",
         on_click(): void {
             /* This modal is purely informational and doesn't do anything when closed. */
         },
-        html_submit_button: $t({defaultMessage: "Continue"}),
+        modal_submit_button_text: $t({defaultMessage: "Continue"}),
         close_on_submit: true,
         single_footer_button: true,
     });
@@ -342,6 +343,10 @@ export function mark_subscribed(
     // The new stream in sidebar might need its unread counts
     // re-calculated.
     unread_ui.update_unread_counts();
+
+    // If the recent view folder filter is active, the new subscription
+    // may belong to the currently selected folder.
+    recent_view_ui.complete_rerender();
 }
 
 export function mark_unsubscribed(sub: StreamSubscription): void {
@@ -377,6 +382,10 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
     stream_list.remove_sidebar_row(sub.stream_id);
     stream_list.update_subscribe_to_more_streams_link();
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
+
+    // If the recent view folder filter is active, the unsubscribed
+    // channel may have been in the currently selected folder.
+    recent_view_ui.complete_rerender();
 }
 
 export function report_error_if_user_still_has_subscriptions(user_id: number): void {

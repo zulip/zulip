@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   build-messages:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       filenames: ${{ steps.set-matrix.outputs.filenames }}
     steps:
@@ -73,7 +73,7 @@ jobs:
 
   send-messages:
     needs: build-messages
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     strategy:
       max-parallel: 1
       matrix:

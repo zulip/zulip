@@ -98,6 +98,27 @@ If you are looking to quickly move your Slack integrations to Zulip, check out
   Slack's [users.info](https://api.slack.com/methods/users.info) endpoint. This
   is used to get the name of the Slack message's sender.
 
+### Caveats
+
+- Mentions in messages are not converted to Zulip mentions.
+
+- Notifications will be delayed by a few seconds.
+
+- Some emojis exported from Slack will display as `:emojiname:`, if
+  the emoji name is not present in the emoji database used by Zulip.
+
+- Threads will appear in the main topic instead of in separate topics.
+
+The following data is not included:
+
+- Custom emoji
+
+- Message attachments
+
+- Message edit history
+
+- Message reactions
+
 ### Related documentation
 
 - [Forward messages Slack <-> Zulip][6] (both directions)

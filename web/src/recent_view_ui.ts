@@ -13,12 +13,16 @@ import render_users_with_status_icons from "../templates/users_with_status_icons
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
+import * as channel_folders from "./channel_folders.ts";
+import * as compose_actions from "./compose_actions.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as folder_dropdown_widget from "./folder_dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as list_widget from "./list_widget.ts";
 import type {ListWidget} from "./list_widget.ts";
@@ -41,7 +45,6 @@ import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as typeahead from "./typeahead.ts";
-import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
@@ -79,31 +82,34 @@ export let $current_focus_elem: JQuery | "table" = "table";
 // we store that topic here so that we can restore focus
 // to that topic when user revisits.
 let last_visited_topic: string | undefined;
-let row_focus = 0;
-// Start focus on the topic column, so Down+Enter works to visit a topic.
-let col_focus = 1;
 
 export const COLUMNS = {
-    stream: 0,
-    topic: 1,
-    read: 2,
-    mute: 3,
+    topic: 0,
+    read: 1,
+    mute: 2,
 };
+
+let row_focus = 0;
+// Start focus on the topic column, so Down+Enter works to visit a topic.
+let col_focus = COLUMNS.topic;
 
 // The number of selectable actions in a Recent Conversations view.
 // Used to implement wraparound of elements with the right/left keys.
 // Must be increased when we add new actions, or rethought if we add
 // optional actions that only appear in some rows.
-const MAX_SELECTABLE_TOPIC_COLS = 4;
-const MAX_SELECTABLE_DIRECT_MESSAGE_COLS = 3;
+const MAX_SELECTABLE_TOPIC_COLS = 3;
+const MAX_SELECTABLE_DIRECT_MESSAGE_COLS = 2;
 
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";
 const ls_dropdown_key = "recent_topic_dropdown_filters";
+const ls_folder_filter_key = "recent_topic_folder_filter";
 const ls = localstorage();
 
 let filters = new Set<string>();
 let dropdown_filters = new Set<string>();
+let folder_filter_value: number = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
+let folder_filter_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
 
 const recent_conversation_key_prefix = "recent_conversation:";
 
@@ -132,6 +138,7 @@ export function set_backfill_in_progress(value: boolean): void {
 export function clear_for_tests(): void {
     filters.clear();
     dropdown_filters.clear();
+    folder_filter_value = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
     recent_view_data.conversations.clear();
     topics_widget = undefined;
 }
@@ -140,9 +147,14 @@ export function set_filters_for_tests(new_filters = [views_util.FILTERS.UNMUTED_
     dropdown_filters = new Set(new_filters);
 }
 
+export function set_folder_filter_for_tests(value: number): void {
+    folder_filter_value = value;
+}
+
 export function save_filters(): void {
     ls.set(ls_key, [...filters]);
     ls.set(ls_dropdown_key, [...dropdown_filters]);
+    ls.set(ls_folder_filter_key, folder_filter_value);
 }
 
 export function is_in_focus(): boolean {
@@ -316,20 +328,20 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     }
 
     const unread = has_unread(row);
-    if (col === 2 && !unread) {
-        col = 1;
-        col_focus = 1;
+    if (col === COLUMNS.read && !unread) {
+        col = COLUMNS.topic;
+        col_focus = COLUMNS.topic;
     }
     const type = get_row_type(row);
-    if (col === 3 && type === "private") {
-        col = unread ? 2 : 1;
+    if (col === COLUMNS.mute && type === "private") {
+        col = unread ? COLUMNS.read : COLUMNS.topic;
         col_focus = col;
     }
 
     const $topic_row = $topic_rows.eq(row);
     // We need to allow table to render first before setting focus.
     setTimeout(
-        () => $topic_row.find(".recent_view_focusable").eq(col).children().trigger("focus"),
+        () => $topic_row.find(".recent_view_focusable").addBack().eq(col).trigger("focus"),
         0,
     );
     $current_focus_elem = "table";
@@ -362,11 +374,11 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
             };
         }
     } else {
-        const stream_name = $topic_row.find(".recent_topic_stream a").text();
+        const stream_name = $topic_row.find(".recent-view-channel-name").text();
         const stream = stream_data.get_sub_by_name(stream_name);
         reply_recipient_information = {
             stream_id: stream?.stream_id,
-            topic: $topic_row.find(".recent_topic_name a").text(),
+            topic: $topic_row.find(".recent-view-conversation-link").text(),
         };
     }
     compose_closed_ui.update_recipient_text_for_reply_button(reply_recipient_information);
@@ -448,6 +460,10 @@ export function revive_current_focus(): boolean {
         $("#recent-view-filter_widget").trigger("focus");
         return true;
     }
+    if ($current_focus_elem.hasClass("recent-view-folder-filter-button")) {
+        $("#recent_view_folder_filter_button").trigger("focus");
+        return true;
+    }
 
     const filter_button = $current_focus_elem.attr("data-filter");
     if (!filter_button) {
@@ -477,7 +493,7 @@ export function process_messages(
     rows_order_changed = true,
     msg_list_data?: MessageListData,
 ): void {
-    // Always synced with messages in all_messages_data.
+    // Always synced with messages in recent_view_messages_data.
 
     let conversation_data_updated = false;
     const updated_rows = new Set<string>();
@@ -616,6 +632,7 @@ type ConversationContext = {
           is_private: true;
           user_ids_string: string;
           rendered_pm_with_html: string;
+          pm_users_as_plain: string;
           pm_url: string;
           is_group: boolean;
           is_bot: boolean;
@@ -654,7 +671,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
     const full_last_msg_date_time = timerender.get_full_datetime_clarification(time);
     const conversation_key = recent_view_util.get_key_from_message(last_msg);
     const unread_count = message_to_conversation_unread_count(last_msg);
-    const last_msg_time = timerender.relative_time_string_from_date(time);
+    const last_msg_time = timerender.relative_time_string_from_date(time, true);
     const is_private = last_msg.type === "private";
     let all_senders;
 
@@ -713,19 +730,32 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // Direct message info
         const user_ids_string = last_msg.to_user_ids;
         assert(typeof last_msg.display_recipient !== "string");
+        const sorted_pm_users = last_msg.display_recipient
+            .filter(
+                (recipient: DisplayRecipientUser) =>
+                    !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
+            )
+            .map((user: DisplayRecipientUser) => ({
+                name: people.get_display_full_name(user.id),
+                status_emoji_info: user_status.get_status_emoji(user.id),
+            }))
+            .toSorted((a, b) => util.strcmp(a.name, b.name));
+
         const rendered_pm_with_html = render_users_with_status_icons({
-            users: last_msg.display_recipient
-                .filter(
-                    (recipient: DisplayRecipientUser) =>
-                        !people.is_my_user_id(recipient.id) ||
-                        last_msg.display_recipient.length === 1,
-                )
-                .map((user: DisplayRecipientUser) => ({
-                    name: people.get_display_full_name(user.id),
-                    status_emoji_info: user_status.get_status_emoji(user.id),
-                }))
-                .toSorted((a, b) => util.strcmp(a.name, b.name)),
+            users: sorted_pm_users,
         });
+
+        const sorted_pm_usernames_only: string[] = [];
+
+        for (const user of sorted_pm_users) {
+            sorted_pm_usernames_only.push(user.name);
+        }
+
+        const pm_users_as_plain = util.format_array_as_list_with_conjunction(
+            sorted_pm_usernames_only,
+            "long",
+        );
+
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
         const has_unread_mention =
@@ -735,7 +765,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         let user_circle_class;
         if (!is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
-            const is_deactivated = !people.is_active_user_for_popover(user_id);
+            const is_deactivated = !people.is_active_user_or_system_bot(user_id);
             const user = people.get_by_user_id(user_id);
             if (user.is_bot) {
                 // We display the bot icon rather than a user circle for bots.
@@ -760,6 +790,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         dm_context = {
             user_ids_string,
             rendered_pm_with_html,
+            pm_users_as_plain,
             pm_url,
             is_group,
             is_bot,
@@ -887,6 +918,22 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
         const sub = sub_store.get(msg.stream_id);
         if (!sub?.subscribed && topic_data.type === "stream") {
             // Never try to process deactivated & unsubscribed stream msgs.
+            return true;
+        }
+    }
+
+    const folder_filters = folder_dropdown_widget.FOLDER_FILTERS;
+    if (folder_filter_value !== folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        // When a folder filter is active, hide all DMs.
+        if (msg.type === "private") {
+            return true;
+        }
+        const sub = sub_store.get(msg.stream_id);
+        if (folder_filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION) {
+            if (sub?.folder_id !== null) {
+                return true;
+            }
+        } else if (sub?.folder_id !== folder_filter_value) {
             return true;
         }
     }
@@ -1110,6 +1157,7 @@ function get_recent_view_filters_params(): {
     filter_muted: boolean;
     filter_pm: boolean;
     is_spectator: boolean;
+    show_folder_filter: boolean;
 } {
     return {
         filter_unread: filters.has("unread"),
@@ -1117,6 +1165,7 @@ function get_recent_view_filters_params(): {
         filter_muted: filters.has("include_muted"),
         filter_pm: filters.has("include_private"),
         is_spectator: page_params.is_spectator,
+        show_folder_filter: channel_folders.user_has_folders(),
     };
 }
 
@@ -1133,11 +1182,71 @@ function setup_dropdown_filters_widget(): void {
     filters_dropdown_widget.setup();
 }
 
+function update_recent_view_folder_filter_button(): void {
+    const folder_filters = folder_dropdown_widget.FOLDER_FILTERS;
+    if (folder_filter_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        $("#recent_view_folder_filter_button").addClass("icon-button-neutral");
+        $("#recent_view_folder_filter_button").removeClass("icon-button-brand");
+        $("#recent_view_folder_filter_button .zulip-icon")
+            .removeClass("zulip-icon-folder-search")
+            .addClass("zulip-icon-folder-chevron");
+    } else {
+        $("#recent_view_folder_filter_button").removeClass("icon-button-neutral");
+        $("#recent_view_folder_filter_button").addClass("icon-button-brand");
+        $("#recent_view_folder_filter_button .zulip-icon")
+            .removeClass("zulip-icon-folder-chevron")
+            .addClass("zulip-icon-folder-search");
+    }
+}
+
+function folder_filter_click_handler(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const filter_id = $(event.currentTarget).attr("data-unique-id");
+    assert(filter_id !== undefined);
+    folder_filter_value = Number.parseInt(filter_id, 10);
+    dropdown.hide();
+    widget.render();
+    save_filters();
+    update_recent_view_folder_filter_button();
+    folder_dropdown_widget.update_tooltip_for_folder_filter(
+        "recent_view_folder_filter_container",
+        folder_filter_value,
+    );
+
+    assert(topics_widget !== undefined);
+    topics_widget.hard_redraw();
+}
+
+function setup_folder_dropdown_widget(): void {
+    const folder_filter_dropdown_widget =
+        folder_dropdown_widget.create_folder_filter_dropdown_widget({
+            widget_name: "recent-view-folder-filter",
+            widget_selector: ".recent-view-folder-filter-button",
+            item_click_callback: folder_filter_click_handler,
+            $events_container: $("#recent_view_filter_buttons"),
+            default_id: folder_filter_value,
+        });
+    folder_filter_dropdown_widget.setup();
+    folder_dropdown_widget.update_tooltip_for_folder_filter(
+        "recent_view_folder_filter_container",
+        folder_filter_value,
+    );
+}
+
 export function update_filters_view(): void {
     const rendered_filters = render_recent_view_filters(get_recent_view_filters_params());
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
     filters_dropdown_widget.render();
+    if (folder_filter_dropdown_widget) {
+        update_recent_view_folder_filter_button();
+    }
     assert(topics_widget !== undefined);
     topics_widget.hard_redraw();
 }
@@ -1152,7 +1261,7 @@ function sort_comparator(a: string, b: string): number {
     return -1;
 }
 
-function stream_sort(a: Row, b: Row): number {
+function conversation_sort(a: Row, b: Row): number {
     if (a.type === b.type) {
         const a_msg = message_store.get(a.last_msg_id);
         assert(a_msg !== undefined);
@@ -1163,6 +1272,10 @@ function stream_sort(a: Row, b: Row): number {
             assert(b_msg.type === "stream");
             const a_stream_name = stream_data.get_stream_name_from_id(a_msg.stream_id);
             const b_stream_name = stream_data.get_stream_name_from_id(b_msg.stream_id);
+
+            if (a_stream_name === b_stream_name) {
+                return sort_comparator(a_msg.topic, b_msg.topic);
+            }
             return sort_comparator(a_stream_name, b_stream_name);
         }
         assert(a_msg.type === "private");
@@ -1171,19 +1284,6 @@ function stream_sort(a: Row, b: Row): number {
     }
     // if type is not same sort between "private" and "stream"
     return sort_comparator(a.type, b.type);
-}
-
-function topic_sort_key(conversation_data: ConversationData): string {
-    const message = message_store.get(conversation_data.last_msg_id);
-    assert(message !== undefined);
-    if (message.type === "private") {
-        return message.display_reply_to;
-    }
-    return message.topic;
-}
-
-function topic_sort(a: ConversationData, b: ConversationData): number {
-    return sort_comparator(topic_sort_key(a), topic_sort_key(b));
 }
 
 function unread_count(conversation_data: ConversationData): number {
@@ -1367,8 +1467,7 @@ export function complete_rerender(coming_from_other_views = false): void {
             },
         },
         sort_fields: {
-            stream_sort,
-            topic_sort,
+            conversation_sort,
             unread_sort,
             ...list_widget.generic_sort_functions("numeric", ["last_msg_id"]),
         },
@@ -1383,6 +1482,10 @@ export function complete_rerender(coming_from_other_views = false): void {
         get_min_load_count,
     });
     setup_dropdown_filters_widget();
+    if (channel_folders.user_has_folders()) {
+        setup_folder_dropdown_widget();
+        update_recent_view_folder_filter_button();
+    }
 }
 
 export function update_recent_view_rendered_time(): void {
@@ -1399,7 +1502,7 @@ export function update_recent_view_rendered_time(): void {
         const last_msg = message_store.get(conversation_data.last_msg_id);
         assert(last_msg !== undefined);
         const time = new Date(last_msg.timestamp * 1000);
-        const updated_time = timerender.relative_time_string_from_date(time);
+        const updated_time = timerender.relative_time_string_from_date(time, true);
         const $row = get_topic_row(conversation_data);
         const rendered_time = $row.find(".recent_topic_timestamp").text().trim();
         if (updated_time === rendered_time) {
@@ -1440,16 +1543,16 @@ export function show(): void {
     }
 
     if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_recent_view_modal")) {
-        const html_body = render_introduce_zulip_view_modal({
+        const modal_content_html = render_introduce_zulip_view_modal({
             zulip_view: "recent_conversations",
             current_home_view_and_escape_navigation_enabled:
                 user_settings.web_home_view === "recent" &&
                 user_settings.web_escape_navigates_to_home_view,
         });
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Welcome to recent conversations!"}),
-            html_body,
-            html_submit_button: $t_html({defaultMessage: "Got it"}),
+            modal_title_html: $t_html({defaultMessage: "Welcome to recent conversations!"}),
+            modal_content_html,
+            modal_submit_button_text: $t({defaultMessage: "Got it"}),
             on_click() {
                 /* This widget is purely informational and clicking only closes it. */
             },
@@ -1531,7 +1634,7 @@ function left_arrow_navigation(row: number, col: number): void {
 }
 
 function right_arrow_navigation(row: number, col: number): void {
-    if (col === 1 && !has_unread(row)) {
+    if (col === COLUMNS.topic && !has_unread(row)) {
         col_focus += 1;
     }
 
@@ -1548,8 +1651,8 @@ function up_arrow_navigation(row: number, col: number): void {
     }
     const type = get_row_type(row);
 
-    if (type === "stream" && col === 2 && row - 1 >= 0 && !has_unread(row - 1)) {
-        col_focus = 1;
+    if (type === "stream" && col === COLUMNS.read && row - 1 >= 0 && !has_unread(row - 1)) {
+        col_focus = COLUMNS.topic;
     }
 }
 
@@ -1642,7 +1745,8 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
             if (
                 post_tab_focus_elem.id === "recent_view_search" ||
                 post_tab_focus_elem.classList.contains("button-recent-filters") ||
-                post_tab_focus_elem.classList.contains("dropdown-widget-button")
+                post_tab_focus_elem.classList.contains("dropdown-widget-button") ||
+                post_tab_focus_elem.classList.contains("recent-view-folder-filter-button")
             ) {
                 $current_focus_elem = $(post_tab_focus_elem);
             }
@@ -1718,7 +1822,11 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if ($elt.hasClass("button-recent-filters") || $elt.hasClass("dropdown-widget-button")) {
+    } else if (
+        $elt.hasClass("button-recent-filters") ||
+        $elt.hasClass("dropdown-widget-button") ||
+        $elt.hasClass("recent-view-folder-filter-button")
+    ) {
         switch (input_key) {
             case "click":
                 $current_focus_elem = $elt;
@@ -1727,16 +1835,38 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
             case "left_arrow":
                 if (filter_buttons().first()[0] === $elt[0]) {
                     $current_focus_elem = $("#recent_view_search");
+                } else if ($elt.hasClass("recent-view-folder-filter-button")) {
+                    // The folder filter button is inside a container div,
+                    // so navigate to the container's previous sibling.
+                    $current_focus_elem = $elt.parent().prev();
                 } else {
-                    $current_focus_elem = $elt.prev();
+                    const $prev = $elt.prev();
+                    // If the previous sibling is the folder filter container,
+                    // focus the button inside it.
+                    if ($prev.attr("id") === "recent_view_folder_filter_container") {
+                        $current_focus_elem = $prev.find(".recent-view-folder-filter-button");
+                    } else {
+                        $current_focus_elem = $prev;
+                    }
                 }
                 break;
             case "vim_right":
             case "right_arrow":
                 if (filter_buttons().last()[0] === $elt[0]) {
                     $current_focus_elem = $("#recent_view_search");
+                } else if ($elt.hasClass("recent-view-folder-filter-button")) {
+                    // The folder filter button is inside a container div,
+                    // so navigate to the container's next sibling.
+                    $current_focus_elem = $elt.parent().next();
                 } else {
-                    $current_focus_elem = $elt.next();
+                    const $next = $elt.next();
+                    // If the next sibling is the folder filter container,
+                    // focus the button inside it.
+                    if ($next.attr("id") === "recent_view_folder_filter_container") {
+                        $current_focus_elem = $next.find(".recent-view-folder-filter-button");
+                    } else {
+                        $current_focus_elem = $next;
+                    }
                 }
                 break;
             case "vim_down":
@@ -1846,6 +1976,20 @@ function load_filters(): void {
     if (dropdown_filters.size === 0 || !is_subset) {
         dropdown_filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
     }
+
+    // Load and validate folder filter.
+    const folder_filters = folder_dropdown_widget.FOLDER_FILTERS;
+    const saved_folder_filter = ls.get(ls_folder_filter_key);
+    if (
+        typeof saved_folder_filter === "number" &&
+        (saved_folder_filter === folder_filters.ANY_FOLDER_DROPDOWN_OPTION ||
+            saved_folder_filter === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION ||
+            channel_folders.is_valid_folder_id(saved_folder_filter))
+    ) {
+        folder_filter_value = saved_folder_filter;
+    } else {
+        folder_filter_value = folder_filters.ANY_FOLDER_DROPDOWN_OPTION;
+    }
 }
 
 export function initialize({
@@ -1902,14 +2046,34 @@ export function initialize({
             assert(topic !== undefined);
             on_mark_topic_as_read(stream_id, topic);
         }
-        // If `unread` filter is selected, the focused topic row gets removed
-        // and we automatically move one row down.
-        if (!filters.has("unread")) {
-            change_focused_element($elt, "down_arrow");
-        }
     });
 
-    $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
+    $("body").on("keydown", ".recent-view-body-row", (e) => {
+        if (keydown_util.is_enter_event(e)) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            switch (col_focus) {
+                case COLUMNS.topic:
+                    $(e.currentTarget).find(".recent-view-conversation-link").trigger("click");
+                    break;
+                case COLUMNS.read:
+                    $(e.currentTarget).find(".on_hover_topic_read").trigger("click");
+                    // If `unread` filter is selected, the focused topic row gets removed
+                    // and we automatically move one row down.
+                    if (!filters.has("unread")) {
+                        assert(e.currentTarget instanceof HTMLElement);
+                        change_focused_element($(e.currentTarget), "down_arrow");
+                    }
+                    break;
+                case COLUMNS.mute:
+                    $(e.currentTarget)
+                        .find(".recent_view_focusable .visibility-status-icon")
+                        .trigger("click");
+                    break;
+            }
+        }
+    });
 
     $("body").on("click", ".button-recent-filters", function (this: HTMLElement, e) {
         e.stopPropagation();
@@ -1935,14 +2099,21 @@ export function initialize({
         change_focused_element($(e.currentTarget), "click");
     });
 
-    $("body").on("click", "td.recent_topic_stream", (e) => {
+    $("body").on("click", "#recent_view_folder_filter_button", (e) => {
+        assert(e.currentTarget instanceof HTMLElement);
+        change_focused_element($(e.currentTarget), "click");
+    });
+
+    $("body").on("click", "td.recent-view-channel-name", (e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
 
         e.stopPropagation();
         const topic_row_index = $(e.target).closest("tr").index();
-        focus_clicked_element(topic_row_index, COLUMNS.stream);
+        // Focus topic on channel click since we don't have
+        // separate column for channel and topic.
+        focus_clicked_element(topic_row_index, COLUMNS.topic);
         window.location.href = $(e.currentTarget).find("a").attr("href")!;
     });
 
@@ -1973,6 +2144,8 @@ export function initialize({
         "input",
         "#recent_view_search",
         _.debounce(() => {
+            // Reset focus to first row on new search.
+            row_focus = 0;
             update_filters_view();
             // Wait for user to go idle before initiating search.
         }, 300),
@@ -1988,7 +2161,7 @@ export function initialize({
         maybe_load_older_messages(unread.first_unread_unmuted_message_id);
     });
 
-    $(document).on("compose_canceled.zulip", () => {
+    compose_actions.register_compose_cancel_hook(() => {
         if (recent_view_util.is_visible()) {
             revive_current_focus();
         }

@@ -832,6 +832,12 @@ export async function build_move_topic_to_stream_popover(
         }
 
         assert(new_topic_name !== undefined);
+
+        // Don't show this warning in case only rename.
+        if (new_topic_name.trim().toLowerCase() === args.topic_name.trim().toLowerCase()) {
+            return false;
+        }
+
         let stream_id: number;
         if (stream_widget_value === undefined) {
             // Set stream_id to current_stream_id since the user is not
@@ -1197,9 +1203,9 @@ export async function build_move_topic_to_stream_popover(
     }
 
     dialog_widget.launch({
-        html_heading: modal_heading,
-        html_body: render_move_topic_to_stream(args),
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        modal_title_html: modal_heading,
+        modal_content_html: render_move_topic_to_stream(args),
+        modal_submit_button_text: $t({defaultMessage: "Confirm"}),
         id: "move_topic_modal",
         form_id: "move_topic_form",
         on_click: move_topic,

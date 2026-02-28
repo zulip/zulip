@@ -62,6 +62,7 @@ from zerver.models.realms import (
     DigestWeekdayEnum,
     MessageEditHistoryVisibilityPolicyEnum,
     OrgTypeEnum,
+    RealmMediaPreviewSizeEnum,
     RealmTopicsPolicyEnum,
 )
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
@@ -90,6 +91,9 @@ def check_jitsi_url(value: str) -> str:
         return validator(var_name, value)
     except ValidationError:
         raise JsonableError(_("{var_name} is not an allowed_type").format(var_name=var_name))
+
+
+DEFAULT_AVATAR_SOURCES = [key for key, _ in Realm.AVATAR_SOURCES]
 
 
 @require_realm_admin
@@ -123,6 +127,8 @@ def update_realm(
     can_set_topics_policy_group: Json[GroupSettingChangeRequest] | None = None,
     can_summarize_topics_group: Json[GroupSettingChangeRequest] | None = None,
     create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,
+    default_avatar_source: Annotated[str, check_string_in_validator(DEFAULT_AVATAR_SOURCES)]
+    | None = None,
     default_code_block_language: str | None = None,
     default_language: str | None = None,
     description: Annotated[
@@ -140,12 +146,13 @@ def update_realm(
     enable_read_receipts: Json[bool] | None = None,
     enable_spectator_access: Json[bool] | None = None,
     gif_rating_policy: Json[int] | None = None,
+    media_preview_size: Json[RealmMediaPreviewSizeEnum] | None = None,
     inline_image_preview: Json[bool] | None = None,
     inline_url_embed_preview: Json[bool] | None = None,
     invite_required: Json[bool] | None = None,
     jitsi_server_url_raw: Annotated[
         Json[str] | None,
-        AfterValidator(lambda val: check_jitsi_url(val)),
+        AfterValidator(check_jitsi_url),
         ApiParamConfig("jitsi_server_url"),
     ] = None,
     message_content_allowed_in_email_notifications: Json[bool] | None = None,

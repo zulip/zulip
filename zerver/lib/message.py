@@ -18,7 +18,7 @@ from zerver.lib.cache import generic_bulk_cached_fetch, to_dict_cache_key_id
 from zerver.lib.display_recipient import get_display_recipient, get_display_recipient_by_id
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
-from zerver.lib.mention import MentionData, sender_can_mention_group
+from zerver.lib.mention import MentionData, sender_can_mention_group, silent_mention_syntax_for_user
 from zerver.lib.message_cache import MessageDict, extract_message_dict, stringify_message_dict
 from zerver.lib.partial import partial
 from zerver.lib.request import RequestVariableConversionError
@@ -1387,12 +1387,27 @@ def update_first_visible_message_id(realm: Realm) -> None:
         try:
             first_visible_message_id = (
                 # Uses index: zerver_message_realm_id
-                Message.objects.filter(realm=realm)
+                Message.objects.filter(realm=realm, id__gte=realm.first_visible_message_id)
                 .values("id")
                 .order_by("-id")[realm.message_visibility_limit - 1]["id"]
             )
         except IndexError:
-            first_visible_message_id = 0
+            # There are not enough messages after the old
+            # first_visible_message_id to satisfy the
+            # message_visibility_limit.  This means that there has
+            # been a net loss of messages, or message_visibility_limit
+            # has gone up.  Redo the query without the `id__gte`
+            # limit.
+            try:
+                first_visible_message_id = (
+                    # Uses index: zerver_message_realm_id
+                    Message.objects.filter(realm=realm)
+                    .values("id")
+                    .order_by("-id")[realm.message_visibility_limit - 1]["id"]
+                )
+            except IndexError:
+                # The message_visibility_limit does include all of the messages in the realm; set to 0.
+                first_visible_message_id = 0
         realm.first_visible_message_id = first_visible_message_id
     realm.save(update_fields=["first_visible_message_id"])
 
@@ -1810,3 +1825,16 @@ def is_message_to_self(message: Message) -> bool:
         return message.recipient == message.sender.recipient
 
     return False
+
+
+def get_user_mentions_for_display(user_list: list[UserProfile | UserDisplayRecipient]) -> str:
+    recipient_list = sorted(silent_mention_syntax_for_user(user) for user in user_list)
+
+    if len(recipient_list) == 1:
+        return recipient_list[0]
+
+    last_user = recipient_list.pop()
+    other_users: str = ", ".join(recipient_list)
+    if len(recipient_list) > 1:
+        other_users += ","
+    return _("{other_users} and {last_user}").format(other_users=other_users, last_user=last_user)

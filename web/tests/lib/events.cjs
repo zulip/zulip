@@ -1,5 +1,7 @@
 "use strict";
 
+const {Role} = require("./example_user.cjs");
+
 //  These events are not guaranteed to be perfectly
 //  representative of what the server sends.  We
 //  have a tool called check-schemas that tries
@@ -411,6 +413,13 @@ exports.fixtures = {
         value: false,
     },
 
+    realm__update__media_preview_size: {
+        type: "realm",
+        op: "update",
+        property: "media_preview_size",
+        value: 150,
+    },
+
     realm__update__moderation_request_channel_id: {
         type: "realm",
         op: "update",
@@ -655,7 +664,7 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
-            role: 400,
+            role: Role.MEMBER,
             is_bot: false,
             is_guest: false,
             profile_data: {},
@@ -675,7 +684,7 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
-            role: 400,
+            role: Role.MEMBER,
             is_bot: true,
             is_guest: false,
             profile_data: {},

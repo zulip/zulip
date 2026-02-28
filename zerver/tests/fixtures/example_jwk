@@ -4,8 +4,8 @@
         "e": "AQAB",
         "kid":"SOMEKID",
         "kty": "RSA",
-        "n": "yKavMIaUiNqoCwVaZcLMkSmkMHBXAGLBqExdJxfINypjcXSpIItpUctsv8EWs8j9nKphgGjZTGQU1pGNb59OpMZnrgAjqZ6AGFCyJPlNhABzBX6qwsFOrQNRxHALQU20QXzqqt1hPefWoLoh5fUuFeUOK2Mp8DHMs-0EoznSWsU"
+        "n": "2IbW_hLmlVB2ZvuzEAM2KoHuHPpzKNekOSzWJEjfM5S1d1q8-7LffJ9ciIo4TWIQjhhi9hx__uoPuVfap358V_PAy5EL82uZT49sNiGXPG74TBlHCL4T_8lmD1aqpurv-vuvGM4bSGnY4v-Vd_Wh9tKlcvK9ludrBv_BfMAF1q7vhWIIXOBxo2iGmJyI_wwDqIjDEm7RIpMZ4MiUHIKG9_60_mtgtkAP65euIfTcnB-mg9xhforS2PEhfB_6tiOPTH9gxrZ9dpBn7IjmEAwF2Nx4KuR4bXDvKEyNReQZTCJ_ZBDi5iMIDolRllUBkAxCZlVXufWOAt_1n1sxQnSWoQ",
+        "use": "sig"
         }
     ]
 }
-

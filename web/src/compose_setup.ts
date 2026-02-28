@@ -22,7 +22,7 @@ import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as drafts from "./drafts.ts";
 import * as flatpickr from "./flatpickr.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_view from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -55,7 +55,9 @@ function setup_compose_actions_hooks(): void {
     compose_actions.register_compose_box_clear_hook(compose.clear_preview_area);
 
     compose_actions.register_compose_cancel_hook(abort_xhr);
-    compose_actions.register_compose_cancel_hook(compose_call.abort_video_callbacks);
+    compose_actions.register_compose_cancel_hook(() => {
+        compose_call.abandon_all_callbacks_for_key("");
+    });
 }
 
 export function initialize(): void {
@@ -82,35 +84,43 @@ export function initialize(): void {
         );
     });
 
-    $("textarea#compose-textarea").on("input", () => {
-        if ($("#compose").hasClass("preview_mode")) {
-            compose.render_preview_area();
-        }
-        const recipient_widget_hidden =
-            $(".compose_select_recipient-dropdown-list-container").length === 0;
-        if (recipient_widget_hidden) {
-            compose_validate.warn_if_topic_resolved(false);
-        }
-        const compose_text_length = compose_validate.check_overflow_text($("#send_message_form"));
-
-        // Change compose close button tooltip as per condition.
-        // We save compose text in draft only if its length is > 2.
-        if (compose_text_length > 2) {
-            $("#compose_close").attr(
-                "data-tooltip-template-id",
-                "compose_close_and_save_tooltip_template",
+    $("textarea#compose-textarea").on(
+        "input",
+        _.throttle(() => {
+            if ($("#compose").hasClass("preview_mode")) {
+                compose.render_preview_area();
+            }
+            const recipient_widget_hidden =
+                $(".compose_select_recipient-dropdown-list-container").length === 0;
+            if (recipient_widget_hidden) {
+                compose_validate.warn_if_topic_resolved(false);
+            }
+            const compose_text_length = compose_validate.check_overflow_text(
+                $("#send_message_form"),
             );
-        } else {
-            $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
-        }
 
-        // The poll widget requires an empty compose box.
-        $(".needs-empty-compose").toggleClass("disabled-on-hover", compose_text_length > 0);
+            // Change compose close button tooltip as per condition.
+            // We save compose text in draft only if its length is > 2.
+            if (compose_text_length > 2) {
+                $("#compose_close").attr(
+                    "data-tooltip-template-id",
+                    "compose_close_and_save_tooltip_template",
+                );
+            } else {
+                $("#compose_close").attr(
+                    "data-tooltip-template-id",
+                    "compose_close_tooltip_template",
+                );
+            }
 
-        if (compose_state.get_is_content_unedited_restored_draft()) {
-            compose_state.set_is_content_unedited_restored_draft(false);
-        }
-    });
+            // The poll widget requires an empty compose box.
+            $(".needs-empty-compose").toggleClass("disabled-on-hover", compose_text_length > 0);
+
+            if (compose_state.get_is_content_unedited_restored_draft()) {
+                compose_state.set_is_content_unedited_restored_draft(false);
+            }
+        }, 25),
+    );
 
     $("#compose form").on("submit", (e) => {
         e.preventDefault();
@@ -473,9 +483,9 @@ export function initialize(): void {
         }
 
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Create a poll"}),
-            html_body: render_add_poll_modal(),
-            html_submit_button: $t_html({defaultMessage: "Add poll"}),
+            modal_title_html: $t_html({defaultMessage: "Create a poll"}),
+            modal_content_html: render_add_poll_modal(),
+            modal_submit_button_text: $t({defaultMessage: "Add poll"}),
             close_on_submit: true,
             on_click(e) {
                 // frame a message using data input in modal, then populate the compose textarea with it
@@ -535,9 +545,9 @@ export function initialize(): void {
             }
 
             dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Create a collaborative to-do list"}),
-                html_body: render_add_todo_list_modal(),
-                html_submit_button: $t_html({defaultMessage: "Create to-do list"}),
+                modal_title_html: $t_html({defaultMessage: "Create a collaborative to-do list"}),
+                modal_content_html: render_add_todo_list_modal(),
+                modal_submit_button_text: $t({defaultMessage: "Create to-do list"}),
                 close_on_submit: true,
                 on_click(e) {
                     // frame a message using data input in modal, then populate the compose textarea with it

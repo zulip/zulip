@@ -2,6 +2,7 @@ import logging
 import random
 from collections.abc import Iterable
 from contextlib import suppress
+from dataclasses import dataclass
 from typing import Annotated, Any, cast
 from urllib.parse import urlencode, urljoin
 
@@ -68,7 +69,10 @@ from zerver.forms import (
     RegistrationForm,
     check_subdomain_available,
 )
-from zerver.lib.demo_organizations import get_demo_organization_wordlists
+from zerver.lib.demo_organizations import (
+    get_demo_organization_wordlists,
+    schedule_demo_organization_deletion_reminder,
+)
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import (
@@ -79,7 +83,7 @@ from zerver.lib.i18n import (
 )
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
-from zerver.lib.rate_limiter import rate_limit_request_by_ip
+from zerver.lib.rate_limiter import rate_limit_request_by_ip, readable_expiry_string_for_html
 from zerver.lib.response import json_success
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
@@ -153,7 +157,11 @@ logger = logging.getLogger("zulip.registration")
 
 @typed_endpoint
 def get_prereg_key_and_redirect(
-    request: HttpRequest, *, confirmation_key: PathOnly[str], full_name: str | None = None
+    request: HttpRequest,
+    *,
+    confirmation_key: PathOnly[str],
+    full_name: str | None = None,
+    next: str = "",
 ) -> HttpResponse:
     """
     The purpose of this little endpoint is primarily to take a GET
@@ -190,6 +198,7 @@ def get_prereg_key_and_redirect(
             "key": confirmation_key,
             "full_name": full_name,
             "registration_url": registration_url,
+            "next": next,
         },
     )
 
@@ -280,6 +289,7 @@ def registration_helper(
     form_full_name: Annotated[str | None, ApiParamConfig("full_name")] = None,
     from_confirmation: str | None = None,
     key: str = "",
+    next: str = "",
     slack_access_token: str | None = None,
     source_realm_id: Annotated[NonNegativeInt | None, non_negative_int_or_none_validator()] = None,
     start_slack_import: Json[bool] = False,
@@ -336,6 +346,28 @@ def registration_helper(
                 reverse("get_prereg_key_and_redirect", kwargs={"confirmation_key": key})
             )
 
+        if prereg_realm.data_import_metadata.get("import_from") == "slack":
+            if prereg_realm.data_import_metadata.get("user_activation_url"):
+                assert prereg_realm.data_import_metadata["need_select_realm_owner"] is True
+                return HttpResponseRedirect(
+                    prereg_realm.data_import_metadata["user_activation_url"]
+                )
+            if prereg_realm.data_import_metadata.get("need_select_realm_owner"):
+                return HttpResponseRedirect(
+                    reverse("realm_import_post_process", kwargs={"confirmation_key": key})
+                )
+            if prereg_realm.data_import_metadata.get(
+                "is_import_work_queued"
+            ) or prereg_realm.data_import_metadata.get("unexpected_import_failure"):
+                return TemplateResponse(
+                    request,
+                    "zerver/slack_import.html",
+                    {
+                        "poll_for_import_completion": True,
+                        "key": key,
+                    },
+                )
+
         if start_slack_import:
             assert is_realm_import_enabled()
             assert prereg_realm.data_import_metadata.get("slack_access_token") is not None
@@ -370,25 +402,6 @@ def registration_helper(
             )
 
         elif prereg_realm.data_import_metadata.get("import_from") == "slack":
-            if prereg_realm.data_import_metadata.get("user_activation_url"):
-                assert prereg_realm.data_import_metadata["need_select_realm_owner"] is True
-                return HttpResponseRedirect(
-                    prereg_realm.data_import_metadata["user_activation_url"]
-                )
-            if prereg_realm.data_import_metadata.get("need_select_realm_owner"):
-                return HttpResponseRedirect(
-                    reverse("realm_import_post_process", kwargs={"confirmation_key": key})
-                )
-            if prereg_realm.data_import_metadata.get("is_import_work_queued"):
-                return TemplateResponse(
-                    request,
-                    "zerver/slack_import.html",
-                    {
-                        "poll_for_import_completion": True,
-                        "key": key,
-                    },
-                )
-
             # Set text of `EMAIL_ADDRESS_VISIBILITY_EVERYONE` to "Everyone" so that it doesn't overflow the
             # select box in the slack import page.
             email_address_visibility_options = []
@@ -777,7 +790,7 @@ def registration_helper(
                 user_profile = user
                 if not realm_creation:
                     # Since we'll have created a user, we now just log them in.
-                    return login_and_go_to_home(request, user_profile)
+                    return login_and_redirect(request, user_profile, next)
                 # With realm_creation=True, we're going to return further down,
                 # after finishing up the creation process.
 
@@ -879,7 +892,7 @@ def registration_helper(
             return redirect("/")
 
         assert isinstance(auth_result, UserProfile)
-        return login_and_go_to_home(request, auth_result)
+        return login_and_redirect(request, auth_result, next)
 
     default_email_address_visibility = None
     if realm is not None:
@@ -915,6 +928,7 @@ def registration_helper(
         "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
         "how_realm_creator_found_zulip_options": RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
     }
+    context["next"] = next
 
     if realm_creation:
         # Add context for realm creation part of the form.
@@ -923,7 +937,9 @@ def registration_helper(
     return TemplateResponse(request, "zerver/create_user/register.html", context=context)
 
 
-def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+def login_and_redirect(
+    request: HttpRequest, user_profile: UserProfile, next: str = ""
+) -> HttpResponse:
     mobile_flow_otp = get_expirable_session_var(
         request.session, "registration_mobile_flow_otp", delete=True
     )
@@ -946,9 +962,14 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
         )
 
     do_login(request, user_profile)
-    # Using 'mark_sanitized' to work around false positive where Pysa thinks
-    # that 'user_profile' is user-controlled
-    return HttpResponseRedirect(mark_sanitized(user_profile.realm.url) + reverse("home"))
+    if next:
+        redirect_to = get_safe_redirect_to(next, user_profile.realm.url)
+    else:
+        # Using 'mark_sanitized' to work around false positive where Pysa thinks
+        # that 'user_profile' is user-controlled
+        redirect_to = mark_sanitized(user_profile.realm.url) + reverse("home")
+
+    return HttpResponseRedirect(redirect_to)
 
 
 def prepare_activation_url(
@@ -1118,7 +1139,20 @@ def realm_import_status(
                 ),
             }
             return json_success(request, result)
-        # TODO: If there is something we need to fix for the import, we should notify the user.
+        else:
+            # The import failed due to an unexpected reason. Ask user to email
+            # support with the import file so that we can do the import manually
+            # and investigate the failure.
+            # If there was an error during import, it would have already been logged by Sentry.
+            # We don't have access to the exception here.
+            preregistration_realm.data_import_metadata["unexpected_import_failure"] = True
+            preregistration_realm.save(update_fields=["data_import_metadata"])
+            return json_success(
+                request,
+                {
+                    "status": "unexpected_import_failure",
+                },
+            )
 
     if realm.deactivated:
         # These "if" cases are in the inverse order than they're done
@@ -1343,10 +1377,11 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
             except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
+                retry_after_string = readable_expiry_string_for_html(int(e.secs_to_freedom))
                 return TemplateResponse(
                     request,
                     "zerver/portico_error_pages/rate_limit_exceeded.html",
-                    context={"retry_after": int(e.secs_to_freedom)},
+                    context={"retry_after_string": retry_after_string},
                     status=429,
                 )
 
@@ -1431,7 +1466,13 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
     )
 
 
-def generate_demo_realm_subdomain() -> str:
+@dataclass
+class DemoNameSubdomain:
+    name: str
+    string_id: str
+
+
+def generate_demo_name_and_subdomain() -> DemoNameSubdomain:
     demo_organization_words = get_demo_organization_wordlists()
     demo_subdomain = ""
     while True:
@@ -1442,30 +1483,33 @@ def generate_demo_realm_subdomain() -> str:
         adjective = random.SystemRandom().choice(demo_organization_words["adjectives"])
         noun = random.SystemRandom().choice(demo_organization_words["nouns"])
         demo_subdomain = f"{adverb}-{adjective}-{noun}"
-        if len(demo_subdomain) > Realm.MAX_REALM_SUBDOMAIN_LENGTH:  # nocoverage
+        demo_name = f"{adjective.capitalize()} {noun.capitalize()}"
+        if (
+            len(demo_subdomain) > Realm.MAX_REALM_SUBDOMAIN_LENGTH
+            or len(demo_name) > Realm.MAX_REALM_NAME_LENGTH
+        ):  # nocoverage
             continue
         try:
             check_subdomain_available(demo_subdomain)
             break
         except ValidationError:  # nocoverage
             continue
-    return demo_subdomain
+    return DemoNameSubdomain(name=demo_name, string_id=demo_subdomain)
 
 
 def create_demo_helper(
     request: HttpRequest,
     *,
-    realm_name: str,
     realm_type: int,
     realm_default_language: str,
     how_realm_creator_found_zulip: str,
     how_realm_creator_found_zulip_extra_context: str,
     timezone: str,
 ) -> UserProfile:
-    string_id = generate_demo_realm_subdomain()
+    demo_organization_identifiers = generate_demo_name_and_subdomain()
     realm = do_create_realm(
-        string_id,
-        realm_name,
+        demo_organization_identifiers.string_id,
+        demo_organization_identifiers.name,
         org_type=realm_type,
         default_language=realm_default_language,
         is_demo_organization=True,
@@ -1480,7 +1524,7 @@ def create_demo_helper(
         # placeholder text for the user's full name.
         default_user_name = _("Your name")
 
-    return do_create_user(
+    user_profile = do_create_user(
         acting_user=None,
         default_language=user_default_language,
         default_stream_groups=[],
@@ -1507,6 +1551,9 @@ def create_demo_helper(
         tos_version=settings.TERMS_OF_SERVICE_VERSION,
     )
 
+    schedule_demo_organization_deletion_reminder(user_profile)
+    return user_profile
+
 
 @add_google_analytics
 @typed_endpoint
@@ -1531,14 +1578,14 @@ def create_demo_organization(
                 rate_limit_request_by_ip(request, domain="demo_realm_creation_by_ip")
             except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
+                retry_after_string = readable_expiry_string_for_html(int(e.secs_to_freedom))
                 return TemplateResponse(
                     request,
                     "zerver/portico_error_pages/rate_limit_exceeded.html",
-                    context={"retry_after": int(e.secs_to_freedom)},
+                    context={"retry_after_string": retry_after_string},
                     status=429,
                 )
 
-            realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
             realm_default_language = form.cleaned_data["realm_default_language"]
             how_found_zulip = form.cleaned_data["how_realm_creator_found_zulip"]
@@ -1549,7 +1596,6 @@ def create_demo_organization(
 
             user_profile = create_demo_helper(
                 request,
-                realm_name=realm_name,
                 realm_type=realm_type,
                 realm_default_language=realm_default_language,
                 how_realm_creator_found_zulip=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
@@ -1687,10 +1733,11 @@ def accounts_home(
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
             except RateLimitedError as e:
                 assert e.secs_to_freedom is not None
+                retry_after_string = readable_expiry_string_for_html(int(e.secs_to_freedom))
                 return render(
                     request,
                     "zerver/portico_error_pages/rate_limit_exceeded.html",
-                    context={"retry_after": int(e.secs_to_freedom)},
+                    context={"retry_after_string": retry_after_string},
                     status=429,
                 )
 
@@ -1731,6 +1778,7 @@ def accounts_home(
         current_url=request.get_full_path,
         multiuse_object_key=multiuse_object_key,
         from_multiuse_invite=from_multiuse_invite,
+        next=request.GET.get("next", ""),
     )
     return render(request, "zerver/create_user/accounts_home.html", context=context)
 
@@ -1772,10 +1820,11 @@ def find_account(request: HttpRequest) -> HttpResponse:
                     rate_limit_request_by_ip(request, domain="sends_email_by_ip")
                 except RateLimitedError as e:
                     assert e.secs_to_freedom is not None
+                    retry_after_string = readable_expiry_string_for_html(int(e.secs_to_freedom))
                     return render(
                         request,
                         "zerver/portico_error_pages/rate_limit_exceeded.html",
-                        context={"retry_after": int(e.secs_to_freedom)},
+                        context={"retry_after_string": retry_after_string},
                         status=429,
                     )
 

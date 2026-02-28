@@ -11,6 +11,7 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 from zerver.actions.bots import do_change_bot_owner, do_change_default_sending_stream
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
+    do_set_realm_property,
     do_set_realm_user_default_setting,
 )
 from zerver.actions.streams import do_change_stream_permission
@@ -1514,6 +1515,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_patch_bot_avatar(self) -> None:
         self.login("hamlet")
+        bot_realm = get_realm("zulip")
+        do_set_realm_property(
+            bot_realm, "default_avatar_source", UserProfile.AVATAR_FROM_JDENTICON, acting_user=None
+        )
         bot_info = {
             "full_name": "The Bot of Hamlet",
             "short_name": "hambot",
@@ -1522,9 +1527,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_success(result)
 
         bot_email = "hambot-bot@zulip.testserver"
-        bot_realm = get_realm("zulip")
         profile = get_user(bot_email, bot_realm)
-        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertTrue(os.path.exists(avatar_disk_path(profile)))
 
         email = "hambot-bot@zulip.testserver"
         # Try error case first (too many files):
@@ -1552,6 +1557,21 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
         self.assertTrue(os.path.exists(avatar_disk_path(profile)))
+
+        # Verify Bot's avatar when realm's default avatar source is Gravatar.
+        do_set_realm_property(
+            bot_realm, "default_avatar_source", UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
+        )
+        bot_info = {
+            "full_name": "Bot with gravatar",
+            "short_name": "gravatar",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_email = "gravatar-bot@zulip.testserver"
+        profile = get_user(bot_email, bot_realm)
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
     def test_patch_bot_to_stream(self) -> None:
         self.login("hamlet")
@@ -2271,3 +2291,35 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")
+
+    def test_get_bot_api_key(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot()
+        expected_api_key = bot["api_key"]
+        email = "hambot-bot@zulip.testserver"
+        bot_id = self.get_bot_user(email).id
+
+        result = self.client_get(f"/json/bots/{bot_id}/api_key")
+        api_key = self.assert_json_success(result)["api_key"]
+        self.assertEqual(api_key, expected_api_key)
+
+        # Admins can also get the bot's api key owned by others.
+        self.login("iago")
+        result = self.client_get(f"/json/bots/{bot_id}/api_key")
+        api_key = self.assert_json_success(result)["api_key"]
+        self.assertEqual(api_key, expected_api_key)
+
+        self.login("cordelia")
+        result = self.client_get(f"/json/bots/{bot_id}/api_key")
+        self.assert_json_error(result, "Insufficient permission")
+
+        # This endpoint can only be used to get a bot's api key.
+        self.login("iago")
+        invalid_bot_id = self.example_user("cordelia").id
+        result = self.client_get(f"/json/bots/{invalid_bot_id}/api_key")
+        self.assert_json_error(result, "No such bot")
+
+        invalid_bot_id = 1000
+        result = self.client_get(f"/json/bots/{invalid_bot_id}/api_key")
+        self.assert_json_error(result, "No such bot")

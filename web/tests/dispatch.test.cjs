@@ -38,11 +38,18 @@ mock_esm("../src/inbox_ui", {
 const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
 const compose_recipient = mock_esm("../src/compose_recipient");
+mock_esm("../src/compose_validate", {
+    validate_and_update_send_button_status: noop,
+    warn_if_guest_in_dm_recipient: noop,
+});
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
     update_current_view_for_topic_visibility: noop,
 });
 const message_lists = mock_esm("../src/message_lists");
+mock_esm("../src/thumbnail", {
+    update_thumbnails: noop,
+});
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");
 const narrow_title = mock_esm("../src/narrow_title");
@@ -148,7 +155,6 @@ page_params.test_suite = false;
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
 const channel_folders = zrequire("channel_folders");
-const compose_validate = zrequire("compose_validate");
 const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
@@ -648,8 +654,7 @@ run_test("channel_folders", ({override}) => {
     server_events_dispatch.dispatch_normal_event({type: "channel_folder", op: "other"});
 });
 
-run_test("realm settings", ({override, override_rewire}) => {
-    override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
+run_test("realm settings", ({override}) => {
     override(current_user, "is_admin", true);
     override(realm, "realm_date_created", new Date("2023-01-01Z"));
 
@@ -735,6 +740,10 @@ run_test("realm settings", ({override, override_rewire}) => {
     event = event_fixtures.realm__update__enable_spectator_access;
     dispatch(event);
     assert_same(realm.realm_enable_spectator_access, true);
+
+    event = event_fixtures.realm__update__media_preview_size;
+    dispatch(event);
+    assert_same(realm.realm_media_preview_size, 150);
 
     event = event_fixtures.realm__update_dict__default;
     override(realm, "realm_create_multiuse_invite_group", 1);
@@ -999,7 +1008,7 @@ run_test("realm_user", ({override}) => {
     // manipulation
     assert.deepEqual(added_person, event.person);
 
-    assert.ok(people.is_active_user_for_popover(event.person.user_id));
+    assert.ok(people.is_active_user_or_system_bot(event.person.user_id));
 
     event = event_fixtures.realm_user__update;
     const stub = make_stub();

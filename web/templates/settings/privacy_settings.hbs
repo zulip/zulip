@@ -3,10 +3,10 @@
     <div class="subsection-header inline-block">
         {{#if for_realm_settings}}
         <h3 class="inline-block">{{t "Privacy settings"}}</h3>
-        {{> settings_save_discard_widget section_name="privacy-setting" show_only_indicator=false }}
+        {{> settings_save_discard_widget section_name="privacy-setting" show_save_discard_buttons=true }}
         {{else}}
         <h3 class="inline-block">{{t "Privacy"}}</h3>
-        {{> settings_save_discard_widget section_name="privacy-setting" show_only_indicator=(not for_realm_settings) }}
+        {{> settings_save_discard_widget section_name="privacy-setting" show_saving_indicator=true }}
         {{/if}}
     </div>
 

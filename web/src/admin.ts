@@ -38,6 +38,9 @@ const admin_settings_label = {
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
     realm_moderation_request_channel: $t({defaultMessage: "Moderation requests"}),
+    realm_media_preview_size: $t({
+        defaultMessage: "Size of images and videos in messages",
+    }),
     realm_inline_image_preview: $t({
         defaultMessage: "Show previews of uploaded and linked images and videos",
     }),
@@ -62,6 +65,7 @@ const admin_settings_label = {
     realm_enable_welcome_message_custom_text: $t({
         defaultMessage: "Send a custom Welcome Bot message to new users",
     }),
+    realm_default_avatar_source: $t({defaultMessage: "Default profile pictures for new users"}),
 
     // Organization permissions
     realm_require_unique_names: $t({defaultMessage: "Require unique names"}),
@@ -206,6 +210,8 @@ export function build_page(): void {
         realm_logo_url: realm.realm_logo_url,
         realm_night_logo_source: realm.realm_night_logo_source,
         realm_night_logo_url,
+        realm_media_preview_size: realm.realm_media_preview_size,
+        realm_media_preview_size_values: settings_config.realm_media_preview_size_values,
         realm_topics_policy: realm.realm_topics_policy,
         realm_topics_policy_values: settings_config.get_realm_topics_policy_values(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
@@ -300,6 +306,7 @@ export function build_page(): void {
             information_density.get_string_display_value_for_line_height(
                 realm_user_settings_defaults.web_line_height_percent,
             ),
+        default_avatar_source_values: settings_config.default_avatar_source_values,
     };
 
     const rendered_admin_tab = render_admin_tab(options);

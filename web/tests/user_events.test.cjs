@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -81,13 +82,12 @@ const current_user = {};
 set_current_user(current_user);
 set_realm(make_realm());
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-    is_admin: true,
     role: settings_config.user_role_values.member.code,
-};
+});
 
 function initialize() {
     people.init();
@@ -100,12 +100,12 @@ initialize();
 run_test("updates", ({override}) => {
     let person;
 
-    const isaac = {
+    const isaac = make_user({
         email: "isaac@example.com",
         delivery_email: null,
         user_id: 32,
         full_name: "Isaac Newton",
-    };
+    });
     people.add_active_user(isaac);
 
     override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
@@ -266,13 +266,12 @@ run_test("updates", ({override}) => {
     assert.ok(updated);
     assert.ok(confirm_banner_hidden);
 
-    const test_bot = {
+    const test_bot = make_bot({
         email: "test-bot@example.com",
         user_id: 35,
         full_name: "Test Bot",
-        is_bot: true,
         bot_owner_id: isaac.id,
-    };
+    });
     people.add_active_user(test_bot);
 
     user_events.update_person({user_id: test_bot.user_id, bot_owner_id: me.user_id});

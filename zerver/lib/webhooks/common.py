@@ -10,6 +10,7 @@ from urllib.parse import unquote
 
 from django.conf import settings
 from django.http import HttpRequest
+from django.utils.crypto import constant_time_compare
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext as _
 from pydantic import Json
@@ -31,7 +32,8 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import check_bool, check_string
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
+from zerver.models.custom_profile_fields import CustomProfileField, CustomProfileFieldValue
 
 MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
@@ -281,7 +283,7 @@ def default_fixture_to_headers(http_header_key: str) -> Callable[[str], dict[str
 
     def fixture_to_headers(filename: str) -> dict[str, str]:
         if "__" in filename:
-            event_type = filename.split("__")[0]
+            event_type = filename.split("__", 1)[0]
         else:
             event_type = filename
         return {http_header_key: event_type}
@@ -293,7 +295,7 @@ def parse_multipart_string(body: str) -> dict[str, str]:
     """
     Converts multipart/form-data string (fixture) to dict
     """
-    boundary = body.split("\n")[0][2:]
+    boundary = body.split("\n", 1)[0][2:]
     parts = body.split(f"--{boundary}")
 
     data = {}
@@ -340,5 +342,39 @@ def validate_webhook_signature(
         algorithm,
     ).hexdigest()
 
-    if signed_payload != signature:
+    if not constant_time_compare(signed_payload, signature):
         raise JsonableError(_("Webhook signature verification failed."))
+
+
+def guess_zulip_user_from_external_account(
+    realm: Realm,
+    external_username: str,
+    external_account_field_name: str,
+    external_username_case_insensitive: bool,
+) -> UserProfile | None:
+    try:
+        external_account_field = CustomProfileField.objects.get(
+            realm=realm,
+            field_type=CustomProfileField.EXTERNAL_ACCOUNT,
+            name=external_account_field_name,
+        )
+    except CustomProfileField.DoesNotExist:
+        return None
+
+    lookup = "value__iexact" if external_username_case_insensitive else "value__exact"
+
+    try:
+        matching_user = (
+            CustomProfileFieldValue.objects.filter(
+                field=external_account_field,
+                **{lookup: external_username},
+                user_profile__realm=realm,
+                user_profile__is_active=True,
+            )
+            .select_related("user_profile")
+            .only("user_profile__id", "user_profile__full_name")
+            .get()
+        )
+        return matching_user.user_profile
+    except (CustomProfileFieldValue.DoesNotExist, CustomProfileFieldValue.MultipleObjectsReturned):
+        return None

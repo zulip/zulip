@@ -28,10 +28,10 @@ export let user_cursor: ListCursor<number> | undefined;
 export let user_filter: UserSearch | undefined;
 
 // Function initialized from `ui_init` to avoid importing narrow.js and causing circular imports.
-let narrow_by_email: (email: string) => void;
+let narrow_by_user_id: (user_id: number) => void;
 
-export function get_narrow_by_email_function_for_test_code(): (email: string) => void {
-    return narrow_by_email;
+export function get_narrow_by_user_id_function_for_test_code(): (user_id: number) => void {
+    return narrow_by_user_id;
 }
 
 function get_pm_list_item(user_id: string): JQuery | undefined {
@@ -187,8 +187,8 @@ function do_update_users_for_search(): void {
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);
 
-export function initialize(opts: {narrow_by_email: (email: string) => void}): void {
-    narrow_by_email = opts.narrow_by_email;
+export function initialize(opts: {narrow_by_user_id: (user_id: number) => void}): void {
+    narrow_by_user_id = opts.narrow_by_user_id;
 
     set_cursor_and_filter();
 
@@ -250,11 +250,8 @@ export function narrow_for_user(opts: {$li: JQuery}): void {
 }
 
 export function narrow_for_user_id(opts: {user_id: number}): void {
-    const person = people.get_by_user_id(opts.user_id);
-    const email = person.email;
-
-    assert(narrow_by_email);
-    narrow_by_email(email);
+    assert(narrow_by_user_id);
+    narrow_by_user_id(opts.user_id);
     assert(user_filter !== undefined);
     user_filter.clear_search();
 }

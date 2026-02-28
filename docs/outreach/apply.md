@@ -21,7 +21,15 @@ In addition to the requirements of the specific outreach program
 you're applying to, successful applicants are expected to demonstrate
 the following:
 
-1. **Ability to contribute to a large codebase.** Accepted applicants
+1. **Responsibility for their own work.** Strong applicants consistently take
+   responsibility for all their interactions with the Zulip community: the code
+   changes they propose, PR descriptions and comments, discussions in the
+   development community, etc. They understand the importance of respecting the
+   time of everyone they interact with. If they use AI, they always follow
+   [Zulip's AI use
+   policy](../contributing/contributing.md#ai-use-policy-and-guidelines).
+
+1. **Ability to contribute to a large production codebase.** Accepted applicants
    generally have five or more merged (or nearly merged) pull
    requests, including at least a couple involving significant
    complexity. The quality of your best work is more important than
@@ -30,14 +38,15 @@ the following:
    work](../contributing/code-reviewing.md#reviewing-your-own-code)
    before submitting it for review.
 
-2. **Clear communication.** Building open-source software is a collaborative
+1. **Clear communication.** Building open-source software is a collaborative
    venture, and effective communication is key to making it successful. Learn
    how to [ask great questions](../contributing/asking-great-questions.md), and
    explain your decisions clearly [in your commit
    messages](../contributing/commit-discipline.md#commit-messages) and [on your
-   pull requests](../contributing/reviewable-prs.md).
+   pull requests](../contributing/reviewable-prs.md). Communicate accurately and
+   succinctly -- no AI slop!
 
-3. **Improvement in response to feedback.** Don't worry if you make
+1. **Improvement in response to feedback.** Don't worry if you make
    mistakes in your first few contributions! Everyone makes mistakes
    getting started — just make sure you learn from them!
 
@@ -50,65 +59,33 @@ We are especially excited about applicants who:
 
 - Develop well thought out project proposals
 
-Starting in 2022, being a student is not required in order to apply to
-GSoC. We are happy to accept both student and non-student GSoC
-participants.
+## Applicant eligibility
+
+In our experience, a large (350-hour) project is incompatible with a second
+internship or job. Trying to do both leads to a stressful summer where you don't
+really get to benefit from the mentorship on offer, and will likely struggle to
+complete the GSoC program at all. Any outside commitments beyond the following
+require explicit discussion and approval:
+
+- 10 hours/week for a large project
+- 25 hours/week for a medium project
+
+We are happy to accept both student and non-student GSoC participants.
 
 ## Getting started
 
 If you are new to Zulip, our [contributor
-guide](../contributing/contributing.md) is the place to start. It
-offers a detailed walkthrough for submitting your first pull request,
-with many pointers to additional documentation, and tips on how to get
-help if you need it.
-
-We recommend taking the following steps before diving into the issue tracker:
-
-- Join the [Zulip development
-  community](https://zulip.com/development-community/), and introduce yourself
-  in the channel for the program you are participating in
-  ([#GSoC](https://chat.zulip.org/#narrow/channel/14-GSoC) or
-  [#Outreachy](https://chat.zulip.org/#narrow/channel/391-Outreachy)). Before you
-  jump in, be sure to review the [Zulip community
-  norms](https://zulip.com/development-community/).
-
-- Follow our instructions to [install the development
-  environment](../development/overview.md), getting help in [#provision
-  help](https://chat.zulip.org/#narrow/channel/21-provision-help) if needed.
-
-- Familiarize yourself with [using the development
-  environment](../development/using.md).
-
-- Go through the [new application feature
-  tutorial](../tutorials/new-feature-tutorial.md) to get familiar with how the
-  Zulip codebase is organized, and how to find code in it.
-
-As you are getting started on your first pull request:
-
-- Read the [Zulip guide to Git](../git/overview.md). It's especially important
-  to master using `git rebase`, so that you can restructure your commits. You can
-  get help in [#git help](https://chat.zulip.org/#narrow/channel/44-git-help) if
-  you get stuck.
-
-- To make it easier to structure your PRs well, we recommend installing a
-  [graphical Git client](../git/setup.md#get-a-graphical-client).
-
-- Construct [coherent, mergeable
-  commits](../contributing/commit-discipline.md), with clear
-  commit messages that follow the [Zulip commit style
-  guide](../contributing/commit-discipline.md). More broadly, clear
-  communication on your pull request will make your work stand out.
-
-- Carefully follow our [guide to reviewing your own
-  code](../contributing/code-reviewing.md) before asking anyone else for a
-  review. Catching mistakes yourself will help your PRs be merged faster, and
-  folks will appreciate the quality and professionalism of your work.
-
-Our documentation on [how to be a successful
-contributor](../contributing/contributing.md#how-to-be-a-successful-contributor)
-offers some additional advice.
+guide](../contributing/contributing.md) is the place to start. It offers a
+detailed walkthrough for submitting your first pull request and beyond, with
+many pointers to additional documentation.
 
 ## Putting together your application
+
+::: warning
+**We do not allow the use of AI for writing GSoC applications.** We want to see
+what _you_ think and how you communicate it. If we see that an application was
+written using AI, it will be rejected without review.
+:::
 
 ### What to include
 
@@ -119,6 +96,10 @@ to, your application should describe the following:
   - Why you're excited about working on Zulip.
   - What you are hoping to get out of your participation in the program.
   - How you selected your project.
+- Your summer obligations beyond GSoC (e.g., jobs, exams, travel plans, etc.),
+  and how you plan to manage your time to complete your project with those
+  obligations in mind. Do you expect to complete the program in 12 weeks, or
+  would an extended timeline be more realistic?
 - Relevant experience:
   - Summary of your **prior experience with the technologies** used by Zulip.
   - Your **prior contributions to open-source projects** (including pull requests, bug

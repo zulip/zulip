@@ -19,7 +19,7 @@ hash_replacements = {
 
 
 def encode_hash_component(s: str) -> str:
-    encoded = urllib.parse.quote(s, safe="*")
+    encoded = urllib.parse.quote(s, safe="")
     return "".join(hash_replacements.get(c, c) for c in encoded)
 
 

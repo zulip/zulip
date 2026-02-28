@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 from typing_extensions import ParamSpec
 
 from zerver.data_import.slack_message_conversion import (
+    LossyConversionError,
     convert_slack_formatting,
     render_attachment,
     render_block,
@@ -84,7 +85,10 @@ def api_slack_incoming_webhook(
 
     pieces: list[str] = []
     if payload.get("blocks"):
-        pieces += map(render_block, payload["blocks"])
+        try:
+            pieces += map(render_block, payload["blocks"])
+        except LossyConversionError:  # nocoverage
+            pieces.append(payload.get("text", "").tame(check_string))
 
     if payload.get("attachments"):
         pieces += map(render_attachment, payload["attachments"])

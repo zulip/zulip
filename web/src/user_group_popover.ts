@@ -107,7 +107,7 @@ export function toggle_user_group_info_popover(
                     group.is_system_group &&
                     all_individual_members.some((member_id) => {
                         const member = people.get_user_by_id_assert_valid(member_id);
-                        return people.is_active_user_for_popover(member.user_id) && member.is_bot;
+                        return people.is_active_user_or_system_bot(member.user_id) && member.is_bot;
                     });
                 const displayed_subgroups = subgroups.slice(0, MAX_ROWS_IN_POPOVER);
                 const displayed_members =
@@ -211,7 +211,7 @@ function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
             // Inaccessible or unknown users should not appear in displayed_members.
             .filter(
                 (m: User) =>
-                    people.is_active_user_for_popover(m.user_id) && !m.is_inaccessible_user,
+                    people.is_active_user_or_system_bot(m.user_id) && !m.is_inaccessible_user,
             )
             .map((p: User) => ({
                 ...p,

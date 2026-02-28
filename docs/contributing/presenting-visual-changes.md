@@ -82,7 +82,7 @@ Precise Before/After screenshots have two essential qualities:
    to make sure that there's a pixel-to-pixel correspondence of everything
    you've captured onscreen.
 
-## What bother with precise Before/After screenshots?
+## Why bother with precise Before/After screenshots?
 
 Capturing precise screenshots serves two primary purposes:
 
@@ -343,6 +343,7 @@ You can check out the following tools for capturing screenshots and videos/GIFs.
 #### Linux
 
 - [GNOME Screenshots and screencasts](https://help.gnome.org/gnome-help/screen-shot-record.html)
+- [Spectacle by KDE](https://apps.kde.org/spectacle/)
 
 ### GIF tools by platform
 

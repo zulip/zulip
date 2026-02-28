@@ -1,6 +1,7 @@
 import os
 import re
 from io import BytesIO
+from pathlib import Path
 from urllib.parse import urlsplit
 
 import pyvips
@@ -31,7 +32,7 @@ from zerver.lib.upload.base import StreamingSourceWithSize
 from zerver.lib.upload.local import write_local_file
 from zerver.models import Attachment, RealmEmoji
 from zerver.models.realms import get_realm
-from zerver.models.users import get_system_bot
+from zerver.models.users import UserProfile, get_system_bot
 
 
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
@@ -127,6 +128,9 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         assert settings.LOCAL_UPLOADS_DIR is not None
         assert settings.LOCAL_FILES_DIR is not None
 
+        file_list = list(Path(settings.LOCAL_FILES_DIR).rglob("*"))
+        self.assertEqual(sum(1 for item in file_list if item.is_file()), 0)
+
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 1005):
@@ -138,10 +142,21 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
             self.assertTrue(os.path.isfile(file_path))
 
-        delete_message_attachments(path_ids)
-        for path_id in path_ids:
-            file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
-            self.assertFalse(os.path.isfile(file_path))
+            # Make synthetic .info files and thumbnail files, to ensure those are cleaned up
+            with open(file_path + ".info", "w") as fh:
+                fh.write("{}")
+            os.makedirs(os.path.join(settings.LOCAL_FILES_DIR, "thumbnail", path_id))
+            with open(
+                os.path.join(settings.LOCAL_FILES_DIR, "thumbnail", path_id, "100x100.webp"), "w"
+            ) as fh:
+                fh.write("...")
+
+        with delete_message_attachments() as delete_one:
+            for path_id in path_ids:
+                delete_one(path_id)
+
+        file_list = list(Path(settings.LOCAL_FILES_DIR).rglob("*"))
+        self.assertEqual(sum(1 for item in file_list if item.is_file()), 0)
 
     def test_all_message_attachments(self) -> None:
         write_local_file("files", "foo", b"content")
@@ -206,6 +221,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         file_path = user_avatar_path(user_profile)
 
         write_local_file("avatars", file_path + ".original", read_test_image_file("img.png"))
+        user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
+        user_profile.save()
 
         assert settings.LOCAL_UPLOADS_DIR is not None
         assert settings.LOCAL_AVATARS_DIR is not None

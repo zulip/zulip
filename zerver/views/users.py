@@ -23,6 +23,7 @@ from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
     do_update_user_custom_profile_data_if_changed,
 )
+from zerver.actions.message_delete import DeactivateUserActions
 from zerver.actions.user_settings import (
     check_change_bot_full_name,
     check_change_full_name,
@@ -37,7 +38,7 @@ from zerver.actions.users import (
     do_update_outgoing_webhook_service,
 )
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import require_member_or_admin, require_realm_admin
+from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
@@ -128,21 +129,33 @@ def deactivate_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    actions: Json[DeactivateUserActions] | None = None,
     deactivation_notification_comment: Annotated[str, StringConstraints(max_length=2000)]
     | None = None,
     user_id: PathOnly[int],
 ) -> HttpResponse:
-    target = access_user_by_id(user_profile, user_id, for_admin=True)
+    target = access_user_by_id(user_profile, user_id, allow_bots=False, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
     if check_last_owner(target):
         raise JsonableError(_("Cannot deactivate the only organization owner"))
     if deactivation_notification_comment is not None:
         deactivation_notification_comment = deactivation_notification_comment.strip()
+    if (
+        actions is not None
+        and (
+            actions.delete_public_channel_messages
+            or actions.delete_private_channel_messages
+            or actions.delete_direct_messages
+        )
+        and not user_profile.has_permission("can_delete_any_message_group")
+    ):
+        raise JsonableError(_("User is not allowed to delete other user's messages."))
     return _deactivate_user_profile_backend(
         request,
         user_profile,
         target,
+        deactivate_user_actions=actions,
         deactivation_notification_comment=deactivation_notification_comment,
     )
 
@@ -171,9 +184,14 @@ def _deactivate_user_profile_backend(
     user_profile: UserProfile,
     target: UserProfile,
     *,
+    deactivate_user_actions: Json[DeactivateUserActions] | None = None,
     deactivation_notification_comment: str | None,
 ) -> HttpResponse:
-    do_deactivate_user(target, acting_user=user_profile)
+    do_deactivate_user(
+        target,
+        acting_user=user_profile,
+        deactivate_user_actions=deactivate_user_actions,
+    )
 
     # It's important that we check for None explicitly here, since ""
     # encodes sending an email without a custom administrator comment.
@@ -448,7 +466,7 @@ def get_stream_name(stream: Stream | None) -> str | None:
     return None
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def patch_bot_backend(
     request: HttpRequest,
@@ -580,7 +598,7 @@ def patch_bot_backend(
     return json_success(request, data=json_result)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint_without_parameters
 def regenerate_bot_api_key(
     request: HttpRequest, user_profile: UserProfile, bot_id: PathOnly[int]
@@ -594,7 +612,20 @@ def regenerate_bot_api_key(
     return json_success(request, data=json_result)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
+@typed_endpoint_without_parameters
+def get_bot_api_key(
+    request: HttpRequest, user_profile: UserProfile, bot_id: PathOnly[int]
+) -> HttpResponse:
+    bot = access_bot_by_id(user_profile, bot_id)
+
+    json_result = dict(
+        api_key=bot.api_key,
+    )
+    return json_success(request, data=json_result)
+
+
+@require_human_non_guest_user
 @typed_endpoint
 def add_bot_backend(
     request: HttpRequest,
@@ -662,12 +693,11 @@ def add_bot_backend(
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 
-    if len(request.FILES) == 0:
-        avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
-    elif len(request.FILES) != 1:
-        raise JsonableError(_("You may only upload one file at a time"))
-    else:
+    avatar_source = None
+    if len(request.FILES) == 1:
         avatar_source = UserProfile.AVATAR_FROM_USER
+    elif len(request.FILES) > 1:
+        raise JsonableError(_("You may only upload one file at a time"))
 
     default_sending_stream = None
     if default_sending_stream_name is not None:
@@ -737,7 +767,7 @@ def add_bot_backend(
     return json_success(request, data=json_result)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
     bot_profiles = bot_profiles.select_related(
@@ -941,7 +971,7 @@ def get_subscription_backend(
     stream_id: PathOnly[Json[int]],
     user_id: PathOnly[Json[int]],
 ) -> HttpResponse:
-    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+    target_user = access_user_by_id(user_profile, user_id, allow_bots=True, for_admin=False)
     (_stream, _sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
 
     subscription_status = {"is_subscribed": subscribed_to_stream(target_user, stream_id)}
@@ -956,7 +986,7 @@ def get_subscribed_channels_backend(
     *,
     user_id: PathOnly[Json[int]],
 ) -> HttpResponse:
-    target_user = access_user_by_id(user_profile, user_id, for_admin=False)
+    target_user = access_user_by_id(user_profile, user_id, allow_bots=True, for_admin=False)
     streams = get_metadata_access_streams(
         user_profile,
         list(get_user_subscribed_streams(target_user)),

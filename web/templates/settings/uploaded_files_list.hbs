@@ -7,7 +7,7 @@
     </td>
     <td>{{ create_time_str }}</td>
     <td>
-        {{#if messages.length}}
+        {{#unless (eq messages.length 0)}}
         <div class="attachment-messages">
             {{#each messages}}
                 <a class="ind-message" href="/#narrow/id/{{ this.id }}">
@@ -15,7 +15,7 @@
                 </a>
             {{/each}}
         </div>
-        {{/if}}
+        {{/unless}}
     </td>
     <td class="upload-size" >{{ size_str }}</td>
     <td class="actions">

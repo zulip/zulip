@@ -159,7 +159,12 @@ writing. We strongly prefer clear and concise communication about
 points that actually require discussion over long AI-generated
 comments.
 
-When you use an LLM to write a message for you, it remains **your
+**Do not post AI-generated messages** in the [Zulip development
+community](https://zulip.com/development-community/) -- we want to read your
+own genuine expression of your thoughts. It's fine to use whatever tools you
+like for help with spelling, grammar, or translation.
+
+When you use an LLM to write a PR description or comment, it remains **your
 responsibility** to read through the whole thing and make sure that it
 makes sense to you and represents your ideas concisely. A good rule
 of thumb is that if you can't make yourself carefully read some LLM
@@ -236,7 +241,7 @@ want to take some time to familiarize yourself with the code.
    reading to see how it works and how the codebase is organized.
 
 [graphical Git viewer]: https://zulip.readthedocs.io/en/latest/git/setup.html#get-a-graphical-client
-[git-log-secret]: https://github.com/zulip/zulip-mobile/blob/main/docs/howto/git.md#git-log-secret
+[git-log-secret]: https://zulip.readthedocs.io/en/latest/git/reading-history.html#the-secret-to-using-git-log-p
 
 #### Desktop app
 

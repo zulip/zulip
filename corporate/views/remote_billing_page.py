@@ -42,7 +42,7 @@ from zerver.lib.exceptions import (
     RemoteBillingAuthenticationError,
     RemoteRealmServerMismatchError,
 )
-from zerver.lib.rate_limiter import rate_limit_request_by_ip
+from zerver.lib.rate_limiter import rate_limit_request_by_ip, readable_expiry_string_for_html
 from zerver.lib.remote_server import RealmDataForAnalytics, UserDataForRemoteBilling
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
@@ -703,7 +703,11 @@ def remote_billing_legacy_server_from_login_confirmation_link(
         prereg_object = get_object_from_key(
             confirmation_key,
             [Confirmation.REMOTE_SERVER_BILLING_LEGACY_LOGIN],
-            # These links are reusable.
+            # These links are reusable. The legacy server login flow requires
+            # credentials only available to the server admin. They might want to
+            # just do the authentication step, obtain the confirmation link
+            # for login and pass it on to a different person responsible for
+            # setting up the billing.
             mark_object_used=False,
         )
     except ConfirmationKeyError as exception:
@@ -843,10 +847,11 @@ def check_rate_limits(
         # Our generic error response is good enough here, since this is
         # about the user's IP address, not their entire server.
         assert e.secs_to_freedom is not None
+        retry_after_string = readable_expiry_string_for_html(int(e.secs_to_freedom))
         return render(
             request,
             "zerver/portico_error_pages/rate_limit_exceeded.html",
-            context={"retry_after": int(e.secs_to_freedom)},
+            context={"retry_after_string": retry_after_string},
             status=429,
         )
 
@@ -857,10 +862,11 @@ def check_rate_limits(
         # that was exceeded, so we need to show an error page explaining
         # that specific situation.
         assert e.secs_to_freedom is not None
+        retry_after_string = readable_expiry_string_for_html(int(e.secs_to_freedom))
         return render(
             request,
             "corporate/billing/remote_server_rate_limit_exceeded.html",
-            context={"retry_after": int(e.secs_to_freedom)},
+            context={"retry_after_string": retry_after_string},
             status=429,
         )
 

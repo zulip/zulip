@@ -16,6 +16,15 @@ class ReviewBoardHookTests(WebhookTestCase):
             expected_message,
         )
 
+    def test_review_request_published_with_group(self) -> None:
+        expected_topic_name = "Scheduler"
+        expected_message = "**eeshangarg** opened [#2: Initial commit](https://rbcommons.com/s/zulip/r/2/):\n\n``` quote\n**Description**: Initial commit\n**Status**: pending\n**Target groups**: **people**\n**Branch**: master\n```"
+        self.check_webhook(
+            "review_request_published__with_group",
+            expected_topic_name,
+            expected_message,
+        )
+
     def test_review_request_reopened(self) -> None:
         expected_topic_name = "Scheduler"
         expected_message = "**eeshangarg** reopened [#1: Initial commit (first iteration)](https://rbcommons.com/s/zulip/r/1/):\n\n``` quote\n**Description**: Initial commit (first iteration)\n**Status**: pending\n**Target people**: **drsbgarg**\n**Branch**: master\n```"

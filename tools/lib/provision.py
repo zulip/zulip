@@ -23,7 +23,6 @@ from scripts.lib.zulip_tools import (
     WARNING,
     get_dev_uuid_var_path,
     os_families,
-    parse_os_release,
     run,
     run_as_root,
 )
@@ -72,7 +71,7 @@ except OSError:
     )
     sys.exit(1)
 
-distro_info = parse_os_release()
+distro_info = platform.freedesktop_os_release()
 vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
 if vendor == "debian" and os_version == "12":  # bookworm
@@ -152,7 +151,7 @@ COMMON_YUM_DEPENDENCIES = [
 
 BUILD_GROONGA_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
-if (vendor == "debian" and os_version in ["13"]) or (vendor == "ubuntu" and os_version in []):
+if vendor == "debian" and os_version == "13":
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True

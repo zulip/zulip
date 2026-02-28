@@ -20,6 +20,133 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 471**
+
+* [`GET /events`](/api/get-events), [`GET /realm/linkifiers`](/api/get-linkifiers),
+  [`POST /realm/filters`](/api/add-linkifier),
+  [`PATCH /realm/filters/{filter_id}`](/api/update-linkifier):
+  Added `example_input` and `reverse_template` to linkifier objects.
+  `example_input` is a sample string matching the url_pattern for the linkifier.
+  `reverse_template` is a string that can process input params and turn a url into
+  it's abbreviated form.
+  `reverse_template` requires `example_input` to be provided.
+  Pass an empty string during PATCH to set either of these fields back to null, given
+  they satisfy the requirements stated above.
+
+**Feature level 470**
+
+* [`POST /remove_client_device`](/api/remove-client-device):
+  Added a new endpoint to remove a registered device.
+
+**Feature level 469**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added a new
+  `media_preview_size` realm setting that controls the size of
+  image and video thumbnails in messages.
+
+**Feature level 468**
+
+* [`POST /register_client_device`](/api/register-client-device):
+  Added a new endpoint to register a logged-in device.
+* [`POST /register`](/api/register-queue): Added `devices`
+  field to response.
+* [`GET /events`](/api/get-events):  A `device` event is sent
+  to clients to live-update the `devices` dictionary.
+* [`POST /mobile_push/register`](register-push-device): Redesigned
+  the endpoint to support rotation of `push_key` and FCM/APNs provided token.
+* [`POST /remotes/push/e2ee/register`](/api/register-remote-push-device):
+  Replaced `push_account_id` with `token_id` to support rotation
+  of `push_key` and FCM/APNs provided token.
+* [`POST /mobile_push/e2ee/test_notification`](/api/e2ee-test-notify):
+  Replaced `push_account_id` parameter with `device_id`.
+* [`POST /register`](/api/register-queue): Removed `push_devices`
+  field from response.
+* [`GET /events`](/api/get-events): Removed `push_device` event.
+
+**Feature level 467**
+
+* [Message formatting](/api/message-formatting): The new Markdown
+  image syntax now only supports/permits uploaded images, not
+  third-party image URLs.
+
+**Feature level 466**
+
+* [`POST /register`](/api/register-queue): Added `realm_uuid`
+  field to response. Used by clients that prefer to compute
+  Jdenticon avatars locally.
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events): The `avatar_source` fields may now have
+  the value `"J"`, for Jdenticons.
+
+**Feature level 465**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Nextcloud Talk integration added as an option
+  for the realm setting `video_chat_provider`.
+* [`POST /calls/nextcloud_talk/create`](/api/create-nextcloud-talk-video-call):
+  Added a new endpoint to create a Nextcloud Talk video call URL.
+
+**Feature level 464**
+
+* [`GET /events`](/api/get-events): The server now sends a
+  `realm/update_dict` event instead of `realm/update` event when a
+  Realm's `description` property is changed.
+
+**Feature level 463**
+
+* [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key): Added
+  new endpoint to get a bot's API key.
+
+**Feature level 462**
+
+* [`GET /events`](/api/get-events): Added `rendered_description` field
+  to the realm update event when the `description` property is
+  changed. Note that this new field was removed and replaced with the
+  standard `update_dict` mechanism in feature level 464.
+
+**Feature level 461**
+
+* [`GET /events`](/api/get-events): `realm_bot` update events are
+  now sent when a bot's Zulip display email address is changed.
+
+**Feature level 460**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Constructor Groups integration added as an option
+  for the realm setting `video_chat_provider`.
+* [`POST /calls/constructorgroups/create`](/api/create-constructor-groups-video-call):
+  Added a new endpoint to create a Constructor Groups video call URL.
+
+**Feature level 459**
+
+* [`DELETE /users/{user_id}`](/api/deactivate-user): Added new
+  parameter `actions` that asks the server to perform additional
+  actions, such as deleting messages the user sent, while deactivating
+  the user.
+
+**Feature level 458**
+
+* [`GET users/{user_id}/channels`](/api/get-user-channels): Fixed
+  missing support for querying subscriptions of bot users.
+* [`GET /users/{user_id}/subscriptions/{stream_id}`](/api/get-subscription-status):
+  Fixed missing support for querying subscriptions of bot users.
+* [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member):
+  Fixed missing support for querying group membership of bot users.
+
+**Feature level 457**
+
+[`GET /events`](/api/get-events): `delete_message` events are now
+  sent to the user who deletes the message only if they have content
+  access to the messages' recipient, and the `message_ids` list only
+  includes IDs of the messages that they can access.
+
+**Feature level 456**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added a new
+  `default_avatar_source` realm setting.
+
 **Feature level 455**
 
 * [`POST /register`](/api/register-queue), [`GET
@@ -50,10 +177,8 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 452**
 
-* [`GET /events`](/api/get-events): Prior to Zulip 12.0 (feature level 452)
-  messages deleted via a message retention policy incorrectly failed to generate
-  `delete_message` events. This is now fixed, allowing clients to correctly update
-  their message state, by removing the affected messages from view.
+* [`GET /events`](/api/get-events): Messages deleted via a message
+  retention policy now correctly generate `delete_message` events.
 
 **Feature level 451**
 
@@ -172,6 +297,9 @@ element to plain escaped text.
   backwards-compatibility users in the format intended for clients
   using `POST /register` without the `user_list_incomplete` client
   capability.
+* [Message formatting](/api/message-formatting): Added support for
+  Markdown image syntax, in addition to the previous link-derived
+  image previews; these can be inserted into any block-level element.
 
 **Feature level 436**
 
@@ -183,6 +311,12 @@ element to plain escaped text.
 * [`POST /register`](/api/register-queue): Added `server_report_message_types`
   field which contains a list of supported report types for the [message
   report](/help/report-a-message) feature.
+* [`POST /message/{message_id}/report`](/api/report-message): Clients
+  that support the [message report](/help/report-a-message) feature
+  should use the `key` values in the `server_report_message_types` as the
+  valid values for the `report_type` parameter. Prior to this feature
+  level, the valid values for the `report_type` parameter were limited to:
+  `"harassment"`, `"inappropriate"`, `"norms"`, `"other"`, `"spam"`.
 
 **Feature level 434**
 
@@ -671,8 +805,9 @@ No changes; API feature level used for the Zulip 11.0 release.
 
 **Feature level 382**
 
-* `POST /message/{message_id}/report`: Added a new endpoint for submitting
-  a moderation request for a message.
+* [`POST /message/{message_id}/report`](/api/report-message): Added a new
+  endpoint for [submitting a moderation request](/help/report-a-message)
+  for a message.
 
 **Feature level 381**
 

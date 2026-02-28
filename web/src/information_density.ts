@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 
 import {$t} from "./i18n.ts";
 import * as resize from "./resize.ts";
+import * as stream_data from "./stream_data.ts";
 import {stringify_time} from "./timerender.ts";
 import {user_settings} from "./user_settings.ts";
 
@@ -113,7 +114,7 @@ export function set_base_typography_css_variables(): void {
     const markdown_interelement_space_fraction = 0.3;
     const markdown_interelement_space_px = line_height_px * markdown_interelement_space_fraction;
 
-    $(":root").css("--base-line-height-unitless", line_height_unitless);
+    $(":root").css("--base-line-height-unitless", `${line_height_unitless}`);
     $(":root").css("--base-font-size-px", `${font_size_px}px`);
     $(":root").css("--markdown-interelement-space-px", `${markdown_interelement_space_px}px`);
     $(":root").css(
@@ -123,6 +124,7 @@ export function set_base_typography_css_variables(): void {
 
     set_vertical_alignment_values(line_height_unitless);
     resize.resize_page_components();
+    void stream_data.set_max_channel_width_css_variable();
 }
 
 export function calculate_timestamp_widths(): void {
@@ -136,7 +138,7 @@ export function calculate_timestamp_widths(): void {
     // the correct em-size timestamps can be calculated along
     // with all the other information density values.
     $temp_time_div.css({
-        "font-size": base_font_size_px,
+        "font-size": `${base_font_size_px}px`,
         width: "max-content",
         visibility: "hidden",
         position: "absolute",

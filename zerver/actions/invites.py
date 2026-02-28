@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Collection, Sequence
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from email.utils import format_datetime as email_format_datetime
 from typing import Any
@@ -30,12 +31,7 @@ from zerver.lib.email_validation import (
 from zerver.lib.exceptions import InvitationError
 from zerver.lib.invites import notify_invites_changed
 from zerver.lib.queue import queue_event_on_commit
-from zerver.lib.send_email import (
-    FromAddress,
-    clear_scheduled_invitation_emails,
-    maybe_remove_from_suppression_list,
-    send_future_email,
-)
+from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails, send_future_email
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -44,10 +40,12 @@ from zerver.models import (
     NamedUserGroup,
     PreregistrationUser,
     Realm,
+    RealmAuditLog,
     Stream,
     UserProfile,
 )
 from zerver.models.prereg_users import filter_to_valid_prereg_users
+from zerver.models.realm_audit_logs import AuditLogEventType
 
 
 def estimate_recent_invites(realms: Collection[Realm] | QuerySet[Realm], *, days: int) -> int:
@@ -235,8 +233,6 @@ def do_invite_users(
     errors: list[tuple[str, str, bool]] = []
     validate_email_allowed_in_realm = get_realm_email_validator(realm)
     for email in invitee_emails:
-        if email == "":
-            continue
         email_error = validate_email_is_valid(
             email,
             validate_email_allowed_in_realm,
@@ -315,6 +311,29 @@ def get_invitation_expiry_date(confirmation_obj: Confirmation) -> int | None:
     return datetime_to_timestamp(expiry_date)
 
 
+@dataclass
+class PreregistrationInviteData:
+    email: str
+    invited_by_user_id: int
+    invited: int
+    expiry_date: int | None
+    id: int
+    invited_as: int
+    is_multiuse: bool
+    notify_referrer_on_join: bool
+
+
+@dataclass
+class MultiuseInviteData:
+    invited_by_user_id: int
+    invited: int
+    expiry_date: int | None
+    id: int
+    link_url: str
+    invited_as: int
+    is_multiuse: bool
+
+
 def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[str, Any]]:
     """
     Returns a list of dicts representing invitations that can be controlled by user_profile.
@@ -330,12 +349,12 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
             PreregistrationUser.objects.filter(referred_by=user_profile)
         )
 
-    invites = []
+    invites: list[PreregistrationInviteData | MultiuseInviteData] = []
 
     for invitee in prereg_users:
         assert invitee.referred_by is not None
         invites.append(
-            dict(
+            PreregistrationInviteData(
                 email=invitee.email,
                 invited_by_user_id=invitee.referred_by.id,
                 invited=datetime_to_timestamp(invitee.invited_at),
@@ -348,15 +367,26 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
         )
 
     if user_profile.is_realm_admin:
+        multiuse_invite_ids = (
+            MultiuseInvite.objects.filter(realm=user_profile.realm)
+            .exclude(status=confirmation_settings.STATUS_REVOKED)
+            .values_list("id", flat=True)
+        )
         multiuse_confirmation_objs = Confirmation.objects.filter(
-            realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE
+            realm=user_profile.realm,
+            type=Confirmation.MULTIUSE_INVITE,
+            content_type=ContentType.objects.get_for_model(MultiuseInvite),
+            object_id__in=multiuse_invite_ids,
         ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
     else:
-        multiuse_invite_ids = MultiuseInvite.objects.filter(referred_by=user_profile).values_list(
-            "id", flat=True
+        multiuse_invite_ids = (
+            MultiuseInvite.objects.filter(referred_by=user_profile)
+            .exclude(status=confirmation_settings.STATUS_REVOKED)
+            .values_list("id", flat=True)
         )
         multiuse_confirmation_objs = Confirmation.objects.filter(
             type=Confirmation.MULTIUSE_INVITE,
+            content_type=ContentType.objects.get_for_model(MultiuseInvite),
             object_id__in=multiuse_invite_ids,
         ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
 
@@ -364,11 +394,9 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
         invite = confirmation_obj.content_object
         assert invite is not None
 
-        # This should be impossible, because revoking a multiuse invite
-        # deletes the Confirmation object, so it couldn't have been fetched above.
         assert invite.status != confirmation_settings.STATUS_REVOKED
         invites.append(
-            dict(
+            MultiuseInviteData(
                 invited_by_user_id=invite.referred_by.id,
                 invited=datetime_to_timestamp(confirmation_obj.date_sent),
                 expiry_date=get_invitation_expiry_date(confirmation_obj),
@@ -378,7 +406,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
                 is_multiuse=True,
             )
         )
-    return invites
+    return [asdict(invite) for invite in invites]
 
 
 @transaction.atomic(durable=True)
@@ -411,30 +439,69 @@ def do_create_multiuse_invite_link(
 
 
 @transaction.atomic(durable=True)
-def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
+def do_revoke_user_invite(
+    prereg_user: PreregistrationUser, *, acting_user: UserProfile | None = None
+) -> None:
     email = prereg_user.email
     realm = prereg_user.realm
     assert realm is not None
 
-    # Delete both the confirmation objects and the prereg_user object.
-    # TODO: Probably we actually want to set the confirmation objects
-    # to a "revoked" status so that we can give the invited user a better
-    # error message.
-    content_type = ContentType.objects.get_for_model(PreregistrationUser)
-    Confirmation.objects.filter(content_type=content_type, object_id=prereg_user.id).delete()
-    prereg_user.delete()
+    prereg_user.status = confirmation_settings.STATUS_REVOKED
+    prereg_user.save(update_fields=["status"])
     clear_scheduled_invitation_emails(email)
+
+    confirmation = Confirmation.objects.get(
+        type=Confirmation.INVITATION,
+        content_type=ContentType.objects.get_for_model(PreregistrationUser),
+        object_id=prereg_user.id,
+    )
+    # Defensive assert.
+    assert confirmation.content_object == prereg_user
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=AuditLogEventType.INVITATION_REVOKED,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data={
+            "confirmation_id": confirmation.id,
+            "invitation_type": Confirmation.INVITATION,
+            "invitation_object_id": prereg_user.id,
+        },
+    )
+
     notify_invites_changed(realm, changed_invite_referrer=prereg_user.referred_by)
 
 
 @transaction.atomic(durable=True)
-def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
+def do_revoke_multi_use_invite(
+    multiuse_invite: MultiuseInvite, *, acting_user: UserProfile | None = None
+) -> None:
     realm = multiuse_invite.referred_by.realm
 
-    content_type = ContentType.objects.get_for_model(MultiuseInvite)
-    Confirmation.objects.filter(content_type=content_type, object_id=multiuse_invite.id).delete()
     multiuse_invite.status = confirmation_settings.STATUS_REVOKED
     multiuse_invite.save(update_fields=["status"])
+
+    confirmation = Confirmation.objects.get(
+        type=Confirmation.MULTIUSE_INVITE,
+        content_type=ContentType.objects.get_for_model(MultiuseInvite),
+        object_id=multiuse_invite.id,
+    )
+    # Defensive assert.
+    assert confirmation.content_object == multiuse_invite
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        event_type=AuditLogEventType.INVITATION_REVOKED,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data={
+            "confirmation_id": confirmation.id,
+            "invitation_type": Confirmation.MULTIUSE_INVITE,
+            "invitation_object_id": multiuse_invite.id,
+        },
+    )
+
     notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
@@ -459,7 +526,6 @@ def do_send_user_invite_email(
     if confirmation is None:
         confirmation = prereg_user.confirmation.get()
 
-    maybe_remove_from_suppression_list(prereg_user.email)
     event = {
         "template_prefix": "zerver/emails/invitation",
         "to_emails": [prereg_user.email],
@@ -472,6 +538,7 @@ def do_send_user_invite_email(
             "referrer_realm_name": realm.name,
             "corporate_enabled": settings.CORPORATE_ENABLED,
         },
+        "remove_suppressed_destination": True,
         "realm_id": realm.id,
         "date": email_format_datetime(event_time),
     }

@@ -16,6 +16,7 @@ from zerver.actions.realm_settings import (
 )
 from zerver.lib.bulk_create import create_users
 from zerver.lib.push_notifications import sends_notifications_directly
+from zerver.lib.realm_description import render_realm_description
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.sessions import delete_realm_user_sessions
@@ -37,6 +38,8 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.scheduled_jobs import ScheduledMessage
+from zerver.models.users import get_system_bot
 from zproject.backends import all_default_backend_names
 
 DEFAULT_EMAIL_ADDRESS_VISIBILITY_FOR_REALM = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
@@ -86,6 +89,20 @@ def do_change_realm_subdomain(
         for placeholder_realm in placeholder_realms:
             do_add_deactivated_redirect(placeholder_realm, realm.url)
 
+        # If a realm was a demo organization delete any scheduled messages about the
+        # automatic deletion of the demo organization.
+        if was_demo_organization:
+            sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+            scheduled_notification_bot_messages = ScheduledMessage.objects.filter(
+                sender=sender,
+                delivery_type=ScheduledMessage.SEND_LATER,
+                realm=realm,
+                delivered=False,
+                failed=False,
+            )
+            for scheduled_message in scheduled_notification_bot_messages:
+                scheduled_message.delete()
+
     # The below block isn't executed in a transaction with the earlier code due to
     # the functions called below being complex and potentially sending events,
     # which we don't want to do in atomic blocks.
@@ -94,19 +111,11 @@ def do_change_realm_subdomain(
     # it's deactivated redirect to new_subdomain so that we can tell the users that
     # the realm has been moved to a new subdomain.
     if add_deactivated_redirect:
-        scheduled_deletion_days = None
-        if was_demo_organization:
-            # For converted demo organizations, we schedule the placeholder realm to be
-            # deleted/scrubbed after a set number of days, so that our finite possible
-            # options for demo organization subdomains don't get used up over time.
-            scheduled_deletion_days = settings.DEMO_ORG_DEADLINE_DAYS
-
         placeholder_realm = do_create_realm(old_subdomain, realm.name)
         do_deactivate_realm(
             placeholder_realm,
             acting_user=None,
             deactivation_reason="subdomain_change",
-            deletion_delay_days=scheduled_deletion_days,
             email_owners=False,
         )
         do_add_deactivated_redirect(placeholder_realm, realm.url)
@@ -211,6 +220,9 @@ def do_create_realm(
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
     if description is not None:
         kwargs["description"] = description
+        rendered_description, version = render_realm_description(description, realm=None)
+        kwargs["rendered_description"] = rendered_description
+        kwargs["rendered_description_version"] = version
     if invite_required is not None:
         kwargs["invite_required"] = invite_required
     if plan_type is not None:

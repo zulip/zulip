@@ -22,7 +22,8 @@ import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as modals from "./modals.ts";
 import * as people from "./people.ts";
-import {current_user, realm} from "./state_data.ts";
+import * as settings_data from "./settings_data.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
@@ -36,12 +37,8 @@ function compare_by_name(a: dropdown_widget.Option, b: dropdown_widget.Option): 
     return util.strcmp(a.name, b.name);
 }
 
-function can_user_manage_folder(): boolean {
-    return current_user.is_admin;
-}
-
 export function add_channel_folder(): void {
-    const html_body = render_create_channel_folder_modal({
+    const modal_content_html = render_create_channel_folder_modal({
         max_channel_folder_name_length: realm.max_channel_folder_name_length,
         max_channel_folder_description_length: realm.max_channel_folder_description_length,
     });
@@ -86,10 +83,10 @@ export function add_channel_folder(): void {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Create channel folder"}),
-        html_body,
+        modal_title_html: $t_html({defaultMessage: "Create channel folder"}),
+        modal_content_html,
         id: "create_channel_folder",
-        html_submit_button: $t_html({defaultMessage: "Create"}),
+        modal_submit_button_text: $t({defaultMessage: "Create"}),
         on_click: create_channel_folder,
         loading_spinner: true,
         on_shown: () => $("#new_channel_folder_name").trigger("focus"),
@@ -185,8 +182,9 @@ function archive_folder(folder_id: number): void {
 
 export function handle_archiving_channel_folder(folder_id: number): void {
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Delete channel folder?"}),
-        html_body: render_confirm_archive_channel_folder(),
+        modal_title_html: $t_html({defaultMessage: "Delete channel folder?"}),
+        modal_content_html: render_confirm_archive_channel_folder(),
+        is_compact: true,
         on_click() {
             archive_folder(folder_id);
         },
@@ -203,7 +201,7 @@ function format_channel_item_html(stream: StreamSubscription): string {
         invite_only: stream.invite_only,
         is_web_public: stream.is_web_public,
         stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
-        can_manage_folder: can_user_manage_folder(),
+        can_manage_folder: settings_data.can_user_manage_folder(),
     });
 }
 
@@ -447,9 +445,9 @@ function update_channel_folder(folder_id: number): void {
 export function handle_editing_channel_folder(folder_id: number): void {
     const folder = channel_folders.get_channel_folder_by_id(folder_id);
     const subs = channel_folders.get_sorted_streams_in_folder(folder_id);
-    const can_manage_folder = can_user_manage_folder();
+    const can_manage_folder = settings_data.can_user_manage_folder();
 
-    const html_body = render_edit_channel_folder_modal({
+    const modal_content_html = render_edit_channel_folder_modal({
         name: folder.name,
         description: folder.description,
         folder_id,
@@ -458,7 +456,7 @@ export function handle_editing_channel_folder(folder_id: number): void {
         can_manage_folder,
     });
 
-    const html_heading = can_manage_folder
+    const modal_title_html = can_manage_folder
         ? $t_html({defaultMessage: "Manage channel folder"})
         : $t_html({defaultMessage: "Channel folder details"});
 
@@ -471,8 +469,8 @@ export function handle_editing_channel_folder(folder_id: number): void {
     }
 
     dialog_widget.launch({
-        html_heading,
-        html_body,
+        modal_title_html,
+        modal_content_html,
         id: "edit_channel_folder",
         on_click() {
             if (!can_manage_folder) {

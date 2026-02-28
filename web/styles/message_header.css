@@ -200,6 +200,10 @@
                 padding-top: 5px;
             }
         }
+
+        .recipient_row_date {
+            cursor: pointer;
+        }
     }
 
     .message_header {
@@ -335,5 +339,29 @@
 
     &.recipient-row-topic-menu {
         display: none;
+    }
+}
+
+@container message-lists (width <  $cq_ml_min) {
+    .recipient-bar-control {
+        display: none;
+
+        /* Always show the vdots */
+        &.recipient-row-topic-menu {
+            display: block;
+        }
+    }
+}
+
+@media (width < $ml_min) {
+    .without-container-query-support {
+        .recipient-bar-control {
+            display: none;
+
+            /* Always show the vdots */
+            &.recipient-row-topic-menu {
+                display: block;
+            }
+        }
     }
 }

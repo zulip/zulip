@@ -1,8 +1,10 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
+import * as compose_actions from "./compose_actions.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
 import * as message_store from "./message_store.ts";
@@ -10,11 +12,12 @@ import * as people from "./people.ts";
 import * as rows from "./rows.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import type {EditingStatusWorker, Recipient} from "./typing_status.ts";
+import type {EditingStatusWorker, Recipient, TypingStatusWorker} from "./typing_status.ts";
 import * as typing_status from "./typing_status.ts";
 import {user_settings} from "./user_settings.ts";
 
 let edit_box_worker: EditingStatusWorker;
+let worker: TypingStatusWorker;
 
 type TypingAPIRequest = {op: "start" | "stop"} & (
     | {
@@ -81,6 +84,11 @@ function send_stream_typing_notification(
     operation: "start" | "stop",
 ): void {
     const stream = stream_data.get_sub_by_id(stream_id)!;
+    // If the user lost access to the stream while typing, stream might
+    // be undefined for us, in which case, we need to to return early.
+    if (stream === undefined) {
+        return;
+    }
     if (!stream_data.can_post_messages_in_stream(stream)) {
         return;
     }
@@ -199,6 +207,15 @@ export function get_recipient(): Recipient | null {
     return null;
 }
 
+export function stop_typing_notifications(): void {
+    typing_status.update(
+        worker,
+        null,
+        realm.server_typing_started_wait_period_milliseconds,
+        realm.server_typing_stopped_wait_period_milliseconds,
+    );
+}
+
 function get_message_edit_recipient(message_id: number): Recipient {
     return {
         notification_event_type: "typing_message_edit",
@@ -217,7 +234,7 @@ export function stop_message_edit_notifications(message_id: number): void {
 }
 
 export function initialize(): void {
-    const worker = {
+    worker = {
         get_current_time,
         notify_server_start,
         notify_server_stop,
@@ -229,17 +246,21 @@ export function initialize(): void {
         notify_server_editing_stop,
     };
 
-    $(document).on("input", "#compose-textarea", () => {
-        // If our previous state was no typing notification, send a
-        // start-typing notice immediately.
-        const new_recipient = is_valid_conversation() ? get_recipient() : null;
-        typing_status.update(
-            worker,
-            new_recipient,
-            realm.server_typing_started_wait_period_milliseconds,
-            realm.server_typing_stopped_wait_period_milliseconds,
-        );
-    });
+    $(document).on(
+        "input",
+        "#compose-textarea",
+        _.throttle(() => {
+            // If our previous state was no typing notification, send a
+            // start-typing notice immediately.
+            const new_recipient = is_valid_conversation() ? get_recipient() : null;
+            typing_status.update(
+                worker,
+                new_recipient,
+                realm.server_typing_started_wait_period_milliseconds,
+                realm.server_typing_stopped_wait_period_milliseconds,
+            );
+        }, 25),
+    );
 
     $("body").on("input", ".message_edit_content", function (this: HTMLElement) {
         const $message_row = $(this).closest(".message_row");
@@ -256,12 +277,5 @@ export function initialize(): void {
 
     // We send a stop-typing notification immediately when compose is
     // closed/cancelled
-    $(document).on("compose_canceled.zulip compose_finished.zulip", () => {
-        typing_status.update(
-            worker,
-            null,
-            realm.server_typing_started_wait_period_milliseconds,
-            realm.server_typing_stopped_wait_period_milliseconds,
-        );
-    });
+    compose_actions.register_compose_cancel_hook(stop_typing_notifications);
 }

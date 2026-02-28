@@ -192,6 +192,8 @@ USE_X_FORWARDED_PORT = True
 
 # Override the default SAML entity ID
 SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991"
+if IS_DEV_DROPLET:
+    SOCIAL_AUTH_SAML_SP_ENTITY_ID = EXTERNAL_URI_SCHEME + "zulip." + EXTERNAL_HOST
 
 SOCIAL_AUTH_SUBDOMAIN = "auth"
 
@@ -234,3 +236,16 @@ OUTPUT_COST_PER_GIGATOKEN = 590
 INPUT_COST_PER_GIGATOKEN = 790
 MAX_PER_USER_MONTHLY_AI_COST = 1
 MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
+
+# We override some rate limiting rules in development, when they prove
+# excessively limiting for development and testing purposes.
+RATE_LIMITING_RULES = {
+    "sends_email_by_ip": [
+        # This rule puts a limit on actions such as new organization creation,
+        # which we sometimes need to test repeatedly in development.
+        (86400, 1000),
+    ],
+    "demo_realm_creation_by_ip": [
+        (86400, 1000),
+    ],
+}

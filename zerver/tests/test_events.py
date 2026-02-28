@@ -4,7 +4,6 @@
 # This module is closely integrated with zerver/lib/event_schema.py
 # and zerver/lib/data_types.py systems for validating the schemas of
 # events; it also uses the OpenAPI tools to validate our documentation.
-import base64
 import copy
 import time
 from collections.abc import Callable, Iterator
@@ -54,6 +53,7 @@ from zerver.actions.default_streams import (
     do_remove_streams_from_default_stream_group,
     lookup_default_stream_groups,
 )
+from zerver.actions.devices import do_register_device, do_remove_device
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_invite_users,
@@ -162,7 +162,7 @@ from zerver.actions.users import (
     do_deactivate_user,
     do_update_outgoing_webhook_service,
 )
-from zerver.actions.video_calls import do_set_zoom_token
+from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.lib.drafts import DraftData, do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,
@@ -176,6 +176,9 @@ from zerver.lib.event_schema import (
     check_default_stream_groups,
     check_default_streams,
     check_delete_message,
+    check_device_add,
+    check_device_remove,
+    check_device_update,
     check_direct_message,
     check_draft_add,
     check_draft_remove,
@@ -192,7 +195,6 @@ from zerver.lib.event_schema import (
     check_navigation_view_remove,
     check_navigation_view_update,
     check_onboarding_steps,
-    check_push_device,
     check_reaction_add,
     check_reaction_remove,
     check_realm_bot_add,
@@ -247,14 +249,9 @@ from zerver.lib.event_schema import (
     check_user_topic,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
-from zerver.lib.exceptions import InvalidBouncerPublicKeyError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
-from zerver.lib.push_registration import (
-    RegisterPushDeviceToBouncerQueueItem,
-    handle_register_push_device_to_bouncer,
-)
 from zerver.lib.streams import check_update_all_streams_active_status, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -281,12 +278,12 @@ from zerver.lib.user_groups import (
 from zerver.models import (
     Attachment,
     CustomProfileField,
+    Device,
     ImageAttachment,
     Message,
     MultiuseInvite,
     NamedUserGroup,
     PreregistrationUser,
-    PushDevice,
     Realm,
     RealmAuditLog,
     RealmDomain,
@@ -961,6 +958,8 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
+        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         with self.verify_action(client_gravatar=True) as events:
             self.send_stream_message(
@@ -1308,7 +1307,7 @@ class NormalActionsTest(BaseAction):
         message_obj = events[0]["message"]
         self.assertEqual(message_obj["sender_full_name"], iago.full_name)
         self.assertEqual(message_obj["sender_email"], iago.delivery_email)
-        self.assertIsNone(message_obj["avatar_url"])
+        self.assertIsNotNone(message_obj["avatar_url"])
 
     def test_add_reaction(self) -> None:
         message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
@@ -1593,6 +1592,12 @@ class NormalActionsTest(BaseAction):
         reset_email_visibility_to_everyone_in_zulip_realm()
 
         self.user_profile = self.example_user("iago")
+        do_set_realm_property(
+            self.user_profile.realm,
+            "default_avatar_source",
+            Realm.AVATAR_FROM_GRAVATAR,
+            acting_user=None,
+        )
         streams = [
             get_stream(stream_name, self.user_profile.realm)
             for stream_name in ["Denmark", "Scotland"]
@@ -2642,6 +2647,10 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
+        do_change_avatar_fields(
+            self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
+        )
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
         # for email being passed into this next function.
@@ -2663,6 +2672,10 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
+        do_change_avatar_fields(
+            self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
+        )
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
         # for email being passed into this next function.
@@ -4270,34 +4283,58 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(audit_log.acting_user, self.user_profile)
         self.assertEqual(audit_log.extra_data["realm_export_id"], export_row_id)
 
-    def test_push_device_registration_failure(self) -> None:
-        hamlet = self.example_user("hamlet")
-        self.login_user(hamlet)
+    def test_register_device(self) -> None:
+        with self.verify_action() as events:
+            do_register_device(self.user_profile)
+        check_device_add("events[0]", events[0])
 
-        push_device = PushDevice.objects.create(
-            user=hamlet,
-            token_kind=PushDevice.TokenKind.FCM,
-            push_account_id=2408,
-            push_key=base64.b64decode("MbZ1JWx6YMHw1cZEgCPRQAgolV3lBRefP5qp/GNisiP+"),
-        )
+    def test_remove_device(self) -> None:
+        device = Device.objects.create(user=self.user_profile)
+        with self.verify_action() as events:
+            do_remove_device(self.user_profile, device.id)
+        check_device_remove("events[0]", events[0])
 
-        queue_item: RegisterPushDeviceToBouncerQueueItem = {
-            "user_profile_id": push_device.user.id,
-            "push_account_id": push_device.push_account_id,
-            "bouncer_public_key": "bouncer-public-key",
-            "encrypted_push_registration": "encrypted-push-registration",
-        }
+    def test_register_push_device(self) -> None:
+        self.login_user(self.user_profile)
+        device = Device.objects.create(user=self.user_profile)
+
+        with (
+            mock.patch("zerver.lib.push_registration.do_register_remote_push_device"),
+            self.verify_action(num_events=2) as events,
+        ):
+            payload = {
+                "device_id": device.id,
+                "token_kind": Device.PushTokenKind.FCM,
+                "push_key": "MY+paNlyduYJRQFNZva8w7Gv3PkBua9kIj581F9Vr301",
+                "push_key_id": 2408,
+                "bouncer_public_key": "bouncer-public-key",
+                "encrypted_push_registration": "encrypted-push-registration",
+                "token_id": "hGsEWGmyyfI=",
+            }
+            self.client_post("/json/mobile_push/register", payload)
+        check_device_update("events[0]", events[0])
+        check_device_update("events[1]", events[1])
+
+        # For coverage of `device.pending_push_token_id is not None` branch
+        # in `zerver.lib.devices.get_devices`.
+        device = Device.objects.create(user=self.user_profile)
         with (
             mock.patch(
-                "zerver.lib.push_registration.do_register_remote_push_device",
-                side_effect=InvalidBouncerPublicKeyError,
+                "zerver.worker.missedmessage_mobile_notifications.handle_register_push_device_to_bouncer"
             ),
-            self.verify_action(state_change_expected=True, num_events=1) as events,
+            self.verify_action(num_events=1) as events,
         ):
-            handle_register_push_device_to_bouncer(queue_item)
-        check_push_device("events[0]", events[0])
-        self.assertEqual(events[0]["status"], "failed")
-        self.assertEqual(events[0]["error_code"], "INVALID_BOUNCER_PUBLIC_KEY")
+            payload = {
+                "device_id": device.id,
+                "token_kind": Device.PushTokenKind.FCM,
+                "push_key": "MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt",
+                "push_key_id": 1144,
+                "bouncer_public_key": "bouncer-public-key-2",
+                "encrypted_push_registration": "encrypted-push-registration-2",
+                "token_id": "iGFeKNj3ngQ=",
+            }
+            self.client_post("/json/mobile_push/register", payload)
+        check_device_update("events[0]", events[0])
 
     def test_notify_realm_export_on_failure(self) -> None:
         self.set_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
@@ -4337,11 +4374,11 @@ class NormalActionsTest(BaseAction):
 
     def test_has_zoom_token(self) -> None:
         with self.verify_action() as events:
-            do_set_zoom_token(self.user_profile, {"access_token": "token"})
+            do_set_video_call_provider_token(self.user_profile, "zoom", {"access_token": "token"})
         check_has_zoom_token("events[0]", events[0], value=True)
 
         with self.verify_action() as events:
-            do_set_zoom_token(self.user_profile, None)
+            do_set_video_call_provider_token(self.user_profile, "zoom", None)
         check_has_zoom_token("events[0]", events[0], value=False)
 
     def test_restart_event(self) -> None:
@@ -4407,6 +4444,8 @@ class RealmPropertyActionTest(BaseAction):
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200, None],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200, None],
             topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
+            media_preview_size=[100, 150, 200],
+            default_avatar_source=["G", "J"],
         )
 
         vals = test_values.get(name)
@@ -4475,6 +4514,7 @@ class RealmPropertyActionTest(BaseAction):
                 "allow_message_editing",
                 "message_content_edit_limit_seconds",
                 "topics_policy",
+                "description",
             ]:
                 check_realm_update_dict("events[0]", events[0])
             else:

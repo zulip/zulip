@@ -10,6 +10,8 @@ const {
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -55,57 +57,61 @@ set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     user_id: 999,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 1,
     full_name: "Alice Smith",
-};
-const fred = {
+});
+const fred = make_user({
     email: "fred@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
-};
-const jill = {
+});
+const jill = make_user({
     email: "jill@zulip.com",
     user_id: 3,
     full_name: "Jill Hill",
-};
-const mark = {
+});
+const mark = make_user({
     email: "mark@zulip.com",
     user_id: 4,
     full_name: "Marky Mark",
-};
-const norbert = {
+});
+const norbert = make_user({
     email: "norbert@zulip.com",
     user_id: 5,
     full_name: "Norbert Oswald",
-};
+});
 
-const zoe = {
+const zoe = make_user({
     email: "zoe@example.com",
     user_id: 6,
     full_name: "Zoe Yang",
-};
+});
 
-people.add_active_user(alice);
-people.add_active_user(fred);
-people.add_active_user(jill);
-people.add_active_user(mark);
-people.add_active_user(norbert);
-people.add_active_user(zoe);
-people.add_active_user(me);
+people.add_active_user(alice, "server_events");
+people.add_active_user(fred, "server_events");
+people.add_active_user(jill, "server_events");
+people.add_active_user(mark, "server_events");
+people.add_active_user(norbert, "server_events");
+people.add_active_user(zoe, "server_events");
+people.add_active_user(me, "server_events");
 people.initialize_current_user(me.user_id);
 
 const $alice_stub = $.create("alice stub");
 const $fred_stub = $.create("fred stub");
 
-const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
+const rome_sub = make_stream({
+    name: "Rome",
+    subscribed: true,
+    stream_id: 1001,
+});
 function add_sub_and_set_as_current_narrow(sub) {
     stream_data.add_sub_for_tests(sub);
     const filter_terms = [{operator: "stream", operand: String(sub.stream_id)}];
@@ -233,8 +239,8 @@ test("handlers", ({override, override_rewire}) => {
 
     let narrowed;
 
-    function narrow_by_email(email) {
-        assert.equal(email, "alice@zulip.com");
+    function narrow_by_user_id(user_id) {
+        assert.equal(user_id, alice.user_id);
         narrowed = true;
     }
 
@@ -245,7 +251,7 @@ test("handlers", ({override, override_rewire}) => {
         buddy_list.start_scroll_handler = noop;
         override_rewire(util, "call_function_periodically", noop);
         override_rewire(activity, "send_presence_to_server", noop);
-        activity_ui.initialize({narrow_by_email});
+        activity_ui.initialize({narrow_by_user_id});
 
         buddy_list.populate({
             all_user_ids: [me.user_id, alice.user_id, fred.user_id],

@@ -282,6 +282,7 @@ def send_immediate_email(
     request: HttpRequest | None = None,
     in_reply_to: str | None = None,
     references: str | None = None,
+    remove_suppressed_destination: bool = False,
 ) -> None:
     mail = build_email(
         template_prefix,
@@ -297,7 +298,7 @@ def send_immediate_email(
         in_reply_to=in_reply_to,
         references=references,
     )
-    template = template_prefix.split("/")[-1]
+    template = template_prefix.rsplit("/", 1)[-1]
 
     log_email_config_errors()
 
@@ -312,10 +313,13 @@ def send_immediate_email(
     if request is not None:
         cause = f" (triggered from {request.META['REMOTE_ADDR']})"
 
-    logging_recipient: str | list[str] = mail.to
     if realm is not None:
         logging_recipient = f"{mail.to} in {realm.string_id}"
+    else:
+        logging_recipient = f"{mail.to}"
 
+    if remove_suppressed_destination:
+        maybe_remove_from_suppression_list(mail.to)
     logger.info("Sending %s email to %s%s", template, logging_recipient, cause)
 
     try:
@@ -352,6 +356,7 @@ def send_email(
     realm: Realm | None = None,
     connection: BaseEmailBackend | None = None,
     dry_run: bool = False,
+    remove_suppressed_destination: bool = False,
     request: HttpRequest | None = None,
 ) -> None:
     if settings.EMAIL_ALWAYS_ENQUEUED and not dry_run:
@@ -368,6 +373,7 @@ def send_email(
                 date=date,
                 context=context,
                 realm_id=realm.id if realm is not None else None,
+                remove_suppressed_destination=remove_suppressed_destination,
             ),
         )
     else:
@@ -390,6 +396,7 @@ def send_email(
             connection,
             dry_run,
             request,
+            remove_suppressed_destination=remove_suppressed_destination,
         )
 
 
@@ -439,7 +446,7 @@ def send_future_email(
     context: Mapping[str, Any] = {},
     delay: timedelta = timedelta(0),
 ) -> None:
-    template_name = template_prefix.split("/")[-1]
+    template_name = template_prefix.rsplit("/", 1)[-1]
     email_fields = {
         "template_prefix": template_prefix,
         "from_name": from_name,
@@ -830,7 +837,7 @@ def log_email_config_errors() -> None:
         )
 
 
-def maybe_remove_from_suppression_list(email: str) -> None:
+def maybe_remove_from_suppression_list(email_addresses: list[str]) -> None:
     if settings.EMAIL_HOST is None:
         return
 
@@ -844,7 +851,7 @@ def maybe_remove_from_suppression_list(email: str) -> None:
     if boto3.session.Session().get_credentials() is None:
         return
 
-    with contextlib.suppress(botocore.exceptions.ClientError):
-        boto3.client("sesv2", region_name=maybe_aws[1]).delete_suppressed_destination(
-            EmailAddress=email
-        )
+    client = boto3.client("sesv2", region_name=maybe_aws[1])
+    for email_address in email_addresses:
+        with contextlib.suppress(botocore.exceptions.ClientError):
+            client.delete_suppressed_destination(EmailAddress=email_address)

@@ -23,6 +23,16 @@
                     <div id="slack-import-poll-status" class="not-editable-realm-field">
                         {{ _("Checking import status…") }}
                     </div>
+                    <div id="slack-import-unexpected-failure" class="not-editable-realm-field hidden">
+                        <p class="text-error">
+                            {% trans %}
+                            An unexpected error occurred during the import process. Please follow the instructions for the
+                            <a href="https://zulip.com/help/import-from-slack#import-your-data-into-zulip">
+                                Zulip Cloud (via support) import process
+                            </a> to complete your import.
+                            {% endtrans %}
+                        </p>
+                    </div>
                 </div>
                 {% else %}
                 <form method="post" class="form-inline" action="{{ url('import_realm_from_slack') }}">

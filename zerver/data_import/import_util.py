@@ -5,17 +5,22 @@ import secrets
 import shutil
 import subprocess
 from collections import defaultdict
-from collections.abc import Callable, Iterable, Iterator, Mapping
+from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
-from typing import Any, Protocol, TypeAlias, TypeVar
+from email.errors import HeaderDefect
+from email.headerregistry import Address
+from typing import Any, Generic, Protocol, TypeAlias, TypeVar
+from urllib.parse import SplitResult
 
 import orjson
 import requests
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
+from urllib3.util import Retry
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
@@ -23,6 +28,7 @@ from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.message import normalize_body_for_import
 from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.parallel import run_parallel
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
@@ -89,10 +95,14 @@ class UploadFileRequest:
     kwargs: dict[str, Any]
 
 
-class SubscriberHandler:
+GroupDMKey = TypeVar("GroupDMKey", bound=Hashable)
+
+
+class SubscriberHandler(Generic[GroupDMKey]):
     def __init__(self) -> None:
         self.stream_info: dict[int, set[int]] = {}
         self.direct_message_group_info: dict[int, set[int]] = {}
+        self.group_dm_key_to_zulip_recipient_id: dict[GroupDMKey, int] = {}
 
     def set_info(
         self,
@@ -106,6 +116,16 @@ class SubscriberHandler:
             self.direct_message_group_info[direct_message_group_id] = users
         else:
             raise AssertionError("stream_id or direct_message_group_id is required")
+
+    def add_group_dm_key_to_zulip_recipient_id(
+        self, key: GroupDMKey, group_recipient_id: int
+    ) -> None:
+        # TODO: Currently only Mattermost importer uses this. Maybe refactor this into
+        # self.set_info() once other importers starts using this method too.
+        self.group_dm_key_to_zulip_recipient_id[key] = group_recipient_id
+
+    def get_zulip_recipient_id(self, key: GroupDMKey) -> int | None:
+        return self.group_dm_key_to_zulip_recipient_id.get(key)
 
     def get_users(
         self, stream_id: int | None = None, direct_message_group_id: int | None = None
@@ -684,6 +704,15 @@ def process_avatars(
     return avatar_list + avatar_original_list
 
 
+# Retry on 429 (rate-limited) and common server errors that are
+# typically transient for file-hosting services like Slack's CDN.
+_data_import_session = OutgoingSession(
+    role="data_import",
+    timeout=60,
+    max_retries=Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504]),
+)
+
+
 def request_file_stream(
     url: str,
     params: dict[str, Any] | None = None,
@@ -693,7 +722,7 @@ def request_file_stream(
     if "stream" not in kwargs:
         kwargs.update(stream=True)
 
-    response = requests.get(
+    response = _data_import_session.get(
         url,
         params=params,
         headers=headers,
@@ -747,7 +776,7 @@ def get_emojis(
     Raises `BadImageError` when the content-type is not guessable, or
     not in both `THUMBNAIL_ACCEPT_IMAGE_TYPES` and `INLINE_MIME_TYPES`.
     """
-    response = requests.get(emoji_url, stream=True)
+    response = _data_import_session.get(emoji_url, stream=True)
     content_type_raw = response.headers.get("Content-Type")
     if content_type_raw is None:
         logging.warning(
@@ -929,3 +958,56 @@ def get_attachment_path_and_content(
     markdown_link = get_markdown_link_for_url(link_name, attachment_url)
 
     return AttachmentLinkResult(path_id=path_id, markdown_link=markdown_link)
+
+
+def get_domain_name_for_import() -> str:
+    hostname = SplitResult("", settings.EXTERNAL_HOST, "", "", "").hostname
+    assert hostname is not None
+    return hostname
+
+
+class ImportedBotEmail:
+    duplicate_email_count: dict[str, int] = {}
+    # Mapping of `bot_id` to final email assigned to the bot.
+    assigned_email: dict[str, str] = {}
+
+    @classmethod
+    def get_email(
+        cls,
+        user_profile: ZerverFieldsT,
+        domain_name: str,
+        bot_id: str,
+        bot_name_getter: Callable[[ZerverFieldsT], str],
+    ) -> str:
+        if bot_id in cls.assigned_email:
+            return cls.assigned_email[bot_id]
+
+        bot_name = bot_name_getter(user_profile)
+
+        email = Address(
+            username=bot_name.replace("Bot", "").replace(" ", "").lower() + "-bot",
+            domain=domain_name,
+        ).addr_spec
+        # The address formed above may not be a valid email format - e.g. containing
+        # non-ASCII characters in the local part, if the bot_name contains them.
+        # Only Address(addr_spec=...) triggers the necessary validation.
+        # Thus we call it here, and if issues are detected, we fall back to forming the
+        # email address in a safer way - using the bot id string.
+        try:
+            Address(addr_spec=email)
+        except HeaderDefect:
+            email = Address(
+                username=bot_id + "-bot",
+                domain=domain_name,
+            ).addr_spec
+
+        if email in cls.duplicate_email_count:
+            cls.duplicate_email_count[email] += 1
+            address = Address(addr_spec=email)
+            email_username = address.username + "-" + str(cls.duplicate_email_count[email])
+            email = Address(username=email_username, domain=address.domain).addr_spec
+        else:
+            cls.duplicate_email_count[email] = 1
+
+        cls.assigned_email[bot_id] = email
+        return email

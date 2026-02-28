@@ -100,7 +100,16 @@ $(() => {
                 const {status, redirect} = z
                     .object({status: z.string(), redirect: z.optional(z.string())})
                     .parse(response);
-                $("#slack-import-poll-status").text(status);
+                if (status === "unexpected_import_failure") {
+                    $("#slack-import-poll-status").hide();
+                    $("#slack-import-unexpected-failure").removeClass("hidden");
+                    // Stop polling
+                    if (poll_id) {
+                        clearInterval(poll_id);
+                    }
+                } else {
+                    $("#slack-import-poll-status").text(status);
+                }
                 if (poll_id && redirect !== undefined) {
                     clearInterval(poll_id);
                     window.location.assign(redirect);

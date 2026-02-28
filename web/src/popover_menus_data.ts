@@ -338,7 +338,7 @@ export function get_personal_menu_content_context(): PersonalMenuContext {
 
         // user information
         user_avatar: current_user.avatar_url_medium,
-        is_active: people.is_active_user_for_popover(my_user_id),
+        is_active: people.is_active_user_or_system_bot(my_user_id),
         user_circle_class: buddy_data.get_user_circle_class(my_user_id),
         user_last_seen_time_status: buddy_data.user_last_seen_time_status(my_user_id),
         user_full_name: current_user.full_name,

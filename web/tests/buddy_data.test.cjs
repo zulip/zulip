@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {noop, run_test} = require("./lib/test.cjs");
@@ -45,74 +46,72 @@ initialize_user_settings({user_settings});
 // activity.test.cjs, but we should feel free to add direct tests
 // here.
 
-const selma = {
+const selma = make_user({
     user_id: 1000,
     full_name: "Human Selma",
     email: "selma@example.com",
-};
+});
 
-const me = {
+const me = make_user({
     user_id: 1001,
     full_name: "Human Myself",
     email: "self@example.com",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 1002,
     full_name: "Alice Smith",
-};
+});
 
-const fred = {
+const fred = make_user({
     email: "fred@zulip.com",
     user_id: 1003,
     full_name: "Fred Flintstone",
-};
+});
 
-const jill = {
+const jill = make_user({
     email: "jill@zulip.com",
     user_id: 1004,
     full_name: "Jill Hill",
-};
+});
 
-const mark = {
+const mark = make_user({
     email: "mark@zulip.com",
     user_id: 1005,
     full_name: "Marky Mark",
-};
+});
 
-const old_user = {
+const old_user = make_user({
     user_id: 9999,
     full_name: "Old User",
     email: "old_user@example.com",
-};
+});
 
-const bot = {
+const bot = make_bot({
     user_id: 55555,
     full_name: "Red Herring Bot",
     email: "bot@example.com",
-    is_bot: true,
-    bot_owner_id: null,
-};
+});
 
-const bot_with_owner = {
+const bot_with_owner = make_bot({
     user_id: 55556,
     full_name: "Blue Herring Bot",
     email: "bot_with_owner@example.com",
-    is_bot: true,
     bot_owner_id: 1001,
     bot_owner_full_name: "Human Myself",
-};
+});
 
 function add_canned_users() {
-    people.add_active_user(alice);
-    people.add_active_user(bot);
-    people.add_active_user(bot_with_owner);
-    people.add_active_user(fred);
-    people.add_active_user(jill);
-    people.add_active_user(mark);
-    people.add_active_user(old_user);
-    people.add_active_user(selma);
+    people.add_active_user(alice, "server_events");
+    people.add_active_user(bot, "server_events");
+    people.add_active_user(bot_with_owner, "server_events");
+    people.add_active_user(fred, "server_events");
+    people.add_active_user(jill, "server_events");
+    people.add_active_user(mark, "server_events");
+    people.add_active_user(old_user, "server_events");
+    people.add_active_user(selma, "server_events");
+    people.add_active_user(me, "server_events");
 }
 
 function test(label, f) {
@@ -384,8 +383,8 @@ test("always show me", () => {
 });
 
 test("always show pm users", () => {
-    people.add_active_user(selma);
-    message_lists.set_current(make_message_list([{operator: "dm", operand: selma.email}]));
+    people.add_active_user(selma, "server_events");
+    message_lists.set_current(make_message_list([{operator: "dm", operand: [selma.user_id]}]));
 
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
 });
@@ -611,8 +610,7 @@ test("user_last_seen_time_status", ({override}) => {
 });
 
 test("get_items_for_users", ({override}) => {
-    people.add_active_user(alice);
-    people.add_active_user(fred);
+    add_canned_users();
     set_presence(alice.user_id, "offline");
     override(user_settings, "emojiset", "google");
     override(user_settings, "user_list_style", 2);

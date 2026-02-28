@@ -23,6 +23,7 @@ import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts
 import {localstorage} from "./localstorage.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -252,6 +253,7 @@ export let stream_list_section_container_html = function (
         id: section.id,
         section_title: section.section_title,
         plus_icon_url: can_create_streams ? get_section_channel_plus_icon_url(section) : undefined,
+        show_folder_action_icon: !page_params.is_spectator && section.folder_id !== null,
     });
 };
 
@@ -1442,9 +1444,11 @@ export function set_event_handlers({
         if (scroll_position > pm_list_height) {
             $("#toggle-direct-messages-section-icon").addClass("rotate-icon-right");
             $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-down");
+            pm_list.set_temporarily_collapsed(true);
         } else {
             $("#toggle-direct-messages-section-icon").addClass("rotate-icon-down");
             $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-right");
+            pm_list.set_temporarily_collapsed(false);
         }
     }
 

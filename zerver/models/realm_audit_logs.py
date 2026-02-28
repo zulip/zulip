@@ -132,6 +132,8 @@ class AuditLogEventType(IntEnum):
     CHANNEL_FOLDER_ARCHIVED = 904
     CHANNEL_FOLDER_UNARCHIVED = 905
 
+    INVITATION_REVOKED = 1001
+
     # The following values are only for remote server/realm logs.
     # Values should be exactly 10000 greater than the corresponding
     # value used for the same purpose in realm audit logs (e.g.,

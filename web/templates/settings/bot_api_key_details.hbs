@@ -1,0 +1,28 @@
+<div class="bot-api-key-container" data-api-key="{{api_key}}" data-user-id="{{bot_id}}">
+    <div class="input-group">
+        <label for="api-key" class="modal-field-label">{{t "API key"}}</label>
+        <div class="api-key-details-container">
+            <input type="text" autocomplete="off" name="api-key" class="modal_text_input api-key inline-block" value="{{ api_key }}" readonly/>
+            <div class="buttons-container">
+                <span data-user-id="{{bot_id}}">
+                    {{> ../components/icon_button
+                      icon="refresh-cw"
+                      intent="brand"
+                      custom_classes="bot-modal-regenerate-bot-api-key tippy-zulip-delayed-tooltip"
+                      data-tippy-content=(t "Generate new API key")
+                      }}
+                </span>
+                <span>
+                    {{> ../components/icon_button
+                      icon="copy"
+                      intent="success"
+                      id="copy-api-key-button"
+                      custom_classes="copy-api-key tippy-zulip-delayed-tooltip"
+                      data-tippy-content=(t "Copy API key")
+                      }}
+                </span>
+            </div>
+        </div>
+        <div class="bot-modal-api-key-error text-error"></div>
+    </div>
+</div>

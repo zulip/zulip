@@ -7,6 +7,8 @@ import {Steps} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
 
+import DownloadIcon from "~icons/zulip-icon/download";
+
 Usually, work on a bot starts on a laptop.  At some point, you'll want
 to deploy your bot in a production environment, so that it'll stay up
 regardless of what's happening with your laptop.  There are several
@@ -21,15 +23,14 @@ options for doing so:
   great.
 * Using the Zulip Botserver, which is a simple Flask server for
   running a bot in production, and connecting that to Zulip's outgoing
-  webhooks feature.  This can be deployed in environments like
-  Heroku's free tier without running a persistent process.
+  webhooks feature.
 
 ## Zulip Botserver
 
-The Zulip Botserver is for people who want to
+The Zulip Botserver is for people who want to:
 
-* run bots in production.
-* run multiple bots at once.
+* Run bots in production.
+* Run multiple bots at once.
 
 The Zulip Botserver is a Python (Flask) server that implements Zulip's
 outgoing webhooks API.  You can of course write your own servers using
@@ -97,19 +98,20 @@ pip3 install zulip_botserver
 <Steps>
   1. [Create your bot](#create-a-bot-in-your-zulip-organization) in your Zulip
      organization.
-  1. Download the `zuliprc` file for the bot created above from the
-     **Bots** tab of the **Personal settings** menu, by clicking the download
-     (<i class="fa fa-download" />) icon under the bot's name.
+  1. [Download the `zuliprc` file](/help/manage-a-bot#download-zuliprc-configuration-file)
+     for the bot created above.
   1. Run the Botserver, where `helloworld` is the name of the bot you
      want to run:
 
-     `zulip-botserver --config-file <path_to_zuliprc> --bot-name=helloworld`
+     ```
+     zulip-botserver --config-file <path_to_zuliprc> --bot-name=helloworld
+     ```
 
      You can specify the port number and various other options; run
      `zulip-botserver --help` to see how to do this.
 </Steps>
 
-Congrats, everything is set up! Test your Botserver like you would
+Everything is set up! Test your Botserver like you would
 test a normal bot.
 
 ### Running multiple bots using the Zulip Botserver
@@ -122,8 +124,8 @@ Botserver process.
      in your Zulip organization.
 
   1. Download the `botserverrc` file from the **Bots** tab of the
-     **Personal settings** menu, using the **Download config of all active
-     outgoing webhook bots in Zulip Botserver format** option.
+     **Personal settings** menu, by clicking the **download**
+     (<DownloadIcon />) icon above the **Bots** table.
 
   1. Open the `botserverrc`. It should contain one or more sections that look
      like this:
@@ -140,7 +142,7 @@ Botserver process.
      Each section contains the configuration for an outgoing webhook bot.
 
   1. For each bot, enter the name of the bot you want to run in the square
-     brackets `[]`, e.g., the above example applies to the `helloworld` bot.
+     brackets `[]` (e.g., the above example applies to the `helloworld` bot).
      To run an external bot, enter the path to the bot's python file instead,
      e.g., `[~/Documents/my_bot_script.py]`.
 

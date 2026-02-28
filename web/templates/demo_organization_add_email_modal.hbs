@@ -1,4 +1,4 @@
-<form id="demo_organization_add_email_form">
+<form class="modal-form" id="demo_organization_add_email_form">
     <div class="input-group">
         <label for="demo_organization_add_email" class="modal-field-label">{{t "Email" }}</label>
         <input id="demo_organization_add_email" type="text" name="email" class="modal_text_input" value="{{delivery_email}}" autocomplete="off" spellcheck="false" autofocus="autofocus"/>
@@ -9,7 +9,7 @@
             {{> help_link_widget link="/help/configure-email-visibility" }}
         </label>
         <select id="demo_owner_email_address_visibility" name="demo_owner_email_address_visibility" class="modal_select bootstrap-focus-style">
-            {{#each email_address_visibility_values}}
+            {{#each (object_values email_address_visibility_values)}}
                 <option value="{{this.code}}">{{this.description}}</option>
             {{/each}}
         </select>

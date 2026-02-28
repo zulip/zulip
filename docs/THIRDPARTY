@@ -673,6 +673,11 @@ Copyright: 2013-2022 Cole Bemis
 License: ISC License
 Comment: Icon has been modified by Vlad Koborov
 
+Files: web/icons/loader-circle.svg
+Source: https://lucide.dev/icons/loader-circle
+Copyright: 2013-2026 Cole Bemis
+License: ISC License
+
 Files: web/icons/video-call.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat

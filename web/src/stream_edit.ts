@@ -9,7 +9,6 @@ import render_settings_reactivation_stream_modal from "../templates/confirm_dial
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
-import render_confirm_stream_privacy_change_modal from "../templates/stream_settings/confirm_stream_privacy_change_modal.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
@@ -123,8 +122,8 @@ export function open_stream_edit_modal(stream_id: number): void {
           )
         : $t_html({defaultMessage: "Edit #{channel_name}"}, {channel_name: stream.name});
     dialog_widget.launch({
-        html_heading: heading,
-        html_body: change_stream_info_modal,
+        modal_title_html: heading,
+        modal_content_html: change_stream_info_modal,
         id: "change_stream_info_modal",
         loading_spinner: true,
         on_click: save_stream_info,
@@ -205,7 +204,7 @@ export function get_display_text_for_realm_message_retention_setting(): string {
 
 function get_stream_id(target: HTMLElement): number {
     const $row = $(target).closest(
-        ".stream-row, .stream_settings_header, .subscription_settings, .save-button",
+        ".stream-row, .stream-title-buttons, .subscription_settings, .save-button",
     );
     return Number.parseInt($row.attr("data-stream-id")!, 10);
 }
@@ -487,7 +486,6 @@ export function show_settings_for(node: HTMLElement): void {
 
     $edit_container.addClass("show");
 
-    stream_ui_updates.update_settings_button_for_archive_and_unarchive(sub);
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
     set_up_channel_privacy_dropdown_widget(undefined, sub);
@@ -612,6 +610,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         });
     }
 
+    let sender_dropdown_widget: DropdownWidget;
     function generate_email_modal_post_render(): void {
         function update_option_label(sender: User | CurrentUser | Bot): string {
             if (sender.user_id === people.EMAIL_GATEWAY_BOT.user_id) {
@@ -652,7 +651,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
             event.preventDefault();
         }
 
-        const sender_dropdown_widget = new dropdown_widget.DropdownWidget({
+        sender_dropdown_widget = new dropdown_widget.DropdownWidget({
             widget_name: "sender_channel_email_address",
             get_options,
             item_click_callback,
@@ -669,7 +668,7 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         dialog_widget.submit_api_request(
             channel.get,
             "/json/streams/" + sub.stream_id + "/email_address",
-            {},
+            {sender_id: sender_dropdown_widget.value()},
             {
                 success_continuation(response_data) {
                     const email = z.object({email: z.string()}).parse(response_data).email;
@@ -685,11 +684,11 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Generate channel email address"}),
-        html_body: copy_email_address_modal_html,
+        modal_title_html: $t_html({defaultMessage: "Generate channel email address"}),
+        modal_content_html: copy_email_address_modal_html,
         id: "copy_email_address_modal",
-        html_submit_button: $t_html({defaultMessage: "Generate email address"}),
-        html_exit_button: $t_html({defaultMessage: "Close"}),
+        modal_submit_button_text: $t({defaultMessage: "Generate email address"}),
+        modal_exit_button_text: $t({defaultMessage: "Close"}),
         help_link: "/help/message-a-channel-by-email#configuration-options",
         post_render: generate_email_modal_post_render,
         on_click: generate_email_address,
@@ -893,7 +892,7 @@ export function initialize(): void {
             is_zulip_update_announcements_stream ||
             is_moderation_request_channel;
 
-        const html_body = render_settings_deactivation_stream_modal({
+        const modal_content_html = render_settings_deactivation_stream_modal({
             stream_name_with_privacy_symbol_html,
             is_moderation_request_channel,
             is_new_stream_announcements_stream,
@@ -903,13 +902,13 @@ export function initialize(): void {
         });
 
         confirm_dialog.launch({
-            html_heading: $t_html(
+            modal_title_html: $t_html(
                 {defaultMessage: "Archive <z-link></z-link>?"},
                 {"z-link": () => stream_name_with_privacy_symbol_html},
             ),
             id: "archive-stream-modal",
             help_link: "/help/archive-a-channel",
-            html_body,
+            modal_content_html,
             on_click: do_archive_stream,
         });
 
@@ -941,15 +940,15 @@ export function initialize(): void {
 
         const stream = sub_store.get(stream_id);
         const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
-        const html_body = render_settings_reactivation_stream_modal();
+        const modal_content_html = render_settings_reactivation_stream_modal();
 
         confirm_dialog.launch({
-            html_heading: $t_html(
+            modal_title_html: $t_html(
                 {defaultMessage: "Unarchive <z-link></z-link>?"},
                 {"z-link": () => stream_name_with_privacy_symbol_html},
             ),
             id: "unarchive-stream-modal",
-            html_body,
+            modal_content_html,
             on_click: do_unarchive_stream,
         });
 
@@ -1043,15 +1042,17 @@ export function initialize(): void {
                 settings_org.save_organization_settings(data, $save_button, url);
                 return;
             }
-            dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Confirm changing access permissions"}),
-                html_body: render_confirm_stream_privacy_change_modal(),
+            confirm_dialog.launch({
+                modal_title_html: $t_html({defaultMessage: "Confirm changing access permissions"}),
+                modal_content_html: $t_html({
+                    defaultMessage:
+                        "This change will make this channel's entire message history accessible according to the new configuration.",
+                }),
+                is_compact: true,
                 id: "confirm_stream_privacy_change",
-                html_submit_button: $t_html({defaultMessage: "Confirm"}),
                 on_click() {
                     settings_org.save_organization_settings(data, $save_button, url);
                 },
-                close_on_submit: true,
             });
         },
     );

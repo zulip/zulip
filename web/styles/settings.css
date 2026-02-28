@@ -39,6 +39,7 @@ a.help_link_widget {
     &:hover {
         color: inherit;
         opacity: 1;
+        text-decoration: none;
     }
 }
 
@@ -93,12 +94,6 @@ h3,
 
 #change-email-form-input-email {
     max-width: 90%;
-}
-
-#change_email_modal {
-    #change_email_form {
-        margin: 0;
-    }
 }
 
 .disabled_setting_tooltip {
@@ -188,8 +183,12 @@ h3,
 .play_notification_sound {
     .notification-sound-icon {
         font-size: 1.5714em; /* 22px at 14px / em */
-        /* Visually center with chevron in select */
-        line-height: 1.8571em; /* 26px at 14px / em */
+        /* Visually center with chevron in select
+        by setting the line-height equal to the height
+        of select which is equal to - 1.4em + 8px (4px
+        each for top and bottom paddings) + 2px (1px each
+        for top and bottom borders). */
+        line-height: calc(1.4 * var(--base-font-size-px) + 10px);
         cursor: pointer;
     }
 }
@@ -362,6 +361,7 @@ h3,
     border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
     background-color: hsl(0deg 0% 100%);
+    font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;
@@ -381,6 +381,7 @@ select.settings_select {
     background-repeat: no-repeat;
     background-position: 98%;
     background-size: 1em;
+    font-family: inherit;
 }
 
 #admin-active-users-list,
@@ -402,6 +403,13 @@ select.settings_select {
 
 .config-download-text {
     margin-top: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.bot-list-error {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .user_role,
@@ -439,7 +447,8 @@ select.settings_select {
     width: fit-content;
 }
 
-#bot-edit-form {
+#bot-edit-form,
+#api-key-modal {
     .api-key-details-container,
     .zuliprc-container {
         display: flex;
@@ -451,9 +460,19 @@ select.settings_select {
             align-items: center;
         }
     }
+
+    .modal_text_input {
+        margin-bottom: 0;
+    }
 }
 
 #zuliprc-section {
+    /* Normally all input-group elements have bottom margin of 1.25em.
+    But here the buttons have bottom padding of 0.375em and thus there is
+    already some extra space between this and the section below it, so we
+    reduce the bottom margin by 0.375em. */
+    margin-bottom: 0.875em;
+
     .modal-field-label {
         margin-bottom: 0;
     }
@@ -537,7 +556,7 @@ input[type="checkbox"] {
 
 .admin-realm-form {
     & h3 {
-        margin: 10px 0 5px;
+        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
     }
 
     .subsection-header h3 {
@@ -549,7 +568,7 @@ input[type="checkbox"] {
 .notification-settings-form {
     .subsection-header h3 {
         display: inline-block;
-        margin: 10px 0 5px;
+        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
     }
 
     .tip {
@@ -926,14 +945,15 @@ input[type="checkbox"] {
         display: inline-flex;
     }
 
-    .default_stream_choices_table {
-        margin-top: 2px;
-    }
-
     .choice-row {
         margin-bottom: 10px;
 
         &:last-of-type {
+            /* Remove margin-bottom for last choice row
+               to remove extra space between the modal
+               content and footer. */
+            margin-bottom: 0;
+
             .delete-choice {
                 display: none;
             }
@@ -957,10 +977,6 @@ input[type="checkbox"] {
 }
 
 #add-custom-emoji-modal {
-    & form {
-        margin: 0;
-    }
-
     & input[type="text"] {
         padding: 6px;
     }
@@ -1030,11 +1046,6 @@ input[type="checkbox"] {
     }
 }
 
-#admin-linkifier-pattern-status,
-#admin-linkifier-template-status {
-    margin: 20px 0 0;
-}
-
 #organization-permissions {
     .dropdown-widget-button {
         color: var(--color-text-default);
@@ -1070,7 +1081,6 @@ input[type="checkbox"] {
 
 .edit_bot_form {
     font-size: 100%;
-    margin: 0;
     padding: 0;
 
     .buttons {
@@ -1145,12 +1155,6 @@ input[type="checkbox"] {
         position: absolute;
         right: 20px;
         top: 0;
-    }
-}
-
-#change_password_modal {
-    #change_password_container {
-        margin: 0;
     }
 }
 
@@ -1291,6 +1295,35 @@ label.preferences-radio-choice-label {
     }
 }
 
+.default_avatar_source_values {
+    width: 25em; /* 400px / 16px em */
+
+    .preferences-radio-choice-label {
+        align-items: center;
+
+        .radio-choice-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="radio"] {
+            top: 0;
+            margin-right: 0.5em; /* 8px / 16px em */
+        }
+    }
+
+    .right {
+        display: flex;
+        gap: 0.5em; /* 8px / 16px em */
+    }
+
+    .avatar {
+        height: 2.625em; /* 42px / 16px em */
+        width: 2.625em; /* 42px / 16px em */
+        border-radius: 0.25em; /* 4px / 16px em */
+    }
+}
+
 .user_list_style_values {
     max-width: 25em; /* 350px / 14px em */
 
@@ -1420,7 +1453,7 @@ label.preferences-radio-choice-label {
     .sidebar {
         height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
-        border-right: 1px solid var(--color-border-modal);
+        border-right: 1px solid var(--color-border-modal-bar);
 
         .your-bots-link {
             text-decoration: none;
@@ -1455,7 +1488,7 @@ label.preferences-radio-choice-label {
             transition:
                 background-color 0.2s ease,
                 border-bottom 0.2s ease;
-            border-bottom: 1px solid var(--color-border-modal);
+            border-bottom: 1px solid var(--color-border-modal-bar);
 
             &:last-of-type .text {
                 border-bottom: none;
@@ -1601,6 +1634,7 @@ label.preferences-radio-choice-label {
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -1747,6 +1781,36 @@ label.preferences-radio-choice-label {
     width: fit-content;
 }
 
+#realm-user-default-settings {
+    .settings-field-label,
+    .settings-checkbox-wrapper,
+    .info-density-controls {
+        .reset-user-setting-to-default {
+            display: inline-flex;
+            padding: 0.1875em; /* 3px at 16px */
+            margin-left: 0.1875em; /* 3px at 16px */
+
+            position: relative;
+            top: -0.0625em; /* 1px at 16px */
+
+            .zulip-icon {
+                width: 1em; /* 15px at 16px */
+                height: 1em; /* 15px at 16px */
+                font-size: 0.9375em; /* 15px at 16px */
+            }
+        }
+    }
+
+    .general_notifications .reset-user-setting-to-default {
+        font-size: 1.2em;
+        margin-top: 0.3125em; /* 6px at 16px */
+        /* This is needed to adjust the gap property used
+        for flex layout so that button is not too far from
+        the heading. */
+        margin-left: -0.5em; /* 9.6px at 16px */
+    }
+}
+
 .settings-profile-user-field-hint {
     color: var(--color-text-settings-field-hint);
     /* We effectively eliminate the margin-bottom on
@@ -1849,7 +1913,7 @@ label.preferences-radio-choice-label {
 
     font-size: 1em;
     line-height: var(--base-line-height-unitless);
-    font-family: "Source Sans 3 VF", sans-serif;
+    font-family: inherit;
 
     &:focus {
         border-color: var(--focus-border-color-textarea);
@@ -2071,7 +2135,6 @@ label.preferences-radio-choice-label {
         display: block;
         width: 120px;
         padding: 0;
-        padding-top: 0;
         text-align: center;
         margin: auto;
         float: none;
@@ -2122,8 +2185,8 @@ label.preferences-radio-choice-label {
 }
 
 #edit-linkifier-form {
-    #edit-linkifier-pattern,
-    #edit-linkifier-url-template {
+    #linkifier-pattern,
+    #linkifier-url-template {
         width: 400px;
     }
 
@@ -2131,8 +2194,8 @@ label.preferences-radio-choice-label {
         margin-bottom: 4px;
     }
 
-    #edit-linkifier-pattern-status,
-    #edit-linkifier-template-status {
+    #linkifier-pattern-status,
+    #linkifier-template-status {
         margin-top: 10px;
     }
 
@@ -2208,6 +2271,7 @@ label.preferences-radio-choice-label {
             border: none;
             outline: none;
             display: grid;
+            font-size: inherit;
 
             &:hover {
                 color: var(--color-text-clear-search-button-hover);
@@ -2281,6 +2345,7 @@ label.preferences-radio-choice-label {
         var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
             var(--input-border-width)
     );
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);

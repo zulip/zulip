@@ -79,3 +79,11 @@ export function modify_action_button_style(
     $button.removeClass(action_button_style_class);
     $button.addClass(`action-button-${opts.variant ?? old_variant}-${opts.intent ?? old_intent}`);
 }
+
+export function modify_button_icon($button: JQuery, new_icon: string): void {
+    $button
+        .find(".zulip-icon")
+        .attr("class", (_index, className) =>
+            className.replaceAll(/zulip-icon-[^\s]+/g, `zulip-icon-${new_icon}`),
+        );
+}

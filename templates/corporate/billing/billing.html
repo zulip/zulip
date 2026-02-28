@@ -320,7 +320,7 @@
                     <h2 class="billing-section-title">Invoices</h2>
                     <div class="billing-section-content">
                         <a href="{{ billing_base_url }}/invoices/">
-                            View past invoices
+                            View invoices
                         </a>
                     </div>
                 </div>
@@ -408,15 +408,19 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    Downgrade {{ org_name }} to
-                    {% if is_self_hosted_billing %}
-                    Free plan?
-                    {% else %}
-                    Zulip Cloud Free?
-                    {% endif %}
-                </h1>
-                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        Downgrade {{ org_name }} to
+                        {% if is_self_hosted_billing %}
+                        Free plan?
+                        {% else %}
+                        Zulip Cloud Free?
+                        {% endif %}
+                    </h1>
+                </div>
+                <button type="button" class="modal__close" aria-label="{{ _('Close modal') }}" tabindex="0" data-micromodal-close>
+                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                </button>
             </header>
             <main class="modal__content">
                 <p>
@@ -448,10 +452,14 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    Confirm adding licenses
-                </h1>
-                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        Confirm adding licenses
+                    </h1>
+                </div>
+                <button type="button" class="modal__close" aria-label="{{ _('Close modal') }}" tabindex="0" data-micromodal-close>
+                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                </button>
             </header>
             <main class="modal__content">
                 <p>
@@ -481,10 +489,14 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    Confirm decreasing licenses
-                </h1>
-                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        Confirm decreasing licenses
+                    </h1>
+                </div>
+                <button type="button" class="modal__close" aria-label="{{ _('Close modal') }}" tabindex="0" data-micromodal-close>
+                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                </button>
             </header>
             <main class="modal__content">
                 <p>
@@ -510,10 +522,14 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    Downgrade {{ org_name }} to Zulip Cloud Free?
-                </h1>
-                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        Downgrade {{ org_name }} to Zulip Cloud Free?
+                    </h1>
+                </div>
+                <button type="button" class="modal__close" aria-label="{{ _('Close modal') }}" tabindex="0" data-micromodal-close>
+                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                </button>
             </header>
             <main class="modal__content">
                 <p>
@@ -536,10 +552,14 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    Downgrade {{ org_name }} to the Free plan?
-                </h1>
-                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        Downgrade {{ org_name }} to the Free plan?
+                    </h1>
+                </div>
+                <button type="button" class="modal__close" aria-label="{{ _('Close modal') }}" tabindex="0" data-micromodal-close>
+                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                </button>
             </header>
             <main class="modal__content">
                 <p>
@@ -564,10 +584,14 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    Cancel scheduled upgrade of {{ org_name }}?
-                </h1>
-                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        Cancel scheduled upgrade of {{ org_name }}?
+                    </h1>
+                </div>
+                <button type="button" class="modal__close" aria-label="{{ _('Close modal') }}" tabindex="0" data-micromodal-close>
+                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                </button>
             </header>
             <main class="modal__content">
                 <p>
@@ -592,30 +616,32 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <header class="modal__header">
-                <h1 class="modal__title dialog_heading">
-                    Confirm switching to
-                    {% if automanage_licenses %}
-                    manual
-                    {% else %}
-                    automatic
-                    {% endif %}
-                    license management
-                </h1>
-                <button class="modal__close" aria-label="{{ _('Close modal') }}" data-micromodal-close></button>
-            </header>
-            <main class="modal__content">
-                <p>
-                    Are you sure you want to switch to
-                    <a href="/help/self-hosted-billing#how-does-automatic-license-management-work">
+                <div class="modal__header-content">
+                    <h1 class="modal__title dialog_heading">
+                        Confirm switching to
                         {% if automanage_licenses %}
-                            manual
+                        manual
                         {% else %}
-                            automatic
+                        automatic
                         {% endif %}
                         license management
-                    </a>?
-                </p>
-            </main>
+                    </h1>
+                    <div class="modal__subtitle">
+                        Are you sure you want to switch to
+                        <a href="/help/self-hosted-billing#how-does-automatic-license-management-work">
+                            {% if automanage_licenses %}
+                                manual
+                            {% else %}
+                                automatic
+                            {% endif %}
+                            license management
+                        </a>?
+                    </div>
+                </div>
+                <button type="button" class="modal__close" aria-label="{{ _('Close modal') }}" tabindex="0" data-micromodal-close>
+                    <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
+                </button>
+            </header>
             <footer class="modal__footer">
                 <button class="modal__button dialog_exit_button" aria-label="{{ '(Close this dialog window)' }}" data-micromodal-close>{{ _('Never mind') }}</button>
                 <button class="modal__button dialog_submit_button">

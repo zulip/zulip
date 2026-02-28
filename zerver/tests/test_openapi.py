@@ -228,7 +228,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/dev_list_users",
         #### These personal settings endpoints have modest value to document:
         "/users/me/avatar",
-        "/users/me/api_key/regenerate",
         # Much more valuable would be an org admin bulk-upload feature.
         "/users/me/profile_data",
         #### Should be documented as part of interactive bots documentation
@@ -760,9 +759,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
     def test_generate_and_render_curl_example(self) -> None:
         generated_curl_example = self.curl_example("/get_stream_id", "GET")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/get_stream_id \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode stream=Denmark",
             "```",
         ]
@@ -789,9 +788,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_without_examples
         generated_curl_example = self.curl_example("/mark_stream_as_read", "POST")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX POST http://localhost:9991/api/v1/mark_stream_as_read \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode stream_id=1 \\",
             "    --data-urlencode bool_param=false",
             "```",
@@ -816,9 +815,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
             ],
         )
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode anchor=43 \\",
             "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
@@ -835,9 +834,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_using_object
         generated_curl_example = self.curl_example("/endpoint", "GET")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/endpoint \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             '    --data-urlencode \'param1={"key": "value"}\'',
             "```",
         ]
@@ -864,9 +863,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_using_param_in_path
         generated_curl_example = self.curl_example("/endpoint/{param1}", "GET")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/endpoint/35 \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             '    --data-urlencode \'param2={"key": "value"}\'',
             "```",
         ]
@@ -877,9 +876,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "/get_stream_id:GET", api_url="https://zulip.example.com/api"
         )
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G https://zulip.example.com/api/v1/get_stream_id \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode stream=Denmark",
             "```",
         ]
@@ -899,9 +898,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
             ],
         )
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode anchor=43 \\",
             "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",

@@ -276,8 +276,8 @@ export function postprocess_content(html: string): string {
             // use a subtler background color than on other images
             const image_min_aspect_ratio = 0.4;
             // "Dinky" images are those that are shorter than the
-            // 10em height reserved for thumbnails
-            const image_box_em = 10;
+            // height reserved for thumbnails
+            const image_box_em = thumbnail.get_media_preview_size();
             const is_dinky_image = original_height / font_size_in_use <= image_box_em;
             const has_extreme_aspect_ratio =
                 original_width / original_height <= image_min_aspect_ratio ||
@@ -329,7 +329,7 @@ export function postprocess_content(html: string): string {
         );
 
         if (is_part_of_open_gallery) {
-            // If the the current media element's previous sibling is a gallery,
+            // If the current media element's previous sibling is a gallery,
             // it should be kept with the other media in that gallery.
             gallery_element = elt.previousElementSibling;
         } else {

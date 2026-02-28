@@ -191,7 +191,9 @@ class S3Test(ZulipTestCase):
             path_ids.append(path_id)
 
         with patch.object(S3UploadBackend, "delete_message_attachment") as single_delete:
-            delete_message_attachments(path_ids)
+            with delete_message_attachments() as delete_one:
+                for path_id in path_ids:
+                    delete_one(path_id)
             single_delete.assert_not_called()
         for path_id in path_ids:
             with self.assertRaises(botocore.exceptions.ClientError):
@@ -417,6 +419,8 @@ class S3Test(ZulipTestCase):
 
         with get_test_image_file("img.png") as image_file:
             zerver.lib.upload.upload_avatar_image(image_file, user_profile, future=False)
+        user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
+        user_profile.save()
         test_image_data = read_test_image_file("img.png")
         test_medium_image_data = resize_avatar(test_image_data, MEDIUM_AVATAR_SIZE)
 
@@ -501,6 +505,8 @@ class S3Test(ZulipTestCase):
 
         with get_test_image_file("img.png") as image_file:
             zerver.lib.upload.upload_avatar_image(image_file, user_profile, future=False)
+        user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
+        user_profile.save()
 
         key = bucket.Object(original_file_path)
         image_data = key.get()["Body"].read()
@@ -537,7 +543,7 @@ class S3Test(ZulipTestCase):
 
         do_scrub_avatar_images(user, acting_user=user)
 
-        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
 
         # Confirm that the avatar files no longer exist in S3.
         with self.assertRaises(botocore.exceptions.ClientError):

@@ -245,6 +245,14 @@ function set_gif_rating_policy_dropdown(): void {
     $("#id_realm_gif_rating_policy").val(rating_id);
 }
 
+function set_default_avatar_source_setting(): void {
+    const setting_value = realm.realm_default_avatar_source;
+    $(`#id_realm_default_avatar_source input[value='${CSS.escape(setting_value)}']`).prop(
+        "checked",
+        true,
+    );
+}
+
 function update_message_edit_sub_settings(is_checked: boolean): void {
     settings_ui.disable_sub_setting_onchange(
         is_checked,
@@ -668,6 +676,9 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             break;
         case "realm_waiting_period_threshold":
             set_realm_waiting_period_setting();
+            break;
+        case "realm_default_avatar_source":
+            set_default_avatar_source_setting();
             break;
         case "realm_welcome_message_custom_text":
             unsaved_welcome_message_custom_text = "";
@@ -1124,7 +1135,7 @@ export function deactivate_organization(e: JQuery.Event): void {
         time_unit_choices.pop();
     }
 
-    const html_body = render_settings_deactivate_realm_modal({
+    const modal_content_html = render_settings_deactivate_realm_modal({
         can_set_data_deletion,
         delete_in_options: valid_delete_options,
         custom_deletion_input_label: get_custom_deletion_input_text(),
@@ -1132,14 +1143,14 @@ export function deactivate_organization(e: JQuery.Event): void {
     });
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Deactivate organization"}),
+        modal_title_html: $t_html({defaultMessage: "Deactivate organization"}),
         help_link: "/help/deactivate-your-organization",
-        html_body,
+        modal_content_html,
         id: "deactivate-realm-user-modal",
         on_click: do_deactivate_realm,
         close_on_submit: false,
         focus_submit_on_open: true,
-        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        modal_submit_button_text: $t({defaultMessage: "Confirm"}),
         post_render: deactivate_realm_modal_post_render,
     });
 }
@@ -1547,6 +1558,7 @@ export function build_page(): void {
     set_create_web_public_stream_dropdown_visibility();
     disable_create_user_groups_if_on_limited_plan();
     set_welcome_message_custom_text_visibility();
+    set_default_avatar_source_setting();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
     maybe_restore_unsaved_welcome_message_custom_text();

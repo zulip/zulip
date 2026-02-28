@@ -169,9 +169,11 @@
        Chrome 105) that do not support dynamic viewport
        units. 100% is the legacy full-height value. */
     --full-height-dynamic-viewport: 100%;
+    --gif-scroll-container-height: 80vh;
 
     @supports (height: 100dvh) {
         --full-height-dynamic-viewport: 100dvh;
+        --gif-scroll-container-height: 80dvh;
     }
 
     /*
@@ -315,6 +317,9 @@
     --sidebar-bottom-spacing: 25px;
     --sidebar-filter-bottom-spacing: 3px;
 
+    /* 5px / 16px em */
+    --left-sidebar-direct-messages-bottom-divider-padding: 0.3125em;
+
     /* We base sidebar row heights on their line heights.
        Prominent rows include things like headers (e.g., VIEWS)
        as well as navigation items. Everything else takes
@@ -362,6 +367,9 @@
     --topic-actions-popover-min-width: 200px;
     --user-card-popover-min-width: 200px;
     --stream-card-popover-min-width: 16.4285em;
+
+    /* Image and video thumbnail sizing; updated via JavaScript */
+    --media-preview-max-height: 10em;
 
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */
@@ -639,7 +647,7 @@
        See 1c6bed55e4e800b5bad7150f6bdd274cd7f6504e for more context. */
     --width-dropdown-widget-button: 206px;
     /* User profile modal */
-    --user-profile-modal-body-height: 60vh;
+    --user-profile-modal-height: 75dvh;
     --user-profile-modal-body-margin-bottom: 20px;
 
     /* Height of the button for filter dropdown in stream settings UI.
@@ -835,6 +843,10 @@
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
     );
+    --color-left-sidebar-direct-messages-bottom-divider: light-dark(
+        hsl(0deg 0% 0% / 15%),
+        hsl(0deg 0% 100% / 15%)
+    );
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: light-dark(
         hsl(0deg 0% 80%),
@@ -852,25 +864,6 @@
     --color-background-non-empty-overlay-indicator: light-dark(
         hsl(0deg 0% 100% / 90%),
         hsl(212deg 28% 8% / 75%)
-    );
-    --color-background-modal: light-dark(#ededed, #242424);
-    --color-background-modal-bar: light-dark(#f5f5f5, #333);
-    --color-border-modal: light-dark(
-        color-mix(in srgb, #8c8c8c 25%, transparent),
-        color-mix(in srgb, #fff 8%, transparent)
-    );
-    --color-border-modal-bar: light-dark(
-        color-mix(in srgb, #c2c2c2 80%, transparent),
-        color-mix(in srgb, #fff 5%, transparent)
-    );
-    --color-border-modal-footer: light-dark(
-        hsl(0deg 0% 87%),
-        hsl(0deg 0% 100% / 20%)
-    );
-    --color-modal-close-button: light-dark(inherit, hsl(236deg 33% 90%));
-    --color-background-modal-close-button-hover: light-dark(
-        hsl(0deg 0% 90%),
-        hsl(0deg 0% 91% / 10%)
     );
     --color-modal-selectable-icon: light-dark(
         hsl(240deg 30% 40%),
@@ -1167,10 +1160,6 @@
     --color-background-recent-view-participant-overflow: light-dark(
         hsl(0deg 0% 88%),
         hsl(211deg 18% 25%)
-    );
-    --color-background-recent-view-selected: light-dark(
-        hsl(0deg 11% 93%),
-        hsl(228deg 11% 17%)
     );
     --color-background-recent-view-table-thead-th: light-dark(
         var(--grey-50),

@@ -1,5 +1,5 @@
-import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import type {StateData} from "./state_data.ts";
 
 let max_message_id: number;
@@ -13,7 +13,7 @@ export const get_next_id_float = (function () {
 
     return function (): number | undefined {
         const local_id_increment = 0.01;
-        let latest = all_messages_data.last()?.id ?? max_message_id;
+        let latest = recent_view_messages_data.last()?.id ?? max_message_id;
         latest = Math.max(0, latest);
         const local_id_float = truncate_precision(latest + local_id_increment);
 

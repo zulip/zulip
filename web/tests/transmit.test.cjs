@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -172,11 +173,11 @@ run_test("reply_message_stream", ({override}) => {
 });
 
 run_test("reply_message_private", ({override}) => {
-    const fred = {
+    const fred = make_user({
         user_id: 3,
         email: "fred@example.com",
         full_name: "Fred Frost",
-    };
+    });
     people.add_active_user(fred);
 
     const pm_message = {

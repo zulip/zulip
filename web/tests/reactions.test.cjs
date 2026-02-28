@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -90,26 +91,26 @@ const emoji_params = {
 
 emoji.initialize(emoji_params);
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: alice_user_id,
     full_name: "Alice",
-};
-const bob = {
+});
+const bob = make_user({
     email: "bob@example.com",
     user_id: 6,
     full_name: "Bob van Roberts",
-};
-const cali = {
+});
+const cali = make_user({
     email: "cali@example.com",
     user_id: 7,
     full_name: "Cali",
-};
-const alexus = {
+});
+const alexus = make_user({
     email: "alexus@example.com",
     user_id: 8,
     full_name: "Alexus",
-};
+});
 people.add_active_user(alice);
 people.add_active_user(bob);
 people.add_active_user(cali);

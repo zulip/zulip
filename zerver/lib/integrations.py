@@ -79,7 +79,7 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "mastodon",
     "mercurial",
     "nagios",
-    "notion",
+    "notion_via_zapier",
     "openshift",
     "perforce",
     "puppet",
@@ -216,7 +216,7 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return True
+        return self.name not in ("intercom", "notion")
 
     def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
         paths_to_check = [
@@ -550,20 +550,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="Beeminder",
     ),
     IncomingWebhookIntegration(
-        "bitbucket2",
+        "bitbucket",
         ["version-control"],
-        [
-            WebhookScreenshotConfig(
-                "push.json",
-                "003.png",
-                "bitbucket",
-                bot_name="Bitbucket Bot",
-                channel="commits",
-            )
-        ],
-        logo="images/integrations/logos/bitbucket.svg",
-        display_name="Bitbucket",
+        [WebhookScreenshotConfig("issue_created.json", channel="commits")],
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
+        legacy_names=["bitbucket2"],
     ),
     IncomingWebhookIntegration(
         "buildbot", ["continuous-integration"], [WebhookScreenshotConfig("started.json")]
@@ -579,9 +570,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         ["continuous-integration"],
         [WebhookScreenshotConfig("github_job_completed.json")],
         display_name="CircleCI",
-    ),
-    IncomingWebhookIntegration(
-        "clubhouse", ["project-management"], [WebhookScreenshotConfig("story_create.json")]
     ),
     IncomingWebhookIntegration(
         "codeship",
@@ -689,7 +677,14 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
             )
         ],
         display_name="GitLab",
-        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
+        url_options=[
+            WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
+            WebhookUrlOption(
+                name="ignore_private_projects",
+                label="Exclude notifications from private projects",
+                validator=check_bool,
+            ),
+        ],
     ),
     IncomingWebhookIntegration(
         "gocd",
@@ -734,14 +729,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="Home Assistant",
     ),
     IncomingWebhookIntegration("ifttt", ["meta-integration"], display_name="IFTTT"),
-    IncomingWebhookIntegration(
-        "insping", ["monitoring"], [WebhookScreenshotConfig("website_state_available.json")]
-    ),
-    IncomingWebhookIntegration(
-        "intercom",
-        ["customer-support"],
-        [WebhookScreenshotConfig("conversation_admin_replied.json")],
-    ),
+    IncomingWebhookIntegration("intercom", ["customer-support"]),
     IncomingWebhookIntegration(
         "jira",
         ["project-management"],
@@ -781,6 +769,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         [WebhookScreenshotConfig("incident_activated_new_default_payload.json")],
         display_name="New Relic",
     ),
+    IncomingWebhookIntegration("notion", ["productivity", "project-management"]),
     IncomingWebhookIntegration(
         "opencollective",
         ["financial"],
@@ -829,12 +818,6 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "pingdom", ["monitoring"], [WebhookScreenshotConfig("http_up_to_down.json")]
     ),
     IncomingWebhookIntegration(
-        "pivotal",
-        ["project-management"],
-        [WebhookScreenshotConfig("v5_type_changed.json")],
-        display_name="Pivotal Tracker",
-    ),
-    IncomingWebhookIntegration(
         "radarr", ["entertainment"], [WebhookScreenshotConfig("radarr_movie_grabbed.json")]
     ),
     IncomingWebhookIntegration(
@@ -864,6 +847,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     ),
     IncomingWebhookIntegration(
         "sentry", ["monitoring"], [WebhookScreenshotConfig("event_for_exception_python.json")]
+    ),
+    IncomingWebhookIntegration(
+        "shortcut",
+        ["project-management"],
+        [WebhookScreenshotConfig("story_create.json")],
+        legacy_names=["clubhouse"],
     ),
     IncomingWebhookIntegration(
         "slack",
@@ -977,7 +966,13 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
     Integration(
         "big-blue-button", ["video-calling", "communication"], display_name="BigBlueButton"
     ),
+    Integration(
+        "constructor-groups", ["video-calling", "communication"], display_name="Constructor Groups"
+    ),
     Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
+    Integration(
+        "nextcloud-talk", ["video-calling", "communication"], display_name="Nextcloud Talk"
+    ),
     Integration("zoom", ["video-calling", "communication"]),
 ]
 
@@ -991,7 +986,16 @@ ZAPIER_INTEGRATIONS: list[Integration] = [
     Integration("asana", ["project-management"]),
     # Can be used with RSS integration too
     Integration("mastodon", ["communication"]),
-    Integration("notion", ["productivity", "project-management"]),
+    Integration(
+        "notion_via_zapier",
+        ["productivity", "project-management"],
+        fixtureless_screenshot_config_options=[
+            FixturelessScreenshotConfigOptions(image_dir="notion")
+        ],
+        display_name="Notion",
+        logo="images/integrations/logos/notion.svg",
+        doc="zerver/integrations/notion.md",
+    ),
 ]
 
 PLUGIN_INTEGRATIONS: list[Integration] = [
@@ -1001,6 +1005,7 @@ PLUGIN_INTEGRATIONS: list[Integration] = [
         ["continuous-integration"],
         [FixturelessScreenshotConfigOptions(image_name="004.png")],
     ),
+    Integration("nextcloud", ["productivity"]),
     Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
 ]
 
@@ -1129,6 +1134,8 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # The fixture's goal.losedate needs to be modified dynamically,
     # so the screenshot config is commented out.
     {"beeminder"}
+    # Disabled integrations that are in the process of being added or rewritten.
+    | {"intercom", "notion"}
     # Integrations that call external API endpoints.
     | {"slack"}
     # Integrations that require screenshots of message threads - support is yet to be added
@@ -1151,10 +1158,11 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Outgoing integrations
     | {"email", "onyx"}
     # Video call integrations
-    | {"big-blue-button", "jitsi", "zoom"}
+    | {"big-blue-button", "constructor-groups", "jitsi", "nextcloud-talk", "zoom"}
     | {
         # these integrations do not send messages
         "giphy",
+        "nextcloud",
         "tenor",
         # the integration is planned to be removed
         "twitter",

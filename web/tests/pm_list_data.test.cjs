@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -37,50 +38,50 @@ const {initialize_user_settings} = zrequire("user_settings");
 set_realm(make_realm());
 initialize_user_settings({user_settings: {}});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 101,
     full_name: "Alice",
-};
-const bob = {
+});
+const bob = make_user({
     email: "bob@zulip.com",
     user_id: 102,
     full_name: "Bob",
-};
-const me = {
+});
+const me = make_user({
     email: "me@zulip.com",
     user_id: 103,
     full_name: "Me Myself",
-};
-const zoe = {
+});
+const zoe = make_user({
     email: "zoe@zulip.com",
     user_id: 104,
     full_name: "Zoe",
-};
-const cardelio = {
+});
+const cardelio = make_user({
     email: "cardelio@zulip.com",
     user_id: 105,
     full_name: "Cardelio",
-};
-const iago = {
+});
+const iago = make_user({
     email: "iago@zulip.com",
     user_id: 106,
     full_name: "Iago",
-};
-const bot_test = {
+});
+const bot_test = make_bot({
     email: "outgoingwebhook@zulip.com",
     user_id: 314,
     full_name: "Outgoing webhook",
-    is_admin: false,
-    is_bot: true,
-};
-people.add_active_user(alice);
-people.add_active_user(bob);
-people.add_active_user(me);
-people.add_active_user(zoe);
-people.add_active_user(cardelio);
-people.add_active_user(iago);
-people.add_active_user(bot_test);
+});
+// Add users to `valid_user_ids`.
+const source = "server_events";
+people.add_active_user(alice, source);
+people.add_active_user(bob, source);
+people.add_active_user(me, source);
+people.add_active_user(zoe, source);
+people.add_active_user(cardelio, source);
+people.add_active_user(iago, source);
+people.add_active_user(bot_test, source);
 people.initialize_current_user(me.user_id);
 
 function test(label, f) {
@@ -91,8 +92,8 @@ function test(label, f) {
     });
 }
 
-function set_pm_with_filter(emails) {
-    message_lists.set_current(make_message_list([{operator: "dm", operand: emails}]));
+function set_pm_with_filter(user_ids) {
+    message_lists.set_current(make_message_list([{operator: "dm", operand: user_ids}]));
 }
 
 function check_list_info(list, length, more_unread, recipients_array) {
@@ -177,7 +178,7 @@ test("get_conversations", ({override}) => {
         is_bot: false,
         has_unread_mention: false,
     });
-    set_pm_with_filter("iago@zulip.com");
+    set_pm_with_filter([iago.user_id]);
     pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
 
@@ -246,15 +247,15 @@ test("get_active_user_ids_string", () => {
     message_lists.set_current(make_message_list([{operator: "stream", operand: "test"}]));
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
 
-    set_pm_with_filter("bob@zulip.com,alice@zulip.com");
+    set_pm_with_filter([bob.user_id, alice.user_id]);
     assert.equal(pm_list_data.get_active_user_ids_string(), "101,102");
 
-    blueslip.expect("warn", "Unknown emails");
-    set_pm_with_filter("invalid@zulip.com");
+    blueslip.expect("warn", "Invalid user_ids");
+    set_pm_with_filter([-1]);
     assert.equal(pm_list_data.get_active_user_ids_string(), undefined);
     blueslip.reset();
 
-    set_pm_with_filter("bob@zulip.com,alice@zulip.com,me@zulip.com");
+    set_pm_with_filter([alice.user_id, bob.user_id, me.user_id]);
     assert.equal(pm_list_data.get_active_user_ids_string(), "101,102");
 });
 
@@ -319,7 +320,7 @@ test("get_list_info_unread_messages", ({override}) => {
     // Narrowing to direct messages with Alice adds older
     // one-on-one conversation with her to the list and one
     // unread is removed from more_conversations_unread_count.
-    set_pm_with_filter("alice@zulip.com");
+    set_pm_with_filter([alice.user_id]);
     list_info = pm_list_data.get_list_info(false);
     check_list_info(list_info, 16, 1, [
         "Iago",
@@ -395,7 +396,7 @@ test("get_list_info_no_unread_messages", ({override}) => {
 
     // Narrowing to direct messages with Alice adds older
     // one-on-one conversation with her to the list.
-    set_pm_with_filter("alice@zulip.com");
+    set_pm_with_filter([alice.user_id]);
     list_info = pm_list_data.get_list_info(false);
     check_list_info(list_info, 9, 0, [
         "Bob, Cardelio",

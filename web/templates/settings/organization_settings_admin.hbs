@@ -4,7 +4,7 @@
         <div id="org-notifications" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Automated messages and emails" }}</h3>
-                {{> settings_save_discard_widget section_name="notifications" }}
+                {{> settings_save_discard_widget section_name="notifications" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 {{> ../dropdown_widget_with_label
@@ -74,9 +74,39 @@
         <div id="org-onboarding" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Onboarding" }}</h3>
-                {{> settings_save_discard_widget section_name="onboarding" }}
+                {{> settings_save_discard_widget section_name="onboarding" show_save_discard_buttons=true }}
             </div>
             <div class="organization-settings-parent">
+                <div class="input-group">
+                    <label class="settings-field-label">
+                        {{admin_settings_label.realm_default_avatar_source}}
+                        {{> ../help_link_widget link="/help/configure-default-profile-pictures" }}
+                    </label>
+                    <div class="default_avatar_source_values settings-highlight-box prop-element" id="id_realm_default_avatar_source" data-setting-widget-type="radio-group" data-setting-choice-type="string">
+                        {{#each (object_values default_avatar_source_values)}}
+                            <label class="preferences-radio-choice-label">
+                                <span class="radio-choice-controls">
+                                    <input type="radio" name="default_avatar_source" value="{{this.code}}"/>
+                                    <span class="preferences-radio-choice-text">{{this.description}}</span>
+                                </span>
+                                <span class="right">
+                                    {{#if (eq this.code "J") }}
+                                    <img class="avatar" src="/static/images/jdenticon-1.png" />
+                                    <img class="avatar" src="/static/images/jdenticon-2.png" />
+                                    <img class="avatar" src="/static/images/jdenticon-3.png" />
+                                    <img class="avatar" src="/static/images/jdenticon-4.png" />
+                                    {{else}}
+                                    <img class="avatar" src="/static/images/gravatar-1.png" />
+                                    <img class="avatar" src="/static/images/gravatar-2.png" />
+                                    <img class="avatar" src="/static/images/gravatar-3.png" />
+                                    <img class="avatar" src="/static/images/gravatar-4.png" />
+                                    {{/if}}
+                                </span>
+                            </label>
+                        {{/each}}
+                    </div>
+                </div>
+
                 {{> settings_checkbox
                   setting_name="realm_enable_welcome_message_custom_text"
                   prefix="id_"
@@ -106,7 +136,7 @@
         <div class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Notifications security" }}</h3>
-                {{> settings_save_discard_widget section_name="notifications-security" }}
+                {{> settings_save_discard_widget section_name="notifications-security" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 {{> settings_checkbox
@@ -127,7 +157,7 @@
         <div id="org-compose-settings" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Compose settings"}}</h3>
-                {{> settings_save_discard_widget section_name="compose-settings"}}
+                {{> settings_save_discard_widget section_name="compose-settings" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
@@ -192,7 +222,7 @@
         <div id="org-msg-feed-settings" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message feed settings"}}</h3>
-                {{> settings_save_discard_widget section_name="msg-feed-settings"}}
+                {{> settings_save_discard_widget section_name="msg-feed-settings" show_save_discard_buttons=true }}
             </div>
             <div class="inline-block organization-settings-parent">
                 {{> ../dropdown_widget_with_label
@@ -206,6 +236,13 @@
                   is_checked=realm_enable_read_receipts
                   label=admin_settings_label.realm_enable_read_receipts
                   label_parens_text=admin_settings_label.realm_enable_read_receipts_parens_text}}
+
+                <div class="input-group">
+                    <label for="id_realm_media_preview_size" class="settings-field-label">{{admin_settings_label.realm_media_preview_size}}</label>
+                    <select name="realm_media_preview_size" id="id_realm_media_preview_size" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=realm_media_preview_size_values}}
+                    </select>
+                </div>
 
                 {{#if server_inline_image_preview}}
                 {{> settings_checkbox
@@ -232,7 +269,7 @@
                 <h3>{{t "Message retention period" }}
                     {{> ../help_link_widget link="/help/message-retention-policy" }}
                 </h3>
-                {{> settings_save_discard_widget section_name="message-retention" }}
+                {{> settings_save_discard_widget section_name="message-retention" show_save_discard_buttons=true }}
             </div>
 
             {{> upgrade_tip_widget . }}

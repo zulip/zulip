@@ -42,11 +42,11 @@ class TestTopicLinkUtil(ZulipTestCase):
         )
         self.assertEqual(
             get_stream_topic_link_syntax(sweden_id, "Sweden", "error due to *"),
-            f"[#Sweden > error due to &#42;](#narrow/channel/{sweden_id}-Sweden/topic/error.20due.20to.20*)",
+            f"[#Sweden > error due to &#42;](#narrow/channel/{sweden_id}-Sweden/topic/error.20due.20to.20.2A)",
         )
         self.assertEqual(
             get_stream_topic_link_syntax(sweden_id, "Sweden", "*asterisk"),
-            f"[#Sweden > &#42;asterisk](#narrow/channel/{sweden_id}-Sweden/topic/*asterisk)",
+            f"[#Sweden > &#42;asterisk](#narrow/channel/{sweden_id}-Sweden/topic/.2Aasterisk)",
         )
         self.assertEqual(
             get_stream_topic_link_syntax(sweden_id, "Sweden", "greaterthan>"),
@@ -78,7 +78,7 @@ class TestTopicLinkUtil(ZulipTestCase):
         )
         self.assertEqual(
             get_stream_topic_link_syntax(sweden_id, "Sw*den", ""),
-            f"[#Sw&#42;den > general chat](#narrow/channel/{sweden_id}-Sw*den/topic/)",
+            f"[#Sw&#42;den > general chat](#narrow/channel/{sweden_id}-Sw.2Aden/topic/)",
         )
 
     def test_message_link_syntax(self) -> None:
@@ -93,9 +93,9 @@ class TestTopicLinkUtil(ZulipTestCase):
         )
         self.assertEqual(
             get_message_link_syntax(sweden_id, "Sw*den", "topic", 123),
-            f"[#Sw&#42;den > topic @ 💬](#narrow/channel/{sweden_id}-Sw*den/topic/topic/near/123)",
+            f"[#Sw&#42;den > topic @ 💬](#narrow/channel/{sweden_id}-Sw.2Aden/topic/topic/near/123)",
         )
         self.assertEqual(
             get_message_link_syntax(sweden_id, "Sw*den", "", 123),
-            f"[#Sw&#42;den > general chat @ 💬](#narrow/channel/{sweden_id}-Sw*den/topic//near/123)",
+            f"[#Sw&#42;den > general chat @ 💬](#narrow/channel/{sweden_id}-Sw.2Aden/topic//near/123)",
         )

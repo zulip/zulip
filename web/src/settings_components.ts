@@ -246,6 +246,7 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 
 export const simple_dropdown_realm_settings_schema = z.pick(realm_schema, {
     realm_org_type: true,
+    realm_media_preview_size: true,
     realm_message_edit_history_visibility_policy: true,
     realm_topics_policy: true,
 });
@@ -911,6 +912,9 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_jitsi_server_url":
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_jitsi_server_url_setting_value($(elem), false);
+            break;
+        case "realm_default_avatar_source":
+            proposed_val = get_input_element_value(elem, "radio-group");
             break;
         default:
             if (current_val !== undefined) {

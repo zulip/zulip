@@ -5,7 +5,11 @@ const assert = require("node:assert/strict");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-const thumbnail = mock_esm("../src/thumbnail");
+const thumbnail = mock_esm("../src/thumbnail", {
+    get_media_preview_size() {
+        return 10;
+    },
+});
 
 const {postprocess_content} = zrequire("postprocess_content");
 const {initialize_user_settings} = zrequire("user_settings");

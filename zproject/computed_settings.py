@@ -101,7 +101,7 @@ ZULIP_ORG_KEY = get_secret("zulip_org_key")
 ZULIP_ORG_ID = get_secret("zulip_org_id")
 
 raw_keys: str | None = get_secret("push_registration_encryption_keys")
-PUSH_REGISTRATION_ENCRYPTION_KEYS: dict[str, str] | None = None
+PUSH_REGISTRATION_ENCRYPTION_KEYS: dict[str, str] = {}
 if raw_keys is not None:
     PUSH_REGISTRATION_ENCRYPTION_KEYS = json.loads(raw_keys)
 
@@ -531,6 +531,12 @@ if LOCAL_UPLOADS_DIR is None and S3_REGION is None:
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret("big_blue_button_secret")
+
+CONSTRUCTOR_GROUPS_ACCESS_KEY = get_secret("constructor_groups_access_key")
+CONSTRUCTOR_GROUPS_SECRET_KEY = get_secret("constructor_groups_secret_key")
+
+NEXTCLOUD_TALK_USERNAME = get_secret("nextcloud_talk_username")
+NEXTCLOUD_TALK_PASSWORD = get_secret("nextcloud_talk_password")
 
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [

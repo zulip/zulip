@@ -2,43 +2,45 @@
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">
             <div class="modal__header">
-                <h1 class="modal__title user-profile-name-heading" id="name">
-                    {{#unless is_bot}}
-                        {{#if is_active}}
-                            <span class="tippy-zulip-tooltip user-status-icon-wrapper" data-tippy-content="{{last_seen}}">
-                                <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle user_profile_presence" data-presence-indicator-user-id="{{user_id}}"></span>
-                            </span>
-                        {{else}}
-                            <span>
-                                <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="Deactivated user"></i>
-                            </span>
-                        {{/if}}
-                    {{/unless}}
-                    {{#if is_bot}}
-                        <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
-                    {{/if}}
-                    <span class="user-profile-name">{{> user_full_name name=full_name}}</span>
-                    <span class="user-profile-header-actions">
-                        {{> components/icon_button custom_classes="copy-link-to-user-profile tippy-zulip-delayed-tooltip" icon="link-alt" intent="neutral" data-tippy-content=(t "Copy link to profile") aria-label=(t "Copy link to profile") }}
-                        {{#if is_me}}
-                            {{#if can_manage_profile}}
-                                {{> components/icon_button custom_classes="user-profile-update-user-tab-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Edit profile") aria-label=(t "Edit profile") }}
+                <div class="modal__header-content">
+                    <h1 class="modal__title user-profile-name-heading" id="name">
+                        {{#unless is_bot}}
+                            {{#if is_active}}
+                                <span class="tippy-zulip-tooltip user-status-icon-wrapper" data-tippy-content="{{last_seen}}">
+                                    <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle user_profile_presence" data-presence-indicator-user-id="{{user_id}}"></span>
+                                </span>
                             {{else}}
-                                {{> components/icon_button custom_classes="user-profile-profile-settings-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Edit profile") aria-label=(t "Edit profile") }}
+                                <span>
+                                    <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="Deactivated user"></i>
+                                </span>
                             {{/if}}
-                        {{else if can_manage_profile}}
-                            {{#if is_bot}}
-                                {{> components/icon_button custom_classes="user-profile-update-user-tab-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage bot") aria-label=(t "Manage bot") }}
-                            {{else}}
-                                {{> components/icon_button custom_classes="user-profile-update-user-tab-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage user") aria-label=(t 'Manage user') }}
-                            {{/if}}
+                        {{/unless}}
+                        {{#if is_bot}}
+                            <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                         {{/if}}
-                    </span>
-                </h1>
-                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+                        <span class="user-profile-name">{{> user_full_name name=full_name}}</span>
+                        <span class="user-profile-header-actions">
+                            {{> components/icon_button custom_classes="copy-link-to-user-profile tippy-zulip-delayed-tooltip" icon="link-alt" intent="neutral" data-tippy-content=(t "Copy link to profile") aria-label=(t "Copy link to profile") }}
+                            {{#if is_me}}
+                                {{#if can_manage_profile}}
+                                    {{> components/icon_button custom_classes="user-profile-update-user-tab-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Edit profile") aria-label=(t "Edit profile") }}
+                                {{else}}
+                                    {{> components/icon_button custom_classes="user-profile-profile-settings-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Edit profile") aria-label=(t "Edit profile") }}
+                                {{/if}}
+                            {{else if can_manage_profile}}
+                                {{#if is_bot}}
+                                    {{> components/icon_button custom_classes="user-profile-update-user-tab-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage bot") aria-label=(t "Manage bot") }}
+                                {{else}}
+                                    {{> components/icon_button custom_classes="user-profile-update-user-tab-button tippy-zulip-delayed-tooltip" icon="edit" intent="neutral" data-tippy-content=(t "Manage user") aria-label=(t 'Manage user') }}
+                                {{/if}}
+                            {{/if}}
+                        </span>
+                    </h1>
+                </div>
+                <div class="modal__tab-switcher-container"></div>
+                {{> components/icon_button icon="close" intent="neutral" custom_classes="modal__close" aria-label=(t 'Close modal') data-micromodal-close=true }}
             </div>
-            <div id="tab-toggle"></div>
-            <main class="modal__body" id="body" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
+            <main class="modal__content" data-simplebar data-simplebar-tab-index="-1" data-simplebar-auto-hide="false">
                 <div class="tab-data">
                     <div class="tabcontent active" id="profile-tab">
                         <div class="top">
@@ -184,16 +186,14 @@
                     <div class="tabcontent" id="manage-profile-tab"></div>
                 </div>
             </main>
-            <div class="manage-profile-tab-footer">
-                <footer class="modal__footer">
-                    <div class="save-success"></div>
-                    <button type="button" class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
-                    <button type="button" class="modal__button dialog_submit_button">
-                        <span class="submit-button-text">{{t "Save changes"}}</span>
-                        <span class="modal__spinner"></span>
-                    </button>
-                </footer>
-            </div>
+            <footer class="modal__footer manage-profile-tab-footer">
+                <div class="save-success"></div>
+                <button type="button" class="modal__button dialog_exit_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
+                <button type="button" class="modal__button dialog_submit_button">
+                    <span class="submit-button-text">{{t "Save changes"}}</span>
+                    <span class="modal__spinner"></span>
+                </button>
+            </footer>
         </div>
     </div>
 </div>

@@ -302,6 +302,21 @@ type PolicyValue = {
     description: string;
 };
 
+export const realm_media_preview_size_values = [
+    {
+        code: 100,
+        description: $t({defaultMessage: "Small"}),
+    },
+    {
+        code: 150,
+        description: $t({defaultMessage: "Medium"}),
+    },
+    {
+        code: 200,
+        description: $t({defaultMessage: "Large"}),
+    },
+];
+
 type RealmTopicsPolicyValues = {
     allow_empty_topic: PolicyValue;
     disable_empty_topic: PolicyValue;
@@ -1376,6 +1391,25 @@ export const bot_type_values = {
     },
 };
 
+export const user_deactivation_action_values = [
+    {
+        key: "delete_profile",
+        value: $t({defaultMessage: "Name and profile picture"}),
+    },
+    {
+        key: "delete_public_channel_messages",
+        value: $t({defaultMessage: "Messages in public channels"}),
+    },
+    {
+        key: "delete_private_channel_messages",
+        value: $t({defaultMessage: "Messages in private channels"}),
+    },
+    {
+        key: "delete_direct_messages",
+        value: $t({defaultMessage: "Direct messages"}),
+    },
+];
+
 export const realm_plan_types = {
     self_hosted: {code: 1},
     limited: {code: 2},
@@ -1385,3 +1419,14 @@ export const realm_plan_types = {
 };
 
 export const no_folder_selected = -1;
+
+export const default_avatar_source_values = {
+    jdenticon: {
+        code: "J",
+        description: $t({defaultMessage: "Default"}),
+    },
+    gravatar: {
+        code: "G",
+        description: $t({defaultMessage: "Gravatar"}),
+    },
+};

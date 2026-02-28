@@ -23,6 +23,65 @@ _Unreleased_
 
 ## Zulip Server 11.x series
 
+### Zulip Server 11.5
+
+_Released 2026-02-05_
+
+- CVE-2026-24050: Some administrative actions on the user profile were
+  susceptible to stored XSS in group names or channel names. Exploiting
+  these vulnerabilities required the user explicitly interacting with the
+  problematic object.
+- Start offering a button, when pasting, to upload large pastes as a text file
+  attachment.
+- Changed the camo `User-Agent` to report itself as Zulip Server, along with its
+  version.
+- Fixed channel links for reminders in private channels.
+- Worked around a bug in Safari 17 with certain Unicode characters in user
+  names.
+- Improved the “jump to first unread?” banner logic.
+- Fixed the behavior of the down arrow keyboard shortcut when the last message
+  was long.
+- Fixed topic typeahead to never open downwards.
+- Removed some unnecessary permissions previously requested by the Slack
+  integration.
+- Improved RocketChat import tooling.
+- Improved Mattermost import tooling.
+- Updated Slack export instructions.
+- Fixed broken emoji in channel descriptions of imported organizations.
+- Fixed imports from Zulip exports, which lacked some avatar thumbnails.
+- Improved the initial installation experience when configuring proxies.
+- Added a `postfix.uninstall` setting in `zulip.conf` to leave `postfix`
+  installed, for sites which use Postfix as an outgoing mailserver.
+- Added a `application_server.custom_ca_path` setting in `zulip.conf` to
+  specifying a custom CA to trust (e.g., for OIDC servers with custom
+  certificates).
+- Replaced `./manage.py checkconfig` with `./manage.py check`, and added more
+  config validations to the checks.
+- Added additional validation of hostnames.
+- Started respecting memory limits set from cgroups, for Docker usage.
+- Adjusted `setup-certbot` to run all hooks upon first install, both for Docker,
+  and for sites moving from self-signed certs to Certbot.
+- Degrade gracefully when `hunspell` stemming dictionaries are not installed
+  (i.e. with a remote stock PostgreSQL) rather than requiring an install or
+  configuration option.
+- Allowed files in `/etc/zulip` to be symlinks to other locations.
+- Start auto-generating Sphinx labels for documentation, not just header
+  anchors.
+- Simplified how `CREATE SCHEMA` and `search_path` is configured in PostgreSQL.
+- Fixed a long-standing bug where metadata in S3 for attachments from the email
+  gateway was incorrect.
+- Move character-set detection for text content to before S3 upload, so it is
+  stored there.
+- Fixed a bug which mistakenly downloaded whole text file contents when
+  attempting to guess their content-type.
+- Added per-message incoming email server logging, and adjusted log levels of
+  other email server processes.
+- Added an `application_server.nginx_worker_processes` setting in `zulip.conf`
+  to adjust the number of nginx `worker_processes`.
+- Improved Tornado resharding tooling.
+- Renamed GIF picker integrations to be generic.
+- Updated translations from Weblate.
+
 ### Zulip Server 11.4
 
 _Released 2025-10-23_

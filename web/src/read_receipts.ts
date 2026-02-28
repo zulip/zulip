@@ -49,7 +49,9 @@ export function fetch_read_receipts(message_id: number): void {
     }
 
     if (!has_initial_data) {
-        loading.make_indicator($("#read_receipts_modal .loading_indicator"));
+        loading.make_indicator($("#read_receipts_modal .loading_indicator"), {
+            abs_positioned: true,
+        });
     }
 
     void channel.get({

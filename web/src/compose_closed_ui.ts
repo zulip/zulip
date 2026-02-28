@@ -102,7 +102,12 @@ export function get_recipient_label(
             return get_stream_recipient_label(stream_id, topic);
         }
         if (user_ids_string !== undefined) {
+            // Check for validity of user ids to avoid any errors in case user
+            // narrowed to an incorrect URL.
             const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
+            if (!people.is_valid_user_ids(user_ids)) {
+                return undefined;
+            }
             return get_direct_message_recipient_label(user_ids);
         }
         // Show the standard button text for empty narrows without

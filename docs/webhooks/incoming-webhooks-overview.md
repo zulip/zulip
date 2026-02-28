@@ -117,6 +117,12 @@ configured! 🎉"
   together; this makes for much better consumption by Zulip users. E.g.,
   for a bug tracker integration, put the bug number in the topic for all
   messages; for an integration like Nagios, put the service in the topic.
+- If your integration references usernames from external accounts (such as
+  GitHub usernames), consider using the `guess_zulip_user_from_external_account`
+  helper function from `zerver/lib/webhooks/common.py`. This function automatically
+  matches external accounts to Zulip users who have linked those accounts in their
+  profile's custom fields. This enables converting external usernames to silent mentions,
+  notifying the relevant Zulip users.
 - Integrations that don't match a team's workflow can often be uselessly
   spammy. Give careful thought to providing options for triggering Zulip
   messages only for certain event types, certain projects, or sending
