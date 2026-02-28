@@ -1158,6 +1158,7 @@ function get_recent_view_filters_params(): {
     filter_pm: boolean;
     is_spectator: boolean;
     show_folder_filter: boolean;
+    folder_filter_tooltip: string;
 } {
     return {
         filter_unread: filters.has("unread"),
@@ -1166,6 +1167,8 @@ function get_recent_view_filters_params(): {
         filter_pm: filters.has("include_private"),
         is_spectator: page_params.is_spectator,
         show_folder_filter: channel_folders.user_has_folders(),
+        folder_filter_tooltip:
+            folder_dropdown_widget.get_tooltip_text_for_folder_filter(folder_filter_value),
     };
 }
 
@@ -1197,6 +1200,13 @@ function update_recent_view_folder_filter_button(): void {
             .removeClass("zulip-icon-folder-chevron")
             .addClass("zulip-icon-folder-search");
     }
+    const recent_view_folder_filter_wrapper: tippy.ReferenceElement | undefined = $(
+        "#recent_view_folder_filter_container",
+    ).get(0);
+    assert(recent_view_folder_filter_wrapper !== undefined);
+    recent_view_folder_filter_wrapper._tippy?.setContent(
+        folder_dropdown_widget.get_tooltip_text_for_folder_filter(folder_filter_value),
+    );
 }
 
 function folder_filter_click_handler(
@@ -1214,10 +1224,6 @@ function folder_filter_click_handler(
     widget.render();
     save_filters();
     update_recent_view_folder_filter_button();
-    folder_dropdown_widget.update_tooltip_for_folder_filter(
-        "recent_view_folder_filter_container",
-        folder_filter_value,
-    );
 
     assert(topics_widget !== undefined);
     topics_widget.hard_redraw();
@@ -1232,10 +1238,6 @@ function setup_folder_dropdown_widget(): void {
         default_id: folder_filter_value,
     });
     folder_filter_dropdown_widget.setup();
-    folder_dropdown_widget.update_tooltip_for_folder_filter(
-        "recent_view_folder_filter_container",
-        folder_filter_value,
-    );
 }
 
 export function update_filters_view(): void {

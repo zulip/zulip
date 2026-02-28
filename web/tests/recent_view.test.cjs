@@ -213,6 +213,7 @@ mock_esm("../src/folder_dropdown_widget", {
         UNCATEGORIZED_DROPDOWN_OPTION: -1,
         ANY_FOLDER_DROPDOWN_OPTION: -2,
     },
+    get_tooltip_text_for_folder_filter: () => "Filter by folder",
 });
 const dropdown_widget = mock_esm("../src/dropdown_widget");
 dropdown_widget.DropdownWidget = function DropdownWidget() {
@@ -501,6 +502,7 @@ test("test_recent_view_show", ({override, mock_template}) => {
         search_val: "",
         is_spectator: false,
         show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
 
     activity_ui.set_cursor_and_filter();
@@ -543,6 +545,7 @@ test("test_filter_is_spectator", ({mock_template}) => {
         search_val: "",
         is_spectator: true,
         show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
     let row_data;
     let i;
@@ -578,6 +581,7 @@ test("test_no_filter", ({mock_template}) => {
         search_val: "",
         is_spectator: false,
         show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
     let row_data;
     let i;
@@ -703,6 +707,7 @@ test("test_filter_pm", ({mock_template}) => {
         search_val: "",
         is_spectator: false,
         show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
 
     const expected_users_with_icons = [
@@ -753,6 +758,7 @@ test("test_filter_participated", ({mock_template}) => {
             search_val: "",
             is_spectator: false,
             show_folder_filter: false,
+            folder_filter_tooltip: "Filter by folder",
         });
     });
 
