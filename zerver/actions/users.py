@@ -1,4 +1,5 @@
 from collections import defaultdict
+from collections.abc import Mapping
 from email.headerregistry import Address
 from typing import Any
 
@@ -28,7 +29,7 @@ from zerver.actions.user_settings import do_change_avatar_fields, do_change_full
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields, flush_user_profile
 from zerver.lib.create_user import create_user_profile
-from zerver.lib.event_types import BotServicesOutgoing
+from zerver.lib.event_types import BotServicesEmbedded, BotServicesOutgoing
 from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
@@ -823,22 +824,34 @@ def do_update_outgoing_webhook_service(
 
 
 @transaction.atomic(durable=True)
-def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, str]) -> None:
+def do_update_bot_config_data(
+    bot_profile: UserProfile,
+    service_name: str | None,
+    config_data: Mapping[str, str],
+) -> None:
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
-    updated_config_data = get_bot_config(bot_profile)
-    send_event_on_commit(
-        bot_profile.realm,
-        dict(
-            type="realm_bot",
-            op="update",
-            bot=dict(
-                user_id=bot_profile.id,
-                services=[dict(config_data=updated_config_data)],
+
+    if bot_profile.bot_type == UserProfile.EMBEDDED_BOT:
+        assert service_name is not None
+        updated_config_data = get_bot_config(bot_profile)
+        updated_service: dict[str, str | int] = BotServicesEmbedded(
+            service_name=service_name,
+            config_data=updated_config_data,
+        ).model_dump()
+
+        send_event_on_commit(
+            bot_profile.realm,
+            dict(
+                type="realm_bot",
+                op="update",
+                bot=dict(
+                    user_id=bot_profile.id,
+                    services=[updated_service],
+                ),
             ),
-        ),
-        bot_owner_user_ids(bot_profile),
-    )
+            bot_owner_user_ids(bot_profile),
+        )
 
 
 def get_service_dicts_for_bot(user_profile_id: int) -> list[dict[str, Any]]:

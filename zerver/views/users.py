@@ -96,6 +96,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key
 from zerver.models import Service, Stream, UserProfile
+from zerver.models.bots import BotConfigData, get_bot_services
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -563,9 +564,27 @@ def patch_bot_backend(
             base_url=service_payload_url,
             acting_user=user_profile,
         )
-
-    if config_data is not None:
-        do_update_bot_config_data(bot, config_data)
+    if config_data:
+        if bot.bot_type == UserProfile.EMBEDDED_BOT:
+            services = get_bot_services(bot.id)
+            service_name = services[0].name
+            check_valid_bot_config(bot.bot_type, service_name, config_data)
+            do_update_bot_config_data(bot, service_name, config_data)
+        elif bot.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+            # We assume config_data does not contain "integration_id"; that key
+            # is managed exclusively via the service_name parameter above.  The
+            # same assumption holds in do_create_bot_service.
+            try:
+                service_name = BotConfigData.objects.get(
+                    bot_profile=bot, key="integration_id"
+                ).value
+            except BotConfigData.DoesNotExist:
+                service_name = None
+            if service_name:
+                check_valid_bot_config(bot.bot_type, service_name, config_data)
+            do_update_bot_config_data(bot, service_name, config_data)
+        else:
+            raise JsonableError(_("This bot type doesn't use config data."))
 
     if len(request.FILES) == 0:
         pass
