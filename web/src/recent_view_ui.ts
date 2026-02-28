@@ -1224,14 +1224,13 @@ function folder_filter_click_handler(
 }
 
 function setup_folder_dropdown_widget(): void {
-    const folder_filter_dropdown_widget =
-        folder_dropdown_widget.create_folder_filter_dropdown_widget({
-            widget_name: "recent-view-folder-filter",
-            widget_selector: ".recent-view-folder-filter-button",
-            item_click_callback: folder_filter_click_handler,
-            $events_container: $("#recent_view_filter_buttons"),
-            default_id: folder_filter_value,
-        });
+    folder_filter_dropdown_widget = folder_dropdown_widget.create_folder_filter_dropdown_widget({
+        widget_name: "recent-view-folder-filter",
+        widget_selector: ".recent-view-folder-filter-button",
+        item_click_callback: folder_filter_click_handler,
+        $events_container: $("#recent_view_filter_buttons"),
+        default_id: folder_filter_value,
+    });
     folder_filter_dropdown_widget.setup();
     folder_dropdown_widget.update_tooltip_for_folder_filter(
         "recent_view_folder_filter_container",
