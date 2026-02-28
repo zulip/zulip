@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import TypedDict, cast
 
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
@@ -24,27 +24,53 @@ class RawUserInfoDict(TypedDict):
     reaction_type: str
 
 
-def format_user_status(row: RawUserInfoDict) -> UserInfoDict:
-    # Deprecated way for clients to access the user's `presence_enabled`
-    # setting, with away != presence_enabled. Can be removed when clients
-    # migrate "away" (also referred to as "unavailable") feature to directly
-    # use and update the user's presence_enabled setting.
-    presence_enabled = row["user_profile__presence_enabled"]
-    away = not presence_enabled
-    status_text = row["status_text"]
-    emoji_name = row["emoji_name"]
-    emoji_code = row["emoji_code"]
-    reaction_type = row["reaction_type"]
+from pydantic import BaseModel, ConfigDict
 
-    dct: UserInfoDict = {}
+
+class UserInfoBase(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    # All fields are Optional because total=False in the original TypedDict
+    status_text: str | None = None
+    emoji_name: str | None = None
+    emoji_code: str | None = None
+    reaction_type: str | None = None
+    away: bool | None = None
+
+
+class RawUserInfoBase(BaseModel):
+    """Use ignore to stay compatible with legacy database rows containing
+    extra fields we don't need for the final API response."""
+
+    model_config = ConfigDict(extra="ignore")
+    user_profile_id: int
+    user_profile__presence_enabled: bool
+    status_text: str
+    emoji_name: str
+    emoji_code: str
+    reaction_type: str
+
+
+def format_user_status(row: RawUserInfoBase) -> UserInfoBase:
+    """Deprecated way for clients to access the user's `presence_enabled`
+    setting, with away != presence_enabled. Can be removed when clients
+    migrate "away" (also referred to as "unavailable") feature to directly
+    use and update the user's presence_enabled setting."""
+    presence_enabled = row.user_profile__presence_enabled
+    away = not presence_enabled
+    status_text = row.status_text
+    emoji_name = row.emoji_name
+    emoji_code = row.emoji_code
+    reaction_type = row.reaction_type
+
+    dct = UserInfoBase()
     if away:
-        dct["away"] = away
+        dct.away = away
     if status_text:
-        dct["status_text"] = status_text
+        dct.status_text = status_text
     if emoji_name:
-        dct["emoji_name"] = emoji_name
-        dct["emoji_code"] = emoji_code
-        dct["reaction_type"] = reaction_type
+        dct.emoji_name = emoji_name
+        dct.emoji_code = emoji_code
+        dct.reaction_type = reaction_type
 
     return dct
 
@@ -77,7 +103,8 @@ def get_all_users_status_dict(realm: Realm, user_profile: UserProfile) -> dict[s
     user_dict: dict[str, UserInfoDict] = {}
     for row in rows:
         user_id = row["user_profile_id"]
-        user_dict[str(user_id)] = format_user_status(row)
+        status_obj = format_user_status(RawUserInfoBase(**row))
+        user_dict[str(user_id)] = cast(UserInfoDict, status_obj.model_dump(exclude_none=True))
 
     return user_dict
 
@@ -130,5 +157,9 @@ def get_user_status(user_profile: UserProfile) -> UserInfoDict:
     )
 
     if not status_set_by_user:
-        return {}
-    return format_user_status(status_set_by_user)
+        return cast(UserInfoDict, UserInfoBase().model_dump(exclude_none=True))
+    status_obj = format_user_status(RawUserInfoBase(**status_set_by_user))
+    """We use model_dump(exclude_none=True) to ensure the API response
+    only contains fields explicitly set, matching the expectation
+    of the frontend and backend test suites."""
+    return cast(UserInfoDict, status_obj.model_dump(exclude_none=True))
