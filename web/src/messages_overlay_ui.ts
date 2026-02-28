@@ -81,7 +81,7 @@ export function set_initial_element(element_id: string | undefined, context: Con
         assert(focus_element instanceof HTMLElement);
         activate_element(focus_element, context);
         scroll_util.scroll_element_into_container(
-            $(focus_element),
+            get_element_by_id(element_id, context),
             $(`.${CSS.escape(context.items_list_selector)}`),
         );
     }
@@ -141,6 +141,9 @@ function initialize_focus(event_name: string, context: Context): void {
     const focus_element = util.the($element).children[0];
     assert(focus_element instanceof HTMLElement);
     activate_element(focus_element, context);
+    const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
+    scroll_util.scroll_element_into_container($element, $items_list);
+    return;
 }
 
 function scroll_to_element($element: JQuery, context: Context): void {
@@ -154,34 +157,7 @@ function scroll_to_element($element: JQuery, context: Context): void {
     activate_element($element[0].children[0], context);
 
     const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
-    const $items_container = $(`.${CSS.escape(context.items_container_selector)}`);
-    const $box_item = $(`.${CSS.escape(context.box_item_selector)}`);
-
-    // If focused element is first, scroll to the top.
-    if (util.the($box_item.first()).parentElement === $element[0]) {
-        util.the($items_list).scrollTop = 0;
-    }
-
-    // If focused element is last, scroll to the bottom.
-    if (util.the($box_item.last()).parentElement === $element[0]) {
-        util.the($items_list).scrollTop =
-            util.the($items_list).scrollHeight - ($items_list.height() ?? 0);
-    }
-
-    // If focused element is cut off from the top, scroll up halfway in modal.
-    if ($element.position().top < 55) {
-        // 55 is the minimum distance from the top that will require extra scrolling.
-        util.the($items_list).scrollTop -= util.the($items_list).clientHeight / 2;
-    }
-
-    // If focused element is cut off from the bottom, scroll down halfway in modal.
-    const dist_from_top = $element.position().top;
-    const total_dist = dist_from_top + $element[0].clientHeight;
-    const dist_from_bottom = util.the($items_container).clientHeight - total_dist;
-    if (dist_from_bottom < -4) {
-        // -4 is the min dist from the bottom that will require extra scrolling.
-        util.the($items_list).scrollTop += util.the($items_list).clientHeight / 2;
-    }
+    scroll_util.scroll_element_into_container($element, $items_list);
 }
 
 function get_element_by_id(id: string, context: Context): JQuery {
