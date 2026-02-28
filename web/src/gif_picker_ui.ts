@@ -262,7 +262,16 @@ function toggle_picker_popover(target: HTMLElement): void {
             onMount(instance) {
                 resizable_grid_cleanup = make_resizable(
                     {
-                        directions: ["right", "top_right", "top"],
+                        directions: [
+                            "right",
+                            "top_right",
+                            "top",
+                            "left",
+                            "bottom_right",
+                            "bottom_left",
+                            "bottom",
+                            "top_left",
+                        ],
                         disable_on_mobile: true,
                     },
                     instance.popper.querySelector(".gif-grid-in-popover")!,
@@ -292,6 +301,31 @@ function toggle_picker_popover(target: HTMLElement): void {
                         update_grid_with_search_term(current_search_term, true);
                     }
                 });
+
+                const d = document.createElement("div");
+                d.style.background = "pink";
+                d.style.width = "200px";
+                d.style.height = "200px";
+                d.style.position = "absolute";
+                d.style.top = "300px";
+                d.style.left = "300px";
+                make_resizable(
+                    {
+                        directions: [
+                            "top",
+                            "bottom",
+                            "left",
+                            "right",
+                            "top_right",
+                            "bottom_right",
+                            "bottom_left",
+                            "top_left",
+                        ],
+                        handle_size: 10,
+                    },
+                    d,
+                );
+                document.body.append(d);
             },
             onHidden() {
                 hide_picker_popover();
@@ -300,7 +334,7 @@ function toggle_picker_popover(target: HTMLElement): void {
         },
         {
             show_as_overlay_on_mobile: true,
-            show_as_overlay_always: false,
+            show_as_overlay_always: true,
         },
     );
 }
