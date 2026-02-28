@@ -401,24 +401,11 @@ export const select_field_data_schema = z.record(
 );
 export type SelectFieldData = z.output<typeof select_field_data_schema>;
 
-function read_select_field_data_from_form(
+ function read_select_field_data_from_form(
     $profile_field_form: JQuery,
-    old_field_data: unknown,
+    _old_field_data: unknown,
 ): SelectFieldData {
     const field_data: SelectFieldData = {};
-    let field_order = 1;
-
-    const old_option_value_map = new Map<string, string>();
-    if (old_field_data !== undefined) {
-        for (const [value, choice] of Object.entries(
-            select_field_data_schema.parse(old_field_data),
-        )) {
-            assert(typeof choice !== "string");
-            old_option_value_map.set(choice.text, value);
-        }
-    }
-    $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
-        const field_data: SelectFieldData = {};
     let field_order = 1;
 
     $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
@@ -432,6 +419,7 @@ function read_select_field_data_from_form(
 
     return field_data;
 }
+
 
 export const external_account_field_schema = z.object({
     subtype: z.string(),
@@ -471,9 +459,10 @@ function read_external_account_field_data(
 export type FieldData = SelectFieldData | ExternalAccountFieldData;
 
 export function read_field_data_from_form(
-    field_type_id: number,
+   field_type_id: number,
     $profile_field_form: JQuery,
-   _old_field_data: unknown,
+    _old_field_data: unknown,
+    _old_field_data: unknown,
 ): FieldData | undefined {
     const field_types = realm.custom_profile_field_types;
 
