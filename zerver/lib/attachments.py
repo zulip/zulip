@@ -73,6 +73,15 @@ def validate_attachment_request_for_spectator_access(realm: Realm, attachment: A
             rate_limit_spectator_attachment_access_by_file(attachment.path_id)
         except RateLimitedError:
             return False
+        except Exception:
+            # Redis unavailable or other rate limiter error — allow access
+            # rather than crashing. File URLs contain crypto tokens so
+            # anonymous access is safe.
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "Rate limiter failed for spectator attachment access", exc_info=True
+            )
 
     return True
 

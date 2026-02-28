@@ -45,9 +45,16 @@ class SupabaseJWTMiddleware:
     EXEMPT_PREFIXES = (
         "/api/v1/internal/",
         "/api/v1/events/internal",  # Zulip internal Django→Tornado (uses SHARED_SECRET)
-        "/user_uploads",  # Browser img/file requests don't include auth headers
-        "/thumbnail",  # Thumbnail requests - Zulip's view handles permission checks
         "/nodl/auth/bridge",  # Auth bridge handles its own Supabase JWT validation
+    )
+
+    # Paths where JWT is optional — process if present, pass through if absent.
+    # These serve files that may be requested by browsers (no auth header) or
+    # by the Flutter app (Bearer JWT). We authenticate when possible but never
+    # block access — the view layer handles anonymous/spectator access.
+    OPTIONAL_AUTH_PREFIXES = (
+        "/user_uploads",
+        "/thumbnail",
     )
 
     def __init__(self, get_response: callable) -> None:
@@ -69,6 +76,33 @@ class SupabaseJWTMiddleware:
         """
         # Skip auth for exempt paths
         if self._is_exempt(request.path):
+            return self.get_response(request)
+
+        # Optional auth paths: process JWT if present, but never block access
+        if self._is_optional_auth(request.path):
+            token = self._extract_token(request)
+            if token and settings.SUPABASE_JWT_SECRET:
+                try:
+                    payload = jwt.decode(
+                        token,
+                        settings.SUPABASE_JWT_SECRET,
+                        algorithms=["HS256"],
+                        audience="authenticated",
+                    )
+                    request.supabase_user_id = payload["sub"]
+                    email = payload.get("email")
+                    workspace_id = request.headers.get("X-Workspace-Id")
+                    if email:
+                        user_profile = self._get_user_profile_cached(email, workspace_id)
+                        if user_profile:
+                            request.user_profile = user_profile
+                            request.user = user_profile
+                            logger.info(
+                                f"[nodl-auth] Optional JWT auth success for {email} "
+                                f"on {request.path}"
+                            )
+                except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+                    pass  # Silently fail — view handles anonymous access
             return self.get_response(request)
 
         token = self._extract_token(request)
@@ -183,6 +217,22 @@ class SupabaseJWTMiddleware:
             return True
         return any(
             path == prefix or path.startswith(prefix + "/") for prefix in self.EXEMPT_PREFIXES
+        )
+
+    def _is_optional_auth(self, path: str) -> bool:
+        """Check if the request path has optional authentication.
+
+        For these paths, JWT is processed if present but access is never blocked.
+
+        Args:
+            path: The request path.
+
+        Returns:
+            True if the path should use optional authentication.
+        """
+        return any(
+            path == prefix or path.startswith(prefix + "/")
+            for prefix in self.OPTIONAL_AUTH_PREFIXES
         )
 
     def _get_user_profile_cached(
