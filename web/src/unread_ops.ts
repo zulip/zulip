@@ -738,7 +738,7 @@ export function notify_server_messages_read(
         return;
     }
 
-    message_flags.send_read(messages);
+    message_flags.send_read.add(messages);
 
     for (const message of messages) {
         unread.mark_as_read(message.id);
