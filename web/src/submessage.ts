@@ -49,6 +49,62 @@ export function get_message_events(message: Message): SubmessageEvents | undefin
     return clean_events;
 }
 
+export function is_poll_message(message: Message): boolean {
+    if (message.submessages === undefined || message.submessages.length === 0) {
+        return false;
+    }
+
+    try {
+        const first_data: unknown = JSON.parse(message.submessages[0]!.content);
+        return (
+            typeof first_data === "object" &&
+            first_data !== null &&
+            "widget_type" in first_data &&
+            first_data.widget_type === "poll"
+        );
+    } catch {
+        return false;
+    }
+}
+
+export function is_widget_edited(message: Message): boolean {
+    if (message.has_widget_edits !== undefined) {
+        return message.has_widget_edits;
+    }
+
+    if (message.submessages === undefined || message.submessages.length === 0) {
+        message.has_widget_edits = false;
+        return false;
+    }
+
+    if (!is_poll_message(message)) {
+        message.has_widget_edits = false;
+        return false;
+    }
+
+    // Check if any subsequent submessages are edits (question changes
+    // or new options added after poll creation). Votes don't count.
+    for (let i = 1; i < message.submessages.length; i += 1) {
+        try {
+            const data: unknown = JSON.parse(message.submessages[i]!.content);
+            if (
+                typeof data === "object" &&
+                data !== null &&
+                "type" in data &&
+                (data.type === "question" || data.type === "new_option")
+            ) {
+                message.has_widget_edits = true;
+                return true;
+            }
+        } catch {
+            continue;
+        }
+    }
+
+    message.has_widget_edits = false;
+    return false;
+}
+
 export function render_widget_rows_in_list(list: MessageList | undefined): void {
     for (const message_id of widgetize.get_message_ids()) {
         const $row = list?.get_row(message_id);
