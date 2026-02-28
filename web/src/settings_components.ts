@@ -473,7 +473,7 @@ export type FieldData = SelectFieldData | ExternalAccountFieldData;
 export function read_field_data_from_form(
     field_type_id: number,
     $profile_field_form: JQuery,
-    old_field_data: unknown,
+   _old_field_data: unknown,
 ): FieldData | undefined {
     const field_types = realm.custom_profile_field_types;
 
