@@ -18,7 +18,7 @@ from zerver.decorator import (
     process_client,
     public_json_view,
 )
-from zerver.lib.exceptions import MissingAuthenticationError, UnauthorizedError
+from zerver.lib.exceptions import JsonableError, MissingAuthenticationError, UnauthorizedError
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_method_not_allowed
 from zerver.lib.sessions import narrow_request_user
@@ -168,7 +168,20 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
 
     # for some special views (e.g. serving a file that has been
     # uploaded), we support using the same URL for web and API clients.
-    if "override_api_url_scheme" in view_flags and "Authorization" in request.headers:
+    #
+    # NODL: If middleware already authenticated via JWT (set request.user),
+    # use the session auth path directly. This avoids get_basic_credentials()
+    # which raises JsonableError for Bearer tokens (not UnauthorizedError),
+    # bypassing the graceful fallback below.
+    if (
+        "override_api_url_scheme" in view_flags
+        and hasattr(request, "supabase_user_id")
+        and check_is_authenticated(request)
+    ):
+        target_function = csrf_protect(
+            authenticated_json_view(target_function, skip_rate_limiting=True)
+        )
+    elif "override_api_url_scheme" in view_flags and "Authorization" in request.headers:
         # This request uses standard API based authentication.
         # For override_api_url_scheme views, we skip our normal
         # rate limiting, because there are good reasons clients
@@ -185,9 +198,10 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
                 if request.method in ["DELETE", "PATCH", "PUT"]:
                     auth_target = process_as_post(auth_target)
                 return auth_target(request, **kwargs)
-            except UnauthorizedError:
+            except (UnauthorizedError, JsonableError):
                 # Auth failed — strip the bad header and fall through to
-                # anonymous access below.
+                # anonymous access below. JsonableError catches Bearer tokens
+                # rejected by get_basic_credentials() which expects Basic auth.
                 request.META.pop("HTTP_AUTHORIZATION", None)
                 target_function = csrf_protect(public_json_view(target_function))
         else:

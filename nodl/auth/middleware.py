@@ -105,10 +105,6 @@ class SupabaseJWTMiddleware:
                             )
                 except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
                     pass  # JWT invalid — fall through to anonymous access
-            # Always strip Bearer header on these paths. rest_dispatch's
-            # get_basic_credentials() raises JsonableError (not UnauthorizedError)
-            # for non-Basic auth types, bypassing the graceful fallback.
-            request.META.pop("HTTP_AUTHORIZATION", None)
             return self.get_response(request)
 
         token = self._extract_token(request)
