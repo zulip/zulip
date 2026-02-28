@@ -2291,6 +2291,20 @@ li.topic-list-item {
 }
 
 .zoom-in {
+    #topics_header {
+        display: grid !important;
+        top: calc(
+            var(--line-height-sidebar-row-prominent) + 1px + 2 *
+                var(--left-sidebar-direct-messages-bottom-divider-padding)
+        );
+    }
+
+    .direct-message-section-bottom-divider-container {
+        min-height: calc(
+            1px + 2 * var(--left-sidebar-direct-messages-bottom-divider-padding)
+        );
+    }
+
     .narrow-filter.hide {
         display: none;
     }
@@ -2303,7 +2317,9 @@ li.topic-list-item {
            variables for setting the space on the BACK TO CHANNELS
            grid row plus its top padding: */
         top: calc(
-            var(--line-height-sidebar-row-prominent) +
+            var(--line-height-sidebar-row-prominent) + 1px + 2 *
+                var(--left-sidebar-direct-messages-bottom-divider-padding) +
+                var(--line-height-sidebar-row-prominent) +
                 var(--left-sidebar-sections-vertical-gutter)
         );
         z-index: 2;
