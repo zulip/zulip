@@ -1981,7 +1981,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(service_payload_url, "http://foo.bar2.com")
 
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
-    def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
+    def test_patch_embedded_bot_config_data(self, mock_validate_config: MagicMock) -> None:
         self.create_test_bot(
             "test",
             self.example_user("hamlet"),
@@ -1996,6 +1996,50 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_success(result)
         config_data = orjson.loads(result.content)["config_data"]
         self.assertEqual(config_data, orjson.loads(bot_info["config_data"]))
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_config_data(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "service_name": "stripe",
+            "config_data": orjson.dumps({"stripe_api_key": "initial-key"}).decode(),
+        }
+        self.create_bot(**bot_metadata)
+        bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        bot_info = {"config_data": orjson.dumps({"stripe_api_key": "updated-key"}).decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_success(result)
+        config_data = get_bot_config(bot)
+        self.assertEqual(config_data, {"integration_id": "stripe", "stripe_api_key": "updated-key"})
+
+    def test_patch_incoming_webhook_bot_config_data_no_integration(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Incoming Webhook Bot",
+            "short_name": "my-webhook",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+        }
+        self.create_bot(**bot_metadata)
+        bot = UserProfile.objects.get(full_name="My Incoming Webhook Bot")
+        bot_info = {"config_data": orjson.dumps({"some_key": "some_value"}).decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "This bot doesn't have an integration configured.")
+
+    def test_patch_default_bot_config_data(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Generic Bot",
+            "short_name": "my-webhook",
+            "bot_type": UserProfile.DEFAULT_BOT,
+        }
+        self.create_bot(**bot_metadata)
+        bot = UserProfile.objects.get(full_name="My Generic Bot")
+        bot_info = {"config_data": orjson.dumps({"some_key": "some_value"}).decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "This bot type doesn't use config data.")
 
     def test_outgoing_webhook_invalid_interface(self) -> None:
         self.login("hamlet")
