@@ -418,18 +418,13 @@ function read_select_field_data_from_form(
         }
     }
     $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
+        const field_data: SelectFieldData = {};
+    let field_order = 1;
+
+    $profile_field_form.find("div.choice-row").each(function (this: HTMLElement) {
         const text = util.the($(this).find("input")).value;
         if (text) {
-            let value = old_option_value_map.get(text);
-            if (value !== undefined) {
-                // Resetting the data-value in the form is
-                // important if the user removed an option string
-                // and then added it back again before saving
-                // changes.
-                $(this).attr("data-value", value);
-            } else {
-                value = $(this).attr("data-value")!;
-            }
+            const value = $(this).attr("data-value")!;
             field_data[value] = {text, order: field_order.toString()};
             field_order += 1;
         }
