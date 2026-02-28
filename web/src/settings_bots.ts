@@ -35,7 +35,7 @@ import * as user_sort from "./user_sort.ts";
 import * as util from "./util.ts";
 
 const GENERIC_BOT_TYPE = 1;
-const INCOMING_WEBHOOK_BOT_TYPE = 2;
+const INCOMING_WEBHOOK_BOT_TYPE_INT = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
 const EMBEDDED_BOT_TYPE = "4";
@@ -339,7 +339,7 @@ export function add_a_new_bot(): void {
     }
 
     function set_up_form_fields(): void {
-        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE);
+        $("#create_bot_type").val(INCOMING_WEBHOOK_BOT_TYPE_INT);
         $("#payload_url_inputbox").hide();
         $("#create_payload_url").val("");
         $("#service_name_list").hide();
@@ -452,7 +452,7 @@ function bot_info(bot_user_id: number): BotInfo {
               }),
         show_download_zuliprc_button: is_bot_owner && bot_user.bot_type === GENERIC_BOT_TYPE,
         show_generate_integration_url_button:
-            can_modify_bot && bot_user.bot_type === INCOMING_WEBHOOK_BOT_TYPE,
+            can_modify_bot && bot_user.bot_type === INCOMING_WEBHOOK_BOT_TYPE_INT,
     };
 }
 
