@@ -164,8 +164,20 @@ function update_rendered_drafts(
 
 const keyboard_handling_context: messages_overlay_ui.Context = {
     get_items_ids() {
-        const draft_arrow = drafts.draft_model.get();
-        return Object.getOwnPropertyNames(draft_arrow);
+        const draft_ids: string[] = [];
+        $("#drafts_table .draft-message-row").each(function (this: HTMLElement) {
+            const draft_id = $(this).attr("data-draft-id");
+            if (draft_id !== undefined) {
+                draft_ids.push(draft_id);
+            }
+        });
+
+        if (draft_ids.length > 0) {
+            return draft_ids;
+        }
+
+        const draft_map = drafts.draft_model.get();
+        return Object.getOwnPropertyNames(draft_map);
     },
     on_enter() {
         // This handles when pressing Enter while looking at drafts.
