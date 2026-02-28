@@ -78,7 +78,9 @@ class SupabaseJWTMiddleware:
         if self._is_exempt(request.path):
             return self.get_response(request)
 
-        # Optional auth paths: process JWT if present, but never block access
+        # Optional auth paths: process JWT if present, but never block access.
+        # Always strip Bearer headers so rest_dispatch doesn't misinterpret
+        # them as Basic auth (which raises JsonableError → 400).
         if self._is_optional_auth(request.path):
             token = self._extract_token(request)
             if token and settings.SUPABASE_JWT_SECRET:
@@ -102,7 +104,11 @@ class SupabaseJWTMiddleware:
                                 f"on {request.path}"
                             )
                 except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
-                    pass  # Silently fail — view handles anonymous access
+                    pass  # JWT invalid — fall through to anonymous access
+            # Always strip Bearer header on these paths. rest_dispatch's
+            # get_basic_credentials() raises JsonableError (not UnauthorizedError)
+            # for non-Basic auth types, bypassing the graceful fallback.
+            request.META.pop("HTTP_AUTHORIZATION", None)
             return self.get_response(request)
 
         token = self._extract_token(request)
