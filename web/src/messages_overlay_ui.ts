@@ -23,7 +23,7 @@ export function row_with_focus(context: Context): JQuery {
 export function activate_element(elem: HTMLElement, context: Context): void {
     $(`.${CSS.escape(context.box_item_selector)}`).removeClass("active");
     elem.classList.add("active");
-    elem.focus();
+    elem.focus({preventScroll: true});
 }
 
 export function get_focused_element_id(context: Context): string | undefined {
@@ -47,6 +47,10 @@ export function focus_on_sibling_element(context: Context): void {
     if ($new_focus_element[0] !== undefined) {
         assert($new_focus_element[0].children[0] instanceof HTMLElement);
         activate_element($new_focus_element[0].children[0], context);
+        scroll_util.scroll_element_into_container(
+            $new_focus_element,
+            $(`.${CSS.escape(context.items_list_selector)}`),
+        );
     }
 }
 
