@@ -78,9 +78,8 @@ class SupabaseJWTMiddleware:
         if self._is_exempt(request.path):
             return self.get_response(request)
 
-        # Optional auth paths: process JWT if present, but never block access.
-        # Always strip Bearer headers so rest_dispatch doesn't misinterpret
-        # them as Basic auth (which raises JsonableError → 400).
+        # Optional auth paths: process auth if present, but never block access.
+        # Supports both Bearer JWT and Basic (API key) auth.
         if self._is_optional_auth(request.path):
             token = self._extract_token(request)
             if token and settings.SUPABASE_JWT_SECRET:
@@ -105,6 +104,34 @@ class SupabaseJWTMiddleware:
                             )
                 except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
                     pass  # JWT invalid — fall through to anonymous access
+            elif not token:
+                # Try Basic auth (API key) — used by the mobile prefetch worker.
+                # On failure, silently fall through to anonymous access.
+                auth_header = request.headers.get("Authorization", "")
+                if auth_header.startswith("Basic "):
+                    try:
+                        import base64
+
+                        from zerver.models.users import get_user_profile_by_api_key
+
+                        credentials = auth_header[6:]
+                        decoded = base64.b64decode(credentials).decode()
+                        email, api_key = decoded.split(":", 1)
+                        user_profile = get_user_profile_by_api_key(api_key.strip())
+                        if email.strip().lower() != user_profile.delivery_email.lower():
+                            raise ValueError("Email mismatch")
+                        if not user_profile.is_active or user_profile.realm.deactivated:
+                            raise ValueError("Inactive user or realm")
+                        request.user_profile = user_profile
+                        request.user = user_profile
+                        request._dont_enforce_csrf_checks = True
+                        request.supabase_user_id = f"api_key:{user_profile.id}"
+                        logger.info(
+                            f"[nodl-auth] Optional Basic auth success for {email} "
+                            f"on {request.path}"
+                        )
+                    except Exception:
+                        pass  # Basic auth failed — fall through to anonymous access
             return self.get_response(request)
 
         token = self._extract_token(request)
