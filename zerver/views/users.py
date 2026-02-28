@@ -41,7 +41,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
-from zerver.lib.bot_config import set_bot_config
+from zerver.lib.bot_config import get_bot_configs, set_bot_config
 from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
@@ -97,6 +97,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key
 from zerver.models import Service, Stream, UserProfile
+from zerver.models.bots import get_bot_services
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -565,8 +566,20 @@ def patch_bot_backend(
             acting_user=user_profile,
         )
 
-    if config_data is not None:
-        do_update_bot_config_data(bot, config_data)
+    if config_data:
+        if bot.bot_type == UserProfile.EMBEDDED_BOT:
+            service_name: str | None = get_bot_services(bot.id)[0].name
+        elif bot.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+            # We assume config_data does not contain "integration_id"; that key
+            # is managed exclusively via the service_name parameter above.  The
+            # same assumption holds in do_create_bot_service.
+            existing_config_data = get_bot_configs([bot.id]).get(bot.id, {})
+            service_name = existing_config_data.get("integration_id", None)
+        else:
+            raise JsonableError(_("This bot type doesn't use config data."))
+        if service_name is not None:
+            check_valid_bot_config(bot.bot_type, service_name, config_data)
+        do_update_bot_config_data(bot, service_name, config_data)
 
     if len(request.FILES) == 0:
         pass
