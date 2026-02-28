@@ -33,8 +33,23 @@ servers:
   - url: "https://chat.zulip.org/api/v1"
   # Development server
   - url: "http://localhost:9991/api/v1"
-  # Test suite
+  # Test suite - testserver with subdomain
   - url: "http://{subdomain}.testserver/json"
+    variables:
+      subdomain:
+        default: zulip
+  # Test suite - example.com domains
+  - url: "https://zulip.example.com/api/v1"
+    description: Test server with example.com domain (HTTPS)
+  - url: "http://zulip.example.com/api/v1"
+    description: Test server with example.com domain (HTTP)
+  - url: "http://zulip.example.com/json"
+    description: Test server with example.com domain (JSON endpoint)
+  # Test suite - local IP addresses
+  - url: "http://127.0.0.1/api/v1"
+    description: Test server with local IP address
+  - url: "http://127.0.0.1/json"
+    description: Test server with local IP (JSON endpoint)
 security:
   - basicAuth: []
 #######################
@@ -26044,6 +26059,271 @@ paths:
                       }
                     description: |
                       An example JSON response when the channel folder ID is invalid:
+  /bots:
+    get:
+      operationId: get-bots
+      summary: Get bots
+      tags: ["users"]
+      description: |
+        Get all bots owned by the current user.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - type: object
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      bots:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            username:
+                              type: string
+                            full_name:
+                              type: string
+                            api_key:
+                              type: string
+                            avatar_url:
+                              type: string
+                            default_sending_stream:
+                              type: string
+                              nullable: true
+                            default_events_register_stream:
+                              type: string
+                              nullable: true
+                            default_all_public_streams:
+                              type: boolean
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "bots":
+                          [
+                            {
+                              "username": "my-bot@example.com",
+                              "full_name": "My Bot",
+                              "api_key": "abc123",
+                              "avatar_url": "https://example.com/avatar.png",
+                              "default_sending_stream": "general",
+                              "default_events_register_stream": null,
+                              "default_all_public_streams": true,
+                            },
+                          ],
+                      }
+    post:
+      operationId: create-bot
+      summary: Create a bot
+      tags: ["users"]
+      description: |
+        Create a new bot for the current user.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                  description: |
+                    The full name of the bot.
+                  example: "My Bot"
+                short_name:
+                  type: string
+                  description: |
+                    The short name of the bot. The bot email address will be short_name-bot@<realm-domain>.
+                  example: "my-bot"
+                bot_type:
+                  type: integer
+                  description: |
+                    The type of bot to create.
+
+                    - **1** = Generic bot
+                    - **2** = Incoming webhook bot
+                    - **3** = Outgoing webhook bot
+                    - **4** = Embedded bot
+                  enum: [1, 2, 3, 4]
+                default_sending_stream:
+                  type: string
+                  description: |
+                    The name of the stream the bot will use as its
+                    default stream for sending messages.
+                default_events_register_stream:
+                  type: string
+                  description: |
+                    The name of the stream the bot will use to register
+                    for events.
+                default_all_public_streams:
+                  type: boolean
+                  description: |
+                    Whether the bot should receive events from all public
+                    streams.
+                payload_url:
+                  type: string
+                  description: |
+                    For outgoing webhook bots, the URL to which Zulip will
+                    send outgoing webhook requests.
+                interface_type:
+                  type: integer
+                  description: |
+                    For outgoing webhook bots, the interface type:
+
+                    - **1** = Generic
+                    - **2** = Slack-compatible
+                  enum: [1, 2]
+                service_name:
+                  type: string
+                  description: |
+                    For embedded and incoming webhook bots, the name of
+                    the service that powers the bot.
+                config_data:
+                  type: object
+                  description: |
+                    A JSON-encoded dictionary containing extra configuration
+                    data required for some embedded bots.
+                  additionalProperties:
+                    type: string
+              required:
+                - full_name
+                - short_name
+                - bot_type
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                  description: |
+                    The full name of the bot.
+                  example: "My Bot"
+                short_name:
+                  description: |
+                    The short name of the bot. The bot email address will be
+                    short_name-bot@<realm-domain>.
+                  type: string
+                  example: "my-bot"
+                bot_type:
+                  description: |
+                    The type of bot to create.
+
+                    - **1** = Generic bot
+                    - **2** = Incoming webhook bot
+                    - **3** = Outgoing webhook bot
+                    - **4** = Embedded bot
+                  type: integer
+                  enum: [1, 2, 3, 4]
+                default_sending_stream:
+                  description: |
+                    The name of the stream the bot will use as its
+                    default stream for sending messages.
+                  type: string
+                default_events_register_stream:
+                  description: |
+                    The name of the stream the bot will use to register
+                    for events.
+                  type: string
+                default_all_public_streams:
+                  description: |
+                    Whether the bot should receive events from all public
+                    streams.
+                  type: boolean
+                payload_url:
+                  type: string
+                  description: |
+                    For outgoing webhook bots, the URL to which Zulip will
+                    send outgoing webhook requests.
+                  default: ""
+                interface_type:
+                  description: |
+                    For outgoing webhook bots, the interface type:
+
+                    - **1** = Generic
+                    - **2** = Slack-compatible
+                  type: integer
+                  enum: [1, 2]
+                service_name:
+                  description: |
+                    For embedded and incoming webhook bots, the name of
+                    the service that powers the bot.
+                  type: string
+                config_data:
+                  description: |
+                    A JSON-encoded dictionary containing extra configuration
+                    data required for some embedded bots.
+                  type: object
+                  additionalProperties:
+                    type: string
+              required:
+                - full_name
+                - short_name
+                - bot_type
+            encoding:
+              bot_type:
+                contentType: application/json
+              default_all_public_streams:
+                contentType: application/json
+              interface_type:
+                contentType: application/json
+              config_data:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      user_id:
+                        type: integer
+                        description: |
+                          The user ID of the newly created bot.
+                      api_key:
+                        type: string
+                        description: |
+                          The API key of the newly created bot.
+                      avatar_url:
+                        type: string
+                        description: |
+                          The URL of the bot's avatar.
+                      default_sending_stream:
+                        type: string
+                        nullable: true
+                        description: |
+                          The name of the bot's default sending stream.
+                      default_events_register_stream:
+                        type: string
+                        nullable: true
+                        description: |
+                          The name of the bot's default events register stream.
+                      default_all_public_streams:
+                        type: boolean
+                        description: |
+                          Whether the bot receives events from all public streams.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "user_id": 25,
+                        "api_key": "zbu5H4NiyGNRlhan3LPs5zgRCbNxDVaF",
+                        "avatar_url": "https://example.com/avatar.png",
+                        "default_sending_stream": "general",
+                        "default_events_register_stream": null,
+                        "default_all_public_streams": false,
+                      }
   /bots/{bot_id}/api_key:
     get:
       operationId: get-bot-api-key
