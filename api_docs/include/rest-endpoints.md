@@ -120,6 +120,8 @@
 * [Get all alert words](/api/get-alert-words)
 * [Add alert words](/api/add-alert-words)
 * [Remove alert words](/api/remove-alert-words)
+* [Get bots](/api/get-bots)
+* [Create a bot](/api/create-bot)
 * [Regenerate your API key](/api/regenerate-api-key)
 * [Get a bot's API key](/api/get-bot-api-key)
 * [Regenerate a bot's API key](/api/regenerate-bot-api-key)

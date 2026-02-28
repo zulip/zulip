@@ -229,7 +229,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/zcommand",
         #### These "organization settings" endpoint have modest value to document:
         "/realm",
-        "/bots",
         "/bots/{bot_id}",
         #### These "organization settings" endpoints have low value to document:
         "/realm/profile_fields/{field_id}",
@@ -395,6 +394,9 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 if (
                     function.__name__ != "send_message_backend"
                     or actual_param.param_name != "req_to"
+                ) and (
+                    function.__name__ != "add_bot_backend"
+                    or actual_param.param_name != "payload_url"
                 ):
                     self.assertEqual(
                         actual_param_schema.get("contentMediaType"),
@@ -413,11 +415,19 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 # parameters should be JSON encoded, while our code does expect
                 # that. In this case, we exempt this parameter from the content
                 # type check.
-                self.assertIn(
-                    function_schema_type,
-                    (int, bool),
-                    f"\nUnexpected content type {actual_param_schema['contentMediaType']} on function parameter {actual_param.param_name}, which does not match the OpenAPI definition.",
-                )
+                # We also exempt add_bot_backend payload_url which is a
+                # Json[str] URL parameter for outgoing webhook bots.
+                if (
+                    function.__name__ == "add_bot_backend"
+                    and actual_param.param_name == "payload_url"
+                ):
+                    pass
+                else:
+                    self.assertIn(
+                        function_schema_type,
+                        (int, bool),
+                        f"\nUnexpected content type {actual_param_schema['contentMediaType']} on function parameter {actual_param.param_name}, which does not match the OpenAPI definition.",
+                    )
             function_params.add(
                 (actual_param.request_var_name, schema_type(actual_param_schema, defs_mapping))
             )
