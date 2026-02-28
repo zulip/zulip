@@ -25519,6 +25519,55 @@ paths:
                       }
                     description: |
                       An example JSON response when the bot ID is invalid:
+  /bots/{bot_id}/api_key/regenerate:
+    post:
+      operationId: regenerate-bot-api-key
+      summary: Regenerate a bot's API key
+      tags: ["users"]
+      description: |
+        Generate a new API key for a bot user. Only the bot's owner and
+        organization administrators have access to a bot's API key.
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      api_key:
+                        type: string
+                        description: |
+                          The new API key for the bot.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "api_key": "hkA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
+                      }
+
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "No such bot",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response when the bot ID is invalid:
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.
