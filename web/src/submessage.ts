@@ -3,6 +3,7 @@ import * as z from "zod/mini";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import type {MessageList} from "./message_list.ts";
+import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import {any_widget_data_schema} from "./widget_schema.ts";
@@ -220,6 +221,22 @@ export function handle_event(submsg: Submessage): void {
         post_to_server,
         data,
     });
+
+    // If a poll question was changed or a new option was added,
+    // update the widget-edited cache and rerender so the EDITED
+    // marker appears immediately.
+    if (
+        typeof data === "object" &&
+        data !== null &&
+        "type" in data &&
+        (data.type === "question" || data.type === "new_option") &&
+        !message.has_widget_edits
+    ) {
+        message.has_widget_edits = true;
+        if (message_lists.current !== undefined) {
+            message_lists.current.view.rerender_messages([message]);
+        }
+    }
 }
 
 export function make_server_callback(
