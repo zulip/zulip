@@ -971,16 +971,68 @@ export let format_text = (
             inline_syntax_markers.has(syntax_start)
         ) {
             const lines = selected_text.split("\n");
+
+            // Check if every non-empty line is already formatted
+            const all_lines_formatted = lines.every((line) => {
+                if (line.trim() === "") {
+                    return true;
+                }
+
+                const trimmed = line.trimStart();
+                const numbering_match = /^\d+\.\s*/.exec(trimmed);
+
+                let content = trimmed;
+
+                if (bulleted_numbered_list_util.is_bulleted(trimmed)) {
+                    content = bulleted_numbered_list_util.strip_bullet(trimmed);
+                } else if (numbering_match) {
+                    content = trimmed.slice(numbering_match[0].length);
+                }
+
+                return content.startsWith(syntax_start) && content.endsWith(syntax_end);
+            });
+
             const formatted_lines = lines.map((line) => {
                 // Skip empty lines.
                 if (line.trim() === "") {
                     return line;
                 }
 
-                if (line.startsWith(syntax_start) && line.endsWith(syntax_end)) {
-                    return line.slice(syntax_start.length, line.length - syntax_end.length);
+                const trimmed = line.trimStart();
+                const indent = line.slice(0, line.length - trimmed.length);
+
+                // For list items, apply formatting only to the content
+                // after the list prefix (e.g., "- " or "1. ").
+
+                // To detect numbered list
+                const numbering_match = /^\d+\.\s*/.exec(trimmed);
+
+                let prefix = indent;
+                let content = trimmed;
+
+                if (bulleted_numbered_list_util.is_bulleted(trimmed)) {
+                    prefix += trimmed.slice(0, 2);
+                    content = bulleted_numbered_list_util.strip_bullet(trimmed);
+                } else if (numbering_match) {
+                    const numbering = numbering_match[0];
+                    prefix += numbering;
+                    content = trimmed.slice(numbering.length);
                 }
-                return `${syntax_start}${line}${syntax_end}`;
+
+                // If all lines are formatted, unformat every line
+                if (all_lines_formatted) {
+                    return (
+                        prefix +
+                        content.slice(syntax_start.length, content.length - syntax_end.length)
+                    );
+                }
+
+                // If line is already formatted, leave it as is
+                if (content.startsWith(syntax_start) && content.endsWith(syntax_end)) {
+                    return prefix + content;
+                }
+
+                return `${prefix}${syntax_start}${content}${syntax_end}`;
             });
 
             const result = formatted_lines.join("\n");
