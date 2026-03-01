@@ -1,0 +1,13 @@
+<li class="dm-list-item dm-box bottom_left_row" id="show-all-direct-messages">
+    <a href="#narrow/is/dm" draggable="false" class="dm-box dm-user-status show-all-direct-messages" tabindex="0">
+        <span class="conversation-partners-icon zulip-icon zulip-icon-all-messages"></span>
+        <span class="conversation-partners">
+            <span class="conversation-partners-list">{{t "All DMs" }}</span>
+        </span>
+        <div class="dm-markers-and-unreads">
+            <span class="unread_count {{#if (eq unread_count 0)}}zero_count{{/if}}">
+                {{unread_count}}
+            </span>
+        </div>
+    </a>
+</li>

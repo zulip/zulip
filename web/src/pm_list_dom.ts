@@ -1,6 +1,7 @@
 import _ from "lodash";
 
 import render_more_private_conversations from "../templates/more_pms.hbs";
+import render_pm_list_all_dms from "../templates/pm_list_all_dms.hbs";
 import render_pm_list_item from "../templates/pm_list_item.hbs";
 
 import * as vdom from "./vdom.ts";
@@ -18,6 +19,10 @@ export type PMNode =
     | {
           type: "more_items";
           more_conversations_unread_count: number;
+      }
+    | {
+          type: "all_dms";
+          unread_count: number;
       };
 
 export function keyed_pm_li(conversation: PMListConversation): vdom.Node<PMNode> {
@@ -58,6 +63,23 @@ export function more_private_conversations_li(
         eq,
         type: "more_items",
         more_conversations_unread_count,
+    };
+}
+
+export function all_dms_li(unread_count: number): vdom.Node<PMNode> {
+    const render = (): string => render_pm_list_all_dms({unread_count});
+
+    const eq = (other: PMNode): boolean =>
+        other.type === "all_dms" && unread_count === other.unread_count;
+
+    const key = "all_dms";
+
+    return {
+        key,
+        type: "all_dms",
+        unread_count,
+        render,
+        eq,
     };
 }
 
