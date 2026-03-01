@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import threading
@@ -37,18 +38,32 @@ def _ensure_firebase_initialized() -> bool:
         except ValueError:
             pass
 
+        # Option 1: Standard file path via GOOGLE_APPLICATION_CREDENTIALS
         google_creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "")
-        if not google_creds_path:
-            logger.warning("GOOGLE_APPLICATION_CREDENTIALS not set — FCM push disabled")
-            return False
+        if google_creds_path:
+            try:
+                cred = credentials.Certificate(google_creds_path)
+                firebase_admin.initialize_app(cred)
+                logger.info("Firebase initialized from GOOGLE_APPLICATION_CREDENTIALS")
+                return True
+            except Exception as e:
+                logger.error("Firebase init from file failed: %s", e)
+                return False
 
-        try:
-            cred = credentials.Certificate(google_creds_path)
-            firebase_admin.initialize_app(cred)
-            return True
-        except Exception as e:
-            logger.error("Firebase Admin SDK initialization failed: %s", e)
-            return False
+        # Option 2: Inline JSON via FIREBASE_CREDENTIALS_JSON (for Railway/containers)
+        firebase_json = os.environ.get("FIREBASE_CREDENTIALS_JSON", "")
+        if firebase_json:
+            try:
+                cred = credentials.Certificate(json.loads(firebase_json))
+                firebase_admin.initialize_app(cred)
+                logger.info("Firebase initialized from FIREBASE_CREDENTIALS_JSON")
+                return True
+            except Exception as e:
+                logger.error("Firebase init from JSON env var failed: %s", e)
+                return False
+
+        logger.warning("No Firebase credentials configured — FCM push disabled")
+        return False
 
 
 def send_voip_push_ios(
