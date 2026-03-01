@@ -76,10 +76,8 @@ RETRY_COUNT=0
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     if /app/.venv/bin/python -c "
 import socket
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.settimeout(2)
 try:
-    s.connect(('$RABBITMQ_HOST_CHECK', $RABBITMQ_PORT_CHECK))
+    s = socket.create_connection(('$RABBITMQ_HOST_CHECK', $RABBITMQ_PORT_CHECK), timeout=2)
     s.close()
     exit(0)
 except:
