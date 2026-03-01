@@ -366,10 +366,10 @@ export function get_keydown_hotkey(e: JQuery.KeyDownEvent): Hotkey | Hotkey[] | 
     ) {
         const lowercase_key = key.toLowerCase();
         if (lowercase_key === "n") {
-            return KEYDOWN_MAPPINGS.ArrowDown;
+            return KEYDOWN_MAPPINGS["ArrowDown"];
         }
         if (lowercase_key === "p") {
-            return KEYDOWN_MAPPINGS.ArrowUp;
+            return KEYDOWN_MAPPINGS["ArrowUp"];
         }
     }
 
