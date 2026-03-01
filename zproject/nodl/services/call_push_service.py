@@ -54,7 +54,14 @@ def _ensure_firebase_initialized() -> bool:
         firebase_json = os.environ.get("FIREBASE_CREDENTIALS_JSON", "")
         if firebase_json:
             try:
-                cred = credentials.Certificate(json.loads(firebase_json))
+                # Railway may convert \n escapes in the private_key into real
+                # newlines, which breaks json.loads(). Fix by re-escaping them.
+                try:
+                    cred_dict = json.loads(firebase_json)
+                except json.JSONDecodeError:
+                    fixed = firebase_json.replace("\n", "\\n").replace("\r", "")
+                    cred_dict = json.loads(fixed)
+                cred = credentials.Certificate(cred_dict)
                 firebase_admin.initialize_app(cred)
                 logger.info("Firebase initialized from FIREBASE_CREDENTIALS_JSON")
                 return True
