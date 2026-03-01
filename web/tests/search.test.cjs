@@ -82,6 +82,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         assert.equal(opts.items, 999);
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher(), true);
+        assert.equal(opts.enableMacCtrlNPNavigation, true);
 
         return {
             lookup() {
