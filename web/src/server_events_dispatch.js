@@ -23,6 +23,7 @@ import * as emoji_frequency from "./emoji_frequency.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as gif_state from "./gif_state.ts";
+import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
@@ -117,6 +118,31 @@ export function dispatch_normal_event(event) {
 
         case "attachment":
             attachments_ui.update_attachments(event);
+            if (event.op === "remove" && event.attachment.message_ids) {
+                const {path_id} = event.attachment;
+                for (const message_id of event.attachment.message_ids) {
+                    message_live_update.update_message_in_all_views(message_id, ($row) => {
+                        // Replace inline previews for the deleted attachment
+                        // with Zulip's "image not exist" placeholder. Matches
+                        // image previews by checking if the anchor's href
+                        // contains the attachment's upload path.
+                        $row.find(".media-anchor-element").each(function () {
+                            const href = $(this).attr("href") ?? "";
+                            if (href.includes("/user_uploads/" + path_id)) {
+                                const $img = $(this).find("img");
+                                $img.attr("src", "/static/images/errors/image-not-exist.png");
+                                $img.attr(
+                                    "alt",
+                                    $t({
+                                        defaultMessage:
+                                            "This file does not exist or has been deleted.",
+                                    }),
+                                );
+                            }
+                        });
+                    });
+                }
+            }
             break;
 
         case "channel_folder":
