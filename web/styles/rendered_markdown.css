@@ -983,6 +983,14 @@
     }
 }
 
+.message_content.hide-link-previews {
+    .message_embed,
+    .message-media-preview-image,
+    .message-media-preview-video {
+        display: none;
+    }
+}
+
 .codehilite {
     display: block !important;
     border: none !important;

@@ -1791,6 +1791,24 @@ export class MessageListView {
             this._rerender_message(message_container, {message_content_edited, is_revealed: false});
         }
 
+        // Match the render() paths by calling condense_and_collapse
+        // on the freshly replaced rows. condense_and_collapse uses
+        // message_lists.current internally, so only run it when this
+        // view belongs to the current list.
+        if (message_lists.current === this.list) {
+            const rerendered_elems: HTMLElement[] = [];
+            for (const mc of message_containers) {
+                const row = this.get_row(mc.msg.id)[0];
+                if (row !== undefined) {
+                    rerendered_elems.push(row);
+                }
+            }
+            const $rerendered_rows = $(rerendered_elems);
+            if ($rerendered_rows.length > 0) {
+                condense.condense_and_collapse($rerendered_rows);
+            }
+        }
+
         if (current_group.length > 0) {
             message_groups.push(current_group);
         }
