@@ -117,8 +117,7 @@ To see changes on your remote development server, you need to do one of the foll
   then use your favorite editor to make changes. When you want to see changes
   on your remote Zulip development instance, sync with Git.
 - [Edit remotely](#editing-remotely): Edit code directly on your remote
-  Zulip development instance using a [Web-based IDE](#web-based-ide) (recommended for
-  beginners) or a [command line editor](#command-line-editors), or a
+  Zulip development instance using a [command line editor](#command-line-editors) or a
   [desktop IDE](#desktop-gui-editors) using a plugin to sync your
   changes to the server when you save.
 
