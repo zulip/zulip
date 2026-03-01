@@ -17,7 +17,10 @@ from zproject.nodl.serializers.call_serializers import (
     serialize_call_initiate_response,
     serialize_call_record,
 )
-from zproject.nodl.services.call_push_service import dispatch_call_push_async
+from zproject.nodl.services.call_push_service import (
+    _ensure_firebase_initialized,
+    dispatch_call_push_async,
+)
 from zproject.nodl.views.webhooks_livekit import insert_call_event_message
 from zproject.nodl.services.livekit_service import (
     LIVEKIT_URL,
@@ -26,6 +29,21 @@ from zproject.nodl.services.livekit_service import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+@csrf_exempt
+def calls_health(request: HttpRequest) -> HttpResponse:
+    """Unauthenticated health check for call push infrastructure."""
+    import os
+    firebase_ok = _ensure_firebase_initialized()
+    has_creds_file = bool(os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", ""))
+    has_creds_json = bool(os.environ.get("FIREBASE_CREDENTIALS_JSON", ""))
+    return JsonResponse({
+        "result": "success",
+        "firebase_initialized": firebase_ok,
+        "has_credentials_file": has_creds_file,
+        "has_credentials_json": has_creds_json,
+    })
 
 
 def _require_jwt_auth(view_func):

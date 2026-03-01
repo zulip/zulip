@@ -5,6 +5,7 @@ from zproject.nodl.views.calls import (
     accept_call,
     call_detail,
     call_history,
+    calls_health,
     cancel_call,
     decline_call,
     end_call,
@@ -25,6 +26,7 @@ urlpatterns = [
     path("invites/create", invites_create, name="nodl_invites_create"),
     path("invites/resend", invites_resend, name="nodl_invites_resend"),
     # Call signaling endpoints
+    path("calls/health", calls_health, name="nodl_calls_health"),
     path("calls/initiate", initiate_call, name="nodl_calls_initiate"),
     path("calls/<str:call_id>/accept", accept_call, name="nodl_calls_accept"),
     path("calls/<str:call_id>/decline", decline_call, name="nodl_calls_decline"),
