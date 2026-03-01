@@ -50,6 +50,25 @@ from zerver.models.messages import get_context_for_message
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_id
 
+
+@dataclass
+class MessagePayload:
+    plain: str
+    html: Markup
+
+
+@dataclass
+class SenderPayload:
+    sender: str
+    content: list[MessagePayload]
+
+
+@dataclass
+class MessageListPayload:
+    senders: list[SenderPayload]
+    header: MessagePayload | None = None
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -235,7 +254,7 @@ def build_message_list(
     user: UserProfile,
     messages: list[Message],
     stream_id_map: dict[int, Stream] | None = None,  # only needs id, name
-) -> dict[str, Any]:
+) -> MessageListPayload:
     """
     Builds the message list object for the message notification email and
     digest email template. All `messages` share the same recipient (and topic).
@@ -273,9 +292,7 @@ def build_message_list(
             message_soup.insert(0, sender_name_soup)
         return message_plain, Markup(BeautifulSoup.decode(message_soup))
 
-    def build_message_payload(
-        message: Message, sender: str | None = None
-    ) -> dict[str, str | Markup]:
+    def build_message_payload(message: Message, sender: str | None = None) -> MessagePayload:
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
         # There's a small chance of colliding with non-Zulip URLs containing
@@ -298,13 +315,13 @@ def build_message_list(
         html = Markup(lxml.html.tostring(fragment, encoding="unicode"))
         if sender:
             plain, html = prepend_sender_to_message(plain, html, sender)
-        return {"plain": plain, "html": html}
+        return MessagePayload(plain=plain, html=html)
 
-    def build_sender_payload(message: Message) -> dict[str, Any]:
+    def build_sender_payload(message: Message) -> SenderPayload:
         sender = sender_string(message)
-        return {"sender": sender, "content": [build_message_payload(message, sender)]}
+        return SenderPayload(sender=sender, content=[build_message_payload(message, sender)])
 
-    def digest_block_header(message: Message) -> dict[str, Any]:
+    def digest_block_header(message: Message) -> MessagePayload:
         assert message.recipient.type == Recipient.STREAM
         stream_id = message.recipient.type_id
         assert stream_id_map is not None
@@ -334,24 +351,7 @@ def build_message_list(
             narrow_link=narrow_link,
             topic_html=topic_html,
         )
-        return {
-            "plain": header,
-            "html": header_html,
-        }
-
-    # Collapse message list to:
-    # {
-    #     "header": {"plain": "header", "html": "htmlheader"},
-    #     "senders": [
-    #         {
-    #             "sender": "sender_name",
-    #             "content": [
-    #                 {"plain": "content", "html": "htmlcontent"},
-    #                 {"plain": "content", "html": "htmlcontent"},
-    #             ],
-    #         }
-    #     ],
-    # }
+        return MessagePayload(plain=header, html=header_html)
 
     assert len(messages) > 0
     recipients = {(message.recipient_id, message.topic_name().lower()) for message in messages}
@@ -359,17 +359,17 @@ def build_message_list(
     messages.sort(key=lambda message: message.date_sent)
 
     sender_block = [build_sender_payload(messages[0])]
-    messages_to_render: dict[str, Any] = {"senders": sender_block}
+    messages_to_render = MessageListPayload(senders=sender_block)
+
     if stream_id_map:
         # Needed only for digest emails
-        header = digest_block_header(messages[0])
-        messages_to_render["header"] = header
+        messages_to_render.header = digest_block_header(messages[0])
 
     for message in messages[1:]:
         sender = sender_string(message)
-        # Same message sender, collapse again
-        if sender_block[-1]["sender"] == sender:
-            sender_block[-1]["content"].append(build_message_payload(message))
+        # Same message sender, collapse again using object attributes
+        if sender_block[-1].sender == sender:
+            sender_block[-1].content.append(build_message_payload(message))
         else:
             # Start a new sender block
             sender_block.append(build_sender_payload(message))
