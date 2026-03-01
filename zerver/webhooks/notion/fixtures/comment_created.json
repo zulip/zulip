@@ -1,0 +1,37 @@
+{
+  "id": "c6780f24-10b7-4f42-a6fd-230b6cf7ad69",
+  "timestamp": "2024-12-05T20:46:45.854Z",
+  "workspace_id": "13950b26-c203-4f3b-b97d-93ec06319565",
+  "workspace_name": "Quantify Labs",
+  "subscription_id": "29d75c0d-5546-4414-8459-7b7a92f1fc4b",
+  "integration_id": "0ef2e755-4912-8096-91c1-00376a88a5ca",
+  "type": "comment.created",
+  "authors": [
+    {
+      "id": "c7c11cca-1d73-471d-9b6e-bdef51470190",
+      "type": "person"
+    }
+  ],
+  "accessible_by": [
+    {
+      "id": "556a1abf-4f08-40c6-878a-75890d2a88ba",
+      "type": "person"
+    },
+    {
+      "id": "1edc05f6-2702-81b5-8408-00279347f034",
+      "type": "bot"
+    }
+  ],
+  "attempt_number": 1,
+  "entity": {
+    "id": "153104cd-477e-80ca-8f75-001d9e2b6839",
+    "type": "comment"
+  },
+  "data": {
+    "page_id": "0ef104cd-477e-80e1-8571-cfd10e92339a",
+    "parent": {
+      "id": "0ef104cd-477e-80e1-8571-cfd10e92339a",
+      "type": "page"
+    }
+  }
+}
