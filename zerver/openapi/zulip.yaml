@@ -9542,6 +9542,14 @@ paths:
                         <td>Whether the user has <a href="/help/collapse-a-message">collapsed this message</a>.</td>
                     </tr>
                     <tr>
+                        <td><code>hide_link_previews</code></td>
+                        <td>Whether the user has hidden auto-generated link previews on this message.
+                            Can be set on any message, regardless of whether it currently has a link preview.
+                            <br /><br />
+                            <b>Changes</b>: New in Zulip 12.0 (feature level ZF-43be6b).
+                        </td>
+                    </tr>
+                    <tr>
                         <td><code>mentioned</code></td>
                         <td>
                             Whether the current user
