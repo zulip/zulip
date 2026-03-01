@@ -5,6 +5,10 @@
         <div class="inbox-focus-border">
             <div class="inbox-left-part-wrapper">
                 <div class="inbox-left-part">
+                    <input type="checkbox"
+                        class="inbox-select-checkbox"
+                        data-conversation-key="{{conversation_key}}"
+                        style="margin-right:8px;">
                     {{#if is_direct}}
                         <a class="recipients_info {{#unless user_circle_class}}inbox-group-or-bot-dm{{/unless}}" href="{{dm_url}}" tabindex="-1">
                             <span class="user_block">

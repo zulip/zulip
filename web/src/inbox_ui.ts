@@ -2413,8 +2413,37 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         e.stopPropagation();
         expand_all_folders_and_channels();
     });
+    // ===== MULTI SELECT CHECKBOX SYSTEM =====
+    const selected_conversations = new Set<string>();
 
+    $(document).on("change", ".inbox-select-checkbox", function (this: HTMLInputElement, e): void {
+       e.stopPropagation();
+
+       const key = z.optional(z.string()).parse($(this).data("conversation-key"));
+
+       if (typeof key !== "string") {
+        return;
+       }
+
+       if (this.checked) {
+           selected_conversations.add(key);
+       } else {
+           selected_conversations.delete(key);
+       }
+    });
+    
+    
     $("body").on("click", "#inbox-list .inbox-left-part-wrapper", function (this: HTMLElement, e) {
+       
+        const $target = $(e.target);
+
+        // STOP chat opening when checkbox clicked
+        if ($target.closest(".inbox-select-checkbox").length > 0) {
+            e.stopPropagation();
+            return;
+        }
+
+       
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
@@ -2524,3 +2553,20 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         }
     });
 }
+    /* BULK MARK SELECTED AS READ */
+    $("body").on("click", "#bulk-mark-read", () => {
+        const conversation_keys: string[] = [];
+
+        $(".inbox-select-checkbox:checked").each(function () {
+            const key = z.optional(z.string()).parse($(this).data("conversation-key"));
+            if (typeof key === "string") {
+                conversation_keys.push(key);
+            }
+        });
+
+        for (const key of conversation_keys) {
+            $(`#inbox-row-conversation-${key}`)
+                .find(".unread_count")
+                .trigger("click");
+        }
+    });
