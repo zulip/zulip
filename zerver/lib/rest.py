@@ -169,18 +169,28 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
     # for some special views (e.g. serving a file that has been
     # uploaded), we support using the same URL for web and API clients.
     #
-    # NODL: If middleware already authenticated via JWT (set request.user),
-    # use the session auth path directly. This avoids get_basic_credentials()
-    # which raises JsonableError for Bearer tokens (not UnauthorizedError),
-    # bypassing the graceful fallback below.
+    # NODL: If middleware already authenticated via JWT or API key, skip
+    # Zulip's auth decorators entirely. authenticated_json_view calls
+    # validate_account_and_subdomain which rejects Railway's single-domain
+    # deployment. The middleware already validated the credentials.
     if (
         "override_api_url_scheme" in view_flags
         and hasattr(request, "supabase_user_id")
         and check_is_authenticated(request)
     ):
-        target_function = csrf_protect(
-            authenticated_json_view(target_function, skip_rate_limiting=True)
-        )
+        _upload_fn = target_function
+
+        @csrf_exempt
+        @wraps(_upload_fn)
+        def _nodl_upload_wrapper(
+            req: HttpRequest, /, *a: object, **kw: object
+        ) -> HttpResponse:
+            if not hasattr(req, "user_profile"):
+                raise UnauthorizedError
+            process_client(req, req.user_profile, is_browser_view=True)
+            return _upload_fn(req, req.user_profile, *a, **kw)
+
+        target_function = _nodl_upload_wrapper
     elif "override_api_url_scheme" in view_flags and "Authorization" in request.headers:
         # This request uses standard API based authentication.
         # For override_api_url_scheme views, we skip our normal
