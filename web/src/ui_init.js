@@ -756,6 +756,12 @@ export async function initialize_everything(state_data) {
     });
     drafts.initialize_ui();
     drafts_overlay_ui.initialize();
+    $(window).on("resize.drafts_overlay", () => {
+        if (!overlays.drafts_open()) {
+            return;
+        }
+        drafts_overlay_ui.rerender_drafts();
+    });
     // This needs to happen after activity_ui.initialize, so that user_filter
     // is defined. Also, must happen after people.initialize()
     onboarding_steps.initialize(state_data.onboarding_steps, {

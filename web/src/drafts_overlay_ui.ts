@@ -378,7 +378,7 @@ function setup_bulk_actions_handlers(): void {
     });
 }
 
-function rerender_drafts(): void {
+export function rerender_drafts(): void {
     const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
     render_widgets(narrow_drafts, other_drafts, narrow_drafts_header);
     setup_event_handlers();
