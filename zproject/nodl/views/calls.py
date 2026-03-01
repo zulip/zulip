@@ -35,15 +35,34 @@ logger = logging.getLogger(__name__)
 def calls_health(request: HttpRequest) -> HttpResponse:
     """Unauthenticated health check for call push infrastructure."""
     import os
-    firebase_ok = _ensure_firebase_initialized()
+    error_detail = None
+    firebase_ok = False
+    try:
+        firebase_ok = _ensure_firebase_initialized()
+    except Exception as e:
+        error_detail = str(e)
+
+    if not firebase_ok and not error_detail:
+        # Try to get more detail about why it failed
+        firebase_json = os.environ.get("FIREBASE_CREDENTIALS_JSON", "")
+        if firebase_json:
+            try:
+                parsed = json.loads(firebase_json)
+                error_detail = f"JSON parsed OK, keys: {list(parsed.keys())}"
+            except json.JSONDecodeError as e:
+                error_detail = f"JSON parse error: {e}"
+
     has_creds_file = bool(os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", ""))
     has_creds_json = bool(os.environ.get("FIREBASE_CREDENTIALS_JSON", ""))
-    return JsonResponse({
+    resp = {
         "result": "success",
         "firebase_initialized": firebase_ok,
         "has_credentials_file": has_creds_file,
         "has_credentials_json": has_creds_json,
-    })
+    }
+    if error_detail:
+        resp["error_detail"] = error_detail
+    return JsonResponse(resp)
 
 
 def _require_jwt_auth(view_func):
