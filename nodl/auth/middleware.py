@@ -38,6 +38,7 @@ class SupabaseJWTMiddleware:
         "/health",
         "/nodl/auth/bridge",  # Auth bridge handles its own Supabase JWT validation
         "/nodl/calls/health",  # Firebase diagnostics — no auth needed
+        "/nodl/webhooks/livekit",  # LiveKit room event webhooks (uses its own signature)
         "/api/v1/server_settings",  # Public endpoint — clients need it before auth
         "/api/v1/fetch_api_key",  # Clients need this before they have auth credentials
     }
