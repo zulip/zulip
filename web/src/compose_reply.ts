@@ -279,7 +279,7 @@ function setup_compose_to_forward_single_message(message: Message, opts: QuoteMe
         topic = message.topic;
         stream_id = message.stream_id;
     }
-    compose_state.set_is_processing_forward_message(true);
+    compose_state.set_is_channel_picker_open(true);
     compose_actions.start({
         message_type: message.type,
         topic,
