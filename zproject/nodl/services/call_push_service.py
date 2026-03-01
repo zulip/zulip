@@ -6,6 +6,8 @@ import threading
 
 import firebase_admin
 from firebase_admin import credentials, messaging
+from firebase_admin.exceptions import NotFoundError
+from firebase_admin.messaging import UnregisteredError
 
 logger = logging.getLogger(__name__)
 
@@ -173,17 +175,21 @@ def send_fcm_call_data(
     room_name: str,
     caller_name: str,
     caller_avatar_url: str,
-) -> bool:
+) -> str:
     """Send an FCM high-priority DATA message to an Android device.
 
     Uses firebase-admin SDK. This is a DATA message (not notification)
     so the client app controls display even when backgrounded.
 
-    Returns True on success, False on failure. Never raises.
+    Returns:
+        "sent" on success,
+        "unregistered" if the token is stale/invalid (caller should clean up),
+        "error" on other failures.
+    Never raises.
     """
     if not _ensure_firebase_initialized():
         logger.warning("Firebase not initialized — skipping FCM push")
-        return False
+        return "error"
 
     try:
         message = messaging.Message(
@@ -202,11 +208,16 @@ def send_fcm_call_data(
 
         response = messaging.send(message)
         logger.info("FCM data message sent for call %s: %s", call_id, response)
-        return True
+        return "sent"
+
+    except (UnregisteredError, NotFoundError) as e:
+        # Firebase best practice: token is stale — caller should deactivate it.
+        logger.warning("FCM token %s... is unregistered/not-found: %s", fcm_token[:16], e)
+        return "unregistered"
 
     except Exception as e:
         logger.error("FCM push error for token %s...: %s", fcm_token[:16], e)
-        return False
+        return "error"
 
 
 def dispatch_call_push(
@@ -219,10 +230,18 @@ def dispatch_call_push(
     """Dispatch incoming call push notifications to ALL active devices of the callee.
 
     Queries DeviceVoipToken for active tokens, sends platform-appropriate
-    push to each. Errors are logged but never raised — this is designed
-    to run in a fire-and-forget thread.
+    push to each. For Android, if all DeviceVoipToken FCM sends fail,
+    falls back to Zulip's PushDeviceToken (always kept current by the
+    GCM registration flow).
+
+    Stale tokens that return UNREGISTERED/NOT_FOUND are deactivated
+    immediately per Firebase best practices.
+
+    Errors are logged but never raised — this is designed to run in a
+    fire-and-forget thread.
     """
     # Import here to avoid circular imports at module level
+    from zerver.models import PushDeviceToken
     from zproject.nodl.models import DeviceVoipToken
 
     try:
@@ -235,7 +254,9 @@ def dispatch_call_push(
 
         if not tokens:
             logger.info("No active device tokens for callee %s — push skipped", callee_id)
-            return
+            # Even with no DeviceVoipToken, try the PushDeviceToken fallback below.
+
+        any_android_success = False
 
         for token_record in tokens:
             platform = token_record["platform"]
@@ -253,10 +274,45 @@ def dispatch_call_push(
                 if not fcm_token:
                     logger.warning("Android device %s has no fcm_token — skipping", device_id)
                     continue
-                send_fcm_call_data(fcm_token, call_id, room_name, caller_name, caller_avatar_url)
+                result = send_fcm_call_data(
+                    fcm_token, call_id, room_name, caller_name, caller_avatar_url,
+                )
+                if result == "sent":
+                    any_android_success = True
+                elif result == "unregistered":
+                    # Firebase best practice: deactivate stale token immediately.
+                    DeviceVoipToken.objects.filter(
+                        user_id=callee_id, device_id=device_id,
+                    ).update(is_active=False)
+                    logger.info("Deactivated stale DeviceVoipToken for device %s", device_id)
 
             else:
-                logger.warning("Unknown platform '%s' for device %s — skipping", platform, device_id)
+                logger.warning(
+                    "Unknown platform '%s' for device %s — skipping", platform, device_id,
+                )
+
+        # Fallback: if no DeviceVoipToken succeeded for Android, try Zulip's
+        # PushDeviceToken which is always current from the GCM registration flow.
+        if not any_android_success:
+            zulip_fcm_tokens = list(
+                PushDeviceToken.objects.filter(
+                    user_id=callee_id,
+                    kind=PushDeviceToken.FCM,
+                ).values_list("token", flat=True)
+            )
+            if zulip_fcm_tokens:
+                logger.info(
+                    "No Android DeviceVoipToken succeeded for user %s — "
+                    "trying %d PushDeviceToken(s) as fallback",
+                    callee_id, len(zulip_fcm_tokens),
+                )
+            for fallback_token in zulip_fcm_tokens:
+                result = send_fcm_call_data(
+                    fallback_token, call_id, room_name, caller_name, caller_avatar_url,
+                )
+                if result == "sent":
+                    logger.info("FCM sent via PushDeviceToken fallback for user %s", callee_id)
+                    break
 
     except Exception as e:
         logger.error("Push dispatch failed for callee %s: %s", callee_id, e)
