@@ -675,6 +675,8 @@ def add_bot_backend(
             raise JsonableError(_("Embedded bots are not enabled."))
         if service_name not in [bot.name for bot in EMBEDDED_BOTS]:
             raise JsonableError(_("Invalid embedded bot name."))
+    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and not service_name:
+        raise JsonableError(_("Integration name is required for incoming webhook bots."))
 
     if not form.is_valid():  # nocoverage
         # coverage note: The similar block above covers the most
