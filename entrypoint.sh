@@ -75,14 +75,17 @@ MAX_RETRIES=15
 RETRY_COUNT=0
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     if /app/.venv/bin/python -c "
-import socket
+import socket, sys
+host = '$RABBITMQ_HOST_CHECK'
+port = $RABBITMQ_PORT_CHECK
 try:
-    s = socket.create_connection(('$RABBITMQ_HOST_CHECK', $RABBITMQ_PORT_CHECK), timeout=2)
+    s = socket.create_connection((host, port), timeout=2)
     s.close()
-    exit(0)
-except:
-    exit(1)
-" 2>/dev/null; then
+    sys.exit(0)
+except Exception as e:
+    print(f'  connect failed: {e}', file=sys.stderr)
+    sys.exit(1)
+"; then
         echo "RabbitMQ is reachable at ${RABBITMQ_HOST_CHECK}:${RABBITMQ_PORT_CHECK}"
         break
     fi
