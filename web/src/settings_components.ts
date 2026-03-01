@@ -401,7 +401,7 @@ export const select_field_data_schema = z.record(
 );
 export type SelectFieldData = z.output<typeof select_field_data_schema>;
 
- function read_select_field_data_from_form(
+function read_select_field_data_from_form(
     $profile_field_form: JQuery,
     _old_field_data: unknown,
 ): SelectFieldData {
@@ -419,6 +419,7 @@ export type SelectFieldData = z.output<typeof select_field_data_schema>;
 
     return field_data;
 }
+
 
 
 export const external_account_field_schema = z.object({
