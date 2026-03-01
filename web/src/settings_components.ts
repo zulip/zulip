@@ -420,8 +420,6 @@ function read_select_field_data_from_form(
     return field_data;
 }
 
-
-
 export const external_account_field_schema = z.object({
     subtype: z.string(),
     url_pattern: z.optional(z.string()),
@@ -460,10 +458,9 @@ function read_external_account_field_data(
 export type FieldData = SelectFieldData | ExternalAccountFieldData;
 
 export function read_field_data_from_form(
-   field_type_id: number,
+    field_type_id: number,
     $profile_field_form: JQuery,
-    _old_field_data: unknown,
-    _old_field_data: unknown,
+    old_field_data: unknown,
 ): FieldData | undefined {
     const field_types = realm.custom_profile_field_types;
 
