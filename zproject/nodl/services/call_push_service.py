@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import os
@@ -19,6 +20,41 @@ APNS_USE_SANDBOX = os.environ.get("APNS_USE_SANDBOX", "true").lower() == "true"
 # firebase-admin initializes from GOOGLE_APPLICATION_CREDENTIALS env var
 # or from explicit credentials. We initialize lazily on first use.
 _firebase_init_lock = threading.Lock()
+
+
+def _parse_firebase_json(raw: str) -> dict:
+    """Parse Firebase credentials JSON, handling Railway env var quirks.
+
+    Railway may mangle the JSON in several ways:
+    - Convert \\n escapes to real newlines (breaks json.loads)
+    - Add surrounding quotes
+
+    As a bulletproof fallback, also supports base64-encoded JSON.
+    """
+    # Strip surrounding quotes if Railway wrapped the value
+    stripped = raw.strip().strip('"').strip("'")
+
+    # Try 1: Standard JSON parse
+    try:
+        return json.loads(stripped)
+    except (json.JSONDecodeError, ValueError):
+        pass
+
+    # Try 2: Base64-encoded JSON
+    try:
+        decoded = base64.b64decode(stripped).decode("utf-8")
+        return json.loads(decoded)
+    except Exception:
+        pass
+
+    # Try 3: Re-escape newlines that Railway converted to real ones
+    try:
+        fixed = stripped.replace("\r", "").replace("\n", "\\n")
+        return json.loads(fixed)
+    except (json.JSONDecodeError, ValueError):
+        pass
+
+    raise ValueError("Cannot parse FIREBASE_CREDENTIALS_JSON — tried raw, base64, and newline-fix")
 
 
 def _ensure_firebase_initialized() -> bool:
@@ -51,16 +87,11 @@ def _ensure_firebase_initialized() -> bool:
                 return False
 
         # Option 2: Inline JSON via FIREBASE_CREDENTIALS_JSON (for Railway/containers)
+        # Supports raw JSON, newline-mangled JSON, or base64-encoded JSON.
         firebase_json = os.environ.get("FIREBASE_CREDENTIALS_JSON", "")
         if firebase_json:
             try:
-                # Railway may convert \n escapes in the private_key into real
-                # newlines, which breaks json.loads(). Fix by re-escaping them.
-                try:
-                    cred_dict = json.loads(firebase_json)
-                except json.JSONDecodeError:
-                    fixed = firebase_json.replace("\n", "\\n").replace("\r", "")
-                    cred_dict = json.loads(fixed)
+                cred_dict = _parse_firebase_json(firebase_json)
                 cred = credentials.Certificate(cred_dict)
                 firebase_admin.initialize_app(cred)
                 logger.info("Firebase initialized from FIREBASE_CREDENTIALS_JSON")

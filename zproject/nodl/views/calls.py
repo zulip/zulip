@@ -19,6 +19,7 @@ from zproject.nodl.serializers.call_serializers import (
 )
 from zproject.nodl.services.call_push_service import (
     _ensure_firebase_initialized,
+    _parse_firebase_json,
     dispatch_call_push_async,
 )
 from zproject.nodl.views.webhooks_livekit import insert_call_event_message
@@ -47,10 +48,10 @@ def calls_health(request: HttpRequest) -> HttpResponse:
         firebase_json = os.environ.get("FIREBASE_CREDENTIALS_JSON", "")
         if firebase_json:
             try:
-                parsed = json.loads(firebase_json)
+                parsed = _parse_firebase_json(firebase_json)
                 error_detail = f"JSON parsed OK, keys: {list(parsed.keys())}"
-            except json.JSONDecodeError as e:
-                error_detail = f"JSON parse error: {e}"
+            except Exception as e:
+                error_detail = f"Parse error: {e}"
 
     has_creds_file = bool(os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", ""))
     has_creds_json = bool(os.environ.get("FIREBASE_CREDENTIALS_JSON", ""))
