@@ -550,29 +550,29 @@ test("sort_recipients", () => {
         "b_user_3@zulip.net",
         "b_bot@example.com",
         "a_bot@zulip.com",
-        "a_user@zulip.org",
         "zman@test.net",
+        "a_user@zulip.org",
     ]);
 
     // Test match by email (To get coverage for ok_users and ok_bots)
     assert.deepEqual(get_typeahead_result("b_user_1@zulip.net", ""), [
         "b_user_1@zulip.net",
-        "a_user@zulip.org",
+        "zman@test.net",
         "b_user_2@zulip.net",
         "b_user_3@zulip.net",
-        "zman@test.net",
-        "a_bot@zulip.com",
+        "a_user@zulip.org",
         "b_bot@example.com",
+        "a_bot@zulip.com",
     ]);
 
     // Typeahead for direct message [query, "", ""]
     assert.deepEqual(get_typeahead_result("a", "", ""), [
         "a_user@zulip.org",
         "a_bot@zulip.com",
+        "zman@test.net",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
         "b_user_3@zulip.net",
-        "zman@test.net",
         "b_bot@example.com",
     ]);
 
@@ -699,26 +699,31 @@ test("sort_recipients pm counts", () => {
 
     assert.deepEqual(get_typeahead_result("b", linux_sub.stream_id, "Linux topic"), [
         "b_user_3@zulip.net",
-        "b_user_2@zulip.net",
         "b_user_1@zulip.net",
+        "b_user_2@zulip.net",
         "b_bot@example.com",
         "a_bot@zulip.com",
         "a_user@zulip.org",
         "zman@test.net",
     ]);
 
-    /* istanbul ignore next */
-    function compare() {
-        throw new Error("We do not expect to need a tiebreaker here.");
-    }
-
     // get some line coverage
     assert.equal(
-        th.compare_people_for_relevance(b_user_1_item, b_user_3_item, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(
+            b_user_1_item,
+            b_user_3_item,
+            linux_sub.stream_id,
+            "Linux topic",
+        ),
         1,
     );
     assert.equal(
-        th.compare_people_for_relevance(b_user_3_item, b_user_1_item, compare, linux_sub.stream_id),
+        th.compare_people_for_relevance(
+            b_user_3_item,
+            b_user_1_item,
+            linux_sub.stream_id,
+            "Linux topic",
+        ),
         -1,
     );
 });
@@ -740,8 +745,8 @@ test("sort_recipients dup bots", () => {
         "b_bot@example.com",
         "a_bot@zulip.com",
         "a_bot@zulip.com",
-        "a_user@zulip.org",
         "zman@test.net",
+        "a_user@zulip.org",
     ];
     assert.deepEqual(recipients_email, expected);
 });
@@ -774,7 +779,7 @@ test("sort_recipients dup alls direct message", () => {
         query: "a",
     });
 
-    const expected = [a_user_item, all_obj_item];
+    const expected = [all_obj_item, a_user_item];
     assertSameEmails(recipients, expected);
 });
 
@@ -892,11 +897,11 @@ test("sort broadcast mentions for direct message type", () => {
 
     assert.deepEqual(
         results2.map((r) => r.user.email),
-        [a_user.email, zman.email, "all", "everyone"],
+        ["all", "everyone", a_user.email, zman.email],
     );
 });
 
-test("test compare directly for stream message type", () => {
+test("test compare directly for broadcast vs user", () => {
     // This is important for ensuring test coverage.
     // We don't technically need it now, but our test
     // coverage is subject to the whims of how JS sorts.
@@ -905,18 +910,9 @@ test("test compare directly for stream message type", () => {
     const all_obj_item = broadcast_item(all_obj);
 
     assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
+    // Without stream context, broadcasts come before non-partner users.
     assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), -1);
     assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), 1);
-});
-
-test("test compare directly for direct message", () => {
-    compose_state.set_message_type("private");
-    const all_obj = ct.broadcast_mentions()[0];
-    const all_obj_item = broadcast_item(all_obj);
-
-    assert.equal(th.compare_people_for_relevance(all_obj_item, all_obj_item), 0);
-    assert.equal(th.compare_people_for_relevance(all_obj_item, zman_item), 1);
-    assert.equal(th.compare_people_for_relevance(zman_item, all_obj_item), -1);
 });
 
 test("render_person when emails hidden", ({mock_template, override}) => {
@@ -1124,8 +1120,8 @@ test("compare_language", () => {
 
 // TODO: This is incomplete for testing this function, and
 // should be filled out more. This case was added for codecov.
-test("compare_by_pms", () => {
-    assert.equal(th.compare_by_pms(a_user, a_user), 0);
+test("compare_users_for_pms", () => {
+    assert.equal(th.compare_users_for_pms(a_user, a_user), 0);
 });
 
 test("sort_group_setting_options", ({override_rewire}) => {

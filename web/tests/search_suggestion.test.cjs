@@ -165,7 +165,9 @@ test("get_is_suggestions_for_spectator", () => {
 test("dm_suggestions", ({override}) => {
     let query = "is:dm";
     let suggestions = get_suggestions(query);
-    // Sorted alphabetically by full_name (compare_by_pms tiebreaker).
+    // Empty query: compare_users_for_pms sorts alphabetically
+    // by full_name (no recipient count, no partners, no name-length
+    // tiebreaker without a query).
     let expected = [
         "is:dm",
         `dm:${alice.user_id}`, // Alice Ignore
@@ -966,7 +968,8 @@ test("people_suggestions", ({override}) => {
 
     let suggestions = get_suggestions(query);
 
-    // Both match "te"; alphabetical tiebreaker: Bob Térry < Ted Smith.
+    // Both match "te"; compare_users_for_pms called without query
+    // so no name-length tiebreaker — alphabetical by full_name.
     let expected = [
         "te",
         `dm:${bob.user_id}`, // Bob Térry
@@ -987,7 +990,7 @@ test("people_suggestions", ({override}) => {
     people.add_active_user(accessible_user, "server_events");
     suggestions = get_suggestions(query);
 
-    // Same order with Test unknown user added last (alphabetical).
+    // Same order with Test unknown user added (alphabetical).
     expected = [
         "te",
         `dm:${bob.user_id}`, // Bob Térry
