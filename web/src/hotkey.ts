@@ -353,6 +353,26 @@ export function get_keydown_hotkey(e: JQuery.KeyDownEvent): Hotkey | Hotkey[] | 
         }
     }
 
+    const is_message_or_gear_menu_open =
+        popover_menus.is_message_actions_popover_displayed() ||
+        popover_menus.is_gear_menu_popover_displayed();
+    if (
+        common.has_mac_keyboard() &&
+        e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        !e.shiftKey &&
+        is_message_or_gear_menu_open
+    ) {
+        const lowercase_key = key.toLowerCase();
+        if (lowercase_key === "n") {
+            return KEYDOWN_MAPPINGS.ArrowDown;
+        }
+        if (lowercase_key === "p") {
+            return KEYDOWN_MAPPINGS.ArrowUp;
+        }
+    }
+
     if (common.has_mac_keyboard() && e.ctrlKey && key !== "[") {
         // On macOS, Cmd is used instead of Ctrl. Except 'Ctrl + ['.
         return undefined;

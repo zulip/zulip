@@ -83,6 +83,16 @@ const popovers = mock_esm("../src/user_card_popover", {
         is_open: () => false,
     },
 });
+const popover_menus = mock_esm("../src/popover_menus", {
+    get_visible_instance: () => undefined,
+    sidebar_menu_instance_handle_keyboard() {},
+    is_color_picker_popover_displayed: () => false,
+    is_stream_actions_popover_displayed: () => false,
+    is_message_actions_popover_displayed: () => false,
+    is_personal_menu_popover_displayed: () => false,
+    is_gear_menu_popover_displayed: () => false,
+    is_help_menu_popover_displayed: () => false,
+});
 const reactions = mock_esm("../src/reactions");
 const read_receipts = mock_esm("../src/read_receipts");
 const search = mock_esm("../src/search");
@@ -238,6 +248,21 @@ run_test("mappings", () => {
     assert.equal(map_down("s", false, true, false), undefined);
     assert.equal(map_down(".", false, false, true).name, "narrow_to_compose_target");
     assert.equal(map_down(".", false, true, false), undefined);
+    assert.equal(map_down("n", false, true, false), undefined);
+    assert.equal(map_down("p", false, true, false), undefined);
+
+    with_overrides(({override}) => {
+        override(popover_menus, "is_message_actions_popover_displayed", () => true);
+        assert.equal(map_down("n", false, true, false).name, "down_arrow");
+        assert.equal(map_down("p", false, true, false).name, "up_arrow");
+    });
+
+    with_overrides(({override}) => {
+        override(popover_menus, "is_message_actions_popover_displayed", () => false);
+        override(popover_menus, "is_gear_menu_popover_displayed", () => true);
+        assert.equal(map_down("n", false, true, false).name, "down_arrow");
+        assert.equal(map_down("p", false, true, false).name, "up_arrow");
+    });
     // Reset platform
     navigator.platform = "";
 
@@ -311,6 +336,21 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("л", "KeyK", false, true, false), undefined);
     assert.equal(map_down("ы", "KeyS", false, false, true).name, "star_message");
     assert.equal(map_down("ы", "KeyS", false, true, false), undefined);
+    assert.equal(map_down("т", "KeyN", false, true, false), undefined);
+    assert.equal(map_down("з", "KeyP", false, true, false), undefined);
+
+    with_overrides(({override}) => {
+        override(popover_menus, "is_message_actions_popover_displayed", () => true);
+        assert.equal(map_down("т", "KeyN", false, true, false).name, "down_arrow");
+        assert.equal(map_down("з", "KeyP", false, true, false).name, "up_arrow");
+    });
+
+    with_overrides(({override}) => {
+        override(popover_menus, "is_message_actions_popover_displayed", () => false);
+        override(popover_menus, "is_gear_menu_popover_displayed", () => true);
+        assert.equal(map_down("т", "KeyN", false, true, false).name, "down_arrow");
+        assert.equal(map_down("з", "KeyP", false, true, false).name, "up_arrow");
+    });
     // Reset platform
     navigator.platform = "";
 

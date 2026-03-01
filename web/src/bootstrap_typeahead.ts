@@ -164,6 +164,7 @@ import {insertTextIntoField} from "text-field-edit";
 import getCaretCoordinates from "textarea-caret";
 import * as tippy from "tippy.js";
 
+import * as common from "./common.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {get_string_diff, the} from "./util.ts";
@@ -256,6 +257,7 @@ export class Typeahead<ItemType extends string | object> {
     stopAdvance: boolean;
     advanceKeys: string[];
     non_tippy_parent_element: string | undefined;
+    enableMacCtrlNPNavigation: boolean;
     values: WeakMap<HTMLElement, ItemType>;
     instance: tippy.Instance | undefined;
     requireHighlight: boolean;
@@ -310,6 +312,7 @@ export class Typeahead<ItemType extends string | object> {
         this.tabIsEnter = options.tabIsEnter ?? true;
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
         this.non_tippy_parent_element = options.non_tippy_parent_element;
+        this.enableMacCtrlNPNavigation = options.enableMacCtrlNPNavigation ?? false;
         this.values = new WeakMap();
         this.requireHighlight = options.requireHighlight ?? true;
         this.shouldHighlightFirstResult = options.shouldHighlightFirstResult ?? (() => true);
@@ -725,7 +728,9 @@ export class Typeahead<ItemType extends string | object> {
             return;
         }
 
-        switch (e.key) {
+        const key = this.normalize_typeahead_nav_key(e);
+
+        switch (key) {
             case "Tab":
                 if (!this.tabIsEnter) {
                     return;
@@ -769,8 +774,9 @@ export class Typeahead<ItemType extends string | object> {
             e.preventDefault();
             this.select(e);
         }
+        const key = this.normalize_typeahead_nav_key(e);
         this.suppressKeyPressRepeat = !["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(
-            e.key,
+            key,
         );
         this.move(e);
     }
@@ -790,7 +796,9 @@ export class Typeahead<ItemType extends string | object> {
         // it did modify the query. For example, `Command + delete` on Mac
         // doesn't trigger a keyup event but when `Command` is released, it
         // triggers a keyup event which correctly updates the list.
-        switch (e.key) {
+        const key = this.normalize_typeahead_nav_key(e);
+
+        switch (key) {
             case "ArrowDown":
             case "ArrowUp":
                 break;
@@ -946,6 +954,28 @@ export class Typeahead<ItemType extends string | object> {
         // input position by asking popper to recompute your tooltip's position.
         void this.instance?.popperInstance?.update();
     }
+
+    private normalize_typeahead_nav_key(
+        e: JQuery.KeyDownEvent | JQuery.KeyPressEvent | JQuery.KeyUpEvent,
+    ): string {
+        if (!this.enableMacCtrlNPNavigation) {
+            return e.key;
+        }
+
+        // Support Ctrl+N/Ctrl+P as up/down navigation on macOS.
+        if (common.has_mac_keyboard() && e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+            const key = e.key.toLowerCase();
+
+            if (key === "n") {
+                return "ArrowDown";
+            }
+            if (key === "p") {
+                return "ArrowUp";
+            }
+        }
+
+        return e.key;
+    }
 }
 
 /* TYPEAHEAD PLUGIN DEFINITION
@@ -972,6 +1002,7 @@ type TypeaheadOptions<ItemType> = {
     sorter: (items: ItemType[], query: string) => ItemType[];
     stopAdvance?: boolean;
     tabIsEnter?: boolean;
+    enableMacCtrlNPNavigation?: boolean;
     select_on_escape_condition?: () => boolean;
     trigger_selection?: (event: JQuery.KeyDownEvent) => boolean;
     updater?: (
