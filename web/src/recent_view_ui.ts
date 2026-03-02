@@ -122,6 +122,11 @@ let is_waiting_for_revive_current_focus = true;
 let last_scroll_offset: number | undefined;
 let hide_other_views_callback: (() => void) | undefined;
 
+// Scroll position before user started searching, so we can
+// restore it when the search is cleared.
+let pre_search_scroll_position = 0;
+let previous_search_term = "";
+
 export function set_hide_other_views(callback: () => void): void {
     hide_other_views_callback = callback;
 }
@@ -2146,10 +2151,20 @@ export function initialize({
         "#recent_view_search",
         _.debounce(() => {
             const search_term = $<HTMLInputElement>("#recent_view_search").val() ?? "";
+            const is_previous_search_term_empty = previous_search_term === "";
+            previous_search_term = search_term;
+
+            if (search_term !== "" && is_previous_search_term_empty) {
+                // Store original scroll position to be restored later,
+                // before the table is re-rendered.
+                pre_search_scroll_position = window.scrollY;
+            }
 
             if (search_term === "") {
                 row_focus = 0;
                 update_filters_view();
+                // Restore previous scroll position when search is cleared.
+                window.scrollTo(0, pre_search_scroll_position);
             } else {
                 // Reset focus to first row on new search.
                 row_focus = 0;
