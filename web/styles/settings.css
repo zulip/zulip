@@ -408,6 +408,13 @@ select.settings_select {
 #personal-bot-list .user-status-settings {
     display: flex;
     justify-content: flex-end;
+    /* Matches the height of one row of action icon-buttons, so rows keep a consistent height even when no buttons are shown. */
+    min-height: 2.1875em;
+}
+
+.bot-list-table.hide-actions-column .actions-header,
+.bot-list-table.hide-actions-column td.actions {
+    display: none;
 }
 
 .config-download-text {
