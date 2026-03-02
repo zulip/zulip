@@ -10807,7 +10807,11 @@ paths:
         Administrator endpoint for changing the [status](/help/status-and-availability) of
         another user.
 
-        **Changes**: New in Zulip 11.0 (feature level 407).
+        **Changes**: Prior to Zulip 12.0 (feature level 473), only
+        bots could not access this API endpoint, regardless of the
+        role of the bot.
+
+        New in Zulip 11.0 (feature level 407).
       x-requires-administrator: true
       requestBody:
         required: false

@@ -4,6 +4,7 @@ import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.users import do_change_user_role
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_status import (
     UserInfoDict,
@@ -546,3 +547,30 @@ class UserStatusTest(ZulipTestCase):
                 reaction_type=UserStatus.UNICODE_EMOJI,
             ),
         )
+
+        # Bot with admin privileges can set status for another user.
+        bot = self.create_test_bot("iago-bot", iago)
+        do_change_user_role(
+            bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=iago, notify=False
+        )
+
+        update_status_url = f"/api/v1/users/{hamlet.id}/status"
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.api_post(bot, update_status_url, {"status_text": "status by bot"})
+        self.assert_json_success(result)
+        self.assertEqual(
+            events[0]["event"],
+            dict(type="user_status", user_id=hamlet.id, status_text="status by bot"),
+        )
+        self.assertEqual(
+            user_status_info(hamlet)["status_text"],
+            "status by bot",
+        )
+
+        # Bot with non-admin privileges can't set status for another user.
+        do_change_user_role(bot, UserProfile.ROLE_MEMBER, acting_user=iago, notify=False)
+
+        with self.capture_send_event_calls(expected_num_events=0) as events:
+            result = self.api_post(bot, update_status_url, {"status_text": "new status by bot"})
+        self.assert_json_error(result, "Insufficient permission")

@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 473**
+
+- [`POST /users/{user_id}/status`](/api/update-status-for-user): Bots
+  with administrator permissions can now use this endpoint.
+
 **Feature level 472**
 
 * [`GET /attachments`](/api/get-attachments), [`GET /events`](/api/get-events):
