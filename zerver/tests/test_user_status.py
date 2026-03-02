@@ -522,36 +522,6 @@ class UserStatusTest(ZulipTestCase):
         result = self.client_post(update_status_url, dict(status_text=long_text))
         self.assert_json_error(result, "status_text is too long (limit: 60 characters)")
 
-        # Set "away" with a normal length message.
-        self.update_status_and_assert_event(
-            payload=dict(
-                away=orjson.dumps(True).decode(),
-                status_text="on vacation",
-            ),
-            url=update_status_url,
-            expected_event=dict(
-                type="user_status", user_id=hamlet.id, away=True, status_text="on vacation"
-            ),
-            num_events=2,
-        )
-        self.assertEqual(
-            user_status_info(hamlet),
-            dict(away=True, status_text="on vacation"),
-        )
-
-        result = self.client_get(f"/json/users/{hamlet.id}/status")
-        result_dict = self.assert_json_success(result)
-        self.assertEqual(
-            result_dict["status"],
-            dict(away=True, status_text="on vacation"),
-        )
-
-        # Setting away is a deprecated way of accessing a user's presence_enabled
-        # setting. Can be removed when clients migrate "away" (also referred to as
-        # "unavailable") feature to directly use the presence_enabled setting.
-        user = UserProfile.objects.get(id=hamlet.id)
-        self.assertEqual(user.presence_enabled, False)
-
         # Server should fill emoji_code and reaction_type by emoji_name.
         self.update_status_and_assert_event(
             payload=dict(
@@ -570,7 +540,7 @@ class UserStatusTest(ZulipTestCase):
             user_status_info(hamlet),
             dict(
                 away=True,
-                status_text="on vacation",
+                status_text="at the beach",
                 emoji_name="car",
                 emoji_code="1f697",
                 reaction_type=UserStatus.UNICODE_EMOJI,
