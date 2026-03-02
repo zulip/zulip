@@ -1046,6 +1046,13 @@ input[type="checkbox"] {
     }
 }
 
+.admin_linkifiers_table {
+    th:first-child,
+    td:first-child {
+        white-space: nowrap;
+    }
+}
+
 #organization-permissions {
     .dropdown-widget-button {
         color: var(--color-text-default);

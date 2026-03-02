@@ -27,6 +27,16 @@ const meta = {
     loaded: false,
 };
 
+function maybe_unwrap_single_paragraph(html: string): string {
+    const $element = $(html.trim());
+
+    if ($element.length === 1 && $element.is("p")) {
+        return $element.html();
+    }
+
+    return html;
+}
+
 export function reset(): void {
     meta.loaded = false;
 }
@@ -301,7 +311,7 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
         get_item: ListWidget.default_get_item,
         modifier_html(linkifier, filter_value) {
             const rendered_example_input_html = linkifier.example_input
-                ? markdown.parse_non_message(linkifier.example_input)
+                ? maybe_unwrap_single_paragraph(markdown.parse_non_message(linkifier.example_input))
                 : "";
 
             return render_admin_linkifier_list({
