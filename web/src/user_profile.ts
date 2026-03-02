@@ -33,6 +33,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, DropdownWidgetOptions} from "./dropdown_widget.ts";
 import {get_current_hash_category} from "./hash_parser.ts";
+import * as hash_parser from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {InputPillContainer} from "./input_pill.ts";
@@ -41,6 +42,7 @@ import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as modals from "./modals.ts";
+import * as overlays from "./overlays.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
@@ -102,6 +104,13 @@ export function show_button_spinner($button: JQuery): void {
     $button.prop("disabled", true);
     loading.show_spinner($button, $spinner);
 }
+
+const USER_PROFILE_TAB_URL_MAP: Record<string, string> = {
+    "profile-tab": "profile",
+    "user-profile-streams-tab": "channels",
+    "user-profile-groups-tab": "groups",
+    "manage-profile-tab": "manage",
+};
 
 export function hide_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
@@ -566,18 +575,19 @@ export function hide_user_profile(): void {
 }
 
 function on_user_profile_hide(): void {
-    const base = get_current_hash_category();
-    // After closing the user profile, if the hash consists of `#user`
-    // it means that it acts as an overlay rather than a modal (when
-    // no other overlay is in the background). Hence, we also need to
-    // update the hash when we close it.
-    if (base === "user") {
+    if (get_current_hash_category() === "user") {
         browser_history.exit_overlay();
     }
 }
 
 function show_manage_user_tab(target: string): void {
     toggler.goto(target);
+}
+
+export function update_user_profile_tab(tab_key: string): void {
+    if (toggler) {
+        toggler.goto(tab_key);
+    }
 }
 
 function initialize_user_type_fields(user: User): void {
@@ -588,6 +598,30 @@ function initialize_user_type_fields(user: User): void {
     } else {
         initialize_bot_owner("#user-profile-modal #content", user.user_id);
     }
+}
+
+function update_tab_in_url(key: string): void {
+    if (hash_parser.get_current_hash_category() !== "user") {
+        return;
+    }
+    const raw_section = hash_parser.get_current_hash_section();
+    if (!raw_section) {
+        return;
+    }
+
+    const [user_id_str] = raw_section.split("/");
+
+    if (!user_id_str) {
+        return;
+    }
+
+    const user_id = Number.parseInt(user_id_str, 10);
+    const tab_segment = USER_PROFILE_TAB_URL_MAP[key] ?? "profile";
+    const new_hash = `#user/${user_id}/${tab_segment}`;
+    if (window.location.hash === new_hash) {
+        return;
+    }
+    browser_history.update(new_hash);
 }
 
 export function show_user_profile_access_error_modal(): void {
@@ -747,16 +781,36 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
+    const user_profile_hash = `#user/${user.user_id}/${USER_PROFILE_TAB_URL_MAP[default_tab_key] ?? "profile"}`;
+
+    browser_history.set_hash_before_overlay(
+        hash_parser.get_current_hash_category() === "user"
+            ? browser_history.get_home_view_hash()
+            : window.location.hash,
+    );
     modals.open("user-profile-modal", {autoremove: true, on_hide: on_user_profile_hide});
+    if (!overlays.any_active()) {
+        if (hash_parser.get_current_hash_category() === "user") {
+            window.history.replaceState(null, "", user_profile_hash);
+        } else {
+            browser_history.update(user_profile_hash);
+        }
+    }
     $(".tabcontent").hide();
     $("#user-profile-modal .dialog_submit_button").prop("disabled", true);
 
     let default_tab = 0;
 
-    if (default_tab_key === "user-profile-streams-tab") {
-        default_tab = 1;
-    } else if (default_tab_key === "manage-profile-tab") {
-        default_tab = 3;
+    switch (default_tab_key) {
+        case "user-profile-streams-tab":
+            default_tab = 1;
+            break;
+        case "user-profile-groups-tab":
+            default_tab = 2;
+            break;
+        case "manage-profile-tab":
+            default_tab = 3;
+            break;
     }
 
     let has_initialized_user_type_fields = false;
@@ -775,6 +829,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
             $("#user-profile-modal .manage-profile-tab-footer").removeClass(
                 "manage-profile-tab-active",
             );
+            update_tab_in_url(key);
             switch (key) {
                 case "profile-tab":
                     if (!has_initialized_user_type_fields) {
@@ -1677,8 +1732,14 @@ export function initialize(): void {
     $("body").on(
         "click",
         "#user-profile-modal .user-profile-channel-row, .user-profile-group-row",
-        () => {
+        (e) => {
+            e.preventDefault();
+            const href =
+                $(e.currentTarget).find("a").attr("href") ?? $(e.currentTarget).attr("href");
             hide_user_profile();
+            if (href) {
+                browser_history.go_to_location(href);
+            }
         },
     );
 
