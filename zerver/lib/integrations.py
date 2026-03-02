@@ -747,6 +747,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "jira",
         ["project-management"],
         [WebhookScreenshotConfig("created_v1.json")],
+        url_options=[
+            WebhookUrlOption(name="email", label="Your Jira email", validator=check_string),
+            WebhookUrlOption(
+                name="jira_api_token", label="Your Jira API token", validator=check_string
+            ),
+        ],
     ),
     IncomingWebhookIntegration(
         "jotform", ["productivity"], [WebhookScreenshotConfig("screenshot_response.multipart")]
