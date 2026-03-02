@@ -9,6 +9,7 @@ from django.test import override_settings
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.actions.bots import do_change_bot_owner, do_change_default_sending_stream
+from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
@@ -16,7 +17,13 @@ from zerver.actions.realm_settings import (
 )
 from zerver.actions.streams import do_change_stream_permission
 from zerver.actions.user_groups import check_add_user_group
-from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
+from zerver.actions.users import (
+    do_change_can_create_users,
+    do_change_user_role,
+    do_deactivate_user,
+    get_service_dicts_for_bot,
+    get_service_dicts_for_bots,
+)
 from zerver.lib.bot_config import get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, IncomingWebhookIntegration
@@ -2355,6 +2362,25 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # Ensure bot is not created
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")
+
+    def test_service_dicts_for_incoming_webhook_bot_without_integration(self) -> None:
+        realm = get_realm("zulip")
+        bot = do_create_user(
+            email="legacy-incoming-bot@zulip.com",
+            password=None,
+            realm=realm,
+            full_name="Legacy Incoming Bot",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            bot_owner=self.example_user("hamlet"),
+            acting_user=None,
+        )
+
+        expected_service_dicts = [{"integration_name": ""}]
+        self.assertEqual(get_service_dicts_for_bot(bot.id), expected_service_dicts)
+
+        bot_dicts = [{"id": bot.id, "bot_type": bot.bot_type}]
+        service_dicts_by_uid = get_service_dicts_for_bots(bot_dicts, realm)
+        self.assertEqual(service_dicts_by_uid[bot.id], expected_service_dicts)
 
     def test_get_bot_api_key(self) -> None:
         self.login("hamlet")
