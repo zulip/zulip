@@ -414,6 +414,10 @@ class BotServicesEmbedded(BaseModel):
     config_data: dict[str, str]
 
 
+class BotServicesIncoming(BaseModel):
+    integration_name: str
+
+
 class Bot(BaseModel):
     user_id: int
     api_key: str
@@ -426,7 +430,7 @@ class Bot(BaseModel):
     full_name: str
     is_active: bool
     owner_id: int
-    services: list[BotServicesOutgoing | BotServicesEmbedded]
+    services: list[BotServicesOutgoing | BotServicesEmbedded | BotServicesIncoming]
 
 
 class EventRealmBotAdd(BaseEvent):
@@ -459,7 +463,7 @@ class BotTypeForUpdate(BotTypeForUpdateCore):
     full_name: str | None = None
     is_active: bool | None = None
     owner_id: int | None = None
-    services: list[BotServicesOutgoing | BotServicesEmbedded] | None = None
+    services: list[BotServicesOutgoing | BotServicesEmbedded | BotServicesIncoming] | None = None
 
 
 class EventRealmBotUpdate(BaseEvent):

@@ -1124,7 +1124,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                         );
                         return;
                     }
-                    integration_url_modal.show_generate_integration_url_modal(api_key);
+                    integration_url_modal.show_generate_integration_url_modal(api_key, bot.user_id);
                 })();
             },
         );
