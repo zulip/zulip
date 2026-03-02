@@ -27,13 +27,13 @@ run_test("activity.initialize", ({override}) => {
                 set_new_user_input(true);
             });
 
-            $(window).on("focus", mark_client_active);
-            $(window).idle({
-                idle: DEFAULT_IDLE_TIMEOUT_MS,
-                onIdle: mark_client_idle,
-                onActive: mark_client_active,
-                keepTracking: true,
-            });
+            $(window).on(
+                "focus keydown mousedown mousemove touchmove touchstart wheel",
+                mark_client_active,
+            );
+            if (client_is_active) {
+                mark_client_idle_later();
+            }
         }
     */
     const $document_stub = $("document-stub");
@@ -45,17 +45,8 @@ run_test("activity.initialize", ({override}) => {
     };
 
     $window_stub.on = (event, callback) => {
-        assert.equal(event, "focus");
+        assert.equal(event, "focus keydown mousedown mousemove touchmove touchstart wheel");
         assert.equal(callback, activity.mark_client_active);
-    };
-
-    $window_stub.idle = (info) => {
-        assert.deepEqual(info, {
-            idle: 300000,
-            keepTracking: true,
-            onActive: activity.mark_client_active,
-            onIdle: activity.mark_client_idle,
-        });
     };
 
     override(window, "to_$", () => $window_stub);
