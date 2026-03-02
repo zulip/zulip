@@ -18,22 +18,39 @@ party issue trackers, like GitHub, Salesforce, Zendesk, and others.
 For instance, you can add a linkifier that automatically turns `#2468`
 into a link to `https://github.com/zulip/zulip/issues/2468`.
 
-If the pattern appears in a topic, Zulip adds an
-**Open** (<ExternalLinkIcon />) button
-to the right of the topic in the message recipient bar that links to
-the appropriate URL.
+You can configure linkifiers to work in reverse as well: when you paste a URL
+that matches the linkifier into the compose box, Zulip will automatically
+convert it to linked text (e.g., `https://github.com/zulip/zulip/issues/2468`
+becomes `#2468`).
+
+If a linkifier pattern (e.g., `#2468`) appears in the name of a topic, Zulip adds
+an **Open** (<ExternalLinkIcon />) button to the right of the topic in the
+message recipient bar that links to the appropriate URL.
 
 If you have any trouble creating the linkifiers you want, please [contact Zulip
 support](/help/contact-support) with details on what you're trying to do.
 
 ## Add a custom linkifier
 
+All linkifiers automatically turn text matching the specified pattern into
+links. You can also configure pasted links matching the **URL template** to
+automatically convert to linked text.
+
 <FlattenedSteps>
   <NavigationSteps target="settings/linkifier-settings" />
 
-  1. Under **Add a new linkifier**, enter a **Pattern** and
-     **URL template**.
   1. Click **Add linkifier**.
+  1. Enter the **Pattern** of the text you want to linkify, and **Example text
+     to linkify**, which will help verify your pattern.
+  1. Enter the **URL template** for where text matching the pattern should link.
+  1. *(optional)* To enable automatic conversion of pasted URLs to linked text,
+     fill in **Auto-convert pasted URLs matching the template to**.
+  1. Click **Add linkifier**.
+
+  <ZulipTip>
+    Use the same variables in the **Pattern**, **URL template**, and
+    **Auto-convert pasted URLs matching the template to** fields.
+  </ZulipTip>
 </FlattenedSteps>
 
 ## Edit a custom linkifier
@@ -51,7 +68,8 @@ support](/help/contact-support) with details on what you're trying to do.
 <FlattenedSteps>
   <NavigationSteps target="settings/linkifier-settings" />
 
-  1. In the **Actions** column, click the **delete** (<TrashIcon />) icon for the linkifier you want to delete.
+  1. In the **Actions** column, click the **delete** (<TrashIcon />)
+     icon for the linkifier you want to delete.
   1. Approve by clicking **Confirm**.
 </FlattenedSteps>
 
@@ -59,13 +77,14 @@ support](/help/contact-support) with details on what you're trying to do.
 
 Linkifiers are processed in order, and will not apply to text that
 is already linkified. You can therefore choose which linkifiers to prioritize
-when more than one linkifier applies. See the
+when more than one linkifier applies. The same priority order applies for
+converting URLs to shortened links. See the
 [overlapping patterns section](#overlapping-patterns) for examples.
 
 <FlattenedSteps>
   <NavigationSteps target="settings/linkifier-settings" />
 
-  1. In the **Pattern** column under **Linkifiers**, click and drag the vertical
+  1. In the **Pattern** column, click and drag the vertical
      dots to reorder the list of linkifiers.
 </FlattenedSteps>
 
@@ -82,7 +101,8 @@ Salesforce, Zendesk, and others.
 
 * Pattern: `#(?P<id>[0-9]+)`
 * URL template: `https://github.com/zulip/zulip/issues/{id}`
-* Original text: `#2468`
+* Example text to linkify: `#2468`
+* Auto-convert pasted URLs matching the template to: `#{id}`
 * Automatically links to: `https://github.com/zulip/zulip/issues/2468`
 
 ### Link to issues or tickets in multiple projects or apps
@@ -96,7 +116,8 @@ variants. For example, the Zulip development community
 
 * Pattern: `#F(?P<id>[0-9]+)`
 * URL template: `https://github.com/zulip/zulip-flutter/issues/{id}`
-* Original text: `#F245`
+* Example text to linkify: `#F245`
+* Auto-convert pasted URLs matching the template to: `#F{id}`
 * Automatically links to: `https://github.com/zulip/zulip-flutter/issues/245`
 
 ### Link to issues or tickets in multiple repositories
@@ -106,7 +127,8 @@ linkfier pattern turns `org/repo#ID` into an issue or pull request link.
 
 * Pattern: `(?P<org>[a-zA-Z0-9_-]+)/(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)`
 * URL template: `https://github.com/{org}/{repo}/issues/{id}`
-* Original text: `zulip/zulip#2468`
+* Example text to linkify: `zulip/zulip#2468`
+* Auto-convert pasted URLs matching the template to: `{org}/{repo}#{id}`
 * Automatically links to: `https://github.com/zulip/zulip/issues/2468`
 
 ### Link to a hexadecimal issue or ticket number
@@ -116,7 +138,8 @@ characters long, such as a Git commit ID.
 
 * Pattern: `(?P<id>[0-9a-f]{7,40})`
 * URL template: `https://github.com/zulip/zulip/commit/{id}`
-* Original text: `abdc123`
+* Example text to linkify: `abdc123`
+* Auto-convert pasted URLs matching the template to: `{id}`
 * Automatically links to: `https://github.com/zulip/zulip/commit/abcd123`
 
 ## Advanced linkifier patterns
@@ -150,7 +173,8 @@ site.
 
 * Pattern: `RTD/(?P<article>[a-zA-Z0-9_/.#-]+)`
 * URL template: `https://zulip.readthedocs.io/en/latest/{+article}`
-* Original text: `RTD/overview/changelog.html`
+* Example text to linkify: `RTD/overview/changelog.html`
+* Auto-convert pasted URLs matching the template to: `RTD/{article}`
 * Automatically links to: `https://zulip.readthedocs.io/en/latest/overview/changelog.html`
 
 <ZulipTip>
