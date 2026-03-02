@@ -874,7 +874,7 @@ function set_up_bot_handlers($container: JQuery): void {
             if (!api_key) {
                 return;
             }
-            integration_url_modal.show_generate_integration_url_modal(api_key);
+            integration_url_modal.show_generate_integration_url_modal(api_key, bot_id);
         })();
     });
 }
