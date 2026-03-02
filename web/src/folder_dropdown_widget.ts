@@ -102,12 +102,21 @@ export function update_tooltip_for_folder_filter(
         );
     }
 
-    tippy.default(util.the($(`#${reference_element_id}`)), {
-        animation: false,
-        hideOnClick: false,
-        placement: "bottom",
-        appendTo: () => document.body,
-        delay: LONG_HOVER_DELAY,
-        content,
-    });
+    const element = util.the($(`#${reference_element_id}`));
+
+    if (element) {
+        const tippyOptions: Partial<tippy.Props> = {
+            animation: false,
+            hideOnClick: false,
+            placement: "bottom",
+            delay: LONG_HOVER_DELAY,
+            content,
+        };
+
+        if (typeof document !== "undefined") {
+            tippyOptions.appendTo = document.body;
+        }
+
+        tippy.default(element, tippyOptions);
+    }
 }

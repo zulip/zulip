@@ -444,6 +444,76 @@ run_test("sort_but_pin_current_user_on_top with me", () => {
     assert.deepEqual(users, [my_user, debbie, maria, steven]);
 });
 
+run_test("matches_user_settings_role_with_waiting_period", ({override}) => {
+    const now = Date.now();
+
+    const new_member = {
+        user_id: 9301,
+        full_name: "New Member Test",
+        email: "newtest@example.com",
+        role: settings_config.user_role_values.member.code,
+        date_joined: new Date(now - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+
+    const full_member = {
+        user_id: 9302,
+        full_name: "Full Member Test",
+        email: "fulltest@example.com",
+        role: settings_config.user_role_values.member.code,
+        date_joined: new Date(now - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+
+    people.add_active_user(new_member);
+    people.add_active_user(full_member);
+
+    override(realm, "realm_waiting_period_threshold", 3);
+
+    assert.equal(
+        people.predicate_for_user_settings_filters(new_member, {text_search: "", role_code: 401}),
+        true,
+        "New member should match new member filter",
+    );
+    assert.equal(
+        people.predicate_for_user_settings_filters(full_member, {text_search: "", role_code: 401}),
+        false,
+        "Full member should not match new member filter",
+    );
+
+    assert.equal(
+        people.predicate_for_user_settings_filters(new_member, {text_search: "", role_code: 402}),
+        false,
+        "New member should not match full member filter",
+    );
+    assert.equal(
+        people.predicate_for_user_settings_filters(full_member, {text_search: "", role_code: 402}),
+        true,
+        "Full member should match full member filter",
+    );
+
+    assert.equal(
+        people.predicate_for_user_settings_filters(new_member, {text_search: "", role_code: 0}),
+        true,
+        "All roles filter should match new member",
+    );
+    assert.equal(
+        people.predicate_for_user_settings_filters(full_member, {text_search: "", role_code: 0}),
+        true,
+        "All roles filter should match full member",
+    );
+
+    override(realm, "realm_waiting_period_threshold", 0);
+    assert.equal(
+        people.predicate_for_user_settings_filters(new_member, {text_search: "", role_code: 401}),
+        false,
+        "With waiting period off, new member filter should not match",
+    );
+    assert.equal(
+        people.predicate_for_user_settings_filters(new_member, {text_search: "", role_code: 0}),
+        true,
+        "With waiting period off, all roles filter should match",
+    );
+});
+
 run_test("sort_but_pin_current_user_on_top without me", () => {
     initialize();
     people.add_active_user(maria);
@@ -693,6 +763,34 @@ run_test("user_type", () => {
     assert.equal(people.get_user_type(realm_owner.user_id), $t({defaultMessage: "Owner"}));
     assert.equal(people.get_user_type(moderator.user_id), $t({defaultMessage: "Moderator"}));
     assert.equal(people.get_user_type(bot_botson.user_id), $t({defaultMessage: "Moderator"}));
+
+    // With waiting period configured
+    const now = Date.now();
+    const new_member = {
+        user_id: 9001,
+        full_name: "New Member",
+        email: "newmember@example.com",
+        role: settings_config.user_role_values.member.code,
+        date_joined: new Date(now - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    const old_member = {
+        user_id: 9002,
+        full_name: "Old Member",
+        email: "oldmember@example.com",
+        role: settings_config.user_role_values.member.code,
+        date_joined: new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    people.add_active_user(new_member);
+    people.add_active_user(old_member);
+
+    realm.realm_waiting_period_threshold = 7;
+    assert.ok(people.check_member_is_new(9001));
+    assert.ok(!people.check_member_is_new(9002));
+    assert.equal(people.get_user_type(9001), $t({defaultMessage: "New member"}));
+    assert.equal(people.get_user_type(9002), $t({defaultMessage: "Full member"}));
+
+    realm.realm_waiting_period_threshold = 0;
+    assert.equal(people.get_user_type(9001), $t({defaultMessage: "Member"}));
 });
 
 run_test("updates", () => {
@@ -1472,6 +1570,62 @@ run_test("predicate_for_user_settings_filters", ({override}) => {
     assert.equal(
         people.predicate_for_user_settings_filters(fred_smith, {text_search: "de", role_code: 300}),
         false,
+    );
+
+    // Test with waiting period threshold
+    const now = Date.now();
+    const new_member_test = {
+        user_id: 9010,
+        full_name: "New Member Test",
+        email: "newmembertest@example.com",
+        role: Role.MEMBER,
+        date_joined: new Date(now - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    const full_member_test = {
+        user_id: 9011,
+        full_name: "Full Member Test",
+        email: "fullmembertest@example.com",
+        role: Role.MEMBER,
+        date_joined: new Date(now - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+    people.add_active_user(new_member_test);
+    people.add_active_user(full_member_test);
+    override(realm, "realm_waiting_period_threshold", 3);
+
+    assert.equal(
+        people.predicate_for_user_settings_filters(new_member_test, {
+            text_search: "",
+            role_code: 401,
+        }),
+        true,
+    );
+    assert.equal(
+        people.predicate_for_user_settings_filters(full_member_test, {
+            text_search: "",
+            role_code: 401,
+        }),
+        false,
+    );
+    assert.equal(
+        people.predicate_for_user_settings_filters(new_member_test, {
+            text_search: "",
+            role_code: 402,
+        }),
+        false,
+    );
+    assert.equal(
+        people.predicate_for_user_settings_filters(full_member_test, {
+            text_search: "",
+            role_code: 402,
+        }),
+        true,
+    );
+    assert.equal(
+        people.predicate_for_user_settings_filters(new_member_test, {
+            text_search: "",
+            role_code: 0,
+        }),
+        true,
     );
 });
 

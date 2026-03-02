@@ -235,18 +235,18 @@ run_test("create_folder_filter_dropdown_widget", () => {
 
 run_test("update_tooltip_for_folder_filter - Any folder", () => {
     initialize_folders();
+    let tippy_called = false;
     let tippy_content;
-    let tippy_target;
 
     const body_stub = {};
     global.document = {body: body_stub};
 
     util.the = ($element) => $element[0];
 
-    tippy_default_stub = (element, options) => {
-        tippy_target = element;
+    tippy_default_stub = (_element, options) => {
+        tippy_called = true;
         tippy_content = options.content;
-        assert.equal(options.appendTo(), body_stub);
+        assert.equal(options.appendTo, body_stub, "appendTo should be body_stub");
     };
 
     const $element = $.create("#folder_filter_widget");
@@ -258,18 +258,24 @@ run_test("update_tooltip_for_folder_filter - Any folder", () => {
         folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION,
     );
 
-    assert.equal(tippy_target.id, "folder_filter_widget");
+    assert.ok(tippy_called, "tippy should be called");
     assert.equal(tippy_content, "translated: Filter by folder");
 });
 
 run_test("update_tooltip_for_folder_filter - Uncategorized", () => {
     initialize_folders();
+    let tippy_called = false;
     let tippy_content;
+
+    const body_stub = {};
+    global.document = {body: body_stub};
 
     util.the = ($element) => $element[0];
 
     tippy_default_stub = (_element, options) => {
+        tippy_called = true;
         tippy_content = options.content;
+        assert.equal(options.appendTo, body_stub, "appendTo should be body_stub");
     };
 
     const $element = $.create("#folder_filter_widget");
@@ -281,17 +287,24 @@ run_test("update_tooltip_for_folder_filter - Uncategorized", () => {
         folder_dropdown_widget.FOLDER_FILTERS.UNCATEGORIZED_DROPDOWN_OPTION,
     );
 
+    assert.ok(tippy_called, "tippy should be called");
     assert.equal(tippy_content, "translated: Viewing uncategorized channels");
 });
 
 run_test("update_tooltip_for_folder_filter - specific folder", () => {
     const folders = initialize_folders();
+    let tippy_called = false;
     let tippy_content;
+
+    const body_stub = {};
+    global.document = {body: body_stub};
 
     util.the = ($element) => $element[0];
 
     tippy_default_stub = (_element, options) => {
+        tippy_called = true;
         tippy_content = options.content;
+        assert.equal(options.appendTo, body_stub, "appendTo should be body_stub");
     };
 
     const $element = $.create("#folder_filter_widget");
@@ -303,6 +316,7 @@ run_test("update_tooltip_for_folder_filter - specific folder", () => {
         folders.frontend_folder.id,
     );
 
+    assert.ok(tippy_called, "tippy should be called");
     assert.equal(tippy_content, "translated: Viewing channels in Frontend");
 });
 

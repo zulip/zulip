@@ -457,6 +457,47 @@ export const user_role_values = {
     },
 };
 
+type UserRoleValuesWithProvisionalMember = Omit<typeof user_role_values, "member"> & {
+    provisional_member: {
+        code: number;
+        description: string;
+    };
+    full_member: {
+        code: number;
+        description: string;
+    };
+};
+
+export const user_role_values_with_provisional_member = (() => {
+    const user_role_entries: [string, {code: number; description: string}][] = [];
+
+    for (const [role_name, role_value] of Object.entries(user_role_values)) {
+        if (role_name === "member") {
+            user_role_entries.push(
+                [
+                    "provisional_member",
+                    {
+                        code: 401,
+                        description: $t({defaultMessage: "New member"}),
+                    },
+                ],
+                [
+                    "full_member",
+                    {
+                        code: 402,
+                        description: $t({defaultMessage: "Full member"}),
+                    },
+                ],
+            );
+            continue;
+        }
+        user_role_entries.push([role_name, role_value]);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return Object.fromEntries(user_role_entries) as UserRoleValuesWithProvisionalMember;
+})();
+
 export const all_org_type_values = {
     // When org_type was added to the database model, 'unspecified'
     // was the default for existing organizations. To discourage
