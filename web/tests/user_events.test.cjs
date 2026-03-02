@@ -24,8 +24,12 @@ const settings_bots = mock_esm("../src/settings_bots", {
     redraw_your_bots_list() {},
     toggle_bot_config_download_container() {},
 });
-mock_esm("../src/settings_panel_menu", {
+const settings_panel_menu = mock_esm("../src/settings_panel_menu", {
     update_imported_users_tab() {},
+    org_settings: {
+        current_tab: "organization-profile",
+        set_current_tab() {},
+    },
 });
 mock_esm("../src/settings_users", {
     update_user_data() {},
@@ -75,8 +79,9 @@ mock_esm("../src/settings_profile_fields", {
 mock_esm("../src/settings_realm_user_settings_defaults", {
     maybe_disable_widgets() {},
 });
-mock_esm("../src/settings_streams", {
+const settings_streams = mock_esm("../src/settings_streams", {
     maybe_disable_widgets() {},
+    hide_default_streams_list_for_guest() {},
 });
 
 const bot_data = zrequire("bot_data");
@@ -116,6 +121,15 @@ run_test("updates", ({override}) => {
     people.add_active_user(isaac);
 
     override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
+    let default_streams_hidden = 0;
+    override(settings_streams, "hide_default_streams_list_for_guest", () => {
+        default_streams_hidden += 1;
+    });
+    let org_settings_tab;
+    override(settings_panel_menu.org_settings, "set_current_tab", (tab) => {
+        org_settings_tab = tab;
+        settings_panel_menu.org_settings.current_tab = tab;
+    });
     user_events.update_person({
         user_id: isaac.user_id,
         role: settings_config.user_role_values.guest.code,
@@ -184,9 +198,27 @@ run_test("updates", ({override}) => {
 
     user_events.update_person({
         user_id: me.user_id,
+        role: settings_config.user_role_values.guest.code,
+    });
+    assert.ok(current_user.is_guest);
+    assert.equal(default_streams_hidden, 1);
+    assert.equal(org_settings_tab, undefined);
+
+    settings_panel_menu.org_settings.current_tab = "default-channels-list";
+    user_events.update_person({
+        user_id: me.user_id,
         role: settings_config.user_role_values.member.code,
     });
+    assert.ok(!current_user.is_guest);
     assert.ok(!current_user.is_admin);
+
+    user_events.update_person({
+        user_id: me.user_id,
+        role: settings_config.user_role_values.guest.code,
+    });
+    assert.ok(current_user.is_guest);
+    assert.equal(default_streams_hidden, 2);
+    assert.equal(org_settings_tab, "organization-profile");
 
     user_events.update_person({user_id: me.user_id, full_name: "Me V2"});
     assert.equal(people.my_full_name(), "Me V2");

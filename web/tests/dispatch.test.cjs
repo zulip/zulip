@@ -413,13 +413,18 @@ run_test("custom profile fields", ({override}) => {
 
 run_test("default_streams", ({override}) => {
     const event = event_fixtures.default_streams;
-    override(settings_streams, "update_default_streams_table", noop);
+    let default_stream_table_updates = 0;
+    override(settings_streams, "update_default_streams_table", () => {
+        default_stream_table_updates += 1;
+    });
     override(stream_settings_ui, "update_is_default_stream", noop);
-    const stub = make_stub();
-    override(stream_data, "set_realm_default_streams", stub.f);
+    const set_default_streams_stub = make_stub();
+    override(stream_data, "set_realm_default_streams", set_default_streams_stub.f);
+
     dispatch(event);
-    assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("realm_default_streams");
+    assert.equal(set_default_streams_stub.num_calls, 1);
+    assert.equal(default_stream_table_updates, 1);
+    const args = set_default_streams_stub.get_args("realm_default_streams");
     assert_same(args.realm_default_streams, event.default_streams);
 });
 

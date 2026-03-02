@@ -5,6 +5,7 @@ import render_add_default_streams from "../templates/settings/add_default_stream
 import render_admin_default_streams_list from "../templates/settings/admin_default_streams_list.hbs";
 import render_default_stream_choice from "../templates/settings/default_stream_choice.hbs";
 
+import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
@@ -98,6 +99,22 @@ export function maybe_disable_widgets(): void {
         .prop("disabled", true);
 }
 
+export function hide_default_streams_list_for_guest(): void {
+    if (!current_user.is_guest) {
+        return;
+    }
+
+    $(".org-settings-list li[data-section='default-channels-list']").hide();
+    $(".organization-box [data-name='default-channels-list']").hide();
+
+    if (
+        hash_parser.get_current_hash_category() === "organization" &&
+        hash_parser.get_current_hash_section() === "default-channels-list"
+    ) {
+        browser_history.go_to_location("#organization/organization-profile");
+    }
+}
+
 export function build_default_stream_table(): void {
     const $table = $("#admin_default_streams_table").expectOne();
 
@@ -134,6 +151,10 @@ export function build_default_stream_table(): void {
 }
 
 export function update_default_streams_table(): void {
+    if (current_user.is_guest) {
+        return;
+    }
+
     if (["organization", "settings"].includes(hash_parser.get_current_hash_category())) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
         build_default_stream_table();
@@ -230,6 +251,11 @@ function show_add_default_streams_modal(): void {
 }
 
 export function set_up(): void {
+    if (current_user.is_guest) {
+        hide_default_streams_list_for_guest();
+        return;
+    }
+
     build_page();
     maybe_disable_widgets();
 }
