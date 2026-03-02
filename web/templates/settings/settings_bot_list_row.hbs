@@ -41,6 +41,7 @@
                   }}
             </span>
             {{/if}}
+            {{#if show_manage_buttons}}
             <span class="{{#if cannot_edit}}tippy-zulip-tooltip{{else}}tippy-zulip-delayed-tooltip{{/if}}"
               {{#if cannot_edit}}
               data-tippy-content="{{t 'This bot cannot be managed.'}}"
@@ -72,6 +73,7 @@
                   custom_classes="reactivate"
                   }}
             </span>
+            {{/if}}
             {{/if}}
         </span>
     </td>
