@@ -31,6 +31,11 @@ export const filter_options: TopicFilterPill[] = [
     },
     {
         type: "topic_filter",
+        label: $t({defaultMessage: "followed"}),
+        syntax: "is:followed",
+    },
+    {
+        type: "topic_filter",
         label: $t({defaultMessage: "unfollowed"}),
         syntax: "-is:followed",
         match_prefix_required: "-is",
