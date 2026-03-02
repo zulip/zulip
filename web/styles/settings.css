@@ -408,6 +408,7 @@ select.settings_select {
 #personal-bot-list .user-status-settings {
     display: flex;
     justify-content: flex-end;
+    min-height: 2.1875em;
 }
 
 .config-download-text {
