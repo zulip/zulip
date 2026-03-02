@@ -375,6 +375,12 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             const right_side_tab = hash_parser.get_current_nth_hash_section(3);
             user_group_edit.change_state(section, undefined, right_side_tab);
         }
+        if (base === "user") {
+            const tab_segment = hash_parser.get_current_nth_hash_section(2);
+            const tab_key = hash_util.user_profile_tab_key_from_url(tab_segment);
+            user_profile.update_user_profile_tab(tab_key);
+            return;
+        }
 
         if (base === "settings") {
             if (!section) {
@@ -534,7 +540,13 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             user_profile.show_user_profile_access_error_modal();
         } else {
             const user = people.get_by_user_id(user_id);
-            user_profile.show_user_profile(user);
+            const tab_segment = hash_parser.get_current_nth_hash_section(2);
+            const tab_key = hash_util.user_profile_tab_key_from_url(tab_segment);
+            if (user_profile.get_user_id_if_user_profile_modal_open() === user_id) {
+                user_profile.update_user_profile_tab(tab_key);
+            } else {
+                user_profile.show_user_profile(user, tab_key);
+            }
         }
         return;
     }
