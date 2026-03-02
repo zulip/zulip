@@ -223,6 +223,10 @@ def upload_message_attachment(
     )
     content_type = maybe_add_charset(content_type, file_data)
 
+    # NULL bytes are the one thing we can't store in the original
+    # filename column, due to PostgreSQL limitations
+    uploaded_file_name = re.sub(r"\x00", "", uploaded_file_name)
+
     with transaction.atomic(durable=True):
         upload_backend.upload_message_attachment(
             path_id,
