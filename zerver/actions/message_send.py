@@ -338,7 +338,9 @@ def get_recipient_info(
 
         user_id_to_visibility_policy = stream_topic.user_id_to_visibility_policy_dict()
 
-        def notification_recipients(setting: str) -> set[int]:
+        def notification_recipients(
+            setting: str, *, channel_specific_overrides_mute: bool = False
+        ) -> set[int]:
             return {
                 row["user_profile_id"]
                 for row in subscription_rows
@@ -349,6 +351,7 @@ def get_recipient_info(
                     ),
                     row[setting],
                     row["user_profile_" + setting],
+                    channel_specific_overrides_mute=channel_specific_overrides_mute,
                 )
             }
 
@@ -377,7 +380,9 @@ def get_recipient_info(
             # This is important so as to avoid unnecessarily sending huge user ID lists with
             # thousands of elements to the event queue (which can happen because these settings
             # are `True` by default for new users.)
-            wildcard_mentions_notify_user_ids = notification_recipients("wildcard_mentions_notify")
+            wildcard_mentions_notify_user_ids = notification_recipients(
+                "wildcard_mentions_notify", channel_specific_overrides_mute=True
+            )
             followed_topic_wildcard_mentions_notify_user_ids = (
                 followed_topic_notification_recipients("wildcard_mentions_notify")
             )

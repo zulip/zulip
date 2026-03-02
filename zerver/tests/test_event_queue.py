@@ -427,6 +427,52 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": False, "push_notified": False},
             )
 
+    def test_stream_wildcard_mention_in_muted_stream_with_channel_specific_setting(self) -> None:
+        # When wildcard_mentions_notify is explicitly True for the channel,
+        # it should override channel muting and still notify.
+        self.change_subscription_properties({"is_muted": True, "wildcard_mentions_notify": True})
+        msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                stream_wildcard_mention_email_notify=True,
+                stream_wildcard_mention_push_notify=True,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                already_notified={"email_notified": True, "push_notified": True},
+            )
+
+    def test_stream_wildcard_mention_in_muted_topic_with_channel_specific_setting(self) -> None:
+        # Even with channel-specific wildcard_mentions_notify=True,
+        # muted topics should still suppress notifications.
+        self.change_subscription_properties({"wildcard_mentions_notify": True})
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "mutingtest",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", topic_name="mutingtest", content="@**all** what's up?"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                stream_wildcard_mention_email_notify=False,
+                stream_wildcard_mention_push_notify=False,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                already_notified={"email_notified": False, "push_notified": False},
+            )
+
     def test_stream_wildcard_mention_in_muted_topic(self) -> None:
         # stream wildcard mentions in muted topics don't notify.
         do_set_user_topic_visibility_policy(

@@ -11,6 +11,7 @@ import * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
 import * as spoilers from "./spoilers.ts";
 import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
@@ -244,7 +245,8 @@ export function message_is_notifiable(message: Message | TestNotificationMessage
     }
 
     // @-<username> mentions take precedence over muted-ness. Note
-    // that @all mentions are still suppressed by muting.
+    // that @all mentions are still suppressed by muting unless the
+    // channel-specific wildcard_mentions_notify setting is enabled.
     if (message.mentioned_me_directly) {
         return true;
     }
@@ -263,7 +265,18 @@ export function message_is_notifiable(message: Message | TestNotificationMessage
         stream_data.is_muted(message.stream_id) &&
         !user_topics.is_topic_unmuted(message.stream_id, message.topic)
     ) {
-        return false;
+        // Channel-specific wildcard_mentions_notify=true overrides channel
+        // muting for wildcard mentions (but not topic muting, checked above).
+        const sub = sub_store.get(message.stream_id);
+        if (
+            !(
+                message.mentioned &&
+                !message.mentioned_me_directly &&
+                sub?.wildcard_mentions_notify === true
+            )
+        ) {
+            return false;
+        }
     }
 
     if (message.type === "stream" && user_topics.is_topic_muted(message.stream_id, message.topic)) {
