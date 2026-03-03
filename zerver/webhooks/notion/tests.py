@@ -11,7 +11,7 @@ class NotionHookTests(WebhookTestCase):
         self.check_webhook(
             "verification",
             expected_topic,
-            expected_message_containing="Your verification token is",
+            expected_message="Your verification token is",
         )
 
     def test_all_page_events(self) -> None:
