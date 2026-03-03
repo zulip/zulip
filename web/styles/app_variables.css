@@ -330,13 +330,14 @@
     --line-height-sidebar-topic-inner: 1.2em;
     /* This spacing value is to compensate for the
        additional space of the prominent row-height
-       from within the inner topic value. */
+       from within the inner topic value. The extra 1px
+       provides breathing room to avoid clipping emoji. */
     --spacing-top-bottom-sidebar-topic-inner: calc(
         (
                 var(--line-height-sidebar-row-prominent) -
                     var(--line-height-sidebar-topic-inner)
             ) /
-            2
+            2 + 1px
     );
 
     /* Right sidebar */
