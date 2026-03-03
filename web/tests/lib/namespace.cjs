@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const Module = require("node:module");
 const path = require("node:path");
 
+const FakeTimers = require("@sinonjs/fake-timers");
 const {default: callsites} = require("callsites");
 
 const $ = require("./zjquery.cjs");
@@ -83,6 +84,8 @@ function template_stub({filename, actual_render}) {
         return f(data);
     };
 }
+
+exports.clock = FakeTimers.install();
 
 exports.start = () => {
     assert.equal(actual_load, undefined, "namespace.start was called twice in a row.");
@@ -241,6 +244,7 @@ exports.finish = function () {
         running to do things like detecting pointless mocks
         and resetting our _load hook.
     */
+    exports.clock.reset();
     jquery_function = undefined;
 
     assert.notEqual(actual_load, undefined, "namespace.finish was called without namespace.start.");

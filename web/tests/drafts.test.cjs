@@ -2,13 +2,11 @@
 
 const assert = require("node:assert/strict");
 
-const MockDate = require("mockdate");
-
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
-const {mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -615,7 +613,7 @@ test("format_drafts", ({override, mock_template}) => {
     expected[5].is_empty_string_topic = true;
     assert.deepEqual(draft_model.get(), data);
 
-    MockDate.set(1549958107000);
+    clock.setSystemTime(1549958107000);
 
     override(user_pill, "get_user_ids", () => []);
     compose_state.set_message_type("private");
@@ -767,7 +765,7 @@ test("filter_drafts", ({override, mock_template}) => {
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
-    MockDate.set(1549958107000);
+    clock.setSystemTime(1549958107000);
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests splitting up drafts by current narrow.
@@ -785,8 +783,4 @@ test("filter_drafts", ({override, mock_template}) => {
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
     drafts_overlay_ui.launch();
-});
-
-run_test("reset MockDate", () => {
-    MockDate.reset();
 });
