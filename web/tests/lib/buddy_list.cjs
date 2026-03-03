@@ -46,4 +46,7 @@ exports.stub_buddy_list_elements = () => {
     $(`#buddy-list-users-matching-view .empty-list-message`).remove = noop;
     $(`#buddy-list-other-users .empty-list-message`).remove = noop;
     $(`#buddy-list-participants .empty-list-message`).remove = noop;
+
+    // Simulate no avatar images for clear_avatar_preload_backgrounds.
+    $("#user-list .avatar-preload-background img").each = noop;
 };
