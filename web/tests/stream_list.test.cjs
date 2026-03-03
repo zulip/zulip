@@ -395,16 +395,9 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     const $stream_li1 = $.create("stream1 stub");
     const $stream_li2 = $.create("stream2 stub");
 
-    function make_attr(arg) {
-        return (sel) => {
-            assert.equal(sel, "data-stream-id");
-            return arg;
-        };
-    }
-
-    $stream_li1.attr = make_attr("42");
+    $stream_li1.attr("data-stream-id", "42");
     $stream_li1.hide();
-    $stream_li2.attr = make_attr("99");
+    $stream_li2.attr("data-stream-id", "99");
 
     $.create("#stream_filters li.narrow-filter", {
         children: [elem($stream_li1), elem($stream_li2)],
