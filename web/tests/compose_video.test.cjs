@@ -36,18 +36,6 @@ set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
 
-function stub_out_video_calls() {
-    const $elem = $(".compose-control-buttons-container .video_link");
-    $elem.toggle = (show) => {
-        /* istanbul ignore if */
-        if (show) {
-            $elem.show();
-        } else {
-            $elem.hide();
-        }
-    };
-}
-
 const realm_available_video_chat_providers = {
     disabled: {
         id: 0,
@@ -89,8 +77,6 @@ function test(label, f) {
 test("videos", ({override}) => {
     override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.disabled.id);
     override(window, "to_$", () => $("window-stub"));
-
-    stub_out_video_calls();
 
     compose_setup.initialize();
 
