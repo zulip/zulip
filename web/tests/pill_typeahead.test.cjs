@@ -169,7 +169,7 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
     $fake_input.before = noop;
 
     const $container = $.create(".pill-container");
-    $container.find = () => $fake_input;
+    $container.set_find_results(".input", $fake_input);
 
     const $pill_widget = input_pill.create({
         $container,
@@ -261,7 +261,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
     $fake_input.before = noop;
 
     const $container = $.create(".pill-container");
-    $container.find = () => $fake_input;
+    $container.set_find_results(".input", $fake_input);
 
     const $pill_widget = input_pill.create({
         $container,
@@ -354,7 +354,7 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
     $fake_input.before = noop;
 
     const $container = $.create(".pill-container");
-    $container.find = () => $fake_input;
+    $container.set_find_results(".input", $fake_input);
 
     const $pill_widget = input_pill.create({
         $container,
@@ -446,7 +446,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
     $fake_input.before = noop;
 
     const $container = $.create(".pill-container");
-    $container.find = () => $fake_input;
+    $container.set_find_results(".input", $fake_input);
 
     const $pill_widget = input_pill.create({
         $container,
@@ -703,7 +703,7 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
     $fake_input.before = noop;
 
     const $container = $.create(".pill-container");
-    $container.find = () => $fake_input;
+    $container.set_find_results(".input", $fake_input);
 
     const $pill_widget = input_pill.create({
         $container,
