@@ -38,6 +38,9 @@ const compose_validate = mock_esm("../src/compose_validate", {
     initialize: noop,
 });
 const input_pill = mock_esm("../src/input_pill");
+const message_util = mock_esm("../src/message_util", {
+    user_can_send_direct_message: () => true,
+});
 const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
 });
@@ -681,6 +684,7 @@ function test(label, f) {
             server_supported_permission_settings,
         );
         helpers.override(realm, "realm_can_access_all_users_group", members.id);
+        helpers.override(realm, "realm_direct_message_permission_group", members.id);
 
         people.add_active_user(ali);
         people.add_active_user(alice);
@@ -1851,6 +1855,51 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok(topic_typeahead_called);
     assert.ok(pm_recipient_typeahead_called);
     assert.ok(compose_textarea_typeahead_called);
+});
+
+test("get_person_suggestion_for_topic_typeahead", ({override}) => {
+    override(pm_conversations, "get_partners", () => [lear.user_id]);
+
+    // Active user with DMs enabled is included in suggestions.
+    let results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.ok(results[0].user.user_id === lear.user_id);
+
+    // Participant from current narrow is included in suggestions.
+    override(pm_conversations, "get_partners", () => []);
+    message_lists.current = {
+        data: {
+            participants: {
+                visible: () => new Set([lear.user_id]),
+            },
+        },
+    };
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.ok(results[0].user.user_id === lear.user_id);
+
+    // Deactivated user is excluded from participant-based suggestions.
+    message_lists.current = {
+        data: {
+            participants: {
+                visible: () => new Set([deactivated_user.user_id]),
+            },
+        },
+    };
+    assert.deepEqual(ct.get_person_suggestion_for_topic_typeahead("deactivated"), []);
+
+    // User is excluded when they cannot receive DMs.
+    message_lists.current = {
+        data: {
+            participants: {
+                visible: () => new Set([lear.user_id]),
+            },
+        },
+    };
+    override(message_util, "user_can_send_direct_message", () => false);
+    assert.deepEqual(ct.get_person_suggestion_for_topic_typeahead("lear"), []);
+
+    // No person suggestions when DMs are disabled in the organization.
+    override(realm, "realm_direct_message_permission_group", support.id);
+    assert.deepEqual(ct.get_person_suggestion_for_topic_typeahead("lear"), []);
 });
 
 test("begins_typeahead", ({override, override_rewire}) => {
