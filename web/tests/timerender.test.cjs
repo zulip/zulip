@@ -357,14 +357,8 @@ run_test("render_date_renders_time_html", () => {
     const expected_text = $t({defaultMessage: "Today"});
 
     const $span_stub = $("<span>");
-    let actual_text;
-    $span_stub.text = (val) => {
-        actual_text = val;
-        return $span_stub;
-    };
-
     timerender.render_date(message_time);
-    assert.equal(actual_text, expected_text);
+    assert.equal($span_stub.text(), expected_text);
     assert.equal($span_stub.attr("data-tippy-content"), "Friday, April 12, 2019");
     assert.equal($span_stub.attr("class"), "date_row_text timerender-content timerender0");
 
