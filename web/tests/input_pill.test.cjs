@@ -210,10 +210,9 @@ run_test("arrows on pills", ({mock_template}) => {
 
     const $prev_pill_stub = $.create("prev-pill-stub");
     const $next_pill_stub = $.create("next-pill-stub");
-    const $pill_stub = {
-        prev: () => $prev_pill_stub,
-        next: () => $next_pill_stub,
-    };
+    const $pill_stub = $.create("pill-stub");
+    $pill_stub.prev = () => $prev_pill_stub;
+    $pill_stub.next = () => $next_pill_stub;
 
     $container.set_find_results(".pill:focus", $pill_stub);
 
@@ -244,15 +243,15 @@ run_test("left arrow on input", ({mock_template}) => {
 
     let last_pill_focused = false;
 
-    $container.set_find_results(".pill", {
-        last: () => ({
-            trigger(type) {
-                if (type === "focus") {
-                    last_pill_focused = true;
-                }
-            },
-        }),
+    const $pill_stub = $.create("pill-stub");
+    $pill_stub.last = () => ({
+        trigger(type) {
+            if (type === "focus") {
+                last_pill_focused = true;
+            }
+        },
     });
+    $container.set_find_results(".pill", $pill_stub);
 
     key_handler({
         key: "ArrowLeft",

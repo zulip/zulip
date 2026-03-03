@@ -197,11 +197,11 @@ run_test("message_inline_video", () => {
     const $elem = $.create("message_inline_video");
 
     let load_called = false;
-    $elem.load = () => {
+    $elem[0].load = () => {
         load_called = true;
     };
 
-    $content.set_find_results(".message_inline_video video", $array([$elem]));
+    $content.set_find_results(".message_inline_video video", $array([$elem[0]]));
     window.GestureEvent = true;
     rm.update_elements($content);
     assert.equal(load_called, true);
