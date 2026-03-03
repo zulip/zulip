@@ -448,6 +448,7 @@ class BotTypeForUpdate(BotTypeForUpdateCore):
     # TODO: fix types to avoid optional fields
     api_key: str | None = None
     avatar_url: str | None = None
+    bot_type: int | None = None
     default_all_public_streams: bool | None = None
     default_events_register_stream: str | None = None
     default_sending_stream: str | None = None
@@ -726,6 +727,11 @@ class PersonBotOwnerId(BaseModel):
     bot_owner_id: int
 
 
+class PersonBotType(BaseModel):
+    user_id: int
+    bot_type: int
+
+
 class CustomProfileFieldCore(BaseModel):
     id: int
     value: str | None
@@ -783,6 +789,7 @@ class EventRealmUserUpdate(BaseEvent):
     person: (
         PersonAvatarFields
         | PersonBotOwnerId
+        | PersonBotType
         | PersonCustomProfileField
         | PersonDeliveryEmail
         | PersonEmail

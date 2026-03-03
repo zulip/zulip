@@ -17,7 +17,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import do_change_stream_permission
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
-from zerver.lib.bot_config import ConfigError, get_bot_config
+from zerver.lib.bot_config import ConfigError, get_bot_config, set_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, IncomingWebhookIntegration
 from zerver.lib.request import RequestNotes
@@ -1679,6 +1679,138 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         result = self.client_patch(f"/json/bots/{user_profile.id}", req)
         self.assert_json_error(result, "Must be an organization administrator")
+
+    def test_patch_bot_type(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.DEFAULT_BOT,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        email = "hambot-bot@zulip.testserver"
+        bot_profile = self.get_bot_user(email)
+
+        # DEFAULT_BOT -> INCOMING_WEBHOOK_BOT
+        req = dict(bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.INCOMING_WEBHOOK_BOT)
+
+        # INCOMING_WEBHOOK_BOT -> OUTGOING_WEBHOOK_BOT
+        req = dict(bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_error(result, "Missing service_payload_url.")
+
+        req_outgoing = dict(
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            service_payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            service_interface=Service.GENERIC,
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_outgoing)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.OUTGOING_WEBHOOK_BOT)
+        self.assert_length(get_bot_services(bot_profile.id), 1)
+
+        [service] = get_bot_services(bot_profile.id)
+        self.assertEqual(service.base_url, "http://foo.bar.com")
+        self.assertEqual(service.interface, Service.GENERIC)
+
+        # OUTGOING_WEBHOOK_BOT -> EMBEDDED_BOT
+        req = dict(bot_type=UserProfile.EMBEDDED_BOT)
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_error(result, "Missing service_name.")
+
+        req_embed = dict(
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name=orjson.dumps("not_existing_service").decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_embed)
+        self.assert_json_error(result, "Invalid embedded bot name.")
+
+        req_embed = dict(
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name=orjson.dumps("converter").decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_embed)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.EMBEDDED_BOT)
+        services = get_bot_services(bot_profile.id)
+        self.assert_length(services, 1)
+        self.assertEqual(services[0].name, "converter")
+
+        # EMBEDDED_BOT -> DEFAULT_BOT
+        set_bot_config(bot_profile, "key", "value")
+        req = dict(bot_type=UserProfile.DEFAULT_BOT)
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.DEFAULT_BOT)
+        self.assert_length(get_bot_services(bot_profile.id), 0)
+        with self.assertRaises(ConfigError):
+            get_bot_config(bot_profile)
+
+        # DEFAULT_BOT -> EMBEDDED_BOT with config_data
+        req_embed = dict(
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name=orjson.dumps("followup").decode(),
+            config_data=orjson.dumps({"stream": "value"}).decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_embed)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.EMBEDDED_BOT)
+        services = get_bot_services(bot_profile.id)
+        self.assert_length(services, 1)
+        self.assertEqual(services[0].name, "followup")
+        self.assertEqual(get_bot_config(bot_profile), {"stream": "value"})
+
+    @override_settings(EMBEDDED_BOTS_ENABLED=False)
+    def test_patch_bot_type_embedded_bots_not_enabled(self) -> None:
+        self.login("desdemona")
+        email = "default-bot@zulip.com"
+
+        req = dict(bot_type=UserProfile.EMBEDDED_BOT)
+        result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", req)
+        self.assert_json_error(result, "Invalid bot type")
+
+    def test_patch_embedded_bot_service_name(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "Embedded bot of hamlet",
+            "short_name": "embot",
+            "bot_type": UserProfile.EMBEDDED_BOT,
+            "service_name": "converter",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        email = "embot-bot@zulip.testserver"
+        bot_profile = self.get_bot_user(email)
+
+        req = dict(
+            service_name=orjson.dumps("not_existing_service").decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_error(result, "Invalid embedded bot name.")
+
+        req = dict(
+            service_name=orjson.dumps("followup").decode(),
+            config_data=orjson.dumps({"stream": "value"}).decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.EMBEDDED_BOT)
+        services = get_bot_services(bot_profile.id)
+        self.assert_length(services, 1)
+        self.assertEqual(services[0].name, "followup")
+        self.assertEqual(get_bot_config(bot_profile), {"stream": "value"})
 
     def test_patch_bot_to_stream_private_allowed(self) -> None:
         self.login("hamlet")

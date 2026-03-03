@@ -13,7 +13,6 @@ import * as information_density from "./information_density.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
-import * as settings_bots from "./settings_bots.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_org from "./settings_org.ts";
@@ -52,7 +51,7 @@ export function update_lock_icon_in_sidebar(): void {
 
     $(".org-settings-list .locked").show();
 
-    if (settings_bots.can_create_incoming_webhooks()) {
+    if (settings_data.can_create_incoming_webhooks()) {
         $(".org-settings-list li[data-section='bots'] .locked").hide();
     }
 
@@ -107,7 +106,7 @@ export function build_page(): void {
         zuliprc: "zuliprc",
         botserverrc: "botserverrc",
         timezones: timezones.timezones,
-        can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
+        can_create_new_bots: settings_data.can_create_incoming_webhooks(),
         settings_label,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         web_mark_read_on_scroll_policy_values:
@@ -200,7 +199,7 @@ export function initialize(): void {
         is_guest: current_user.is_guest,
         show_uploaded_files_section: realm.max_file_upload_size_mib > 0,
         show_emoji_settings_lock: !settings_data.user_can_add_custom_emoji(),
-        can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
+        can_create_new_bots: settings_data.can_create_incoming_webhooks(),
         can_edit_user_panel:
             current_user.is_admin ||
             settings_data.user_can_create_multiuse_invite() ||

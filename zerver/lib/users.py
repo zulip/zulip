@@ -226,6 +226,13 @@ def check_valid_interface_type(interface_type: int | None) -> None:
         raise JsonableError(_("Invalid interface type"))
 
 
+def check_valid_embedded_bot_service_name(service_name: str) -> None:
+    from zerver.lib.integrations import EMBEDDED_BOTS
+
+    if service_name not in [bot.name for bot in EMBEDDED_BOTS]:
+        raise JsonableError(_("Invalid embedded bot name."))
+
+
 def is_administrator_role(role: int) -> bool:
     return role in {UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER}
 

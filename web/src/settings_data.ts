@@ -420,3 +420,24 @@ export function guests_can_access_all_other_users(): boolean {
 export function can_user_manage_folder(): boolean {
     return current_user.is_admin;
 }
+
+export function can_create_new_bots(): boolean {
+    return user_has_permission_for_group_setting(
+        realm.realm_can_create_bots_group,
+        "can_create_bots_group",
+        "realm",
+    );
+}
+
+export function can_create_incoming_webhooks(): boolean {
+    // User who have the permission to create any bot can also
+    // create incoming webhooks.
+    return (
+        can_create_new_bots() ||
+        user_has_permission_for_group_setting(
+            realm.realm_can_create_write_only_bots_group,
+            "can_create_write_only_bots_group",
+            "realm",
+        )
+    );
+}
