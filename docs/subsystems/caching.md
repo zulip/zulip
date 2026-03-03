@@ -240,7 +240,7 @@ We generally try to avoid in-process backend caching in Zulip's Django
 codebase, because every Zulip production installation involves
 multiple servers. We do have a few, however:
 
-- `@return_same_value_during_entire_request`: We use this decorator to
+- `@cache_for_current_request`: We use this decorator to
   cache values in memory during the lifetime of a request. We use this
   for linkifiers and display recipients. The middleware knows how to
   flush the relevant in-memory caches at the start of a request.
