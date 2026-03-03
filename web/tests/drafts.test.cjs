@@ -590,8 +590,6 @@ test("format_drafts", ({override, mock_template}) => {
         },
     ];
 
-    $("#drafts_table").append = noop;
-
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {
@@ -748,8 +746,6 @@ test("filter_drafts", ({override, mock_template}) => {
             is_web_public: stream_2.is_web_public,
         },
     ];
-
-    $("#drafts_table").append = noop;
 
     const draft_model = drafts.draft_model;
     const ls = localstorage();

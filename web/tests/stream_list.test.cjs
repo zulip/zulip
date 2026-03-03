@@ -684,7 +684,6 @@ test_ui("refresh_pin", ({override_rewire}) => {
     };
 
     override_rewire(stream_list, "update_count_in_dom", noop);
-    $("#stream_filters").append = noop;
 
     let scrolled;
     override_rewire(stream_list, "scroll_stream_into_view", () => {
