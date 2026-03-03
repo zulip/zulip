@@ -30,6 +30,7 @@ PAGE_EVENTS = list(PAGE_EVENT_MESSAGES.keys())
 DATABASE_EVENTS = list(DATABASE_EVENT_MESSAGES.keys())
 COMMENT_EVENTS = list(COMMENT_EVENT_MESSAGES.keys())
 
+
 def handle_page_event(payload: WildValue) -> tuple[str, str]:
     event_type = payload["type"].tame(check_string)
     workspace = payload["workspace_name"].tame(check_string)
@@ -39,11 +40,7 @@ def handle_page_event(payload: WildValue) -> tuple[str, str]:
     assert action is not None
     topic = "Notion Pages"
 
-    body = (
-        f"**{action}**\n\n"
-        f"Workspace: **{workspace}**\n"
-        f"Page ID: `{page_id}`"
-    )
+    body = f"**{action}**\n\nWorkspace: **{workspace}**\nPage ID: `{page_id}`"
 
     return topic, body
 
