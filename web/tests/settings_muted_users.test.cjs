@@ -77,12 +77,7 @@ run_test("settings", ({override}) => {
         return $fake_row;
     };
 
-    let row_attribute_fetched = false;
-    $fake_row.attr = (opts) => {
-        assert.equal(opts, "data-user-id");
-        row_attribute_fetched += 1;
-        return "5";
-    };
+    $fake_row.attr("data-user-id", "5");
 
     let unmute_user_called = false;
     channel.del = (payload) => {
@@ -93,7 +88,6 @@ run_test("settings", ({override}) => {
 
     unmute_click_handler.call($unmute_button, event);
     assert.ok(unmute_user_called);
-    assert.ok(row_attribute_fetched);
 
     let mute_user_called = false;
     channel.post = (payload) => {

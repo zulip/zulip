@@ -170,10 +170,6 @@ function simulate_draft_ui_interactions() {
     $(".top_left_drafts").set_find_results(".unread_count", $.create("draft-unread-count-stub"));
 }
 
-function assert_compose_send_button_attr_is_undefined() {
-    assert.equal($("#compose-send-button").attr(), undefined);
-}
-
 test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
 
@@ -597,8 +593,6 @@ test_ui("initialize", ({override}) => {
 
         compose_setup.abort_xhr();
 
-        // I'm not sure this proves anything interesting.
-        assert_compose_send_button_attr_is_undefined();
         assert.ok(uppy_cancel_all_called);
     })();
 });

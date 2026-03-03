@@ -83,19 +83,8 @@ run_test("settings", ({override, override_rewire}) => {
         return $topics_panel_header;
     };
 
-    let topic_data_called = 0;
-    $topic_tr_html.attr = (opts) => {
-        topic_data_called += 1;
-        switch (opts) {
-            case "data-stream-id":
-                return frontend.stream_id;
-            case "data-topic":
-                return "js";
-            /* istanbul ignore next */
-            default:
-                throw new Error(`Unknown attribute ${opts}`);
-        }
-    };
+    $topic_tr_html.attr("data-stream-id", `${frontend.stream_id}`);
+    $topic_tr_html.attr("data-topic", "js");
 
     let user_topic_visibility_policy_changed = false;
     override_rewire(
@@ -114,5 +103,4 @@ run_test("settings", ({override, override_rewire}) => {
     };
     topic_change_handler.call(topic_fake_this, event);
     assert.ok(user_topic_visibility_policy_changed);
-    assert.equal(topic_data_called, 2);
 });
