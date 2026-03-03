@@ -130,6 +130,7 @@
 
 #### Server & organizations
 
+* [Create a default channel group](/api/create-default-stream-group)
 * [Get server settings](/api/get-server-settings)
 * [Get linkifiers](/api/get-linkifiers)
 * [Add a linkifier](/api/add-linkifier)

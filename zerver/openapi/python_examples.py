@@ -883,6 +883,29 @@ def update_stream(client: Client, stream_id: int) -> None:
     validate_against_openapi_schema(result, "/streams/{stream_id}", "patch", "200")
 
 
+@openapi_test_function("/default_stream_groups/create:post")
+def create_default_stream_group(client: Client) -> None:
+    client.call_endpoint(
+        url="/users/me/subscriptions",
+        method="POST",
+        request={"subscriptions": '[{"name": "new_test_stream"}]'},
+    )
+
+    # {code_example|start}
+    request = {
+        "group_name": "Engineering",
+        "description": "Default channels for the engineering team.",
+        "stream_names": json.dumps(["new_test_stream"]),
+    }
+    result = client.call_endpoint(
+        url="/default_stream_groups/create",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+    print(result)
+
+
 @openapi_test_function("/user_groups:get")
 def get_user_groups(client: Client) -> int:
     # {code_example|start}
@@ -2160,6 +2183,7 @@ def test_server_organizations(client: Client) -> None:
     export_realm(client)
     get_realm_exports(client)
     get_realm_export_consents(client)
+    create_default_stream_group(client)
 
 
 def test_errors(client: Client) -> None:

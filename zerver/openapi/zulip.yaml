@@ -8068,6 +8068,62 @@ paths:
                   - $ref: "#/components/schemas/InvalidChannelError"
                   - description: |
                       A typical failed JSON response for when an invalid channel ID is passed:
+  /default_stream_groups/create:
+    post:
+      summary: Create a default channel group
+      description: |
+        Create a new default channel group.
+
+        Default channel groups allow organizations to group channels together
+        so that users can be easily subscribed to multiple channels at once.
+      tags:
+        - server_and_organizations
+      operationId: create-default-stream-group
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                group_name:
+                  description: The name of the default channel group.
+                  type: string
+                  example: "Engineering"
+                description:
+                  description: A description for the default channel group.
+                  type: string
+                  example: "Default channels for the engineering team."
+                stream_names:
+                  description: A JSON-encoded array of channel names to include in the group.
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "new_test_stream"
+              required:
+                - group_name
+                - description
+                - stream_names
+            encoding:
+              stream_names:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                    example: {"result": "success", "msg": ""}
+
   /messages:
     get:
       operationId: get-messages

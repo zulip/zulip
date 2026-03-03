@@ -431,6 +431,17 @@ def get_temporary_url_for_uploaded_file() -> dict[str, object]:
     return {"realm_id_str": realm_id, "filename": filename}
 
 
+@openapi_param_value_generator(["/default_stream_groups/create:post"])
+def create_default_stream_group_data() -> dict[str, object]:
+    helpers.subscribe(helpers.example_user("iago"), "new_test_stream")
+
+    return {
+        "group_name": "Marketing",
+        "description": "Default channels for the marketing team.",
+        "stream_names": ["new_test_stream"],
+    }
+
+
 @openapi_param_value_generator(["/users/me/api_key/regenerate:post"])
 def regenerate_api_key_test_user() -> dict[str, object]:
     test_user_email = "regenerate-api-key-test@zulip.com"
