@@ -98,7 +98,7 @@ def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:
 # due to differences in the Slack import data and Slack webhook
 # payloads.
 def convert_to_zulip_markdown(text: str, slack_app_token: str) -> str:
-    text = convert_slack_formatting(text)
+    text, _ = convert_slack_formatting(text)
     text = convert_slack_workspace_mentions(text)
     text = convert_slack_user_and_channel_mentions(text, slack_app_token)
     return text
@@ -199,7 +199,7 @@ def api_slack_webhook(
             else:
                 raise RequestVariableMissingError(variable)
 
-        text = convert_slack_formatting(legacy_payload["text"])
+        text, _ = convert_slack_formatting(legacy_payload["text"])
         text = replace_links(text)
         text = get_message_body(text, legacy_payload["user_name"], [])
         handle_slack_webhook_message(

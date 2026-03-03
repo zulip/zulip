@@ -304,7 +304,7 @@ class SlackWebhookTests(WebhookTestCase):
     def test_message_from_slack_integration_bot(self) -> None:
         message_body = """
 **Task status changed** from `complete` to `to do`
-**<https://app.clickup.com/t/25567147/86cw30wf2|asd>**
+**[asd](https://app.clickup.com/t/25567147/86cw30wf2)**
 
 [Cookie / The Goodiest of Cstdddddsdd / dds](https://search.clickup-au.com/media/app-icons/clickup/logo_alpha.png)
 

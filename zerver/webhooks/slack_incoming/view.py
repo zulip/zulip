@@ -102,6 +102,6 @@ def api_slack_incoming_webhook(
         body = body.strip()
 
     if body != "":
-        body = convert_slack_formatting(replace_links(body).strip())
+        body, __ = convert_slack_formatting(replace_links(body).strip())
         check_send_webhook_message(request, user_profile, user_specified_topic, body)
     return json_success(request, data={"ok": True})

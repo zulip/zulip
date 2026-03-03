@@ -208,11 +208,15 @@ def convert_slack_workspace_mentions(text: str) -> str:
     return text
 
 
-def convert_slack_formatting(text: str) -> str:
+def convert_slack_formatting(text: str) -> tuple[str, bool]:
     text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
     text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
     text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
-    return text
+    # Check and convert link format
+    text, has_link = convert_link_format(text)
+    # convert `<mailto:foo@foo.com>` to `mailto:foo@foo.com`
+    text, has_mailto_link = convert_mailto_format(text)
+    return text, has_link or has_mailto_link
 
 
 # Markdown mapping
@@ -223,7 +227,7 @@ def convert_to_zulip_markdown(
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
 ) -> tuple[str, list[int], bool]:
     mentioned_users_id = []
-    text = convert_slack_formatting(text)
+    text, message_has_link = convert_slack_formatting(text)
     text = convert_slack_workspace_mentions(text)
 
     # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
@@ -243,13 +247,6 @@ def convert_to_zulip_markdown(
                 mentioned_users_id.append(user_id)
 
     text = " ".join(tokens)
-
-    # Check and convert link format
-    text, has_link = convert_link_format(text)
-    # convert `<mailto:foo@foo.com>` to `mailto:foo@foo.com`
-    text, has_mailto_link = convert_mailto_format(text)
-
-    message_has_link = has_link or has_mailto_link
 
     return text, mentioned_users_id, message_has_link
 
