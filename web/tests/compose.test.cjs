@@ -2,15 +2,13 @@
 
 const assert = require("node:assert/strict");
 
-const MockDate = require("mockdate");
-
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_bot, make_user} = require("./lib/example_user.cjs");
-const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -262,7 +260,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
 
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
-    MockDate.set(new Date(fake_now * 1000));
+    clock.setSystemTime(new Date(fake_now * 1000));
 
     const fake_compose_box = new FakeComposeBox();
 
@@ -850,8 +848,4 @@ test_ui("DM policy disabled", ({override}) => {
     // For human user and bot user, the "Message X" button is disabled
     reply_disabled = compose_closed_ui.should_disable_compose_reply_button_for_direct_message();
     assert.ok(reply_disabled);
-});
-
-run_test("reset MockDate", () => {
-    MockDate.reset();
 });

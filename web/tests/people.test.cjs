@@ -4,13 +4,12 @@ const assert = require("node:assert/strict");
 
 const {parseISO} = require("date-fns");
 const _ = require("lodash");
-const MockDate = require("mockdate");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_bot, make_cross_realm_bot, make_user, Role} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
-const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -652,7 +651,7 @@ run_test("bot_custom_profile_data", () => {
 
 run_test("user_timezone", ({override}) => {
     initialize();
-    MockDate.set(parseISO("20130208T080910").getTime());
+    clock.setSystemTime(parseISO("20130208T080910").getTime());
 
     override(user_settings, "twenty_four_hour_time", true);
     assert.equal(people.get_user_time(me.user_id), "00:09");
@@ -663,7 +662,7 @@ run_test("user_timezone", ({override}) => {
 
 run_test("utcToZonedTime", ({override}) => {
     initialize();
-    MockDate.set(parseISO("20130208T080910").getTime());
+    clock.setSystemTime(parseISO("20130208T080910").getTime());
     override(user_settings, "twenty_four_hour_time", true);
 
     assert.deepEqual(people.get_user_time(unknown_user.user_id), undefined);
@@ -1719,7 +1718,7 @@ run_test("get_users_that_match_role_ids", () => {
 
 // reset to native Date()
 run_test("reset MockDate", () => {
-    MockDate.reset();
+    clock.reset();
 });
 
 run_test("fetch_users retry", async ({override, override_rewire}) => {
