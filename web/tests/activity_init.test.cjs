@@ -39,16 +39,6 @@ run_test("activity.initialize", ({override}) => {
     const $document_stub = $("document-stub");
     const $window_stub = $("window-stub");
 
-    $document_stub.on = (event, callback) => {
-        assert.equal(event, "mousemove");
-        callback(); // should be set_new_user_input(true)
-    };
-
-    $window_stub.on = (event, callback) => {
-        assert.equal(event, "focus keydown mousedown mousemove touchmove touchstart wheel");
-        assert.equal(callback, activity.mark_client_active);
-    };
-
     override(window, "to_$", () => $window_stub);
     override(document, "to_$", () => $document_stub);
 
@@ -57,6 +47,11 @@ run_test("activity.initialize", ({override}) => {
 
     activity.initialize();
 
+    assert.equal(
+        $window_stub.get_on_handler("focus keydown mousedown mousemove touchmove touchstart wheel"),
+        activity.mark_client_active,
+    );
+    $document_stub.trigger("mousemove"); // should be set_new_user_input(true)
     assert.equal(activity.new_user_input, true);
 });
 
