@@ -208,6 +208,9 @@ class FakeElement extends RejectMissing {
         this.selectionStart = start;
         this.selectionEnd = end;
     }
+    to_$() {
+        return new exports.FakeJQuery([this]);
+    }
 }
 
 exports.default_element = function (selector) {
@@ -820,7 +823,7 @@ function dom_args(args) {
         }
         // Used by zjquery to support $($x) === $x
         to_$() {
-            return this;
+            return new exports.FakeJQuery([...this]);
         }
         toggle(show) {
             assert.ok([true, false].includes(show));

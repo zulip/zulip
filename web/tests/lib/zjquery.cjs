@@ -36,7 +36,7 @@ function verify_selector_for_zulip(selector) {
 }
 
 function make_zjquery() {
-    const elems = new Map();
+    const results = new Map();
 
     const zjquery = function (arg, arg2) {
         assert.ok(typeof arg !== "function", "zjquery does not support $(callback)");
@@ -66,23 +66,18 @@ function make_zjquery() {
 
         verify_selector_for_zulip(selector);
 
-        if (!elems.has(selector)) {
-            const $elem = new FakeJQuery([default_element(selector)]);
-            $elem[0].to_$ = () => $elem;
-            elems.set(selector, $elem);
+        if (!results.has(selector)) {
+            results.set(selector, [default_element(selector)]);
         }
-        return elems.get(selector);
+        return new FakeJQuery(results.get(selector));
     };
 
     zjquery.create = function (selector, opts) {
-        assert.ok(!elems.has(selector), "You already created an object with this name!!");
-        const $elem = new FakeJQuery(opts?.elements ?? [default_element(selector)]);
-        if (!opts?.elements) {
-            $elem[0].to_$ = () => $elem;
-        }
-        elems.set(selector, $elem);
+        assert.ok(!results.has(selector), "You already created an object with this name!!");
+        const elements = opts?.elements ?? [default_element(selector)];
+        results.set(selector, elements);
 
-        return $elem;
+        return new FakeJQuery(elements);
     };
 
     zjquery.set_results = (selector, elements) => zjquery.create(selector, {elements});
@@ -90,11 +85,11 @@ function make_zjquery() {
     zjquery.Event = FakeEvent;
 
     zjquery.reset_selector = (selector) => {
-        elems.delete(selector);
+        results.delete(selector);
     };
 
     zjquery.clear_all_elements = function () {
-        elems.clear();
+        results.clear();
     };
 
     return zjquery;
