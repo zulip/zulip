@@ -1,6 +1,6 @@
 import json
 import re
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 from typing import Any
 
 from zerver.lib.message import SendMessageRequest
@@ -35,7 +35,15 @@ def get_widget_data(content: str) -> tuple[str | None, Any]:
         if widget_type in valid_widget_types:
             remaining_content = content.replace(tokens[0], "", 1)
             extra_data = get_extra_data_from_widget_type(remaining_content, widget_type)
-            return widget_type, asdict(extra_data)
+
+            if is_dataclass(extra_data):
+                payload = asdict(extra_data)
+            elif isinstance(extra_data, dict):
+                payload = extra_data
+            else:
+                payload = {"value": extra_data}
+
+            return widget_type, payload
 
     return None, None
 
