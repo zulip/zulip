@@ -431,6 +431,11 @@ class MessageDict:
         # Render topic_links with the stream's realm instead of the
         # sender's realm; this is important for messages sent by
         # cross-realm bots like NOTIFICATION_BOT.
+        # topic_links() is called once per message during rendering, which
+        # can be thousands of times when fetching a large topic. It's cached
+        # per-request to avoid repeating expensive regex work. The cache is
+        # automatically flushed when linkifiers change (see
+        # zerver/models/linkifiers.py).
         obj[TOPIC_LINKS] = topic_links(rendering_realm_id, topic_name)
 
         if last_edit_time is not None:
