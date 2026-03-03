@@ -258,7 +258,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
     let ui_called = false;
     scroll_util.reset_scrollbar = ($elem) => {
         ui_called = true;
-        assert.equal($elem, $("#subscription_overlay .streams-list"));
+        assert.equal($elem[0], $("#subscription_overlay .streams-list")[0]);
     };
 
     // Filtering has the side effect of setting the "active" class

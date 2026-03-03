@@ -59,45 +59,45 @@ test("feature_check", ({override}) => {
 });
 
 test("config", () => {
-    assert.equal(upload.compose_config.textarea(), $("textarea#compose-textarea"));
+    assert.equal(upload.compose_config.textarea()[0], $("textarea#compose-textarea")[0]);
     assert.equal(
-        upload.compose_config.upload_banner_message("id_1"),
-        $("#compose_banners .upload_banner.file_id_1 .upload_msg"),
+        upload.compose_config.upload_banner_message("id_1")[0],
+        $("#compose_banners .upload_banner.file_id_1 .upload_msg")[0],
     );
     assert.equal(
-        upload.compose_config.upload_banner_cancel_button("id_2"),
-        $("#compose_banners .upload_banner.file_id_2 .upload_banner_cancel_button"),
+        upload.compose_config.upload_banner_cancel_button("id_2")[0],
+        $("#compose_banners .upload_banner.file_id_2 .upload_banner_cancel_button")[0],
     );
     assert.equal(
-        upload.compose_config.upload_banner_hide_button("id_2"),
-        $("#compose_banners .upload_banner.file_id_2 .main-view-banner-close-button"),
+        upload.compose_config.upload_banner_hide_button("id_2")[0],
+        $("#compose_banners .upload_banner.file_id_2 .main-view-banner-close-button")[0],
     );
     assert.equal(upload.compose_config.file_input_identifier(), "#compose input.file_input");
     assert.equal(upload.compose_config.source(), "compose-file-input");
-    assert.equal(upload.compose_config.drag_drop_container(), $("#compose"));
+    assert.equal(upload.compose_config.drag_drop_container()[0], $("#compose")[0]);
     assert.equal(
-        upload.compose_config.markdown_preview_hide_button(),
-        $("#compose .undo_markdown_preview"),
+        upload.compose_config.markdown_preview_hide_button()[0],
+        $("#compose .undo_markdown_preview")[0],
     );
 
     assert.equal(
-        upload.edit_config(1).textarea(),
-        $(`#edit_form_${CSS.escape(1)} textarea.message_edit_content`),
+        upload.edit_config(1).textarea()[0],
+        $(`#edit_form_${CSS.escape(1)} textarea.message_edit_content`)[0],
     );
 
     $(`#edit_form_${CSS.escape(2)}`).set_find_results(
         ".message_edit_save",
         $(".message_edit_save"),
     );
-    assert.equal(upload.edit_config(2).send_button(), $(".message_edit_save"));
+    assert.equal(upload.edit_config(2).send_button()[0], $(".message_edit_save")[0]);
 
     assert.equal(
         upload.edit_config(11).upload_banner_identifier("id_3"),
         `#edit_form_${CSS.escape(11)} .upload_banner.file_id_3`,
     );
     assert.equal(
-        upload.edit_config(75).upload_banner("id_60"),
-        $(`#edit_form_${CSS.escape(75)} .upload_banner.file_id_60`),
+        upload.edit_config(75).upload_banner("id_60")[0],
+        $(`#edit_form_${CSS.escape(75)} .upload_banner.file_id_60`)[0],
     );
 
     $(`#edit_form_${CSS.escape(2)} .upload_banner`).set_find_results(
@@ -105,8 +105,8 @@ test("config", () => {
         $(".upload_banner_cancel_button"),
     );
     assert.equal(
-        upload.edit_config(2).upload_banner_cancel_button("id_34"),
-        $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .upload_banner_cancel_button`),
+        upload.edit_config(2).upload_banner_cancel_button("id_34")[0],
+        $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .upload_banner_cancel_button`)[0],
     );
 
     $(`#edit_form_${CSS.escape(2)} .upload_banner`).set_find_results(
@@ -114,8 +114,10 @@ test("config", () => {
         $(".main-view-banner-close-button"),
     );
     assert.equal(
-        upload.edit_config(2).upload_banner_hide_button("id_34"),
-        $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .main-view-banner-close-button`),
+        upload.edit_config(2).upload_banner_hide_button("id_34")[0],
+        $(
+            `#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .main-view-banner-close-button`,
+        )[0],
     );
 
     $(`#edit_form_${CSS.escape(22)} .upload_banner.file_id_234`).set_find_results(
@@ -123,8 +125,8 @@ test("config", () => {
         $(".upload_msg"),
     );
     assert.equal(
-        upload.edit_config(22).upload_banner_message("id_234"),
-        $(`#edit_form_${CSS.escape(22)} .upload_banner.file_id_234 .upload_msg`),
+        upload.edit_config(22).upload_banner_message("id_234")[0],
+        $(`#edit_form_${CSS.escape(22)} .upload_banner.file_id_234 .upload_msg`)[0],
     );
 
     assert.equal(
@@ -133,12 +135,12 @@ test("config", () => {
     );
     assert.equal(upload.edit_config(123).source(), "message-edit-file-input");
     assert.equal(
-        upload.edit_config(1).drag_drop_container(),
-        $(`#message-row-1-${CSS.escape(1)} .message_edit_form`),
+        upload.edit_config(1).drag_drop_container()[0],
+        $(`#message-row-1-${CSS.escape(1)} .message_edit_form`)[0],
     );
     assert.equal(
-        upload.edit_config(65).markdown_preview_hide_button(),
-        $(`#edit_form_${CSS.escape(65)} .undo_markdown_preview`),
+        upload.edit_config(65).markdown_preview_hide_button()[0],
+        $(`#edit_form_${CSS.escape(65)} .undo_markdown_preview`)[0],
     );
 });
 
@@ -274,7 +276,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading budapest.png…]()");
         assert.equal(new_syntax, "");
-        assert.equal($textarea, $("textarea#compose-textarea"));
+        assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
     });
     $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").trigger("click");
     assert.ok(remove_file_called);
@@ -533,7 +535,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
             new_syntax,
             "![modified-name-copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
         );
-        assert.equal($textarea, $("textarea#compose-textarea"));
+        assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
     });
     let compose_ui_autosize_textarea_called = false;
     override_rewire(compose_ui, "autosize_textarea", () => {
@@ -564,7 +566,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(new_syntax, "");
-        assert.equal($textarea, $("textarea#compose-textarea"));
+        assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
     });
     on_restriction_failed_callback(file, null, null);
     assert.ok(compose_ui_replace_syntax_called);

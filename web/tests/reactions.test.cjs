@@ -561,7 +561,7 @@ test("find_reaction", () => {
     const local_id = "unicode_emoji,1f44b";
     const $reaction = stub_reaction(message_id, local_id);
 
-    assert.equal(reactions.find_reaction(message_id, local_id), $reaction);
+    assert.equal(reactions.find_reaction(message_id, local_id)[0], $reaction[0]);
 });
 
 test("get_reaction_sections", () => {
@@ -569,7 +569,7 @@ test("get_reaction_sections", () => {
 
     const $section = reactions.get_reaction_sections(555);
 
-    assert.equal($section, $message_reactions);
+    assert.equal($section[0], $message_reactions[0]);
 });
 
 test("emoji_reaction_title", ({override}) => {
