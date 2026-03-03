@@ -4,6 +4,8 @@ import requests
 from typing_extensions import override
 from urllib3.util import Retry
 
+from zproject.config import get_config
+
 
 class OutgoingSession(requests.Session):
     def __init__(
@@ -12,6 +14,7 @@ class OutgoingSession(requests.Session):
         timeout: float,
         headers: dict[str, str] | None = None,
         max_retries: int | Retry | None = None,
+        proxies: dict[str, str] | None = None,
     ) -> None:
         super().__init__()
         retry: Retry | None = Retry(total=0)
@@ -25,6 +28,21 @@ class OutgoingSession(requests.Session):
         self.mount("https://", outgoing_adapter)
         if headers:
             self.headers.update(headers)
+
+        if proxies is None:
+            proxy_host = get_config("http_proxy", "host", "localhost")
+            proxy_port = get_config("http_proxy", "port", "4750")
+            proxy = ""
+            if proxy_host != "" and proxy_port != "":
+                proxy = f"http://{proxy_host}:{proxy_port}"
+                self.proxies.update(
+                    {
+                        "http": proxy,
+                        "https": proxy,
+                    }
+                )
+        else:
+            self.proxies.update(proxies)
 
 
 class OutgoingHTTPAdapter(requests.adapters.HTTPAdapter):

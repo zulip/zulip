@@ -48,7 +48,7 @@ class TestOutgoingHttp(ZulipTestCase):
     def test_headers(self) -> None:
         with RequestMockWithProxySupport() as mock_requests:
             mock_requests.add(responses.GET, "http://example.com/")
-            OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}).get(
+            OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}, proxies={}).get(
                 "http://example.com/"
             )
             self.assert_length(mock_requests.calls, 1)
@@ -57,8 +57,42 @@ class TestOutgoingHttp(ZulipTestCase):
             self.assertFalse("X-Smokescreen-Role" in headers)
             self.assertEqual(headers["X-Foo"], "bar")
 
+    def test_proxy_headers_config(self) -> None:
+        with (
+            RequestMockWithProxySupport() as mock_requests,
+            mock.patch("zerver.lib.outgoing_http.get_config") as get_config,
+        ):
+            get_config.side_effect = ("localhost", "4242")
+            mock_requests.add(responses.GET, "http://localhost:4242/")
+            OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}).get(
+                "http://example.com/"
+            )
+            self.assert_length(mock_requests.calls, 1)
+            headers = mock_requests.calls[0].request.headers
+            self.assertEqual(headers["X-Smokescreen-Role"], "testing")
+
+    def test_proxy_headers_no_config(self) -> None:
+        with (
+            RequestMockWithProxySupport() as mock_requests,
+            mock.patch("zerver.lib.outgoing_http.get_config") as get_config,
+        ):
+            get_config.side_effect = ("", "")
+            mock_requests.add(responses.GET, "http://example.com/")
+            OutgoingSession(role="testing", timeout=1).get("http://example.com/")
+
+    def test_proxy_headers_proxy_override(self) -> None:
+        with (
+            RequestMockWithProxySupport() as mock_requests,
+            mock.patch("zerver.lib.outgoing_http.get_config") as get_config,
+        ):
+            get_config.side_effect = ("localhost", "4242")
+            mock_requests.add(responses.GET, "http://proxy-host:4343/")
+            OutgoingSession(
+                role="testing", timeout=1, proxies={"http": "http://proxy-host:4343"}
+            ).get("http://example.com/")
+
     @mock.patch.dict(os.environ, {"http_proxy": "http://localhost:4242"})
-    def test_proxy_headers(self) -> None:
+    def test_proxy_headers_env(self) -> None:
         with RequestMockWithProxySupport() as mock_requests:
             mock_requests.add(responses.GET, "http://localhost:4242/")
             OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}).get(
