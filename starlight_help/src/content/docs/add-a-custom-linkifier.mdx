@@ -40,8 +40,8 @@ automatically convert to linked text.
   <NavigationSteps target="settings/linkifier-settings" />
 
   1. Click **Add linkifier**.
-  1. Enter the **Pattern** of the text you want to linkify, and **Example text
-     to linkify**, which will help verify your pattern.
+  1. Enter the **Example text to linkify**, and the **Pattern** that will match
+     it and similar text.
   1. Enter the **URL template** for where text matching the pattern should link.
   1. *(optional)* To enable automatic conversion of pasted URLs to linked text,
      fill in **Auto-convert pasted URLs matching the template to**.
@@ -84,7 +84,7 @@ converting URLs to shortened links. See the
 <FlattenedSteps>
   <NavigationSteps target="settings/linkifier-settings" />
 
-  1. In the **Pattern** column, click and drag the vertical
+  1. In the **Example** column, click and drag the vertical
      dots to reorder the list of linkifiers.
 </FlattenedSteps>
 
@@ -99,9 +99,9 @@ This is a pattern that turns a `#` followed by a number into a link. It is often
 used to link to issues or tickets in third party issue trackers, like GitHub,
 Salesforce, Zendesk, and others.
 
+* Example text to linkify: `#2468`
 * Pattern: `#(?P<id>[0-9]+)`
 * URL template: `https://github.com/zulip/zulip/issues/{id}`
-* Example text to linkify: `#2468`
 * Auto-convert pasted URLs matching the template to: `#{id}`
 * Automatically links to: `https://github.com/zulip/zulip/issues/2468`
 
@@ -114,9 +114,9 @@ variants. For example, the Zulip development community
 `#M2468` for an issue in the repository for the Zulip mobile app,
 `#D2468` and issue in the desktop app repository, etc.
 
+* Example text to linkify: `#F245`
 * Pattern: `#F(?P<id>[0-9]+)`
 * URL template: `https://github.com/zulip/zulip-flutter/issues/{id}`
-* Example text to linkify: `#F245`
 * Auto-convert pasted URLs matching the template to: `#F{id}`
 * Automatically links to: `https://github.com/zulip/zulip-flutter/issues/245`
 
@@ -125,9 +125,9 @@ variants. For example, the Zulip development community
 For organizations that commonly link to multiple GitHub repositories, this
 linkfier pattern turns `org/repo#ID` into an issue or pull request link.
 
+* Example text to linkify: `zulip/zulip#2468`
 * Pattern: `(?P<org>[a-zA-Z0-9_-]+)/(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>[0-9]+)`
 * URL template: `https://github.com/{org}/{repo}/issues/{id}`
-* Example text to linkify: `zulip/zulip#2468`
 * Auto-convert pasted URLs matching the template to: `{org}/{repo}#{id}`
 * Automatically links to: `https://github.com/zulip/zulip/issues/2468`
 
@@ -136,9 +136,9 @@ linkfier pattern turns `org/repo#ID` into an issue or pull request link.
 The following pattern linkfies a string of hexadecimal digits between 7 and 40
 characters long, such as a Git commit ID.
 
+* Example text to linkify: `abdc123`
 * Pattern: `(?P<id>[0-9a-f]{7,40})`
 * URL template: `https://github.com/zulip/zulip/commit/{id}`
-* Example text to linkify: `abdc123`
 * Auto-convert pasted URLs matching the template to: `{id}`
 * Automatically links to: `https://github.com/zulip/zulip/commit/abcd123`
 
@@ -171,9 +171,9 @@ the precise behavior of URL templates.
 This example pattern is a shorthand for linking to pages on Zulip's ReadTheDocs
 site.
 
+* Example text to linkify: `RTD/overview/changelog.html`
 * Pattern: `RTD/(?P<article>[a-zA-Z0-9_/.#-]+)`
 * URL template: `https://zulip.readthedocs.io/en/latest/{+article}`
-* Example text to linkify: `RTD/overview/changelog.html`
 * Auto-convert pasted URLs matching the template to: `RTD/{article}`
 * Automatically links to: `https://zulip.readthedocs.io/en/latest/overview/changelog.html`
 
