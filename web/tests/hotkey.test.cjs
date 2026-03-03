@@ -203,6 +203,7 @@ run_test("mappings", () => {
     assert.equal(map_down("[", false, true).name, "escape");
     assert.equal(map_down("c", false, true).name, "copy_with_c");
     assert.equal(map_down("k", false, true).name, "search_with_k");
+    assert.equal(map_down("@", true, true).name, "open_mentions_view");
     assert.equal(map_down("s", false, true).name, "star_message");
     assert.equal(map_down(".", false, true).name, "narrow_to_compose_target");
 
@@ -242,6 +243,8 @@ run_test("mappings", () => {
     assert.equal(map_down("c", false, true, false), undefined);
     assert.equal(map_down("k", false, false, true).name, "search_with_k");
     assert.equal(map_down("k", false, true, false), undefined);
+    assert.equal(map_down("@", true, false, true).name, "open_mentions_view");
+    assert.equal(map_down("@", true, true, false), undefined);
     assert.equal(map_down("s", false, false, true).name, "star_message");
     assert.equal(map_down("s", false, true, false), undefined);
     assert.equal(map_down(".", false, false, true).name, "narrow_to_compose_target");
@@ -284,6 +287,7 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("х", "BracketLeft", false, true).name, "escape");
     assert.equal(map_down("с", "KeyC", false, true).name, "copy_with_c");
     assert.equal(map_down("л", "KeyK", false, true).name, "search_with_k");
+    assert.equal(map_down("@", "Digit2", true, true).name, "open_mentions_view");
     assert.equal(map_down("ы", "KeyS", false, true).name, "star_message");
     assert.equal(map_down("з", "KeyP", false, false, false, true).name, "toggle_compose_preview");
 
@@ -317,6 +321,8 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("с", "KeyC", false, true, false), undefined);
     assert.equal(map_down("л", "KeyK", false, false, true).name, "search_with_k");
     assert.equal(map_down("л", "KeyK", false, true, false), undefined);
+    assert.equal(map_down("@", "Digit2", true, false, true).name, "open_mentions_view");
+    assert.equal(map_down("@", "Digit2", true, true, false), undefined);
     assert.equal(map_down("ы", "KeyS", false, false, true).name, "star_message");
     assert.equal(map_down("ы", "KeyS", false, true, false), undefined);
     // Reset platform
