@@ -15,6 +15,8 @@ import * as feedback_widget from "./feedback_widget.ts";
 import {$t} from "./i18n.ts";
 import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
+import * as message_lists from "./message_lists.ts";
+import * as multiple_messages_delete from "./multiple_messages_delete.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -431,6 +433,37 @@ const time_zone_update_offer_banner = (): AlertBanner => {
     };
 };
 
+const multiple_messages_delete_banner = (): AlertBanner => (
+    {
+        process: "multiple_messages_delete_banner",
+        intent: "danger",
+        label: $t(
+            {
+                defaultMessage:
+                    "Delete selected messages?",
+            },
+        ),
+        buttons: [
+            {
+                attention: "quiet",
+                label: $t({defaultMessage: "Yes"}),
+                custom_classes: "confirm-delete-multiple-messages",
+            },
+            {
+                attention: "borderless",
+                label: $t({defaultMessage: "No"}),
+                custom_classes: "discard-delete-multiple-messages",
+            },
+        ],
+        close_button: false,
+        custom_classes: "navbar-alert-banner",
+    }
+);
+
+export function show_multiple_messages_delete_banner() : void {
+    open_navbar_banner_and_resize(multiple_messages_delete_banner());
+}
+
 export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
@@ -643,6 +676,26 @@ export function initialize(): void {
                     });
                 },
             });
+        },
+    );
+
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".confirm-delete-multiple-messages",
+        function (this: HTMLElement) {
+            const $banner = $(this).closest(".banner");
+            close_navbar_banner_and_resize($banner);
+            multiple_messages_delete.initiate_multiple_message_deletion();
+        },
+    );
+
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".discard-delete-multiple-messages",
+        function (this: HTMLElement) {
+            const $banner = $(this).closest(".banner");
+            close_navbar_banner_and_resize($banner);
+            message_lists.current?.rerender();
         },
     );
 
