@@ -88,7 +88,6 @@ test("activate", ({override}) => {
     // Both widgetize.render and widgetize.handle_event are tested
     // here to use the "caching" of widgets.
     const $row = $.create("<stub message row>");
-    $row.length = 1;
     $row.attr("id", `message-row-${message_lists.current.id}-2909`);
     const $message_content = $.create(`#message-row-${message_lists.current.id}-2909`);
     $row.set_find_results(".message_content", $message_content);

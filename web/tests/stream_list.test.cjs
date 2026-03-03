@@ -208,8 +208,6 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     const $social_li = $("<social-sidebar-row-stub>");
     const stream_id = social.stream_id;
 
-    $social_li.length = 1;
-
     const $privacy_elem = $.create("privacy-stub");
     $social_li.set_find_results(".stream-privacy", $privacy_elem);
 
@@ -294,11 +292,7 @@ function add_row(sub) {
         update_whether_active() {},
         get_li() {
             const html = "<" + sub.name + "-sidebar-row-stub>";
-            const $obj = $(html);
-
-            $obj.length = 1; // bypass blueslip error
-
-            return $obj;
+            return $(html);
         },
     };
     stream_list.stream_sidebar.set_row(sub.stream_id, row);
@@ -423,7 +417,6 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
         $stream_li2.toggleClass(classname, value);
     };
 
-    $stream_li1.length = 1;
     $(".filter-topics").remove = () => {
         filter_topics_appended = false;
     };
@@ -623,7 +616,6 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
     stream_data.rename_sub(sub, new_name);
 
     const $li_stub = $.create("li stub");
-    $li_stub.length = 1;
 
     mock_template("stream_sidebar_row.hbs", false, (payload) => {
         assert.deepEqual(payload, {

@@ -8,7 +8,6 @@ exports.buddy_list_add_user_matching_view = (user_id, $stub) => {
     if ($stub.attr) {
         $stub.attr("data-user-id", user_id);
     }
-    $stub.length = 1;
     users_matching_view.push(user_id);
     const sel = `li.user_sidebar_entry[data-user-id='${CSS.escape(user_id)}']`;
     $("#buddy_list_wrapper").set_find_results(sel, $stub);
@@ -19,7 +18,6 @@ exports.buddy_list_add_other_user = (user_id, $stub) => {
     if ($stub.attr) {
         $stub.attr("data-user-id", user_id);
     }
-    $stub.length = 1;
     other_users.push(user_id);
     const sel = `li.user_sidebar_entry[data-user-id='${CSS.escape(user_id)}']`;
     $("#buddy_list_wrapper").set_find_results(sel, $stub);
