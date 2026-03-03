@@ -8,6 +8,17 @@ from zproject.config import get_config
 
 
 class OutgoingSession(requests.Session):
+    """Reasonable outgoing HTTP request defaults.
+
+    This class exists to force requests through the Smokescreen
+    proxy, enforce that requests have timeouts set, and to provide an
+    easy way for them to include retries.  The 'Role' is currently
+    unused -- Smokescreen does not currently consume the
+    X-Smokescreen-Role header, but may do so in the future for
+    additional ACL'ing of destinations and/or logging.
+
+    """
+
     def __init__(
         self,
         role: str,
